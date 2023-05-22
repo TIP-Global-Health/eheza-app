@@ -1,5 +1,6 @@
 module Utils.GeoLocation exposing
     ( GeoInfo
+    , GeoLocationId
     , ReverseGeoInfo
     , filterGeoLocationDictByParent
     , geoInfo
@@ -9,7 +10,7 @@ module Utils.GeoLocation exposing
     )
 
 import AssocList as Dict exposing (Dict)
-import Restful.Endpoint exposing (EntityId, fromEntityId, toEntityId)
+import Backend.Entities exposing (EntityId, fromEntityId, toEntityId)
 
 
 {-| This is here to have a partially type-safe key for the Dict.

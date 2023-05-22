@@ -921,6 +921,46 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-person-field_ncda_data'.
+  $field_instances['node-person-field_ncda_data'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 27,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncda_data',
+    'label' => 'NCDA Data',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 23,
+    ),
+  );
+
   // Exported field_instance: 'node-person-field_number_of_children'.
   $field_instances['node-person-field_number_of_children'] = array(
     'bundle' => 'person',
@@ -1294,7 +1334,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 23,
+      'weight' => 24,
     ),
   );
 
@@ -1607,6 +1647,7 @@ function hedley_person_field_default_field_instances() {
   t('How are these persons related?');
   t('Marital status');
   t('Mode of delivery');
+  t('NCDA Data');
   t('National ID number');
   t('Number of children');
   t('Number of children under 5 years old');

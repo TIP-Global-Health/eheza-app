@@ -24,9 +24,12 @@ views. more often than that.
 fetch : Model -> List Msg
 fetch model =
     case model.activePage of
+        Menu ->
+            []
+
         Scoreboard ->
             Pages.Scoreboard.Fetch.fetch model.backend model.scoreboardPage
                 |> List.map (\subMsg -> MsgBackend subMsg)
 
-        _ ->
+        NotFound ->
             []

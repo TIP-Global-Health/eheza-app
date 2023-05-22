@@ -24,7 +24,9 @@
             "elm-community/maybe-extra": "5.0.0",
             "elm-community/typed-svg": "7.0.0",
             "gampleman/elm-visualization": "2.3.0",
+            "justinmimbs/date": "4.0.1",
             "krisajenkins/remotedata": "5.0.0",
+            "lukewestby/elm-http-builder": "6.0.0",
             "pzp1997/assoc-list": "1.0.0",
             "stoeffel/editable": "2.0.1",
             "zwilias/elm-rosetree": "1.5.0"
@@ -45,7 +47,6 @@
             "ianmackenzie/elm-units": "2.9.0",
             "ianmackenzie/elm-units-interval": "2.3.0",
             "ianmackenzie/elm-units-prefixed": "2.7.0",
-            "justinmimbs/date": "4.0.1",
             "justinmimbs/time-extra": "1.1.1",
             "rtfeldman/elm-hex": "1.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.3",
