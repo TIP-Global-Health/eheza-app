@@ -27,7 +27,6 @@ view language currentTime nurseId nurse db model =
             div [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
                     [ translateText language Translate.Wellbeing
-                    , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
                     ]
                 , span
                     [ class "link-back"
@@ -38,14 +37,14 @@ view language currentTime nurseId nurse db model =
 
         resilienceMessageButton =
             button
-                [ class "ui primary button resilience-message"
+                [ class "ui primary button"
                 , onClick <| SetActivePage <| UserPage MessagingCenterPage
                 ]
-                [ span [ class "icon" ] []
-                , span [ class "text" ] [ text <| translate language Translate.ResilienceMessage ]
+                [ span [ class "text" ] [ text <| translate language Translate.ResilienceMessage ]
+                , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
                 ]
     in
-    div []
+    div [ class "page-activity well-being" ]
         [ header
         , resilienceMessageButton
         ]
