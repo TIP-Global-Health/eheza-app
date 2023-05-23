@@ -9,7 +9,6 @@ include_once 'hedley_aggregated_ncda.features.inc';
 
 define('HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA', 'hedley_aggregated_ncda_calculate_ncda_data');
 
-
 /**
  * Implements hook_menu().
  */
@@ -78,50 +77,6 @@ function hedley_aggregated_ncda_node_update($node) {
   }
 
   hedley_aggregated_ncda_trigger_recalculation_by_measurement($node);
-}
-
-function hedley_aggregated_ncda_trigger_recalculation_by_measurement($node) {
-  $triggering_measurement_types = hedley_aggregated_ncda_get_triggering_measurement_types();
-  if (!in_array($node->type, $triggering_measurement_types)) {
-    return;
-  }
-
-  $wrapper = entity_metadata_wrapper('node', $node);
-  if (!$wrapper->__isset('field_person')) {
-    // Can't resolve to which person measurement belongs.
-    return;
-  }
-
-  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $person_id, [
-    'person_id' => $person_id,
-  ]);
-}
-
-function hedley_aggregated_ncda_trigger_recalculation_for_new_village($node) {
-  $residents = hedley_chw_get_village_residents($node->nid);
-
-  foreach ($residents as $resident) {
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $resident, [
-      'person_id' => $resident,
-    ]);
-  }
-}
-
-function hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node) {
-  $wrapper = entity_metadata_wrapper('node', $node);
-  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
-
-  $birth_date = $wrapper->field_birth_date->value();
-  $birth_date_orig = $wrapper_orig->field_birth_date->value();
-
-  if ($birth_date == $birth_date_orig) {
-    return;
-  }
-
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $node->nid, [
-    'person_id' => $node->nid,
-  ]);
 }
 
 /**
@@ -924,6 +879,79 @@ function hedley_aggregated_ncda_bundle_to_encounter_type($node) {
 }
 
 /**
+ * Triggers recalculation of person's NCDA data based on it's measurement node.
+ *
+ * @param object $node
+ *   The node object of a measurement.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_aggregated_ncda_trigger_recalculation_by_measurement($node) {
+  $triggering_measurement_types = hedley_aggregated_ncda_get_triggering_measurement_types();
+  if (!in_array($node->type, $triggering_measurement_types)) {
+    // Not a triggering measurement.
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  if (!$wrapper->__isset('field_person')) {
+    // Can't resolve to which person measurement belongs.
+    return;
+  }
+
+  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+  // Trigger recalculation using AQ.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $person_id, [
+    'person_id' => $person_id,
+  ]);
+}
+
+/**
+ * Triggers recalculation of village residents NCDA data on village creation.
+ *
+ * @param object $node
+ *   The node object of a village.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_aggregated_ncda_trigger_recalculation_for_new_village($node) {
+  $residents = hedley_chw_get_village_residents($node->nid);
+
+  foreach ($residents as $resident) {
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $resident, [
+      'person_id' => $resident,
+    ]);
+  }
+}
+
+/**
+ * Triggers recalculation of person's NCDA data, when edited.
+ *
+ * Recalculation is required only when birth date is edited.
+ * Note: currently, editing geo fields of person is not allowed.
+ *
+ * @param object $node
+ *   The node object of a village.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+
+  $birth_date = $wrapper->field_birth_date->value();
+  $birth_date_orig = $wrapper_orig->field_birth_date->value();
+
+  if ($birth_date == $birth_date_orig) {
+    return;
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $node->nid, [
+    'person_id' => $node->nid,
+  ]);
+}
+
+/**
  * Retrieves the date measured field value from measurement node.
  *
  * @param object $node
@@ -945,8 +973,21 @@ function hedley_aggregated_ncda_get_date_measured($node) {
   return $parts[0];
 }
 
+/**
+ * Retrieves measurement types that need to trigger NCDA recalculation.
+ *
+ * @return array
+ *   The array of triggering measurement types.
+ */
 function hedley_aggregated_ncda_get_triggering_measurement_types() {
-  $content_types_to_load = array_merge(
+  return array_merge(
+    [
+      HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_MEDICATION_DISTRIBUTION_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE,
+    ],
     HEDLEY_ACTIVITY_NCDA_BUNDLES,
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
@@ -954,11 +995,4 @@ function hedley_aggregated_ncda_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES
   );
-  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
-  $content_types_to_load[] = HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE;
-  $content_types_to_load[] = HEDLEY_ACTIVITY_MEDICATION_DISTRIBUTION_CONTENT_TYPE;
-  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE;
-  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE;
-
-  return $content_types_to_load;
 }
