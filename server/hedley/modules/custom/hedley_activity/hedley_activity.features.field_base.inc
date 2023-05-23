@@ -1276,7 +1276,7 @@ function hedley_activity_field_default_field_bases() {
         'has-toilets' => 'Has Toilets',
         'has-kitchen-garden' => 'Has Kitchen Garden',
         'regular-prenatal-visits' => 'Regular Prenatal Visits',
-        'ron-supplements-during-pregnancy' => 'Iron Supplements During Pregnancy',
+        'iron-supplements-during-pregnancy' => 'Iron Supplements During Pregnancy',
         'insecticide-treated-bednets-during-pregnancy' => 'Insecticide Treated Bednets During Pregnancy',
         'none' => 'None',
       ),

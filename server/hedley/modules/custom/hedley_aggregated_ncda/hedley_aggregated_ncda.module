@@ -343,23 +343,86 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     'birth_date' => date("Y-m-d", $birth_date),
   ];
 
-  $content_types_to_load = HEDLEY_ACTIVITY_NCDA_BUNDLES;
+  $content_types_to_load = array_merge(HEDLEY_ACTIVITY_NCDA_BUNDLES, HEDLEY_ACTIVITY_HEIGHT_BUNDLES);
   $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
 
+  $heights = $ncdas = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
     $nodes = node_load_multiple($measurements);
     foreach ($nodes as $node) {
+      if (in_array($node->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
+        $heights[] = $node;
+        continue;
+      }
+      if (in_array($node->type, HEDLEY_ACTIVITY_NCDA_BUNDLES)) {
+        $ncdas[] = $node;
+        continue;
+      }
+      // If we got so far, it's pregnancy summary content type.
+      // Only thing we need from it is the birth weight.
       if (!empty($node->field_weight) && !empty($node->field_weight[LANGUAGE_NONE][0]['value'])) {
         $birth_weight = $node->field_weight[LANGUAGE_NONE][0]['value'];
       }
     }
   }
 
+  // Birth weight measurement is taken once -
+  // at Newborn exam encounter (pregnancy summary measurement), if it
+  // was performed, at first NCDA questioner, otherwise.
+  // Therefore, if we did not resolve birth weight from pregnancy summary,
+  // we try to resolve from NCDA questioners.
+  if (empty($birth_weight)) {
+    foreach ($ncdas as $ncda) {
+      if (!empty($ncda->field_weight) && !empty($ncda->field_weight[LANGUAGE_NONE][0]['value'])) {
+        $birth_weight = $ncda->field_weight[LANGUAGE_NONE][0]['value'];
+      }
+      break;
+    }
+  }
   if ($birth_weight) {
     $data['low_birth_weight'] = $birth_weight < 2000;
   }
+
+  $data['stunting_severe'] = [];
+  $data['stunting_moderate'] = [];
+  $data['stunting_normal'] = [];
+  foreach ($heights as $height) {
+    if (!empty($height->field_zscore_age) && !empty($height->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
+      $value = $height->field_zscore_age[LANGUAGE_NONE][0]['value'];
+      if ($value <= -3) {
+        $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
+        $data['stunting_severe'][] = $parts[0];
+        continue;
+      }
+      if ($value <= -2) {
+        $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
+        $data['stunting_moderate'][] = $parts[0];
+        continue;
+      }
+      $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
+      $data['stunting_normal'][] = $parts[0];
+    }
+  }
+
+  $postpartum_checkups = $iron_during_pregnancy = FALSE;
+  foreach ($ncdas as $ncda) {
+    $items = field_get_items('node', $ncda, 'field_ncda_signs');
+    if (!$items) {
+      continue;
+    }
+    foreach ($items as $item) {
+      if ($item['value'] == 'regular-prenatal-visits') {
+        $postpartum_checkups = TRUE;
+      }
+      elseif ($item['value'] == 'iron-supplements-during-pregnancy') {
+        $iron_during_pregnancy = TRUE;
+      }
+    }
+  }
+  $data['postpartum_checkups'] = $postpartum_checkups;
+  $data['iron_during_pregnancy'] = $iron_during_pregnancy;
 
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
