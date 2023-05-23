@@ -2766,3 +2766,4 @@ geoLocationDictToOptions =
             (\( id, geoLocation ) ->
                 ( String.fromInt <| fromEntityId id, geoLocation.name )
             )
+        >> List.sortBy Tuple.second
