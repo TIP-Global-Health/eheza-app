@@ -343,10 +343,14 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     'birth_date' => date("Y-m-d", $birth_date),
   ];
 
-  $content_types_to_load = array_merge(HEDLEY_ACTIVITY_NCDA_BUNDLES, HEDLEY_ACTIVITY_HEIGHT_BUNDLES);
+  $content_types_to_load = array_merge(
+    HEDLEY_ACTIVITY_NCDA_BUNDLES,
+    HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_MUAC_BUNDLES);
   $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
 
-  $heights = $ncdas = [];
+  $heights = $weights = $muacs = $ncdas = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
@@ -356,10 +360,22 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
         $heights[] = $node;
         continue;
       }
+
+      if (in_array($node->type, HEDLEY_ACTIVITY_WEIGHT_BUNDLES)) {
+        $weights[] = $node;
+        continue;
+      }
+
+      if (in_array($node->type, HEDLEY_ACTIVITY_MUAC_BUNDLES)) {
+        $muacs[] = $node;
+        continue;
+      }
+
       if (in_array($node->type, HEDLEY_ACTIVITY_NCDA_BUNDLES)) {
         $ncdas[] = $node;
         continue;
       }
+
       // If we got so far, it's pregnancy summary content type.
       // Only thing we need from it is the birth weight.
       if (!empty($node->field_weight) && !empty($node->field_weight[LANGUAGE_NONE][0]['value'])) {
@@ -385,24 +401,78 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     $data['low_birth_weight'] = $birth_weight < 2000;
   }
 
-  $data['stunting_severe'] = [];
-  $data['stunting_moderate'] = [];
-  $data['stunting_normal'] = [];
+  $empty_nutrition_values = [
+    'severe' => [],
+    'moderate' => [],
+    'normal' => [],
+  ];
+
+  $data['nutrition'] = [
+    'stunting' => $empty_nutrition_values,
+    'underweight' => $empty_nutrition_values,
+    'wasting' => $empty_nutrition_values,
+    'muac' => $empty_nutrition_values,
+  ];
+
   foreach ($heights as $height) {
     if (!empty($height->field_zscore_age) && !empty($height->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
       $value = $height->field_zscore_age[LANGUAGE_NONE][0]['value'];
-      if ($value <= -3) {
-        $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
-        $data['stunting_severe'][] = $parts[0];
-        continue;
-      }
-      if ($value <= -2) {
-        $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
-        $data['stunting_moderate'][] = $parts[0];
-        continue;
-      }
       $parts = explode(' ', $height->field_date_measured[LANGUAGE_NONE][0]['value']);
-      $data['stunting_normal'][] = $parts[0];
+      if ($value <= -3) {
+        $data['nutrition']['stunting']['severe'][] = $parts[0];
+      }
+      elseif ($value <= -2) {
+        $data['nutrition']['stunting']['moderate'][] = $parts[0];
+      }
+      else {
+        $data['nutrition']['stunting']['normal'][] = $parts[0];
+      }
+    }
+  }
+
+  foreach ($weights as $weight) {
+    if (!empty($weight->field_zscore_age) && !empty($weight->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
+      $value = $weight->field_zscore_age[LANGUAGE_NONE][0]['value'];
+      $parts = explode(' ', $weight->field_date_measured[LANGUAGE_NONE][0]['value']);
+      if ($value <= -3) {
+        $data['nutrition']['underweight']['severe'][] = $parts[0];
+      }
+      elseif ($value <= -2) {
+        $data['nutrition']['underweight']['moderate'][] = $parts[0];
+      }
+      else {
+        $data['nutrition']['underweight']['normal'][] = $parts[0];
+      }
+    }
+
+    if (!empty($weight->field_zscore_length) && !empty($weight->field_zscore_length[LANGUAGE_NONE][0]['value'])) {
+      $value = $weight->field_zscore_length[LANGUAGE_NONE][0]['value'];
+      $parts = explode(' ', $weight->field_date_measured[LANGUAGE_NONE][0]['value']);
+      if ($value <= -3) {
+        $data['nutrition']['wasting']['severe'][] = $parts[0];
+      }
+      elseif ($value <= -2) {
+        $data['nutrition']['wasting']['moderate'][] = $parts[0];
+      }
+      else {
+        $data['nutrition']['wasting']['normal'][] = $parts[0];
+      }
+    }
+  }
+
+  foreach ($muacs as $muac) {
+    if (!empty($muac->field_muac) && !empty($muac->field_muac[LANGUAGE_NONE][0]['value'])) {
+      $value = $muac->field_muac[LANGUAGE_NONE][0]['value'];
+      $parts = explode(' ', $muac->field_date_measured[LANGUAGE_NONE][0]['value']);
+      if ($value <= 11.5) {
+        $data['nutrition']['muac']['severe'][] = $parts[0];
+      }
+      elseif ($value <= 12.5) {
+        $data['nutrition']['muac']['moderate'][] = $parts[0];
+      }
+      else {
+        $data['nutrition']['muac']['normal'][] = $parts[0];
+      }
     }
   }
 

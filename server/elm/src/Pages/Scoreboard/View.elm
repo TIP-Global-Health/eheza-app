@@ -55,7 +55,7 @@ viewScoreboardData language currentDate data model =
         [ topBar
         , viewAggregatedChildScoreboardPane language data
         , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap data
-        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap data
+        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap data
         , viewStuntingPane language currentDate model.yearSelectorGap monthsGap data
         , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap data
         , viewUniversalInterventionPane language currentDate model.yearSelectorGap data
@@ -155,8 +155,8 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewAcuteMalnutritionPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
-viewAcuteMalnutritionPane language currentDate yearSelectorGap data =
+viewAcuteMalnutritionPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
+viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap data =
     let
         rows =
             List.map2
@@ -166,8 +166,100 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap data =
                 [ SevereAcuteMalnutrition, ModerateAcuteMalnutrition, GoodNutrition ]
                 values
 
+        valuesByRow =
+            List.foldl
+                (\record accum ->
+                    let
+                        stuntingSevereAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.severe
+
+                        stuntingModerateAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.moderate
+
+                        stuntingNormalAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.normal
+
+                        underweightSevereAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.underweight.severe
+
+                        underweightModerateAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.underweight.moderate
+
+                        underweightNormalAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.underweight.normal
+
+                        wastingSevereAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.wasting.severe
+
+                        wastingModerateAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.wasting.moderate
+
+                        wastingNormalAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.wasting.normal
+
+                        muacSevereAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.muac.severe
+
+                        muacModerateAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.muac.moderate
+
+                        muacNormalAsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.muac.normal
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMoths ->
+                                        let
+                                            ( row1, row2, row3 ) =
+                                                if
+                                                    List.member gapInMoths stuntingSevereAsAgeInMonths
+                                                        || List.member gapInMoths underweightSevereAsAgeInMonths
+                                                        || List.member gapInMoths wastingSevereAsAgeInMonths
+                                                        || List.member gapInMoths muacModerateAsAgeInMonths
+                                                then
+                                                    ( accumValue.row1 + 1, accumValue.row2, accumValue.row3 )
+
+                                                else if
+                                                    List.member gapInMoths stuntingModerateAsAgeInMonths
+                                                        || List.member gapInMoths underweightModerateAsAgeInMonths
+                                                        || List.member gapInMoths wastingModerateAsAgeInMonths
+                                                        || List.member gapInMoths muacModerateAsAgeInMonths
+                                                then
+                                                    ( accumValue.row1, accumValue.row2 + 1, accumValue.row3 )
+
+                                                else if
+                                                    List.member gapInMoths stuntingNormalAsAgeInMonths
+                                                        || List.member gapInMoths underweightNormalAsAgeInMonths
+                                                        || List.member gapInMoths wastingNormalAsAgeInMonths
+                                                        || List.member gapInMoths muacNormalAsAgeInMonths
+                                                then
+                                                    ( accumValue.row1, accumValue.row2, accumValue.row3 + 1 )
+
+                                                else
+                                                    ( accumValue.row1, accumValue.row2, accumValue.row3 )
+                                        in
+                                        { row1 = row1
+                                        , row2 = row2
+                                        , row3 = row3
+                                        }
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                emptyValues
+                data.records
+
+        emptyValues =
+            List.repeat 12 { row1 = 0, row2 = 0, row3 = 0 }
+
         values =
-            []
+            [ List.map .row1 valuesByRow
+            , List.map .row2 valuesByRow
+            , List.map .row3 valuesByRow
+            ]
     in
     div [ class "pane orange" ]
         [ viewPaneHeading language Translate.AcuteMalnutrition
@@ -193,13 +285,13 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap data =
                 (\record accum ->
                     let
                         severeAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.stuntingSevere
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.severe
 
                         moderateAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.stuntingModerate
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.moderate
 
                         normalAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.stuntingNormal
+                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.normal
                     in
                     List.indexedMap
                         (\index accumValue ->
