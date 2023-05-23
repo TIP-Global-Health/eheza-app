@@ -476,23 +476,55 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     }
   }
 
-  $postpartum_checkups = $iron_during_pregnancy = FALSE;
+  $data['ncda'] = [
+    'postpartum_checkups' => FALSE,
+    'iron_during_pregnancy' => FALSE,
+    'pane_nb' => [
+      'row1' => [],
+      'row2' => [],
+      'row3' => [],
+      'row4' => [],
+    ],
+  ];
+
   foreach ($ncdas as $ncda) {
     $items = field_get_items('node', $ncda, 'field_ncda_signs');
     if (!$items) {
       continue;
     }
+    $parts = explode(' ', $ncda->field_date_measured[LANGUAGE_NONE][0]['value']);
     foreach ($items as $item) {
-      if ($item['value'] == 'regular-prenatal-visits') {
-        $postpartum_checkups = TRUE;
-      }
-      elseif ($item['value'] == 'iron-supplements-during-pregnancy') {
-        $iron_during_pregnancy = TRUE;
+      switch ($item['value']) {
+        case 'regular-prenatal-visits':
+          $data['ncda']['postpartum_checkups'] = TRUE;
+          break;
+
+        case 'iron-supplements-during-pregnancy':
+          $data['ncda']['iron_during_pregnancy'] = TRUE;
+          break;
+
+        case 'breastfed-for-six-months':
+          $data['ncda']['pane_nb']['row1'][] = $parts[0];
+          break;
+
+        case 'appropriate-complementary-feeding':
+          $data['ncda']['pane_nb']['row2'][] = $parts[0];
+          break;
+
+        case 'five-food-groups':
+          $data['ncda']['pane_nb']['row3'][] = $parts[0];
+          break;
+
+        // These 3 appear according to child age.
+        // There can be only one of these values at single questioner.
+        case 'meal-frequency-6to8m':
+        case 'meal-frequency-9to11m':
+        case 'meal-frequency-12+m':
+          $data['ncda']['pane_nb']['row4'][] = $parts[0];
+          break;
       }
     }
   }
-  $data['postpartum_checkups'] = $postpartum_checkups;
-  $data['iron_during_pregnancy'] = $iron_during_pregnancy;
 
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);

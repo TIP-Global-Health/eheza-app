@@ -22,8 +22,7 @@ type alias PatientData =
     { birthDate : NominalDate
     , lowBirthWeight : Maybe Bool
     , nutrition : NutritionCriterionsData
-    , postpartumCheckups : Bool
-    , ironDuringPregnancy : Bool
+    , ncda : NCDAData
     }
 
 
@@ -57,6 +56,34 @@ emptyCriterionBySeverities =
     , moderate = []
     , normal = []
     }
+
+
+type alias NCDAData =
+    { postpartumCheckups : Bool
+    , ironDuringPregnancy : Bool
+    , nutritionBehavior : NutritionBehaviorData
+    }
+
+
+emptyNCDAData : NCDAData
+emptyNCDAData =
+    { postpartumCheckups = False
+    , ironDuringPregnancy = False
+    , nutritionBehavior = emptyNutritionBehaviorData
+    }
+
+
+type alias NutritionBehaviorData =
+    { row1 : List NominalDate
+    , row2 : List NominalDate
+    , row3 : List NominalDate
+    , row4 : List NominalDate
+    }
+
+
+emptyNutritionBehaviorData : NutritionBehaviorData
+emptyNutritionBehaviorData =
+    NutritionBehaviorData [] [] [] []
 
 
 type Msg
