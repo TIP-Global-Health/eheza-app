@@ -5710,9 +5710,9 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
 	function (entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F5(
-	function (birthDate, lowBirthWeight, stuntingSevere, stuntingModerate, stuntingNormal) {
-		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere};
+var $author$project$Backend$Scoreboard$Model$PatientData = F7(
+	function (birthDate, lowBirthWeight, stuntingSevere, stuntingModerate, stuntingNormal, postpartumCheckups, ironDuringPregnancy) {
+		return {birthDate: birthDate, ironDuringPregnancy: ironDuringPregnancy, lowBirthWeight: lowBirthWeight, postpartumCheckups: postpartumCheckups, stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$core$Basics$composeL = F3(
@@ -6876,13 +6876,13 @@ var $author$project$Backend$Scoreboard$Decoder$sainitzePatientData = F2(
 					A2($pzp1997$assoc_list$AssocList$get, months, stuntingSevereDict)) ? $elm$core$Maybe$Just(date) : $elm$core$Maybe$Nothing;
 			},
 			$pzp1997$assoc_list$AssocList$toList(stuntingModerateDict));
-		return {
-			birthDate: data.birthDate,
-			lowBirthWeight: data.lowBirthWeight,
-			stuntingModerate: sanitizedStuntingModerate,
-			stuntingNormal: sanitizedStuntingNormal,
-			stuntingSevere: $pzp1997$assoc_list$AssocList$values(stuntingSevereDict)
-		};
+		return _Utils_update(
+			data,
+			{
+				stuntingModerate: sanitizedStuntingModerate,
+				stuntingNormal: sanitizedStuntingNormal,
+				stuntingSevere: $pzp1997$assoc_list$AssocList$values(stuntingSevereDict)
+			});
 	});
 var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (currentDate) {
 	return A2(
@@ -6890,29 +6890,39 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 		$author$project$Backend$Scoreboard$Decoder$sainitzePatientData(currentDate),
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'stunting_normal',
-			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-			_List_Nil,
+			'iron_during_pregnancy',
+			$elm$json$Json$Decode$bool,
+			false,
 			A4(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'stunting_moderate',
-				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
-				_List_Nil,
+				'postpartum_checkups',
+				$elm$json$Json$Decode$bool,
+				false,
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'stunting_severe',
+					'stunting_normal',
 					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
 					_List_Nil,
 					A4(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-						'low_birth_weight',
-						$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
-						$elm$core$Maybe$Nothing,
-						A3(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'birth_date',
-							$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-							$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))));
+						'stunting_moderate',
+						$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+						_List_Nil,
+						A4(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+							'stunting_severe',
+							$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+							_List_Nil,
+							A4(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+								'low_birth_weight',
+								$elm$json$Json$Decode$maybe($elm$json$Json$Decode$bool),
+								$elm$core$Maybe$Nothing,
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+									'birth_date',
+									$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+									$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))))));
 };
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
@@ -7552,7 +7562,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'Village':
 				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing};
 			default:
-				return {english: 'Univeral Intervention', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing};
 		}
 	}
 };
@@ -26616,6 +26626,27 @@ var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
 	return {$: 'NCDAANCNewbornItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckups'};
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
 var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
 	function (language, label) {
 		return A2(
@@ -26719,45 +26750,53 @@ var $author$project$Pages$Scoreboard$View$viewTableRow = F5(
 				]),
 			A2($elm$core$List$cons, activityCell, valueCells));
 	});
-var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
-		var values = function () {
-			var _v0 = data.entityType;
-			switch (_v0.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12]),
-							_List_fromArray(
-							[10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105]),
-							_List_fromArray(
-							[105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241]),
-							_List_fromArray(
-							[259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569]),
-							_List_fromArray(
-							[583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569])
-						]);
-			}
-		}();
+var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMoths) {
+											var gap = gapInMoths - ageInMonths;
+											var row1 = (record.postpartumCheckups && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row2 = (record.ironDuringPregnancy && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
+											return {row1: row1, row2: row2};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow)
+			]);
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -26901,27 +26940,6 @@ var $author$project$Translate$NCDADemographicsItemLabel = function (a) {
 	return {$: 'NCDADemographicsItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$NewbornsThisMonth = {$: 'NewbornsThisMonth'};
-var $elm$core$List$repeatHelp = F3(
-	function (result, n, value) {
-		repeatHelp:
-		while (true) {
-			if (n <= 0) {
-				return result;
-			} else {
-				var $temp$result = A2($elm$core$List$cons, value, result),
-					$temp$n = n - 1,
-					$temp$value = value;
-				result = $temp$result;
-				n = $temp$n;
-				value = $temp$value;
-				continue repeatHelp;
-			}
-		}
-	});
-var $elm$core$List$repeat = F2(
-	function (n, value) {
-		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
-	});
 var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F5(
 	function (language, currentDate, yearSelectorGap, monthsGap, data) {
 		var emptyValues = A2(
@@ -27481,6 +27499,7 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F4(
 						rows))
 				]));
 	});
+var $author$project$Pages$Scoreboard$Model$Deworming = {$: 'Deworming'};
 var $author$project$Pages$Scoreboard$Model$ECDServices = {$: 'ECDServices'};
 var $author$project$Pages$Scoreboard$Model$Immunization = {$: 'Immunization'};
 var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) {
@@ -27565,7 +27584,7 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F4(
 						itemValues);
 				}),
 			_List_fromArray(
-				[$author$project$Pages$Scoreboard$Model$Immunization, $author$project$Pages$Scoreboard$Model$VitaminA, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$ECDServices]),
+				[$author$project$Pages$Scoreboard$Model$Immunization, $author$project$Pages$Scoreboard$Model$VitaminA, $author$project$Pages$Scoreboard$Model$Deworming, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$ECDServices]),
 			values);
 		return A2(
 			$elm$html$Html$div,
@@ -27794,7 +27813,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					A5($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A4($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, data),
+					A5($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, data),

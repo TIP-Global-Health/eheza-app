@@ -370,7 +370,7 @@ translationSet transId =
             }
 
         UniversalIntervention ->
-            { english = "Univeral Intervention"
+            { english = "Universal Intervention"
             , kinyarwanda = Nothing
             }
 

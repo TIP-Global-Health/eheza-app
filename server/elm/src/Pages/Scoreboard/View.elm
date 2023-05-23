@@ -57,7 +57,7 @@ viewScoreboardData language currentDate data model =
         , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap data
         , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap data
         , viewStuntingPane language currentDate model.yearSelectorGap monthsGap data
-        , viewANCNewbornPane language currentDate model.yearSelectorGap data
+        , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap data
         , viewUniversalInterventionPane language currentDate model.yearSelectorGap data
         , viewNutritionBehaviorPane language currentDate model.yearSelectorGap data
         , viewTargetedInterventionsPane language currentDate model.yearSelectorGap data
@@ -257,8 +257,8 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewANCNewbornPane : Language -> NominalDate -> Int -> ScoreboardData -> Html any
-viewANCNewbornPane language currentDate yearSelectorGap data =
+viewANCNewbornPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
+viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
     let
         rows =
             List.map2
@@ -268,27 +268,54 @@ viewANCNewbornPane language currentDate yearSelectorGap data =
                 [ RegularCheckups, IronDuringPregnancy ]
                 values
 
+        valuesByRow =
+            List.foldl
+                (\record accum ->
+                    let
+                        ageInMonths =
+                            diffMonths record.birthDate currentDate
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMoths ->
+                                        let
+                                            gap =
+                                                gapInMoths - ageInMonths
+
+                                            row1 =
+                                                if record.postpartumCheckups && gap > 0 && gap < 10 then
+                                                    accumValue.row1 + 1
+
+                                                else
+                                                    accumValue.row1
+
+                                            row2 =
+                                                if record.ironDuringPregnancy && gap > 0 && gap < 10 then
+                                                    accumValue.row2 + 1
+
+                                                else
+                                                    accumValue.row2
+                                        in
+                                        { row1 = row1
+                                        , row2 = row2
+                                        }
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                emptyValues
+                data.records
+
+        emptyValues =
+            List.repeat 12 { row1 = 0, row2 = 0 }
+
         values =
-            case data.entityType of
-                EntityVillage ->
-                    [ [ 10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12 ]
-                    , [ 10, 16, 13, 12, 18, 11, 14, 19, 17, 20, 15, 12 ]
-                    ]
-
-                EntityCell ->
-                    [ [ 105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105 ]
-                    , [ 105, 138, 115, 131, 122, 126, 131, 146, 133, 147, 128, 105 ]
-                    ]
-
-                EntitySector ->
-                    [ [ 259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241 ]
-                    , [ 259, 240, 212, 230, 265, 227, 211, 258, 215, 231, 274, 241 ]
-                    ]
-
-                EntityDistrict ->
-                    [ [ 583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569 ]
-                    , [ 583, 557, 643, 619, 612, 632, 592, 640, 608, 562, 620, 569 ]
-                    ]
+            [ List.map .row1 valuesByRow
+            , List.map .row2 valuesByRow
+            ]
     in
     div [ class "pane cyan" ]
         [ viewPaneHeading language Translate.ANCNewborn
@@ -306,7 +333,7 @@ viewUniversalInterventionPane language currentDate yearSelectorGap data =
                 (\item itemValues ->
                     viewTableRow language currentDate yearSelectorGap (Translate.NCDAUniversalInterventionItemLabel item) itemValues
                 )
-                [ Immunization, VitaminA, OngeraMNP, OngeraMNP, ECDServices ]
+                [ Immunization, VitaminA, Deworming, OngeraMNP, ECDServices ]
                 values
 
         values =

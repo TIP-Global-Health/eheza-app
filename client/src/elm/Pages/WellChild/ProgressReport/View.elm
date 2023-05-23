@@ -2495,7 +2495,7 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                                             (\closestDate ->
                                                 if Date.compare closestDate referenceDate == GT then
                                                     -- Closest date when vaccine is required is after
-                                                    -- current month, which means that att current month
+                                                    -- current month, which means that at current month
                                                     -- we're not behind on vaccination.
                                                     ( referenceDate, NCDACellValueV )
 
