@@ -1329,6 +1329,7 @@ type TranslationId
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
     | ResilienceCategory ResilienceCategory
+    | ResilienceMessage
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
@@ -8289,7 +8290,7 @@ translationSet trans =
                 MenuDeviceStatus ->
                     translationSet DeviceStatus
 
-                MenuMessagingCenter ->
+                MenuWellBeing ->
                     { english = "Wellbeing"
                     , kinyarwanda = Nothing
                     }
@@ -15441,6 +15442,11 @@ translationSet trans =
                     { english = "End Of Month"
                     , kinyarwanda = Nothing
                     }
+
+        ResilienceMessage ->
+            { english = "Resilience Message"
+            , kinyarwanda = Nothing
+            }
 
         ResilienceMessageIntroduction1Title ->
             { english = "Welcome to the work based resilience messaging program."
