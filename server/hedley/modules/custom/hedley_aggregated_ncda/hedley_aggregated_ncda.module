@@ -17,7 +17,7 @@ function hedley_aggregated_ncda_menu() {
     'title' => 'NCDA scoreboard',
     'description' => 'View aggregated NCDA scoreboard',
     'page callback' => 'hedley_aggregated_ncda_callback_menu',
-    'access arguments' => ['hedley_aggregated_ncda_access'],
+    'access callback' => 'hedley_aggregated_ncda_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%'] = array(
@@ -25,7 +25,7 @@ function hedley_aggregated_ncda_menu() {
     'description' => 'View aggregated NCDA scoreboard',
     'page callback' => 'hedley_aggregated_ncda_callback_district',
     'page arguments' => [3, 4],
-    'access arguments' => ['hedley_aggregated_ncda_access'],
+    'access callback' => 'hedley_aggregated_ncda_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%'] = array(
@@ -33,7 +33,7 @@ function hedley_aggregated_ncda_menu() {
     'description' => 'View aggregated NCDA scoreboard',
     'page callback' => 'hedley_aggregated_ncda_callback_sector',
     'page arguments' => [3, 4, 5],
-    'access arguments' => ['hedley_aggregated_ncda_access'],
+    'access callback' => 'hedley_aggregated_ncda_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%/%'] = array(
@@ -41,7 +41,7 @@ function hedley_aggregated_ncda_menu() {
     'description' => 'View aggregated NCDA scoreboard',
     'page callback' => 'hedley_aggregated_ncda_callback_cell',
     'page arguments' => [3, 4, 5, 6],
-    'access arguments' => ['hedley_aggregated_ncda_access'],
+    'access callback' => 'hedley_aggregated_ncda_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%/%/%'] = array(
@@ -49,7 +49,7 @@ function hedley_aggregated_ncda_menu() {
     'description' => 'View aggregated NCDA scoreboard',
     'page callback' => 'hedley_aggregated_ncda_callback_village',
     'page arguments' => [3, 4, 5, 6, 7],
-    'access arguments' => ['hedley_aggregated_ncda_access'],
+    'access callback' => 'hedley_aggregated_ncda_access',
   );
 
   return $items;
