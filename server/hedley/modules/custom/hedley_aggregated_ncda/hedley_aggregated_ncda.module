@@ -427,7 +427,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
 
   $content_types_to_load = hedley_aggregated_ncda_get_triggering_measurement_types();
 
-  $heights = $weights = $muacs = $ncdas = $fbfs = $nutritions = $send_to_hcs = $medication_distributions = $mebendezoles = $vitamins_a = [];
+  $heights = $weights = $muacs = $ncdas = $fbfs = $nutritions = $send_to_hcs = $medication_distributions = $mebendezoles = $vitamins_a = $immunisations = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
@@ -480,6 +480,11 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
 
       if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE) {
         $vitamins_a[] = $node;
+        continue;
+      }
+
+      if (in_array($node->type, HEDLEY_ACTIVITY_IMMUNISATION_BUNDLES)) {
+        $immunisations[] = $node;
         continue;
       }
 
@@ -602,7 +607,15 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
     ],
     // Universal Intervention pane.
     'pane2' => [
-      'row1' => [],
+      'row1' => [
+        'bcg' => [],
+        'opv' => [],
+        'dtp' => [],
+        'pcv13' => [],
+        'rotarix' => [],
+        'ipv' => [],
+        'mr' => [],
+      ],
       'row2' => [],
       'row3' => [],
       'row4' => [],
@@ -845,6 +858,47 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
     }
   }
 
+  foreach ($immunisations as $immunisation) {
+    $items = field_get_items('node', $immunisation, 'field_administration_dates');
+    if (!$items) {
+      continue;
+    }
+
+    foreach ($items as $item) {
+      $parts = explode(' ', $item['value']);
+
+      switch ($immunisation->type) {
+        case HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_TYPE:
+          $data['ncda']['pane2']['row1']['bcg'][] = $parts[0];
+          break;
+
+        case HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_TYPE:
+          $data['ncda']['pane2']['row1']['opv'][] = $parts[0];
+          break;
+
+        case HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_TYPE:
+          $data['ncda']['pane2']['row1']['dtp'][] = $parts[0];
+          break;
+
+        case HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_TYPE:
+          $data['ncda']['pane2']['row1']['pcv13'][] = $parts[0];
+          break;
+
+        case HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_TYPE:
+          $data['ncda']['pane2']['row1']['rotarix'][] = $parts[0];
+          break;
+
+        case HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_TYPE:
+          $data['ncda']['pane2']['row1']['ipv'][] = $parts[0];
+          break;
+
+        case HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_TYPE:
+          $data['ncda']['pane2']['row1']['mr'][] = $parts[0];
+          break;
+      }
+    }
+  }
+
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
   $wrapper->save();
@@ -993,6 +1047,7 @@ function hedley_aggregated_ncda_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
     HEDLEY_ACTIVITY_MUAC_BUNDLES,
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
-    HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES
+    HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES,
+    HEDLEY_ACTIVITY_IMMUNISATION_BUNDLES
   );
 }
