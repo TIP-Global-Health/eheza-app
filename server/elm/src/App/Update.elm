@@ -17,7 +17,6 @@ import Pages.Menu.Model
 import Pages.Menu.Update
 import Pages.Scoreboard.Model
 import Pages.Scoreboard.Update
-import Pages.Scoreboard.Utils exposing (..)
 import Task
 import Time
 

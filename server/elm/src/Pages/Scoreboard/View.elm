@@ -13,7 +13,6 @@ import Html.Attributes exposing (..)
 import Icons
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Scoreboard.Model exposing (..)
-import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -434,9 +433,6 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
                     let
                         ageInMonths =
                             diffMonths record.birthDate currentDate
-
-                        row1AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row1
 
                         row2AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row2
