@@ -13,6 +13,7 @@ import Html.Attributes exposing (..)
 import Icons
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Scoreboard.Model exposing (..)
+import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
 import Pages.Utils exposing (viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -456,8 +457,53 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
                                                 ageInMonths - gapInMonths
 
                                             row1 =
-                                                -- Immunization will be implemented in follow up PR.
-                                                accumValue.row1
+                                                if (ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24) then
+                                                    accumValue.row1
+
+                                                else
+                                                    let
+                                                        referenceDate =
+                                                            -- We use it to determine if child was
+                                                            -- behind on any of vaccines at that month.
+                                                            resolveLastDayForMonthX ageInMonthsForIndexCell record.birthDate
+
+                                                        -- Filter out vaccinations that were performed
+                                                        -- after the reference date.
+                                                        vaccinationProgressOnReferrenceDate =
+                                                            Dict.map
+                                                                (\vaccineType dosesDict ->
+                                                                    Dict.filter
+                                                                        (\dose administeredDate ->
+                                                                            Date.compare administeredDate referenceDate == LT
+                                                                        )
+                                                                        dosesDict
+                                                                )
+                                                                record.ncda.universalIntervention.row1
+
+                                                        futureVaccinations =
+                                                            generateFutureVaccinationsData record.birthDate vaccinationProgressOnReferrenceDate
+
+                                                        closestDateForVaccination =
+                                                            List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
+                                                                |> List.sortWith Date.compare
+                                                                |> List.head
+                                                    in
+                                                    Maybe.map
+                                                        (\closestDate ->
+                                                            if Date.compare closestDate referenceDate == GT then
+                                                                -- Closest date when vaccine is required is after end of
+                                                                -- referenced month, which means that we're on track.
+                                                                accumValue.row1 + 1
+
+                                                            else
+                                                                -- Otherwise, we're off track.
+                                                                accumValue.row1
+                                                        )
+                                                        closestDateForVaccination
+                                                        |> Maybe.withDefault
+                                                            -- This indicates that there're no future vaccinations to be
+                                                            -- done, and therefore, we're on track at referenced month.
+                                                            (accumValue.row1 + 1)
 
                                             -- Vitamin A is given with interval of at least 6 months.
                                             -- So, once dose is given, we need to do +1 for that month, and
@@ -535,6 +581,17 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
                 )
                 emptyValues
                 data.records
+
+        -- Resolves the date for last day of month X after child birth date.
+        -- For example, for X = 0, this is
+        -- the last day, before child turns 1 month old.
+        resolveLastDayForMonthX monthX childBirthDate =
+            -- Get to first day of the birth months.
+            Date.floor Date.Month childBirthDate
+                |> -- Add required number of months.
+                   Date.add Date.Months (monthX + 1)
+                |> -- Substract one day
+                   Date.add Date.Days -1
 
         emptyValues =
             List.repeat 12 { row1 = 0, row2 = 0, row3 = 0, row4 = 0, row5 = 0 }

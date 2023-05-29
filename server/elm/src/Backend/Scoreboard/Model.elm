@@ -91,8 +91,7 @@ emptyANCNewbornData =
 
 
 type alias UniversalInterventionData =
-    { -- @todo
-      row1 : VaccinationProgressDict
+    { row1 : VaccinationProgressDict
     , row2 : List NominalDate
     , row3 : List NominalDate
     , row4 : List NominalDate
