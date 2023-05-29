@@ -95,9 +95,7 @@ type alias UniversalInterventionData =
     , row2 : List NominalDate
     , row3 : List NominalDate
     , row4 : List NominalDate
-
-    -- @todo
-    , row5 : List NominalDate
+    , row5 : List ECDEncounterData
     }
 
 
@@ -121,12 +119,6 @@ type alias RawVaccinationData =
     }
 
 
-type alias VaccinationValue =
-    { administeredDoses : EverySet VaccineDose
-    , administrationDates : EverySet NominalDate
-    }
-
-
 type VaccineType
     = VaccineBCG
     | VaccineOPV
@@ -143,6 +135,73 @@ type VaccineDose
     | VaccineDoseThird
     | VaccineDoseFourth
     | VaccineDoseFifth
+
+
+type alias ECDEncounterData =
+    { date : NominalDate
+    , warning : ECDWarning
+    , signs : List ECDSign
+    }
+
+
+type ECDWarning
+    = WarningECDMilestoneBehind
+    | WarningECDMilestoneReferToSpecialist
+    | NoECDMilstoneWarning
+
+
+type ECDSign
+    = -- From 5 weeks.
+      FollowMothersEyes
+    | MoveArmsAndLegs
+      -- From 13 weeks.
+    | RaiseHandsUp
+    | Smile
+    | RollSideways
+      -- From 6 months (minors).
+    | BringHandsToMouth
+    | HoldHeadWithoutSupport
+    | HoldAndShakeToys
+    | ReactToSuddenSounds
+    | UseConsonantSounds
+      -- From 6 months (majors).
+    | RespondToSoundWithSound
+    | TurnHeadWhenCalled
+    | SitWithoutSupport
+    | SmileBack
+    | RollTummyToBack
+    | ReachForToys
+      -- From 15 months.
+    | UseSimpleGestures
+    | StandOnTheirOwn
+    | CopyDuringPlay
+    | SayMamaDada
+    | CanHoldSmallObjects
+      -- From 18 months.
+    | LooksWhenPointedAt
+    | UseSingleWords
+    | WalkWithoutHelp
+    | PlayPretend
+    | PointToThingsOfInterest
+      -- From 2 years.
+    | UseShortPhrases
+    | InterestedInOtherChildren
+    | FollowSimpleInstructions
+    | KickBall
+    | PointAtNamedObjects
+      -- From 3 years.
+    | DressThemselves
+    | WashHandsGoToToiled
+    | KnowsColorsAndNumbers
+    | UseMediumPhrases
+    | PlayMakeBelieve
+      -- From 4 years.
+    | FollowThreeStepInstructions
+    | StandOnOneFootFiveSeconds
+    | UseLongPhrases
+    | ShareWithOtherChildren
+    | CountToTen
+    | NoECDSigns
 
 
 type alias NutritionBehaviorData =

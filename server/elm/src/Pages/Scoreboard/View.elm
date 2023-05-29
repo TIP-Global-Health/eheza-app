@@ -443,9 +443,6 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
 
                         row4AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row4
-
-                        row5AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row5
                     in
                     List.indexedMap
                         (\index accumValue ->

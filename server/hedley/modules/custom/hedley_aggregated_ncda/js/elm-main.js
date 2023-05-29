@@ -6898,6 +6898,186 @@ var $author$project$Backend$Scoreboard$Model$UniversalInterventionData = F5(
 	function (row1, row2, row3, row4, row5) {
 		return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 	});
+var $author$project$Backend$Scoreboard$Model$ECDEncounterData = F3(
+	function (date, warning, signs) {
+		return {date: date, signs: signs, warning: warning};
+	});
+var $author$project$Backend$Scoreboard$Model$NoECDMilstoneWarning = {$: 'NoECDMilstoneWarning'};
+var $author$project$Backend$Scoreboard$Model$NoECDSigns = {$: 'NoECDSigns'};
+var $author$project$Backend$Scoreboard$Model$BringHandsToMouth = {$: 'BringHandsToMouth'};
+var $author$project$Backend$Scoreboard$Model$CanHoldSmallObjects = {$: 'CanHoldSmallObjects'};
+var $author$project$Backend$Scoreboard$Model$CopyDuringPlay = {$: 'CopyDuringPlay'};
+var $author$project$Backend$Scoreboard$Model$CountToTen = {$: 'CountToTen'};
+var $author$project$Backend$Scoreboard$Model$DressThemselves = {$: 'DressThemselves'};
+var $author$project$Backend$Scoreboard$Model$FollowMothersEyes = {$: 'FollowMothersEyes'};
+var $author$project$Backend$Scoreboard$Model$FollowSimpleInstructions = {$: 'FollowSimpleInstructions'};
+var $author$project$Backend$Scoreboard$Model$FollowThreeStepInstructions = {$: 'FollowThreeStepInstructions'};
+var $author$project$Backend$Scoreboard$Model$HoldAndShakeToys = {$: 'HoldAndShakeToys'};
+var $author$project$Backend$Scoreboard$Model$HoldHeadWithoutSupport = {$: 'HoldHeadWithoutSupport'};
+var $author$project$Backend$Scoreboard$Model$InterestedInOtherChildren = {$: 'InterestedInOtherChildren'};
+var $author$project$Backend$Scoreboard$Model$KickBall = {$: 'KickBall'};
+var $author$project$Backend$Scoreboard$Model$KnowsColorsAndNumbers = {$: 'KnowsColorsAndNumbers'};
+var $author$project$Backend$Scoreboard$Model$LooksWhenPointedAt = {$: 'LooksWhenPointedAt'};
+var $author$project$Backend$Scoreboard$Model$MoveArmsAndLegs = {$: 'MoveArmsAndLegs'};
+var $author$project$Backend$Scoreboard$Model$PlayMakeBelieve = {$: 'PlayMakeBelieve'};
+var $author$project$Backend$Scoreboard$Model$PlayPretend = {$: 'PlayPretend'};
+var $author$project$Backend$Scoreboard$Model$PointAtNamedObjects = {$: 'PointAtNamedObjects'};
+var $author$project$Backend$Scoreboard$Model$PointToThingsOfInterest = {$: 'PointToThingsOfInterest'};
+var $author$project$Backend$Scoreboard$Model$RaiseHandsUp = {$: 'RaiseHandsUp'};
+var $author$project$Backend$Scoreboard$Model$ReachForToys = {$: 'ReachForToys'};
+var $author$project$Backend$Scoreboard$Model$ReactToSuddenSounds = {$: 'ReactToSuddenSounds'};
+var $author$project$Backend$Scoreboard$Model$RespondToSoundWithSound = {$: 'RespondToSoundWithSound'};
+var $author$project$Backend$Scoreboard$Model$RollSideways = {$: 'RollSideways'};
+var $author$project$Backend$Scoreboard$Model$RollTummyToBack = {$: 'RollTummyToBack'};
+var $author$project$Backend$Scoreboard$Model$SayMamaDada = {$: 'SayMamaDada'};
+var $author$project$Backend$Scoreboard$Model$ShareWithOtherChildren = {$: 'ShareWithOtherChildren'};
+var $author$project$Backend$Scoreboard$Model$SitWithoutSupport = {$: 'SitWithoutSupport'};
+var $author$project$Backend$Scoreboard$Model$Smile = {$: 'Smile'};
+var $author$project$Backend$Scoreboard$Model$SmileBack = {$: 'SmileBack'};
+var $author$project$Backend$Scoreboard$Model$StandOnOneFootFiveSeconds = {$: 'StandOnOneFootFiveSeconds'};
+var $author$project$Backend$Scoreboard$Model$StandOnTheirOwn = {$: 'StandOnTheirOwn'};
+var $author$project$Backend$Scoreboard$Model$TurnHeadWhenCalled = {$: 'TurnHeadWhenCalled'};
+var $author$project$Backend$Scoreboard$Model$UseConsonantSounds = {$: 'UseConsonantSounds'};
+var $author$project$Backend$Scoreboard$Model$UseLongPhrases = {$: 'UseLongPhrases'};
+var $author$project$Backend$Scoreboard$Model$UseMediumPhrases = {$: 'UseMediumPhrases'};
+var $author$project$Backend$Scoreboard$Model$UseShortPhrases = {$: 'UseShortPhrases'};
+var $author$project$Backend$Scoreboard$Model$UseSimpleGestures = {$: 'UseSimpleGestures'};
+var $author$project$Backend$Scoreboard$Model$UseSingleWords = {$: 'UseSingleWords'};
+var $author$project$Backend$Scoreboard$Model$WalkWithoutHelp = {$: 'WalkWithoutHelp'};
+var $author$project$Backend$Scoreboard$Model$WashHandsGoToToiled = {$: 'WashHandsGoToToiled'};
+var $author$project$Backend$Scoreboard$Decoder$decodeECDSign = A2(
+	$elm$json$Json$Decode$andThen,
+	function (sign) {
+		switch (sign) {
+			case 'follow-mothers-eyes':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$FollowMothersEyes);
+			case 'move-arms-and-legs':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$MoveArmsAndLegs);
+			case 'raise-hands-up':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RaiseHandsUp);
+			case 'smile':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$Smile);
+			case 'roll-sideways':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RollSideways);
+			case 'bring-hands-to-mouth':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$BringHandsToMouth);
+			case 'hold-head-without-support':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$HoldHeadWithoutSupport);
+			case 'hold-and-shake-toys':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$HoldAndShakeToys);
+			case 'react-to-sudden-sounds':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ReactToSuddenSounds);
+			case 'use-consonant-sounds':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseConsonantSounds);
+			case 'respond-to-sound-with-sound':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RespondToSoundWithSound);
+			case 'turn-head-when-called':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$TurnHeadWhenCalled);
+			case 'sit-without-support':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SitWithoutSupport);
+			case 'smile-back':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SmileBack);
+			case 'roll-tummy-to-back':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RollTummyToBack);
+			case 'reach-for-toys':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ReachForToys);
+			case 'use-simple-gestures':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseSimpleGestures);
+			case 'stand-on-their-own':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$StandOnTheirOwn);
+			case 'copy-during-play':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$CopyDuringPlay);
+			case 'say-mama-dada':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SayMamaDada);
+			case 'can-hold-small-objects':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$CanHoldSmallObjects);
+			case 'looks-when-pointed-at':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$LooksWhenPointedAt);
+			case 'use-single-words':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseSingleWords);
+			case 'walk-without-help':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$WalkWithoutHelp);
+			case 'play-pretend':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PlayPretend);
+			case 'point-to-things-of-interest':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PointToThingsOfInterest);
+			case 'use-short-phrases':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseShortPhrases);
+			case 'interested-in-other-children':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$InterestedInOtherChildren);
+			case 'follow-simple-instructions':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$FollowSimpleInstructions);
+			case 'kick-ball':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$KickBall);
+			case 'point-at-named-objects':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PointAtNamedObjects);
+			case 'dress-themselves':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$DressThemselves);
+			case 'wash-hands-go-to-toiled':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$WashHandsGoToToiled);
+			case 'knows-colors-and-numbers':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$KnowsColorsAndNumbers);
+			case 'use-medium-phrases':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseMediumPhrases);
+			case 'play-make-believe':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PlayMakeBelieve);
+			case 'follow-three-step-instructions':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$FollowThreeStepInstructions);
+			case 'stand-on-one-foot-five-seconds':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$StandOnOneFootFiveSeconds);
+			case 'use-long-phrases':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseLongPhrases);
+			case 'share-with-other-children':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ShareWithOtherChildren);
+			case 'count-to-ten':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$CountToTen);
+			case 'none':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NoECDSigns);
+			default:
+				return $elm$json$Json$Decode$fail(sign + ' is not a recognized ECDSign');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Scoreboard$Model$WarningECDMilestoneBehind = {$: 'WarningECDMilestoneBehind'};
+var $author$project$Backend$Scoreboard$Model$WarningECDMilestoneReferToSpecialist = {$: 'WarningECDMilestoneReferToSpecialist'};
+var $author$project$Backend$Scoreboard$Decoder$decodeECDWarning = A2(
+	$elm$json$Json$Decode$andThen,
+	function (warning) {
+		switch (warning) {
+			case 'warning-ecd-milestone-behind':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$WarningECDMilestoneBehind);
+			case 'warning-ecd-milestone-refer-to-specialist':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$WarningECDMilestoneReferToSpecialist);
+			case 'no-ecd-milstone-warning':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NoECDMilstoneWarning);
+			default:
+				return $elm$json$Json$Decode$fail(warning + ' is not a recognized ECDWarning');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeECDEncounterData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'signs',
+	$elm$json$Json$Decode$list($author$project$Backend$Scoreboard$Decoder$decodeECDSign),
+	_List_fromArray(
+		[$author$project$Backend$Scoreboard$Model$NoECDSigns]),
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'warning',
+		$author$project$Backend$Scoreboard$Decoder$decodeECDWarning,
+		$author$project$Backend$Scoreboard$Model$NoECDMilstoneWarning,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'date',
+			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ECDEncounterData))));
 var $author$project$Backend$Scoreboard$Model$RawVaccinationData = F7(
 	function (bcg, opv, dtp, pcv13, rotarix, ipv, mr) {
 		return {bcg: bcg, dtp: dtp, ipv: ipv, mr: mr, opv: opv, pcv13: pcv13, rotarix: rotarix};
@@ -7020,13 +7200,6 @@ var $author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationPr
 				generateVaccinationProgressForVaccine(data.mr))
 			]));
 };
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
 var $author$project$Backend$Scoreboard$Decoder$decodeVaccinationProgressDict = A2(
 	$elm$json$Json$Decode$map,
 	$author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationProgressDict,
@@ -7063,7 +7236,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeUniversalInterventionData =
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 		'row5',
-		$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+		$elm$json$Json$Decode$list($author$project$Backend$Scoreboard$Decoder$decodeECDEncounterData),
 		_List_Nil,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -28477,12 +28650,6 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F5(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var row5AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.universalIntervention.row5);
 					var row4AsAgeInMonths = A2(
 						$elm$core$List$map,
 						function (date) {
