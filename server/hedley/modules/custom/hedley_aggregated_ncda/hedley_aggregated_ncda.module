@@ -427,7 +427,8 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
 
   $content_types_to_load = hedley_aggregated_ncda_get_triggering_measurement_types();
 
-  $heights = $weights = $muacs = $ncdas = $fbfs = $nutritions = $send_to_hcs = $medication_distributions = $mebendezoles = $vitamins_a = $immunisations = [];
+  $heights = $weights = $muacs = $ncdas = $fbfs = $nutritions = $send_to_hcs = [];
+  $medication_distributions = $mebendezoles = $vitamins_a = $immunisations = $ecds = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
@@ -485,6 +486,11 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
 
       if (in_array($node->type, HEDLEY_ACTIVITY_IMMUNISATION_BUNDLES)) {
         $immunisations[] = $node;
+        continue;
+      }
+
+      if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_ECD_CONTENT_TYPE) {
+        $ecds[] = $node;
         continue;
       }
 
@@ -899,6 +905,52 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
     }
   }
 
+  $ecd_entries = $ecd_encounters_ids = [];
+  foreach ($ecds as $ecd) {
+    $items = field_get_items('node', $ecd, 'field_ecd_signs');
+    if (!$items) {
+      continue;
+    }
+
+    $date_measured = hedley_aggregated_ncda_get_date_measured($ecd);
+    $ecd_entries[$date_measured] = [
+      'signs' => [],
+    ];
+
+    // Record ECD signs measured on date.
+    foreach ($items as $item) {
+      $ecd_entries[$date_measured]['signs'][] = $item['value'];
+    }
+
+    // Store ECD encounter ID, to load its warnings.
+    $ecd_encounters_ids[] = $ecd->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+  }
+
+  if (!empty($ecd_encounters_ids)) {
+    $ecd_encounters = node_load_multiple($ecd_encounters_ids);
+    foreach ($ecd_encounters as $ecd_encounter) {
+      // Retrieve encounter date.
+      $encounter_date = hedley_aggregated_ncda_get_date_filed_value($ecd_encounter, 'field_scheduled_date');
+      $items = field_get_items('node', $ecd_encounter, 'field_encounter_warnings');
+
+      foreach ($items as $item) {
+        // If there's a relevant ECD warning, add it to encounter entry.
+        if (!in_array($item['value'], ['warning-ecd-milestone-behind', 'warning-ecd-milestone-refer-to-specialist'])) {
+          continue;
+        }
+        // We know there can be only single ECD waring, so no need to
+        // take care into account multiple warnings case.
+        $ecd_entries[$encounter_date]['warning'] = $item['value'];
+      }
+    }
+  }
+
+  // Process ECD entries and format for passing to front-end.
+  foreach ($ecd_entries as $date => $entry) {
+    $entry['date'] = $date;
+    $data['ncda']['pane2']['row5'][] = $entry;
+  }
+
   $encoded_data = json_encode($data);
   $wrapper->field_ncda_data->set($encoded_data);
   $wrapper->save();
@@ -1015,15 +1067,33 @@ function hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node) {
  *   The date measured or FALSE if not found.
  */
 function hedley_aggregated_ncda_get_date_measured($node) {
-  if (!field_info_field('field_date_measured')) {
+  return hedley_aggregated_ncda_get_date_filed_value($node, 'field_date_measured');
+}
+
+/**
+ * Retrieves the value for date field of a node.
+ *
+ * @param object $node
+ *   The node object.
+ *
+ * @param string $field_name
+ *   Then name of date field.
+ *
+ * @return string|bool
+ *   The value of date field, or FALSE if not found.
+ */
+function hedley_aggregated_ncda_get_date_filed_value($node, $field_name) {
+  if (!field_info_field($field_name)) {
     return FALSE;
   }
 
-  if (empty($node->field_date_measured) || empty($node->field_date_measured[LANGUAGE_NONE][0]['value'])) {
+  $field = $node->{$field_name};
+
+  if (empty($field) || empty($field[LANGUAGE_NONE][0]['value'])) {
     return FALSE;
   }
 
-  $parts = explode(' ', $node->field_date_measured[LANGUAGE_NONE][0]['value']);
+  $parts = explode(' ', $field[LANGUAGE_NONE][0]['value']);
   return $parts[0];
 }
 
@@ -1041,6 +1111,7 @@ function hedley_aggregated_ncda_get_triggering_measurement_types() {
       HEDLEY_ACTIVITY_MEDICATION_DISTRIBUTION_CONTENT_TYPE,
       HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE,
       HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE,
+      HEDLEY_ACTIVITY_WELL_CHILD_ECD_CONTENT_TYPE,
     ],
     HEDLEY_ACTIVITY_NCDA_BUNDLES,
     HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
