@@ -5716,12 +5716,76 @@ var $author$project$Backend$Scoreboard$Model$PatientData = F4(
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Backend$Scoreboard$Model$NCDAData = F3(
-	function (postpartumCheckups, ironDuringPregnancy, nutritionBehavior) {
-		return {ironDuringPregnancy: ironDuringPregnancy, nutritionBehavior: nutritionBehavior, postpartumCheckups: postpartumCheckups};
+	function (ancNewborn, nutritionBehavior, infrastructureEnvironmentWash) {
+		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior};
 	});
-var $author$project$Backend$Scoreboard$Model$NutritionBehaviorData = F4(
-	function (row1, row2, row3, row4) {
-		return {row1: row1, row2: row2, row3: row3, row4: row4};
+var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
+	function (row1, row2) {
+		return {row1: row1, row2: row2};
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return $elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						$elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_v0.$ === 'Ok') {
+				var rawValue = _v0.a;
+				var _v1 = A2(
+					$elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_v1.$ === 'Ok') {
+					var finalResult = _v1.a;
+					return $elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _v1.a;
+					return $elm$json$Json$Decode$fail(
+						$elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return $elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'row2',
+	$elm$json$Json$Decode$bool,
+	false,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row1',
+		$elm$json$Json$Decode$bool,
+		false,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ANCNewbornData)));
+var $author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData = F5(
+	function (row1, row2, row3, row4, row5) {
+		return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 	});
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
@@ -6536,7 +6600,6 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
-var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 	if (result.$ === 'Ok') {
 		var successValue = result.a;
@@ -6552,53 +6615,35 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
-	function (pathDecoder, valDecoder, fallback) {
-		var nullOr = function (decoder) {
-			return $elm$json$Json$Decode$oneOf(
-				_List_fromArray(
-					[
-						decoder,
-						$elm$json$Json$Decode$null(fallback)
-					]));
-		};
-		var handleResult = function (input) {
-			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
-			if (_v0.$ === 'Ok') {
-				var rawValue = _v0.a;
-				var _v1 = A2(
-					$elm$json$Json$Decode$decodeValue,
-					nullOr(valDecoder),
-					rawValue);
-				if (_v1.$ === 'Ok') {
-					var finalResult = _v1.a;
-					return $elm$json$Json$Decode$succeed(finalResult);
-				} else {
-					var finalErr = _v1.a;
-					return $elm$json$Json$Decode$fail(
-						$elm$json$Json$Decode$errorToString(finalErr));
-				}
-			} else {
-				return $elm$json$Json$Decode$succeed(fallback);
-			}
-		};
-		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
-	function (key, valDecoder, fallback, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
-				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
-				valDecoder,
-				fallback),
-			decoder);
+var $author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'row5',
+	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+	_List_Nil,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row4',
+		$elm$json$Json$Decode$bool,
+		false,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'row3',
+			$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			_List_Nil,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'row2',
+				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				_List_Nil,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'row1',
+					$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					_List_Nil,
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData))))));
+var $author$project$Backend$Scoreboard$Model$NutritionBehaviorData = F4(
+	function (row1, row2, row3, row4) {
+		return {row1: row1, row2: row2, row3: row3, row4: row4};
 	});
 var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -6621,22 +6666,24 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = A4(
 				$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD),
 				_List_Nil,
 				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionBehaviorData)))));
+var $author$project$Backend$Scoreboard$Model$emptyANCNewbornData = A2($author$project$Backend$Scoreboard$Model$ANCNewbornData, false, false);
+var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'pane_nb',
-	$author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData,
-	$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
+	'pane5',
+	$author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWashData,
+	$author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData,
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'iron_during_pregnancy',
-		$elm$json$Json$Decode$bool,
-		false,
+		'pane3',
+		$author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData,
+		$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'postpartum_checkups',
-			$elm$json$Json$Decode$bool,
-			false,
+			'pane1',
+			$author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData,
+			$author$project$Backend$Scoreboard$Model$emptyANCNewbornData,
 			$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData))));
 var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
 	function (stunting, underweight, wasting, muac) {
@@ -6970,7 +7017,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 					$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionCriterionsData)))));
 };
-var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ironDuringPregnancy: false, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, postpartumCheckups: false};
+var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ancNewborn: $author$project$Backend$Scoreboard$Model$emptyANCNewbornData, infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData};
 var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
 var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
 var $elm$json$Json$Decode$maybe = function (decoder) {
@@ -26849,10 +26896,10 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var gap = gapInMoths - ageInMonths;
-											var row1 = (record.ncda.postpartumCheckups && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
-											var row2 = (record.ncda.ironDuringPregnancy && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
+										function (gapInMonths) {
+											var gap = gapInMonths - ageInMonths;
+											var row1 = (record.ncda.ancNewborn.row1 && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row2 = (record.ncda.ancNewborn.row2 && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
 											return {row1: row1, row2: row2};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -27040,8 +27087,8 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var _v0 = (A2($elm$core$List$member, gapInMoths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMoths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMoths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMoths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMoths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+										function (gapInMonths) {
+											var _v0 = (A2($elm$core$List$member, gapInMonths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
 											var row1 = _v0.a;
 											var row2 = _v0.b;
 											var row3 = _v0.c;
@@ -27191,8 +27238,8 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var gap = ageInMonths - gapInMoths;
+										function (gapInMonths) {
+											var gap = ageInMonths - gapInMonths;
 											var row1 = ((gap >= 0) && (gap < 24)) ? (accumValue.row1 + 1) : accumValue.row1;
 											var row2 = (!gap) ? (accumValue.row2 + 1) : accumValue.row2;
 											var row3 = ((!gap) && _Utils_eq(
@@ -27272,69 +27319,100 @@ var $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets = {$: 'Inse
 var $author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel = function (a) {
 	return {$: 'NCDAInfrastructureEnvironmentWashItemLabel', a: a};
 };
-var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
-		var values = function () {
-			var _v0 = data.entityType;
-			switch (_v0.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[9, 14, 16, 12, 10, 8, 17, 11, 11, 16, 13, 15]),
-							_List_fromArray(
-							[13, 9, 13, 16, 12, 8, 17, 10, 10, 12, 14, 11]),
-							_List_fromArray(
-							[10, 9, 8, 16, 17, 11, 14, 18, 12, 15, 15, 11]),
-							_List_fromArray(
-							[16, 12, 11, 7, 13, 8, 16, 19, 15, 14, 11, 18]),
-							_List_fromArray(
-							[13, 8, 10, 9, 18, 11, 7, 17, 12, 10, 14, 17])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[118, 138, 106, 117, 123, 98, 138, 103, 125, 125, 108, 110]),
-							_List_fromArray(
-							[122, 92, 146, 114, 125, 128, 138, 109, 91, 118, 115, 109]),
-							_List_fromArray(
-							[127, 126, 130, 103, 143, 117, 121, 108, 108, 111, 136, 135]),
-							_List_fromArray(
-							[104, 129, 132, 100, 99, 137, 132, 110, 127, 123, 131, 119]),
-							_List_fromArray(
-							[116, 90, 102, 92, 115, 134, 118, 137, 92, 130, 121, 122])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[252, 244, 239, 247, 234, 259, 217, 259, 215, 250, 222, 264]),
-							_List_fromArray(
-							[257, 261, 209, 263, 225, 213, 226, 236, 220, 259, 240, 243]),
-							_List_fromArray(
-							[262, 209, 234, 237, 236, 237, 215, 267, 237, 228, 230, 256]),
-							_List_fromArray(
-							[252, 249, 214, 226, 284, 291, 202, 279, 238, 215, 285, 271]),
-							_List_fromArray(
-							[211, 262, 224, 244, 275, 237, 220, 246, 282, 265, 241, 241])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[631, 583, 667, 626, 621, 567, 652, 611, 506, 555, 665, 636]),
-							_List_fromArray(
-							[537, 523, 588, 628, 617, 502, 562, 640, 504, 568, 522, 534]),
-							_List_fromArray(
-							[625, 623, 556, 504, 664, 655, 661, 531, 637, 558, 638, 582]),
-							_List_fromArray(
-							[657, 624, 577, 659, 643, 490, 532, 545, 601, 680, 506, 651]),
-							_List_fromArray(
-							[530, 605, 652, 621, 650, 522, 559, 606, 548, 523, 656, 492])
-						]);
-			}
-		}();
+var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0, row3: 0, row4: 0, row5: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var row5AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.infrastructureEnvironmentWash.row5);
+					var row3AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.infrastructureEnvironmentWash.row3);
+					var row2AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.infrastructureEnvironmentWash.row2);
+					var row1AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.infrastructureEnvironmentWash.row1);
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMonths) {
+											var row5 = A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
+											var row4 = function () {
+												var gap = ageInMonths - gapInMonths;
+												return (record.ncda.infrastructureEnvironmentWash.row4 && ((gap >= 0) && (gap < 24))) ? (accumValue.row4 + 1) : accumValue.row4;
+											}();
+											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row3;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row4;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row5;
+				},
+				valuesByRow)
+			]);
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -27348,7 +27426,7 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 						itemValues);
 				}),
 			_List_fromArray(
-				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$HasKitchenGarden, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets]),
+				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets, $author$project$Pages$Scoreboard$Model$HasKitchenGarden]),
 			values);
 		return A2(
 			$elm$html$Html$div,
@@ -27422,11 +27500,11 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var row4 = A2($elm$core$List$member, gapInMoths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
-											var row3 = A2($elm$core$List$member, gapInMoths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMoths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row1 = A2($elm$core$List$member, gapInMoths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+										function (gapInMonths) {
+											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
+											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3, row4: row4};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -27542,10 +27620,10 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F5(
 									accumValue,
 									A2(
 										$elm$core$Maybe$map,
-										function (gapInMoths) {
-											var row3 = A2($elm$core$List$member, gapInMoths, normalAsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMoths, moderateAsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row1 = A2($elm$core$List$member, gapInMoths, severeAsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+										function (gapInMonths) {
+											var row3 = A2($elm$core$List$member, gapInMonths, normalAsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMonths, moderateAsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row1 = A2($elm$core$List$member, gapInMonths, severeAsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -28046,7 +28124,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A4($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, data),
-					A4($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, data)
+					A5($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, data)
 				]));
 	});
 var $author$project$Pages$Scoreboard$View$view = F4(

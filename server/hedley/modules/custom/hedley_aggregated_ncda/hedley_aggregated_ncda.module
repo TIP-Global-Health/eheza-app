@@ -477,13 +477,25 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   }
 
   $data['ncda'] = [
-    'postpartum_checkups' => FALSE,
-    'iron_during_pregnancy' => FALSE,
-    'pane_nb' => [
+    // ANC + Newborn pane.
+    'pane1' => [
+      'row1' => FALSE,
+      'row2' => FALSE,
+    ],
+    // Nutrition Behavior pane.
+    'pane3' => [
       'row1' => [],
       'row2' => [],
       'row3' => [],
       'row4' => [],
+    ],
+    // Infrastructure, Environment & Wash pane.
+    'pane5' => [
+      'row1' => [],
+      'row2' => [],
+      'row3' => [],
+      'row4' => FALSE,
+      'row5' => [],
     ],
   ];
 
@@ -496,23 +508,23 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     foreach ($items as $item) {
       switch ($item['value']) {
         case 'regular-prenatal-visits':
-          $data['ncda']['postpartum_checkups'] = TRUE;
+          $data['ncda']['pane1']['row1'] = TRUE;
           break;
 
         case 'iron-supplements-during-pregnancy':
-          $data['ncda']['iron_during_pregnancy'] = TRUE;
+          $data['ncda']['pane1']['row2'] = TRUE;
           break;
 
         case 'breastfed-for-six-months':
-          $data['ncda']['pane_nb']['row1'][] = $parts[0];
+          $data['ncda']['pane3']['row1'][] = $parts[0];
           break;
 
         case 'appropriate-complementary-feeding':
-          $data['ncda']['pane_nb']['row2'][] = $parts[0];
+          $data['ncda']['pane3']['row2'][] = $parts[0];
           break;
 
         case 'five-food-groups':
-          $data['ncda']['pane_nb']['row3'][] = $parts[0];
+          $data['ncda']['pane3']['row3'][] = $parts[0];
           break;
 
         // These 3 appear according to child age.
@@ -520,7 +532,27 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
         case 'meal-frequency-6to8m':
         case 'meal-frequency-9to11m':
         case 'meal-frequency-12+m':
-          $data['ncda']['pane_nb']['row4'][] = $parts[0];
+          $data['ncda']['pane3']['row4'][] = $parts[0];
+          break;
+
+        case 'has-clean-water':
+          $data['ncda']['pane5']['row1'][] = $parts[0];
+          break;
+
+        case 'has-toilets':
+          $data['ncda']['pane5']['row2'][] = $parts[0];
+          break;
+
+        case 'has-handwashing-facility':
+          $data['ncda']['pane5']['row3'][] = $parts[0];
+          break;
+
+        case 'insecticide-treated-bednets-during-pregnancy':
+          $data['ncda']['pane5']['row4'] = TRUE;
+          break;
+
+        case 'has-kitchen-garden':
+          $data['ncda']['pane5']['row5'][] = $parts[0];
           break;
       }
     }

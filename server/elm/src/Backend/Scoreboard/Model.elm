@@ -59,18 +59,29 @@ emptyCriterionBySeverities =
 
 
 type alias NCDAData =
-    { postpartumCheckups : Bool
-    , ironDuringPregnancy : Bool
+    { ancNewborn : ANCNewbornData
     , nutritionBehavior : NutritionBehaviorData
+    , infrastructureEnvironmentWash : InfrastructureEnvironmentWashData
     }
 
 
 emptyNCDAData : NCDAData
 emptyNCDAData =
-    { postpartumCheckups = False
-    , ironDuringPregnancy = False
+    { ancNewborn = emptyANCNewbornData
     , nutritionBehavior = emptyNutritionBehaviorData
+    , infrastructureEnvironmentWash = emptyInfrastructureEnvironmentWashData
     }
+
+
+type alias ANCNewbornData =
+    { row1 : Bool
+    , row2 : Bool
+    }
+
+
+emptyANCNewbornData : ANCNewbornData
+emptyANCNewbornData =
+    ANCNewbornData False False
 
 
 type alias NutritionBehaviorData =
@@ -84,6 +95,20 @@ type alias NutritionBehaviorData =
 emptyNutritionBehaviorData : NutritionBehaviorData
 emptyNutritionBehaviorData =
     NutritionBehaviorData [] [] [] []
+
+
+type alias InfrastructureEnvironmentWashData =
+    { row1 : List NominalDate
+    , row2 : List NominalDate
+    , row3 : List NominalDate
+    , row4 : Bool
+    , row5 : List NominalDate
+    }
+
+
+emptyInfrastructureEnvironmentWashData : InfrastructureEnvironmentWashData
+emptyInfrastructureEnvironmentWashData =
+    InfrastructureEnvironmentWashData [] [] [] False []
 
 
 type Msg
