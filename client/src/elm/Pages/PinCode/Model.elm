@@ -50,7 +50,7 @@ type MainMenuActivity
     | MenuDashboards
     | MenuCaseManagement
     | MenuDeviceStatus
-    | MenuWellBeing
+    | MenuWellbeing
     | MenuStockManagement
 
 

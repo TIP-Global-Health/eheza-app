@@ -8290,7 +8290,7 @@ translationSet trans =
                 MenuDeviceStatus ->
                     translationSet DeviceStatus
 
-                MenuWellBeing ->
+                MenuWellbeing ->
                     { english = "Wellbeing"
                     , kinyarwanda = Nothing
                     }
@@ -19466,8 +19466,8 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                WellBeingPage ->
-                    { english = "WellBeing"
+                WellbeingPage ->
+                    { english = "Wellbeing"
                     , kinyarwanda = Nothing
                     }
 

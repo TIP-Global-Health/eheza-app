@@ -1,4 +1,4 @@
-module Pages.WellBeing.Fetch exposing (fetch)
+module Pages.Wellbeing.Fetch exposing (fetch)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)

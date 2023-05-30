@@ -1,4 +1,4 @@
-module Pages.WellBeing.View exposing (..)
+module Pages.Wellbeing.View exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -44,7 +44,7 @@ view language currentTime nurseId nurse db model =
                 , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
                 ]
     in
-    div [ class "page-activity well-being" ]
+    div [ class "page-activity wellbeing" ]
         [ header
         , resilienceMessageButton
         ]

@@ -51,11 +51,11 @@ import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 import Pages.StockManagement.Fetch
 import Pages.TraceContact.Fetch
-import Pages.WellBeing.Fetch
 import Pages.WellChild.Activity.Fetch
 import Pages.WellChild.Encounter.Fetch
 import Pages.WellChild.Participant.Fetch
 import Pages.WellChild.ProgressReport.Fetch
+import Pages.Wellbeing.Fetch
 import Time
 
 
@@ -357,7 +357,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage WellBeingPage ->
+            UserPage WellbeingPage ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
@@ -365,7 +365,7 @@ fetch model =
                                 nurseId =
                                     Tuple.first loggedIn.nurse
                             in
-                            Pages.WellBeing.Fetch.fetch currentDate nurseId model.indexedDb
+                            Pages.Wellbeing.Fetch.fetch currentDate nurseId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []

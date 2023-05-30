@@ -256,9 +256,9 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                                 , DevicePage
                                 )
 
-                            MenuWellBeing ->
+                            MenuWellbeing ->
                                 ( "messaging-center"
-                                , UserPage WellBeingPage
+                                , UserPage WellbeingPage
                                 )
 
                             MenuStockManagement ->
@@ -267,7 +267,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                                 )
 
                     viewCardFunc =
-                        if activity == MenuWellBeing then
+                        if activity == MenuWellbeing then
                             resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
                                 |> activityCardWithCounter
 
@@ -287,7 +287,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                 , MenuDeviceStatus
                 ]
                     ++ (if nurse.resilienceProgramEnabled then
-                            [ MenuWellBeing ]
+                            [ MenuWellbeing ]
 
                         else
                             []
