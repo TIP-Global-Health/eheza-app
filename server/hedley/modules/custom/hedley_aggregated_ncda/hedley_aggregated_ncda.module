@@ -354,8 +354,10 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
   $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE;
   $content_types_to_load[] = HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE;
   $content_types_to_load[] = HEDLEY_ACTIVITY_MEDICATION_DISTRIBUTION_CONTENT_TYPE;
+  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE;
+  $content_types_to_load[] = HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE;
 
-  $heights = $weights = $muacs = $ncdas = $fbfs = $nutritions = $send_to_hcs = $medication_distributions = [];
+  $heights = $weights = $muacs = $ncdas = $fbfs = $nutritions = $send_to_hcs = $medication_distributions = $mebendezoles = $vitamins_a = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
@@ -398,6 +400,16 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
 
       if ($node->type == HEDLEY_ACTIVITY_MEDICATION_DISTRIBUTION_CONTENT_TYPE) {
         $medication_distributions[] = $node;
+        continue;
+      }
+
+      if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE) {
+        $mebendezoles[] = $node;
+        continue;
+      }
+
+      if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE) {
+        $vitamins_a[] = $node;
         continue;
       }
 
@@ -720,6 +732,44 @@ function hedley_aggregated_ncda_generate_data_for_person($person_id) {
     foreach ($items as $item) {
       if (in_array($item['value'], ['ors', 'zinc'])) {
         $data['ncda']['pane4']['row3'][] = $date_measured;
+        break;
+      }
+    }
+  }
+
+  foreach ($vitamins_a as $vitamin_a) {
+    $items = field_get_items('node', $vitamin_a, 'field_administration_note');
+    if (!$items) {
+      continue;
+    }
+
+    $date_measured = hedley_aggregated_ncda_get_date_measured($vitamin_a);
+    if (!$date_measured) {
+      continue;
+    }
+
+    foreach ($items as $item) {
+      if ($item['value'] == 'administered-today') {
+        $data['ncda']['pane2']['row2'][] = $date_measured;
+        break;
+      }
+    }
+  }
+
+  foreach ($mebendezoles as $mebendezole) {
+    $items = field_get_items('node', $mebendezole, 'field_administration_note');
+    if (!$items) {
+      continue;
+    }
+
+    $date_measured = hedley_aggregated_ncda_get_date_measured($mebendezole);
+    if (!$date_measured) {
+      continue;
+    }
+
+    foreach ($items as $item) {
+      if ($item['value'] == 'administered-today') {
+        $data['ncda']['pane2']['row3'][] = $date_measured;
         break;
       }
     }

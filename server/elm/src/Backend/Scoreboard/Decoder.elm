@@ -134,6 +134,7 @@ decodeNCDAData : NominalDate -> Decoder NCDAData
 decodeNCDAData currentDate =
     succeed NCDAData
         |> optional "pane1" decodeANCNewbornData emptyANCNewbornData
+        |> optional "pane2" (decodeUniversalInterventionData currentDate) emptyUniversalInterventionData
         |> optional "pane3" (decodeNutritionBehaviorData currentDate) emptyNutritionBehaviorData
         |> optional "pane4" (decodeTargetedInterventionsData currentDate) emptyTargetedInterventionsData
         |> optional "pane5" (decodeInfrastructureEnvironmentWashData currentDate) emptyInfrastructureEnvironmentWashData
@@ -144,6 +145,16 @@ decodeANCNewbornData =
     succeed ANCNewbornData
         |> optional "row1" bool False
         |> optional "row2" bool False
+
+
+decodeUniversalInterventionData : NominalDate -> Decoder UniversalInterventionData
+decodeUniversalInterventionData currentDate =
+    succeed UniversalInterventionData
+        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row2" (decodeMonthlyValues currentDate) []
+        |> optional "row3" (decodeMonthlyValues currentDate) []
+        |> optional "row4" (decodeMonthlyValues currentDate) []
+        |> optional "row5" (decodeMonthlyValues currentDate) []
 
 
 decodeNutritionBehaviorData : NominalDate -> Decoder NutritionBehaviorData

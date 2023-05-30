@@ -5715,9 +5715,9 @@ var $author$project$Backend$Scoreboard$Model$PatientData = F4(
 		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$Backend$Scoreboard$Model$NCDAData = F4(
-	function (ancNewborn, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
-		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions};
+var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
+	function (ancNewborn, universalIntervention, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
+		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions, universalIntervention: universalIntervention};
 	});
 var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
 	function (row1, row2) {
@@ -6894,10 +6894,43 @@ var $author$project$Backend$Scoreboard$Decoder$decodeTargetedInterventionsData =
 							_List_Nil,
 							$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$TargetedInterventionsData)))))));
 };
+var $author$project$Backend$Scoreboard$Model$UniversalInterventionData = F5(
+	function (row1, row2, row3, row4, row5) {
+		return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
+	});
+var $author$project$Backend$Scoreboard$Decoder$decodeUniversalInterventionData = function (currentDate) {
+	return A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'row5',
+		$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+		_List_Nil,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'row4',
+			$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+			_List_Nil,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'row3',
+				$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+				_List_Nil,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'row2',
+					$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+					_List_Nil,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+						'row1',
+						$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+						_List_Nil,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UniversalInterventionData))))));
+};
 var $author$project$Backend$Scoreboard$Model$emptyANCNewbornData = A2($author$project$Backend$Scoreboard$Model$ANCNewbornData, false, false);
 var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData = A6($author$project$Backend$Scoreboard$Model$TargetedInterventionsData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
+var $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData = A5($author$project$Backend$Scoreboard$Model$UniversalInterventionData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = function (currentDate) {
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -6916,10 +6949,15 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = function (curren
 				$author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData,
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'pane1',
-					$author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData,
-					$author$project$Backend$Scoreboard$Model$emptyANCNewbornData,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData)))));
+					'pane2',
+					$author$project$Backend$Scoreboard$Decoder$decodeUniversalInterventionData(currentDate),
+					$author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+						'pane1',
+						$author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData,
+						$author$project$Backend$Scoreboard$Model$emptyANCNewbornData,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NCDAData))))));
 };
 var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
 	function (stunting, underweight, wasting, muac) {
@@ -7085,7 +7123,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 					$author$project$Backend$Scoreboard$Decoder$decodeCriterionBySeverities(currentDate),
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionCriterionsData)))));
 };
-var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ancNewborn: $author$project$Backend$Scoreboard$Model$emptyANCNewbornData, infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, targetedInterventions: $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData};
+var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ancNewborn: $author$project$Backend$Scoreboard$Model$emptyANCNewbornData, infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, targetedInterventions: $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData, universalIntervention: $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData};
 var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
 var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
 var $elm$json$Json$Decode$maybe = function (decoder) {
@@ -27923,69 +27961,116 @@ var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) 
 var $author$project$Pages$Scoreboard$Model$OngeraMNP = {$: 'OngeraMNP'};
 var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention'};
 var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
-var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F4(
-	function (language, currentDate, yearSelectorGap, data) {
-		var values = function () {
-			var _v0 = data.entityType;
-			switch (_v0.$) {
-				case 'EntityVillage':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[13, 14, 11, 17, 9, 8, 14, 16, 12, 10, 15, 12]),
-							_List_fromArray(
-							[6, 10, 17, 13, 14, 12, 9, 8, 11, 15, 16, 12]),
-							_List_fromArray(
-							[14, 12, 16, 17, 10, 9, 13, 7, 8, 11, 19, 11]),
-							_List_fromArray(
-							[7, 12, 15, 10, 16, 8, 15, 17, 13, 14, 19, 11]),
-							_List_fromArray(
-							[12, 15, 8, 11, 11, 9, 17, 16, 15, 12, 19, 11])
-						]);
-				case 'EntityCell':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[89, 98, 76, 81, 105, 92, 113, 127, 140, 115, 92, 104]),
-							_List_fromArray(
-							[102, 85, 121, 96, 133, 107, 127, 104, 141, 110, 88, 129]),
-							_List_fromArray(
-							[129, 118, 144, 96, 142, 139, 112, 131, 147, 137, 135, 123]),
-							_List_fromArray(
-							[136, 142, 98, 131, 143, 101, 131, 119, 144, 99, 109, 126]),
-							_List_fromArray(
-							[117, 121, 124, 133, 104, 141, 109, 128, 101, 137, 122, 99])
-						]);
-				case 'EntitySector':
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[261, 217, 205, 238, 205, 281, 276, 220, 250, 299, 283, 252]),
-							_List_fromArray(
-							[222, 206, 223, 196, 279, 261, 257, 216, 249, 233, 269, 248]),
-							_List_fromArray(
-							[241, 267, 278, 217, 211, 251, 272, 229, 240, 221, 208, 220]),
-							_List_fromArray(
-							[211, 248, 230, 235, 222, 240, 216, 212, 227, 262, 255, 225]),
-							_List_fromArray(
-							[209, 224, 215, 247, 273, 263, 258, 214, 249, 236, 275, 249])
-						]);
-				default:
-					return _List_fromArray(
-						[
-							_List_fromArray(
-							[597, 567, 620, 564, 485, 545, 663, 536, 498, 603, 665, 496]),
-							_List_fromArray(
-							[547, 599, 581, 474, 505, 489, 655, 593, 605, 539, 629, 508]),
-							_List_fromArray(
-							[632, 506, 551, 580, 647, 562, 508, 475, 659, 502, 642, 657]),
-							_List_fromArray(
-							[608, 572, 519, 648, 655, 599, 586, 547, 596, 522, 618, 484]),
-							_List_fromArray(
-							[567, 514, 601, 658, 557, 528, 505, 506, 540, 554, 529, 510])
-						]);
-			}
-		}();
+var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F5(
+	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0, row3: 0, row4: 0, row5: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var row5AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.universalIntervention.row5);
+					var row4AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.universalIntervention.row4);
+					var row3AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.universalIntervention.row3);
+					var row2AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.universalIntervention.row2);
+					var row1AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.universalIntervention.row1);
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMonths) {
+											var row5 = accumValue.row5;
+											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
+											var row1 = accumValue.row1;
+											var ageInMonthsForIndexCell = ageInMonths - gapInMonths;
+											var row2 = (A2(
+												$elm$core$List$any,
+												function (ageInMonthsOnAdministrationDate) {
+													var numberOfMonthsSinceAdministration = ageInMonthsOnAdministrationDate - gapInMonths;
+													return (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0);
+												},
+												row2AsAgeInMonths) && ((ageInMonthsForIndexCell >= 0) && (ageInMonthsForIndexCell < 24))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (A2(
+												$elm$core$List$any,
+												function (ageInMonthsOnAdministrationDate) {
+													var numberOfMonthsSinceAdministration = ageInMonthsOnAdministrationDate - gapInMonths;
+													return (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0);
+												},
+												row3AsAgeInMonths) && ((ageInMonthsForIndexCell >= 0) && (ageInMonthsForIndexCell < 34))) ? (accumValue.row3 + 1) : accumValue.row3;
+											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row3;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row4;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row5;
+				},
+				valuesByRow)
+			]);
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -28229,7 +28314,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					A5($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A4($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, data),
+					A5($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
 					A5($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, data)
