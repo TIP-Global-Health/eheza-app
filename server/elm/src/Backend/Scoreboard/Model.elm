@@ -279,3 +279,4 @@ emptyInfrastructureEnvironmentWashData =
 
 type Msg
     = SetData Value
+    | CalculateECD
