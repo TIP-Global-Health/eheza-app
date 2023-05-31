@@ -1075,7 +1075,6 @@ function hedley_aggregated_ncda_get_date_measured($node) {
  *
  * @param object $node
  *   The node object.
- *
  * @param string $field_name
  *   Then name of date field.
  *
