@@ -13,7 +13,7 @@ import Html.Attributes exposing (..)
 import Icons
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Scoreboard.Model exposing (..)
-import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
+import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -562,8 +562,103 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
                                                     accumValue.row4
 
                                             row5 =
-                                                -- ECD will be implemented in follow up PR.
-                                                accumValue.row5
+                                                if (ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24) then
+                                                    accumValue.row5
+
+                                                else
+                                                    let
+                                                        milestonesToCurrentDateWithStatus =
+                                                            generateECDMilestonesWithStatus currentDate
+                                                                record.birthDate
+                                                                record.ncda.universalIntervention.row5
+                                                                |> Dict.fromList
+
+                                                        -- milestoneWithStatusToCellValues ( milestone, status ) =
+                                                        --     let
+                                                        --         cellValue =
+                                                        --             case status of
+                                                        --                 StatusOnTrack ->
+                                                        --                     NCDACellValueV
+                                                        --
+                                                        --                 NoECDStatus ->
+                                                        --                     NCDACellValueEmpty
+                                                        --
+                                                        --                 _ ->
+                                                        --                     NCDACellValueX
+                                                        --     in
+                                                        --     case milestone of
+                                                        --         -- Covers age of 2 and 3 months.
+                                                        --         Milestone6Weeks ->
+                                                        --             List.repeat 2 cellValue
+                                                        --
+                                                        --         -- Covers age of 4 and 5 months.
+                                                        --         Milestone14Weeks ->
+                                                        --             List.repeat 2 cellValue
+                                                        --
+                                                        --         -- Covers age of 6, 7 and 8 months.
+                                                        --         Milestone6Months ->
+                                                        --             List.repeat 3 cellValue
+                                                        --
+                                                        --         -- Covers age of 9, 10 and 11 months.
+                                                        --         Milestone9Months ->
+                                                        --             List.repeat 3 cellValue
+                                                        --
+                                                        --         -- Covers age of 12, 13 and 14 months.
+                                                        --         Milestone12Months ->
+                                                        --             List.repeat 3 cellValue
+                                                        --
+                                                        --         --    Covers age of 15, 16 and 17 months.
+                                                        --         Milestone15Months ->
+                                                        --             List.repeat 3 cellValue
+                                                        --
+                                                        --         --    Covers age of 18 to 23 months.
+                                                        --         Milestone18Months ->
+                                                        --             List.repeat 6 cellValue
+                                                        --
+                                                        --         --    Covers age of 24 and 25 months.
+                                                        --         Milestone2Years ->
+                                                        --             List.repeat 2 cellValue
+                                                        --
+                                                        --         -- Not in range.
+                                                        --         Milestone3Years ->
+                                                        --             []
+                                                        --
+                                                        --         -- Not in range.
+                                                        --         Milestone4Years ->
+                                                        --             []
+                                                        allMilestones =
+                                                            [ Milestone6Weeks
+                                                            , Milestone14Weeks
+                                                            , Milestone6Months
+                                                            , Milestone9Months
+                                                            , Milestone12Months
+                                                            , Milestone15Months
+                                                            , Milestone18Months
+                                                            , Milestone2Years
+                                                            ]
+                                                    in
+                                                    -- -- For first month, there's no ECD milestone.
+                                                    -- NCDACellValueDash
+                                                    --     :: (List.map
+                                                    --             (\milestone ->
+                                                    --                 ( milestone
+                                                    --                 , Dict.get milestone milestonesToCurrentDateWithStatus
+                                                    --                     |> Maybe.withDefault NoECDStatus
+                                                    --                 )
+                                                    --             )
+                                                    --             allMilestones
+                                                    --             |> List.map milestoneWithStatusToCellValues
+                                                    --             |> List.concat
+                                                    --        )
+                                                    --     |> List.indexedMap
+                                                    --         (\month value ->
+                                                    --             if ageMonths < month then
+                                                    --                 NCDACellValueEmpty
+                                                    --
+                                                    --             else
+                                                    --                 value
+                                                    --         )
+                                                    accumValue.row5
                                         in
                                         { row1 = row1
                                         , row2 = row2
