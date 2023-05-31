@@ -425,14 +425,22 @@ class RoboFile extends Tasks {
 
   /**
    * Generates the nutrition report.
+   *
+   * @param string $date
+   *   The date to generate the report for.
+   * @param string $district
+   *   The district to generate the report for.
    */
-  public function reportNutrition($district = NULL) {
-    if (empty($district)) {
-      $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php');
+  public function reportNutrition($date = NULL, $district = NULL) {
+    $command = 'cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php';
+    if (!empty($district)) {
+      $command .= ' --district=' . escapeshellarg($district);
     }
-    else {
-      $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --district=$district");
+    if (!empty($date)) {
+      $command .= ' --date=' . escapeshellarg($date);
     }
+
+    $this->_exec($command);
   }
 
 }
