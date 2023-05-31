@@ -28299,7 +28299,9 @@ var $justinmimbs$date$Date$Month = {$: 'Month'};
 var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) {
 	return {$: 'NCDAUniversalInterventionItemLabel', a: a};
 };
+var $author$project$Pages$Scoreboard$Model$NoECDStatus = {$: 'NoECDStatus'};
 var $author$project$Pages$Scoreboard$Model$OngeraMNP = {$: 'OngeraMNP'};
+var $author$project$Pages$Scoreboard$Model$StatusOnTrack = {$: 'StatusOnTrack'};
 var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention'};
 var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
 var $elm$core$Basics$min = F2(
@@ -28334,6 +28336,9 @@ var $justinmimbs$date$Date$add = F3(
 				return $justinmimbs$date$Date$RD(rd + n);
 		}
 	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
 var $elm$time$Time$Fri = {$: 'Fri'};
 var $elm$time$Time$Mon = {$: 'Mon'};
 var $elm$time$Time$Sat = {$: 'Sat'};
@@ -28426,7 +28431,6 @@ var $justinmimbs$date$Date$floor = F2(
 	});
 var $author$project$Pages$Scoreboard$Model$StatusECDBehind = {$: 'StatusECDBehind'};
 var $author$project$Pages$Scoreboard$Model$StatusOffTrack = {$: 'StatusOffTrack'};
-var $author$project$Pages$Scoreboard$Model$StatusOnTrack = {$: 'StatusOnTrack'};
 var $elm$core$List$all = F2(
 	function (isOkay, list) {
 		return !A2(
@@ -28434,9 +28438,6 @@ var $elm$core$List$all = F2(
 			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
 			list);
 	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
 var $justinmimbs$date$Date$Weeks = {$: 'Weeks'};
 var $elm$core$List$drop = F2(
 	function (n, list) {
@@ -29024,6 +29025,11 @@ var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F2(
 			},
 			$author$project$Pages$Scoreboard$Utils$allVaccineTypes);
 	});
+var $elm_community$list_extra$List$Extra$getAt = F2(
+	function (idx, xs) {
+		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
+			A2($elm$core$List$drop, idx, xs));
+	});
 var $pzp1997$assoc_list$AssocList$map = F2(
 	function (alter, _v0) {
 		var alist = _v0.a;
@@ -29079,6 +29085,56 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F5(
 							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
 						},
 						record.ncda.universalIntervention.row2);
+					var edcMilestonesStatusByMonth = function () {
+						var statusForMilestonePeriod = function (_v1) {
+							var milestone = _v1.a;
+							var status = _v1.b;
+							switch (milestone.$) {
+								case 'Milestone6Weeks':
+									return A2($elm$core$List$repeat, 2, status);
+								case 'Milestone14Weeks':
+									return A2($elm$core$List$repeat, 2, status);
+								case 'Milestone6Months':
+									return A2($elm$core$List$repeat, 3, status);
+								case 'Milestone9Months':
+									return A2($elm$core$List$repeat, 3, status);
+								case 'Milestone12Months':
+									return A2($elm$core$List$repeat, 3, status);
+								case 'Milestone15Months':
+									return A2($elm$core$List$repeat, 3, status);
+								case 'Milestone18Months':
+									return A2($elm$core$List$repeat, 6, status);
+								case 'Milestone2Years':
+									return A2($elm$core$List$repeat, 2, status);
+								case 'Milestone3Years':
+									return _List_Nil;
+								default:
+									return _List_Nil;
+							}
+						};
+						var milestonesToCurrentDateWithStatus = $pzp1997$assoc_list$AssocList$fromList(
+							A3($author$project$Pages$Scoreboard$Utils$generateECDMilestonesWithStatus, currentDate, record.birthDate, record.ncda.universalIntervention.row5));
+						var allMilestones = _List_fromArray(
+							[$author$project$Pages$Scoreboard$Model$Milestone6Weeks, $author$project$Pages$Scoreboard$Model$Milestone14Weeks, $author$project$Pages$Scoreboard$Model$Milestone6Months, $author$project$Pages$Scoreboard$Model$Milestone9Months, $author$project$Pages$Scoreboard$Model$Milestone12Months, $author$project$Pages$Scoreboard$Model$Milestone15Months, $author$project$Pages$Scoreboard$Model$Milestone18Months, $author$project$Pages$Scoreboard$Model$Milestone2Years]);
+						return A2(
+							$elm$core$List$cons,
+							$author$project$Pages$Scoreboard$Model$NoECDStatus,
+							$elm$core$List$concat(
+								A2(
+									$elm$core$List$map,
+									statusForMilestonePeriod,
+									A2(
+										$elm$core$List$map,
+										function (milestone) {
+											return _Utils_Tuple2(
+												milestone,
+												A2(
+													$elm$core$Maybe$withDefault,
+													$author$project$Pages$Scoreboard$Model$NoECDStatus,
+													A2($pzp1997$assoc_list$AssocList$get, milestone, milestonesToCurrentDateWithStatus)));
+										},
+										allMilestones))));
+					}();
 					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
@@ -29155,11 +29211,11 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F5(
 												if ((ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24)) {
 													return accumValue.row5;
 												} else {
-													var milestonesToCurrentDateWithStatus = $pzp1997$assoc_list$AssocList$fromList(
-														A3($author$project$Pages$Scoreboard$Utils$generateECDMilestonesWithStatus, currentDate, record.birthDate, record.ncda.universalIntervention.row5));
-													var allMilestones = _List_fromArray(
-														[$author$project$Pages$Scoreboard$Model$Milestone6Weeks, $author$project$Pages$Scoreboard$Model$Milestone14Weeks, $author$project$Pages$Scoreboard$Model$Milestone6Months, $author$project$Pages$Scoreboard$Model$Milestone9Months, $author$project$Pages$Scoreboard$Model$Milestone12Months, $author$project$Pages$Scoreboard$Model$Milestone15Months, $author$project$Pages$Scoreboard$Model$Milestone18Months, $author$project$Pages$Scoreboard$Model$Milestone2Years]);
-													return accumValue.row5;
+													var status = A2(
+														$elm$core$Maybe$withDefault,
+														$author$project$Pages$Scoreboard$Model$NoECDStatus,
+														A2($elm_community$list_extra$List$Extra$getAt, ageInMonthsForIndexCell, edcMilestonesStatusByMonth));
+													return _Utils_eq(status, $author$project$Pages$Scoreboard$Model$StatusOnTrack) ? (accumValue.row5 + 1) : accumValue.row5;
 												}
 											}();
 											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
