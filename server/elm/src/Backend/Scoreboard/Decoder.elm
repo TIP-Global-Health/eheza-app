@@ -157,7 +157,7 @@ decodeUniversalInterventionData currentDate =
         |> optional "row2" (decodeMonthlyValues currentDate) []
         |> optional "row3" (decodeMonthlyValues currentDate) []
         |> optional "row4" (decodeMonthlyValues currentDate) []
-        |> optional "row5" (list decodeECDEncounterData) []
+        |> optional "row5" (list decodeECDEncounterData |> map toInitialUniversalInterventionECDData) emptyUniversalInterventionECDData
 
 
 decodeVaccinationProgressDict : Decoder VaccinationProgressDict
@@ -171,6 +171,11 @@ decodeVaccinationProgressDict =
         |> required "ipv" decodeUniqueDates
         |> required "mr" decodeUniqueDates
         |> map rawVaccinationDataToVaccinationProgressDict
+
+
+toInitialUniversalInterventionECDData : List ECDEncounterData -> UniversalInterventionECDData
+toInitialUniversalInterventionECDData encountersData =
+    UniversalInterventionECDData encountersData []
 
 
 decodeECDEncounterData : Decoder ECDEncounterData

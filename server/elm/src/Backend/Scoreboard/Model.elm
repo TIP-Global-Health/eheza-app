@@ -95,13 +95,13 @@ type alias UniversalInterventionData =
     , row2 : List NominalDate
     , row3 : List NominalDate
     , row4 : List NominalDate
-    , row5 : List ECDEncounterData
+    , row5 : UniversalInterventionECDData
     }
 
 
 emptyUniversalInterventionData : UniversalInterventionData
 emptyUniversalInterventionData =
-    UniversalInterventionData Dict.empty [] [] [] []
+    UniversalInterventionData Dict.empty [] [] [] emptyUniversalInterventionECDData
 
 
 type alias VaccinationProgressDict =
@@ -202,6 +202,37 @@ type ECDSign
     | ShareWithOtherChildren
     | CountToTen
     | NoECDSigns
+
+
+type alias UniversalInterventionECDData =
+    { encountersData : List ECDEncounterData
+    , ecdMilestonesStatusByMonth : List ECDStatus
+    }
+
+
+emptyUniversalInterventionECDData : UniversalInterventionECDData
+emptyUniversalInterventionECDData =
+    UniversalInterventionECDData [] []
+
+
+type PediatricCareMilestone
+    = Milestone6Weeks
+    | Milestone14Weeks
+    | Milestone6Months
+    | Milestone9Months
+    | Milestone12Months
+    | Milestone15Months
+    | Milestone18Months
+    | Milestone2Years
+    | Milestone3Years
+    | Milestone4Years
+
+
+type ECDStatus
+    = StatusOnTrack
+    | StatusECDBehind
+    | StatusOffTrack
+    | NoECDStatus
 
 
 type alias NutritionBehaviorData =

@@ -4,7 +4,7 @@ import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
-import Backend.Scoreboard.Model exposing (ScoreboardData, SelectedEntity(..))
+import Backend.Scoreboard.Model exposing (ECDStatus(..), ScoreboardData, SelectedEntity(..))
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
@@ -444,83 +444,6 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
 
                         row4AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row4
-
-                        -- Structure that holds monthly status of ECD milestones,
-                        -- when child is between 0 and 24 months old.
-                        edcMilestonesStatusByMonth =
-                            let
-                                milestonesToCurrentDateWithStatus =
-                                    generateECDMilestonesWithStatus currentDate
-                                        record.birthDate
-                                        record.ncda.universalIntervention.row5
-                                        |> Dict.fromList
-
-                                statusForMilestonePeriod ( milestone, status ) =
-                                    case milestone of
-                                        -- Covers age of 2 and 3 months.
-                                        Milestone6Weeks ->
-                                            List.repeat 2 status
-
-                                        -- Covers age of 4 and 5 months.
-                                        Milestone14Weeks ->
-                                            List.repeat 2 status
-
-                                        -- Covers age of 6, 7 and 8 months.
-                                        Milestone6Months ->
-                                            List.repeat 3 status
-
-                                        -- Covers age of 9, 10 and 11 months.
-                                        Milestone9Months ->
-                                            List.repeat 3 status
-
-                                        -- Covers age of 12, 13 and 14 months.
-                                        Milestone12Months ->
-                                            List.repeat 3 status
-
-                                        --    Covers age of 15, 16 and 17 months.
-                                        Milestone15Months ->
-                                            List.repeat 3 status
-
-                                        --    Covers age of 18 to 23 months.
-                                        Milestone18Months ->
-                                            List.repeat 6 status
-
-                                        --    Covers age of 24 and 25 months.
-                                        Milestone2Years ->
-                                            List.repeat 2 status
-
-                                        -- Not in range.
-                                        Milestone3Years ->
-                                            []
-
-                                        -- Not in range.
-                                        Milestone4Years ->
-                                            []
-
-                                allMilestones =
-                                    [ Milestone6Weeks
-                                    , Milestone14Weeks
-                                    , Milestone6Months
-                                    , Milestone9Months
-                                    , Milestone12Months
-                                    , Milestone15Months
-                                    , Milestone18Months
-                                    , Milestone2Years
-                                    ]
-                            in
-                            -- For first month, there's no ECD milestone.
-                            NoECDStatus
-                                :: (List.map
-                                        (\milestone ->
-                                            ( milestone
-                                            , Dict.get milestone milestonesToCurrentDateWithStatus
-                                                |> Maybe.withDefault NoECDStatus
-                                            )
-                                        )
-                                        allMilestones
-                                        |> List.map statusForMilestonePeriod
-                                        |> List.concat
-                                   )
                     in
                     List.indexedMap
                         (\index accumValue ->
@@ -646,7 +569,7 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
                                                 else
                                                     let
                                                         status =
-                                                            List.Extra.getAt ageInMonthsForIndexCell edcMilestonesStatusByMonth
+                                                            List.Extra.getAt ageInMonthsForIndexCell record.ncda.universalIntervention.row5.ecdMilestonesStatusByMonth
                                                                 |> Maybe.withDefault NoECDStatus
                                                     in
                                                     if status == StatusOnTrack then
