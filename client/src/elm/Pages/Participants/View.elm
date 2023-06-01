@@ -125,7 +125,7 @@ view language nurse ( sessionId, session ) model =
                 Nothing
 
         goBackPage =
-            backFromSessionPage nurse session.offlineSession
+            UserPage ClinicalPage
 
         endSessionAction =
             if isCommunityHealthWorker nurse then

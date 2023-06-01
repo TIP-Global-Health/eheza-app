@@ -19172,7 +19172,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                ClinicsPage _ ->
+                ClinicsPage ->
                     { english = "Groups"
                     , kinyarwanda = Just "Itsinda"
                     }

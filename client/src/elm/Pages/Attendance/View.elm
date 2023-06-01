@@ -20,7 +20,7 @@ import Html.Events exposing (onClick, onInput)
 import LocalData exposing (LocalData(..))
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (backFromSessionPage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+import Pages.Utils exposing (matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
@@ -64,7 +64,7 @@ view language nurse ( sessionId, session ) model =
                         |> Dict.values
 
         goBackPage =
-            backFromSessionPage nurse session.offlineSession
+            UserPage ClinicalPage
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
