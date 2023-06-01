@@ -96,6 +96,7 @@ import Pages.WellChild.Encounter.View
 import Pages.WellChild.Participant.View
 import Pages.WellChild.ProgressReport.Model
 import Pages.WellChild.ProgressReport.View
+import Pages.Wellbeing.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import SyncManager.View
@@ -788,6 +789,24 @@ viewUserPage page deviceName model configured =
                                     |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
                         in
                         Pages.MessagingCenter.View.view model.language
+                            model.currentTime
+                            nurseId
+                            nurse
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper model
+
+                    WellbeingPage ->
+                        let
+                            ( nurseId, nurse ) =
+                                loggedInModel.nurse
+
+                            page_ =
+                                Dict.get nurseId loggedInModel.messagingCenterPages
+                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                        in
+                        Pages.Wellbeing.View.view model.language
                             model.currentTime
                             nurseId
                             nurse
