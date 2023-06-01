@@ -64,7 +64,7 @@ view language nurse ( sessionId, session ) model =
                         |> Dict.values
 
         goBackPage =
-            UserPage ClinicalPage
+            UserPage ClinicsPage
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div

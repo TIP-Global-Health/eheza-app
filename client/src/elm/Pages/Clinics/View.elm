@@ -11,6 +11,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
+import Backend.NutritionEncounter.Utils exposing (sortByDate)
 import Backend.Session.Model exposing (Session)
 import Backend.Session.Utils exposing (isClosed)
 import Date exposing (Unit(..))
@@ -44,7 +45,7 @@ view language currentDate user healthCenterId model db syncManager =
     let
         content =
             viewWebData language
-                (viewLoadedClinicList language user healthCenterId syncManager model)
+                (viewLoadedClinicList language currentDate user healthCenterId syncManager db model)
                 identity
                 db.clinics
 
@@ -82,8 +83,8 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> SyncManager.Model.Model -> Model -> Dict ClinicId Clinic -> Html Msg
-viewLoadedClinicList language user selectedHealthCenterId syncManager model clinics =
+viewLoadedClinicList : Language -> NominalDate -> Nurse -> HealthCenterId -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Dict ClinicId Clinic -> Html Msg
+viewLoadedClinicList language currentDate user selectedHealthCenterId syncManager db model clinics =
     let
         syncedHealthCenters =
             getSyncedHealthCenters syncManager
@@ -159,13 +160,11 @@ viewLoadedClinicList language user selectedHealthCenterId syncManager model clin
 
                             buttonsView =
                                 if isJust model.clinicType then
-                                    synced
-                                        |> Dict.toList
-                                        |> List.map (viewClinicButton user)
+                                    Dict.toList synced
+                                        |> List.map (viewClinicButton currentDate user db)
 
                                 else
-                                    synced
-                                        |> Dict.values
+                                    Dict.values synced
                                         |> viewClinicTypeButtons language
                         in
                         div []
@@ -177,21 +176,53 @@ viewLoadedClinicList language user selectedHealthCenterId syncManager model clin
             (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
 
 
-viewClinicButton : Nurse -> ( ClinicId, Clinic ) -> Html Msg
-viewClinicButton nurse ( clinicId, clinic ) =
+viewClinicButton : NominalDate -> Nurse -> ModelIndexedDb -> ( ClinicId, Clinic ) -> Html Msg
+viewClinicButton currentDate nurse db ( clinicId, clinic ) =
     let
-        classAttr =
+        attributes =
             if isAuthorithedNurse clinic nurse then
-                class "ui fluid primary button"
+                let
+                    sessions =
+                        db.sessionsByClinic
+                            |> Dict.get clinicId
+                            |> Maybe.andThen RemoteData.toMaybe
+
+                    sessionStartedToday =
+                        Maybe.andThen
+                            (Dict.filter (\_ session -> session.startDate == currentDate)
+                                >> Dict.toList
+                                >> List.sortWith (sortByDate (Tuple.second >> .startDate))
+                                >> List.head
+                            )
+                            sessions
+
+                    action =
+                        Maybe.map
+                            (\( sessionId, _ ) ->
+                                [ SessionPage sessionId AttendancePage
+                                    |> UserPage
+                                    |> SetActivePage
+                                    |> onClick
+                                ]
+                            )
+                            sessionStartedToday
+                            |> Maybe.withDefault
+                                [ { startDate = currentDate
+                                  , endDate = Nothing
+                                  , clinicId = clinicId
+                                  , clinicType = clinic.clinicType
+                                  }
+                                    |> PostSession
+                                    |> MsgIndexedDb
+                                    |> onClick
+                                ]
+                in
+                class "ui fluid primary button" :: action
 
             else
-                class "ui fluid primary dark disabled button"
+                [ class "ui fluid primary dark disabled button" ]
     in
-    button
-        [ classAttr
-
-        --  , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just clinicId
-        ]
+    button attributes
         [ text clinic.name ]
 
 
@@ -199,12 +230,11 @@ viewClinicTypeButtons : Language -> List Clinic -> List (Html Msg)
 viewClinicTypeButtons language clinics =
     let
         clinicsTypes =
-            clinics
-                |> List.map .clinicType
+            List.map .clinicType clinics
 
         allowedTypes =
-            allClinicTypes
-                |> List.filter (\type_ -> List.member type_ clinicsTypes)
+            List.filter (\type_ -> List.member type_ clinicsTypes)
+                allClinicTypes
     in
     allowedTypes
         |> List.map

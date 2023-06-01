@@ -111,7 +111,7 @@ view language nurse ( sessionId, session ) model =
                     ( completedActivities, translate language Trans.NoActivitiesCompleted )
 
         goBackPage =
-            UserPage ClinicalPage
+            UserPage ClinicsPage
 
         endSessionAction =
             if isCommunityHealthWorker nurse then
