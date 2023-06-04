@@ -116,11 +116,18 @@ while ($processed < $total) {
     try {
       $message = new Message('', 'TIP Health', [$phone_number]);
 
+      $image_uri = file_create_url($file->uri);
+      if (strpos($image_uri, 'http://') === 0) {
+        $image_uri = str_replace('http://', 'https://', $image_uri);
+      }
+
+      drush_print("Image: $image_uri");
+
       $header_param =
         new ComponentParameterImage(
           new MediaContent(
             $file->filename,
-            file_create_url($file->uri),
+            $image_uri,
             $file->filemime
           )
         );
