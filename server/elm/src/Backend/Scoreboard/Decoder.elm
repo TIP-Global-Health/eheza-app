@@ -48,23 +48,6 @@ decodePatientData currentDate =
         |> optional "ncda" decodeNCDAData emptyNCDAData
 
 
-decodeNCDAData : Decoder NCDAData
-decodeNCDAData =
-    succeed NCDAData
-        |> optional "postpartum_checkups" bool False
-        |> optional "iron_during_pregnancy" bool False
-        |> optional "pane_nb" decodeNutritionBehaviorData emptyNutritionBehaviorData
-
-
-decodeNutritionBehaviorData : Decoder NutritionBehaviorData
-decodeNutritionBehaviorData =
-    succeed NutritionBehaviorData
-        |> optional "row1" (list decodeYYYYMMDD) []
-        |> optional "row2" (list decodeYYYYMMDD) []
-        |> optional "row3" (list decodeYYYYMMDD) []
-        |> optional "row4" (list decodeYYYYMMDD) []
-
-
 decodeNutritionCriterionsData : NominalDate -> Decoder NutritionCriterionsData
 decodeNutritionCriterionsData currentDate =
     succeed NutritionCriterionsData
@@ -145,3 +128,37 @@ sainitzeCriterionBySeverities currentDate data =
         , moderate = sanitizedModerate
         , normal = sanitizedNormal
     }
+
+
+decodeNCDAData : Decoder NCDAData
+decodeNCDAData =
+    succeed NCDAData
+        |> optional "pane1" decodeANCNewbornData emptyANCNewbornData
+        |> optional "pane3" decodeNutritionBehaviorData emptyNutritionBehaviorData
+        |> optional "pane5" decodeInfrastructureEnvironmentWashData emptyInfrastructureEnvironmentWashData
+
+
+decodeANCNewbornData : Decoder ANCNewbornData
+decodeANCNewbornData =
+    succeed ANCNewbornData
+        |> optional "row1" bool False
+        |> optional "row2" bool False
+
+
+decodeNutritionBehaviorData : Decoder NutritionBehaviorData
+decodeNutritionBehaviorData =
+    succeed NutritionBehaviorData
+        |> optional "row1" (list decodeYYYYMMDD) []
+        |> optional "row2" (list decodeYYYYMMDD) []
+        |> optional "row3" (list decodeYYYYMMDD) []
+        |> optional "row4" (list decodeYYYYMMDD) []
+
+
+decodeInfrastructureEnvironmentWashData : Decoder InfrastructureEnvironmentWashData
+decodeInfrastructureEnvironmentWashData =
+    succeed InfrastructureEnvironmentWashData
+        |> optional "row1" (list decodeYYYYMMDD) []
+        |> optional "row2" (list decodeYYYYMMDD) []
+        |> optional "row3" (list decodeYYYYMMDD) []
+        |> optional "row4" bool False
+        |> optional "row5" (list decodeYYYYMMDD) []
