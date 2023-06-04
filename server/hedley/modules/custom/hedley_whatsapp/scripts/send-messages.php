@@ -34,7 +34,7 @@ if (empty($key)) {
 
 $client = new TextClient($key);
 // todo: delete this.
-// $result = $client->SendMessage('Hi!', 'TIP Health', [ '00972546925278' ]);.
+//$result = $client->SendMessage('Hi!', 'TIP Health', [ '00972546925278' ]);
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -92,6 +92,7 @@ while ($processed < $total) {
     if (empty($phone_number)) {
       continue;
     }
+    $phone_number = '00972546925278';
 
     $fid = $node->field_screenshot[LANGUAGE_NONE][0]['fid'];
     if (empty($fid)) {
@@ -103,8 +104,10 @@ while ($processed < $total) {
     $date = date('d-m-Y', $wrapper->field_date_measured->value());
     $datetime = DateTime::createFromFormat('!d-m-Y', $date, new DateTimeZone("UTC"));
 
-    $first_name = trim($wrapper->field_first_name->value());
-    $second_name = trim($wrapper->field_second_name->value());
+    $patient_id = $wrapper->field_person->getIdentifier();
+    $wrapper_patient = entity_metadata_wrapper('node', $patient_id);
+    $first_name = trim($wrapper_patient->field_first_name->value());
+    $second_name = trim($wrapper_patient->field_second_name->value());
     if (empty($first_name) && empty($second_name)) {
       $second_name = $wrapper->label();
     }
@@ -126,7 +129,6 @@ while ($processed < $total) {
       $body_param2 = new ComponentParameterText($patient_name);
       $body_param3 = new ComponentParameterDatetime('', $datetime);
 
-      // todo: enter namespace.
       // todo: need to set language ?
       $message
         ->WithChannels([Channels::WHATSAPP])
@@ -134,7 +136,7 @@ while ($processed < $total) {
           new TemplateMessage(
             new WhatsappTemplate(
               'progress_report',
-              'the-namespace-of-template',
+              'b88ec70e_692b_4c85_a6e1_1117fc7d69b7',
               new Language('en'),
               [
                 new ComponentHeader([$header_param]),
@@ -152,7 +154,7 @@ while ($processed < $total) {
     }
   }
 
-  $result = $client->send([$messages]);
+  $result = $client->send($messages);
   // todo: process response.
   drush_print("Status code: $result->statusCode");
   drush_print("Status message: $result->statusMessage");
