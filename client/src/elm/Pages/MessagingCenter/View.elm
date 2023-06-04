@@ -505,7 +505,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
 
                 plainTitle =
                     div [ class <| "header", onClick messageClickedAction ]
-                        [ i [ class <| "icon-" ++ extraClass ] []
+                        [ i [ class <| "icon-" ++ extraClass ++ " " ++ titleWrapperClass ] []
                         , messageCategory
                         , dateSent
                         , div
