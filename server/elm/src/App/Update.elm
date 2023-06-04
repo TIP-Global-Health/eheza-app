@@ -113,7 +113,8 @@ update msg model =
             )
 
         SetCurrentTime date ->
-            ( { model | currentTime = date }, Cmd.none )
+            { model | currentTime = date }
+                |> update (MsgBackend (Backend.Model.MsgScoreboard Backend.Scoreboard.Model.CalculateECD))
 
 
 subscriptions : Model -> Sub Msg

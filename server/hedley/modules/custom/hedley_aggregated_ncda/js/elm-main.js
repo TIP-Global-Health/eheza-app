@@ -5452,6 +5452,7 @@ var $author$project$App$Update$resolveActivePage = function (page) {
 			return $author$project$App$Types$NotFound;
 	}
 };
+var $author$project$Backend$Scoreboard$Model$CalculateECD = {$: 'CalculateECD'};
 var $author$project$App$Model$MsgMenuPage = function (a) {
 	return {$: 'MsgMenuPage', a: a};
 };
@@ -8082,49 +8083,61 @@ var $elm$core$Result$map = F2(
 	});
 var $author$project$Backend$Scoreboard$Update$update = F3(
 	function (currentDate, msg, model) {
-		var value = msg.a;
-		var data = A2(
-			$elm$json$Json$Decode$decodeValue,
-			$author$project$Backend$Scoreboard$Decoder$decodeScoreboardData(currentDate),
-			value);
-		var dataWithECDMilestonesStatus = A2(
-			$elm$core$Result$map,
-			function (scoreboardData) {
-				var updatedRecords = A2(
-					$elm$core$List$map,
-					function (record) {
-						var ecdMilestonesStatusByMonth = A3($author$project$Backend$Scoreboard$Utils$generateECDMilestonesStatusByMonth, currentDate, record.birthDate, record.ncda.universalIntervention.row5.encountersData);
-						var updatedUniversalInterventionData = function (universalInterventionData) {
+		if (msg.$ === 'SetData') {
+			var value = msg.a;
+			var modelUpdated = _Utils_update(
+				model,
+				{
+					scoreboardData: $elm$core$Maybe$Just(
+						A2(
+							$elm$json$Json$Decode$decodeValue,
+							$author$project$Backend$Scoreboard$Decoder$decodeScoreboardData(currentDate),
+							value))
+				});
+			return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+		} else {
+			var dataWithECDMilestonesStatus = A2(
+				$elm$core$Maybe$map,
+				function (data) {
+					return A2(
+						$elm$core$Result$map,
+						function (scoreboardData) {
+							var updatedRecords = A2(
+								$elm$core$List$map,
+								function (record) {
+									var ecdMilestonesStatusByMonth = A3($author$project$Backend$Scoreboard$Utils$generateECDMilestonesStatusByMonth, currentDate, record.birthDate, record.ncda.universalIntervention.row5.encountersData);
+									var updatedUniversalInterventionData = function (universalInterventionData) {
+										return _Utils_update(
+											universalInterventionData,
+											{ecdMilestonesStatusByMonth: ecdMilestonesStatusByMonth});
+									}(record.ncda.universalIntervention.row5);
+									var updatedUniversalIntervention = function (universalIntervention) {
+										return _Utils_update(
+											universalIntervention,
+											{row5: updatedUniversalInterventionData});
+									}(record.ncda.universalIntervention);
+									var updatedNCDA = function (ncda) {
+										return _Utils_update(
+											ncda,
+											{universalIntervention: updatedUniversalIntervention});
+									}(record.ncda);
+									return _Utils_update(
+										record,
+										{ncda: updatedNCDA});
+								},
+								scoreboardData.records);
 							return _Utils_update(
-								universalInterventionData,
-								{ecdMilestonesStatusByMonth: ecdMilestonesStatusByMonth});
-						}(record.ncda.universalIntervention.row5);
-						var updatedUniversalIntervention = function (universalIntervention) {
-							return _Utils_update(
-								universalIntervention,
-								{row5: updatedUniversalInterventionData});
-						}(record.ncda.universalIntervention);
-						var updatedNCDA = function (ncda) {
-							return _Utils_update(
-								ncda,
-								{universalIntervention: updatedUniversalIntervention});
-						}(record.ncda);
-						return _Utils_update(
-							record,
-							{ncda: updatedNCDA});
-					},
-					scoreboardData.records);
-				return _Utils_update(
-					scoreboardData,
-					{records: updatedRecords});
-			},
-			data);
-		var modelUpdated = _Utils_update(
-			model,
-			{
-				scoreboardData: $elm$core$Maybe$Just(dataWithECDMilestonesStatus)
-			});
-		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+								scoreboardData,
+								{records: updatedRecords});
+						},
+						data);
+				},
+				model.scoreboardData);
+			var modelUpdated = _Utils_update(
+				model,
+				{scoreboardData: dataWithECDMilestonesStatus});
+			return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+		}
 	});
 var $elm$core$Platform$Cmd$map = _Platform_map;
 var $author$project$Backend$Utils$updateSubModel = F4(
@@ -8273,11 +8286,13 @@ var $author$project$App$Update$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var date = msg.a;
-				return _Utils_Tuple2(
+				return A2(
+					$author$project$App$Update$update,
+					$author$project$App$Model$MsgBackend(
+						$author$project$Backend$Model$MsgScoreboard($author$project$Backend$Scoreboard$Model$CalculateECD)),
 					_Utils_update(
 						model,
-						{currentTime: date}),
-					$elm$core$Platform$Cmd$none);
+						{currentTime: date}));
 		}
 	});
 var $author$project$App$Update$init = function (flags) {
