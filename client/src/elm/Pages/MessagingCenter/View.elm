@@ -59,12 +59,12 @@ view language currentTime nurseId nurse db model =
         header =
             div [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ translateText language Translate.Wellbeing
+                    [ translateText language Translate.ResilienceMessage
                     , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
                     ]
                 , span
                     [ class "link-back"
-                    , onClick <| SetActivePage PinCodePage
+                    , onClick <| SetActivePage <| UserPage WellbeingPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
@@ -505,7 +505,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
 
                 plainTitle =
                     div [ class <| "header", onClick messageClickedAction ]
-                        [ i [ class <| "icon-" ++ extraClass ] []
+                        [ i [ class <| "icon-" ++ extraClass ++ " " ++ titleWrapperClass ] []
                         , messageCategory
                         , dateSent
                         , div
