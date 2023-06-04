@@ -196,6 +196,7 @@ type UserPage
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
+    | WellbeingPage
     | StockManagementPage
 
 

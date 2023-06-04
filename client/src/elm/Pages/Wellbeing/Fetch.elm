@@ -1,4 +1,4 @@
-module Pages.MessagingCenter.Fetch exposing (fetch)
+module Pages.Wellbeing.Fetch exposing (fetch)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -12,5 +12,5 @@ import RemoteData exposing (RemoteData(..))
 
 fetch : NominalDate -> NurseId -> ModelIndexedDb -> List MsgIndexedDb
 fetch currentDate nurseId db =
-    [ FetchResilienceMessagesForNurse nurseId
+    [ FetchResilienceSurveysForNurse nurseId
     ]
