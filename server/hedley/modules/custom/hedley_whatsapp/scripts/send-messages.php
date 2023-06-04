@@ -32,6 +32,12 @@ if (empty($key)) {
   return;
 }
 
+$template_namespace_id = variable_get('hedley_whatsapp_template_namespace_id', '');
+if (empty($template_namespace_id)) {
+  drush_print("WhatsApp template namespace ID not set. Aborting.");
+  return;
+}
+
 $client = new TextClient($key);
 // todo: delete this.
 //$phone_number = '00972546925278';
@@ -116,7 +122,7 @@ while ($processed < $total) {
     $patient_name = "$second_name $first_name";
 
     try {
-      $message = new Message('', 'TIP Health', [$phone_number]);
+      $message = new Message('WhatsApp delivery attempt', 'Tip Global Health', [$phone_number]);
 
       $image_uri = file_create_url($file->uri);
       if (strpos($image_uri, 'http://') === 0) {
@@ -138,14 +144,13 @@ while ($processed < $total) {
       $body_param2 = new ComponentParameterText($patient_name);
       $body_param3 = new ComponentParameterDatetime('', $datetime);
 
-      // todo: need to set language ?
       $message
         ->WithChannels([Channels::WHATSAPP])
         ->WithTemplate(
           new TemplateMessage(
             new WhatsappTemplate(
               'progress_report',
-              'b88ec70e_692b_4c85_a6e1_1117fc7d69b7',
+              $template_namespace_id,
               new Language('en'),
               [
                 new ComponentHeader([$header_param]),
