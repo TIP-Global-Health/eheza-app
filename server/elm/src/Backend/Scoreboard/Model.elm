@@ -60,7 +60,9 @@ emptyCriterionBySeverities =
 
 type alias NCDAData =
     { ancNewborn : ANCNewbornData
+    , universalIntervention : UniversalInterventionData
     , nutritionBehavior : NutritionBehaviorData
+    , targetedInterventions : TargetedInterventionsData
     , infrastructureEnvironmentWash : InfrastructureEnvironmentWashData
     }
 
@@ -68,7 +70,9 @@ type alias NCDAData =
 emptyNCDAData : NCDAData
 emptyNCDAData =
     { ancNewborn = emptyANCNewbornData
+    , universalIntervention = emptyUniversalInterventionData
     , nutritionBehavior = emptyNutritionBehaviorData
+    , targetedInterventions = emptyTargetedInterventionsData
     , infrastructureEnvironmentWash = emptyInfrastructureEnvironmentWashData
     }
 
@@ -84,6 +88,23 @@ emptyANCNewbornData =
     ANCNewbornData False False
 
 
+type alias UniversalInterventionData =
+    { -- @todo
+      row1 : List NominalDate
+    , row2 : List NominalDate
+    , row3 : List NominalDate
+    , row4 : List NominalDate
+
+    -- @todo
+    , row5 : List NominalDate
+    }
+
+
+emptyUniversalInterventionData : UniversalInterventionData
+emptyUniversalInterventionData =
+    UniversalInterventionData [] [] [] [] []
+
+
 type alias NutritionBehaviorData =
     { row1 : List NominalDate
     , row2 : List NominalDate
@@ -95,6 +116,21 @@ type alias NutritionBehaviorData =
 emptyNutritionBehaviorData : NutritionBehaviorData
 emptyNutritionBehaviorData =
     NutritionBehaviorData [] [] [] []
+
+
+type alias TargetedInterventionsData =
+    { row1 : List NominalDate
+    , row2 : List NominalDate
+    , row3 : List NominalDate
+    , row4 : List NominalDate
+    , row5 : List NominalDate
+    , row6 : List NominalDate
+    }
+
+
+emptyTargetedInterventionsData : TargetedInterventionsData
+emptyTargetedInterventionsData =
+    TargetedInterventionsData [] [] [] [] [] []
 
 
 type alias InfrastructureEnvironmentWashData =

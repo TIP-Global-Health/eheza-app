@@ -45,7 +45,7 @@ decodePatientData currentDate =
         |> required "birth_date" decodeYYYYMMDD
         |> optional "low_birth_weight" (maybe bool) Nothing
         |> optional "nutrition" (decodeNutritionCriterionsData currentDate) emptyNutritionCriterionsData
-        |> optional "ncda" decodeNCDAData emptyNCDAData
+        |> optional "ncda" (decodeNCDAData currentDate) emptyNCDAData
 
 
 decodeNutritionCriterionsData : NominalDate -> Decoder NutritionCriterionsData
@@ -130,12 +130,14 @@ sainitzeCriterionBySeverities currentDate data =
     }
 
 
-decodeNCDAData : Decoder NCDAData
-decodeNCDAData =
+decodeNCDAData : NominalDate -> Decoder NCDAData
+decodeNCDAData currentDate =
     succeed NCDAData
         |> optional "pane1" decodeANCNewbornData emptyANCNewbornData
-        |> optional "pane3" decodeNutritionBehaviorData emptyNutritionBehaviorData
-        |> optional "pane5" decodeInfrastructureEnvironmentWashData emptyInfrastructureEnvironmentWashData
+        |> optional "pane2" (decodeUniversalInterventionData currentDate) emptyUniversalInterventionData
+        |> optional "pane3" (decodeNutritionBehaviorData currentDate) emptyNutritionBehaviorData
+        |> optional "pane4" (decodeTargetedInterventionsData currentDate) emptyTargetedInterventionsData
+        |> optional "pane5" (decodeInfrastructureEnvironmentWashData currentDate) emptyInfrastructureEnvironmentWashData
 
 
 decodeANCNewbornData : Decoder ANCNewbornData
@@ -145,20 +147,57 @@ decodeANCNewbornData =
         |> optional "row2" bool False
 
 
-decodeNutritionBehaviorData : Decoder NutritionBehaviorData
-decodeNutritionBehaviorData =
+decodeUniversalInterventionData : NominalDate -> Decoder UniversalInterventionData
+decodeUniversalInterventionData currentDate =
+    succeed UniversalInterventionData
+        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row2" (decodeMonthlyValues currentDate) []
+        |> optional "row3" (decodeMonthlyValues currentDate) []
+        |> optional "row4" (decodeMonthlyValues currentDate) []
+        |> optional "row5" (decodeMonthlyValues currentDate) []
+
+
+decodeNutritionBehaviorData : NominalDate -> Decoder NutritionBehaviorData
+decodeNutritionBehaviorData currentDate =
     succeed NutritionBehaviorData
-        |> optional "row1" (list decodeYYYYMMDD) []
-        |> optional "row2" (list decodeYYYYMMDD) []
-        |> optional "row3" (list decodeYYYYMMDD) []
-        |> optional "row4" (list decodeYYYYMMDD) []
+        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row2" (decodeMonthlyValues currentDate) []
+        |> optional "row3" (decodeMonthlyValues currentDate) []
+        |> optional "row4" (decodeMonthlyValues currentDate) []
 
 
-decodeInfrastructureEnvironmentWashData : Decoder InfrastructureEnvironmentWashData
-decodeInfrastructureEnvironmentWashData =
+decodeTargetedInterventionsData : NominalDate -> Decoder TargetedInterventionsData
+decodeTargetedInterventionsData currentDate =
+    succeed TargetedInterventionsData
+        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row2" (decodeMonthlyValues currentDate) []
+        |> optional "row3" (decodeMonthlyValues currentDate) []
+        |> optional "row4" (decodeMonthlyValues currentDate) []
+        |> optional "row5" (decodeMonthlyValues currentDate) []
+        |> optional "row6" (decodeMonthlyValues currentDate) []
+
+
+decodeInfrastructureEnvironmentWashData : NominalDate -> Decoder InfrastructureEnvironmentWashData
+decodeInfrastructureEnvironmentWashData currentDate =
     succeed InfrastructureEnvironmentWashData
-        |> optional "row1" (list decodeYYYYMMDD) []
-        |> optional "row2" (list decodeYYYYMMDD) []
-        |> optional "row3" (list decodeYYYYMMDD) []
+        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row2" (decodeMonthlyValues currentDate) []
+        |> optional "row3" (decodeMonthlyValues currentDate) []
         |> optional "row4" bool False
-        |> optional "row5" (list decodeYYYYMMDD) []
+        |> optional "row5" (decodeMonthlyValues currentDate) []
+
+
+decodeMonthlyValues : NominalDate -> Decoder (List NominalDate)
+decodeMonthlyValues currentDate =
+    list decodeYYYYMMDD
+        |> map (sanitizeSingleValuePerMonth currentDate)
+
+
+sanitizeSingleValuePerMonth : NominalDate -> List NominalDate -> List NominalDate
+sanitizeSingleValuePerMonth currentDate dates =
+    -- Transfering from list to dict with diff months as key makes
+    -- sure we get only single value for given months.
+    List.map (\date -> ( diffMonths date currentDate, date ))
+        dates
+        |> Dict.fromList
+        |> Dict.values
