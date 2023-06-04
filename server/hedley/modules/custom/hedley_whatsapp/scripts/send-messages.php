@@ -34,7 +34,9 @@ if (empty($key)) {
 
 $client = new TextClient($key);
 // todo: delete this.
-//$result = $client->SendMessage('Hi!', 'TIP Health', [ '00972546925278' ]);
+//$phone_number = '00972546925278';
+//$result = $client->SendMessage('Hi!', 'TIP Health', [$phone_number]);
+//return;
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -92,18 +94,18 @@ while ($processed < $total) {
     if (empty($phone_number)) {
       continue;
     }
+    // Hardcoded number for tests.
     $phone_number = '00972546925278';
 
     $fid = $node->field_screenshot[LANGUAGE_NONE][0]['fid'];
     if (empty($fid)) {
       continue;
     }
-    $file = file_load($fid);
 
+    $file = file_load($fid);
     $report_type = $wrapper->field_report_type->value();
     $date = date('d-m-Y', $wrapper->field_date_measured->value());
     $datetime = DateTime::createFromFormat('!d-m-Y', $date, new DateTimeZone("UTC"));
-
     $patient_id = $wrapper->field_person->getIdentifier();
     $wrapper_patient = entity_metadata_wrapper('node', $patient_id);
     $first_name = trim($wrapper_patient->field_first_name->value());
@@ -165,7 +167,7 @@ while ($processed < $total) {
   // todo: process response.
   drush_print("Status code: $result->statusCode");
   drush_print("Status message: $result->statusMessage");
-  drush_print("Details: $result->details");
+  // drush_print("Details: $result->details");
 
   $nid = end($ids);
 
