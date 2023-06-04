@@ -721,7 +721,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
               const uploadUrl = [
                 backendUrl,
-                '/api/file-upload?access_token=',
+                '/api/file-upload-public?access_token=',
                 accessToken,
               ].join('');
 
