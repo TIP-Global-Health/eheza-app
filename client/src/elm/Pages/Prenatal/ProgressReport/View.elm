@@ -286,8 +286,9 @@ viewContent language currentDate isChw initiator model assembled =
                                                 |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
 
                                         sendViaWhatsAppEnabled =
-                                            -- For now, we disabled 'Send via WhatsApp' feature.
-                                            False
+                                            -- Enabling for demo purposes.
+                                            -- @todo: revise.
+                                            True
 
                                         ( actionsClass, actionButtonColor, sendViaWhatsAppButton ) =
                                             if sendViaWhatsAppEnabled then

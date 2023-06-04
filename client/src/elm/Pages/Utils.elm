@@ -943,8 +943,9 @@ viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg
 viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
     let
         sendViaWhatsAppEnabled =
-            -- For now, we disabled 'Send via WhatsApp' feature.
-            False
+            -- Enabling for demo purposes.
+            -- @todo: revise.
+            True
 
         ( actionsClass, endEncounterButtonColor, sendViaWhatsAppButton ) =
             if sendViaWhatsAppEnabled then
