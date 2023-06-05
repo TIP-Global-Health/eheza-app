@@ -50,15 +50,19 @@ $nid = drush_get_option('nid', 0);
 $batch = drush_get_option('batch', 50);
 
 // Get the allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 250);
 
 $type = 'whatsapp_record';
+// Maximal number of attempts of delivering message.
+$delivery_attempts = variable_get('hedley_whatsapp_delivery_attempts', 5);
 
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', $type)
   ->propertyCondition('status', NODE_PUBLISHED)
+  ->fieldCondition('field_delivery_attempts', 'value', $delivery_attempts, '<')
+  ->fieldCondition('field_date_concluded', 'value', NULL, 'IS NULL')
   ->propertyOrderBy('nid');
 
 $count_query = clone $base_query;
@@ -66,11 +70,11 @@ $count_query->propertyCondition('nid', $nid, '>');
 $total = $count_query->count()->execute();
 
 if ($total == 0) {
-  drush_print("There are no nodes of type $type in DB.");
+  drush_print("There are no $type messages to deliver.");
   exit;
 }
 
-drush_print("$total nodes of type $type located.");
+drush_print("Located $total $type messages for delivery.");
 
 $processed = 0;
 while ($processed < $total) {
@@ -92,6 +96,7 @@ while ($processed < $total) {
   }
 
   $messages = [];
+  $mapping = [];
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
@@ -122,7 +127,14 @@ while ($processed < $total) {
     $patient_name = "$second_name $first_name";
 
     try {
-      $message = new Message('WhatsApp delivery attempt', 'Tip Global Health', [$phone_number]);
+      $reference = $patient_name . '-' . $node->created;
+      $message = new Message(
+        'WhatsApp delivery attempt',
+        'Tip Global Health',
+        [$phone_number],
+        $reference
+      );
+      $mapping[$reference] = $node;
 
       $image_uri = file_create_url($file->uri);
       if (strpos($image_uri, 'http://') === 0) {
@@ -169,10 +181,31 @@ while ($processed < $total) {
   }
 
   $result = $client->send($messages);
-  // todo: process response.
   drush_print("Status code: $result->statusCode");
   drush_print("Status message: $result->statusMessage");
-  // drush_print("Details: $result->details");
+
+  $details = $result->details;
+  foreach ($details as $delivery_result) {
+    if (empty($delivery_result->reference)) {
+      continue;
+    }
+
+    $node = $mapping[$delivery_result->reference];
+    if (empty($node)) {
+      continue;
+    }
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    if ($delivery_result->messageErrorCode === 0) {
+      $wrapper->field_date_concluded->set(time());
+      $wrapper->save();
+    }
+    else {
+      $attempts = $wrapper->field_delivery_attempts->value();
+      $wrapper->field_delivery_attempts->set($attempts + 1);
+      $wrapper->save();
+    }
+  }
 
   $nid = end($ids);
 
@@ -183,7 +216,7 @@ while ($processed < $total) {
 
   $count = count($nodes);
   $processed += $count;
-  drush_print("$count nodes of type $type processed.");
+  drush_print("$count $type messages processed.");
 }
 
-drush_print("Done! $processed WhatsApp records processed.");
+drush_print("Done! Total of $processed $type messages processed.");
