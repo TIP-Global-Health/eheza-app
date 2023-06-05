@@ -26362,18 +26362,22 @@ var $author$project$Utils$GeoLocation$getGeoVillages = $pzp1997$assoc_list$Assoc
 													$author$project$Backend$Entities$toEntityId(2615))))
 										]))))))))));
 var $author$project$Utils$GeoLocation$geoInfo = {cells: $author$project$Utils$GeoLocation$getGeoCells, districts: $author$project$Utils$GeoLocation$getGeoDistricts, provinces: $author$project$Utils$GeoLocation$getGeoProvinces, sectors: $author$project$Utils$GeoLocation$getGeoSectors, villages: $author$project$Utils$GeoLocation$getGeoVillages};
+var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$Utils$GeoLocation$geoLocationDictToOptions = A2(
 	$elm$core$Basics$composeR,
 	$pzp1997$assoc_list$AssocList$toList,
-	$elm$core$List$map(
-		function (_v0) {
-			var id = _v0.a;
-			var geoLocation = _v0.b;
-			return _Utils_Tuple2(
-				$elm$core$String$fromInt(
-					$author$project$Backend$Entities$fromEntityId(id)),
-				geoLocation.name);
-		}));
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$map(
+			function (_v0) {
+				var id = _v0.a;
+				var geoLocation = _v0.b;
+				return _Utils_Tuple2(
+					$elm$core$String$fromInt(
+						$author$project$Backend$Entities$fromEntityId(id)),
+					geoLocation.name);
+			}),
+		$elm$core$List$sortBy($elm$core$Tuple$second)));
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
