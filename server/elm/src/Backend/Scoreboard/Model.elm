@@ -1,5 +1,7 @@
 module Backend.Scoreboard.Model exposing (..)
 
+import AssocList as Dict exposing (Dict)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 
@@ -89,8 +91,7 @@ emptyANCNewbornData =
 
 
 type alias UniversalInterventionData =
-    { -- @todo
-      row1 : List NominalDate
+    { row1 : VaccinationProgressDict
     , row2 : List NominalDate
     , row3 : List NominalDate
     , row4 : List NominalDate
@@ -102,7 +103,46 @@ type alias UniversalInterventionData =
 
 emptyUniversalInterventionData : UniversalInterventionData
 emptyUniversalInterventionData =
-    UniversalInterventionData [] [] [] [] []
+    UniversalInterventionData Dict.empty [] [] [] []
+
+
+type alias VaccinationProgressDict =
+    Dict VaccineType (Dict VaccineDose NominalDate)
+
+
+type alias RawVaccinationData =
+    { bcg : EverySet NominalDate
+    , opv : EverySet NominalDate
+    , dtp : EverySet NominalDate
+    , pcv13 : EverySet NominalDate
+    , rotarix : EverySet NominalDate
+    , ipv : EverySet NominalDate
+    , mr : EverySet NominalDate
+    }
+
+
+type alias VaccinationValue =
+    { administeredDoses : EverySet VaccineDose
+    , administrationDates : EverySet NominalDate
+    }
+
+
+type VaccineType
+    = VaccineBCG
+    | VaccineOPV
+    | VaccineDTP
+    | VaccinePCV13
+    | VaccineRotarix
+    | VaccineIPV
+    | VaccineMR
+
+
+type VaccineDose
+    = VaccineDoseFirst
+    | VaccineDoseSecond
+    | VaccineDoseThird
+    | VaccineDoseFourth
+    | VaccineDoseFifth
 
 
 type alias NutritionBehaviorData =

@@ -2468,7 +2468,7 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                                             referenceDate =
                                                 -- We use it to determine if child was
                                                 -- behind on any of vaccines at that month.
-                                                resolveLastDayForMonthX (index + 1) birthDate
+                                                resolveLastDayForMonthX index birthDate
 
                                             -- Filter out vaccinations that were performed
                                             -- after the reference date.
@@ -2518,7 +2518,7 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                             (List.repeat 25 ""
                                 |> List.indexedMap
                                     (\index _ ->
-                                        ( resolveLastDayForMonthX (index + 1) birthDate
+                                        ( resolveLastDayForMonthX index birthDate
                                         , NCDACellValueX
                                         )
                                     )
@@ -2527,12 +2527,16 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                 )
                 child.birthDate
 
+        -- Resolves the date for last day of month X after child birth date.
+        -- For example, for X = 0, this is
+        -- the last day, before child turns 1 month old.
         resolveLastDayForMonthX monthX childBirthDate =
-            -- This is the date for last day of month X.
-            -- For example, for X = 0, this is
-            -- the last day, before child turns 1 month old.
-            Date.add Date.Months monthX childBirthDate
-                |> Date.add Date.Days -1
+            -- Get to first day of the birth months.
+            Date.floor Date.Month childBirthDate
+                |> -- Add required number of months.
+                   Date.add Date.Months (monthX + 1)
+                |> -- Substract one day
+                   Date.add Date.Days -1
 
         vitaminAByAgeInMonths =
             Maybe.andThen Tuple.first medicineByAgeInMonths

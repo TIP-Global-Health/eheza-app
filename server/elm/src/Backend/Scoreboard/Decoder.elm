@@ -2,9 +2,12 @@ module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Scoreboard.Model exposing (..)
+import Backend.Scoreboard.Utils exposing (..)
+import Date
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, float, int, list, map, maybe, string, succeed)
-import Json.Decode.Pipeline exposing (optional, required)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Maybe.Extra exposing (isNothing)
 
 
@@ -150,11 +153,55 @@ decodeANCNewbornData =
 decodeUniversalInterventionData : NominalDate -> Decoder UniversalInterventionData
 decodeUniversalInterventionData currentDate =
     succeed UniversalInterventionData
-        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row1" decodeVaccinationProgressDict Dict.empty
         |> optional "row2" (decodeMonthlyValues currentDate) []
         |> optional "row3" (decodeMonthlyValues currentDate) []
         |> optional "row4" (decodeMonthlyValues currentDate) []
         |> optional "row5" (decodeMonthlyValues currentDate) []
+
+
+decodeVaccinationProgressDict : Decoder VaccinationProgressDict
+decodeVaccinationProgressDict =
+    succeed RawVaccinationData
+        |> required "bcg" decodeUniqueDates
+        |> required "opv" decodeUniqueDates
+        |> required "dtp" decodeUniqueDates
+        |> required "pcv13" decodeUniqueDates
+        |> required "rotarix" decodeUniqueDates
+        |> required "ipv" decodeUniqueDates
+        |> required "mr" decodeUniqueDates
+        |> map rawVaccinationDataToVaccinationProgressDict
+
+
+decodeUniqueDates : Decoder (EverySet NominalDate)
+decodeUniqueDates =
+    list decodeYYYYMMDD
+        |> map EverySet.fromList
+
+
+rawVaccinationDataToVaccinationProgressDict : RawVaccinationData -> VaccinationProgressDict
+rawVaccinationDataToVaccinationProgressDict data =
+    let
+        generateVaccinationProgressForVaccine dates =
+            EverySet.toList dates
+                |> List.sortWith Date.compare
+                |> List.indexedMap
+                    (\index date ->
+                        vaccineDoseFromOrder index
+                            |> Maybe.map (\dose -> ( dose, date ))
+                    )
+                |> Maybe.Extra.values
+                |> Dict.fromList
+    in
+    [ ( VaccineBCG, generateVaccinationProgressForVaccine data.bcg )
+    , ( VaccineOPV, generateVaccinationProgressForVaccine data.opv )
+    , ( VaccineDTP, generateVaccinationProgressForVaccine data.dtp )
+    , ( VaccinePCV13, generateVaccinationProgressForVaccine data.pcv13 )
+    , ( VaccineRotarix, generateVaccinationProgressForVaccine data.rotarix )
+    , ( VaccineIPV, generateVaccinationProgressForVaccine data.ipv )
+    , ( VaccineMR, generateVaccinationProgressForVaccine data.mr )
+    ]
+        |> Dict.fromList
 
 
 decodeNutritionBehaviorData : NominalDate -> Decoder NutritionBehaviorData
