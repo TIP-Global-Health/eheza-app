@@ -4,7 +4,10 @@ import AssocList as Dict exposing (Dict)
 import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (vaccineDoseToComparable)
 import Date exposing (Unit(..))
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
+import List.Extra
+import Pages.Scoreboard.Model exposing (..)
 
 
 {-| For each type of vaccine, we generate next dose and administration date.

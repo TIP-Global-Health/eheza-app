@@ -1143,7 +1143,7 @@ genrateDefaultECDStatus birthDate milestone individualWellChildMeasurementsWithD
                 (\firstEncounterAfterMilestoneDate ->
                     List.filterMap
                         (\( date, ( _, measurements ) ) ->
-                            if Date.compare date milestoneDate == GT then
+                            if Date.compare date firstEncounterAfterMilestoneDate == GT then
                                 Nothing
 
                             else
@@ -2644,105 +2644,104 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAOngeraMNP)
 
         ecdValues =
-            Maybe.map2
-                (\assembled ageMonths ->
-                    let
-                        milestonesToCurrentDateWithStatus =
-                            generateECDMilestonesWithStatus currentDate
-                                child
-                                wellChildEncounters
-                                individualWellChildMeasurementsWithDates
-                                |> Dict.fromList
+            ageInMonths currentDate child
+                |> Maybe.map
+                    (\ageMonths ->
+                        let
+                            milestonesToCurrentDateWithStatus =
+                                generateECDMilestonesWithStatus currentDate
+                                    child
+                                    wellChildEncounters
+                                    individualWellChildMeasurementsWithDates
+                                    |> Dict.fromList
 
-                        milestoneWithStatusToCellValues ( milestone, status ) =
-                            let
-                                cellValue =
-                                    case status of
-                                        StatusOnTrack ->
-                                            NCDACellValueV
+                            milestoneWithStatusToCellValues ( milestone, status ) =
+                                let
+                                    cellValue =
+                                        case status of
+                                            StatusOnTrack ->
+                                                NCDACellValueV
 
-                                        NoECDStatus ->
-                                            NCDACellValueEmpty
+                                            NoECDStatus ->
+                                                NCDACellValueEmpty
 
-                                        _ ->
-                                            NCDACellValueX
-                            in
-                            case milestone of
-                                -- Covers age of 2 and 3 months.
-                                Milestone6Weeks ->
-                                    List.repeat 2 cellValue
+                                            _ ->
+                                                NCDACellValueX
+                                in
+                                case milestone of
+                                    -- Covers age of 2 and 3 months.
+                                    Milestone6Weeks ->
+                                        List.repeat 2 cellValue
 
-                                -- Covers age of 4 and 5 months.
-                                Milestone14Weeks ->
-                                    List.repeat 2 cellValue
+                                    -- Covers age of 4 and 5 months.
+                                    Milestone14Weeks ->
+                                        List.repeat 2 cellValue
 
-                                -- Covers age of 6, 7 and 8 months.
-                                Milestone6Months ->
-                                    List.repeat 3 cellValue
+                                    -- Covers age of 6, 7 and 8 months.
+                                    Milestone6Months ->
+                                        List.repeat 3 cellValue
 
-                                -- Covers age of 9, 10 and 11 months.
-                                Milestone9Months ->
-                                    List.repeat 3 cellValue
+                                    -- Covers age of 9, 10 and 11 months.
+                                    Milestone9Months ->
+                                        List.repeat 3 cellValue
 
-                                -- Covers age of 12, 13 and 14 months.
-                                Milestone12Months ->
-                                    List.repeat 3 cellValue
+                                    -- Covers age of 12, 13 and 14 months.
+                                    Milestone12Months ->
+                                        List.repeat 3 cellValue
 
-                                --    Covers age of 15, 16 and 17 months.
-                                Milestone15Months ->
-                                    List.repeat 3 cellValue
+                                    --    Covers age of 15, 16 and 17 months.
+                                    Milestone15Months ->
+                                        List.repeat 3 cellValue
 
-                                --    Covers age of 18 to 23 months.
-                                Milestone18Months ->
-                                    List.repeat 6 cellValue
+                                    --    Covers age of 18 to 23 months.
+                                    Milestone18Months ->
+                                        List.repeat 6 cellValue
 
-                                --    Covers age of 24 and 25 months.
-                                Milestone2Years ->
-                                    List.repeat 2 cellValue
+                                    --    Covers age of 24 and 25 months.
+                                    Milestone2Years ->
+                                        List.repeat 2 cellValue
 
-                                -- Not in range.
-                                Milestone3Years ->
-                                    []
+                                    -- Not in range.
+                                    Milestone3Years ->
+                                        []
 
-                                -- Not in range.
-                                Milestone4Years ->
-                                    []
+                                    -- Not in range.
+                                    Milestone4Years ->
+                                        []
 
-                        allMilestones =
-                            [ Milestone6Weeks
-                            , Milestone14Weeks
-                            , Milestone6Months
-                            , Milestone9Months
-                            , Milestone12Months
-                            , Milestone15Months
-                            , Milestone18Months
-                            , Milestone2Years
-                            ]
-                    in
-                    -- For first month, there's no ECD milestone.
-                    NCDACellValueDash
-                        :: (List.map
-                                (\milestone ->
-                                    ( milestone
-                                    , Dict.get milestone milestonesToCurrentDateWithStatus
-                                        |> Maybe.withDefault NoECDStatus
+                            allMilestones =
+                                [ Milestone6Weeks
+                                , Milestone14Weeks
+                                , Milestone6Months
+                                , Milestone9Months
+                                , Milestone12Months
+                                , Milestone15Months
+                                , Milestone18Months
+                                , Milestone2Years
+                                ]
+                        in
+                        -- For first month, there's no ECD milestone.
+                        NCDACellValueDash
+                            :: (List.map
+                                    (\milestone ->
+                                        ( milestone
+                                        , Dict.get milestone milestonesToCurrentDateWithStatus
+                                            |> Maybe.withDefault NoECDStatus
+                                        )
                                     )
-                                )
-                                allMilestones
-                                |> List.map milestoneWithStatusToCellValues
-                                |> List.concat
-                           )
-                        |> List.indexedMap
-                            (\month value ->
-                                if ageMonths < month then
-                                    NCDACellValueEmpty
+                                    allMilestones
+                                    |> List.map milestoneWithStatusToCellValues
+                                    |> List.concat
+                               )
+                            |> List.indexedMap
+                                (\month value ->
+                                    if ageMonths < month then
+                                        NCDACellValueEmpty
 
-                                else
-                                    value
-                            )
-                )
-                maybeAssembled
-                (ageInMonths currentDate child)
+                                    else
+                                        value
+                                )
+                    )
                 |> Maybe.withDefault emptyNCDAValuesForChild
     in
     div [ class "pane universal-interventions" ]

@@ -4,16 +4,17 @@ import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
-import Backend.Scoreboard.Model exposing (ScoreboardData, SelectedEntity(..))
+import Backend.Scoreboard.Model exposing (ECDStatus(..), ScoreboardData, SelectedEntity(..))
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Icons
+import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Scoreboard.Model exposing (..)
-import Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData)
+import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -443,9 +444,6 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
 
                         row4AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row4
-
-                        row5AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row5
                     in
                     List.indexedMap
                         (\index accumValue ->
@@ -565,8 +563,20 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
                                                     accumValue.row4
 
                                             row5 =
-                                                -- ECD will be implemented in follow up PR.
-                                                accumValue.row5
+                                                if (ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24) then
+                                                    accumValue.row5
+
+                                                else
+                                                    let
+                                                        status =
+                                                            List.Extra.getAt ageInMonthsForIndexCell record.ncda.universalIntervention.row5.ecdMilestonesStatusByMonth
+                                                                |> Maybe.withDefault NoECDStatus
+                                                    in
+                                                    if status == StatusOnTrack then
+                                                        accumValue.row5 + 1
+
+                                                    else
+                                                        accumValue.row5
                                         in
                                         { row1 = row1
                                         , row2 = row2
