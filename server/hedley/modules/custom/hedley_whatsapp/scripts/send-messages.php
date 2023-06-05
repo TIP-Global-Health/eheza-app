@@ -161,8 +161,8 @@ while ($processed < $total) {
         ->WithTemplate(
           new TemplateMessage(
             new WhatsappTemplate(
-              'progress_report',
               $template_namespace_id,
+              'progress_report',
               new Language('en'),
               [
                 new ComponentHeader([$header_param]),
@@ -180,7 +180,10 @@ while ($processed < $total) {
     }
   }
 
+  drush_print('Forwarding messages to vendor...');
+
   $result = $client->send($messages);
+
   drush_print("Status code: $result->statusCode");
   drush_print("Status message: $result->statusMessage");
 
