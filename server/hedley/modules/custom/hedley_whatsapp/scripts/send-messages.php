@@ -38,6 +38,7 @@ if (empty($template_namespace_id)) {
   return;
 }
 
+$client = new TextClient($key);
 // todo: delete this.
 //$phone_number = '00972546925278';
 //$result = $client->SendMessage('Hi!', 'TIP Health', [$phone_number]);
@@ -181,7 +182,6 @@ while ($processed < $total) {
 
   drush_print('Forwarding messages to vendor...');
 
-  $client = new TextClient($key);
   $result = $client->send($messages);
 
   drush_print("Status code: $result->statusCode");
