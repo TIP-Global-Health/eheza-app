@@ -5413,7 +5413,8 @@ var $elm$core$Basics$composeR = F3(
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
 var $author$project$Pages$Menu$Model$emptyModel = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
-var $author$project$Pages$Scoreboard$Model$emptyModel = {yearSelectorGap: 0};
+var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
+var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
 var $author$project$Backend$Model$emptyModelBackend = {scoreboardData: $elm$core$Maybe$Nothing};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
@@ -5693,15 +5694,27 @@ var $author$project$Pages$Menu$Update$update = F2(
 	});
 var $author$project$Pages$Scoreboard$Update$update = F3(
 	function (modelBackend, msg, model) {
-		var step = msg.a;
-		return A4(
-			$author$project$App$Model$PagesReturn,
-			_Utils_update(
-				model,
-				{yearSelectorGap: model.yearSelectorGap + step}),
-			$elm$core$Platform$Cmd$none,
-			$author$project$Error$Utils$noError,
-			_List_Nil);
+		if (msg.$ === 'ChaneYearGap') {
+			var step = msg.a;
+			return A4(
+				$author$project$App$Model$PagesReturn,
+				_Utils_update(
+					model,
+					{yearSelectorGap: model.yearSelectorGap + step}),
+				$elm$core$Platform$Cmd$none,
+				$author$project$Error$Utils$noError,
+				_List_Nil);
+		} else {
+			var mode = msg.a;
+			return A4(
+				$author$project$App$Model$PagesReturn,
+				_Utils_update(
+					model,
+					{viewMode: mode}),
+				$elm$core$Platform$Cmd$none,
+				$author$project$Error$Utils$noError,
+				_List_Nil);
+		}
 	});
 var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
@@ -27768,7 +27781,11 @@ var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
 	return {$: 'ChaneYearGap', a: a};
 };
+var $author$project$Pages$Scoreboard$Model$ModePercentages = {$: 'ModePercentages'};
 var $author$project$Translate$NewSelection = {$: 'NewSelection'};
+var $author$project$Pages$Scoreboard$Model$SetViewMode = function (a) {
+	return {$: 'SetViewMode', a: a};
+};
 var $justinmimbs$date$Date$month = A2(
 	$elm$core$Basics$composeR,
 	$justinmimbs$date$Date$toCalendarDate,
@@ -27790,6 +27807,22 @@ var $author$project$Pages$Scoreboard$View$generateMonthsGap = F2(
 					},
 					A2($elm$core$List$range, 1, 12))));
 	});
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
 var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
 var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
@@ -29450,22 +29483,6 @@ var $author$project$Icons$iconForward = function (attrs) {
 				_List_Nil)
 			]));
 };
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $author$project$Pages$Utils$viewYearSelector = F4(
 	function (language, currentDate, gap, changeGapMsg) {
 		var minYear = 2018;
@@ -29555,7 +29572,47 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 						[
 							$elm$html$Html$Attributes$class('values-percents')
 						]),
-					_List_Nil)
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$classList(
+									_List_fromArray(
+										[
+											_Utils_Tuple2('item', true),
+											_Utils_Tuple2(
+											'selected',
+											_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModePercentages))
+										])),
+									$elm$html$Html$Events$onClick(
+									$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModePercentages))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('%')
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$classList(
+									_List_fromArray(
+										[
+											_Utils_Tuple2('item', true),
+											_Utils_Tuple2(
+											'selected',
+											_Utils_eq(model.viewMode, $author$project$Pages$Scoreboard$Model$ModeValues))
+										])),
+									$elm$html$Html$Events$onClick(
+									$author$project$Pages$Scoreboard$Model$SetViewMode($author$project$Pages$Scoreboard$Model$ModeValues))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('#')
+								]))
+						]))
 				]));
 		var monthsGap = A2($author$project$Pages$Scoreboard$View$generateMonthsGap, currentDate, model.yearSelectorGap);
 		return A2(

@@ -10,6 +10,7 @@ import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Icons
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
@@ -46,7 +47,24 @@ viewScoreboardData language currentDate data model =
                         ]
                     ]
                 , viewYearSelector language currentDate model.yearSelectorGap ChaneYearGap
-                , div [ class "values-percents" ] []
+                , div [ class "values-percents" ]
+                    [ div
+                        [ classList
+                            [ ( "item", True )
+                            , ( "selected", model.viewMode == ModePercentages )
+                            ]
+                        , onClick <| SetViewMode ModePercentages
+                        ]
+                        [ text "%" ]
+                    , div
+                        [ classList
+                            [ ( "item", True )
+                            , ( "selected", model.viewMode == ModeValues )
+                            ]
+                        , onClick <| SetViewMode ModeValues
+                        ]
+                        [ text "#" ]
+                    ]
                 ]
 
         monthsGap =
