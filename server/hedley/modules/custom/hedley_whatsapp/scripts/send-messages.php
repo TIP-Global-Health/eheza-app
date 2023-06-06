@@ -38,7 +38,6 @@ if (empty($template_namespace_id)) {
   return;
 }
 
-$client = new TextClient($key);
 // todo: delete this.
 //$phone_number = '00972546925278';
 //$result = $client->SendMessage('Hi!', 'TIP Health', [$phone_number]);
@@ -128,12 +127,6 @@ while ($processed < $total) {
 
     try {
       $reference = $patient_name . '-' . $node->created;
-      $message = new Message(
-        'WhatsApp delivery attempt',
-        'Tip Global Health',
-        [$phone_number],
-        $reference
-      );
       $mapping[$reference] = $node;
 
       $image_uri = file_create_url($file->uri);
@@ -156,6 +149,12 @@ while ($processed < $total) {
       $body_param2 = new ComponentParameterText($patient_name);
       $body_param3 = new ComponentParameterDatetime('', $datetime);
 
+      $message = new Message(
+        '',
+        'Tip Global Health',
+        [$phone_number],
+        $reference
+      );
       $message
         ->WithChannels([Channels::WHATSAPP])
         ->WithTemplate(
@@ -182,6 +181,7 @@ while ($processed < $total) {
 
   drush_print('Forwarding messages to vendor...');
 
+  $client = new TextClient($key);
   $result = $client->send($messages);
 
   drush_print("Status code: $result->statusCode");
