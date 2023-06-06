@@ -104,12 +104,12 @@ viewScoreboardData language currentDate data model =
         , viewAggregatedChildScoreboardPane language data
         , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 data
         , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewStuntingPane language currentDate model.yearSelectorGap monthsGap data
-        , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap data
-        , viewUniversalInterventionPane language currentDate model.yearSelectorGap monthsGap data
-        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap data
-        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap data
-        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap data
+        , viewStuntingPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewUniversalInterventionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         ]
 
 
@@ -132,7 +132,8 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDADemographicsItemLabel item) itemValues
+                    List.map String.fromInt itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDADemographicsItemLabel item)
                 )
                 [ ChildrenUnder2, NewbornsThisMonth, LowBirthWeigh ]
                 (childrenUnder2 :: values)
@@ -200,10 +201,11 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow2 language currentDate yearSelectorGap (Translate.NCDAAcuteMalnutritionItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAAcuteMalnutritionItemLabel item)
                 )
                 [ SevereAcuteMalnutrition, ModerateAcuteMalnutrition, GoodNutrition ]
-                (List.map (valuesByViewMode viewMode childrenUnder2) values)
+                values
 
         valuesByRow =
             List.foldl
@@ -308,13 +310,14 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
         ]
 
 
-viewStuntingPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewStuntingPane language currentDate yearSelectorGap monthsGap data =
+viewStuntingPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAStuntingItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAStuntingItemLabel item)
                 )
                 [ SevereStunting, ModerateStunting, NoStunting ]
                 values
@@ -388,13 +391,14 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewANCNewbornPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
+viewANCNewbornPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAANCNewbornItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAANCNewbornItemLabel item)
                 )
                 [ RegularCheckups, IronDuringPregnancy ]
                 values
@@ -456,13 +460,14 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewUniversalInterventionPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap data =
+viewUniversalInterventionPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAUniversalInterventionItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAUniversalInterventionItemLabel item)
                 )
                 [ Immunization, VitaminA, Deworming, OngeraMNP, ECDServices ]
                 values
@@ -660,13 +665,14 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
         ]
 
 
-viewNutritionBehaviorPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
+viewNutritionBehaviorPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDANutritionBehaviorItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDANutritionBehaviorItemLabel item)
                 )
                 [ BreastfedSixMonths, AppropriateComplementaryFeeding, DiverseDiet, MealsADay ]
                 values
@@ -752,13 +758,14 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewTargetedInterventionsPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap data =
+viewTargetedInterventionsPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDATargetedInterventionsItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDATargetedInterventionsItemLabel item)
                 )
                 [ FBFGiven
                 , TreatmentForAcuteMalnutrition
@@ -900,13 +907,14 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap dat
         ]
 
 
-viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap monthsGap data =
+viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAInfrastructureEnvironmentWashItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAInfrastructureEnvironmentWashItemLabel item)
                 )
                 [ HasToilets, HasCleanWater, HasHandwashingFacility, InsecticideTreatedBedNets, HasKitchenGarden ]
                 values
@@ -1044,7 +1052,7 @@ viewTableHeader language =
             :: monthCells
 
 
-viewTableRow : Language -> NominalDate -> Int -> TranslationId -> List Int -> Html any
+viewTableRow : Language -> NominalDate -> Int -> TranslationId -> List String -> Html any
 viewTableRow language currentDate yearSelectorGap itemTransId values =
     let
         activityCell =
@@ -1063,47 +1071,8 @@ viewTableRow language currentDate yearSelectorGap itemTransId values =
             :: valueCells
 
 
-formatValues : NominalDate -> Int -> List Int -> List String
+formatValues : NominalDate -> Int -> List String -> List String
 formatValues currentDate yearSelectorGap =
-    let
-        currentMonthNumber =
-            Date.monthNumber currentDate
-    in
-    List.indexedMap
-        (\index value ->
-            if yearSelectorGap == 0 then
-                if index < currentMonthNumber then
-                    String.fromInt value
-
-                else
-                    ""
-
-            else
-                String.fromInt value
-        )
-
-
-viewTableRow2 : Language -> NominalDate -> Int -> TranslationId -> List String -> Html any
-viewTableRow2 language currentDate yearSelectorGap itemTransId values =
-    let
-        activityCell =
-            div [ class "cell activity" ] [ text <| translate language itemTransId ]
-
-        valueCells =
-            formatValues2 currentDate yearSelectorGap values
-                |> List.map
-                    (\value ->
-                        div [ class "cell value" ]
-                            [ text value ]
-                    )
-    in
-    div [ class "table-row" ] <|
-        activityCell
-            :: valueCells
-
-
-formatValues2 : NominalDate -> Int -> List String -> List String
-formatValues2 currentDate yearSelectorGap =
     let
         currentMonthNumber =
             Date.monthNumber currentDate

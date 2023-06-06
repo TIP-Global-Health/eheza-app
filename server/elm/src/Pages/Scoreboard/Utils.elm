@@ -226,12 +226,13 @@ valuesByViewMode viewMode denominators nominators =
             List.map2
                 (\nominator denominator ->
                     if denominator == 0 then
-                        "0.0"
+                        "0.0%"
 
                     else
                         (toFloat nominator / toFloat denominator)
                             |> (*) 100
                             |> Round.round 1
+                            |> (\number -> number ++ "%")
                 )
                 nominators
                 denominators

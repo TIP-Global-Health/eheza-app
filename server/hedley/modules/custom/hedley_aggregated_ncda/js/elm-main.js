@@ -27866,208 +27866,6 @@ var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
 	return {$: 'NCDAANCNewbornItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckups'};
-var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
-	function (language, label) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('pane-heading')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					A2($author$project$Translate$translate, language, label))
-				]));
-	});
-var $author$project$Translate$Month = function (a) {
-	return {$: 'Month', a: a};
-};
-var $author$project$Translate$Status = {$: 'Status'};
-var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) {
-	var statusCell = A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('cell activity')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(
-				A2($author$project$Translate$translate, language, $author$project$Translate$Status))
-			]));
-	var monthCells = A2(
-		$elm$core$List$map,
-		function (month) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('cell')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$Month(month)))
-					]));
-		},
-		_List_fromArray(
-			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('table-header')
-			]),
-		A2($elm$core$List$cons, statusCell, monthCells));
-};
-var $author$project$Pages$Scoreboard$View$formatValues = F2(
-	function (currentDate, yearSelectorGap) {
-		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
-		return $elm$core$List$indexedMap(
-			F2(
-				function (index, value) {
-					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? $elm$core$String$fromInt(value) : '') : $elm$core$String$fromInt(value);
-				}));
-	});
-var $author$project$Pages$Scoreboard$View$viewTableRow = F5(
-	function (language, currentDate, yearSelectorGap, itemTransId, values) {
-		var valueCells = A2(
-			$elm$core$List$map,
-			function (value) {
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('cell value')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(value)
-						]));
-			},
-			A3($author$project$Pages$Scoreboard$View$formatValues, currentDate, yearSelectorGap, values));
-		var activityCell = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('cell activity')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					A2($author$project$Translate$translate, language, itemTransId))
-				]));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('table-row')
-				]),
-			A2($elm$core$List$cons, activityCell, valueCells));
-	});
-var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F5(
-	function (language, currentDate, yearSelectorGap, monthsGap, data) {
-		var emptyValues = A2(
-			$elm$core$List$repeat,
-			12,
-			{row1: 0, row2: 0});
-		var valuesByRow = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (record, accum) {
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
-					return A2(
-						$elm$core$List$indexedMap,
-						F2(
-							function (index, accumValue) {
-								return A2(
-									$elm$core$Maybe$withDefault,
-									accumValue,
-									A2(
-										$elm$core$Maybe$map,
-										function (gapInMonths) {
-											var gap = gapInMonths - ageInMonths;
-											var row1 = (record.ncda.ancNewborn.row1 && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
-											var row2 = (record.ncda.ancNewborn.row2 && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
-											return {row1: row1, row2: row2};
-										},
-										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
-							}),
-						accum);
-				}),
-			emptyValues,
-			data.records);
-		var values = _List_fromArray(
-			[
-				A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.row1;
-				},
-				valuesByRow),
-				A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.row2;
-				},
-				valuesByRow)
-			]);
-		var rows = A3(
-			$elm$core$List$map2,
-			F2(
-				function (item, itemValues) {
-					return A5(
-						$author$project$Pages$Scoreboard$View$viewTableRow,
-						language,
-						currentDate,
-						yearSelectorGap,
-						$author$project$Translate$NCDAANCNewbornItemLabel(item),
-						itemValues);
-				}),
-			_List_fromArray(
-				[$author$project$Pages$Scoreboard$Model$RegularCheckups, $author$project$Pages$Scoreboard$Model$IronDuringPregnancy]),
-			values);
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('pane cyan')
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$ANCNewborn),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('pane-content')
-						]),
-					A2(
-						$elm$core$List$cons,
-						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
-						rows))
-				]));
-	});
-var $author$project$Translate$AcuteMalnutrition = {$: 'AcuteMalnutrition'};
-var $author$project$Pages$Scoreboard$Model$GoodNutrition = {$: 'GoodNutrition'};
-var $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition = {$: 'ModerateAcuteMalnutrition'};
-var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
-	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
-};
-var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
@@ -28313,7 +28111,10 @@ var $author$project$Pages$Scoreboard$Utils$valuesByViewMode = F3(
 				$elm$core$List$map2,
 				F2(
 					function (nominator, denominator) {
-						return (!denominator) ? '0.0' : A2($myrho$elm_round$Round$round, 1, 100 * (nominator / denominator));
+						return (!denominator) ? '0.0%' : function (number) {
+							return number + '%';
+						}(
+							A2($myrho$elm_round$Round$round, 1, 100 * (nominator / denominator)));
 					}),
 				nominators,
 				denominators);
@@ -28321,7 +28122,65 @@ var $author$project$Pages$Scoreboard$Utils$valuesByViewMode = F3(
 			return A2($elm$core$List$map, $elm$core$String$fromInt, nominators);
 		}
 	});
-var $author$project$Pages$Scoreboard$View$formatValues2 = F2(
+var $author$project$Pages$Scoreboard$View$viewPaneHeading = F2(
+	function (language, label) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane-heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, label))
+				]));
+	});
+var $author$project$Translate$Month = function (a) {
+	return {$: 'Month', a: a};
+};
+var $author$project$Translate$Status = {$: 'Status'};
+var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) {
+	var statusCell = A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('cell activity')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				A2($author$project$Translate$translate, language, $author$project$Translate$Status))
+			]));
+	var monthCells = A2(
+		$elm$core$List$map,
+		function (month) {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('cell')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$Month(month)))
+					]));
+		},
+		_List_fromArray(
+			[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]));
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('table-header')
+			]),
+		A2($elm$core$List$cons, statusCell, monthCells));
+};
+var $author$project$Pages$Scoreboard$View$formatValues = F2(
 	function (currentDate, yearSelectorGap) {
 		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
 		return $elm$core$List$indexedMap(
@@ -28330,7 +28189,7 @@ var $author$project$Pages$Scoreboard$View$formatValues2 = F2(
 					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? value : '') : value;
 				}));
 	});
-var $author$project$Pages$Scoreboard$View$viewTableRow2 = F5(
+var $author$project$Pages$Scoreboard$View$viewTableRow = F5(
 	function (language, currentDate, yearSelectorGap, itemTransId, values) {
 		var valueCells = A2(
 			$elm$core$List$map,
@@ -28346,7 +28205,7 @@ var $author$project$Pages$Scoreboard$View$viewTableRow2 = F5(
 							$elm$html$Html$text(value)
 						]));
 			},
-			A3($author$project$Pages$Scoreboard$View$formatValues2, currentDate, yearSelectorGap, values));
+			A3($author$project$Pages$Scoreboard$View$formatValues, currentDate, yearSelectorGap, values));
 		var activityCell = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -28365,6 +28224,105 @@ var $author$project$Pages$Scoreboard$View$viewTableRow2 = F5(
 					$elm$html$Html$Attributes$class('table-row')
 				]),
 			A2($elm$core$List$cons, activityCell, valueCells));
+	});
+var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
+	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
+		var emptyValues = A2(
+			$elm$core$List$repeat,
+			12,
+			{row1: 0, row2: 0});
+		var valuesByRow = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (record, accum) {
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, accumValue) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									accumValue,
+									A2(
+										$elm$core$Maybe$map,
+										function (gapInMonths) {
+											var gap = gapInMonths - ageInMonths;
+											var row1 = (record.ncda.ancNewborn.row1 && ((gap > 0) && (gap < 10))) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row2 = (record.ncda.ancNewborn.row2 && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
+											return {row1: row1, row2: row2};
+										},
+										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
+							}),
+						accum);
+				}),
+			emptyValues,
+			data.records);
+		var values = _List_fromArray(
+			[
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row1;
+				},
+				valuesByRow),
+				A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.row2;
+				},
+				valuesByRow)
+			]);
+		var rows = A3(
+			$elm$core$List$map2,
+			F2(
+				function (item, itemValues) {
+					return A5(
+						$author$project$Pages$Scoreboard$View$viewTableRow,
+						language,
+						currentDate,
+						yearSelectorGap,
+						$author$project$Translate$NCDAANCNewbornItemLabel(item),
+						A3($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2, itemValues));
+				}),
+			_List_fromArray(
+				[$author$project$Pages$Scoreboard$Model$RegularCheckups, $author$project$Pages$Scoreboard$Model$IronDuringPregnancy]),
+			values);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('pane cyan')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Scoreboard$View$viewPaneHeading, language, $author$project$Translate$ANCNewborn),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('pane-content')
+						]),
+					A2(
+						$elm$core$List$cons,
+						$author$project$Pages$Scoreboard$View$viewTableHeader(language),
+						rows))
+				]));
+	});
+var $author$project$Translate$AcuteMalnutrition = {$: 'AcuteMalnutrition'};
+var $author$project$Pages$Scoreboard$Model$GoodNutrition = {$: 'GoodNutrition'};
+var $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition = {$: 'ModerateAcuteMalnutrition'};
+var $author$project$Translate$NCDAAcuteMalnutritionItemLabel = function (a) {
+	return {$: 'NCDAAcuteMalnutritionItemLabel', a: a};
+};
+var $author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition = {$: 'SevereAcuteMalnutrition'};
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
 	});
 var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
@@ -28496,19 +28454,16 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 			F2(
 				function (item, itemValues) {
 					return A5(
-						$author$project$Pages$Scoreboard$View$viewTableRow2,
+						$author$project$Pages$Scoreboard$View$viewTableRow,
 						language,
 						currentDate,
 						yearSelectorGap,
 						$author$project$Translate$NCDAAcuteMalnutritionItemLabel(item),
-						itemValues);
+						A3($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2, itemValues));
 				}),
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$SevereAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$ModerateAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$GoodNutrition]),
-			A2(
-				$elm$core$List$map,
-				A2($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2),
-				values));
+			values);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -28650,7 +28605,7 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F6(
 						currentDate,
 						yearSelectorGap,
 						$author$project$Translate$NCDADemographicsItemLabel(item),
-						itemValues);
+						A2($elm$core$List$map, $elm$core$String$fromInt, itemValues));
 				}),
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$ChildrenUnder2, $author$project$Pages$Scoreboard$Model$NewbornsThisMonth, $author$project$Pages$Scoreboard$Model$LowBirthWeigh]),
@@ -28685,8 +28640,8 @@ var $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets = {$: 'Inse
 var $author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel = function (a) {
 	return {$: 'NCDAInfrastructureEnvironmentWashItemLabel', a: a};
 };
-var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F5(
-	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane = F7(
+	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var emptyValues = A2(
 			$elm$core$List$repeat,
 			12,
@@ -28789,7 +28744,7 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 						currentDate,
 						yearSelectorGap,
 						$author$project$Translate$NCDAInfrastructureEnvironmentWashItemLabel(item),
-						itemValues);
+						A3($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2, itemValues));
 				}),
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$HasToilets, $author$project$Pages$Scoreboard$Model$HasCleanWater, $author$project$Pages$Scoreboard$Model$HasHandwashingFacility, $author$project$Pages$Scoreboard$Model$InsecticideTreatedBedNets, $author$project$Pages$Scoreboard$Model$HasKitchenGarden]),
@@ -28823,8 +28778,8 @@ var $author$project$Translate$NCDANutritionBehaviorItemLabel = function (a) {
 	return {$: 'NCDANutritionBehaviorItemLabel', a: a};
 };
 var $author$project$Translate$NutritionBehavior = {$: 'NutritionBehavior'};
-var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F5(
-	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
+	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var emptyValues = A2(
 			$elm$core$List$repeat,
 			12,
@@ -28916,7 +28871,7 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F5(
 						currentDate,
 						yearSelectorGap,
 						$author$project$Translate$NCDANutritionBehaviorItemLabel(item),
-						itemValues);
+						A3($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2, itemValues));
 				}),
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$BreastfedSixMonths, $author$project$Pages$Scoreboard$Model$AppropriateComplementaryFeeding, $author$project$Pages$Scoreboard$Model$DiverseDiet, $author$project$Pages$Scoreboard$Model$MealsADay]),
@@ -28949,8 +28904,8 @@ var $author$project$Translate$NCDAStuntingItemLabel = function (a) {
 var $author$project$Pages$Scoreboard$Model$NoStunting = {$: 'NoStunting'};
 var $author$project$Pages$Scoreboard$Model$SevereStunting = {$: 'SevereStunting'};
 var $author$project$Translate$Stunting = {$: 'Stunting'};
-var $author$project$Pages$Scoreboard$View$viewStuntingPane = F5(
-	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+var $author$project$Pages$Scoreboard$View$viewStuntingPane = F7(
+	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var emptyValues = A2(
 			$elm$core$List$repeat,
 			12,
@@ -29029,7 +28984,7 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F5(
 						currentDate,
 						yearSelectorGap,
 						$author$project$Translate$NCDAStuntingItemLabel(item),
-						itemValues);
+						A3($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2, itemValues));
 				}),
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$SevereStunting, $author$project$Pages$Scoreboard$Model$ModerateStunting, $author$project$Pages$Scoreboard$Model$NoStunting]),
@@ -29065,8 +29020,8 @@ var $author$project$Pages$Scoreboard$Model$SupportChildWithDisability = {$: 'Sup
 var $author$project$Translate$TargetedInterventions = {$: 'TargetedInterventions'};
 var $author$project$Pages$Scoreboard$Model$TreatmentForAcuteMalnutrition = {$: 'TreatmentForAcuteMalnutrition'};
 var $author$project$Pages$Scoreboard$Model$TreatmentForDiarrhea = {$: 'TreatmentForDiarrhea'};
-var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F5(
-	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F7(
+	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var emptyValues = A2(
 			$elm$core$List$repeat,
 			12,
@@ -29186,7 +29141,7 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F5(
 						currentDate,
 						yearSelectorGap,
 						$author$project$Translate$NCDATargetedInterventionsItemLabel(item),
-						itemValues);
+						A3($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2, itemValues));
 				}),
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$FBFGiven, $author$project$Pages$Scoreboard$Model$TreatmentForAcuteMalnutrition, $author$project$Pages$Scoreboard$Model$TreatmentForDiarrhea, $author$project$Pages$Scoreboard$Model$SupportChildWithDisability, $author$project$Pages$Scoreboard$Model$ConditionalCashTransfer, $author$project$Pages$Scoreboard$Model$ConditionalFoodItems]),
@@ -29529,8 +29484,8 @@ var $pzp1997$assoc_list$AssocList$map = F2(
 				},
 				alist));
 	});
-var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F5(
-	function (language, currentDate, yearSelectorGap, monthsGap, data) {
+var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F7(
+	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var resolveLastDayForMonthX = F2(
 			function (monthX, childBirthDate) {
 				return A3(
@@ -29703,7 +29658,7 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F5(
 						currentDate,
 						yearSelectorGap,
 						$author$project$Translate$NCDAUniversalInterventionItemLabel(item),
-						itemValues);
+						A3($author$project$Pages$Scoreboard$Utils$valuesByViewMode, viewMode, childrenUnder2, itemValues));
 				}),
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$Immunization, $author$project$Pages$Scoreboard$Model$VitaminA, $author$project$Pages$Scoreboard$Model$Deworming, $author$project$Pages$Scoreboard$Model$OngeraMNP, $author$project$Pages$Scoreboard$Model$ECDServices]),
@@ -29982,12 +29937,12 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
 					A6($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, data),
 					A7($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A5($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A5($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A5($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A5($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A5($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, data),
-					A5($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, data)
+					A7($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+					A7($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+					A7($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+					A7($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+					A7($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+					A7($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data)
 				]));
 	});
 var $author$project$Pages$Scoreboard$View$view = F4(
