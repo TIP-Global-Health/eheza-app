@@ -137,7 +137,7 @@ the login page instead.
 -}
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
-    | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
+    | ClinicsPage -- shows a list of clinics, allows you to choose one
     | ClinicalProgressReportPage PrenatalProgressReportInitiator PrenatalEncounterId
     | DashboardPage DashboardPage -- Dashboard with visual summary of the data
     | GlobalCaseManagementPage -- page where info about needed follow ups is displayed.

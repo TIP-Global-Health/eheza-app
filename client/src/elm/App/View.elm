@@ -314,12 +314,11 @@ viewUserPage page deviceName model configured =
                         Pages.Clinical.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw model
                             |> flexPageWrapper model
 
-                    ClinicsPage clinicId ->
+                    ClinicsPage ->
                         Pages.Clinics.View.view model.language
                             currentDate
                             (Tuple.second loggedInModel.nurse)
                             healthCenterId
-                            clinicId
                             loggedInModel.clinicsPage
                             model.indexedDb
                             model.syncManager

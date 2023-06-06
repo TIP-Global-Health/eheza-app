@@ -108,9 +108,14 @@ fetch model =
                 Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (ClinicsPage clinicId) ->
-                Pages.Clinics.Fetch.fetch clinicId
-                    |> List.map MsgIndexedDb
+            UserPage ClinicsPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( healthCenterId, loggedIn ) ->
+                            Pages.Clinics.Fetch.fetch healthCenterId model.indexedDb model.syncManager loggedIn.clinicsPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
             UserPage (DashboardPage subPage) ->
                 getLoggedInData model
