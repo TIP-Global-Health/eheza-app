@@ -77,6 +77,8 @@ class RoboFile extends Tasks {
       'client',
       'scalability-test',
       'infrastructure_setup',
+      'composer.json',
+      'composer.lock',
     ];
 
     $rsyncExcludeString = '--exclude=' . implode(' --exclude=', $rsyncExclude);
