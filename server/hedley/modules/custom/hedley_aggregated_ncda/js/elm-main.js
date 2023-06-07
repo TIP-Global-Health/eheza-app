@@ -28104,20 +28104,17 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
+var $author$project$Pages$Scoreboard$Utils$viewPercentage = F2(
+	function (nominator, denominator) {
+		return (!denominator) ? '0.0%' : function (number) {
+			return number + '%';
+		}(
+			A2($myrho$elm_round$Round$round, 1, 100 * (nominator / denominator)));
+	});
 var $author$project$Pages$Scoreboard$Utils$valuesByViewMode = F3(
 	function (viewMode, denominators, nominators) {
 		if (viewMode.$ === 'ModePercentages') {
-			return A3(
-				$elm$core$List$map2,
-				F2(
-					function (nominator, denominator) {
-						return (!denominator) ? '0.0%' : function (number) {
-							return number + '%';
-						}(
-							A2($myrho$elm_round$Round$round, 1, 100 * (nominator / denominator)));
-					}),
-				nominators,
-				denominators);
+			return A3($elm$core$List$map2, $author$project$Pages$Scoreboard$Utils$viewPercentage, nominators, denominators);
 		} else {
 			return A2($elm$core$List$map, $elm$core$String$fromInt, nominators);
 		}
@@ -28546,8 +28543,8 @@ var $author$project$Translate$NCDADemographicsItemLabel = function (a) {
 	return {$: 'NCDADemographicsItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$NewbornsThisMonth = {$: 'NewbornsThisMonth'};
-var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F6(
-	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, data) {
+var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F7(
+	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var emptyValues = A2(
 			$elm$core$List$repeat,
 			12,
@@ -28580,21 +28577,32 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F6(
 				}),
 			emptyValues,
 			data.records);
-		var values = _List_fromArray(
-			[
-				A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.row2;
-				},
-				valuesByRow),
-				A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.row3;
-				},
-				valuesByRow)
-			]);
+		var lowBirthWeight = A2(
+			$elm$core$List$map,
+			function ($) {
+				return $.row3;
+			},
+			valuesByRow);
+		var newborns = A2(
+			$elm$core$List$map,
+			function ($) {
+				return $.row2;
+			},
+			valuesByRow);
+		var lowBirthWeightForView = function () {
+			if (viewMode.$ === 'ModePercentages') {
+				return A3($elm$core$List$map2, $author$project$Pages$Scoreboard$Utils$viewPercentage, lowBirthWeight, newborns);
+			} else {
+				return A2($elm$core$List$map, $elm$core$String$fromInt, lowBirthWeight);
+			}
+		}();
+		var newbornsForView = function () {
+			if (viewMode.$ === 'ModePercentages') {
+				return A3($elm$core$List$map2, $author$project$Pages$Scoreboard$Utils$viewPercentage, newborns, childrenUnder2);
+			} else {
+				return A2($elm$core$List$map, $elm$core$String$fromInt, newborns);
+			}
+		}();
 		var rows = A3(
 			$elm$core$List$map2,
 			F2(
@@ -28605,11 +28613,16 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F6(
 						currentDate,
 						yearSelectorGap,
 						$author$project$Translate$NCDADemographicsItemLabel(item),
-						A2($elm$core$List$map, $elm$core$String$fromInt, itemValues));
+						itemValues);
 				}),
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$ChildrenUnder2, $author$project$Pages$Scoreboard$Model$NewbornsThisMonth, $author$project$Pages$Scoreboard$Model$LowBirthWeigh]),
-			A2($elm$core$List$cons, childrenUnder2, values));
+			_List_fromArray(
+				[
+					A2($elm$core$List$map, $elm$core$String$fromInt, childrenUnder2),
+					newbornsForView,
+					lowBirthWeightForView
+				]));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -29935,7 +29948,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 				[
 					topBar,
 					A2($author$project$Pages$Scoreboard$View$viewAggregatedChildScoreboardPane, language, data),
-					A6($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, data),
+					A7($author$project$Pages$Scoreboard$View$viewDemographicsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
 					A7($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
 					A7($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
 					A7($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),

@@ -102,7 +102,7 @@ viewScoreboardData language currentDate data model =
     div [ class "page-content" ]
         [ topBar
         , viewAggregatedChildScoreboardPane language data
-        , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 data
+        , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewStuntingPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
@@ -126,17 +126,16 @@ viewAggregatedChildScoreboardPane language data =
         ]
 
 
-viewDemographicsPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ScoreboardData -> Html any
-viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnder2 data =
+viewDemographicsPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    List.map String.fromInt itemValues
-                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDADemographicsItemLabel item)
+                    viewTableRow language currentDate yearSelectorGap (Translate.NCDADemographicsItemLabel item) itemValues
                 )
                 [ ChildrenUnder2, NewbornsThisMonth, LowBirthWeigh ]
-                (childrenUnder2 :: values)
+                [ List.map String.fromInt childrenUnder2, newbornsForView, lowBirthWeightForView ]
 
         valuesByRow =
             List.foldl
@@ -182,10 +181,27 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
         emptyValues =
             List.repeat 12 { row2 = 0, row3 = 0 }
 
-        values =
-            [ List.map .row2 valuesByRow
-            , List.map .row3 valuesByRow
-            ]
+        newborns =
+            List.map .row2 valuesByRow
+
+        newbornsForView =
+            case viewMode of
+                ModePercentages ->
+                    List.map2 viewPercentage newborns childrenUnder2
+
+                ModeValues ->
+                    List.map String.fromInt newborns
+
+        lowBirthWeight =
+            List.map .row3 valuesByRow
+
+        lowBirthWeightForView =
+            case viewMode of
+                ModePercentages ->
+                    List.map2 viewPercentage lowBirthWeight newborns
+
+                ModeValues ->
+                    List.map String.fromInt lowBirthWeight
     in
     div [ class "pane cyan" ]
         [ viewPaneHeading language Translate.Demographics

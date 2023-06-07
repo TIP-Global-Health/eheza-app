@@ -1,4 +1,4 @@
-module Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData, valuesByViewMode)
+module Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Scoreboard.Model exposing (..)
@@ -223,19 +223,19 @@ valuesByViewMode : ViewMode -> List Int -> List Int -> List String
 valuesByViewMode viewMode denominators nominators =
     case viewMode of
         ModePercentages ->
-            List.map2
-                (\nominator denominator ->
-                    if denominator == 0 then
-                        "0.0%"
-
-                    else
-                        (toFloat nominator / toFloat denominator)
-                            |> (*) 100
-                            |> Round.round 1
-                            |> (\number -> number ++ "%")
-                )
-                nominators
-                denominators
+            List.map2 viewPercentage nominators denominators
 
         ModeValues ->
             List.map String.fromInt nominators
+
+
+viewPercentage : Int -> Int -> String
+viewPercentage nominator denominator =
+    if denominator == 0 then
+        "0.0%"
+
+    else
+        (toFloat nominator / toFloat denominator)
+            |> (*) 100
+            |> Round.round 1
+            |> (\number -> number ++ "%")
