@@ -9,6 +9,7 @@ type alias Model =
     , sector : Maybe GeoLocationId
     , cell : Maybe GeoLocationId
     , village : Maybe GeoLocationId
+    , selected : Bool
     }
 
 
@@ -19,6 +20,7 @@ emptyModel =
     , sector = Nothing
     , cell = Nothing
     , village = Nothing
+    , selected = False
     }
 
 
@@ -33,3 +35,4 @@ type alias ViewSelectionValue =
 
 type Msg
     = SetGeoLocation (String -> Model -> Model) String
+    | SelectionMade

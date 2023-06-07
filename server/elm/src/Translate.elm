@@ -63,6 +63,7 @@ type TranslationId
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
     | NewSelection
     | NutritionBehavior
+    | PleaseWaitMessage
     | Province
     | Sector
     | SelectedEntity SelectedEntity
@@ -322,6 +323,11 @@ translationSet transId =
 
         NutritionBehavior ->
             { english = "Nutrition Behavior"
+            , kinyarwanda = Nothing
+            }
+
+        PleaseWaitMessage ->
+            { english = "Please wait. This action may take a couple of minutes to complete."
             , kinyarwanda = Nothing
             }
 

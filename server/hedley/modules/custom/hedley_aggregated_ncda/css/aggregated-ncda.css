@@ -59,6 +59,7 @@ body,
   font-size: 26px;
   width: 40%;
 }
+
 .page-content .inputs .select-input-wrapper .select-input {
   background: none;
   border: 2px solid white;
@@ -71,13 +72,8 @@ body,
   width: 60%;
 }
 
-
 .page-content .inputs .select-input-wrapper .select-input:focus {
   outline-color: white;
-}
-
-.page-content .actions {
-  text-align: center;
 }
 
 .page-content .top-bar {
@@ -146,6 +142,12 @@ body,
 
 .page-content .top-bar .values-percents .item:last-child {
   border-left: none;
+}
+
+.page-content .actions {
+  color: white;
+  font-size: 24px;
+  text-align: center;
 }
 
 .page-content .actions a button {

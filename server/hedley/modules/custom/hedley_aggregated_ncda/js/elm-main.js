@@ -5449,7 +5449,7 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
-var $author$project$Pages$Menu$Model$emptyModel = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Menu$Model$emptyModel = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, selected: false, village: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
 var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
 var $author$project$Backend$Model$emptyModelBackend = {scoreboardData: $elm$core$Maybe$Nothing};
@@ -5720,14 +5720,25 @@ var $author$project$App$Model$PagesReturn = F4(
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
 var $author$project$Pages$Menu$Update$update = F2(
 	function (msg, model) {
-		var updatedFunc = msg.a;
-		var value = msg.b;
-		return A4(
-			$author$project$App$Model$PagesReturn,
-			A2(updatedFunc, value, model),
-			$elm$core$Platform$Cmd$none,
-			$author$project$Error$Utils$noError,
-			_List_Nil);
+		if (msg.$ === 'SetGeoLocation') {
+			var updatedFunc = msg.a;
+			var value = msg.b;
+			return A4(
+				$author$project$App$Model$PagesReturn,
+				A2(updatedFunc, value, model),
+				$elm$core$Platform$Cmd$none,
+				$author$project$Error$Utils$noError,
+				_List_Nil);
+		} else {
+			return A4(
+				$author$project$App$Model$PagesReturn,
+				_Utils_update(
+					model,
+					{selected: true}),
+				$elm$core$Platform$Cmd$none,
+				$author$project$Error$Utils$noError,
+				_List_Nil);
+		}
 	});
 var $author$project$Pages$Scoreboard$Update$update = F3(
 	function (modelBackend, msg, model) {
@@ -8745,6 +8756,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'NutritionBehavior':
 				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing};
+			case 'PleaseWaitMessage':
+				return {english: 'Please wait. This action may take a couple of minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'Sector':
@@ -8909,7 +8922,9 @@ var $author$project$Error$View$view = F2(
 				]));
 	});
 var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
+var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
 var $author$project$Translate$Province = {$: 'Province'};
+var $author$project$Pages$Menu$Model$SelectionMade = {$: 'SelectionMade'};
 var $author$project$Pages$Menu$Model$SetGeoLocation = F2(
 	function (a, b) {
 		return {$: 'SetGeoLocation', a: a, b: b};
@@ -27390,6 +27405,23 @@ var $elm$core$Maybe$map2 = F3(
 			}
 		}
 	});
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
 		A2(
@@ -27430,7 +27462,6 @@ var $elm$html$Html$Events$alwaysStop = function (x) {
 var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -27695,93 +27726,92 @@ var $author$project$Pages$Menu$View$view = F2(
 				$elm$core$Maybe$map2,
 				F2(
 					function (province, district) {
-						var villagePart = A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2(
-								$elm$core$Maybe$map,
-								function (geoLocation) {
-									return '/' + geoLocation.name;
-								},
+						if (model.selected) {
+							return $elm$html$Html$text(
+								A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage));
+						} else {
+							var villagePart = A2(
+								$elm$core$Maybe$withDefault,
+								'',
 								A2(
-									$elm$core$Maybe$andThen,
-									function (id) {
-										return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.villages);
+									$elm$core$Maybe$map,
+									function (geoLocation) {
+										return '/' + geoLocation.name;
 									},
-									model.village)));
-						var sectorPart = A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2(
-								$elm$core$Maybe$map,
-								function (geoLocation) {
-									return '/' + geoLocation.name;
-								},
-								A2(
-									$elm$core$Maybe$andThen,
-									function (id) {
-										return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.sectors);
-									},
-									model.sector)));
-						var provincePart = A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2(
-								$elm$core$Maybe$map,
-								function ($) {
-									return $.name;
-								},
-								A2($pzp1997$assoc_list$AssocList$get, province, $author$project$Utils$GeoLocation$geoInfo.provinces)));
-						var districtPart = A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2(
-								$elm$core$Maybe$map,
-								function ($) {
-									return $.name;
-								},
-								A2($pzp1997$assoc_list$AssocList$get, district, $author$project$Utils$GeoLocation$geoInfo.districts)));
-						var cellPart = A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2(
-								$elm$core$Maybe$map,
-								function (geoLocation) {
-									return '/' + geoLocation.name;
-								},
-								A2(
-									$elm$core$Maybe$andThen,
-									function (id) {
-										return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.cells);
-									},
-									model.cell)));
-						var suffix = provincePart + ('/' + (districtPart + (sectorPart + (cellPart + villagePart))));
-						return A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('actions')
-								]),
-							_List_fromArray(
-								[
 									A2(
-									$elm$html$Html$a,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda/' + suffix)
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$button,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text(
-													A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
-												]))
-										]))
-								]));
+										$elm$core$Maybe$andThen,
+										function (id) {
+											return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.villages);
+										},
+										model.village)));
+							var sectorPart = A2(
+								$elm$core$Maybe$withDefault,
+								'',
+								A2(
+									$elm$core$Maybe$map,
+									function (geoLocation) {
+										return '/' + geoLocation.name;
+									},
+									A2(
+										$elm$core$Maybe$andThen,
+										function (id) {
+											return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.sectors);
+										},
+										model.sector)));
+							var provincePart = A2(
+								$elm$core$Maybe$withDefault,
+								'',
+								A2(
+									$elm$core$Maybe$map,
+									function ($) {
+										return $.name;
+									},
+									A2($pzp1997$assoc_list$AssocList$get, province, $author$project$Utils$GeoLocation$geoInfo.provinces)));
+							var districtPart = A2(
+								$elm$core$Maybe$withDefault,
+								'',
+								A2(
+									$elm$core$Maybe$map,
+									function ($) {
+										return $.name;
+									},
+									A2($pzp1997$assoc_list$AssocList$get, district, $author$project$Utils$GeoLocation$geoInfo.districts)));
+							var cellPart = A2(
+								$elm$core$Maybe$withDefault,
+								'',
+								A2(
+									$elm$core$Maybe$map,
+									function (geoLocation) {
+										return '/' + geoLocation.name;
+									},
+									A2(
+										$elm$core$Maybe$andThen,
+										function (id) {
+											return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.cells);
+										},
+										model.cell)));
+							var suffix = provincePart + ('/' + (districtPart + (sectorPart + (cellPart + villagePart))));
+							return A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda/' + suffix)
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Events$onClick($author$project$Pages$Menu$Model$SelectionMade)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
+											]))
+									]));
+						}
 					}),
 				model.province,
 				model.district));
@@ -27811,7 +27841,14 @@ var $author$project$Pages$Menu$View$view = F2(
 						]),
 					_List_fromArray(
 						[provinceInput, districtInput, sectorInput, cellInput, villageInput])),
-					actionButton
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('actions')
+						]),
+					_List_fromArray(
+						[actionButton]))
 				]));
 	});
 var $elm$core$Debug$toString = _Debug_toString;
@@ -27844,22 +27881,6 @@ var $author$project$Pages$Scoreboard$View$generateMonthsGap = F2(
 					},
 					A2($elm$core$List$range, 1, 12))));
 	});
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
 var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
 var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
