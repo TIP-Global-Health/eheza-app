@@ -199,20 +199,20 @@ gulp.task("copy:bower", function() {
 // Copy html2canvas.
 gulp.task("copy:html2canvas", function() {
   return gulp.src([
-      "node_modules/html2canvas/dist/*",
-    ]).pipe(gulp.dest("serve/node_modules/html2canvas/dist"))
+      "node_modules/html2canvas/**/*"
+    ]).pipe(gulp.dest("serve/bower_components/html2canvas"))
     .pipe($.size({
-      title: "html2canvas"
+      title: "Html2Canvas"
     }))
 });
 
 // Copy signature_pad.
 gulp.task("copy:signature_pad", function() {
   return gulp.src([
-      "node_modules/signature_pad/dist/*",
-    ]).pipe(gulp.dest("serve/node_modules/signature_pad/dist"))
+      "node_modules/signature_pad/**/*"
+    ]).pipe(gulp.dest("serve/bower_components/signature_pad"))
     .pipe($.size({
-      title: "signature_pad"
+      title: "SignaturePad"
     }))
 });
 
@@ -373,17 +373,16 @@ gulp.task("ssl-cert", function(cb) {
 // reload the website accordingly. Update or add other files you need to be watched.
 gulp.task("watch", function() {
   // We need to copy dev, so index.html may be replaced by error messages.
-  gulp.watch(["src/index.html", "src/js/**/*.js"], ["copy:dev",
-    "pwa:dev",
-    reload
-  ]);
-  gulp.watch(["src/elm/**/*.elm"], ["elm", "copy:dev",
+  gulp.watch(["src/index.html", "src/js/**/*.js"], [
     "pwa:dev", reload
   ]);
-  gulp.watch(["src/assets/scss/**/*.scss"], ["styles", "copy:dev",
+  gulp.watch(["src/elm/**/*.elm"], [
     "pwa:dev", reload
   ]);
-  gulp.watch(["src/assets/zscore/**/*.txt"], ["zscore", "copy:dev",
+  gulp.watch(["src/assets/scss/**/*.scss"], [
+    "pwa:dev", reload
+  ]);
+  gulp.watch(["src/assets/zscore/**/*.txt"], [
     "pwa:dev", reload
   ]);
 });
@@ -414,23 +413,8 @@ var precacheLocalDev = [
   'bower_components/dexie/dist/dexie.min.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
   'bower_components/semantic/dist/semantic.min.css',
-  'node_modules/html2canvas/dist/html2canvas.min.js',
-  'node_modules/signature_pad/dist/signature_pad.umd.min.js'
-];
-
-// There may be a better way to do this, but for the moment we have some
-// slight duplication here.
-var precacheProd = [
-  precacheFileGlob,
-  'assets/**/' + precacheFileGlob,
-  'bower_components/copy-button/bundled.min.*.js',
-  'bower_components/dropzone/dist/min/dropzone.min.*.css',
-  'bower_components/dropzone/dist/min/dropzone.min.*.js',
-  'bower_components/dexie/dist/dexie.min.*.js',
-  'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.*.css',
-  'node_modules/html2canvas/dist/html2canvas.min.*.js',
-  'node_modules/signature_pad/dist/signature_pad.umd.min.js'
+  'bower_components/html2canvas/dist/html2canvas.min.js',
+  'bower_components/signature_pad/dist/signature_pad.umd.min.js'
 ];
 
 // For offline use while developing
@@ -442,32 +426,7 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
     cacheId: 'eheza-app',
     globDirectory: 'serve',
     globPatterns: precacheLocalDev,
-    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
-    clientsClaim: true,
-    skipWaiting: false,
-    importScripts: [
-      'bower_components/dexie/dist/dexie.min.js',
-      'uuid.js',
-      'sw.js',
-      'config.js',
-      'lifecycle.js',
-      'nodes.js',
-      'statistics.js',
-      'photos.js',
-    ]
-  });
-});
-
-// Offline use in production.
-gulp.task('pwa:prod', function() {
-  var workboxBuild = require('workbox-build');
-
-  return workboxBuild.generateSW({
-    swDest: 'dist/service-worker.js',
-    cacheId: 'eheza-app',
-    globDirectory: 'dist',
-    globPatterns: precacheProd,
-    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+    maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
     clientsClaim: true,
     skipWaiting: false,
     importScripts: [
@@ -487,14 +446,11 @@ gulp.task('pwa:prod', function() {
 gulp.task("emulator", ["serve:emulator", "watch"]);
 
 // Default task, run when just writing "gulp" in the terminal
-gulp.task("default", ["serve:dev", "watch"]);
+gulp.task("default", gulpSequence("serve:dev", "watch"));
 
 // Builds the site but doesnt serve it to you
 // @todo: Add "bower" here
-gulp.task("build", gulpSequence("clean:dev", ["styles",
-  "zscore", "copy:dev",
-  "elm", "pwa:dev"
-]));
+gulp.task("build", gulpSequence("clean:dev", "pwa:dev"));
 
 // Tweak config to include real environment.
 gulp.task("deploy:config", function() {
@@ -514,6 +470,5 @@ gulp.task("deploy:revert", function() {
 
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
-gulp.task("publish", gulpSequence("deploy:config", ["build", "clean:prod"], ["minify", "cname",
-  "images"
-], "pwa:dev", "deploy:revert"));
+gulp.task("publish", gulpSequence("deploy:config", ["build", "clean:prod"],
+ ["minify", "cname", "images"], "deploy:revert"));
