@@ -16,7 +16,7 @@ var $ = require("gulp-load-plugins")();
 var del = require("del");
 
 var rename = require("gulp-rename");
-// BrowserSync isn"t a gulp package, and needs to be loaded manually
+// BrowserSync isn't a gulp package, and needs to be loaded manually
 var browserSync = require("browser-sync");
 
 var elm = require('gulp-elm');
@@ -50,12 +50,10 @@ gulp.task("clean:dev", function(cb) {
     cb);
 });
 
-
 // Deletes the directory that the optimized site is output to
 gulp.task("clean:prod", function(cb) {
   return del(["dist"], cb);
 });
-
 
 // Compiles the SASS files and moves them into the "assets/stylesheets" directory
 gulp.task("styles", [], function() {
@@ -148,7 +146,7 @@ function capitalize(input) {
   return input.charAt(0).toUpperCase() + input.slice(1);
 }
 
-// Optimizes the images that exists
+// Optimizes the images that exist
 gulp.task("images", function() {
   return gulp.src("src/assets/images/**")
     .pipe($.changed("dist/assets/images"))
@@ -248,7 +246,6 @@ gulp.task('bower', function() {
     .pipe(gulp.dest("serve"));
 });
 
-
 // Optimizes all the CSS, HTML and concats the JS etc
 gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
   function() {
@@ -296,6 +293,7 @@ gulp.task("deploy", [], function() {
 });
 
 gulp.task('elm-init', elm.init);
+
 gulp.task('elm', ['elm-init', 'version'], function() {
   return gulp.src('src/elm/Main.elm')
     .pipe(plumber())
@@ -449,7 +447,6 @@ gulp.task("emulator", ["serve:emulator", "watch"]);
 gulp.task("default", gulpSequence("serve:dev", "watch"));
 
 // Builds the site but doesnt serve it to you
-// @todo: Add "bower" here
 gulp.task("build", gulpSequence("clean:dev", "pwa:dev"));
 
 // Tweak config to include real environment.
@@ -466,7 +463,6 @@ gulp.task("deploy:config", function() {
 gulp.task("deploy:revert", function() {
   return exec("git checkout src/elm/Config.elm");
 });
-
 
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
