@@ -59,6 +59,7 @@ body,
   font-size: 26px;
   width: 40%;
 }
+
 .page-content .inputs .select-input-wrapper .select-input {
   background: none;
   border: 2px solid white;
@@ -71,13 +72,8 @@ body,
   width: 60%;
 }
 
-
 .page-content .inputs .select-input-wrapper .select-input:focus {
   outline-color: white;
-}
-
-.page-content .actions {
-  text-align: center;
 }
 
 .page-content .top-bar {
@@ -117,6 +113,41 @@ body,
   font-size: 18px;
   height: 30px;
   margin-left: 20px;
+}
+
+.page-content .top-bar .values-percents {
+  align-items: baseline;
+  display: flex;
+  justify-content: flex-end;
+  width: 33%;
+}
+
+.page-content .top-bar .values-percents .item {
+  background-color: white;
+  border: 1px solid white;
+  color: #07b9ff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  width: 40px;
+}
+
+.page-content .top-bar .values-percents .item.selected {
+  background-color: #07b9ff;
+  color: white;
+}
+
+.page-content .top-bar .values-percents .item:last-child {
+  border-left: none;
+}
+
+.page-content .actions {
+  color: white;
+  font-size: 24px;
+  text-align: center;
 }
 
 .page-content .actions a button {
@@ -187,6 +218,7 @@ body,
 .page-content .pane-content .table-header .cell.activity,
 .page-content .pane-content .table-row .cell.activity {
   padding-left: 20px;
+  line-height: 24px;
   text-align: left;
   width: 20%;
 }

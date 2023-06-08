@@ -14,3 +14,10 @@ update msg model =
                 Cmd.none
                 noError
                 []
+
+        SelectionMade ->
+            PagesReturn
+                { model | selected = True }
+                Cmd.none
+                noError
+                []
