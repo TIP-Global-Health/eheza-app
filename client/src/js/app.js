@@ -1124,7 +1124,37 @@ function makeProgressReportScreenshot(elementId, data) {
 
     const canvas = await html2canvas(element, {
         width: element.clientWidth,
-        windowHeight: totalHeight
+        windowHeight: totalHeight,
+        onclone: function(document) {
+          var styleSheets = document.styleSheets;
+          var promises = [];
+
+          for (var i = 0; i < styleSheets.length; i++) {
+            var styleSheet = styleSheets[i];
+            if (styleSheet.href) {
+              var promise = fetch(styleSheet.href, { cache: 'reload' })
+                .then(function(response) {
+                  if (response.ok) {
+                    return response.text();
+                  } else {
+                    throw new Error('Failed to fetch stylesheet: ' + response.url);
+                  }
+                })
+                .then(function(cssText) {
+                  var style = document.createElement('style');
+                  style.textContent = cssText;
+                  document.head.appendChild(style);
+                })
+                .catch(function(error) {
+                  console.error('Error fetching stylesheet:', error);
+                });
+
+              promises.push(promise);
+            }
+          }
+
+          return Promise.all(promises);
+        }
       });
 
     canvas.toBlob(async function(blob) {
