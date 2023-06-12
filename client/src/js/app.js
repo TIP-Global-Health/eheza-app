@@ -286,6 +286,7 @@ dbSync.version(20).stores({
  * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
  */
 
+// This hook is activated as a result of new content that is being synced from backend.
 dbSync.shards.hook('creating', function (primKey, obj, trans) {
   if (obj.type === 'person') {
     if (typeof obj.label == 'string') {
@@ -294,6 +295,7 @@ dbSync.shards.hook('creating', function (primKey, obj, trans) {
   }
 });
 
+// This hook is activated as a result of updated content that is being synced from backend.
 dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
   if (obj.type === 'person') {
     if (mods.hasOwnProperty("label")) {
