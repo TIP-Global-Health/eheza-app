@@ -793,8 +793,12 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .count();
 
         if (totalEntites == 0) {
-          // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+            // No entities for upload found.
+            let resultToSend = {
+              'entities': [],
+              'remaining': 0
+            };
+            return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -827,7 +831,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -862,7 +870,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
