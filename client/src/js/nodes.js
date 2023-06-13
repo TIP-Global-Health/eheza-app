@@ -144,8 +144,10 @@
 
         if (event.request.method === 'PUT') {
             if (uuid) {
-                return putNode(event.request, type, uuid);
+                return patchNode(event.request, type, uuid);
             }
+
+            return postNode(event.request, type);
         }
 
         if (event.request.method === 'POST') {
@@ -214,41 +216,6 @@
                     });
                 });
             }
-        }).catch(sendErrorResponses);
-    }
-
-    function putNode (request, type, uuid) {
-        return dbSync.open().catch(databaseError).then(function () {
-            return getTableForType(type).then(function (table) {
-                return request.json().catch(jsonError).then(function (json) {
-                    json.uuid = uuid;
-                    json.type = type;
-
-                    return table.put(json).catch(databaseError).then(function () {
-                        return sendRevisedNode(table, uuid).then(function () {
-                            // For hooks to be able to work, we need to declare the
-                            // tables that may be altered due to a change. In this case
-                            // We want to allow adding pending upload photos.
-                            // See for example dbSync.nodeChanges.hook().
-                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
-                                var body = JSON.stringify({
-                                    data: [json]
-                                });
-
-                                var response = new Response(body, {
-                                    status: 200,
-                                    statusText: 'OK',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
-
-                                return Promise.resolve(response);
-                            });
-                        });
-                    });
-                });
-            });
         }).catch(sendErrorResponses);
     }
 
