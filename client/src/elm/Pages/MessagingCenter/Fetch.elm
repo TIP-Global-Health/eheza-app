@@ -12,6 +12,5 @@ import RemoteData exposing (RemoteData(..))
 
 fetch : NominalDate -> NurseId -> ModelIndexedDb -> List MsgIndexedDb
 fetch currentDate nurseId db =
-    [ FetchResilienceSurveysForNurse nurseId
-    , FetchResilienceMessagesForNurse nurseId
+    [ FetchResilienceMessagesForNurse nurseId
     ]

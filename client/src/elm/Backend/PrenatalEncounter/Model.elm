@@ -194,7 +194,7 @@ type Msg
     | HandleSavedSocialHistory (WebData ())
     | SaveVitals PersonId (Maybe VitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
-    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
+    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) ImageUrl
     | HandleSavedPrenatalPhoto (WebData ())
     | SaveBirthPlan PersonId (Maybe BirthPlanId) BirthPlanValue
     | HandleSavedBirthPlan (WebData ())

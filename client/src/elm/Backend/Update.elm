@@ -68,6 +68,9 @@ import Backend.ResilienceSurvey.Update
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
+import Backend.StockUpdate.Model
+import Backend.StockUpdate.Update
+import Backend.StockUpdate.Utils exposing (generateStockManagementData)
 import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.Utils exposing (..)
@@ -639,6 +642,48 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedFollowUpMeasurements id data ->
             ( { model | followUpMeasurements = Dict.insert id data model.followUpMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchStockManagementMeasurements id ->
+            ( { model | stockManagementMeasurements = Dict.insert id Loading model.stockManagementMeasurements }
+            , sw.get stockManagementMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedStockManagementMeasurements id)
+            , []
+            )
+
+        HandleFetchedStockManagementMeasurements id data ->
+            ( { model | stockManagementMeasurements = Dict.insert id data model.stockManagementMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchStockManagementData id ->
+            let
+                updatedModel =
+                    case Dict.get id model.stockManagementData of
+                        Just (Success _) ->
+                            -- Data already calculated, and there's no need to recalculate.
+                            model
+
+                        _ ->
+                            let
+                                data =
+                                    Dict.get id model.stockManagementMeasurements
+                                        |> Maybe.andThen RemoteData.toMaybe
+                                        |> Maybe.map (generateStockManagementData currentDate >> Success)
+                                        |> Maybe.withDefault NotAsked
+                            in
+                            { model | stockManagementData = Dict.insert id data model.stockManagementData }
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        MarkForRecalculationStockManagementData id ->
+            ( { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
             , Cmd.none
             , []
             )
@@ -2912,26 +2957,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
         PostSession session ->
             ( { model | postSession = Loading }
             , sw.post sessionEndpoint session
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession session.clinicType)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession)
             , []
             )
 
-        HandlePostedSession clinicType data ->
+        HandlePostedSession data ->
             let
                 msgs =
-                    if clinicType == Chw then
+                    RemoteData.map
+                        (\sessionId ->
+                            SessionPage sessionId AttendancePage
+                                |> UserPage
+                                |> App.Model.SetActivePage
+                                |> List.singleton
+                        )
                         data
-                            |> RemoteData.map
-                                (\sessionId ->
-                                    SessionPage sessionId AttendancePage
-                                        |> UserPage
-                                        |> App.Model.SetActivePage
-                                        |> List.singleton
-                                )
-                            |> RemoteData.withDefault []
-
-                    else
-                        []
+                        |> RemoteData.withDefault []
             in
             ( { model | postSession = data }
             , Cmd.none
@@ -3242,12 +3283,32 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        MsgStockUpdate updateNurseId subMsg ->
+            let
+                requests =
+                    Dict.get updateNurseId model.stockUpdateRequests
+                        |> Maybe.withDefault Backend.StockUpdate.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.StockUpdate.Update.update currentDate subMsg requests
+            in
+            ( { model | stockUpdateRequests = Dict.insert updateNurseId subModel model.stockUpdateRequests }
+            , Cmd.map (MsgStockUpdate updateNurseId) subCmd
+            , []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
 nuanced way.
 -}
-handleRevision : NominalDate -> Maybe HealthCenterId -> Maybe VillageId -> Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
+handleRevision :
+    NominalDate
+    -> Maybe HealthCenterId
+    -> Maybe VillageId
+    -> Revision
+    -> ( ModelIndexedDb, Bool )
+    -> ( ModelIndexedDb, Bool )
 handleRevision currentDate healthCenterId villageId revision (( model, recalc ) as noChange) =
     case revision of
         AcuteFindingsRevision uuid data ->
@@ -3395,10 +3456,27 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             noChange
 
         ChildFbfRevision uuid data ->
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | childFbf = Dict.insert uuid data measurements.childFbf })
+                        modelWithStockUpdateRecalc
+
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
+            in
             ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
-                model
+                modelWithMappedStockManagement
             , True
             )
 
@@ -3664,10 +3742,27 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         MotherFbfRevision uuid data ->
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | motherFbf = Dict.insert uuid data measurements.motherFbf })
+                        modelWithStockUpdateRecalc
+
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
+            in
             ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
-                model
+                modelWithMappedStockManagement
             , True
             )
 
@@ -4414,6 +4509,32 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
                 model
+            , recalc
+            )
+
+        StockUpdateRevision uuid data ->
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | stockUpdate = Dict.insert uuid data measurements.stockUpdate })
+                        modelWithStockUpdateRecalc
+
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
+            in
+            ( { modelWithMappedStockManagement
+                | stockUpdates =
+                    RemoteData.map (Dict.insert uuid data)
+                        modelWithMappedStockManagement.stockUpdates
+              }
             , recalc
             )
 

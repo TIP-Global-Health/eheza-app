@@ -122,11 +122,14 @@
                 else if (type === 'well-child-measurements') {
                     return viewMeasurements('well_child_encounter', uuid);
                 }
+                else if (type === 'ncd-measurements') {
+                    return viewMeasurements('ncd_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
-                else if (type === 'ncd-measurements') {
-                    return viewMeasurements('ncd_encounter', uuid);
+                else if (type === 'stock-management-measurements') {
+                    return viewStockManagementMeasurements(uuid);
                 }
                 else {
                     return view(type, uuid);
@@ -602,6 +605,60 @@
         }).catch(sendErrorResponses);
     }
 
+    var stockManagementMeasurementsTypes = [
+      'child_fbf',
+      'mother_fbf',
+      'stock_update'
+    ];
+
+    function viewStockManagementMeasurements (shard) {
+        // Load all types of follow up measurements that belong to provided healh center.
+        var query = dbSync.shards.where('type').anyOf(stockManagementMeasurementsTypes).and(function (item) {
+          return item.shard === shard;
+        });
+
+        // Build an empty list of measurements, so we return some value, even
+        // if no measurements were ever taken.
+        var data = {};
+        data = {};
+        // Decoder is expecting to have the health center UUID.
+        data.uuid = shard;
+
+        return query.toArray().catch(databaseError).then(function (nodes) {
+            if (nodes) {
+                nodes.forEach(function (node) {
+                    if (data[node.type]) {
+                        data[node.type].push(node);
+                    } else {
+                        data[node.type] = [node];
+                    }
+                });
+
+                var body = JSON.stringify({
+                    // Decoder is expecting a list.
+                    data: [data]
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
+        }).catch(sendErrorResponses);
+    }
+
     // Fields which we index along with type, so we can search for them.
     var searchFields = [
         'adult',
@@ -943,12 +1000,20 @@
      * Helper function to add a record to authority PhotoUploadChanges.
      */
     function addPhotoUploadChanges(tableHook, table, obj) {
-        if (!obj.data.hasOwnProperty('photo')) {
-            // Entity doesn't have a photo.
-            return;
+        var url;
+
+        if (obj.data.hasOwnProperty('photo')) {
+          url = obj.data.photo;
+        }
+        else if (obj.data.hasOwnProperty('signature')) {
+          url = obj.data.signature;
+        }
+        else {
+          // Entity doesn't have an image.
+          return;
         }
 
-        if (!photosUploadUrlRegex.test(obj.data.photo)) {
+        if (!photosUploadUrlRegex.test(url)) {
             // Photo URL doesn't point to the local cache.
             return;
         }
@@ -959,7 +1024,7 @@
             const result = await table.add({
                 localId : primaryKey,
                 uuid: obj.uuid,
-                photo: obj.data.photo,
+                photo: url,
                 // Drupal's file ID.
                 fileId: null,
                 // The file name on Drupal.

@@ -97,7 +97,7 @@ type Msg
     | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
       -- PHOTO
     | DropZoneComplete DropZoneFile
-    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
+    | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
       -- NCDA
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String

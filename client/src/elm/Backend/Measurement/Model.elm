@@ -71,12 +71,12 @@ type alias NCDMeasurement value =
 {-| The string represents the URL of the photo -- that is, the URL which
 we can reference in order to display the photo.
 -}
-type PhotoUrl
-    = PhotoUrl String
+type ImageUrl
+    = ImageUrl String
 
 
 type alias Photo =
-    GroupMeasurement PhotoUrl
+    GroupMeasurement ImageUrl
 
 
 {-| For the various measurements that are floats, we wrap them in a type to
@@ -314,7 +314,7 @@ type alias NutritionNutrition =
 
 
 type alias NutritionPhoto =
-    NutritionMeasurement PhotoUrl
+    NutritionMeasurement ImageUrl
 
 
 type alias NutritionWeight =
@@ -800,7 +800,7 @@ type alias PrenatalNutrition =
 
 
 type alias PrenatalPhoto =
-    PrenatalMeasurement PhotoUrl
+    PrenatalMeasurement ImageUrl
 
 
 type alias MalariaPrevention =
@@ -2152,7 +2152,7 @@ type alias WellChildNutrition =
 
 
 type alias WellChildPhoto =
-    WellChildMeasurement PhotoUrl
+    WellChildMeasurement ImageUrl
 
 
 type alias WellChildWeight =
@@ -2733,6 +2733,48 @@ type alias HbA1cTestValue =
 
 
 
+-- Stock Management:
+
+
+type alias StockUpdate =
+    { nurse : NurseId
+    , dateMeasured : NominalDate
+    , updateType : StockUpdateType
+    , quantity : Int
+    , dateRecorded : NominalDate
+    , dateExpires : Maybe NominalDate
+    , batchNumber : Maybe String
+    , supplier : Maybe StockSupplier
+    , notes : Maybe String
+    , correctionReason : Maybe StockCorrectionReason
+    , healthCenter : HealthCenterId
+    , shard : Maybe HealthCenterId
+    , signature : ImageUrl
+    }
+
+
+type StockUpdateType
+    = UpdateReceivingSupplies
+    | UpdateCorrection
+
+
+type StockSupplier
+    = SupplierMOH
+    | SupplierRBC
+    | SupplierUNICEF
+    | SupplierRMSCentral
+    | SupplierRMSDistrict
+    | SupplierBUFMAR
+
+
+type StockCorrectionReason
+    = ReasonInputError
+    | ReasonExpiration
+    | ReasonMissing
+    | ReasonOther
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
@@ -3034,6 +3076,16 @@ type alias NCDMeasurements =
     , symptomReview : Maybe ( NCDSymptomReviewId, NCDSymptomReview )
     , urineDipstickTest : Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )
     , vitals : Maybe ( NCDVitalsId, NCDVitals )
+    }
+
+
+{-| A set of measurements that includes all required data for
+Stock management data presentation.
+-}
+type alias StockManagementMeasurements =
+    { childFbf : Dict ChildFbfId Fbf
+    , motherFbf : Dict MotherFbfId Fbf
+    , stockUpdate : Dict StockUpdateId StockUpdate
     }
 
 

@@ -63,14 +63,8 @@ pageToFragment current =
                 ClinicalPage ->
                     Just "clinical"
 
-                ClinicsPage clinicId ->
-                    let
-                        clinic =
-                            clinicId
-                                |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
-                                |> Maybe.withDefault ""
-                    in
-                    Just ("clinics" ++ clinic)
+                ClinicsPage ->
+                    Just "clinics"
 
                 DashboardPage subPage ->
                     let
@@ -320,12 +314,17 @@ pageToFragment current =
                 MessagingCenterPage ->
                     Just "messaging-center"
 
+                WellbeingPage ->
+                    Just "wellbeing"
+
+                StockManagementPage ->
+                    Just "stock-management"
+
 
 parser : Parser (Page -> c) c
 parser =
     oneOf
-        [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
-        , map (UserPage (ClinicsPage Nothing)) (s "clinics")
+        [ map (UserPage ClinicsPage) (s "clinics")
         , map DevicePage (s "device")
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
@@ -376,6 +375,8 @@ parser =
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
+        , map (UserPage WellbeingPage) (s "wellbeing")
+        , map (UserPage StockManagementPage) (s "stock-management")
 
         -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top

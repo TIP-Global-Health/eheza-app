@@ -115,7 +115,7 @@ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw app =
                                                                 )
                                                     )
                                         )
-                                    |> Maybe.withDefault (SetActivePage <| UserPage <| ClinicsPage Nothing)
+                                    |> Maybe.withDefault (SetActivePage <| UserPage ClinicsPage)
 
                             groupAssessmentButton =
                                 button

@@ -49,11 +49,13 @@ import Pages.Prenatal.RecurrentActivity.Fetch
 import Pages.Prenatal.RecurrentEncounter.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
+import Pages.StockManagement.Fetch
 import Pages.TraceContact.Fetch
 import Pages.WellChild.Activity.Fetch
 import Pages.WellChild.Encounter.Fetch
 import Pages.WellChild.Participant.Fetch
 import Pages.WellChild.ProgressReport.Fetch
+import Pages.Wellbeing.Fetch
 import Time
 
 
@@ -106,9 +108,14 @@ fetch model =
                 Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (ClinicsPage clinicId) ->
-                Pages.Clinics.Fetch.fetch clinicId
-                    |> List.map MsgIndexedDb
+            UserPage ClinicsPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( healthCenterId, loggedIn ) ->
+                            Pages.Clinics.Fetch.fetch healthCenterId model.indexedDb model.syncManager loggedIn.clinicsPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
             UserPage (DashboardPage subPage) ->
                 getLoggedInData model
@@ -351,6 +358,28 @@ fetch model =
                                     Tuple.first loggedIn.nurse
                             in
                             Pages.MessagingCenter.Fetch.fetch currentDate nurseId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
+            UserPage WellbeingPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            let
+                                nurseId =
+                                    Tuple.first loggedIn.nurse
+                            in
+                            Pages.Wellbeing.Fetch.fetch currentDate nurseId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
+            UserPage StockManagementPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( healthCenterId, _ ) ->
+                            Pages.StockManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
