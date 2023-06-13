@@ -249,7 +249,9 @@
                                             uuid: uuid,
                                             method: 'PATCH',
                                             data: json,
-                                            timestamp: Date.now()
+                                            timestamp: Date.now(),
+                                            // Mark entity as not synced.
+                                            isSynced: 0
                                         };
 
                                         var changeTable = dbSync.nodeChanges;
@@ -269,7 +271,6 @@
                                         }
 
                                         return addShard.then(function () {
-                                            change.isSynced = 0;
                                             return changeTable.add(change).then(function (localId) {
                                                 return Promise.resolve(response);
                                             });
@@ -347,6 +348,13 @@
 
                                           return changeTable.add(change).then(function (localId) {
                                               return Promise.resolve(response);
+                                          }).catch(function (err) {
+                                            // If there was a failure, we try again, assuming it
+                                            // may have been a glitch. If operation fails again,
+                                            // we leave it with no ftther handling.
+                                            return changeTable.add(change).then(function (localId) {
+                                                return Promise.resolve(response);
+                                            })
                                           });
                                     });
                                 });
