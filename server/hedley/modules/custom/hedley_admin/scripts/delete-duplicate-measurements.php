@@ -56,10 +56,11 @@ foreach ($encounter_types as $encounter_type) {
 
     foreach ($encounters_with_duplicates as $encounter) {
       $query = db_select("field_data_field_$encounter_type", 'ne');
+      $query->leftJoin('node', 'n', 'n.nid = ne.entity_id');
       $query->fields('ne', ['entity_id']);
       $query->condition('ne.bundle', $bundle);
       $query->condition("ne.field_{$encounter_type}_target_id", $encounter);
-      $query->orderBy('ne.entity_id');
+      $query->orderBy('n.vid', 'DESC');
       $result = $query->execute()->fetchAllAssoc('entity_id');
 
       $duplicates = array_keys($result);

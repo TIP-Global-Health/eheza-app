@@ -514,7 +514,10 @@
                     if (data[target][node.type]) {
                         data[target][node.type].push(node);
                         if (key !== 'person') {
-                          data[target][node.type].sort((a,b) => (a.vid - b.vid));
+                          // Sorting DESC, so that node with highest vid
+                          // is selected first, as it was edited last, and
+                          // got most recent data.
+                          data[target][node.type].sort((a,b) => (b.vid - a.vid));
                         }
                     } else {
                         data[target] = data[target] || {};
