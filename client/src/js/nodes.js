@@ -513,6 +513,9 @@
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
                         data[target][node.type].push(node);
+                        if (key !== 'person') {
+                          data[target][node.type].sort((a,b) => (a.vid - b.vid));
+                        }
                     } else {
                         data[target] = data[target] || {};
                         data[target][node.type] = [node];
