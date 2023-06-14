@@ -26,8 +26,8 @@ if (!drupal_is_cli()) {
 $memory_limit = drush_get_option('memory_limit', 250);
 
 $fields = field_info_fields();
-
 $encounter_types = [
+  'session',
   'prenatal_encounter',
   'nutrition_encounter',
   'acute_illness_encounter',
@@ -36,7 +36,6 @@ $encounter_types = [
   'ncd_encounter',
 ];
 
-// $session_bundles = $fields['field_session']['bundles']['node'];
 $total_deleted = 0;
 
 foreach ($encounter_types as $encounter_type) {
@@ -44,22 +43,39 @@ foreach ($encounter_types as $encounter_type) {
   $deleted_for_encounter = 0;
   $bundles = $fields["field_$encounter_type"]['bundles']['node'];
   foreach ($bundles as $bundle) {
-    $query = db_select("field_data_field_$encounter_type", 'ne');
-    $query->fields('ne', ["field_{$encounter_type}_target_id"]);
-    $query->condition('ne.bundle', $bundle);
-    $query->addExpression("COUNT(ne.field_{$encounter_type}_target_id)", 'total');
-    $query->groupBy("ne.field_{$encounter_type}_target_id");
+    $query = db_select("field_data_field_$encounter_type", 'et');
+    $query->addField('et', "field_{$encounter_type}_target_id");
+    if ($encounter_type == 'session') {
+      $query->leftJoin('field_data_field_person', 'fp', 'fp.entity_id = et.entity_id');
+      $query->addField('fp', 'field_person_target_id');
+    }
+    $query->condition('et.bundle', $bundle);
+    $query->addExpression("COUNT(et.field_{$encounter_type}_target_id)", 'total');
+    $query->groupBy("et.field_{$encounter_type}_target_id");
+    if ($encounter_type == 'session') {
+      $query->groupBy("fp.field_person_target_id");
+    }
     $query->havingCondition('total', 1, '>');
     $query->range(0, 2000);
-    $result = $query->execute()->fetchAllAssoc("field_{$encounter_type}_target_id");
-    $encounters_with_duplicates = array_keys($result);
+    $duplicates_data = $query->execute()->fetchAll();
 
-    foreach ($encounters_with_duplicates as $encounter) {
-      $query = db_select("field_data_field_$encounter_type", 'ne');
-      $query->leftJoin('node', 'n', 'n.nid = ne.entity_id');
-      $query->fields('ne', ['entity_id']);
-      $query->condition('ne.bundle', $bundle);
-      $query->condition("ne.field_{$encounter_type}_target_id", $encounter);
+    foreach ($duplicates_data as $data) {
+      $encounter = $data->{"field_{$encounter_type}_target_id"};
+      $query = db_select("field_data_field_$encounter_type", 'et');
+      $query->leftJoin('node', 'n', 'n.nid = et.entity_id');
+      $query->addField('et', 'entity_id');
+      if ($encounter_type == 'session') {
+        $person_id = $data->field_person_target_id;
+        if (!$person_id) {
+          // Can not resolve duplicates due to failure to retrieve person ID.
+          continue;
+        }
+        $query->leftJoin('field_data_field_person', 'fp', 'fp.entity_id = et.entity_id');
+        $query->addField('fp', 'field_person_target_id');
+        $query->condition('fp.field_person_target_id', $person_id);
+      }
+      $query->condition('et.bundle', $bundle);
+      $query->condition("et.field_{$encounter_type}_target_id", $encounter);
       $query->orderBy('n.vid', 'DESC');
       $result = $query->execute()->fetchAllAssoc('entity_id');
 
