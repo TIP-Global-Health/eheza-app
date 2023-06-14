@@ -20,6 +20,39 @@ if (!drupal_is_cli()) {
   return;
 }
 
+$fields = field_info_fields();
+// $session_bundles = $fields['field_session']['bundles']['node'];
+$nutrition_bundles = $fields['field_nutrition_encounter']['bundles']['node'];
+
+foreach ($nutrition_bundles as $bundle) {
+  $query = db_select('field_data_field_nutrition_encounter', 'ne');
+  $query->fields('ne', ['field_nutrition_encounter_target_id']);
+  $query->condition('ne.bundle', $bundle);
+  $query->addExpression('COUNT(ne.field_nutrition_encounter_target_id)', 'total');
+  $query->groupBy('ne.field_nutrition_encounter_target_id');
+  $query->havingCondition('total', 1, '>');
+  $query->range(0, 2000);
+  $result = $query->execute()->fetchAllAssoc('field_nutrition_encounter_target_id');
+  $encounters_with_duplicates = array_keys($result);
+
+  foreach ($encounters_with_duplicates as $encounter) {
+    $query = db_select('field_data_field_nutrition_encounter', 'ne');
+    $query->fields('ne', ['entity_id']);
+    $query->condition('ne.bundle', $bundle);
+    $query->condition('ne.field_nutrition_encounter_target_id', $encounter);
+    $query->orderBy('ne.entity_id', 'DESC');
+    $result = $query->execute()->fetchAllAssoc('entity_id');
+
+    $duplicates = array_keys($result);
+    $first = array_shift($duplicates);
+    $total_for_deletion = count($duplicates);
+    drush_print("Deleting $total_for_deletion duplicates of $bundle bundle at encounter $encounter");
+    node_delete_multiple($duplicates);
+  }
+}
+
+exit;
+
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
