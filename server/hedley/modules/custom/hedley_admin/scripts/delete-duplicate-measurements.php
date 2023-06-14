@@ -59,7 +59,7 @@ foreach ($encounter_types as $encounter_type) {
       $query->fields('ne', ['entity_id']);
       $query->condition('ne.bundle', $bundle);
       $query->condition("ne.field_{$encounter_type}_target_id", $encounter);
-      $query->orderBy('ne.entity_id', 'DESC');
+      $query->orderBy('ne.entity_id');
       $result = $query->execute()->fetchAllAssoc('entity_id');
 
       $duplicates = array_keys($result);
