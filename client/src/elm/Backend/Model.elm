@@ -279,6 +279,8 @@ type MsgIndexedDb
     | FetchAcuteIllnessMeasurements AcuteIllnessEncounterId
     | FetchChildMeasurements PersonId
     | FetchChildrenMeasurements (List PersonId)
+    | FetchChildScoreboardEncounter ChildScoreboardEncounterId
+    | FetchChildScoreboardEncountersForParticipant IndividualEncounterParticipantId
     | FetchClinics
     | FetchComputedDashboard HealthCenterId
       -- Request to generate assembled daya needed to display Dashboards
@@ -360,6 +362,8 @@ type MsgIndexedDb
     | HandleFetchedNCDEncounter NCDEncounterId (WebData NCDEncounter)
     | HandleFetchedNCDEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))
     | HandleFetchedNCDMeasurements NCDEncounterId (WebData NCDMeasurements)
+    | HandleFetchedChildScoreboardEncounter ChildScoreboardEncounterId (WebData ChildScoreboardEncounter)
+    | HandleFetchedChildScoreboardEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict ChildScoreboardEncounterId ChildScoreboardEncounter))
     | HandleFetchedParticipantForms (WebData (Dict ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))

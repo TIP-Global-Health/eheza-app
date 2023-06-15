@@ -594,6 +594,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchChildScoreboardEncountersForParticipant id ->
+            ( { model | childScoreboardEncountersByParticipant = Dict.insert id Loading model.childScoreboardEncountersByParticipant }
+            , sw.select childScoreboardEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedChildScoreboardEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardEncountersForParticipant id data ->
+            ( { model | childScoreboardEncountersByParticipant = Dict.insert id data model.childScoreboardEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -1030,6 +1043,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedNCDEncounter id data ->
             ( { model | ncdEncounters = Dict.insert id data model.ncdEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchChildScoreboardEncounter id ->
+            ( { model | childScoreboardEncounters = Dict.insert id Loading model.childScoreboardEncounters }
+            , sw.get childScoreboardEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardEncounter id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardEncounter id data ->
+            ( { model | childScoreboardEncounters = Dict.insert id data model.childScoreboardEncounters }
             , Cmd.none
             , []
             )
