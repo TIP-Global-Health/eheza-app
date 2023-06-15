@@ -1413,3 +1413,11 @@ type alias StockUpdateId =
 
 type StockUpdateUuidType
     = StockUpdateUuidType
+
+
+type alias ChildScoreboardEncounterId =
+    EntityUuid ChildScoreboardEncounterUuidType
+
+
+type ChildScoreboardEncounterUuidType
+    = ChildScoreboardEncounterUuidType
