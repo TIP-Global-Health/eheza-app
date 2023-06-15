@@ -131,6 +131,9 @@
                 else if (type === 'stock-management-measurements') {
                     return viewStockManagementMeasurements(uuid);
                 }
+                else if (type === 'child-scoreboard-measurements') {
+                  return viewMeasurements('child_scoreboard_encounter', uuid);
+                }
                 else {
                     return view(type, uuid);
                 }
@@ -508,6 +511,9 @@
                     }
                     else if (key === 'ncd_encounter') {
                         target = node.ncd_encounter;
+                    }
+                    else if (key === 'child_scorebaord_encounter') {
+                        target = node.child_scorebaord_encounter;
                     }
 
                     data[target] = data[target] || {};
