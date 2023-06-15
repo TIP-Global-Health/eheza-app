@@ -284,6 +284,7 @@ function hedley_device_assign_shards($node, $wrapper) {
     case 'home_visit_encounter':
     case 'well_child_encounter':
     case 'ncd_encounter':
+    case 'child_scoreboard':
       // Assign shards based on Person of the individual participant,
       // to which encounter belongs.
       $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
