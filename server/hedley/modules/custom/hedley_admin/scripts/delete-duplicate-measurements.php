@@ -83,8 +83,7 @@ foreach ($encounter_types as $encounter_type) {
       $first = array_shift($duplicates);
       $total_for_deletion = count($duplicates);
       $deleted_for_encounter += $total_for_deletion;
-      //drush_print("Deleting $total_for_deletion duplicates of $bundle bundle at encounter $encounter");
-      // node_delete_multiple($duplicates);
+      node_delete_multiple($duplicates);
     }
 
     if (round(memory_get_usage() / 1048576) >= $memory_limit) {
