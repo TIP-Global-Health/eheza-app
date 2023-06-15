@@ -1,5 +1,6 @@
 module Pages.ChildScoreboard.Participant.Fetch exposing (fetch)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))

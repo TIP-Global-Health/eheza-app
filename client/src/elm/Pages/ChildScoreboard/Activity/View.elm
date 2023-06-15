@@ -22,8 +22,15 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view :
+    Language
+    -> NominalDate
+    -> ChildScoreboardEncounterId
+    -- -> ChildScoreboardActivity
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate id db model =
     -- @Todo
     emptyNode
 

@@ -90,6 +90,7 @@ type alias ModelIndexedDb =
     , homeVisitEncounterRequests : Dict HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Model
     , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
     , ncdEncounterRequests : Dict NCDEncounterId Backend.NCDEncounter.Model.Model
+    , childScoreboardEncounterRequests : Dict ChildScoreboardEncounterId Backend.ChildScoreboardEncounter.Model.Model
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
     , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
@@ -229,6 +230,7 @@ emptyModelIndexedDb =
     , homeVisitEncounterRequests = Dict.empty
     , wellChildEncounterRequests = Dict.empty
     , ncdEncounterRequests = Dict.empty
+    , childScoreboardEncounterRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualSessionRequests = Dict.empty
     , nurseRequests = Dict.empty
@@ -421,6 +423,7 @@ type MsgIndexedDb
     | MsgHomeVisitEncounter HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Msg
     | MsgWellChildEncounter WellChildEncounterId Backend.WellChildEncounter.Model.Msg
     | MsgNCDEncounter NCDEncounterId Backend.NCDEncounter.Model.Msg
+    | MsgChildScoreboardEncounter ChildScoreboardEncounterId Backend.ChildScoreboardEncounter.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | MsgNurse NurseId Backend.Nurse.Model.Msg

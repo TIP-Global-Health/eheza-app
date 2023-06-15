@@ -175,6 +175,9 @@ pageToFragment current =
                 NCDParticipantPage initiator id ->
                     Just <| "ncd-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
 
+                ChildScoreboardParticipantPage id ->
+                    Just <| "child-scoreboard-participant/" ++ fromEntityUuid id
+
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
 
@@ -307,6 +310,9 @@ pageToFragment current =
                 NCDProgressReportPage initiator ->
                     Just <| "ncd-progress-report/" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragment initiator
 
+                ChildScoreboardEncounterPage id ->
+                    Just <| "child-scoreboard-encounter/" ++ fromEntityUuid id
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -351,6 +357,7 @@ parser =
         , map (\id initiator -> UserPage <| AcuteIllnessParticipantPage initiator id) (s "acute-illness-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| NCDParticipantPage initiator id) (s "ncd-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id -> UserPage <| ChildScoreboardParticipantPage id) (s "child-scoreboard-participant" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -375,6 +382,7 @@ parser =
         , map (\id activity -> UserPage <| WellChildActivityPage id activity) (s "well-child-activity" </> parseUuid </> parseWellChildActivity)
         , map (\id -> UserPage <| WellChildProgressReportPage id) (s "well-child-progress-report" </> parseUuid)
         , map (\id -> UserPage <| NCDEncounterPage id) (s "ncd-encounter" </> parseUuid)
+        , map (\id -> UserPage <| ChildScoreboardEncounterPage id) (s "child-scoreboard-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDActivityPage id activity) (s "ncd-activity" </> parseUuid </> parseNCDActivity)
         , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)

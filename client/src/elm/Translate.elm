@@ -19511,6 +19511,16 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                ChildScoreboardParticipantPage _ ->
+                    { english = "Child Scoreboard Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildScoreboardEncounterPage _ ->
+                    { english = "Child Scoreboard Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

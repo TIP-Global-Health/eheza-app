@@ -40,3 +40,4 @@ emptyModel =
 
 type Msg
     = CloseChildScoreboardEncounter
+    | HandleClosedChildScoreboardEncounter (WebData ())

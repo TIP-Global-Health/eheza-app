@@ -7,6 +7,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Update
+import Backend.ChildScoreboardEncounter.Model
+import Backend.ChildScoreboardEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
@@ -2532,6 +2534,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | ncdEncounterRequests = Dict.insert encounterId subModel model.ncdEncounterRequests }
             , Cmd.map (MsgNCDEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgChildScoreboardEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.childScoreboardEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.childScoreboardEncounterRequests
+                        |> Maybe.withDefault Backend.ChildScoreboardEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.ChildScoreboardEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | childScoreboardEncounterRequests = Dict.insert encounterId subModel model.childScoreboardEncounterRequests }
+            , Cmd.map (MsgChildScoreboardEncounter encounterId) subCmd
             , []
             )
 

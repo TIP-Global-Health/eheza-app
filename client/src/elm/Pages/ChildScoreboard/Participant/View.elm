@@ -27,8 +27,8 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> PersonId -> IndividualParticipantInitiator -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate selectedHealthCenter id initiator db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate selectedHealthCenter id db =
     --@Todo
     text ""
 

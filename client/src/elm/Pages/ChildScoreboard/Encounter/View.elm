@@ -1,15 +1,13 @@
 module Pages.ChildScoreboard.Encounter.View exposing (view)
 
 -- import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
+-- import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
+-- import Backend.Measurement.Model exposing (ChildScoreboardMeasurements)
 
 import AssocList as Dict exposing (Dict)
-import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
-import Backend.ChildScoreboardActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
-import Backend.ChildScoreboardEncounter.Types exposing (ChildScoreboardProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
-import Backend.Measurement.Model exposing (ChildScoreboardMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Gizra.Html exposing (emptyNode)

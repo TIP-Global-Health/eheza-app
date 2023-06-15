@@ -29,3 +29,8 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                             |> toCmd (RemoteData.fromResult >> HandleClosedChildScoreboardEncounter)
                         )
                     )
+
+        HandleClosedChildScoreboardEncounter data ->
+            ( { model | closeChildScoreboardEncounter = data }
+            , Cmd.none
+            )

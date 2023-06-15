@@ -193,6 +193,10 @@ type UserPage
     | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index
     | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity
     | NCDProgressReportPage NCDProgressReportInitiator
+    | ChildScoreboardParticipantPage PersonId
+    | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- nutrition activities index.
+      -- @todo
+      --| ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record nutrition activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
