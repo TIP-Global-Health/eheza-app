@@ -2,6 +2,7 @@ module SyncManager.Utils exposing (..)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
+import Backend.ChildScoreboardEncounter.Encoder
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder

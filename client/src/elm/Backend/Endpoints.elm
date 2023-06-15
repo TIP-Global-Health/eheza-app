@@ -5,6 +5,7 @@ import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncount
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardEncounter)
 import Backend.ChildScoreboardEncounter.Encoder exposing (encodeChildScoreboardEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
