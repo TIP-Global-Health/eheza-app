@@ -505,6 +505,7 @@ type Revision
     | NutritionCaringRevision NutritionCaringId NutritionCaring
     | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
+    | ChildScoreboardEncounterRevision ChildScoreboardEncounterId ChildScoreboardEncounter
     | NutritionFeedingRevision NutritionFeedingId NutritionFeeding
     | NutritionFollowUpRevision NutritionFollowUpId NutritionFollowUp
     | NutritionFoodSecurityRevision NutritionFoodSecurityId NutritionFoodSecurity

@@ -1,6 +1,7 @@
 module Backend.Decoder exposing (decodeRevision)
 
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
@@ -85,6 +86,9 @@ decodeRevision =
 
                     "child_fbf" ->
                         decodeWithUuid ChildFbfRevision decodeFbf
+
+                    "child_scorebaord_encounter" ->
+                        decodeWithUuid ChildScoreboardEncounterRevision decodeChildScoreboardEncounter
 
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
