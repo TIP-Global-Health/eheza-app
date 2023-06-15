@@ -17,20 +17,23 @@ individualEncounterTypeToString encounterType =
         AntenatalEncounter ->
             "antenatal"
 
+        ChildScoreboardEncounter ->
+            "child-scoreboard"
+
         HomeVisitEncounter ->
             "home-visit"
 
         InmmunizationEncounter ->
             "inmmunization"
 
+        NCDEncounter ->
+            "ncd"
+
         NutritionEncounter ->
             "nutrition"
 
         WellChildEncounter ->
             "well-child"
-
-        NCDEncounter ->
-            "ncd"
 
 
 individualEncounterTypeFromString : String -> Maybe IndividualEncounterType
@@ -42,20 +45,23 @@ individualEncounterTypeFromString string =
         "antenatal" ->
             Just AntenatalEncounter
 
+        "child-scoreboard" ->
+            Just ChildScoreboardEncounter
+
         "home-visit" ->
             Just HomeVisitEncounter
 
         "inmmunization" ->
             Just InmmunizationEncounter
 
+        "ncd" ->
+            Just NCDEncounter
+
         "nutrition" ->
             Just NutritionEncounter
 
         "well-child" ->
             Just WellChildEncounter
-
-        "ncd" ->
-            Just NCDEncounter
 
         _ ->
             Nothing

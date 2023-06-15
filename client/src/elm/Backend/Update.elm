@@ -2823,6 +2823,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage InitiatorParticipantsPage personId
 
+                                                    ChildScoreboardEncounter ->
+                                                        --@todo
+                                                        IndividualEncounterTypesPage
+
                                                     NutritionEncounter ->
                                                         NutritionParticipantPage InitiatorParticipantsPage personId
 
@@ -3031,6 +3035,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                                         _ ->
                                             []
+
+                                ChildScoreboardEncounter ->
+                                    -- @todo
+                                    []
 
                                 NutritionEncounter ->
                                     [ emptyNutritionEncounter sessionId currentDate healthCenterId
