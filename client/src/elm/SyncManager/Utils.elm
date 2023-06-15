@@ -469,11 +469,14 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityCall114 identifier ->
             getIdentifier identifier "call_114"
 
-        BackendAuthorityClinic identifier ->
-            getIdentifier identifier "clinic"
-
         BackendAuthorityChildFbf identifier ->
             getIdentifier identifier "child_fbf"
+
+        BackendAuthorityChildScoreboardEncounter identifier ->
+            getIdentifier identifier "child_scorebaord_encounter"
+
+        BackendAuthorityClinic identifier ->
+            getIdentifier identifier "clinic"
 
         BackendAuthorityContributingFactors identifier ->
             getIdentifier identifier "contributing_factors"
@@ -1148,11 +1151,14 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityCall114 identifier ->
             encode Backend.Measurement.Encoder.encodeCall114 identifier
 
-        BackendAuthorityClinic identifier ->
-            encode Backend.Clinic.Encoder.encodeClinic identifier
-
         BackendAuthorityChildFbf identifier ->
             encode Backend.Measurement.Encoder.encodeChildFbf identifier
+
+        BackendAuthorityChildScoreboardEncounter identifier ->
+            encode Backend.ChildScoreboardEncounter.Encoder.encodeChildScoreboardEncounter identifier
+
+        BackendAuthorityClinic identifier ->
+            encode Backend.Clinic.Encoder.encodeClinic identifier
 
         BackendAuthorityContributingFactors identifier ->
             encode Backend.Measurement.Encoder.encodeContributingFactors identifier
@@ -1783,11 +1789,14 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityCall114 identifier ->
             Call114Revision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityClinic identifier ->
-            ClinicRevision (toEntityUuid identifier.uuid) identifier.entity
-
         BackendAuthorityChildFbf identifier ->
             ChildFbfRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardEncounter identifier ->
+            ChildScoreboardEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityClinic identifier ->
+            ClinicRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityContributingFactors identifier ->
             ContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
