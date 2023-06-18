@@ -1086,6 +1086,106 @@ type NCDAStep
     | NCDAStepPermanentQuestions2
 
 
+type alias NCDADataNEW =
+    { form : NCDAFormNEW
+    , helperState : Maybe NCDASignNEW
+    }
+
+
+emptyNCDADataNEW : NCDADataNEW
+emptyNCDADataNEW =
+    { form = emptyNCDAFormNEW
+    , helperState = Nothing
+    }
+
+
+type alias NCDAFormNEW =
+    { step : NCDAStepNEW
+
+    -- Step 1.
+    , numberOfANCVisitsCorrect : Maybe Bool
+    , numberOfANCVisits : Maybe Int
+    , supplementsDuringPregnancy : Maybe Bool
+    , takenSupplementsPerGuidance : Maybe Bool
+
+    -- Step 2.
+    , numberOfMissedImmunizationAppointmentsCorrect : Maybe Bool
+    , foodSupplements : Maybe Bool
+    , foodSupplementsType : Maybe NutritionSupplementType
+    , takingFoodSupplements : Maybe Bool
+
+    -- Step 3.
+    , fiveFoodGroups : Maybe Bool
+    , breastfedForSixMonths : Maybe Bool
+    , appropriateComplementaryFeeding : Maybe Bool
+
+    -- Step 4.
+    , beneficiaryCashTransfer : Maybe Bool
+    , receivingCashTransfer : Maybe Bool
+    , conditionalFoodItems : Maybe Bool
+    , childWithAcuteMalnutrition : Maybe Bool
+    , treatedForAcuteMalnutrition : Maybe Bool
+    , childWitDisability : Maybe Bool
+    , receivingSupport : Maybe Bool
+    , childGotDiarrhea : Maybe Bool
+
+    -- Step 5.
+    , hasCleanWater : Maybe Bool
+    , hasHandwashingFacility : Maybe Bool
+    , hasToilets : Maybe Bool
+    , hasKitchenGarden : Maybe Bool
+    , insecticideTreatedBednets : Maybe Bool
+    }
+
+
+emptyNCDAFormNEW : NCDAFormNEW
+emptyNCDAFormNEW =
+    { step = NCDAStepAntenatalCare
+
+    -- Step 1.
+    , numberOfANCVisitsCorrect = Nothing
+    , numberOfANCVisits = Nothing
+    , supplementsDuringPregnancy = Nothing
+    , takenSupplementsPerGuidance = Nothing
+
+    -- Step 2.
+    , numberOfMissedImmunizationAppointmentsCorrect = Nothing
+    , foodSupplements = Nothing
+    , foodSupplementsType = Nothing
+    , takingFoodSupplements = Nothing
+
+    -- Step 3.
+    , fiveFoodGroups = Nothing
+    , breastfedForSixMonths = Nothing
+    , appropriateComplementaryFeeding = Nothing
+
+    -- Step 4.
+    , beneficiaryCashTransfer = Nothing
+    , receivingCashTransfer = Nothing
+    , conditionalFoodItems = Nothing
+    , childWithAcuteMalnutrition = Nothing
+    , treatedForAcuteMalnutrition = Nothing
+    , childWitDisability = Nothing
+    , receivingSupport = Nothing
+    , childGotDiarrhea = Nothing
+
+    -- Step 5.
+    , hasCleanWater = Nothing
+    , hasHandwashingFacility = Nothing
+    , hasToilets = Nothing
+    , hasKitchenGarden = Nothing
+    , insecticideTreatedBednets = Nothing
+    }
+
+
+type NCDAStepNEW
+    = NCDAStepAntenatalCare
+    | NCDAStepUniversalInterventions
+    | NCDAStepNutritionBehavior
+    | NCDAStepTargetedInterventions
+    | NCDAStepInfrastructureEnvironment
+
+
 type GroupOfFoods
     = Staples
     | Legumes

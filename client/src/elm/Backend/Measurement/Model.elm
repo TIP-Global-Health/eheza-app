@@ -297,6 +297,32 @@ type NCDASign
     | NoNCDASigns
 
 
+type NCDASignNEW
+    = NumberOfANCVisitsCorrect
+    | SupplementsDuringPregnancy
+    | TakenSupplementsPerGuidance
+    | NumberOfMissedImmunizationAppointmentsCorrect
+    | FoodSupplements
+    | TakingFoodSupplements
+    | FiveFoodGroups
+    | BreastfedForSixMonths
+    | AppropriateComplementaryFeeding
+    | BeneficiaryCashTransfer
+    | ReceivingCashTransfer
+    | ConditionalFoodItems
+    | ChildWithAcuteMalnutrition
+    | TreatedForAcuteMalnutrition
+    | ChildWitDisability
+    | ReceivingSupport
+    | ChildGotDiarrhea
+    | HasHandwashingFacility
+    | HasCleanWater
+    | HasToilets
+    | HasKitchenGarden
+    | InsecticideTreatedBednets
+    | NoNCDASignsNEW
+
+
 
 -- NUTRITION MEASUREMENTS
 
