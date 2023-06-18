@@ -161,6 +161,7 @@ type alias ModelIndexedDb =
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
     , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
     , postNCDEncounter : Dict IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
+    , postChildScoreboardEncounter : Dict IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
 
     -- Dashboard Statistics.
     , computedDashboards : Dict HealthCenterId ComputedDashboard
@@ -222,6 +223,7 @@ emptyModelIndexedDb =
     , postWellChildEncounter = Dict.empty
     , postAcuteIllnessEncounter = Dict.empty
     , postNCDEncounter = Dict.empty
+    , postChildScoreboardEncounter = Dict.empty
     , postRelationship = Dict.empty
     , postSession = NotAsked
     , prenatalEncounterRequests = Dict.empty
@@ -396,6 +398,7 @@ type MsgIndexedDb
     | PostHomeVisitEncounter HomeVisitEncounter
     | PostWellChildEncounter WellChildEncounter
     | PostNCDEncounter NCDEncounter
+    | PostChildScoreboardEncounter ChildScoreboardEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PatchPersonInitator PersonId (WebData Person)
@@ -409,6 +412,7 @@ type MsgIndexedDb
     | HandlePostedHomeVisitEncounter IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
     | HandlePostedWellChildEncounter IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
     | HandlePostedNCDEncounter IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
+    | HandlePostedChildScoreboardEncounter IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,

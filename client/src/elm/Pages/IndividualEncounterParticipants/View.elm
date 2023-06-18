@@ -239,8 +239,7 @@ viewParticipant language currentDate encounterType db id person =
                     [ onClick <| SetActivePage <| UserPage <| NCDParticipantPage InitiatorParticipantsPage id ]
 
                 ChildScoreboardEncounter ->
-                    -- @todo
-                    []
+                    [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
 
         viewAction =
             div [ class "action" ]

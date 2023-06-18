@@ -474,7 +474,7 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             getIdentifier identifier "child_fbf"
 
         BackendAuthorityChildScoreboardEncounter identifier ->
-            getIdentifier identifier "child_scorebaord_encounter"
+            getIdentifier identifier "child_scoreboard_encounter"
 
         BackendAuthorityClinic identifier ->
             getIdentifier identifier "clinic"

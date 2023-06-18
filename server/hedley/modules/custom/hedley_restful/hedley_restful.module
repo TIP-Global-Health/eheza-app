@@ -41,7 +41,7 @@ const HEDLEY_RESTFUL_FOR_UPLOAD = [
  */
 const HEDLEY_RESTFUL_SHARDED = [
   'acute_illness_encounter' => 'acute-illness-encounters',
-  'child_scorebaord_encounter' => 'child-scorebaord-encounter',
+  'child_scoreboard_encounter' => 'child-scoreboard-encounter',
   'clinic' => 'clinics',
   'home_visit_encounter' => 'home-visit-encounter',
   'individual_participant' => 'individual-participants',

@@ -2871,8 +2871,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                         PrenatalParticipantPage InitiatorParticipantsPage personId
 
                                                     ChildScoreboardEncounter ->
-                                                        --@todo
-                                                        IndividualEncounterTypesPage
+                                                        ChildScoreboardParticipantPage personId
 
                                                     NutritionEncounter ->
                                                         NutritionParticipantPage InitiatorParticipantsPage personId
@@ -3084,8 +3083,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                             []
 
                                 ChildScoreboardEncounter ->
-                                    -- @todo
-                                    []
+                                    [ Backend.ChildScoreboardEncounter.Model.emptyChildScoreboardEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostChildScoreboardEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
 
                                 NutritionEncounter ->
                                     [ emptyNutritionEncounter sessionId currentDate healthCenterId
@@ -3266,6 +3267,27 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     [ App.Model.SetActivePage <|
                         UserPage <|
                             Pages.Page.NCDEncounterPage ncdEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
+        PostChildScoreboardEncounter childScoreboardEncounter ->
+            ( { model | postChildScoreboardEncounter = Dict.insert childScoreboardEncounter.participant Loading model.postChildScoreboardEncounter }
+            , sw.post childScoreboardEncounterEndpoint childScoreboardEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedChildScoreboardEncounter childScoreboardEncounter.participant)
+            , []
+            )
+
+        HandlePostedChildScoreboardEncounter participantId data ->
+            ( { model | postChildScoreboardEncounter = Dict.insert participantId data model.postChildScoreboardEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( childScoreboardEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.ChildScoreboardEncounterPage childScoreboardEncounterId
                     ]
                 )
                 data

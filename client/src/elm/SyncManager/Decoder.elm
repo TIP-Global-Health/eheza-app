@@ -496,7 +496,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeFbf
                             BackendAuthorityChildFbf
 
-                    "child_scorebaord_encounter" ->
+                    "child_scoreboard_encounter" ->
                         doDecode
                             Backend.ChildScoreboardEncounter.Decoder.decodeChildScoreboardEncounter
                             BackendAuthorityChildScoreboardEncounter

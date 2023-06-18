@@ -236,6 +236,7 @@ function hedley_schedule_field_default_field_bases() {
       'allowed_values' => array(
         'acute-illness' => 'Acute Illness',
         'antenatal' => 'Antenatal',
+        'child-scoreboard' => 'Child Scoreboard',
         'home-visit' => 'Home visit',
         'inmmunization' => 'Inmmunization',
         'ncd' => 'NCD',

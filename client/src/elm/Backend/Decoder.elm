@@ -87,7 +87,7 @@ decodeRevision =
                     "child_fbf" ->
                         decodeWithUuid ChildFbfRevision decodeFbf
 
-                    "child_scorebaord_encounter" ->
+                    "child_scoreboard_encounter" ->
                         decodeWithUuid ChildScoreboardEncounterRevision decodeChildScoreboardEncounter
 
                     "clinic" ->

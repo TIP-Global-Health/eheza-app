@@ -55,7 +55,7 @@ var tableForType = {
     call_114: 'shards',
     catchment_area: 'nodes',
     child_fbf: 'shards',
-    child_scorebaord_encounter: 'shards',
+    child_scoreboard_encounter: 'shards',
     clinic: 'shards',
     contributing_factors: 'shards',
     counseling_schedule: 'nodes',

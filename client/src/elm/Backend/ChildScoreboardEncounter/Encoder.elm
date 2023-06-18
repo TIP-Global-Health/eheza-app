@@ -20,6 +20,6 @@ encodeChildScoreboardEncounter session =
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
     , ( "deleted", bool False )
-    , ( "type", string "child_scorebaord_encounter" )
+    , ( "type", string "child_scoreboard_encounter" )
     ]
         ++ encodeIfExists "shard" session.shard encodeEntityUuid

@@ -512,8 +512,8 @@
                     else if (key === 'ncd_encounter') {
                         target = node.ncd_encounter;
                     }
-                    else if (key === 'child_scorebaord_encounter') {
-                        target = node.child_scorebaord_encounter;
+                    else if (key === 'child_scoreboard_encounter') {
+                        target = node.child_scoreboard_encounter;
                     }
 
                     data[target] = data[target] || {};

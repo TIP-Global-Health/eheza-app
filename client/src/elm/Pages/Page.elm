@@ -195,8 +195,6 @@ type UserPage
     | NCDProgressReportPage NCDProgressReportInitiator
     | ChildScoreboardParticipantPage PersonId
     | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- nutrition activities index.
-      -- @todo
-      --| ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record nutrition activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
