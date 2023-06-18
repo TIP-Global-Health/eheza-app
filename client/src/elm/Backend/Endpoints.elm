@@ -1266,3 +1266,8 @@ childScoreboardEncounterEndpoint =
     swEndpoint "nodes/child_scoreboard_encounter" decodeChildScoreboardEncounter
         |> withValueEncoder (object << encodeChildScoreboardEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
+
+
+childScoreboardMeasurementsEndpoint : ReadOnlyEndPoint Error ChildScoreboardEncounterId ChildScoreboardMeasurements ()
+childScoreboardMeasurementsEndpoint =
+    swEndpoint "nodes/child-scoreboard-measurements" decodeChildScoreboardMeasurements

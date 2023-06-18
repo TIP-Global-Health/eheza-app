@@ -139,6 +139,7 @@ type alias ModelIndexedDb =
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
     , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
     , ncdMeasurements : Dict NCDEncounterId (WebData NCDMeasurements)
+    , scoreboardMeasurements : Dict ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
     , stockManagementMeasurements : Dict HealthCenterId (WebData StockManagementMeasurements)
     , stockManagementData : Dict HealthCenterId (WebData StockManagementData)
 
@@ -205,6 +206,7 @@ emptyModelIndexedDb =
     , ncdEncounters = Dict.empty
     , ncdEncountersByParticipant = Dict.empty
     , ncdMeasurements = Dict.empty
+    , scoreboardMeasurements = Dict.empty
     , stockManagementMeasurements = Dict.empty
     , stockManagementData = Dict.empty
     , childScoreboardEncounters = Dict.empty
@@ -285,6 +287,7 @@ type MsgIndexedDb
     | FetchChildrenMeasurements (List PersonId)
     | FetchChildScoreboardEncounter ChildScoreboardEncounterId
     | FetchChildScoreboardEncountersForParticipant IndividualEncounterParticipantId
+    | FetchChildScoreboardMeasurements ChildScoreboardEncounterId
     | FetchClinics
     | FetchComputedDashboard HealthCenterId
       -- Request to generate assembled daya needed to display Dashboards
@@ -344,6 +347,9 @@ type MsgIndexedDb
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStatsRaw))
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
+    | HandleFetchedChildScoreboardEncounter ChildScoreboardEncounterId (WebData ChildScoreboardEncounter)
+    | HandleFetchedChildScoreboardEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict ChildScoreboardEncounterId ChildScoreboardEncounter))
+    | HandleFetchedChildScoreboardMeasurements ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
@@ -366,8 +372,6 @@ type MsgIndexedDb
     | HandleFetchedNCDEncounter NCDEncounterId (WebData NCDEncounter)
     | HandleFetchedNCDEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))
     | HandleFetchedNCDMeasurements NCDEncounterId (WebData NCDMeasurements)
-    | HandleFetchedChildScoreboardEncounter ChildScoreboardEncounterId (WebData ChildScoreboardEncounter)
-    | HandleFetchedChildScoreboardEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict ChildScoreboardEncounterId ChildScoreboardEncounter))
     | HandleFetchedParticipantForms (WebData (Dict ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))

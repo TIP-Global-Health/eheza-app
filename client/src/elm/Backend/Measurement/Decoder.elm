@@ -269,6 +269,11 @@ decodeNCDMeasurements =
         |> optional "ncd_vitals" (decodeHead decodeNCDVitals) Nothing
 
 
+decodeChildScoreboardMeasurements : Decoder ChildScoreboardMeasurements
+decodeChildScoreboardMeasurements =
+    succeed ChildScoreboardMeasurements
+
+
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
 decodeStockManagementMeasurements =
     succeed StockManagementMeasurements

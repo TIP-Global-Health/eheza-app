@@ -742,6 +742,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchChildScoreboardMeasurements id ->
+            ( { model | scoreboardMeasurements = Dict.insert id Loading model.scoreboardMeasurements }
+            , sw.get scoreboardMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardMeasurements id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardMeasurements id data ->
+            ( { model | scoreboardMeasurements = Dict.insert id data model.scoreboardMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchFollowUpParticipants ids ->
             if List.isEmpty ids then
                 noChange

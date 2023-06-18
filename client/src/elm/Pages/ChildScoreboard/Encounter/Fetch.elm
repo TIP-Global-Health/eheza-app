@@ -35,9 +35,7 @@ fetch id db =
 
         -- We fetch measurements of all encounters.
         fetchMeasurementsMsgs =
-            -- @todo
-            -- List.map FetchChildScoreboardMeasurements encountersIds
-            []
+            List.map FetchChildScoreboardMeasurements encountersIds
     in
     Maybe.Extra.values
         [ Maybe.map FetchIndividualEncounterParticipant participantId
