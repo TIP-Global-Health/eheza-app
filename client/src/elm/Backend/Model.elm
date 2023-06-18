@@ -139,7 +139,7 @@ type alias ModelIndexedDb =
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
     , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
     , ncdMeasurements : Dict NCDEncounterId (WebData NCDMeasurements)
-    , scoreboardMeasurements : Dict ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
+    , childScoreboardMeasurements : Dict ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
     , stockManagementMeasurements : Dict HealthCenterId (WebData StockManagementMeasurements)
     , stockManagementData : Dict HealthCenterId (WebData StockManagementData)
 
@@ -206,7 +206,7 @@ emptyModelIndexedDb =
     , ncdEncounters = Dict.empty
     , ncdEncountersByParticipant = Dict.empty
     , ncdMeasurements = Dict.empty
-    , scoreboardMeasurements = Dict.empty
+    , childScoreboardMeasurements = Dict.empty
     , stockManagementMeasurements = Dict.empty
     , stockManagementData = Dict.empty
     , childScoreboardEncounters = Dict.empty

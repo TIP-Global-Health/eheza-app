@@ -743,14 +743,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         FetchChildScoreboardMeasurements id ->
-            ( { model | scoreboardMeasurements = Dict.insert id Loading model.scoreboardMeasurements }
-            , sw.get scoreboardMeasurementsEndpoint id
+            ( { model | childScoreboardMeasurements = Dict.insert id Loading model.childScoreboardMeasurements }
+            , sw.get childScoreboardMeasurementsEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardMeasurements id)
             , []
             )
 
         HandleFetchedChildScoreboardMeasurements id data ->
-            ( { model | scoreboardMeasurements = Dict.insert id data model.scoreboardMeasurements }
+            ( { model | childScoreboardMeasurements = Dict.insert id data model.childScoreboardMeasurements }
             , Cmd.none
             , []
             )

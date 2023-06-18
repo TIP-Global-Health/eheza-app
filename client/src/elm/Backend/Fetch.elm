@@ -260,6 +260,21 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchChildScoreboardEncounter id ->
+            Dict.get id model.childScoreboardEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchChildScoreboardEncountersForParticipant id ->
+            Dict.get id model.childScoreboardEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchChildScoreboardMeasurements id ->
+            Dict.get id model.childScoreboardMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchStockManagementMeasurements id ->
             Dict.get id model.stockManagementMeasurements
                 |> Maybe.withDefault NotAsked
@@ -421,6 +436,15 @@ forget msg model =
 
         FetchNCDMeasurements id ->
             { model | ncdMeasurements = Dict.remove id model.ncdMeasurements }
+
+        FetchChildScoreboardEncounter id ->
+            { model | childScoreboardEncounters = Dict.remove id model.childScoreboardEncounters }
+
+        FetchChildScoreboardEncountersForParticipant id ->
+            { model | childScoreboardEncountersByParticipant = Dict.remove id model.childScoreboardEncountersByParticipant }
+
+        FetchChildScoreboardMeasurements id ->
+            { model | childScoreboardMeasurements = Dict.remove id model.childScoreboardMeasurements }
 
         FetchStockManagementMeasurements id ->
             { model | stockManagementMeasurements = Dict.remove id model.stockManagementMeasurements }
