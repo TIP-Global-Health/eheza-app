@@ -75,11 +75,11 @@ type IndividualEncounterType
     | AntenatalEncounter
     | ChildScoreboardEncounter
     | HomeVisitEncounter
-    | NutritionEncounter
-    | WellChildEncounter
-    | NCDEncounter
       -- @todo : can be removed?
     | InmmunizationEncounter
+    | NCDEncounter
+    | NutritionEncounter
+    | WellChildEncounter
 
 
 type DeliveryLocation
