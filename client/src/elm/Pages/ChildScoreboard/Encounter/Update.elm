@@ -2,6 +2,7 @@ module Pages.ChildScoreboard.Encounter.Update exposing (update)
 
 import App.Model
 import Backend.ChildScoreboardEncounter.Model
+import Backend.Measurement.Model exposing (WeightInGrm(..))
 import Backend.Model
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -24,4 +25,63 @@ update msg model =
             ( model
             , Cmd.none
             , [ App.Model.SetActivePage page ]
+            )
+
+        SetNCDABoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ncdaData.form
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBirthWeight string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | birthWeight = String.toFloat string |> Maybe.map WeightInGrm
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNCDAFormStep step ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | step = Just step })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNCDAHelperState state ->
+            let
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | helperState = state })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
             )
