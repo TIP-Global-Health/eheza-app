@@ -1011,6 +1011,8 @@ type TranslationId
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
+    | NCDANumberOfANCVisitsHeader Int
+    | NCDANumberOfANCVisitsQuestion
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -1763,6 +1765,7 @@ type TranslationId
     | View
     | ViewProgressReport
     | Village
+    | Visits
     | VitaminAWarningPopupMessage
     | WaitForVitalsRecheckHelper
     | WaitForLabsResultsHelper
@@ -9409,22 +9412,22 @@ translationSet trans =
         NCDASignNEWCounceling sign ->
             case sign of
                 NumberOfANCVisitsCorrect ->
-                    { english = "Provide counseling to the mother on the importance of regular ANC visits."
+                    { english = "Provide counseling to the mother on the importance of regular ANC visits"
                     , kinyarwanda = Nothing
                     }
 
                 SupplementsDuringPregnancy ->
-                    { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and referral the mother to the HC to receive the Iron/Folic Acid/MMS."
+                    { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and referral the mother to the HC to receive the Iron/Folic Acid/MMS"
                     , kinyarwanda = Nothing
                     }
 
                 NumberOfMissedImmunizationAppointmentsCorrect ->
-                    { english = "Provide the counseling to the mother to update the child's vaccination record with a Nurse through a Standard Pediatric Visit."
+                    { english = "Provide the counseling to the mother to update the child's vaccination record with a Nurse through a Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
 
                 TakingFoodSupplements ->
-                    { english = "Provide counseling to the mother on the consequences that may occur to the mother and the child."
+                    { english = "Provide counseling to the mother on the consequences that may occur to the mother and the child"
                     , kinyarwanda = Nothing
                     }
 
@@ -9736,6 +9739,27 @@ translationSet trans =
                     { english = "Edema"
                     , kinyarwanda = Just "Kubyimba"
                     }
+
+        NCDANumberOfANCVisitsHeader number ->
+            if number == 0 then
+                { english = "According to E-Heza, the mother had no ANC standard visits"
+                , kinyarwanda = Nothing
+                }
+
+            else if number == 0 then
+                { english = "According to E-Heza, the mother had 1 ANC standard visit"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "According to E-Heza, the mother had " ++ String.fromInt number ++ " ANC standard visits"
+                , kinyarwanda = Nothing
+                }
+
+        NCDANumberOfANCVisitsQuestion ->
+            { english = "How many ANC standard visits did the mother recieve"
+            , kinyarwanda = Nothing
+            }
 
         NCDDangerSign sign ->
             case sign of
@@ -18579,6 +18603,11 @@ translationSet trans =
         Village ->
             { english = "Village"
             , kinyarwanda = Just "Umudugudu"
+            }
+
+        Visits ->
+            { english = "visits"
+            , kinyarwanda = Nothing
             }
 
         VitaminAWarningPopupMessage ->

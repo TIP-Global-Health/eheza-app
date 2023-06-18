@@ -60,11 +60,26 @@ update msg model =
             , []
             )
 
+        SetNumberANCVisitsMsg string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | numberOfANCVisits = String.toFloat string })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetNCDAFormStep step ->
             let
                 updatedForm =
                     model.ncdaData.form
-                        |> (\form -> { form | step = Just step })
+                        |> (\form -> { form | step = step })
 
                 updatedData =
                     model.ncdaData

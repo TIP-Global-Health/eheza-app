@@ -3,20 +3,20 @@ module Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Backend.ChildScoreboardEncounter.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, NCDASign)
+import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, NCDASign, NCDASignNEW)
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (NCDAData, NCDAForm, NCDAStep, emptyNCDAData)
+import Measurement.Model exposing (NCDADataNEW, NCDAFormNEW, NCDAStepNEW, emptyNCDADataNEW)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { ncdaData : NCDAData }
+    { ncdaData : NCDADataNEW }
 
 
 emptyModel : Model
 emptyModel =
-    { ncdaData = emptyNCDAData }
+    { ncdaData = emptyNCDADataNEW }
 
 
 type alias AssembledData =
@@ -31,7 +31,8 @@ type alias AssembledData =
 type Msg
     = CloseEncounter ChildScoreboardEncounterId
     | SetActivePage Page
-    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetNCDABoolInput (Bool -> NCDAFormNEW -> NCDAFormNEW) Bool
     | SetBirthWeight String
-    | SetNCDAFormStep NCDAStep
-    | SetNCDAHelperState (Maybe NCDASign)
+    | SetNumberANCVisitsMsg String
+    | SetNCDAFormStep NCDAStepNEW
+    | SetNCDAHelperState (Maybe NCDASignNEW)

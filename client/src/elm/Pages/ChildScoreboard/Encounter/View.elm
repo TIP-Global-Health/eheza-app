@@ -12,7 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
-import Measurement.Model exposing (NCDAData)
+import Measurement.Model exposing (NCDADataNEW)
 import Measurement.View
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
@@ -80,22 +80,23 @@ viewNCDAContent :
     -> NominalDate
     -> AssembledData
     -> ModelIndexedDb
-    -> NCDAData
+    -> NCDADataNEW
     -> List (Html Msg)
 viewNCDAContent language currentDate assembled db data =
     let
         saveMsg =
             SetActivePage PinCodePage
     in
-    Measurement.View.viewNCDAContent language
+    Measurement.View.viewNCDAContentNEW language
         currentDate
         assembled.person
         SetNCDABoolInput
         SetBirthWeight
+        SetNumberANCVisitsMsg
         SetNCDAFormStep
         saveMsg
         SetNCDAHelperState
-        data.helperState
-        data.form
+        -- @todo
+        -- data.helperState
         Nothing
-        []
+        data.form

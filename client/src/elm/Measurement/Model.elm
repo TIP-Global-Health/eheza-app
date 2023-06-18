@@ -1104,7 +1104,7 @@ type alias NCDAFormNEW =
 
     -- Step 1.
     , numberOfANCVisitsCorrect : Maybe Bool
-    , numberOfANCVisits : Maybe Int
+    , numberOfANCVisits : Maybe Float
     , supplementsDuringPregnancy : Maybe Bool
     , takenSupplementsPerGuidance : Maybe Bool
 
@@ -1135,6 +1135,9 @@ type alias NCDAFormNEW =
     , hasToilets : Maybe Bool
     , hasKitchenGarden : Maybe Bool
     , insecticideTreatedBednets : Maybe Bool
+
+    -- For future use.
+    , birthWeight : Maybe WeightInGrm
     }
 
 
@@ -1175,6 +1178,9 @@ emptyNCDAFormNEW =
     , hasToilets = Nothing
     , hasKitchenGarden = Nothing
     , insecticideTreatedBednets = Nothing
+
+    -- For future use.
+    , birthWeight = Nothing
     }
 
 
