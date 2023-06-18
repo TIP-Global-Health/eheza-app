@@ -636,7 +636,8 @@ div.page-person {
 }
 
 div.page-participant,
-div.page-activity {
+div.page-activity,
+div.page-encounter.child-scoreboard {
 
   .tasks-count {
     background: $color-primary;
@@ -1747,7 +1748,6 @@ div.page-activity.stock-management {
   }
 }
 
-// Acute Illness Activity page
 div.page-activity.nutrition {
 
   .ui.full.segment {
@@ -1820,6 +1820,19 @@ div.page-activity.nutrition {
       }
     }
   }
+}
+
+div.page-encounter.child-scoreboard {
+
+  .ui.full.segment .full.content .ui.form.ncda {
+      min-height: 210px;
+
+      .label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+    }
+
 }
 
 div.page-activity.prenatal,
