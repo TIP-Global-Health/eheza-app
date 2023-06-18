@@ -179,6 +179,9 @@ initiatorFromUrlFragment s =
         "ncd" ->
             IndividualEncounterOrigin NCDEncounter |> Just
 
+        "child-scoreboard" ->
+            IndividualEncounterOrigin ChildScoreboardEncounter |> Just
+
         _ ->
             if String.startsWith "session-" s then
                 String.dropLeft (String.length "session-") s
