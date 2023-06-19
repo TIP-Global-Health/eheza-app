@@ -1824,7 +1824,17 @@ div.page-activity.nutrition {
 
 div.page-encounter.child-scoreboard {
 
-  .ui.full.segment .full.content .ui.form.ncda {
+  .ui.unstackable.items {
+
+    .header {
+      background: $color-primary;
+      font-size: 26px;
+      font-weight: bold;
+      padding-top: 10px;
+      text-align: center;
+    }
+
+    .ui.full.segment .full.content .ui.form.ncda {
       min-height: 210px;
 
       .label {
@@ -1832,6 +1842,7 @@ div.page-encounter.child-scoreboard {
         margin-bottom: 5px;
       }
     }
+  }
 
 }
 

@@ -2915,7 +2915,8 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                         , actionButton saveMsg
                         ]
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ div [ class "header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form ncda" ]

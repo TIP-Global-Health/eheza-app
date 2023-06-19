@@ -85,6 +85,7 @@ import Measurement.Model
         ( FloatInputConstraints
         , GroupOfFoods(..)
         , LaboratoryTask(..)
+        , NCDAStepNEW(..)
         , NextStepsTask(..)
         )
 import Pages.AcuteIllness.Activity.Types
@@ -415,6 +416,7 @@ type TranslationId
     | ANCNewborn
     | And
     | AndSentence
+    | AntenatalCare
     | AntenatalProgressReport
     | AppName
     | AppointmentConfirmation
@@ -785,6 +787,7 @@ type TranslationId
     | IndividualEncounterSubsequentVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType Bool
     | IndividualEncounterTypes
+    | InfrastructureEnvironment
     | InfrastructureEnvironmentWash
     | InitialResultsDisplay InitialResultsDisplay
     | IntractableVomiting Bool
@@ -1013,6 +1016,7 @@ type TranslationId
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
     | NCDANumberOfANCVisitsHeader Int
     | NCDANumberOfANCVisitsQuestion
+    | NCDAStep NCDAStepNEW
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -2961,6 +2965,11 @@ translationSet trans =
             , kinyarwanda = Just "maze"
             }
 
+        AntenatalCare ->
+            { english = "Antenatal Care"
+            , kinyarwanda = Just "Isuzuma ku mugore utwite"
+            }
+
         AntenatalProgressReport ->
             { english = "Antenatal Progress Report"
             , kinyarwanda = Nothing
@@ -3507,9 +3516,7 @@ translationSet trans =
                     }
 
                 Pages.GlobalCaseManagement.Model.FilterAntenatal ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
-                    }
+                    translationSet AntenatalCare
 
                 FilterNutrition ->
                     { english = "Home Visit"
@@ -3539,9 +3546,7 @@ translationSet trans =
                     }
 
                 Pages.GlobalCaseManagement.Model.FilterAntenatal ->
-                    { english = "Antenatal Care Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umugore utwite"
-                    }
+                    translationSet AntenatalCare
 
                 FilterNutrition ->
                     { english = "Child Nutrition Follow Up"
@@ -4969,9 +4974,7 @@ translationSet trans =
                     }
 
                 AntenatalPage ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku Mugore Utwite"
-                    }
+                    translationSet AntenatalCare
 
         EncounterWarningForDiagnosisPane warning suffix ->
             let
@@ -6474,9 +6477,7 @@ translationSet trans =
                     }
 
                 AntenatalEncounter ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
-                    }
+                    translationSet AntenatalCare
 
                 ChildScoreboardEncounter ->
                     { english = "Child Scoreboard"
@@ -6516,6 +6517,11 @@ translationSet trans =
 
         IndividualEncounterTypes ->
             { english = "Individual Encounter Types"
+            , kinyarwanda = Nothing
+            }
+
+        InfrastructureEnvironment ->
+            { english = "Infrastructure & Environment"
             , kinyarwanda = Nothing
             }
 
@@ -9761,6 +9767,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        NCDAStep step ->
+            case step of
+                NCDAStepAntenatalCare ->
+                    translationSet AntenatalCare
+
+                NCDAStepUniversalInterventions ->
+                    translationSet UniversalInterventions
+
+                NCDAStepNutritionBehavior ->
+                    translationSet NutritionBehavior
+
+                NCDAStepTargetedInterventions ->
+                    translationSet TargetedInterventions
+
+                NCDAStepInfrastructureEnvironment ->
+                    translationSet InfrastructureEnvironment
+
         NCDDangerSign sign ->
             case sign of
                 Dyspnea ->
@@ -11311,9 +11334,7 @@ translationSet trans =
                     }
 
                 Pages.PatientRecord.Model.FilterAntenatal ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
-                    }
+                    translationSet AntenatalCare
 
                 FilterDemographics ->
                     { english = "Demographics"
