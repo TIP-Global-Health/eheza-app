@@ -2845,13 +2845,14 @@ viewNCDAContentNEW :
     -> ((Bool -> NCDAFormNEW -> NCDAFormNEW) -> Bool -> msg)
     -> (String -> msg)
     -> (String -> msg)
+    -> (NutritionSupplementType -> msg)
     -> (NCDAStepNEW -> msg)
     -> msg
     -> (Maybe NCDASignNEW -> msg)
     -> Maybe NCDASignNEW
     -> NCDAFormNEW
     -> List (Html msg)
-viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setStepMsg saveMsg setHelperStateMsg helperState form =
+viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form =
     let
         ( inputs, tasks ) =
             ncdaFormInputsAndTasksNEW language
@@ -2860,6 +2861,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                 setBoolInputMsg
                 setBirthWeightMsg
                 setNumberANCVisitsMsg
+                setNutritionSupplementTypeMsg
                 setHelperStateMsg
                 form
                 currentStep
@@ -2938,11 +2940,12 @@ ncdaFormInputsAndTasksNEW :
     -> ((Bool -> NCDAFormNEW -> NCDAFormNEW) -> Bool -> msg)
     -> (String -> msg)
     -> (String -> msg)
+    -> (NutritionSupplementType -> msg)
     -> (Maybe NCDASignNEW -> msg)
     -> NCDAFormNEW
     -> NCDAStepNEW
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setHelperStateMsg form currentStep =
+ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -3024,9 +3027,82 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     , [ maybeToBoolTask form.takenSupplementsPerGuidance ]
                     )
 
-                -- NumberOfMissedImmunizationAppointmentsCorrect
-                -- FoodSupplements
-                -- TakingFoodSupplements
+                NumberOfMissedImmunizationAppointmentsCorrect ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | numberOfMissedImmunizationAppointmentsCorrect = Just value }
+
+                        counselling =
+                            if form.numberOfMissedImmunizationAppointmentsCorrect == Just False then
+                                [ viewCounselingLabel NumberOfMissedImmunizationAppointmentsCorrect ]
+
+                            else
+                                []
+                    in
+                    ( [ viewCustomLabel language Translate.NCDANumberImmunizationAppointmentLabel "." "label"
+                      , viewCustomLabel language Translate.NCDANumberOfMissedImmunizationAppointmentsHeader "." "label"
+                      ]
+                        ++ viewNCDAInput NumberOfANCVisitsCorrect form.numberOfMissedImmunizationAppointmentsCorrect updateFunc
+                        ++ counselling
+                    , [ form.numberOfMissedImmunizationAppointmentsCorrect ]
+                    )
+
+                FoodSupplements ->
+                    let
+                        updateFunc value form_ =
+                            { form_
+                                | foodSupplements = Just value
+                                , foodSupplementType = Nothing
+                                , takingFoodSupplements = Nothing
+                            }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.foodSupplements == Just True then
+                                let
+                                    ( isTakingInput, isTakingTask ) =
+                                        if isJust form.foodSupplementType then
+                                            inputsAndTasksForSign TakingFoodSupplements
+
+                                        else
+                                            ( [], [] )
+                                in
+                                ( [ viewQuestionLabel language Translate.WhatType
+                                  , viewCheckBoxSelectInput language
+                                        [ FortifiedPorridge, Rutf, Ongera, TherapeuticMilk ]
+                                        []
+                                        form.foodSupplementType
+                                        setNutritionSupplementTypeMsg
+                                        Translate.NutritionSupplementType
+                                  ]
+                                    ++ isTakingInput
+                                , maybeToBoolTask form.foodSupplementType :: isTakingTask
+                                )
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput SupplementsDuringPregnancy form.foodSupplements updateFunc
+                        ++ derivedInputs
+                    , form.foodSupplements :: derivedTasks
+                    )
+
+                TakingFoodSupplements ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | takingFoodSupplements = Just value }
+
+                        counselling =
+                            if form.takingFoodSupplements == Just False then
+                                [ viewCounselingLabel TakingFoodSupplements ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput TakingFoodSupplements form.takingFoodSupplements updateFunc
+                        ++ counselling
+                    , [ maybeToBoolTask form.takingFoodSupplements ]
+                    )
+
                 -- FiveFoodGroups
                 -- BreastfedForSixMonths
                 -- AppropriateComplementaryFeeding
@@ -3244,19 +3320,32 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
     case currentStep of
         NCDAStepAntenatalCare ->
             let
-                ancSignsInputsAndTasks =
+                inputsAndTasks =
                     List.map inputsAndTasksForSign
                         [ NumberOfANCVisitsCorrect
                         , SupplementsDuringPregnancy
                         ]
             in
-            ( List.map Tuple.first ancSignsInputsAndTasks
+            ( List.map Tuple.first inputsAndTasks
                 |> List.concat
-            , List.map Tuple.second ancSignsInputsAndTasks
+            , List.map Tuple.second inputsAndTasks
                 |> List.concat
             )
 
-        -- NCDAStepUniversalInterventions
+        NCDAStepUniversalInterventions ->
+            let
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign
+                        [ NumberOfMissedImmunizationAppointmentsCorrect
+                        , FoodSupplements
+                        ]
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+                |> List.concat
+            )
+
         -- NCDAStepNutritionBehavior
         -- NCDAStepTargetedInterventions
         -- NCDAStepInfrastructureEnvironment

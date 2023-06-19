@@ -92,7 +92,8 @@ viewNCDAContent language currentDate assembled db data =
         assembled.person
         SetNCDABoolInput
         SetBirthWeight
-        SetNumberANCVisitsMsg
+        SetNumberANCVisits
+        SetNutritionSupplementType
         SetNCDAFormStep
         saveMsg
         SetNCDAHelperState

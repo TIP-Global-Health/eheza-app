@@ -1111,7 +1111,7 @@ type alias NCDAFormNEW =
     -- Step 2.
     , numberOfMissedImmunizationAppointmentsCorrect : Maybe Bool
     , foodSupplements : Maybe Bool
-    , foodSupplementsType : Maybe NutritionSupplementType
+    , foodSupplementType : Maybe NutritionSupplementType
     , takingFoodSupplements : Maybe Bool
 
     -- Step 3.
@@ -1143,7 +1143,7 @@ type alias NCDAFormNEW =
 
 emptyNCDAFormNEW : NCDAFormNEW
 emptyNCDAFormNEW =
-    { step = NCDAStepAntenatalCare
+    { step = NCDAStepUniversalInterventions
 
     -- Step 1.
     , numberOfANCVisitsCorrect = Nothing
@@ -1154,7 +1154,7 @@ emptyNCDAFormNEW =
     -- Step 2.
     , numberOfMissedImmunizationAppointmentsCorrect = Nothing
     , foodSupplements = Nothing
-    , foodSupplementsType = Nothing
+    , foodSupplementType = Nothing
     , takingFoodSupplements = Nothing
 
     -- Step 3.

@@ -3,7 +3,7 @@ module Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Backend.ChildScoreboardEncounter.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, NCDASign, NCDASignNEW)
+import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, NCDASign, NCDASignNEW, NutritionSupplementType)
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (NCDADataNEW, NCDAFormNEW, NCDAStepNEW, emptyNCDADataNEW)
@@ -33,6 +33,7 @@ type Msg
     | SetActivePage Page
     | SetNCDABoolInput (Bool -> NCDAFormNEW -> NCDAFormNEW) Bool
     | SetBirthWeight String
-    | SetNumberANCVisitsMsg String
+    | SetNumberANCVisits String
+    | SetNutritionSupplementType NutritionSupplementType
     | SetNCDAFormStep NCDAStepNEW
     | SetNCDAHelperState (Maybe NCDASignNEW)

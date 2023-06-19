@@ -1016,6 +1016,8 @@ type TranslationId
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
     | NCDANumberOfANCVisitsHeader Int
     | NCDANumberOfANCVisitsQuestion
+    | NCDANumberImmunizationAppointmentLabel
+    | NCDANumberOfMissedImmunizationAppointmentsHeader
     | NCDAStep NCDAStepNEW
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
@@ -9764,6 +9766,16 @@ translationSet trans =
 
         NCDANumberOfANCVisitsQuestion ->
             { english = "How many ANC standard visits did the mother recieve"
+            , kinyarwanda = Nothing
+            }
+
+        NCDANumberImmunizationAppointmentLabel ->
+            { english = "According to E-Heza, you have no immunization appointment scheduled"
+            , kinyarwanda = Nothing
+            }
+
+        NCDANumberOfMissedImmunizationAppointmentsHeader ->
+            { english = "According to E-Heza, you have not missed any appointments"
             , kinyarwanda = Nothing
             }
 
