@@ -108,7 +108,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
 
         -- Counseling ->
-        --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
+        --    viewCounselingSession language (mapMeasurementData .counsellingSession measurements) session model.counselling
         Weight ->
             viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
 
@@ -770,10 +770,10 @@ viewChildFbf language currentDate child clinicType measurement form =
                    completed =
                        isJust measurement.current
 
-                   -- For counseling sessions, we don't allow saves unless all the
+                   -- For counselling sessions, we don't allow saves unless all the
                    -- topics are checked. Also, we don't allow an update if the
                    -- activity has been completed. That is, once the nurse says the
-                   -- counseling session is done, the nurse cannot correct that.
+                   -- counselling session is done, the nurse cannot correct that.
                    saveMsg =
                        if allTopicsChecked && not completed then
                            SaveCounselingSession existingId timing topics
@@ -789,8 +789,8 @@ viewChildFbf language currentDate child clinicType measurement form =
                            |> Maybe.withDefault Dict.empty
                in
                div
-                   [ class "ui full segment counseling"
-                   , id "counselingSessionEntryForm"
+                   [ class "ui full segment counselling"
+                   , id "counsellingSessionEntryForm"
                    ]
                    [ div [ class "content" ]
                        [ h3 [ class "ui header" ]
@@ -820,7 +820,7 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
             (\topicId topic ->
                 let
                     inputId =
-                        "counseling-checkbox-" ++ fromEntityUuid topicId
+                        "counselling-checkbox-" ++ fromEntityUuid topicId
 
                     isChecked =
                         EverySet.member topicId selectedTopics
@@ -2915,7 +2915,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                         , actionButton saveMsg
                         ]
     in
-    [ div [ class "header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
+    [ div [ class "task-header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
@@ -2954,11 +2954,11 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                         ( derivedInputs, derivedTasks ) =
                             if form.numberOfANCVisitsCorrect == Just False then
                                 let
-                                    counceling =
+                                    counselling =
                                         Maybe.map
                                             (\numberOfANCVisits ->
                                                 if numberOfANCVisits < 4 then
-                                                    [ viewCustomLabel language (Translate.NCDASignNEWCounceling NumberOfANCVisitsCorrect) "." "label" ]
+                                                    [ viewCounselingLabel NumberOfANCVisitsCorrect ]
 
                                                 else
                                                     []
@@ -2973,7 +2973,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                                         "anc-visits"
                                         Translate.Visits
                                   ]
-                                    ++ counceling
+                                    ++ counselling
                                 , [ maybeToBoolTask form.numberOfANCVisits ]
                                 )
 
@@ -2987,8 +2987,43 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     , form.numberOfANCVisitsCorrect :: derivedTasks
                     )
 
-                -- SupplementsDuringPregnancy
-                -- TakenSupplementsPerGuidance
+                SupplementsDuringPregnancy ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | supplementsDuringPregnancy = Just value }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.supplementsDuringPregnancy == Just True then
+                                inputsAndTasksForSign TakenSupplementsPerGuidance
+
+                            else
+                                ( [], [] )
+
+                        counselling =
+                            if
+                                (form.supplementsDuringPregnancy == Just False)
+                                    || (form.takenSupplementsPerGuidance == Just False)
+                            then
+                                [ viewCounselingLabel SupplementsDuringPregnancy ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput SupplementsDuringPregnancy form.supplementsDuringPregnancy updateFunc
+                        ++ derivedInputs
+                        ++ counselling
+                    , form.supplementsDuringPregnancy :: derivedTasks
+                    )
+
+                TakenSupplementsPerGuidance ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | takenSupplementsPerGuidance = Just value }
+                    in
+                    ( viewNCDAInput TakenSupplementsPerGuidance form.takenSupplementsPerGuidance updateFunc
+                    , [ maybeToBoolTask form.takenSupplementsPerGuidance ]
+                    )
+
                 -- NumberOfMissedImmunizationAppointmentsCorrect
                 -- FoodSupplements
                 -- TakingFoodSupplements
@@ -3202,6 +3237,9 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                 ""
                 Nothing
             ]
+
+        viewCounselingLabel sign =
+            viewCustomLabel language (Translate.NCDASignNEWCounceling sign) "." "label counselling"
     in
     case currentStep of
         NCDAStepAntenatalCare ->
@@ -3209,6 +3247,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                 ancSignsInputsAndTasks =
                     List.map inputsAndTasksForSign
                         [ NumberOfANCVisitsCorrect
+                        , SupplementsDuringPregnancy
                         ]
             in
             ( List.map Tuple.first ancSignsInputsAndTasks

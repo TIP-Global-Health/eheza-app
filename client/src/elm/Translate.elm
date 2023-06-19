@@ -9423,7 +9423,7 @@ translationSet trans =
                     }
 
                 SupplementsDuringPregnancy ->
-                    { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and referral the mother to the HC to receive the Iron/Folic Acid/MMS"
+                    { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and refer the mother to the HC to receive the Iron/Folic Acid/MMS"
                     , kinyarwanda = Nothing
                     }
 
