@@ -3146,14 +3146,102 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     , [ maybeToBoolTask form.appropriateComplementaryFeeding ]
                     )
 
-                -- BeneficiaryCashTransfer
-                -- ReceivingCashTransfer
-                -- ConditionalFoodItems
-                -- ChildWithAcuteMalnutrition
-                -- TreatedForAcuteMalnutrition
-                -- ChildWitDisability
-                -- ReceivingSupport
-                -- ChildGotDiarrhea
+                BeneficiaryCashTransfer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | beneficiaryCashTransfer = Just value, receivingCashTransfer = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.beneficiaryCashTransfer == Just True then
+                                inputsAndTasksForSign ReceivingCashTransfer
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput BeneficiaryCashTransfer form.beneficiaryCashTransfer updateFunc
+                        ++ derivedInputs
+                    , form.beneficiaryCashTransfer :: derivedTasks
+                    )
+
+                ReceivingCashTransfer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | receivingCashTransfer = Just value }
+                    in
+                    ( viewNCDAInput ReceivingCashTransfer form.receivingCashTransfer updateFunc
+                    , [ maybeToBoolTask form.receivingCashTransfer ]
+                    )
+
+                ConditionalFoodItems ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | conditionalFoodItems = Just value }
+                    in
+                    ( viewNCDAInput ConditionalFoodItems form.conditionalFoodItems updateFunc
+                    , [ maybeToBoolTask form.conditionalFoodItems ]
+                    )
+
+                ChildWithAcuteMalnutrition ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childWithAcuteMalnutrition = Just value, treatedForAcuteMalnutrition = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childWithAcuteMalnutrition == Just True then
+                                inputsAndTasksForSign TreatedForAcuteMalnutrition
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition updateFunc
+                        ++ derivedInputs
+                    , form.childWithAcuteMalnutrition :: derivedTasks
+                    )
+
+                TreatedForAcuteMalnutrition ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | treatedForAcuteMalnutrition = Just value }
+                    in
+                    ( viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc
+                    , [ maybeToBoolTask form.treatedForAcuteMalnutrition ]
+                    )
+
+                ChildWitDisability ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childWitDisability = Just value, receivingSupport = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childWitDisability == Just True then
+                                inputsAndTasksForSign ReceivingSupport
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput ChildWitDisability form.childWitDisability updateFunc
+                        ++ derivedInputs
+                    , form.childWitDisability :: derivedTasks
+                    )
+
+                ReceivingSupport ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | receivingSupport = Just value }
+                    in
+                    ( viewNCDAInput ReceivingSupport form.receivingSupport updateFunc
+                    , [ maybeToBoolTask form.receivingSupport ]
+                    )
+
+                ChildGotDiarrhea ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childGotDiarrhea = Just value }
+                    in
+                    ( viewNCDAInput ChildGotDiarrhea form.childGotDiarrhea updateFunc
+                    , [ maybeToBoolTask form.childGotDiarrhea ]
+                    )
+
                 -- HasHandwashingFacility
                 -- HasCleanWater
                 -- HasToilets
@@ -3414,7 +3502,23 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                 |> List.concat
             )
 
-        -- NCDAStepTargetedInterventions
+        NCDAStepTargetedInterventions ->
+            let
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign
+                        [ BeneficiaryCashTransfer
+                        , ConditionalFoodItems
+                        , ChildWithAcuteMalnutrition
+                        , ChildWitDisability
+                        , ChildGotDiarrhea
+                        ]
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+                |> List.concat
+            )
+
         -- NCDAStepInfrastructureEnvironment
         --     NCDAStepQuestionsAskedOnce ->
         --         let
