@@ -1003,6 +1003,7 @@ type TranslationId
     | Name
     | NationalIdNumber
     | NCDABirthweightQuestion
+    | NCDADiarrheaPopupMessage
     | NCDASignQuestion NCDASign
     | NCDASignNEWCounceling NCDASignNEW
     | NCDASignNEWQuestion NCDASignNEW
@@ -9318,6 +9319,11 @@ translationSet trans =
         NCDABirthweightQuestion ->
             { english = "What was the child's birthweight"
             , kinyarwanda = Just "Umwana yavukanye ibiro bingahe"
+            }
+
+        NCDADiarrheaPopupMessage ->
+            { english = "Child got diarrhea. Please perform \"Acute Illness\" encounter."
+            , kinyarwanda = Nothing
             }
 
         NCDASignQuestion sign ->

@@ -38,8 +38,6 @@ import Pages.AcuteIllness.Participant.Model
 import Pages.AcuteIllness.Participant.Update
 import Pages.AcuteIllness.ProgressReport.Model
 import Pages.AcuteIllness.ProgressReport.Update
-import Pages.ChildScoreboard.Activity.Model
-import Pages.ChildScoreboard.Activity.Update
 import Pages.ChildScoreboard.Encounter.Model
 import Pages.ChildScoreboard.Encounter.Update
 import Pages.Clinics.Update

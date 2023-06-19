@@ -40,7 +40,7 @@ import Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading)
 import Utils.WebData exposing (viewWebData)
 
 

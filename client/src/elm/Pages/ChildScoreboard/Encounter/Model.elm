@@ -11,12 +11,16 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { ncdaData : NCDADataNEW }
+    { ncdaData : NCDADataNEW
+    , showAIEncounterPopup : Bool
+    }
 
 
 emptyModel : Model
 emptyModel =
-    { ncdaData = emptyNCDADataNEW }
+    { ncdaData = emptyNCDADataNEW
+    , showAIEncounterPopup = False
+    }
 
 
 type alias AssembledData =
@@ -37,3 +41,5 @@ type Msg
     | SetNutritionSupplementType NutritionSupplementType
     | SetNCDAFormStep NCDAStepNEW
     | SetNCDAHelperState (Maybe NCDASignNEW)
+    | ShowAIEncounterPopup
+    | TriggerAcuteIllnessEncounter PersonId

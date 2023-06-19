@@ -20,6 +20,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -44,6 +45,7 @@ viewHeaderAndContent language currentDate db model assembled =
     div [ class "page-encounter child-scoreboard" ]
         [ header
         , content
+        , viewModal <| acuteIllnessEncounterPopup language assembled.participant.person model
         ]
 
 
@@ -85,7 +87,11 @@ viewNCDAContent :
 viewNCDAContent language currentDate assembled db data =
     let
         saveMsg =
-            SetActivePage PinCodePage
+            if data.form.childGotDiarrhea == Just True then
+                ShowAIEncounterPopup
+
+            else
+                SetActivePage PinCodePage
     in
     Measurement.View.viewNCDAContentNEW language
         currentDate
@@ -99,3 +105,28 @@ viewNCDAContent language currentDate assembled db data =
         SetNCDAHelperState
         data.helperState
         data.form
+
+
+acuteIllnessEncounterPopup : Language -> PersonId -> Model -> Maybe (Html Msg)
+acuteIllnessEncounterPopup language childId model =
+    if model.showAIEncounterPopup then
+        Just <|
+            div [ class "ui active modal danger-signs-popup" ]
+                [ div [ class "content" ]
+                    [ div [ class "popup-heading-wrapper" ]
+                        [ img [ src "assets/images/exclamation-red.png" ] []
+                        , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+                        ]
+                    , div [ class "popup-action" ] [ text <| translate language Translate.NCDADiarrheaPopupMessage ]
+                    ]
+                , div [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| TriggerAcuteIllnessEncounter childId
+                        ]
+                        [ text <| translate language Translate.Continue ]
+                    ]
+                ]
+
+    else
+        Nothing

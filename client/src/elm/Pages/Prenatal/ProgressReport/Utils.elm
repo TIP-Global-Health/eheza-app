@@ -67,7 +67,7 @@ import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, vie
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (thumbnailImage, viewModal)
+import Utils.Html exposing (thumbnailImage)
 import Utils.WebData exposing (viewWebData)
 
 

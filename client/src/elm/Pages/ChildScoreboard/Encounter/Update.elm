@@ -2,6 +2,7 @@ module Pages.ChildScoreboard.Encounter.Update exposing (update)
 
 import App.Model
 import Backend.ChildScoreboardEncounter.Model
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (WeightInGrm(..))
 import Backend.Model
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
@@ -114,4 +115,16 @@ update msg model =
             ( { model | ncdaData = updatedData }
             , Cmd.none
             , []
+            )
+
+        ShowAIEncounterPopup ->
+            ( { model | showAIEncounterPopup = True }
+            , Cmd.none
+            , []
+            )
+
+        TriggerAcuteIllnessEncounter childId ->
+            ( { model | showAIEncounterPopup = False }
+            , Cmd.none
+            , [ App.Model.SetActivePage <| UserPage (AcuteIllnessParticipantPage InitiatorParticipantsPage childId) ]
             )
