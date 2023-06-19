@@ -3103,9 +3103,49 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     , [ maybeToBoolTask form.takingFoodSupplements ]
                     )
 
-                -- FiveFoodGroups
-                -- BreastfedForSixMonths
-                -- AppropriateComplementaryFeeding
+                FiveFoodGroups ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | fiveFoodGroups = Just value }
+                    in
+                    ( [ div [ class "label-with-helper" ]
+                            [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups
+                            , div
+                                [ class "label-helper"
+
+                                -- @todo
+                                -- , onClick <| setHelperStateMsg (Just NCDAFiveFoodGroups)
+                                ]
+                                [ img [ src "assets/images/question-mark.svg" ] [] ]
+                            ]
+                      , viewBoolInput
+                            language
+                            form.fiveFoodGroups
+                            (setBoolInputMsg updateFunc)
+                            ""
+                            Nothing
+                      ]
+                    , [ form.fiveFoodGroups ]
+                    )
+
+                BreastfedForSixMonths ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | breastfedForSixMonths = Just value }
+                    in
+                    ( viewNCDAInput BreastfedForSixMonths form.breastfedForSixMonths updateFunc
+                    , [ maybeToBoolTask form.breastfedForSixMonths ]
+                    )
+
+                AppropriateComplementaryFeeding ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | appropriateComplementaryFeeding = Just value }
+                    in
+                    ( viewNCDAInput AppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc
+                    , [ maybeToBoolTask form.appropriateComplementaryFeeding ]
+                    )
+
                 -- BeneficiaryCashTransfer
                 -- ReceivingCashTransfer
                 -- ConditionalFoodItems
@@ -3346,7 +3386,34 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                 |> List.concat
             )
 
-        -- NCDAStepNutritionBehavior
+        NCDAStepNutritionBehavior ->
+            let
+                feedingSign =
+                    ageInMonths currentDate person
+                        |> Maybe.map
+                            (\ageMonths ->
+                                if ageMonths < 6 then
+                                    []
+
+                                else if ageMonths < 7 then
+                                    [ BreastfedForSixMonths ]
+
+                                else
+                                    [ AppropriateComplementaryFeeding ]
+                            )
+                        |> Maybe.withDefault []
+
+                inputsAndTasks =
+                    FiveFoodGroups
+                        :: feedingSign
+                        |> List.map inputsAndTasksForSign
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+                |> List.concat
+            )
+
         -- NCDAStepTargetedInterventions
         -- NCDAStepInfrastructureEnvironment
         --     NCDAStepQuestionsAskedOnce ->
