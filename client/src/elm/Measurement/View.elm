@@ -2914,7 +2914,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                 NCDAStepInfrastructureEnvironment ->
                     div [ class "actions two" ]
                         [ backButton NCDAStepTargetedInterventions
-                        , actionButton saveMsg
+                        , Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) saveMsg Translate.EndEncounter
                         ]
     in
     [ div [ class "task-header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
