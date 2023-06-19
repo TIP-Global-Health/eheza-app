@@ -2968,7 +2968,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                 NumberOfANCVisitsCorrect ->
                     let
                         updateFunc value form_ =
-                            { form_ | numberOfANCVisitsCorrect = Just value }
+                            { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
 
                         ( derivedInputs, derivedTasks ) =
                             if form.numberOfANCVisitsCorrect == Just False then
@@ -3009,7 +3009,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                 SupplementsDuringPregnancy ->
                     let
                         updateFunc value form_ =
-                            { form_ | supplementsDuringPregnancy = Just value }
+                            { form_ | supplementsDuringPregnancy = Just value, takenSupplementsPerGuidance = Nothing }
 
                         ( derivedInputs, derivedTasks ) =
                             if form.supplementsDuringPregnancy == Just True then
