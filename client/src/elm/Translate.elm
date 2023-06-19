@@ -9426,7 +9426,7 @@ translationSet trans =
         NCDASignNEWCounceling sign ->
             case sign of
                 NumberOfANCVisitsCorrect ->
-                    { english = "Provide counseling to the mother on the importance of regular ANC visits"
+                    { english = "Provide the counseling on the consequences that may occur to her and the baby if she doesn't attend ANC visit as per guidance"
                     , kinyarwanda = Nothing
                     }
 
@@ -9441,7 +9441,67 @@ translationSet trans =
                     }
 
                 TakingFoodSupplements ->
-                    { english = "Provide counseling to the mother on the consequences that may occur to the mother and the child"
+                    { english = " Provides counseling on the importance of Ongera and FBF and advise them to go to the Health center to recieve them"
+                    , kinyarwanda = Nothing
+                    }
+
+                FiveFoodGroups ->
+                    { english = "Provide counseling on how the mother can combine different food items based on the one they have in their area"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastfedForSixMonths ->
+                    { english = "Provide counseling on the importance of breastfeeding a baby for 6 months without interruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.AppropriateComplementaryFeeding ->
+                    { english = "Provide counseling on the importance of complementary feeding and using example show them some food item that can be easy to find in their area"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReceivingCashTransfer ->
+                    { english = "Provide counseling to the mother to go to the local government in charge and advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.ConditionalFoodItems ->
+                    { english = "Provide counseling to the beneficiaries to go to the local government in charge and advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatedForAcuteMalnutrition ->
+                    { english = "Provide the counseling about preventing acute malnutrition and send the child to the Health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReceivingSupport ->
+                    { english = "Provide counseling to the mother to take the child to the Health center so that they can get the support needed"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasCleanWater ->
+                    { english = "Provide counceling on how to prepare clean water like boiling it and using water purifier"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasHandwashingFacility ->
+                    { english = "Provide counceling on the importance of handwashing facility, and tell them to buy it  and use it. If they don't have means advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasToilets ->
+                    { english = "Provide counceling by telling them to buiuld toilets. If they don't have means advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasKitchenGarden ->
+                    { english = "Provide counceling on the importance of eating fruits and vegetables from kitchen garden. And tell them to build one. If they don't have means advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                InsecticideTreatedBednets ->
+                    { english = "Provide counceling on the importance of using the insecticide-treated bednets and advise them to have one"
                     , kinyarwanda = Nothing
                     }
 

@@ -3123,6 +3123,13 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | fiveFoodGroups = Just value }
+
+                        counselling =
+                            if form.fiveFoodGroups == Just False then
+                                [ viewCounselingLabel FiveFoodGroups ]
+
+                            else
+                                []
                     in
                     ( [ div [ class "label-with-helper" ]
                             [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups
@@ -3139,6 +3146,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                             ""
                             Nothing
                       ]
+                        ++ counselling
                     , [ form.fiveFoodGroups ]
                     )
 
@@ -3146,8 +3154,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | breastfedForSixMonths = Just value }
+
+                        counselling =
+                            if form.breastfedForSixMonths == Just False then
+                                [ viewCounselingLabel BreastfedForSixMonths ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput BreastfedForSixMonths form.breastfedForSixMonths updateFunc
+                    ( viewNCDAInput BreastfedForSixMonths form.breastfedForSixMonths updateFunc ++ counselling
                     , [ maybeToBoolTask form.breastfedForSixMonths ]
                     )
 
@@ -3155,8 +3170,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | appropriateComplementaryFeeding = Just value }
+
+                        counselling =
+                            if form.appropriateComplementaryFeeding == Just False then
+                                [ viewCounselingLabel AppropriateComplementaryFeeding ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput AppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc
+                    ( viewNCDAInput AppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc ++ counselling
                     , [ maybeToBoolTask form.appropriateComplementaryFeeding ]
                     )
 
@@ -3181,8 +3203,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | receivingCashTransfer = Just value }
+
+                        counselling =
+                            if form.receivingCashTransfer == Just False then
+                                [ viewCounselingLabel ReceivingCashTransfer ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput ReceivingCashTransfer form.receivingCashTransfer updateFunc
+                    ( viewNCDAInput ReceivingCashTransfer form.receivingCashTransfer updateFunc ++ counselling
                     , [ maybeToBoolTask form.receivingCashTransfer ]
                     )
 
@@ -3190,8 +3219,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | conditionalFoodItems = Just value }
+
+                        counselling =
+                            if form.conditionalFoodItems == Just False then
+                                [ viewCounselingLabel ConditionalFoodItems ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput ConditionalFoodItems form.conditionalFoodItems updateFunc
+                    ( viewNCDAInput ConditionalFoodItems form.conditionalFoodItems updateFunc ++ counselling
                     , [ maybeToBoolTask form.conditionalFoodItems ]
                     )
 
@@ -3216,8 +3252,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | treatedForAcuteMalnutrition = Just value }
+
+                        counselling =
+                            if form.treatedForAcuteMalnutrition == Just False then
+                                [ viewCounselingLabel TreatedForAcuteMalnutrition ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc
+                    ( viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc ++ counselling
                     , [ maybeToBoolTask form.treatedForAcuteMalnutrition ]
                     )
 
@@ -3242,8 +3285,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | receivingSupport = Just value }
+
+                        counselling =
+                            if form.receivingSupport == Just False then
+                                [ viewCounselingLabel ReceivingSupport ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput ReceivingSupport form.receivingSupport updateFunc
+                    ( viewNCDAInput ReceivingSupport form.receivingSupport updateFunc ++ counselling
                     , [ maybeToBoolTask form.receivingSupport ]
                     )
 
@@ -3260,8 +3310,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | hasCleanWater = Just value }
+
+                        counselling =
+                            if form.hasCleanWater == Just False then
+                                [ viewCounselingLabel HasCleanWater ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput HasCleanWater form.hasCleanWater updateFunc
+                    ( viewNCDAInput HasCleanWater form.hasCleanWater updateFunc ++ counselling
                     , [ maybeToBoolTask form.hasCleanWater ]
                     )
 
@@ -3269,8 +3326,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | hasHandwashingFacility = Just value }
+
+                        counselling =
+                            if form.hasHandwashingFacility == Just False then
+                                [ viewCounselingLabel HasHandwashingFacility ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput HasHandwashingFacility form.hasHandwashingFacility updateFunc
+                    ( viewNCDAInput HasHandwashingFacility form.hasHandwashingFacility updateFunc ++ counselling
                     , [ maybeToBoolTask form.hasHandwashingFacility ]
                     )
 
@@ -3278,8 +3342,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | hasToilets = Just value }
+
+                        counselling =
+                            if form.hasToilets == Just False then
+                                [ viewCounselingLabel HasToilets ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput HasToilets form.hasToilets updateFunc
+                    ( viewNCDAInput HasToilets form.hasToilets updateFunc ++ counselling
                     , [ maybeToBoolTask form.hasToilets ]
                     )
 
@@ -3287,8 +3358,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | hasKitchenGarden = Just value }
+
+                        counselling =
+                            if form.hasKitchenGarden == Just False then
+                                [ viewCounselingLabel HasKitchenGarden ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput HasKitchenGarden form.hasKitchenGarden updateFunc
+                    ( viewNCDAInput HasKitchenGarden form.hasKitchenGarden updateFunc ++ counselling
                     , [ maybeToBoolTask form.hasKitchenGarden ]
                     )
 
@@ -3296,8 +3374,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     let
                         updateFunc value form_ =
                             { form_ | insecticideTreatedBednets = Just value }
+
+                        counselling =
+                            if form.insecticideTreatedBednets == Just False then
+                                [ viewCounselingLabel InsecticideTreatedBednets ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput InsecticideTreatedBednets form.insecticideTreatedBednets updateFunc
+                    ( viewNCDAInput InsecticideTreatedBednets form.insecticideTreatedBednets updateFunc ++ counselling
                     , [ maybeToBoolTask form.insecticideTreatedBednets ]
                     )
 
