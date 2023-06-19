@@ -2760,41 +2760,59 @@ viewNCDAHelperDialog language action helperState =
         (\sign ->
             case sign of
                 NCDAFiveFoodGroups ->
-                    Just <|
-                        div [ class "ui active modal ncda-helper-popup" ]
-                            [ div [ class "header" ]
-                                [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups ]
-                            , div
-                                [ class "content" ]
-                                [ ol [] <|
-                                    List.map
-                                        (\foodGroup ->
-                                            li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
-                                        )
-                                        [ Staples
-                                        , Legumes
-                                        , DairyProducts
-                                        , AnimalSourceFoods
-                                        , Eggs
-                                        , FruitsVegetables
-                                        , BreastMilk
-                                        , MealsWithEdibleOil
-                                        ]
-                                ]
-                            , div
-                                [ class "actions" ]
-                                [ button
-                                    [ class "ui fluid primary button"
-                                    , onClick action
-                                    ]
-                                    [ text <| translate language Translate.Close ]
-                                ]
-                            ]
+                    Just <| ncdaHelperDialog language action
 
                 _ ->
                     Nothing
         )
         helperState
+
+
+viewNCDAHelperDialogNEW : Language -> msg -> Maybe NCDASignNEW -> Maybe (Html msg)
+viewNCDAHelperDialogNEW language action helperState =
+    Maybe.andThen
+        (\sign ->
+            case sign of
+                FiveFoodGroups ->
+                    Just <| ncdaHelperDialog language action
+
+                _ ->
+                    Nothing
+        )
+        helperState
+
+
+ncdaHelperDialog : Language -> msg -> Html msg
+ncdaHelperDialog language action =
+    div [ class "ui active modal ncda-helper-popup" ]
+        [ div [ class "header" ]
+            [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups ]
+        , div
+            [ class "content" ]
+            [ ol [] <|
+                List.map
+                    (\foodGroup ->
+                        li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
+                    )
+                    [ Staples
+                    , Legumes
+                    , DairyProducts
+                    , AnimalSourceFoods
+                    , Eggs
+                    , FruitsVegetables
+                    , BreastMilk
+                    , MealsWithEdibleOil
+                    ]
+            ]
+        , div
+            [ class "actions" ]
+            [ button
+                [ class "ui fluid primary button"
+                , onClick action
+                ]
+                [ text <| translate language Translate.Close ]
+            ]
+        ]
 
 
 viewNCDA :
@@ -2926,10 +2944,8 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
             ]
         , actions
         ]
-
-    -- @todo
-    -- , viewModal <|
-    --     viewNCDAHelperDialog language (setHelperStateMsg Nothing) helperState
+    , viewModal <|
+        viewNCDAHelperDialogNEW language (setHelperStateMsg Nothing) helperState
     ]
 
 
@@ -3112,9 +3128,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                             [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups
                             , div
                                 [ class "label-helper"
-
-                                -- @todo
-                                -- , onClick <| setHelperStateMsg (Just NCDAFiveFoodGroups)
+                                , onClick <| setHelperStateMsg (Just FiveFoodGroups)
                                 ]
                                 [ img [ src "assets/images/question-mark.svg" ] [] ]
                             ]

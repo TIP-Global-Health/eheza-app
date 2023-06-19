@@ -97,7 +97,5 @@ viewNCDAContent language currentDate assembled db data =
         SetNCDAFormStep
         saveMsg
         SetNCDAHelperState
-        -- @todo
-        -- data.helperState
-        Nothing
+        data.helperState
         data.form
