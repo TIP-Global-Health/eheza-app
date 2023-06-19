@@ -1830,8 +1830,10 @@ div.page-encounter.child-scoreboard {
       background: $color-primary;
       font-size: 26px;
       font-weight: bold;
+      padding-bottom: 5px;
       padding-top: 10px;
       text-align: center;
+      text-decoration: underline;
     }
 
     .ui.full.segment .full.content .ui.form.ncda {
