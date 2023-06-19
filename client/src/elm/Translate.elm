@@ -9452,7 +9452,7 @@ translationSet trans =
                     }
 
                 SupplementsDuringPregnancy ->
-                    { english = "Did the mother receive  Iron, folic acid, MMS"
+                    { english = "Did the mother receive Iron, folic acid, MMS"
                     , kinyarwanda = Nothing
                     }
 
