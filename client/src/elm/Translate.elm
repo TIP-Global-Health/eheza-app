@@ -6305,7 +6305,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = "First Child Scoreboard Encounter"
+                    { english = "First Child Scorecard Encounter"
                     , kinyarwanda = Nothing
                     }
 
@@ -6347,7 +6347,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = "Child Scoreboard Encounter"
+                    { english = "Child Scorecard Encounter"
                     , kinyarwanda = Nothing
                     }
 
@@ -6395,7 +6395,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = "Select Child Scoreboard Visit"
+                    { english = "Select Child Scorecard Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -6443,7 +6443,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = "Subsequent Child Scoreboard Visit"
+                    { english = "Subsequent Child Scorecard Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -6483,7 +6483,7 @@ translationSet trans =
                     translationSet AntenatalCare
 
                 ChildScoreboardEncounter ->
-                    { english = "Child Scoreboard"
+                    { english = "Child Scorecard"
                     , kinyarwanda = Nothing
                     }
 
@@ -9322,7 +9322,7 @@ translationSet trans =
             }
 
         NCDADiarrheaPopupMessage ->
-            { english = "Child got diarrhea. Please perform \"Acute Illness\" encounter."
+            { english = "The child has diarrhea. Please continue to an Acute Illness encounter."
             , kinyarwanda = Nothing
             }
 
@@ -9458,12 +9458,12 @@ translationSet trans =
                     }
 
                 SupplementsDuringPregnancy ->
-                    { english = "Did the mother receive Iron, folic acid, MMS"
+                    { english = "Did the mother receive food supplementations"
                     , kinyarwanda = Nothing
                     }
 
                 TakenSupplementsPerGuidance ->
-                    { english = "Has she taken it as per guidance (CHW observes)"
+                    { english = "Has she taken it as per guidance (CHW observed)"
                     , kinyarwanda = Nothing
                     }
 
@@ -9478,7 +9478,7 @@ translationSet trans =
                     }
 
                 TakingFoodSupplements ->
-                    { english = "Are you taking it"
+                    { english = "Is the food supplementation being consumed"
                     , kinyarwanda = Nothing
                     }
 
@@ -9756,22 +9756,22 @@ translationSet trans =
 
         NCDANumberOfANCVisitsHeader number ->
             if number == 0 then
-                { english = "According to E-Heza, the mother had no ANC standard visits"
+                { english = "According to E-Heza, the mother had no standard ANC visits"
                 , kinyarwanda = Nothing
                 }
 
             else if number == 0 then
-                { english = "According to E-Heza, the mother had 1 ANC standard visit"
+                { english = "According to E-Heza, the mother had 1 standard ANC visit"
                 , kinyarwanda = Nothing
                 }
 
             else
-                { english = "According to E-Heza, the mother had " ++ String.fromInt number ++ " ANC standard visits"
+                { english = "According to E-Heza, the mother had " ++ String.fromInt number ++ " standard ANC visits"
                 , kinyarwanda = Nothing
                 }
 
         NCDANumberOfANCVisitsQuestion ->
-            { english = "How many ANC standard visits did the mother recieve"
+            { english = "How many ANC standard visits did the mother receive"
             , kinyarwanda = Nothing
             }
 
@@ -19484,7 +19484,7 @@ translateActivePage page =
                             }
 
                         ChildScoreboardEncounter ->
-                            { english = "Child Scoreboard Participants"
+                            { english = "Child Scorecard Participants"
                             , kinyarwanda = Nothing
                             }
 
@@ -19731,7 +19731,7 @@ translateActivePage page =
                     }
 
                 ChildScoreboardEncounterPage _ ->
-                    { english = "Child Scoreboard Encounter"
+                    { english = "Child Scorecard Encounter"
                     , kinyarwanda = Nothing
                     }
 
