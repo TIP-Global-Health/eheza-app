@@ -3437,20 +3437,16 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     ageInMonths currentDate person
                         |> Maybe.map
                             (\ageMonths ->
-                                if ageMonths < 6 then
-                                    []
-
-                                else if ageMonths < 7 then
+                                if ageMonths < 7 then
                                     [ BreastfedForSixMonths ]
 
                                 else
-                                    [ AppropriateComplementaryFeeding ]
+                                    [ FiveFoodGroups, AppropriateComplementaryFeeding ]
                             )
                         |> Maybe.withDefault []
 
                 inputsAndTasks =
-                    FiveFoodGroups
-                        :: feedingSign
+                    feedingSign
                         |> List.map inputsAndTasksForSign
             in
             ( List.map Tuple.first inputsAndTasks
