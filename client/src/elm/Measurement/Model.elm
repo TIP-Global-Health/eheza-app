@@ -1143,7 +1143,7 @@ type alias NCDAFormNEW =
 
 emptyNCDAFormNEW : NCDAFormNEW
 emptyNCDAFormNEW =
-    { step = NCDAStepAntenatalCare
+    { step = NCDAStepPillars
 
     -- Step 1.
     , numberOfANCVisitsCorrect = Nothing
@@ -1185,7 +1185,8 @@ emptyNCDAFormNEW =
 
 
 type NCDAStepNEW
-    = NCDAStepAntenatalCare
+    = NCDAStepPillars
+    | NCDAStepAntenatalCare
     | NCDAStepUniversalInterventions
     | NCDAStepNutritionBehavior
     | NCDAStepTargetedInterventions
