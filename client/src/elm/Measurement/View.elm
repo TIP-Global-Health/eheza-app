@@ -3097,7 +3097,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                             else
                                 ( [], [] )
                     in
-                    ( viewNCDAInput SupplementsDuringPregnancy form.foodSupplements updateFunc
+                    ( viewNCDAInput FoodSupplements form.foodSupplements updateFunc
                         ++ derivedInputs
                     , form.foodSupplements :: derivedTasks
                     )
