@@ -9847,6 +9847,9 @@ translationSet trans =
 
         NCDAStep step ->
             case step of
+                NCDAStepPillars ->
+                    translationSet AntenatalCare
+
                 NCDAStepAntenatalCare ->
                     translationSet AntenatalCare
 
