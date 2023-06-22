@@ -9481,27 +9481,27 @@ translationSet trans =
                     }
 
                 Backend.Measurement.Model.HasCleanWater ->
-                    { english = "Provide counceling on how to prepare clean water like boiling it and using water purifier"
+                    { english = "Provide counseling on how to prepare clean water like boiling it and using water purifier"
                     , kinyarwanda = Nothing
                     }
 
                 Backend.Measurement.Model.HasHandwashingFacility ->
-                    { english = "Provide counceling on the importance of handwashing facility, and tell them to buy it  and use it. If they don't have means advocate for them"
+                    { english = "Provide counseling on the importance of handwashing facility, and tell them to buy it  and use it. If they don't have means advocate for them"
                     , kinyarwanda = Nothing
                     }
 
                 Backend.Measurement.Model.HasToilets ->
-                    { english = "Provide counceling by telling them to buiuld toilets. If they don't have means advocate for them"
+                    { english = "Provide counseling by telling them to buiuld toilets. If they don't have means advocate for them"
                     , kinyarwanda = Nothing
                     }
 
                 Backend.Measurement.Model.HasKitchenGarden ->
-                    { english = "Provide counceling on the importance of eating fruits and vegetables from kitchen garden. And tell them to build one. If they don't have means advocate for them"
+                    { english = "Provide counseling on the importance of eating fruits and vegetables from kitchen garden. And tell them to build one. If they don't have means advocate for them"
                     , kinyarwanda = Nothing
                     }
 
                 InsecticideTreatedBednets ->
-                    { english = "Provide counceling on the importance of using the insecticide-treated bednets and advise them to have one"
+                    { english = "Provide counseling on the importance of using the insecticide-treated bednets and advise them to have one"
                     , kinyarwanda = Nothing
                     }
 
@@ -9518,7 +9518,7 @@ translationSet trans =
                     }
 
                 SupplementsDuringPregnancy ->
-                    { english = "Did the mother receive food supplementations"
+                    { english = "Did the mother receive Iron, Folic Acid/MMS"
                     , kinyarwanda = Nothing
                     }
 
@@ -9533,7 +9533,7 @@ translationSet trans =
                     }
 
                 FoodSupplements ->
-                    { english = "Did you receive food supplementation"
+                    { english = "Did the child receive food supplementation"
                     , kinyarwanda = Nothing
                     }
 
