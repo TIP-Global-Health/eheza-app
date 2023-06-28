@@ -89,7 +89,7 @@ while ($processed < $total) {
     ->range(0, $batch)
     ->execute();
 
-  if ($ids) {
+  if (empty($ids)) {
     // No more items left.
     break;
   }
