@@ -39,10 +39,6 @@ if (empty($template_namespace_id)) {
 }
 
 $client = new TextClient($key);
-// todo: delete this.
-//$phone_number = '00972546925278';
-//$result = $client->SendMessage('Hi!', 'TIP Health', [$phone_number]);
-//return;
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -108,8 +104,6 @@ while ($processed < $total) {
     if (empty($phone_number)) {
       continue;
     }
-    // Hardcoded number for tests.
-    $phone_number = '00972546925278';
 
     $fid = $node->field_screenshot[LANGUAGE_NONE][0]['fid'];
     if (empty($fid)) {
