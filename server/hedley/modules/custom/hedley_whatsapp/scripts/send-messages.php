@@ -87,7 +87,8 @@ while ($processed < $total) {
 
   $ids = $query
     ->range(0, $batch)
-    ->execute();
+    ->execute()
+    ->fetchCol();
 
   if (empty($ids)) {
     // No more items left.
