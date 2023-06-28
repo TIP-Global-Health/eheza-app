@@ -158,6 +158,7 @@ viewPhoneInput language currentDate data =
                 , CountryCodeTanzania
                 , CountryCodeBurundi
                 , CountryCodeUSACanada
+                , CountryCodeIsrael
                 ]
 
         curerntPhoneNumber =
