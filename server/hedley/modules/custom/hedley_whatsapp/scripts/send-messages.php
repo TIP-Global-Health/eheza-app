@@ -82,7 +82,7 @@ while ($processed < $total) {
 
   $query = clone $base_query;
   if ($nid) {
-    $query->propertyCondition('nid', $nid, '>');
+    $query->condition('nid', $nid, '>');
   }
 
   $ids = $query
