@@ -56,18 +56,21 @@ $type = 'whatsapp_record';
 // Maximal number of attempts of delivering message.
 $delivery_attempts = variable_get('hedley_whatsapp_delivery_attempts', 5);
 
-$base_query = new EntityFieldQuery();
-$base_query
-  ->entityCondition('entity_type', 'node')
-  ->propertyCondition('type', $type)
-  ->propertyCondition('status', NODE_PUBLISHED)
-  ->fieldCondition('field_delivery_attempts', 'value', $delivery_attempts, '<')
-  ->fieldCondition('field_date_concluded', 'value', NULL, 'IS NULL')
-  ->propertyOrderBy('nid');
+$base_query = db_select('node', 'n');
+$base_query->addField('n', 'nid');
+$base_query->condition('n.status', NODE_PUBLISHED);
+$base_query->condition('n.type', $type);
+$base_query->leftJoin('field_data_field_date_concluded', 'dc', 'n.nid = dc.entity_id');
+$base_query->isNull('dc.field_date_concluded_value');
+$base_query->leftJoin('field_data_field_delivery_attempts', 'da', 'n.nid = da.entity_id');
+$base_query->condition('da.field_delivery_attempts_value', $delivery_attempts, '<');
 
 $count_query = clone $base_query;
-$count_query->propertyCondition('nid', $nid, '>');
-$total = $count_query->count()->execute();
+if ($nid) {
+  $count_query->condition('n.nid', $nid, '>');
+}
+$executed = $count_query->execute();
+$total = $executed->rowCount();
 
 if ($total == 0) {
   drush_print("There are no $type messages to deliver.");
