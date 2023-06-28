@@ -85,18 +85,17 @@ while ($processed < $total) {
     $query->propertyCondition('nid', $nid, '>');
   }
 
-  $result = $query
+  $ids = $query
     ->range(0, $batch)
     ->execute();
 
-  if (empty($result['node'])) {
+  if ($ids) {
     // No more items left.
     break;
   }
 
   $messages = [];
   $mapping = [];
-  $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
     $wrapper = entity_metadata_wrapper('node', $node);
