@@ -1421,3 +1421,11 @@ type alias ChildScoreboardEncounterId =
 
 type ChildScoreboardEncounterUuidType
     = ChildScoreboardEncounterUuidType
+
+
+type alias ChildScoreboardNCDAId =
+    EntityUuid ChildScoreboardNCDAUuidType
+
+
+type ChildScoreboardNCDAUuidType
+    = ChildScoreboardNCDAUuidType
