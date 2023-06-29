@@ -16,8 +16,7 @@ if (!$limit_date) {
   drush_print('Please specify --limit_date option');
   exit;
 }
-
-
+ 
 /**
  * Gets the node ID of the health center.
  *
@@ -27,43 +26,34 @@ if (!$limit_date) {
  * @return string
  *   The node ID of the health center.
  */
-function getHealthCenterId($health_center_name = NULL) {
+function get_health_center_id($health_center_name = NULL) {
   if ($health_center_name) {
-    $health_center_name = str_replace(['_','-','.'],' ',$health_center_name);
-
-
-    
-
-
+    $health_center_name = str_replace(['_', '-', '.'], ' ', $health_center_name);
     $results = db_query("SELECT nid FROM node WHERE title='$health_center_name' AND type='health_center'");
     if (!$results->fetchField()) {
       $results = db_query("SELECT nid FROM node WHERE title LIKE '$health_center_name%' AND type='health_center'");
       if (!$results->fetchField()) {
-        //Case 1 - No records match
-        drush_print('No health center matches the name provided.');
+        drush_print('No health centers match the name provided');
         exit;
       } elseif (!$results->fetchField()) {
         return db_query("SELECT nid FROM node WHERE title LIKE '$health_center_name%' AND type='health_center' LIMIT 1") ->fetchField();
       } else {
-        //TODO: Case 2 - Multiple records matches
         $results = db_query("SELECT nid FROM node WHERE title LIKE '$health_center_name%' AND type='health_center'");
         drush_print('Multiple health centers match the name provided including ' .
           getHealthCenter($results->fetchField()) . ', ' . getHealthCenter($results->fetchField()) .
           ", etc. \r\nPlease use a more specific name");
         exit();
       }
-  } else {
-    return db_query("SELECT nid FROM node WHERE title='$health_center_name' AND type='health_center'")-> fetchField();
-  }
+    } else {
+      return db_query("SELECT nid FROM node WHERE title='$health_center_name' AND type='health_center'")-> fetchField();
+    }
   }
   else {
     return NULL;
   }
 }
 
-$region = getHealthCenterId($region_name);
-drush_print($region);
-drush_print(getHealthCenter($region));
+$region = get_health_center_id($region_name);
 
 // We need to filter for all the measurements at several places,
 // but it's a bad idea to hardcode the list, so we generate a piece of SQL
