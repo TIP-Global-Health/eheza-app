@@ -4,7 +4,11 @@ import App.Model
 import Backend.ChildScoreboardEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Measurement.Model exposing (WeightInGrm(..))
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model
+import Gizra.Update exposing (sequenceExtra)
+import Maybe.Extra exposing (unwrap)
+import Measurement.Utils exposing (toNCDAValueNEWWithDefault)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 
@@ -12,14 +16,34 @@ import Pages.Page exposing (Page(..), UserPage(..))
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
-        CloseEncounter id ->
+        CloseEncounter assembled ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first assembled.measurements.ncda
+
+                measurement =
+                    getMeasurementValueFunc assembled.measurements.ncda
+
+                saveNCDAMsg =
+                    model.ncdaData.form
+                        |> toNCDAValueNEWWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.ChildScoreboardEncounter.Model.SaveNCDA assembled.participant.person measurementId value
+                                    |> Backend.Model.MsgChildScoreboardEncounter assembled.id
+                                    |> App.Model.MsgIndexedDb
+                                ]
+                            )
+            in
             ( model
             , Cmd.none
             , [ Backend.ChildScoreboardEncounter.Model.CloseChildScoreboardEncounter
-                    |> Backend.Model.MsgChildScoreboardEncounter id
+                    |> Backend.Model.MsgChildScoreboardEncounter assembled.id
                     |> App.Model.MsgIndexedDb
               , App.Model.SetActivePage PinCodePage
               ]
+                ++ saveNCDAMsg
             )
 
         SetActivePage page ->
@@ -123,8 +147,9 @@ update msg model =
             , []
             )
 
-        TriggerAcuteIllnessEncounter childId ->
+        TriggerAcuteIllnessEncounter assembled ->
             ( { model | showAIEncounterPopup = False }
             , Cmd.none
-            , [ App.Model.SetActivePage <| UserPage (AcuteIllnessParticipantPage InitiatorParticipantsPage childId) ]
+            , [ App.Model.SetActivePage <| UserPage (AcuteIllnessParticipantPage InitiatorParticipantsPage assembled.participant.person) ]
             )
+                |> sequenceExtra update [ CloseEncounter assembled ]

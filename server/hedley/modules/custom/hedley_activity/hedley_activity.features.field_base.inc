@@ -1295,7 +1295,7 @@ function hedley_activity_field_default_field_bases() {
         'insecticide-treated-bednets-during-pregnancy' => 'Insecticide Treated Bednets During Pregnancy',
         'support-child-with-disability' => 'Support Child With Disability',
 
-        // @todo: to be decided.
+        // @todo: decide if this is needed:
         'born-with-birth-defect' => 'Born With Birth Defect',
         'meal-frequency-6to8m' => 'Meal Frequency 6 to 9 months',
         'meal-frequency-9to11m' => 'Meal Frequency 9 to 12 months',

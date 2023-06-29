@@ -29,15 +29,19 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeChildScoreboardEncounter : WebData ()
+    , saveNCDA : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeChildScoreboardEncounter = NotAsked
+    , saveNCDA = NotAsked
     }
 
 
 type Msg
     = CloseChildScoreboardEncounter
     | HandleClosedChildScoreboardEncounter (WebData ())
+    | SaveNCDA PersonId (Maybe ChildScoreboardNCDAId) NCDAValueNEW
+    | HandleSavedNCDA (WebData ())
