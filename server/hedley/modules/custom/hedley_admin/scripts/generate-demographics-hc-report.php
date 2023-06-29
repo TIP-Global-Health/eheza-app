@@ -16,7 +16,7 @@ if (!$limit_date) {
   drush_print('Please specify --limit_date option');
   exit;
 }
- 
+
 /**
  * Gets the node ID of the health center.
  *
@@ -36,11 +36,11 @@ function get_health_center_id($health_center_name = NULL) {
         drush_print('No health centers match the name provided');
         exit;
       } elseif (!$results->fetchField()) {
-        return db_query("SELECT nid FROM node WHERE title LIKE '$health_center_name%' AND type='health_center' LIMIT 1") ->fetchField();
+        return db_query("SELECT nid FROM node WHERE title LIKE '$health_center_name%' AND type='health_center' LIMIT 1")->fetchField();
       } else {
         $results = db_query("SELECT nid FROM node WHERE title LIKE '$health_center_name%' AND type='health_center'");
         drush_print('Multiple health centers match the name provided including ' .
-          getHealthCenter($results->fetchField()) . ', ' . getHealthCenter($results->fetchField()) .
+          get_health_center($results->fetchField()) . ', ' . get_health_center($results->fetchField()) .
           ", etc. \r\nPlease use a more specific name");
         exit();
       }
@@ -317,7 +317,7 @@ foreach ($commands as $command) {
 $group_encounter_all = group_encounter_all($measurement_types_sql_list, $limit_date, $region);
 $group_encounter_unique = group_encounter_unique($measurement_types_sql_list, $limit_date, $region);
 
-$health_center_name = getHealthCenter($region);
+$health_center_name = get_health_center($region);
 
 drush_print("# Demographics report - " . $health_center_name . " - " . $limit_date);
 
@@ -432,7 +432,7 @@ drush_print("## ENCOUNTERS");
  * @return string
  *   The name for the health center.
  */
-function getHealthCenter($health_center_id = NULL) {
+function get_health_center($health_center_id = NULL) {
   if ($health_center_id) {
     return db_query("SELECT title FROM node WHERE nid='$health_center_id' AND type='health_center' LIMIT 1")->fetchField();
   }

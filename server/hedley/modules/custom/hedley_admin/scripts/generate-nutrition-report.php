@@ -12,7 +12,7 @@
 
 require_once __DIR__ . '/report_common.inc';
 
-//Get the region
+// Get the region.
 $region = drush_get_option('region', FALSE);
 
 // Get the last node id.
