@@ -26,6 +26,9 @@ class HedleyRestfulChildScoreboardNCDA extends HedleyRestfulActivityBase {
     'field_ncda_signs',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
@@ -62,6 +65,6 @@ class HedleyRestfulChildScoreboardNCDA extends HedleyRestfulActivityBase {
     }
 
     return $items;
-  }  
+  }
 
 }
