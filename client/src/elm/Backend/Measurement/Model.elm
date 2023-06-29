@@ -64,6 +64,10 @@ type alias NCDMeasurement value =
     Measurement NCDEncounterId value
 
 
+type alias ChildScoreboardMeasurement value =
+    Measurement ChildScoreboardEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -2759,6 +2763,22 @@ type alias HbA1cTestValue =
 
 
 
+-- Child Scorecard measurements.
+
+
+type alias ChildScoreboardNCDA =
+    ChildScoreboardMeasurement NCDAValueNEW
+
+
+type alias NCDAValueNEW =
+    { signs : EverySet NCDASignNEW
+    , birthWeight : Maybe WeightInGrm
+    , numberOfANCVisits : Maybe Float
+    , foodSupplementType : Maybe NutritionSupplementType
+    }
+
+
+
 -- Stock Management:
 
 
@@ -3106,7 +3126,8 @@ type alias NCDMeasurements =
 
 
 type alias ChildScoreboardMeasurements =
-    {}
+    { ncda : Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA )
+    }
 
 
 {-| A set of measurements that includes all required data for
