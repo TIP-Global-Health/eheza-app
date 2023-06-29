@@ -1109,6 +1109,11 @@ encodeNCDMeasurement =
     encodeMeasurement "ncd_encounter"
 
 
+encodeChildScoreboardMeasurement : (value -> List ( String, Value )) -> ChildScoreboardMeasurement value -> List ( String, Value )
+encodeChildScoreboardMeasurement =
+    encodeMeasurement "child_scoreboard_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
@@ -4866,3 +4871,40 @@ encodeHbA1cTestValue value =
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_hba1c_test" )
            ]
+
+
+encodeChildScoreboardNCDA : ChildScoreboardNCDA -> List ( String, Value )
+encodeChildScoreboardNCDA =
+    encodeChildScoreboardMeasurement (encodeNCDAValueNEWWithType "child_scoreboard_ncda")
+
+
+encodeNCDAValueNEWWithType : String -> NCDAValueNEW -> List ( String, Value )
+encodeNCDAValueNEWWithType type_ value =
+    let
+        birthWeight =
+            Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
+                value.birthWeight
+                |> Maybe.withDefault []
+
+        numberOfANCVisits =
+            Maybe.map (\ancVisits -> [ ( "anc_visits", float ancVisits ) ])
+                value.numberOfANCVisits
+                |> Maybe.withDefault []
+
+        foodSupplementType =
+            Maybe.map (\supplementType -> [ ( "supplement_type", encodeNutritionSupplementType supplementType ) ])
+                value.foodSupplementType
+                |> Maybe.withDefault []
+    in
+    [ ( "ncda_signs", encodeEverySet encodeNCDASignNEW value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+        ++ birthWeight
+        ++ numberOfANCVisits
+        ++ foodSupplementType
+
+
+encodeNCDASignNEW : NCDASignNEW -> Value
+encodeNCDASignNEW =
+    ncdaSignNEWToString >> string
