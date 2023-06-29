@@ -1271,3 +1271,9 @@ childScoreboardEncounterEndpoint =
 childScoreboardMeasurementsEndpoint : ReadOnlyEndPoint Error ChildScoreboardEncounterId ChildScoreboardMeasurements ()
 childScoreboardMeasurementsEndpoint =
     swEndpoint "nodes/child-scoreboard-measurements" decodeChildScoreboardMeasurements
+
+
+childScoreboardNCDAEndpoint : ReadWriteEndPoint Error ChildScoreboardNCDAId ChildScoreboardNCDA ChildScoreboardNCDA ()
+childScoreboardNCDAEndpoint =
+    swEndpoint "nodes/child_scoreboard_ncda" decodeChildScoreboardNCDA
+        |> withValueEncoder (object << encodeChildScoreboardNCDA)
