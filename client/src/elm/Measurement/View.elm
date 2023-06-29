@@ -3264,7 +3264,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     , [ maybeToBoolTask form.treatedForAcuteMalnutrition ]
                     )
 
-                ChildWitDisability ->
+                ChildWithDisability ->
                     let
                         updateFunc value form_ =
                             { form_ | childWitDisability = Just value, receivingSupport = Nothing }
@@ -3276,7 +3276,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                             else
                                 ( [], [] )
                     in
-                    ( viewNCDAInput ChildWitDisability form.childWitDisability updateFunc
+                    ( viewNCDAInput ChildWithDisability form.childWitDisability updateFunc
                         ++ derivedInputs
                     , form.childWitDisability :: derivedTasks
                     )
@@ -3462,7 +3462,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                         [ BeneficiaryCashTransfer
                         , ConditionalFoodItems
                         , ChildWithAcuteMalnutrition
-                        , ChildWitDisability
+                        , ChildWithDisability
                         , ChildGotDiarrhea
                         ]
             in
