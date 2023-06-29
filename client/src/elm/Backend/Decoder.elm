@@ -90,6 +90,9 @@ decodeRevision =
                     "child_scoreboard_encounter" ->
                         decodeWithUuid ChildScoreboardEncounterRevision decodeChildScoreboardEncounter
 
+                    "child_scoreboard_ncda" ->
+                        decodeWithUuid ChildScoreboardNCDARevision decodeChildScoreboardNCDA
+
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
 
