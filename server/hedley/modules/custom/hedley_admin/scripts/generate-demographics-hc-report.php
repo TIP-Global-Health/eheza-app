@@ -35,10 +35,10 @@ function get_health_center_id($health_center_name = NULL) {
       if (!$results->fetchField()) {
         drush_print('No health centers match the name provided');
         exit;
-      } 
+      }
       elseif (!$results->fetchField()) {
         return db_query("SELECT nid FROM node WHERE title LIKE '$health_center_name%' AND type='health_center' LIMIT 1")->fetchField();
-      } 
+      }
       else {
         $results = db_query("SELECT nid FROM node WHERE title LIKE '$health_center_name%' AND type='health_center'");
         drush_print('Multiple health centers match the name provided including ' .
@@ -46,7 +46,7 @@ function get_health_center_id($health_center_name = NULL) {
           ", etc. \r\nPlease use a more specific name");
         exit();
       }
-    } 
+    }
     else {
       return db_query("SELECT nid FROM node WHERE title='$health_center_name' AND type='health_center'")->fetchField();
     }
