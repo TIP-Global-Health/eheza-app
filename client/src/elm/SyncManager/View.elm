@@ -420,6 +420,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityChildScoreboardEncounter identifier ->
                 text ("Child Scoreboard Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
+            BackendAuthorityChildScoreboardNCDA identifier ->
+                viewMeasurement identifier "Child Scoreboard NCDA"
+
             BackendAuthorityClinic identifier ->
                 text <| "Clinic " ++ identifier.entity.name
 

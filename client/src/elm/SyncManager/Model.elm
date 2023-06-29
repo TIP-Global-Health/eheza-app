@@ -72,6 +72,7 @@ type BackendAuthorityEntity
     | BackendAuthorityCall114 (BackendEntity Call114)
     | BackendAuthorityChildFbf (BackendEntity Fbf)
     | BackendAuthorityChildScoreboardEncounter (BackendEntity ChildScoreboardEncounter)
+    | BackendAuthorityChildScoreboardNCDA (BackendEntity ChildScoreboardNCDA)
     | BackendAuthorityClinic (BackendEntity Clinic)
     | BackendAuthorityContributingFactors (BackendEntity ContributingFactors)
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
