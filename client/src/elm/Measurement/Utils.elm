@@ -4545,6 +4545,139 @@ toNCDAValue form =
         |> andMap (Just form.birthWeight)
 
 
+fromNCDAValueNEW : Maybe NCDAValueNEW -> NCDAFormNEW
+fromNCDAValueNEW saved =
+    { step = NCDAStepAntenatalCare
+    , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
+    , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member BreastfedForSixMonths) saved
+    , conditionalFoodItems = Maybe.map (.signs >> EverySet.member ConditionalFoodItems) saved
+    , fiveFoodGroups = Maybe.map (.signs >> EverySet.member FiveFoodGroups) saved
+    , hasCleanWater = Maybe.map (.signs >> EverySet.member HasCleanWater) saved
+    , hasHandwashingFacility = Maybe.map (.signs >> EverySet.member HasHandwashingFacility) saved
+    , hasToilets = Maybe.map (.signs >> EverySet.member HasToilets) saved
+    , hasKitchenGarden = Maybe.map (.signs >> EverySet.member HasKitchenGarden) saved
+
+    -- New:
+    , beneficiaryCashTransfer = Maybe.map (.signs >> EverySet.member BeneficiaryCashTransfer) saved
+    , childGotDiarrhea = Maybe.map (.signs >> EverySet.member ChildGotDiarrhea) saved
+    , childWithAcuteMalnutrition = Maybe.map (.signs >> EverySet.member ChildWithAcuteMalnutrition) saved
+    , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
+    , foodSupplements = Maybe.map (.signs >> EverySet.member FoodSupplements) saved
+    , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
+    , numberOfANCVisitsCorrect = Maybe.map (.signs >> EverySet.member NumberOfANCVisitsCorrect) saved
+    , numberOfMissedImmunizationAppointmentsCorrect = Maybe.map (.signs >> EverySet.member NumberOfMissedImmunizationAppointmentsCorrect) saved
+    , receivingCashTransfer = Maybe.map (.signs >> EverySet.member ReceivingCashTransfer) saved
+    , receivingSupport = Maybe.map (.signs >> EverySet.member ReceivingSupport) saved
+    , supplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member SupplementsDuringPregnancy) saved
+    , takenSupplementsPerGuidance = Maybe.map (.signs >> EverySet.member TakenSupplementsPerGuidance) saved
+    , treatedForAcuteMalnutrition = Maybe.map (.signs >> EverySet.member TreatedForAcuteMalnutrition) saved
+    , takingFoodSupplements = Maybe.map (.signs >> EverySet.member TakingFoodSupplements) saved
+
+    --@todo: decide if this is needed:
+    -- , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
+    -- , mealFrequency6to8Months = Maybe.map (.signs >> EverySet.member MealFrequency6to8Months) saved
+    -- , mealFrequency9to11Months = Maybe.map (.signs >> EverySet.member MealFrequency9to11Months) saved
+    -- , mealFrequency12MonthsOrMore = Maybe.map (.signs >> EverySet.member MealFrequency12MonthsOrMore) saved
+    , birthWeight = Maybe.andThen .birthWeight saved
+    , numberOfANCVisits = Maybe.andThen .numberOfANCVisits saved
+    , foodSupplementType = Maybe.andThen .foodSupplementType saved
+    }
+
+
+ncdaFormNEWWithDefault : NCDAFormNEW -> Maybe NCDAValueNEW -> NCDAFormNEW
+ncdaFormNEWWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { step = form.step
+                , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
+                , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
+                , conditionalFoodItems = or form.conditionalFoodItems (EverySet.member ConditionalFoodItems value.signs |> Just)
+                , fiveFoodGroups = or form.fiveFoodGroups (EverySet.member FiveFoodGroups value.signs |> Just)
+                , hasCleanWater = or form.hasCleanWater (EverySet.member HasCleanWater value.signs |> Just)
+                , hasHandwashingFacility = or form.hasHandwashingFacility (EverySet.member HasHandwashingFacility value.signs |> Just)
+                , hasToilets = or form.hasToilets (EverySet.member HasToilets value.signs |> Just)
+                , hasKitchenGarden = or form.hasKitchenGarden (EverySet.member HasKitchenGarden value.signs |> Just)
+
+                -- New:
+                , beneficiaryCashTransfer = or form.beneficiaryCashTransfer (EverySet.member BeneficiaryCashTransfer value.signs |> Just)
+                , childGotDiarrhea = or form.childGotDiarrhea (EverySet.member ChildGotDiarrhea value.signs |> Just)
+                , childWithAcuteMalnutrition = or form.childWithAcuteMalnutrition (EverySet.member ChildWithAcuteMalnutrition value.signs |> Just)
+                , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
+                , foodSupplements = or form.foodSupplements (EverySet.member FoodSupplements value.signs |> Just)
+                , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
+                , numberOfANCVisitsCorrect = or form.numberOfANCVisitsCorrect (EverySet.member NumberOfANCVisitsCorrect value.signs |> Just)
+                , numberOfMissedImmunizationAppointmentsCorrect = or form.numberOfMissedImmunizationAppointmentsCorrect (EverySet.member NumberOfMissedImmunizationAppointmentsCorrect value.signs |> Just)
+                , receivingCashTransfer = or form.receivingCashTransfer (EverySet.member ReceivingCashTransfer value.signs |> Just)
+                , receivingSupport = or form.receivingSupport (EverySet.member ReceivingSupport value.signs |> Just)
+                , supplementsDuringPregnancy = or form.supplementsDuringPregnancy (EverySet.member SupplementsDuringPregnancy value.signs |> Just)
+                , takenSupplementsPerGuidance = or form.takenSupplementsPerGuidance (EverySet.member TakenSupplementsPerGuidance value.signs |> Just)
+                , treatedForAcuteMalnutrition = or form.treatedForAcuteMalnutrition (EverySet.member TreatedForAcuteMalnutrition value.signs |> Just)
+                , takingFoodSupplements = or form.takingFoodSupplements (EverySet.member TakingFoodSupplements value.signs |> Just)
+
+                --@todo: decide if this is needed:
+                -- , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
+                -- , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member MealFrequency6to8Months value.signs |> Just)
+                -- , mealFrequency9to11Months = or form.mealFrequency9to11Months (EverySet.member MealFrequency9to11Months value.signs |> Just)
+                -- , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member MealFrequency12MonthsOrMore value.signs |> Just)
+                , birthWeight = or form.birthWeight value.birthWeight
+                , numberOfANCVisits = or form.numberOfANCVisits value.numberOfANCVisits
+                , foodSupplementType = or form.foodSupplementType value.foodSupplementType
+                }
+            )
+
+
+toNCDAValueNEWWithDefault : Maybe NCDAValueNEW -> NCDAFormNEW -> Maybe NCDAValueNEW
+toNCDAValueNEWWithDefault saved form =
+    ncdaFormNEWWithDefault form saved
+        |> toNCDAValueNEW
+
+
+toNCDAValueNEW : NCDAFormNEW -> Maybe NCDAValueNEW
+toNCDAValueNEW form =
+    let
+        signs =
+            [ ifNullableTrue AppropriateComplementaryFeeding form.appropriateComplementaryFeeding
+            , ifNullableTrue BreastfedForSixMonths form.breastfedForSixMonths
+            , ifNullableTrue ConditionalFoodItems form.conditionalFoodItems
+            , ifNullableTrue FiveFoodGroups form.fiveFoodGroups
+            , ifNullableTrue HasCleanWater form.hasCleanWater
+            , ifNullableTrue HasHandwashingFacility form.hasHandwashingFacility
+            , ifNullableTrue HasToilets form.hasToilets
+            , ifNullableTrue HasKitchenGarden form.hasKitchenGarden
+
+            -- New:
+            , ifNullableTrue BeneficiaryCashTransfer form.beneficiaryCashTransfer
+            , ifNullableTrue ChildGotDiarrhea form.childGotDiarrhea
+            , ifNullableTrue ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition
+            , ifNullableTrue ChildWithDisability form.childWithDisability
+            , ifNullableTrue FoodSupplements form.foodSupplements
+            , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
+            , ifNullableTrue NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect
+            , ifNullableTrue NumberOfMissedImmunizationAppointmentsCorrect form.numberOfMissedImmunizationAppointmentsCorrect
+            , ifNullableTrue ReceivingCashTransfer form.receivingCashTransfer
+            , ifNullableTrue ReceivingSupport form.receivingSupport
+            , ifNullableTrue SupplementsDuringPregnancy form.supplementsDuringPregnancy
+            , ifNullableTrue TakenSupplementsPerGuidance form.takenSupplementsPerGuidance
+            , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
+            , ifNullableTrue TakingFoodSupplements form.takingFoodSupplements
+
+            --@todo: decide if this is needed:
+            -- , ifNullableTrue BornWithBirthDefect form.bornWithBirthDefect
+            -- , ifNullableTrue MealFrequency6to8Months form.mealFrequency6to8Months
+            -- , ifNullableTrue MealFrequency9to11Months form.mealFrequency9to11Months
+            -- , ifNullableTrue MealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASignsNEW)
+    in
+    Maybe.map NCDAValueNEW signs
+        |> andMap (Just form.birthWeight)
+        |> andMap (Just form.numberOfANCVisits)
+        |> andMap (Just form.foodSupplementType)
+
+
 {-| Whether to expect a counseling activity is not just a yes/no question,
 since we'd also like to know **which** sort of counseling activity to expect.
 I suppose we could parameterize the `Counseling` activity by
