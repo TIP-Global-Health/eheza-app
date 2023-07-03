@@ -22,7 +22,7 @@ import Backend.NutritionEncounter.Utils
         ( calculateZScoreWeightForAge
         , getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
-        , resolvePreviousNCDAValuesForChild
+        , resolveNCDANeverFilled
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
@@ -46,6 +46,7 @@ import Measurement.Model
         , MuacForm
         , NCDAData
         , NCDAForm
+        , NCDAHistoryData
         , NextStepsTask(..)
         , NutritionForm
         , SendToHCForm
@@ -216,11 +217,12 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
 
         NCDA ->
             let
-                newbornExamPregnancySummary =
-                    getNewbornExamPregnancySummary assembled.participant.person db
+                historyData =
+                    { pregnancySummary = getNewbornExamPregnancySummary assembled.participant.person db
+                    , ncdaNeverFilled = resolveNCDANeverFilled currentDate assembled.participant.person db
+                    }
             in
-            resolvePreviousNCDAValuesForChild currentDate assembled.participant.person db
-                |> viewNCDAContent language currentDate id assembled db model.ncdaData newbornExamPregnancySummary
+            viewNCDAContent language currentDate id assembled db model.ncdaData historyData
 
         NextSteps ->
             viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
@@ -681,10 +683,9 @@ viewNCDAContent :
     -> AssembledData
     -> ModelIndexedDb
     -> NCDAData
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> NCDAHistoryData
     -> List (Html Msg)
-viewNCDAContent language currentDate id assembled db data newbornExamPregnancySummary previousNCDAValues =
+viewNCDAContent language currentDate id assembled db data historyData =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -703,8 +704,7 @@ viewNCDAContent language currentDate id assembled db data newbornExamPregnancySu
         SetNCDAHelperState
         data.helperState
         form
-        newbornExamPregnancySummary
-        previousNCDAValues
+        historyData
 
 
 viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)

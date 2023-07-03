@@ -1107,6 +1107,8 @@ type alias NCDAFormNEW =
     , numberOfANCVisits : Maybe Float
     , supplementsDuringPregnancy : Maybe Bool
     , takenSupplementsPerGuidance : Maybe Bool
+    , bornWithBirthDefect : Maybe Bool
+    , birthWeight : Maybe WeightInGrm
 
     -- Step 2.
     , numberOfMissedImmunizationAppointmentsCorrect : Maybe Bool
@@ -1135,9 +1137,6 @@ type alias NCDAFormNEW =
     , hasToilets : Maybe Bool
     , hasKitchenGarden : Maybe Bool
     , insecticideTreatedBednets : Maybe Bool
-
-    -- For future use.
-    , birthWeight : Maybe WeightInGrm
     }
 
 
@@ -1150,6 +1149,8 @@ emptyNCDAFormNEW =
     , numberOfANCVisits = Nothing
     , supplementsDuringPregnancy = Nothing
     , takenSupplementsPerGuidance = Nothing
+    , bornWithBirthDefect = Nothing
+    , birthWeight = Nothing
 
     -- Step 2.
     , numberOfMissedImmunizationAppointmentsCorrect = Nothing
@@ -1178,9 +1179,6 @@ emptyNCDAFormNEW =
     , hasToilets = Nothing
     , hasKitchenGarden = Nothing
     , insecticideTreatedBednets = Nothing
-
-    -- For future use.
-    , birthWeight = Nothing
     }
 
 
@@ -1256,4 +1254,10 @@ emptyHbA1cTestForm =
     , dateSelectorPopupState = Nothing
     , hba1cResult = Nothing
     , hba1cResultDirty = False
+    }
+
+
+type alias NCDAHistoryData =
+    { pregnancySummary : Maybe PregnancySummaryValue
+    , ncdaNeverFilled : Bool
     }

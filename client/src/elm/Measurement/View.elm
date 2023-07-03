@@ -27,7 +27,7 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
-        , resolvePreviousNCDAValuesForChild
+        , resolveNCDANeverFilled
         )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
@@ -126,11 +126,12 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
 
         Activity.Model.NCDA ->
             let
-                newbornExamPregnancySummary =
-                    getNewbornExamPregnancySummary childId db
+                historyData =
+                    { pregnancySummary = getNewbornExamPregnancySummary childId db
+                    , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
+                    }
             in
-            resolvePreviousNCDAValuesForChild currentDate childId db
-                |> viewNCDA language currentDate child (mapMeasurementData .ncda measurements) model.ncdaData newbornExamPregnancySummary
+            viewNCDA language currentDate child (mapMeasurementData .ncda measurements) model.ncdaData historyData
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -2297,10 +2298,9 @@ viewNCDAContent :
     -> (Maybe NCDASign -> msg)
     -> Maybe NCDASign
     -> NCDAForm
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> NCDAHistoryData
     -> List (Html msg)
-viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg setStepMsg saveMsg setHelperStateMsg helperState form newbornExamPregnancySummary previousNCDAValues =
+viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData =
     let
         ( inputs, tasks ) =
             ncdaFormInputsAndTasks language
@@ -2311,7 +2311,7 @@ viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg se
                 setHelperStateMsg
                 form
                 currentStep
-                newbornExamPregnancySummary
+                historyData.pregnancySummary
 
         totalTasks =
             List.length tasks
@@ -2321,7 +2321,7 @@ viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg se
                 |> List.sum
 
         currentStep =
-            resolveNCDAFormStep newbornExamPregnancySummary previousNCDAValues form
+            resolveNCDAFormStep historyData form
 
         actions =
             let
@@ -2343,7 +2343,7 @@ viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg se
                 NCDAStepPermanentQuestions1 ->
                     let
                         initialStep =
-                            resolveNCDAFormInitialStep newbornExamPregnancySummary previousNCDAValues
+                            resolveNCDAFormInitialStep historyData
                     in
                     if initialStep == NCDAStepPermanentQuestions1 then
                         div [ class "actions" ]
@@ -2674,30 +2674,27 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
             )
 
 
-resolveNCDAFormStep : Maybe PregnancySummaryValue -> List ( NominalDate, NCDAValue ) -> NCDAForm -> NCDAStep
-resolveNCDAFormStep newbornExamPregnancySummary previousNCDAValues form =
+resolveNCDAFormStep : NCDAHistoryData -> NCDAForm -> NCDAStep
+resolveNCDAFormStep historyData form =
     Maybe.withDefault
-        (resolveNCDAFormInitialStep newbornExamPregnancySummary previousNCDAValues)
+        (resolveNCDAFormInitialStep historyData)
         form.step
 
 
-resolveNCDAFormInitialStep :
-    Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
-    -> NCDAStep
-resolveNCDAFormInitialStep newbornExamPregnancySummary previousNCDAValues =
+resolveNCDAFormInitialStep : NCDAHistoryData -> NCDAStep
+resolveNCDAFormInitialStep historyData =
     let
         showANCQuestions =
             -- If NCDA was filled before, for sure it included answers to
             -- needed questions.
-            List.isEmpty previousNCDAValues
+            historyData.ncdaNeverFilled
 
         showNewbornExamQuestions =
             (-- If NCDA was filled before, for sure it included answers to
              -- needed questions.
-             List.isEmpty previousNCDAValues
+             historyData.ncdaNeverFilled
             )
-                && showNCDAQuestionsByNewbornExam newbornExamPregnancySummary
+                && showNCDAQuestionsByNewbornExam historyData.pregnancySummary
     in
     if showANCQuestions || showNewbornExamQuestions then
         NCDAStepQuestionsAskedOnce
@@ -2821,10 +2818,9 @@ viewNCDA :
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
     -> NCDAData
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> NCDAHistoryData
     -> Html MsgChild
-viewNCDA language currentDate child measurement data newbornExamPregnancySummary previousNCDAValues =
+viewNCDA language currentDate child measurement data historyData =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -2851,8 +2847,7 @@ viewNCDA language currentDate child measurement data newbornExamPregnancySummary
         SetNCDAHelperState
         data.helperState
         form
-        newbornExamPregnancySummary
-        previousNCDAValues
+        historyData
         |> div []
 
 
@@ -2869,8 +2864,9 @@ viewNCDAContentNEW :
     -> (Maybe NCDASignNEW -> msg)
     -> Maybe NCDASignNEW
     -> NCDAFormNEW
+    -> NCDAHistoryData
     -> List (Html msg)
-viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form =
+viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData =
     let
         ( inputs, tasks ) =
             ncdaFormInputsAndTasksNEW language
@@ -2883,6 +2879,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                 setHelperStateMsg
                 form
                 currentStep
+                historyData.pregnancySummary
 
         totalTasks =
             List.length tasks
@@ -2960,8 +2957,9 @@ ncdaFormInputsAndTasksNEW :
     -> (Maybe NCDASignNEW -> msg)
     -> NCDAFormNEW
     -> NCDAStepNEW
+    -> Maybe PregnancySummaryValue
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep =
+ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -3386,6 +3384,15 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                     , [ maybeToBoolTask form.insecticideTreatedBednets ]
                     )
 
+                BornWithBirthDefect ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | bornWithBirthDefect = Just value }
+                    in
+                    ( viewNCDAInput InsecticideTreatedBednets form.bornWithBirthDefect updateFunc
+                    , [ maybeToBoolTask form.bornWithBirthDefect ]
+                    )
+
                 NoNCDASignsNEW ->
                     ( [], [] )
 
@@ -3410,11 +3417,27 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                         [ NumberOfANCVisitsCorrect
                         , SupplementsDuringPregnancy
                         ]
+
+                ( newbornExamSection, newbornExamTasks ) =
+                    if showNCDAQuestionsByNewbornExam newbornExamPregnancySummary then
+                        let
+                            ( birthWeightSection, birthWeightTasks ) =
+                                birthWeightInputsAndTasks language form.birthWeight setBirthWeightMsg
+
+                            ( birthDefectSection, birthDefectTask ) =
+                                inputsAndTasksForSign BornWithBirthDefect
+                        in
+                        ( birthWeightSection ++ birthDefectSection
+                        , birthDefectTask ++ birthWeightTasks
+                        )
+
+                    else
+                        ( [], [] )
             in
-            ( List.map Tuple.first inputsAndTasks
-                |> List.concat
-            , List.map Tuple.second inputsAndTasks
-                |> List.concat
+            ( (List.map Tuple.first inputsAndTasks |> List.concat)
+                ++ newbornExamSection
+            , (List.map Tuple.second inputsAndTasks |> List.concat)
+                ++ newbornExamTasks
             )
 
         NCDAStepUniversalInterventions ->

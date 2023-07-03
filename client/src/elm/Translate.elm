@@ -9512,6 +9512,11 @@ translationSet trans =
 
         NCDASignNEWQuestion sign ->
             case sign of
+                BornWithBirthDefect ->
+                    { english = "Was the child born with a birth defect"
+                    , kinyarwanda = Just "Umwana yaba yaravukanye ubumuga"
+                    }
+
                 NumberOfANCVisitsCorrect ->
                     { english = "Is this correct"
                     , kinyarwanda = Nothing

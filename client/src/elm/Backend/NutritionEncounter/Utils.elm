@@ -260,6 +260,29 @@ generateIndividualWellChildMeasurementsForChild childId db =
         |> Maybe.withDefault []
 
 
+generateIndividualChildScoreboardMeasurementsForChild :
+    PersonId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
+generateIndividualChildScoreboardMeasurementsForChild childId db =
+    resolveIndividualParticipantForPerson childId Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter db
+        |> Maybe.map
+            (getChildScoreboardEncountersForParticipant db
+                >> List.filterMap
+                    (\( encounterId, encounter ) ->
+                        case Dict.get encounterId db.childScoreboardMeasurements of
+                            Just (Success data) ->
+                                Just ( encounter.startDate, ( encounterId, data ) )
+
+                            _ ->
+                                Nothing
+                    )
+                -- Most recent date to least recent date.
+                >> List.sortWith sortTuplesByDateDesc
+            )
+        |> Maybe.withDefault []
+
+
 getNewbornExamPregnancySummary :
     PersonId
     -> ModelIndexedDb
@@ -392,6 +415,26 @@ resolvePreviousMeasurementsSetForChild childId db =
     , weights = nutritionWeights ++ wellChildWeights ++ groupWeights |> List.sortWith sortTuplesByDateDesc
     , headCircumferences = wellChildHeadCircumferences
     }
+
+
+resolveNCDANeverFilled :
+    NominalDate
+    -> PersonId
+    -> ModelIndexedDb
+    -> Bool
+resolveNCDANeverFilled currentDate childId db =
+    let
+        previousNCDAValuesForChild =
+            resolvePreviousNCDAValuesForChild currentDate childId db
+
+        individualChildScoreboardMeasurements =
+            generateIndividualChildScoreboardMeasurementsForChild childId db
+
+        previousChildScoreboardNCDAs =
+            resolveIndividualChildScoreboardValues individualChildScoreboardMeasurements .ncda identity
+                |> List.filter (\( date, _ ) -> Date.compare date currentDate == LT)
+    in
+    List.isEmpty previousNCDAValuesForChild && List.isEmpty previousChildScoreboardNCDAs
 
 
 resolvePreviousNCDAValuesForChild :
@@ -535,6 +578,24 @@ resolveIndividualWellChildValues :
     -> (a -> b)
     -> List ( NominalDate, b )
 resolveIndividualWellChildValues measurementsWithDates measurementFunc valueFunc =
+    measurementsWithDates
+        |> List.filterMap
+            (\( date, ( _, measurements ) ) ->
+                measurementFunc measurements
+                    |> Maybe.map
+                        (\measurement ->
+                            ( date, Tuple.second measurement |> .value |> valueFunc )
+                        )
+            )
+        |> List.reverse
+
+
+resolveIndividualChildScoreboardValues :
+    List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
+    -> (ChildScoreboardMeasurements -> Maybe ( id, ChildScoreboardMeasurement a ))
+    -> (a -> b)
+    -> List ( NominalDate, b )
+resolveIndividualChildScoreboardValues measurementsWithDates measurementFunc valueFunc =
     measurementsWithDates
         |> List.filterMap
             (\( date, ( _, measurements ) ) ->

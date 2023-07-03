@@ -6,6 +6,11 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( getNewbornExamPregnancySummary
+        , resolveNCDANeverFilled
+        )
 import Backend.Person.Model exposing (Person)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -98,6 +103,11 @@ viewNCDAContent language currentDate assembled db data =
 
             else
                 CloseEncounter assembled
+
+        historyData =
+            { pregnancySummary = getNewbornExamPregnancySummary assembled.participant.person db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate assembled.participant.person db
+            }
     in
     Measurement.View.viewNCDAContentNEW language
         currentDate
@@ -111,6 +121,7 @@ viewNCDAContent language currentDate assembled db data =
         SetNCDAHelperState
         data.helperState
         form
+        historyData
 
 
 acuteIllnessEncounterPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
