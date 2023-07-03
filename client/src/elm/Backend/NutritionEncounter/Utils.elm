@@ -1,6 +1,8 @@
 module Backend.NutritionEncounter.Utils exposing (..)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
@@ -27,7 +29,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isNothing)
 import Pages.Utils exposing (ifEverySetEmpty)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (diffDays, zScoreWeightForAge)
@@ -232,14 +234,6 @@ generateIndividualNutritionMeasurementsForChild childId db =
         |> Maybe.withDefault []
 
 
-getNutritionEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NutritionEncounterId, NutritionEncounter )
-getNutritionEncountersForParticipant db participantId =
-    Dict.get participantId db.nutritionEncountersByParticipant
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.withDefault []
-
-
 generateIndividualWellChildMeasurementsForChild :
     PersonId
     -> ModelIndexedDb
@@ -278,9 +272,34 @@ getNewbornExamPregnancySummary childId db =
         |> List.head
 
 
+getAcuteIllnessEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
+getAcuteIllnessEncountersForParticipant =
+    getParticipantEncountersByEncounterType .acuteIllnessEncountersByParticipant
+
+
+getNutritionEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NutritionEncounterId, NutritionEncounter )
+getNutritionEncountersForParticipant =
+    getParticipantEncountersByEncounterType .nutritionEncountersByParticipant
+
+
 getWellChildEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( WellChildEncounterId, WellChildEncounter )
-getWellChildEncountersForParticipant db participantId =
-    Dict.get participantId db.wellChildEncountersByParticipant
+getWellChildEncountersForParticipant =
+    getParticipantEncountersByEncounterType .wellChildEncountersByParticipant
+
+
+getChildScoreboardEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( ChildScoreboardEncounterId, ChildScoreboardEncounter )
+getChildScoreboardEncountersForParticipant =
+    getParticipantEncountersByEncounterType .childScoreboardEncountersByParticipant
+
+
+getParticipantEncountersByEncounterType :
+    (ModelIndexedDb -> Dict IndividualEncounterParticipantId (WebData (Dict encounterId encounter)))
+    -> ModelIndexedDb
+    -> IndividualEncounterParticipantId
+    -> List ( encounterId, encounter )
+getParticipantEncountersByEncounterType dataStructureFunc db participantId =
+    dataStructureFunc db
+        |> Dict.get participantId
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map Dict.toList
         |> Maybe.withDefault []

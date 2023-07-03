@@ -3,6 +3,7 @@ module Pages.AcuteIllness.Encounter.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
@@ -12,33 +13,24 @@ fetch id db =
     let
         participantId =
             Dict.get id db.acuteIllnessEncounters
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .participant
 
         personId =
-            participantId
-                |> Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+            Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
+                participantId
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .person
 
         encountersIds =
-            participantId
-                |> Maybe.map
-                    (\participantId_ ->
-                        Dict.get participantId_ db.acuteIllnessEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map Dict.keys
-                            |> RemoteData.withDefault []
-                    )
+            Maybe.map (getAcuteIllnessEncountersForParticipant db) participantId
                 |> Maybe.withDefault []
+                |> List.map Tuple.first
 
         -- We fetch measurements for all encounters, to be
         -- able to apply `expectedAcuteIllnessActivity` logic.
         fetchMeasurements =
-            encountersIds
-                |> List.map FetchAcuteIllnessMeasurements
+            List.map FetchAcuteIllnessMeasurements encountersIds
     in
     Maybe.Extra.values
         [ Maybe.map FetchIndividualEncounterParticipant participantId
