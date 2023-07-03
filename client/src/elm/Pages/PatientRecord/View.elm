@@ -577,14 +577,8 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
             ( familyPlanning.dateMeasured, familyPlanning.value )
 
         prenatalEncountersIds =
-            List.map
-                (\participantId ->
-                    Dict.get participantId db.prenatalEncountersByParticipant
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.keys
-                )
+            List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
                 prenatalParticipantsIds
-                |> Maybe.Extra.values
                 |> List.concat
     in
     div [ class "pane family-planning" ]

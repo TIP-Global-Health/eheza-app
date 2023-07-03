@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
@@ -17,10 +18,12 @@ import Backend.Measurement.Utils
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.NutritionActivity.Model exposing (..)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Date
@@ -282,14 +285,29 @@ getNutritionEncountersForParticipant =
     getParticipantEncountersByEncounterType .nutritionEncountersByParticipant
 
 
+getHomeVisitEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( HomeVisitEncounterId, HomeVisitEncounter )
+getHomeVisitEncountersForParticipant =
+    getParticipantEncountersByEncounterType .homeVisitEncountersByParticipant
+
+
 getWellChildEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( WellChildEncounterId, WellChildEncounter )
 getWellChildEncountersForParticipant =
     getParticipantEncountersByEncounterType .wellChildEncountersByParticipant
 
 
+getNCDEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NCDEncounterId, NCDEncounter )
+getNCDEncountersForParticipant =
+    getParticipantEncountersByEncounterType .ncdEncountersByParticipant
+
+
 getChildScoreboardEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( ChildScoreboardEncounterId, ChildScoreboardEncounter )
 getChildScoreboardEncountersForParticipant =
     getParticipantEncountersByEncounterType .childScoreboardEncountersByParticipant
+
+
+getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
+getPrenatalEncountersForParticipant =
+    getParticipantEncountersByEncounterType .prenatalEncountersByParticipant
 
 
 getParticipantEncountersByEncounterType :

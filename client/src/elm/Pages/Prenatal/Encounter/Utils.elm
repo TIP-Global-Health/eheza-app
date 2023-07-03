@@ -253,10 +253,7 @@ resolveGlobalObstetricHistory nursePreviousMeasurements measurements =
 
 getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
 getPrenatalEncountersForParticipant db participantId =
-    Dict.get participantId db.prenatalEncountersByParticipant
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.withDefault []
+    Backend.NutritionEncounter.Utils.getPrenatalEncountersForParticipant db participantId
         |> List.sortWith sortEncounterTuplesDesc
 
 
