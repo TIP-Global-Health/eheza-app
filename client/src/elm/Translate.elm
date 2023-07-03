@@ -9623,7 +9623,7 @@ translationSet trans =
                     }
 
                 InsecticideTreatedBednets ->
-                    { english = "Is the mother using the insecticide-treated bednets ?"
+                    { english = "Is the mother using the insecticide-treated bednets"
                     , kinyarwanda = Nothing
                     }
 

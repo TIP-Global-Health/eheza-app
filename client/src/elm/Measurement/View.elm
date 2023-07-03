@@ -3389,7 +3389,7 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
                         updateFunc value form_ =
                             { form_ | bornWithBirthDefect = Just value }
                     in
-                    ( viewNCDAInput InsecticideTreatedBednets form.bornWithBirthDefect updateFunc
+                    ( viewNCDAInput BornWithBirthDefect form.bornWithBirthDefect updateFunc
                     , [ maybeToBoolTask form.bornWithBirthDefect ]
                     )
 
