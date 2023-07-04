@@ -2984,44 +2984,63 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
             case sign of
                 NumberOfANCVisitsCorrect ->
                     let
-                        updateFunc value form_ =
-                            { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
+                        ( numberOfANCVisitsInputs, numberOfANCVisitsTasks ) =
+                            let
+                                counselling =
+                                    Maybe.map
+                                        (\numberOfANCVisits ->
+                                            if numberOfANCVisits < 4 then
+                                                [ viewCounselingLabel NumberOfANCVisitsCorrect ]
 
-                        ( derivedInputs, derivedTasks ) =
-                            if form.numberOfANCVisitsCorrect == Just False then
-                                let
-                                    counselling =
-                                        Maybe.map
-                                            (\numberOfANCVisits ->
-                                                if numberOfANCVisits < 4 then
-                                                    [ viewCounselingLabel NumberOfANCVisitsCorrect ]
-
-                                                else
-                                                    []
-                                            )
-                                            form.numberOfANCVisits
-                                            |> Maybe.withDefault []
-                                in
-                                ( [ viewQuestionLabel language Translate.NCDANumberOfANCVisitsQuestion
-                                  , viewMeasurementInput language
+                                            else
+                                                []
+                                        )
                                         form.numberOfANCVisits
-                                        setNumberANCVisitsMsg
-                                        "anc-visits"
-                                        Translate.Visits
-                                  ]
-                                    ++ counselling
-                                , [ maybeToBoolTask form.numberOfANCVisits ]
+                                        |> Maybe.withDefault []
+                            in
+                            ( [ viewQuestionLabel language Translate.NCDANumberOfANCVisitsQuestion
+                              , viewMeasurementInput language
+                                    form.numberOfANCVisits
+                                    setNumberANCVisitsMsg
+                                    "anc-visits"
+                                    Translate.Visits
+                              ]
+                                ++ counselling
+                            , [ maybeToBoolTask form.numberOfANCVisits ]
+                            )
+                    in
+                    Maybe.map
+                        (\numberOfEncounters ->
+                            if numberOfEncounters < 4 then
+                                let
+                                    updateFunc value form_ =
+                                        { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
+
+                                    ( derivedInputs, derivedTasks ) =
+                                        if form.numberOfANCVisitsCorrect == Just False then
+                                            ( numberOfANCVisitsInputs, numberOfANCVisitsTasks )
+
+                                        else
+                                            ( [], [] )
+                                in
+                                ( (viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader (Just numberOfEncounters)) "." "label"
+                                    :: viewNCDAInput NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect updateFunc
+                                  )
+                                    ++ derivedInputs
+                                , form.numberOfANCVisitsCorrect :: derivedTasks
                                 )
 
                             else
                                 ( [], [] )
-                    in
-                    ( (viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader 0) "." "label"
-                        :: viewNCDAInput NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect updateFunc
-                      )
-                        ++ derivedInputs
-                    , form.numberOfANCVisitsCorrect :: derivedTasks
-                    )
+                        )
+                        numberOfANCEncounters
+                        |> Maybe.withDefault
+                            -- Number of encounters is not known, which means that
+                            -- pregnancy was not tracked on E-Heza.
+                            ( viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader Nothing) "." "label"
+                                :: numberOfANCVisitsInputs
+                            , numberOfANCVisitsTasks
+                            )
 
                 SupplementsDuringPregnancy ->
                     let
