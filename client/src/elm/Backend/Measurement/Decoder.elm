@@ -3,6 +3,8 @@ module Backend.Measurement.Decoder exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Person.Decoder exposing (decodeGender)
@@ -5234,3 +5236,14 @@ decodeNCDASignNEW =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDASignNEW")
             )
+
+
+decodePregnancyByNewborn : Decoder (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+decodePregnancyByNewborn =
+    oneOf
+        [ at [ "individual_participant" ] (decodeHead decodeIndividualEncounterParticipant)
+
+        -- Seems there're no individual participants for the pregnancy, so
+        -- we can determine that pregnancy was not tracked on E-Heza.
+        , succeed Nothing
+        ]
