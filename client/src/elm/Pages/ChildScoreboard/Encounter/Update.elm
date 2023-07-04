@@ -119,7 +119,7 @@ update msg model =
             let
                 updatedForm =
                     model.ncdaData.form
-                        |> (\form -> { form | step = step })
+                        |> (\form -> { form | step = Just step })
 
                 updatedData =
                     model.ncdaData

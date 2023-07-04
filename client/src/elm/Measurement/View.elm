@@ -2683,24 +2683,31 @@ resolveNCDAFormStep historyData form =
 
 resolveNCDAFormInitialStep : NCDAHistoryData -> NCDAStep
 resolveNCDAFormInitialStep historyData =
-    let
-        showANCQuestions =
-            -- If NCDA was filled before, for sure it included answers to
-            -- needed questions.
-            historyData.ncdaNeverFilled
-
-        showNewbornExamQuestions =
-            (-- If NCDA was filled before, for sure it included answers to
-             -- needed questions.
-             historyData.ncdaNeverFilled
-            )
-                && showNCDAQuestionsByNewbornExam historyData.pregnancySummary
-    in
-    if showANCQuestions || showNewbornExamQuestions then
+    -- If NCDA was filled before, for sure it included answers to
+    -- needed questions.
+    if historyData.ncdaNeverFilled then
         NCDAStepQuestionsAskedOnce
 
     else
         NCDAStepPermanentQuestions1
+
+
+resolveNCDAFormStepNEW : NCDAHistoryData -> NCDAFormNEW -> NCDAStepNEW
+resolveNCDAFormStepNEW historyData form =
+    Maybe.withDefault
+        (resolveNCDAFormInitialStepNEW historyData)
+        form.step
+
+
+resolveNCDAFormInitialStepNEW : NCDAHistoryData -> NCDAStepNEW
+resolveNCDAFormInitialStepNEW historyData =
+    -- If NCDA was filled before, for sure it included answers to
+    -- needed questions.
+    if historyData.ncdaNeverFilled then
+        NCDAStepAntenatalCare
+
+    else
+        NCDAStepUniversalInterventions
 
 
 showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
@@ -2710,7 +2717,7 @@ showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
     -- Newborn exam was launched, so, it could have been filled
     -- without them.
     -- It's enough to check if one of the questions was answered,
-    -- because both answres are required to save the form.
+    -- because both answereds are required to save the form.
     Maybe.map (.birthWeight >> isNothing) newbornExamPregnancySummary
         |> Maybe.withDefault True
 
@@ -2865,8 +2872,9 @@ viewNCDAContentNEW :
     -> Maybe NCDASignNEW
     -> NCDAFormNEW
     -> NCDAHistoryData
+    -> Maybe Int
     -> List (Html msg)
-viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData =
+viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData numberOfANCEncounters =
     let
         ( inputs, tasks ) =
             ncdaFormInputsAndTasksNEW language
@@ -2880,6 +2888,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                 form
                 currentStep
                 historyData.pregnancySummary
+                numberOfANCEncounters
 
         totalTasks =
             List.length tasks
@@ -2889,7 +2898,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                 |> List.sum
 
         currentStep =
-            form.step
+            resolveNCDAFormStepNEW historyData form
 
         actions =
             let
@@ -2909,10 +2918,19 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                         [ actionButton (setStepMsg NCDAStepUniversalInterventions) ]
 
                 NCDAStepUniversalInterventions ->
-                    div [ class "actions two" ]
-                        [ backButton NCDAStepAntenatalCare
-                        , actionButton (setStepMsg NCDAStepNutritionBehavior)
-                        ]
+                    let
+                        initialStep =
+                            resolveNCDAFormInitialStepNEW historyData
+                    in
+                    if initialStep == NCDAStepUniversalInterventions then
+                        div [ class "actions" ]
+                            [ actionButton (setStepMsg NCDAStepNutritionBehavior) ]
+
+                    else
+                        div [ class "actions two" ]
+                            [ backButton NCDAStepAntenatalCare
+                            , actionButton (setStepMsg NCDAStepNutritionBehavior)
+                            ]
 
                 NCDAStepNutritionBehavior ->
                     div [ class "actions two" ]
@@ -2958,8 +2976,9 @@ ncdaFormInputsAndTasksNEW :
     -> NCDAFormNEW
     -> NCDAStepNEW
     -> Maybe PregnancySummaryValue
+    -> Maybe Int
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary =
+ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary numberOfANCEncounters =
     let
         inputsAndTasksForSign sign =
             case sign of

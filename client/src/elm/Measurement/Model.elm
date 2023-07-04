@@ -1100,7 +1100,7 @@ emptyNCDADataNEW =
 
 
 type alias NCDAFormNEW =
-    { step : NCDAStepNEW
+    { step : Maybe NCDAStepNEW
 
     -- Step 1.
     , numberOfANCVisitsCorrect : Maybe Bool
@@ -1142,7 +1142,7 @@ type alias NCDAFormNEW =
 
 emptyNCDAFormNEW : NCDAFormNEW
 emptyNCDAFormNEW =
-    { step = NCDAStepAntenatalCare
+    { step = Nothing
 
     -- Step 1.
     , numberOfANCVisitsCorrect = Nothing

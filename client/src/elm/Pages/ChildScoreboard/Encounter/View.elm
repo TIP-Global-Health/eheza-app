@@ -122,6 +122,7 @@ viewNCDAContent language currentDate assembled db data =
         data.helperState
         form
         historyData
+        assembled.ancEncounters
 
 
 acuteIllnessEncounterPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
