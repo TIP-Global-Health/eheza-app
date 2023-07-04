@@ -277,10 +277,6 @@ dbSync.version(20).stores({
 });
 
 dbSync.version(21).stores({
-    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
-});
-
-dbSync.version(22).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],newborn',
 });
 
@@ -340,7 +336,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 22;
+const dbVersion = 21;
 
 /**
  * Return saved info for General sync.
