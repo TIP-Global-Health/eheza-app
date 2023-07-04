@@ -822,6 +822,7 @@
 
                 var encounterTypes = [
                   'acute_illness_encounter',
+                  'child_scoreboard_encounter',
                   'home_visit_encounter',
                   'ncd_encounter',
                   'nutrition_encounter',
