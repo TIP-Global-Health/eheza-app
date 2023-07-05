@@ -131,6 +131,9 @@
                 else if (type === 'stock-management-measurements') {
                     return viewStockManagementMeasurements(uuid);
                 }
+                else if (type === 'child-scoreboard-measurements') {
+                  return viewMeasurements('child_scoreboard_encounter', uuid);
+                }
                 else {
                     return view(type, uuid);
                 }
@@ -509,6 +512,9 @@
                     else if (key === 'ncd_encounter') {
                         target = node.ncd_encounter;
                     }
+                    else if (key === 'child_scoreboard_encounter') {
+                        target = node.child_scoreboard_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -816,6 +822,7 @@
 
                 var encounterTypes = [
                   'acute_illness_encounter',
+                  'child_scoreboard_encounter',
                   'home_visit_encounter',
                   'ncd_encounter',
                   'nutrition_encounter',

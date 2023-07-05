@@ -90,6 +90,7 @@ viewContent language currentDate selectedHealthCenter isChw app =
                                     , encounterButton AntenatalEncounter
                                     , encounterButton NutritionEncounter
                                     , encounterButton WellChildEncounter
+                                    , encounterButton ChildScoreboardEncounter
                                     ]
 
                                 else

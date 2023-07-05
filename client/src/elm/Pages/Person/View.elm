@@ -623,6 +623,15 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , title = Translate.People
                             }
 
+                        ChildScoreboardEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage ChildScoreboardEncounter)
+                            , expectedAge = ExpectChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -2 today
+                            , birthDateSelectorTo = Date.add Days -1 today
+                            , title = Translate.People
+                            }
+
                         -- Note yet implemented. Providing 'default'
                         -- values, to satisfy compiler.
                         InmmunizationEncounter ->

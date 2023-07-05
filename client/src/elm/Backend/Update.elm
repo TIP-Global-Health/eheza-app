@@ -7,6 +7,8 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Update
+import Backend.ChildScoreboardEncounter.Model
+import Backend.ChildScoreboardEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
@@ -594,6 +596,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchChildScoreboardEncountersForParticipant id ->
+            ( { model | childScoreboardEncountersByParticipant = Dict.insert id Loading model.childScoreboardEncountersByParticipant }
+            , sw.select childScoreboardEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedChildScoreboardEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardEncountersForParticipant id data ->
+            ( { model | childScoreboardEncountersByParticipant = Dict.insert id data model.childScoreboardEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -723,6 +738,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedNCDMeasurements id data ->
             ( { model | ncdMeasurements = Dict.insert id data model.ncdMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchChildScoreboardMeasurements id ->
+            ( { model | childScoreboardMeasurements = Dict.insert id Loading model.childScoreboardMeasurements }
+            , sw.get childScoreboardMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardMeasurements id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardMeasurements id data ->
+            ( { model | childScoreboardMeasurements = Dict.insert id data model.childScoreboardMeasurements }
             , Cmd.none
             , []
             )
@@ -1030,6 +1058,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedNCDEncounter id data ->
             ( { model | ncdEncounters = Dict.insert id data model.ncdEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchChildScoreboardEncounter id ->
+            ( { model | childScoreboardEncounters = Dict.insert id Loading model.childScoreboardEncounters }
+            , sw.get childScoreboardEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardEncounter id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardEncounter id data ->
+            ( { model | childScoreboardEncounters = Dict.insert id data model.childScoreboardEncounters }
             , Cmd.none
             , []
             )
@@ -2509,6 +2550,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        MsgChildScoreboardEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.childScoreboardEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.childScoreboardEncounterRequests
+                        |> Maybe.withDefault Backend.ChildScoreboardEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.ChildScoreboardEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | childScoreboardEncounterRequests = Dict.insert encounterId subModel model.childScoreboardEncounterRequests }
+            , Cmd.map (MsgChildScoreboardEncounter encounterId) subCmd
+            , []
+            )
+
         MsgTraceContact traceContactId subMsg ->
             let
                 traceContact =
@@ -2823,6 +2883,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage InitiatorParticipantsPage personId
 
+                                                    ChildScoreboardEncounter ->
+                                                        ChildScoreboardParticipantPage personId
+
                                                     NutritionEncounter ->
                                                         NutritionParticipantPage InitiatorParticipantsPage personId
 
@@ -3032,6 +3095,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         _ ->
                                             []
 
+                                ChildScoreboardEncounter ->
+                                    [ Backend.ChildScoreboardEncounter.Model.emptyChildScoreboardEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostChildScoreboardEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 NutritionEncounter ->
                                     [ emptyNutritionEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostNutritionEncounter
@@ -3211,6 +3280,27 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     [ App.Model.SetActivePage <|
                         UserPage <|
                             Pages.Page.NCDEncounterPage ncdEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
+        PostChildScoreboardEncounter childScoreboardEncounter ->
+            ( { model | postChildScoreboardEncounter = Dict.insert childScoreboardEncounter.participant Loading model.postChildScoreboardEncounter }
+            , sw.post childScoreboardEncounterEndpoint childScoreboardEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedChildScoreboardEncounter childScoreboardEncounter.participant)
+            , []
+            )
+
+        HandlePostedChildScoreboardEncounter participantId data ->
+            ( { model | postChildScoreboardEncounter = Dict.insert participantId data model.postChildScoreboardEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( childScoreboardEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.ChildScoreboardEncounterPage childScoreboardEncounterId
                     ]
                 )
                 data
@@ -3490,6 +3580,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 (\measurements -> { measurements | nutritions = Dict.insert uuid data measurements.nutritions })
                 model
             , True
+            )
+
+        ChildScoreboardEncounterRevision uuid data ->
+            let
+                childScoreboardEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.childScoreboardEncounters
+
+                childScoreboardEncountersByParticipant =
+                    Dict.remove data.participant model.childScoreboardEncountersByParticipant
+            in
+            ( { model
+                | childScoreboardEncounters = childScoreboardEncounters
+                , childScoreboardEncountersByParticipant = childScoreboardEncountersByParticipant
+              }
+            , recalc
             )
 
         ClinicRevision uuid data ->

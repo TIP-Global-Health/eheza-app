@@ -73,6 +73,7 @@ emptyModel =
 type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
+    | ChildScoreboardEncounter
     | HomeVisitEncounter
       -- @todo : can be removed?
     | InmmunizationEncounter

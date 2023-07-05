@@ -417,6 +417,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityChildFbf identifier ->
                 viewMeasurement identifier "Child Fbf"
 
+            BackendAuthorityChildScoreboardEncounter identifier ->
+                text ("Child Scoreboard Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
             BackendAuthorityClinic identifier ->
                 text <| "Clinic " ++ identifier.entity.name
 
@@ -577,7 +580,7 @@ viewAuthorityEntity backendAuthorityEntity =
                 viewMeasurement identifier "Nutrition Contributing Factors"
 
             BackendAuthorityNutritionEncounter identifier ->
-                text ("NutritionEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+                text ("Nutrition Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
             BackendAuthorityNutritionFeeding identifier ->
                 viewMeasurement identifier "Nutrition Feeding"

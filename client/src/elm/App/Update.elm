@@ -38,6 +38,10 @@ import Pages.AcuteIllness.Participant.Model
 import Pages.AcuteIllness.Participant.Update
 import Pages.AcuteIllness.ProgressReport.Model
 import Pages.AcuteIllness.ProgressReport.Update
+import Pages.ChildScoreboard.Activity.Model
+import Pages.ChildScoreboard.Activity.Update
+import Pages.ChildScoreboard.Encounter.Model
+import Pages.ChildScoreboard.Encounter.Update
 import Pages.Clinics.Update
 import Pages.Dashboard.Model
 import Pages.Dashboard.Update
@@ -496,6 +500,19 @@ update msg model =
                             in
                             ( { data | ncdRecurrentEncounterPages = Dict.insert id subModel data.ncdRecurrentEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNCDRecurrentEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageChildScoreboardEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.childScoreboardEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.ChildScoreboard.Encounter.Model.emptyModel
+                                        |> Pages.ChildScoreboard.Encounter.Update.update subMsg
+                            in
+                            ( { data | childScoreboardEncounterPages = Dict.insert id subModel data.childScoreboardEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardEncounter id) subCmd
                             , extraMsgs
                             )
 

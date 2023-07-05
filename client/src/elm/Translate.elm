@@ -4904,6 +4904,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ni irihe suzuma ku mugore utwite ushaka gutangira kuri"
                     }
 
+                ChildScoreboardEncounter ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
                 HomeVisitEncounter ->
                     { english = "Do you want to start a Home Visit assessment for"
                     , kinyarwanda = Just "Urashaka gutangira igikorwa cyo gusura mu rugo"
@@ -4919,12 +4924,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                WellChildEncounter ->
+                NCDEncounter ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
 
-                NCDEncounter ->
+                WellChildEncounter ->
                     { english = ""
                     , kinyarwanda = Nothing
                     }
@@ -6288,14 +6293,9 @@ translationSet trans =
                     , kinyarwanda = Just "Isuzuma rya mbere ku mugore utwite"
                     }
 
-                InmmunizationEncounter ->
-                    { english = "First Inmmunization Encounter"
+                ChildScoreboardEncounter ->
+                    { english = "First Child Scoreboard Encounter"
                     , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "First Nutrition Encounter"
-                    , kinyarwanda = Just "Isuzuma rya mbere ku mirire"
                     }
 
                 HomeVisitEncounter ->
@@ -6303,14 +6303,24 @@ translationSet trans =
                     , kinyarwanda = Just "Gusura abarwayi mu rugo bwambere"
                     }
 
-                WellChildEncounter ->
-                    { english = "First Standard Pediatric Visit Encounter"
-                    , kinyarwanda = Just "Isura rya mbere ku mwana"
+                InmmunizationEncounter ->
+                    { english = "First Inmmunization Encounter"
+                    , kinyarwanda = Nothing
                     }
 
                 NCDEncounter ->
                     { english = "First NCD Encounter"
                     , kinyarwanda = Just "Isuzuma rya mbere kuburwayi butandura"
+                    }
+
+                NutritionEncounter ->
+                    { english = "First Nutrition Encounter"
+                    , kinyarwanda = Just "Isuzuma rya mbere ku mirire"
+                    }
+
+                WellChildEncounter ->
+                    { english = "First Standard Pediatric Visit Encounter"
+                    , kinyarwanda = Just "Isura rya mbere ku mwana"
                     }
 
         IndividualEncounterLabel encounterType isChw ->
@@ -6325,19 +6335,29 @@ translationSet trans =
                     , kinyarwanda = Just "Isuzuma k’umugore utwite"
                     }
 
-                InmmunizationEncounter ->
-                    { english = "Inmmunization Encounter"
+                ChildScoreboardEncounter ->
+                    { english = "Child Scoreboard Encounter"
                     , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Nutrition Encounter"
-                    , kinyarwanda = Just "Isuzuma ry’imirire"
                     }
 
                 HomeVisitEncounter ->
                     { english = "Home Visit Encounter"
                     , kinyarwanda = Just "Gusura abarwayi mu rugo"
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDEncounter ->
+                    { english = "NCD Encounter"
+                    , kinyarwanda = Just "Isuzuma ku Burwayi Butandura"
+                    }
+
+                NutritionEncounter ->
+                    { english = "Nutrition Encounter"
+                    , kinyarwanda = Just "Isuzuma ry’imirire"
                     }
 
                 WellChildEncounter ->
@@ -6351,11 +6371,6 @@ translationSet trans =
                         , kinyarwanda = Just "Isura risanzwe ry'Umwana"
                         }
 
-                NCDEncounter ->
-                    { english = "NCD Encounter"
-                    , kinyarwanda = Just "Isuzuma ku Burwayi Butandura"
-                    }
-
         IndividualEncounterSelectVisit encounterType isChw ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -6368,19 +6383,29 @@ translationSet trans =
                     , kinyarwanda = Just "Hitamo isuzuma k’umugore utwite"
                     }
 
-                InmmunizationEncounter ->
-                    { english = "Select Inmmunization Visit"
+                ChildScoreboardEncounter ->
+                    { english = "Select Child Scoreboard Visit"
                     , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Select Nutrition Visit"
-                    , kinyarwanda = Just "Hitamo isuzuma ry’imirire"
                     }
 
                 HomeVisitEncounter ->
                     { english = "Select Home Visit"
                     , kinyarwanda = Just "Hitamo Gusura Umurwayi"
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Select Inmmunization Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDEncounter ->
+                    { english = "Select NCD Visit"
+                    , kinyarwanda = Just "Hitamo Isuzuma Kuburwayi Butandura"
+                    }
+
+                NutritionEncounter ->
+                    { english = "Select Nutrition Visit"
+                    , kinyarwanda = Just "Hitamo isuzuma ry’imirire"
                     }
 
                 WellChildEncounter ->
@@ -6394,11 +6419,6 @@ translationSet trans =
                         , kinyarwanda = Just "Hitamo isura ry'umwana"
                         }
 
-                NCDEncounter ->
-                    { english = "Select NCD Visit"
-                    , kinyarwanda = Just "Hitamo Isuzuma Kuburwayi Butandura"
-                    }
-
         IndividualEncounterSubsequentVisit encounterType ->
             case encounterType of
                 AcuteIllnessEncounter ->
@@ -6411,14 +6431,9 @@ translationSet trans =
                     , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
                     }
 
-                InmmunizationEncounter ->
-                    { english = "Subsequent Inmmunization Encounter"
+                ChildScoreboardEncounter ->
+                    { english = "Subsequent Child Scoreboard Visit"
                     , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Subsequent Nutrition Encounter"
-                    , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
                     }
 
                 HomeVisitEncounter ->
@@ -6426,14 +6441,24 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                WellChildEncounter ->
-                    { english = "Subsequent Standard Pediatric Visit"
+                InmmunizationEncounter ->
+                    { english = "Subsequent Inmmunization Encounter"
                     , kinyarwanda = Nothing
                     }
 
                 NCDEncounter ->
                     { english = "Subsequent NCD Visit"
                     , kinyarwanda = Just "Isuzuma Rikurikiyeho ku Burwayi Butandura"
+                    }
+
+                NutritionEncounter ->
+                    { english = "Subsequent Nutrition Encounter"
+                    , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
+                    }
+
+                WellChildEncounter ->
+                    { english = "Subsequent Standard Pediatric Visit"
+                    , kinyarwanda = Nothing
                     }
 
         IndividualEncounterType encounterType isChw ->
@@ -6448,19 +6473,29 @@ translationSet trans =
                     , kinyarwanda = Just "Isuzuma ku mugore utwite"
                     }
 
-                InmmunizationEncounter ->
-                    { english = "Inmmunization"
+                ChildScoreboardEncounter ->
+                    { english = "Child Scoreboard"
                     , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Child Nutrition"
-                    , kinyarwanda = Just "Imirire y'umwana"
                     }
 
                 HomeVisitEncounter ->
                     { english = "Home Visit"
                     , kinyarwanda = Just "Gusura Umurwayi"
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                NCDEncounter ->
+                    { english = "Noncommunicable Diseases"
+                    , kinyarwanda = Just "Indwara Zitandura"
+                    }
+
+                NutritionEncounter ->
+                    { english = "Child Nutrition"
+                    , kinyarwanda = Just "Imirire y'umwana"
                     }
 
                 WellChildEncounter ->
@@ -6473,11 +6508,6 @@ translationSet trans =
                         { english = "Standard Pediatric Visit"
                         , kinyarwanda = Just "Kujyana Umwana mu Isuzumiro"
                         }
-
-                NCDEncounter ->
-                    { english = "Noncommunicable Diseases"
-                    , kinyarwanda = Just "Indwara Zitandura"
-                    }
 
         IndividualEncounterTypes ->
             { english = "Individual Encounter Types"
@@ -19239,13 +19269,8 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             }
 
-                        InmmunizationEncounter ->
-                            { english = "Inmmunization Participants"
-                            , kinyarwanda = Nothing
-                            }
-
-                        NutritionEncounter ->
-                            { english = "Nutrition Participants"
+                        ChildScoreboardEncounter ->
+                            { english = "Child Scoreboard Participants"
                             , kinyarwanda = Nothing
                             }
 
@@ -19254,14 +19279,24 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             }
 
-                        WellChildEncounter ->
-                            { english = "Standard Pediatric Visit Participant"
+                        InmmunizationEncounter ->
+                            { english = "Inmmunization Participants"
                             , kinyarwanda = Nothing
                             }
 
                         NCDEncounter ->
                             { english = "NCD Participants"
                             , kinyarwanda = Just "Abitabiriye muri Serivise y'indwara zitandura"
+                            }
+
+                        NutritionEncounter ->
+                            { english = "Nutrition Participants"
+                            , kinyarwanda = Nothing
+                            }
+
+                        WellChildEncounter ->
+                            { english = "Standard Pediatric Visit Participant"
+                            , kinyarwanda = Nothing
                             }
 
                 RelationshipPage _ _ _ ->
@@ -19473,6 +19508,16 @@ translateActivePage page =
 
                 StockManagementPage ->
                     { english = "Stock Management"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildScoreboardParticipantPage _ ->
+                    { english = "Child Scoreboard Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildScoreboardEncounterPage _ ->
+                    { english = "Child Scoreboard Encounter"
                     , kinyarwanda = Nothing
                     }
 

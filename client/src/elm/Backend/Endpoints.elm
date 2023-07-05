@@ -3,6 +3,9 @@ module Backend.Endpoints exposing (..)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardEncounter)
+import Backend.ChildScoreboardEncounter.Encoder exposing (encodeChildScoreboardEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
@@ -1256,3 +1259,15 @@ stockUpdateEndpoint : ReadWriteEndPoint Error StockUpdateId StockUpdate StockUpd
 stockUpdateEndpoint =
     swEndpoint "nodes/stock_update" decodeStockUpdate
         |> withValueEncoder (object << encodeStockUpdate)
+
+
+childScoreboardEncounterEndpoint : ReadWriteEndPoint Error ChildScoreboardEncounterId ChildScoreboardEncounter ChildScoreboardEncounter (Maybe IndividualEncounterParticipantId)
+childScoreboardEncounterEndpoint =
+    swEndpoint "nodes/child_scoreboard_encounter" decodeChildScoreboardEncounter
+        |> withValueEncoder (object << encodeChildScoreboardEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+childScoreboardMeasurementsEndpoint : ReadOnlyEndPoint Error ChildScoreboardEncounterId ChildScoreboardMeasurements ()
+childScoreboardMeasurementsEndpoint =
+    swEndpoint "nodes/child-scoreboard-measurements" decodeChildScoreboardMeasurements

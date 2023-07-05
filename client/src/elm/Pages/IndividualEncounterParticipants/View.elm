@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isChildUnderAgeOf2, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffYears)
@@ -123,6 +123,9 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         person.birthDate
                         |> Maybe.withDefault False
 
+                ChildScoreboardEncounter ->
+                    isChw && isChildUnderAgeOf2 currentDate person
+
         -- For CHW nurse, we present people only from the village that was selected.
         chwCondition person =
             if isChw then
@@ -234,6 +237,9 @@ viewParticipant language currentDate encounterType db id person =
 
                 NCDEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| NCDParticipantPage InitiatorParticipantsPage id ]
+
+                ChildScoreboardEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
 
         viewAction =
             div [ class "action" ]

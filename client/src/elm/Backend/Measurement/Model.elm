@@ -3079,6 +3079,10 @@ type alias NCDMeasurements =
     }
 
 
+type alias ChildScoreboardMeasurements =
+    {}
+
+
 {-| A set of measurements that includes all required data for
 Stock management data presentation.
 -}

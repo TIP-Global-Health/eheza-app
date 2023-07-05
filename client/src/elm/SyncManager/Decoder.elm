@@ -8,6 +8,7 @@ module SyncManager.Decoder exposing
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Decoder
+import Backend.ChildScoreboardEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
@@ -494,6 +495,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeFbf
                             BackendAuthorityChildFbf
+
+                    "child_scoreboard_encounter" ->
+                        doDecode
+                            Backend.ChildScoreboardEncounter.Decoder.decodeChildScoreboardEncounter
+                            BackendAuthorityChildScoreboardEncounter
 
                     "clinic" ->
                         doDecode
