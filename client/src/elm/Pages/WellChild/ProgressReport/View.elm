@@ -96,6 +96,7 @@ import Pages.WellChild.Encounter.Utils
         )
 import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities)
 import Pages.WellChild.ProgressReport.Model exposing (..)
+import Pages.WellChild.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate, translateText)
@@ -734,63 +735,6 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                 :: viewEntries language entries
         , priorDiagniosisButton |> showIf (not viewForSendViaWhatsApp)
         ]
-
-
-generateIndividualNutritionAssessmentEntries :
-    List
-        { c
-            | nutrition :
-                Maybe
-                    ( id
-                    , { b
-                        | dateMeasured : NominalDate
-                        , value : NutritionValue
-                      }
-                    )
-        }
-    -> List ( NominalDate, List NutritionAssessment )
-generateIndividualNutritionAssessmentEntries measurementList =
-    List.map
-        (\measurements ->
-            Maybe.map2 filterNutritionAssessments
-                (getMeasurementDateMeasuredFunc measurements.nutrition)
-                (getMeasurementValueFunc measurements.nutrition)
-                |> Maybe.Extra.join
-        )
-        measurementList
-        |> Maybe.Extra.values
-
-
-filterNutritionAssessments : NominalDate -> NutritionValue -> Maybe ( NominalDate, List NutritionAssessment )
-filterNutritionAssessments dateMeasured value =
-    let
-        assesments =
-            EverySet.toList value.assesment
-                |> List.filterMap
-                    (\assesment ->
-                        case assesment of
-                            NoNutritionAssessment ->
-                                Nothing
-
-                            AssesmentMalnutritionSigns _ ->
-                                Just <| AssesmentMalnutritionSigns (EverySet.toList value.signs)
-
-                            _ ->
-                                Just assesment
-                    )
-    in
-    if List.isEmpty assesments then
-        Nothing
-
-    else
-        Just ( dateMeasured, assesments )
-
-
-generateGroupNutritionAssessmentEntries : ChildMeasurementList -> List ( NominalDate, List NutritionAssessment )
-generateGroupNutritionAssessmentEntries measurementList =
-    Dict.values measurementList.nutritions
-        |> List.filterMap
-            (\nutrition -> filterNutritionAssessments nutrition.dateMeasured nutrition.value)
 
 
 resolveDateOfLastNutritionAssessment :

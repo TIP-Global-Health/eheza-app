@@ -45,7 +45,6 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.ChildScoreboard.Encounter.Utils exposing (countANCEncountersMadeForChild)
 import Pages.Utils
     exposing
         ( maybeToBoolTask

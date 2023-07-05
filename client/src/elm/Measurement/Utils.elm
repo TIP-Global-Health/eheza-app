@@ -3,8 +3,10 @@ module Measurement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( calculateZScoreWeightForAge
@@ -16,6 +18,7 @@ import Backend.NutritionEncounter.Utils
         , zScoreWeightForAgeSevere
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import Date exposing (Unit(..))
@@ -31,6 +34,7 @@ import List.Extra
 import LocalData
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
+import Pages.Nutrition.Encounter.Utils
 import Pages.Session.Model
 import Pages.Utils
     exposing
@@ -53,6 +57,12 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSelectListInput
         )
+import Pages.WellChild.Utils
+    exposing
+        ( generateGroupNutritionAssessmentEntries
+        , generateIndividualNutritionAssessmentEntries
+        )
+import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
@@ -4974,3 +4984,91 @@ isTestResultValid =
            -- it to be valid, because results for some test are
            -- updated after few hours, or even days.
            Maybe.withDefault True
+
+
+countANCEncountersMadeForChild : PersonId -> ModelIndexedDb -> Maybe Int
+countANCEncountersMadeForChild childId db =
+    Dict.get childId db.pregnancyByNewborn
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.Extra.join
+        |> Maybe.andThen
+            (\( participantId, _ ) ->
+                Dict.get participantId db.prenatalEncountersByParticipant
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map
+                        (Dict.filter
+                            (\_ encounter ->
+                                not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+                            )
+                            >> Dict.size
+                        )
+            )
+
+
+childWithMalnutritionDiagnosis : PersonId -> ModelIndexedDb -> Bool
+childWithMalnutritionDiagnosis childId db =
+    let
+        individualParticipants =
+            Dict.get childId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        individualWellChildParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        individualNutritionParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        groupNutritionMeasurements =
+            Dict.get childId db.childMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.withDefault emptyChildMeasurementList
+
+        individualNutritionMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Pages.Nutrition.Encounter.Utils.generatePreviousMeasurements Nothing participantId db
+                )
+                individualNutritionParticipantId
+                |> Maybe.withDefault []
+                |> List.map (Tuple.second >> Tuple.second)
+
+        individualWellChildMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Pages.WellChild.Utils.generatePreviousMeasurements Nothing participantId db
+                )
+                individualWellChildParticipantId
+                |> Maybe.withDefault []
+                |> List.map (Tuple.second >> Tuple.second)
+
+        groupNutritionAssessment =
+            generateGroupNutritionAssessmentEntries groupNutritionMeasurements
+
+        individualNutritionAssessment =
+            generateIndividualNutritionAssessmentEntries individualNutritionMeasurements
+
+        individuaWellChildAssessment =
+            generateIndividualNutritionAssessmentEntries individualWellChildMeasurements
+    in
+    individualNutritionAssessment
+        ++ groupNutritionAssessment
+        ++ individuaWellChildAssessment
+        |> List.any
+            (\( _, assessments ) ->
+                List.member AssesmentAcuteMalnutritionModerate assessments
+                    || List.member AssesmentAcuteMalnutritionSevere assessments
+            )

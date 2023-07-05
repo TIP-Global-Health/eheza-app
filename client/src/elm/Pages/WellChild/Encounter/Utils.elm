@@ -16,6 +16,7 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.WellChild.Activity.Utils exposing (generateVaccinationProgress, getPreviousMeasurements)
 import Pages.WellChild.Encounter.Model exposing (..)
+import Pages.WellChild.Utils exposing (generatePreviousMeasurements)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -75,27 +76,6 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
         |> RemoteData.andMap (Success vaccinationHistory)
         |> RemoteData.andMap (Success vaccinationProgress)
-
-
-generatePreviousMeasurements : Maybe WellChildEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
-generatePreviousMeasurements currentEncounterId participantId db =
-    getWellChildEncountersForParticipant db participantId
-        |> List.filterMap
-            (\( encounterId, encounter ) ->
-                -- We do not want to get data of current encounter.
-                if currentEncounterId == Just encounterId then
-                    Nothing
-
-                else
-                    case Dict.get encounterId db.wellChildMeasurements of
-                        Just (Success data) ->
-                            Just ( encounter.startDate, ( encounterId, data ) )
-
-                        _ ->
-                            Nothing
-            )
-        -- Most recent date to least recent date.
-        |> List.sortWith sortTuplesByDateDesc
 
 
 resolvePediatricCareMilestoneOnDate : NominalDate -> NominalDate -> Maybe PediatricCareMilestone
