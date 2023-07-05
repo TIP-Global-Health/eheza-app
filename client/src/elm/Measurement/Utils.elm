@@ -5072,3 +5072,42 @@ childDiagnosedWithMalnutrition childId db =
                 List.member AssesmentAcuteMalnutritionModerate assessments
                     || List.member AssesmentAcuteMalnutritionSevere assessments
             )
+
+
+resoloveLastScheduledImmunizationVisitDate : PersonId -> ModelIndexedDb -> Maybe NominalDate
+resoloveLastScheduledImmunizationVisitDate childId db =
+    let
+        individualParticipants =
+            Dict.get childId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        individualWellChildParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        individualWellChildMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Pages.WellChild.Utils.generatePreviousMeasurements Nothing participantId db
+                )
+                individualWellChildParticipantId
+                |> Maybe.withDefault []
+                |> List.map (Tuple.second >> Tuple.second)
+    in
+    List.filterMap
+        (.nextVisit
+            >> getMeasurementValueFunc
+            >> Maybe.andThen .immunisationDate
+        )
+        individualWellChildMeasurements
+        |> -- Since generatePreviousMeasurements sorts DESC the list,
+           -- we know that at head of list we got immunization
+           -- visit date that was scheduled last.
+           List.head

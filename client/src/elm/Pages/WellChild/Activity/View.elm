@@ -2363,7 +2363,7 @@ resolveNextVisitDates : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -
 resolveNextVisitDates currentDate isChw assembled db form =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-            generateNextVisitDates currentDate isChw assembled db
+            generateNextVisitDates currentDate assembled db
     in
     ( Maybe.Extra.or form.immunisationDate nextDateForImmunisationVisit
     , Maybe.Extra.or form.pediatricVisitDate nextDateForPediatricVisit

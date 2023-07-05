@@ -14,7 +14,11 @@ import Pages.WellChild.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-generatePreviousMeasurements : Maybe WellChildEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+generatePreviousMeasurements :
+    Maybe WellChildEncounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
 generatePreviousMeasurements currentEncounterId participantId db =
     getWellChildEncountersForParticipant db participantId
         |> List.filterMap
