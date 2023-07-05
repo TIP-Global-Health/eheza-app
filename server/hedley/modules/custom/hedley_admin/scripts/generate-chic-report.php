@@ -20,8 +20,6 @@ if (!$start_date || !$end_date) {
 
 drush_print("# CHIC report - " . $start_date . "-" . $end_date);
 
-
-
 $queries = [
   // As the group of all pregnancies.
   "First Visits - Any location" => file_get_contents(__DIR__ . '/anc-first-visit-all-pregnancies-monthly.SQL'),
@@ -104,17 +102,17 @@ foreach ($queries as $label => $query) {
   $table = new HedleyAdminTextTable([$label, 'Count']);
   $results = db_query($query, [':start' => $start_date, ':end' => $end_date])->fetchAll(PDO::FETCH_ASSOC);
   $data = [];
-    foreach ($results as $result) {
-      $data[] = [
-          'Newborn Visits within 2 days',
-          $result['counter'],
-        ];
+  foreach ($results as $result) {
+    $data[] = [
+      'Newborn Visits within 2 days',
+      $result['counter'],
+    ];
 
-       $data[] = [
-          'Total Newborn Visits',
-          $result['total'],
-        ];
-    }
+    $data[] = [
+      'Total Newborn Visits',
+      $result['total'],
+    ];
+  }
 
   drush_print($table->render($data));
 
@@ -135,58 +133,58 @@ $symptoms_general[] = [
   'value' => 'field_body_aches_period_value',
   'name' => 'bd',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_chills_period',
   'value' => 'field_chills_period_value',
   'name' => 'nbd',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_fever_period',
   'value' => 'field_fever_period_value',
   'name' => 'fever',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_night_sweats_period',
   'value' => 'field_night_sweats_period_value',
   'name' => 'ns',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_headache_period',
   'value' => 'field_headache_period_value',
   'name' => 'headache',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_lethargy_period',
   'value' => 'field_lethargy_period_value',
   'name' => 'lethargy',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_poor_suck_period',
   'value' => 'field_poor_suck_period_value',
   'name' => 'poor_suck',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_unable_to_eat_period',
   'value' => 'field_unable_to_eat_period_value',
   'name' => 'unable_to_eat',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_unable_to_drink_period',
   'value' => 'field_unable_to_drink_period_value',
   'name' => 'unable_to_drink',
 ];
 
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_increased_thirst_period',
   'value' => 'field_increased_thirst_period_value',
   'name' => 'increased_thirst',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_dry_mouth_period',
   'value' => 'field_dry_mouth_period_value',
   'name' => 'dry_mouth',
 ];
-$symptoms_general[] =[
+$symptoms_general[] = [
   'field' => 'field_data_field_severe_weakness_period',
   'value' => 'field_severe_weakness_period_value',
   'name' => 'severe_weakness',
@@ -201,32 +199,32 @@ foreach ($nids as $nid) {
   $symptom_id = db_query($query)->fetchfield();
 
   if ($symptom_id) {
-  foreach ($symptoms_general as $symptom) {
-    $query = 'SELECT ' . $symptom['value'] . ' as value FROM '. $symptom['field'] . ' WHERE entity_id = ' . $symptom_id;
-    $data = db_query($query)->fetchfield();
-    if ($data > 1) {
-      $total_count = $total_count + 1;
-      break;
+    foreach ($symptoms_general as $symptom) {
+      $query = 'SELECT ' . $symptom['value'] . ' as value FROM '. $symptom['field'] . ' WHERE entity_id = ' . $symptom_id;
+      $data = db_query($query)->fetchfield();
+      if ($data > 1) {
+        $total_count = $total_count + 1;
+        break;
+      }
     }
-  }
     $total_count = $total_count + 1;
     $success_count = $success_count + 1;
-}
+  }
 }
 
 $table = new HedleyAdminTextTable(['Encounters', 'Count']);
 
 
 $data = [];
-    $data[] = [
-        'AI Visits within 2 days',
-        $success_count,
-      ];
+$data[] = [
+  'AI Visits within 2 days',
+  $success_count,
+];
 
-     $data[] = [
-        'Total Encounters',
-        $total_count,
-      ];
+$data[] = [
+  'Total Encounters',
+  $total_count,
+];
 
 drush_print($table->render($data));
 
@@ -238,16 +236,21 @@ foreach ($nids as $nid) {
   $gi = db_query("SELECT COUNT(*) AS counter FROM field_data_field_acute_illness_encounter WHERE bundle = 'symptoms_gi' AND field_acute_illness_encounter_target_id = $nid")->fetchfield();
 
   $nodes[$nid] = [
-    'general' => $general, 
+    'general' => $general,
     'respiratory' => $respiratory,
     'gi' => $gi,
   ];
 
 }
 
-$table = new HedleyAdminTextTable(['Encounter ID', 'General', 'Respiratory', 'GI']);
+$table = new HedleyAdminTextTable([
+  'Encounter ID',
+  'General',
+  'Respiratory',
+  'GI'
+]);
 
-$data =[];
+$data = [];
 foreach ($nodes as $nid => $value) {
   $data[] = [
     $nid,
@@ -256,6 +259,4 @@ foreach ($nodes as $nid => $value) {
     $value['gi'],
   ];
 }
-
 // drush_print($table->render($data));
-
