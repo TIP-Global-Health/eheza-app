@@ -258,4 +258,4 @@ foreach ($nodes as $nid => $value) {
     $value['respiratory'],
     $value['gi'],
   ];
-} // drush_print($table->render($data));
+}
