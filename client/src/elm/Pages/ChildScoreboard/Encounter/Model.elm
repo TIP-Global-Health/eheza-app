@@ -29,7 +29,6 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : ChildScoreboardMeasurements
-    , ancEncounters : Maybe Int
     }
 
 

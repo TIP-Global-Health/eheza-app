@@ -38,21 +38,16 @@ generateAssembledData id db =
                         Dict.get participant_.person db.people
                             |> Maybe.withDefault NotAsked
                     )
-
-        ancEncounters =
-            RemoteData.toMaybe participant
-                |> Maybe.andThen (.person >> countANCEncounters db)
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
         |> RemoteData.andMap participant
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
-        |> RemoteData.andMap (Success ancEncounters)
 
 
-countANCEncounters : ModelIndexedDb -> PersonId -> Maybe Int
-countANCEncounters db childId =
+countANCEncountersMadeForChild : PersonId -> ModelIndexedDb -> Maybe Int
+countANCEncountersMadeForChild childId db =
     Dict.get childId db.pregnancyByNewborn
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.Extra.join

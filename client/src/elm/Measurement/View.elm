@@ -45,6 +45,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
+import Pages.ChildScoreboard.Encounter.Utils exposing (countANCEncountersMadeForChild)
 import Pages.Utils
     exposing
         ( maybeToBoolTask
@@ -2861,6 +2862,7 @@ viewNCDA language currentDate child measurement data historyData =
 viewNCDAContentNEW :
     Language
     -> NominalDate
+    -> PersonId
     -> Person
     -> ((Bool -> NCDAFormNEW -> NCDAFormNEW) -> Bool -> msg)
     -> (String -> msg)
@@ -2872,13 +2874,14 @@ viewNCDAContentNEW :
     -> Maybe NCDASignNEW
     -> NCDAFormNEW
     -> NCDAHistoryData
-    -> Maybe Int
+    -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData numberOfANCEncounters =
+viewNCDAContentNEW language currentDate personId person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData db =
     let
         ( inputs, tasks ) =
             ncdaFormInputsAndTasksNEW language
                 currentDate
+                personId
                 person
                 setBoolInputMsg
                 setBirthWeightMsg
@@ -2888,7 +2891,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                 form
                 currentStep
                 historyData.pregnancySummary
-                numberOfANCEncounters
+                db
 
         totalTasks =
             List.length tasks
@@ -2967,6 +2970,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
 ncdaFormInputsAndTasksNEW :
     Language
     -> NominalDate
+    -> PersonId
     -> Person
     -> ((Bool -> NCDAFormNEW -> NCDAFormNEW) -> Bool -> msg)
     -> (String -> msg)
@@ -2976,14 +2980,17 @@ ncdaFormInputsAndTasksNEW :
     -> NCDAFormNEW
     -> NCDAStepNEW
     -> Maybe PregnancySummaryValue
-    -> Maybe Int
+    -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary numberOfANCEncounters =
+ncdaFormInputsAndTasksNEW language currentDate personId person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
     let
         inputsAndTasksForSign sign =
             case sign of
                 NumberOfANCVisitsCorrect ->
                     let
+                        numberOfANCEncounters =
+                            countANCEncountersMadeForChild personId db
+
                         ( numberOfANCVisitsInputs, numberOfANCVisitsTasks ) =
                             let
                                 counselling =
