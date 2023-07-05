@@ -77,7 +77,7 @@ import Components.SendViaWhatsAppDialog.Model
         )
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (Html, text)
 import Http
 import Measurement.Model
@@ -1017,7 +1017,7 @@ type TranslationId
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
     | NCDANumberOfANCVisitsHeader (Maybe Int)
     | NCDANumberOfANCVisitsQuestion
-    | NCDANumberImmunizationAppointmentLabel
+    | NCDANumberImmunizationAppointmentLabel (Maybe NominalDate)
     | NCDANumberOfMissedImmunizationAppointmentsHeader
     | NCDAStep NCDAStepNEW
     | NCDDangerSign NCDDangerSign
@@ -9843,10 +9843,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        NCDANumberImmunizationAppointmentLabel ->
-            { english = "According to E-Heza, you have no immunization appointment scheduled"
-            , kinyarwanda = Nothing
-            }
+        NCDANumberImmunizationAppointmentLabel maybeDate ->
+            Maybe.map
+                (\date ->
+                    { english = "According to E-Heza, you have immunization appointment scheduled to " ++ formatDDMMYYYY date
+                    , kinyarwanda = Nothing
+                    }
+                )
+                maybeDate
+                |> Maybe.withDefault
+                    { english = "According to E-Heza, you have no immunization appointment scheduled"
+                    , kinyarwanda = Nothing
+                    }
 
         NCDANumberOfMissedImmunizationAppointmentsHeader ->
             { english = "According to E-Heza, you have not missed any appointments"
