@@ -200,7 +200,7 @@ foreach ($nids as $nid) {
 
   if ($symptom_id) {
     foreach ($symptoms_general as $symptom) {
-      $query = 'SELECT ' . $symptom['value'] . ' as value FROM '. $symptom['field'] . ' WHERE entity_id = ' . $symptom_id;
+      $query = 'SELECT ' . $symptom['value'] . ' as value FROM ' . $symptom['field'] . ' WHERE entity_id = ' . $symptom_id;
       $data = db_query($query)->fetchfield();
       if ($data > 1) {
         $total_count = $total_count + 1;
@@ -247,7 +247,7 @@ $table = new HedleyAdminTextTable([
   'Encounter ID',
   'General',
   'Respiratory',
-  'GI'
+  'GI',
 ]);
 
 $data = [];
@@ -259,4 +259,5 @@ foreach ($nodes as $nid => $value) {
     $value['gi'],
   ];
 }
+
 // drush_print($table->render($data));
