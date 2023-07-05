@@ -5005,8 +5005,8 @@ countANCEncountersMadeForChild childId db =
             )
 
 
-childWithMalnutritionDiagnosis : PersonId -> ModelIndexedDb -> Bool
-childWithMalnutritionDiagnosis childId db =
+childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool
+childDiagnosedWithMalnutrition childId db =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson

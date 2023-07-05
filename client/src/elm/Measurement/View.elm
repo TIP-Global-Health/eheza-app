@@ -3525,13 +3525,21 @@ ncdaFormInputsAndTasksNEW language currentDate personId person setBoolInputMsg s
         NCDAStepTargetedInterventions ->
             let
                 inputsAndTasks =
-                    List.map inputsAndTasksForSign
-                        [ BeneficiaryCashTransfer
-                        , ConditionalFoodItems
-                        , ChildWithAcuteMalnutrition
-                        , ChildWithDisability
-                        , ChildGotDiarrhea
-                        ]
+                    [ BeneficiaryCashTransfer
+                    , ConditionalFoodItems
+                    ]
+                        ++ childWithAcuteMalnutritionSign
+                        ++ [ ChildWithDisability
+                           , ChildGotDiarrhea
+                           ]
+                        |> List.map inputsAndTasksForSign
+
+                childWithAcuteMalnutritionSign =
+                    if childDiagnosedWithMalnutrition personId db then
+                        []
+
+                    else
+                        [ ChildWithAcuteMalnutrition ]
             in
             ( List.map Tuple.first inputsAndTasks
                 |> List.concat
