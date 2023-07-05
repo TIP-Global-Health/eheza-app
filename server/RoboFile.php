@@ -146,7 +146,13 @@ class RoboFile extends Tasks {
    * @throws \Robo\Exception\TaskException
    */
   public function deployPantheonSync(string $env = 'test', bool $doDeploy = TRUE) {
-    $pantheonName = self::PANTHEON_NAME;
+    if (getenv('PANTHEON_NAME')) {
+      $pantheonName = getenv('PANTHEON_NAME');
+    }
+    else {
+      $pantheonName = self::PANTHEON_NAME;
+    }
+
     $pantheonTerminusEnvironment = $pantheonName . '.' . $env;
 
     $task = $this->taskExecStack();

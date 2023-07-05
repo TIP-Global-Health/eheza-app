@@ -48,7 +48,7 @@ import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportIni
 import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (spinner, thumbnailImage, viewModal)
+import Utils.Html exposing (spinner, thumbnailImage)
 import ZScore.Model
 
 

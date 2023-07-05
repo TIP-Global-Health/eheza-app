@@ -26,8 +26,6 @@ import Pages.AcuteIllness.Participant.Model
 import Pages.AcuteIllness.Participant.View
 import Pages.AcuteIllness.ProgressReport.Model
 import Pages.AcuteIllness.ProgressReport.View
-import Pages.ChildScoreboard.Activity.Model
-import Pages.ChildScoreboard.Activity.View
 import Pages.ChildScoreboard.Encounter.Model
 import Pages.ChildScoreboard.Encounter.View
 import Pages.ChildScoreboard.Participant.View

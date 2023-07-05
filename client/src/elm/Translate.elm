@@ -85,6 +85,7 @@ import Measurement.Model
         ( FloatInputConstraints
         , GroupOfFoods(..)
         , LaboratoryTask(..)
+        , NCDAStepNEW(..)
         , NextStepsTask(..)
         )
 import Pages.AcuteIllness.Activity.Types
@@ -415,6 +416,7 @@ type TranslationId
     | ANCNewborn
     | And
     | AndSentence
+    | AntenatalCare
     | AntenatalProgressReport
     | AppName
     | AppointmentConfirmation
@@ -785,6 +787,7 @@ type TranslationId
     | IndividualEncounterSubsequentVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType Bool
     | IndividualEncounterTypes
+    | InfrastructureEnvironment
     | InfrastructureEnvironmentWash
     | InitialResultsDisplay InitialResultsDisplay
     | IntractableVomiting Bool
@@ -1000,7 +1003,10 @@ type TranslationId
     | Name
     | NationalIdNumber
     | NCDABirthweightQuestion
+    | NCDADiarrheaPopupMessage
     | NCDASignQuestion NCDASign
+    | NCDASignNEWCounceling NCDASignNEW
+    | NCDASignNEWQuestion NCDASignNEW
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDAANCNewbornItemLabel NCDAANCNewbornItem
@@ -1009,6 +1015,11 @@ type TranslationId
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
+    | NCDANumberOfANCVisitsHeader Int
+    | NCDANumberOfANCVisitsQuestion
+    | NCDANumberImmunizationAppointmentLabel
+    | NCDANumberOfMissedImmunizationAppointmentsHeader
+    | NCDAStep NCDAStepNEW
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -1761,6 +1772,7 @@ type TranslationId
     | View
     | ViewProgressReport
     | Village
+    | Visits
     | VitaminAWarningPopupMessage
     | WaitForVitalsRecheckHelper
     | WaitForLabsResultsHelper
@@ -2956,6 +2968,11 @@ translationSet trans =
             , kinyarwanda = Just "maze"
             }
 
+        AntenatalCare ->
+            { english = "Antenatal Care"
+            , kinyarwanda = Just "Isuzuma ku mugore utwite"
+            }
+
         AntenatalProgressReport ->
             { english = "Antenatal Progress Report"
             , kinyarwanda = Nothing
@@ -3502,9 +3519,7 @@ translationSet trans =
                     }
 
                 Pages.GlobalCaseManagement.Model.FilterAntenatal ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
-                    }
+                    translationSet AntenatalCare
 
                 FilterNutrition ->
                     { english = "Home Visit"
@@ -3534,9 +3549,7 @@ translationSet trans =
                     }
 
                 Pages.GlobalCaseManagement.Model.FilterAntenatal ->
-                    { english = "Antenatal Care Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umugore utwite"
-                    }
+                    translationSet AntenatalCare
 
                 FilterNutrition ->
                     { english = "Child Nutrition Follow Up"
@@ -4964,9 +4977,7 @@ translationSet trans =
                     }
 
                 AntenatalPage ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku Mugore Utwite"
-                    }
+                    translationSet AntenatalCare
 
         EncounterWarningForDiagnosisPane warning suffix ->
             let
@@ -6294,7 +6305,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = "First Child Scoreboard Encounter"
+                    { english = "First Child Scorecard Encounter"
                     , kinyarwanda = Nothing
                     }
 
@@ -6336,7 +6347,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = "Child Scoreboard Encounter"
+                    { english = "Child Scorecard Encounter"
                     , kinyarwanda = Nothing
                     }
 
@@ -6384,7 +6395,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = "Select Child Scoreboard Visit"
+                    { english = "Select Child Scorecard Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -6432,7 +6443,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = "Subsequent Child Scoreboard Visit"
+                    { english = "Subsequent Child Scorecard Visit"
                     , kinyarwanda = Nothing
                     }
 
@@ -6469,12 +6480,10 @@ translationSet trans =
                     }
 
                 AntenatalEncounter ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
-                    }
+                    translationSet AntenatalCare
 
                 ChildScoreboardEncounter ->
-                    { english = "Child Scoreboard"
+                    { english = "Child Scorecard"
                     , kinyarwanda = Nothing
                     }
 
@@ -6511,6 +6520,11 @@ translationSet trans =
 
         IndividualEncounterTypes ->
             { english = "Individual Encounter Types"
+            , kinyarwanda = Nothing
+            }
+
+        InfrastructureEnvironment ->
+            { english = "Infrastructure & Environment"
             , kinyarwanda = Nothing
             }
 
@@ -9307,6 +9321,11 @@ translationSet trans =
             , kinyarwanda = Just "Umwana yavukanye ibiro bingahe"
             }
 
+        NCDADiarrheaPopupMessage ->
+            { english = "The child has diarrhea. Please continue to an Acute Illness encounter."
+            , kinyarwanda = Nothing
+            }
+
         NCDASignQuestion sign ->
             case sign of
                 NCDABornWithBirthDefect ->
@@ -9404,6 +9423,210 @@ translationSet trans =
                     , kinyarwanda = Just "Nta na kimwe"
                     }
 
+        NCDASignNEWCounceling sign ->
+            case sign of
+                NumberOfANCVisitsCorrect ->
+                    { english = "Provide the counseling on the consequences that may occur to her and the baby if she doesn't attend ANC visit as per guidance"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplementsDuringPregnancy ->
+                    { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and refer the mother to the HC to receive the Iron/Folic Acid/MMS"
+                    , kinyarwanda = Nothing
+                    }
+
+                NumberOfMissedImmunizationAppointmentsCorrect ->
+                    { english = "Provide the counseling to the mother to update the child's vaccination record with a Nurse through a Standard Pediatric Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                TakingFoodSupplements ->
+                    { english = " Provides counseling on the importance of Ongera and FBF and advise them to go to the Health center to recieve them"
+                    , kinyarwanda = Nothing
+                    }
+
+                FiveFoodGroups ->
+                    { english = "Provide counseling on how the mother can combine different food items based on the one they have in their area"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastfedForSixMonths ->
+                    { english = "Provide counseling on the importance of breastfeeding a baby for 6 months without interruption"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.AppropriateComplementaryFeeding ->
+                    { english = "Provide counseling on the importance of complementary feeding and using example show them some food item that can be easy to find in their area"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReceivingCashTransfer ->
+                    { english = "Provide counseling to the mother to go to the local government in charge and advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.ConditionalFoodItems ->
+                    { english = "Provide counseling to the beneficiaries to go to the local government in charge and advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatedForAcuteMalnutrition ->
+                    { english = "Provide the counseling about preventing acute malnutrition and send the child to the Health center"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReceivingSupport ->
+                    { english = "Provide counseling to the mother to take the child to the Health center so that they can get the support needed"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasCleanWater ->
+                    { english = "Provide counseling on how to prepare clean water like boiling it and using water purifier"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasHandwashingFacility ->
+                    { english = "Provide counseling on the importance of handwashing facility, and tell them to buy it  and use it. If they don't have means advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasToilets ->
+                    { english = "Provide counseling by telling them to buiuld toilets. If they don't have means advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasKitchenGarden ->
+                    { english = "Provide counseling on the importance of eating fruits and vegetables from kitchen garden. And tell them to build one. If they don't have means advocate for them"
+                    , kinyarwanda = Nothing
+                    }
+
+                InsecticideTreatedBednets ->
+                    { english = "Provide counseling on the importance of using the insecticide-treated bednets and advise them to have one"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDASignNEWQuestion sign ->
+            case sign of
+                NumberOfANCVisitsCorrect ->
+                    { english = "Is this correct"
+                    , kinyarwanda = Nothing
+                    }
+
+                SupplementsDuringPregnancy ->
+                    { english = "Did the mother receive Iron, Folic Acid/MMS"
+                    , kinyarwanda = Nothing
+                    }
+
+                TakenSupplementsPerGuidance ->
+                    { english = "Has she taken it as per guidance (CHW observed)"
+                    , kinyarwanda = Nothing
+                    }
+
+                NumberOfMissedImmunizationAppointmentsCorrect ->
+                    { english = "Is this correct"
+                    , kinyarwanda = Nothing
+                    }
+
+                FoodSupplements ->
+                    { english = "Did the child receive food supplementation"
+                    , kinyarwanda = Nothing
+                    }
+
+                TakingFoodSupplements ->
+                    { english = "Is the food supplementation being consumed"
+                    , kinyarwanda = Nothing
+                    }
+
+                FiveFoodGroups ->
+                    { english = "Does the child receive food items from the 5 food groups"
+                    , kinyarwanda = Just "Umwana yahawe indyo irimo amoko atanu y'ibiribwa"
+                    }
+
+                BreastfedForSixMonths ->
+                    { english = "Breastfed baby for 6 months without interruption"
+                    , kinyarwanda = Just "Umwana yonse amezi 6 nta kindi bamuvangiye"
+                    }
+
+                Backend.Measurement.Model.AppropriateComplementaryFeeding ->
+                    { english = "Appropriate complementary feeding (6-24 months)"
+                    , kinyarwanda = Just "Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)"
+                    }
+
+                BeneficiaryCashTransfer ->
+                    { english = "Is the mother or the child beneficiary of cash transfer e.g. NSDS, VUP"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReceivingCashTransfer ->
+                    { english = "Are they receiving it"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.ConditionalFoodItems ->
+                    { english = "Receipt of conditional food items including small livestock"
+                    , kinyarwanda = Just "Gufata inkunga z’ingoboka harimo ibiryo n'amatungo magufi"
+                    }
+
+                ChildWithAcuteMalnutrition ->
+                    { english = "Please check MUAC. Does the child have acute malnutrition"
+                    , kinyarwanda = Nothing
+                    }
+
+                TreatedForAcuteMalnutrition ->
+                    { english = "Is the child being treated"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildWitDisability ->
+                    { english = "Does the child have disability"
+                    , kinyarwanda = Nothing
+                    }
+
+                ReceivingSupport ->
+                    { english = "Does the child receive support"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildGotDiarrhea ->
+                    { english = "Does the child have diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.HasCleanWater ->
+                    { english = "Does the house have clean water"
+                    , kinyarwanda = Just "Urugo rufite amazi asukuye"
+                    }
+
+                Backend.Measurement.Model.HasHandwashingFacility ->
+                    { english = "Does the house have a handwashing facility"
+                    , kinyarwanda = Just "Urugo rufite kandagirukarabe kandi irakoreshwa"
+                    }
+
+                Backend.Measurement.Model.HasToilets ->
+                    { english = "Does the household have toilets"
+                    , kinyarwanda = Just "Urugo rufite ubwiherero bwujuje ibyangombwa"
+                    }
+
+                Backend.Measurement.Model.HasKitchenGarden ->
+                    { english = "Does the house have a kitchen garden"
+                    , kinyarwanda = Just "Urugo rufite umurima w’igikoni"
+                    }
+
+                InsecticideTreatedBednets ->
+                    { english = "Is the mother using the insecticide-treated bednets ?"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoNCDASignsNEW ->
+                    { english = "None"
+                    , kinyarwanda = Just "Nta na kimwe"
+                    }
+
         NCDActivityTitle activity ->
             case activity of
                 Backend.NCDActivity.Model.DangerSigns ->
@@ -9463,39 +9686,39 @@ translationSet trans =
 
         NCDAInfrastructureEnvironmentWashItemLabel item ->
             case item of
-                HasToilets ->
+                Pages.WellChild.ProgressReport.Model.HasToilets ->
                     { english = "Household has toilets"
                     , kinyarwanda = Just "Urugo rufite ubwiherero"
                     }
 
-                HasCleanWater ->
+                Pages.WellChild.ProgressReport.Model.HasCleanWater ->
                     { english = "Household has clean water"
                     , kinyarwanda = Just "Urugo rufite amazi meza"
                     }
 
-                HasHandwashingFacility ->
+                Pages.WellChild.ProgressReport.Model.HasHandwashingFacility ->
                     { english = "Household has handwashing facility"
                     , kinyarwanda = Just "Urugo rufite kandagirukarabe"
                     }
 
-                HasKitchenGarden ->
+                Pages.WellChild.ProgressReport.Model.HasKitchenGarden ->
                     { english = "Household has kitchen garden"
                     , kinyarwanda = Just "Urugo rufite akarima k'igikoni"
                     }
 
-                InsecticideTreatedBedNets ->
+                Pages.WellChild.ProgressReport.Model.InsecticideTreatedBedNets ->
                     { english = "Insecticide treated bed nets"
                     , kinyarwanda = Just "Urugo rufite nzitiramibu ikoranye umuti"
                     }
 
         NCDANutritionBehaviorItemLabel item ->
             case item of
-                BreastfedSixMonths ->
+                Pages.WellChild.ProgressReport.Model.BreastfedSixMonths ->
                     { english = "Breastfed baby for 6 mo without interruption"
                     , kinyarwanda = Just "Konsa umwana amezi 6 utamuvangiye"
                     }
 
-                AppropriateComplementaryFeeding ->
+                Pages.WellChild.ProgressReport.Model.AppropriateComplementaryFeeding ->
                     { english = "Appropriate complementary feeding (6-24 mo)"
                     , kinyarwanda = Just "Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)"
                     }
@@ -9537,7 +9760,7 @@ translationSet trans =
                     , kinyarwanda = Just "Gufata amafaranga y’inkunga agenerwa umugore utwite n’uwonsa bo mu miryango ikennye (icyiciro cya 1 n’icya 2) – NSDS, VUP"
                     }
 
-                ConditionalFoodItems ->
+                Pages.WellChild.ProgressReport.Model.ConditionalFoodItems ->
                     { english = "Receipt of conditional food items including small livestock"
                     , kinyarwanda = Just "Gufata inkunga z’ingoboka harimo ibiryo n'amatungo magufi"
                     }
@@ -9590,6 +9813,57 @@ translationSet trans =
                     { english = "Edema"
                     , kinyarwanda = Just "Kubyimba"
                     }
+
+        NCDANumberOfANCVisitsHeader number ->
+            if number == 0 then
+                { english = "According to E-Heza, the mother had no standard ANC visits"
+                , kinyarwanda = Nothing
+                }
+
+            else if number == 0 then
+                { english = "According to E-Heza, the mother had 1 standard ANC visit"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = "According to E-Heza, the mother had " ++ String.fromInt number ++ " standard ANC visits"
+                , kinyarwanda = Nothing
+                }
+
+        NCDANumberOfANCVisitsQuestion ->
+            { english = "How many ANC standard visits did the mother receive"
+            , kinyarwanda = Nothing
+            }
+
+        NCDANumberImmunizationAppointmentLabel ->
+            { english = "According to E-Heza, you have no immunization appointment scheduled"
+            , kinyarwanda = Nothing
+            }
+
+        NCDANumberOfMissedImmunizationAppointmentsHeader ->
+            { english = "According to E-Heza, you have not missed any appointments"
+            , kinyarwanda = Nothing
+            }
+
+        NCDAStep step ->
+            case step of
+                NCDAStepPillars ->
+                    translationSet AntenatalCare
+
+                NCDAStepAntenatalCare ->
+                    translationSet AntenatalCare
+
+                NCDAStepUniversalInterventions ->
+                    translationSet UniversalInterventions
+
+                NCDAStepNutritionBehavior ->
+                    translationSet NutritionBehavior
+
+                NCDAStepTargetedInterventions ->
+                    translationSet TargetedInterventions
+
+                NCDAStepInfrastructureEnvironment ->
+                    translationSet InfrastructureEnvironment
 
         NCDDangerSign sign ->
             case sign of
@@ -11141,9 +11415,7 @@ translationSet trans =
                     }
 
                 Pages.PatientRecord.Model.FilterAntenatal ->
-                    { english = "Antenatal Care"
-                    , kinyarwanda = Just "Isuzuma ku mugore utwite"
-                    }
+                    translationSet AntenatalCare
 
                 FilterDemographics ->
                     { english = "Demographics"
@@ -18435,6 +18707,11 @@ translationSet trans =
             , kinyarwanda = Just "Umudugudu"
             }
 
+        Visits ->
+            { english = "visits"
+            , kinyarwanda = Nothing
+            }
+
         VitaminAWarningPopupMessage ->
             { english = "Patient did not recieve Vitamin A"
             , kinyarwanda = Nothing
@@ -19270,7 +19547,7 @@ translateActivePage page =
                             }
 
                         ChildScoreboardEncounter ->
-                            { english = "Child Scoreboard Participants"
+                            { english = "Child Scorecard Participants"
                             , kinyarwanda = Nothing
                             }
 
@@ -19517,7 +19794,7 @@ translateActivePage page =
                     }
 
                 ChildScoreboardEncounterPage _ ->
-                    { english = "Child Scoreboard Encounter"
+                    { english = "Child Scorecard Encounter"
                     , kinyarwanda = Nothing
                     }
 

@@ -75,7 +75,6 @@ import Pages.Utils
         )
 import Translate exposing (Language, translate)
 import Translate.Model exposing (Language(..))
-import Utils.Html exposing (viewModal)
 
 
 expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool

@@ -108,7 +108,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
 
         -- Counseling ->
-        --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
+        --    viewCounselingSession language (mapMeasurementData .counsellingSession measurements) session model.counselling
         Weight ->
             viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
 
@@ -770,10 +770,10 @@ viewChildFbf language currentDate child clinicType measurement form =
                    completed =
                        isJust measurement.current
 
-                   -- For counseling sessions, we don't allow saves unless all the
+                   -- For counselling sessions, we don't allow saves unless all the
                    -- topics are checked. Also, we don't allow an update if the
                    -- activity has been completed. That is, once the nurse says the
-                   -- counseling session is done, the nurse cannot correct that.
+                   -- counselling session is done, the nurse cannot correct that.
                    saveMsg =
                        if allTopicsChecked && not completed then
                            SaveCounselingSession existingId timing topics
@@ -789,8 +789,8 @@ viewChildFbf language currentDate child clinicType measurement form =
                            |> Maybe.withDefault Dict.empty
                in
                div
-                   [ class "ui full segment counseling"
-                   , id "counselingSessionEntryForm"
+                   [ class "ui full segment counselling"
+                   , id "counsellingSessionEntryForm"
                    ]
                    [ div [ class "content" ]
                        [ h3 [ class "ui header" ]
@@ -820,7 +820,7 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
             (\topicId topic ->
                 let
                     inputId =
-                        "counseling-checkbox-" ++ fromEntityUuid topicId
+                        "counselling-checkbox-" ++ fromEntityUuid topicId
 
                     isChecked =
                         EverySet.member topicId selectedTopics
@@ -2760,41 +2760,59 @@ viewNCDAHelperDialog language action helperState =
         (\sign ->
             case sign of
                 NCDAFiveFoodGroups ->
-                    Just <|
-                        div [ class "ui active modal ncda-helper-popup" ]
-                            [ div [ class "header" ]
-                                [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups ]
-                            , div
-                                [ class "content" ]
-                                [ ol [] <|
-                                    List.map
-                                        (\foodGroup ->
-                                            li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
-                                        )
-                                        [ Staples
-                                        , Legumes
-                                        , DairyProducts
-                                        , AnimalSourceFoods
-                                        , Eggs
-                                        , FruitsVegetables
-                                        , BreastMilk
-                                        , MealsWithEdibleOil
-                                        ]
-                                ]
-                            , div
-                                [ class "actions" ]
-                                [ button
-                                    [ class "ui fluid primary button"
-                                    , onClick action
-                                    ]
-                                    [ text <| translate language Translate.Close ]
-                                ]
-                            ]
+                    Just <| ncdaHelperDialog language action
 
                 _ ->
                     Nothing
         )
         helperState
+
+
+viewNCDAHelperDialogNEW : Language -> msg -> Maybe NCDASignNEW -> Maybe (Html msg)
+viewNCDAHelperDialogNEW language action helperState =
+    Maybe.andThen
+        (\sign ->
+            case sign of
+                FiveFoodGroups ->
+                    Just <| ncdaHelperDialog language action
+
+                _ ->
+                    Nothing
+        )
+        helperState
+
+
+ncdaHelperDialog : Language -> msg -> Html msg
+ncdaHelperDialog language action =
+    div [ class "ui active modal ncda-helper-popup" ]
+        [ div [ class "header" ]
+            [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups ]
+        , div
+            [ class "content" ]
+            [ ol [] <|
+                List.map
+                    (\foodGroup ->
+                        li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
+                    )
+                    [ Staples
+                    , Legumes
+                    , DairyProducts
+                    , AnimalSourceFoods
+                    , Eggs
+                    , FruitsVegetables
+                    , BreastMilk
+                    , MealsWithEdibleOil
+                    ]
+            ]
+        , div
+            [ class "actions" ]
+            [ button
+                [ class "ui fluid primary button"
+                , onClick action
+                ]
+                [ text <| translate language Translate.Close ]
+            ]
+        ]
 
 
 viewNCDA :
@@ -2836,3 +2854,677 @@ viewNCDA language currentDate child measurement data newbornExamPregnancySummary
         newbornExamPregnancySummary
         previousNCDAValues
         |> div []
+
+
+viewNCDAContentNEW :
+    Language
+    -> NominalDate
+    -> Person
+    -> ((Bool -> NCDAFormNEW -> NCDAFormNEW) -> Bool -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (NutritionSupplementType -> msg)
+    -> (NCDAStepNEW -> msg)
+    -> msg
+    -> (Maybe NCDASignNEW -> msg)
+    -> Maybe NCDASignNEW
+    -> NCDAFormNEW
+    -> List (Html msg)
+viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form =
+    let
+        ( inputs, tasks ) =
+            ncdaFormInputsAndTasksNEW language
+                currentDate
+                person
+                setBoolInputMsg
+                setBirthWeightMsg
+                setNumberANCVisitsMsg
+                setNutritionSupplementTypeMsg
+                setHelperStateMsg
+                form
+                currentStep
+
+        totalTasks =
+            List.length tasks
+
+        tasksCompleted =
+            List.map taskCompleted tasks
+                |> List.sum
+
+        currentStep =
+            form.step
+
+        actions =
+            let
+                actionButton =
+                    Pages.Utils.saveButton language (tasksCompleted == totalTasks)
+
+                backButton backStep =
+                    button
+                        [ class "ui fluid primary button"
+                        , onClick <| setStepMsg backStep
+                        ]
+                        [ text <| ("< " ++ translate language Translate.Back) ]
+
+                pillarButton pillar =
+                    button
+                        [ class "ui primary button pillars"
+                        , onClick <| setStepMsg pillar
+                        ]
+                        [ span [ class "icon" ] []
+                        , span [ class "text" ] [ text <| translate language <| Translate.NCDAStep pillar ]
+                        ]
+
+                buttons =
+                    [ pillarButton NCDAStepAntenatalCare
+                    , pillarButton NCDAStepUniversalInterventions
+                    , pillarButton NCDAStepNutritionBehavior
+                    , pillarButton NCDAStepTargetedInterventions
+                    , pillarButton NCDAStepInfrastructureEnvironment
+                    ]
+            in
+            case currentStep of
+                NCDAStepPillars ->
+                    div [ class "actions pillar" ]
+                        buttons
+
+                NCDAStepAntenatalCare ->
+                    div [ class "actions two" ]
+                        [ backButton NCDAStepPillars
+                        , actionButton (setStepMsg NCDAStepUniversalInterventions)
+                        ]
+
+                NCDAStepUniversalInterventions ->
+                    div [ class "actions two" ]
+                        [ backButton NCDAStepAntenatalCare
+                        , actionButton (setStepMsg NCDAStepNutritionBehavior)
+                        ]
+
+                NCDAStepNutritionBehavior ->
+                    div [ class "actions two" ]
+                        [ backButton NCDAStepUniversalInterventions
+                        , actionButton (setStepMsg NCDAStepTargetedInterventions)
+                        ]
+
+                NCDAStepTargetedInterventions ->
+                    div [ class "actions two" ]
+                        [ backButton NCDAStepNutritionBehavior
+                        , actionButton (setStepMsg NCDAStepInfrastructureEnvironment)
+                        ]
+
+                NCDAStepInfrastructureEnvironment ->
+                    div [ class "actions two" ]
+                        [ backButton NCDAStepTargetedInterventions
+                        , Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) saveMsg Translate.EndEncounter
+                        ]
+    in
+    if currentStep == NCDAStepPillars then
+        [ div [ class "ui full segment" ]
+            [ div [ class "full content" ]
+                [ actions ]
+            ]
+        , viewModal <|
+            viewNCDAHelperDialogNEW language (setHelperStateMsg Nothing) helperState
+        ]
+
+    else
+        [ div [ class "task-header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
+        , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        , div [ class "ui full segment" ]
+            [ div [ class "full content" ]
+                [ div [ class "ui form ncda" ]
+                    inputs
+                ]
+            , actions
+            ]
+        , viewModal <|
+            viewNCDAHelperDialogNEW language (setHelperStateMsg Nothing) helperState
+        ]
+
+
+ncdaFormInputsAndTasksNEW :
+    Language
+    -> NominalDate
+    -> Person
+    -> ((Bool -> NCDAFormNEW -> NCDAFormNEW) -> Bool -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (NutritionSupplementType -> msg)
+    -> (Maybe NCDASignNEW -> msg)
+    -> NCDAFormNEW
+    -> NCDAStepNEW
+    -> ( List (Html msg), List (Maybe Bool) )
+ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep =
+    let
+        inputsAndTasksForSign sign =
+            case sign of
+                NumberOfANCVisitsCorrect ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.numberOfANCVisitsCorrect == Just False then
+                                let
+                                    counselling =
+                                        Maybe.map
+                                            (\numberOfANCVisits ->
+                                                if numberOfANCVisits < 4 then
+                                                    [ viewCounselingLabel NumberOfANCVisitsCorrect ]
+
+                                                else
+                                                    []
+                                            )
+                                            form.numberOfANCVisits
+                                            |> Maybe.withDefault []
+                                in
+                                ( [ viewQuestionLabel language Translate.NCDANumberOfANCVisitsQuestion
+                                  , viewMeasurementInput language
+                                        form.numberOfANCVisits
+                                        setNumberANCVisitsMsg
+                                        "anc-visits"
+                                        Translate.Visits
+                                  ]
+                                    ++ counselling
+                                , [ maybeToBoolTask form.numberOfANCVisits ]
+                                )
+
+                            else
+                                ( [], [] )
+                    in
+                    ( (viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader 0) "." "label"
+                        :: viewNCDAInput NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect updateFunc
+                      )
+                        ++ derivedInputs
+                    , form.numberOfANCVisitsCorrect :: derivedTasks
+                    )
+
+                SupplementsDuringPregnancy ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | supplementsDuringPregnancy = Just value, takenSupplementsPerGuidance = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.supplementsDuringPregnancy == Just True then
+                                inputsAndTasksForSign TakenSupplementsPerGuidance
+
+                            else
+                                ( [], [] )
+
+                        counselling =
+                            if
+                                (form.supplementsDuringPregnancy == Just False)
+                                    || (form.takenSupplementsPerGuidance == Just False)
+                            then
+                                [ viewCounselingLabel SupplementsDuringPregnancy ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput SupplementsDuringPregnancy form.supplementsDuringPregnancy updateFunc
+                        ++ derivedInputs
+                        ++ counselling
+                    , form.supplementsDuringPregnancy :: derivedTasks
+                    )
+
+                TakenSupplementsPerGuidance ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | takenSupplementsPerGuidance = Just value }
+                    in
+                    ( viewNCDAInput TakenSupplementsPerGuidance form.takenSupplementsPerGuidance updateFunc
+                    , [ maybeToBoolTask form.takenSupplementsPerGuidance ]
+                    )
+
+                NumberOfMissedImmunizationAppointmentsCorrect ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | numberOfMissedImmunizationAppointmentsCorrect = Just value }
+
+                        counselling =
+                            if form.numberOfMissedImmunizationAppointmentsCorrect == Just False then
+                                [ viewCounselingLabel NumberOfMissedImmunizationAppointmentsCorrect ]
+
+                            else
+                                []
+                    in
+                    ( [ viewCustomLabel language Translate.NCDANumberImmunizationAppointmentLabel "." "label"
+                      , viewCustomLabel language Translate.NCDANumberOfMissedImmunizationAppointmentsHeader "." "label"
+                      ]
+                        ++ viewNCDAInput NumberOfANCVisitsCorrect form.numberOfMissedImmunizationAppointmentsCorrect updateFunc
+                        ++ counselling
+                    , [ form.numberOfMissedImmunizationAppointmentsCorrect ]
+                    )
+
+                FoodSupplements ->
+                    let
+                        updateFunc value form_ =
+                            { form_
+                                | foodSupplements = Just value
+                                , foodSupplementType = Nothing
+                                , takingFoodSupplements = Nothing
+                            }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.foodSupplements == Just True then
+                                let
+                                    ( isTakingInput, isTakingTask ) =
+                                        if isJust form.foodSupplementType then
+                                            inputsAndTasksForSign TakingFoodSupplements
+
+                                        else
+                                            ( [], [] )
+                                in
+                                ( [ viewQuestionLabel language Translate.WhatType
+                                  , viewCheckBoxSelectInput language
+                                        [ FortifiedPorridge, Rutf, Ongera, TherapeuticMilk ]
+                                        []
+                                        form.foodSupplementType
+                                        setNutritionSupplementTypeMsg
+                                        Translate.NutritionSupplementType
+                                  ]
+                                    ++ isTakingInput
+                                , maybeToBoolTask form.foodSupplementType :: isTakingTask
+                                )
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput FoodSupplements form.foodSupplements updateFunc
+                        ++ derivedInputs
+                    , form.foodSupplements :: derivedTasks
+                    )
+
+                TakingFoodSupplements ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | takingFoodSupplements = Just value }
+
+                        counselling =
+                            if form.takingFoodSupplements == Just False then
+                                [ viewCounselingLabel TakingFoodSupplements ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput TakingFoodSupplements form.takingFoodSupplements updateFunc
+                        ++ counselling
+                    , [ maybeToBoolTask form.takingFoodSupplements ]
+                    )
+
+                FiveFoodGroups ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | fiveFoodGroups = Just value }
+
+                        counselling =
+                            if form.fiveFoodGroups == Just False then
+                                [ viewCounselingLabel FiveFoodGroups ]
+
+                            else
+                                []
+                    in
+                    ( [ div [ class "label-with-helper" ]
+                            [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups
+                            , div
+                                [ class "label-helper"
+                                , onClick <| setHelperStateMsg (Just FiveFoodGroups)
+                                ]
+                                [ img [ src "assets/images/question-mark.svg" ] [] ]
+                            ]
+                      , viewBoolInput
+                            language
+                            form.fiveFoodGroups
+                            (setBoolInputMsg updateFunc)
+                            ""
+                            Nothing
+                      ]
+                        ++ counselling
+                    , [ form.fiveFoodGroups ]
+                    )
+
+                BreastfedForSixMonths ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | breastfedForSixMonths = Just value }
+
+                        counselling =
+                            if form.breastfedForSixMonths == Just False then
+                                [ viewCounselingLabel BreastfedForSixMonths ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput BreastfedForSixMonths form.breastfedForSixMonths updateFunc ++ counselling
+                    , [ maybeToBoolTask form.breastfedForSixMonths ]
+                    )
+
+                AppropriateComplementaryFeeding ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | appropriateComplementaryFeeding = Just value }
+
+                        counselling =
+                            if form.appropriateComplementaryFeeding == Just False then
+                                [ viewCounselingLabel AppropriateComplementaryFeeding ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput AppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc ++ counselling
+                    , [ maybeToBoolTask form.appropriateComplementaryFeeding ]
+                    )
+
+                BeneficiaryCashTransfer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | beneficiaryCashTransfer = Just value, receivingCashTransfer = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.beneficiaryCashTransfer == Just True then
+                                inputsAndTasksForSign ReceivingCashTransfer
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput BeneficiaryCashTransfer form.beneficiaryCashTransfer updateFunc
+                        ++ derivedInputs
+                    , form.beneficiaryCashTransfer :: derivedTasks
+                    )
+
+                ReceivingCashTransfer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | receivingCashTransfer = Just value }
+
+                        counselling =
+                            if form.receivingCashTransfer == Just False then
+                                [ viewCounselingLabel ReceivingCashTransfer ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ReceivingCashTransfer form.receivingCashTransfer updateFunc ++ counselling
+                    , [ maybeToBoolTask form.receivingCashTransfer ]
+                    )
+
+                ConditionalFoodItems ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | conditionalFoodItems = Just value }
+
+                        counselling =
+                            if form.conditionalFoodItems == Just False then
+                                [ viewCounselingLabel ConditionalFoodItems ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ConditionalFoodItems form.conditionalFoodItems updateFunc ++ counselling
+                    , [ maybeToBoolTask form.conditionalFoodItems ]
+                    )
+
+                ChildWithAcuteMalnutrition ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childWithAcuteMalnutrition = Just value, treatedForAcuteMalnutrition = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childWithAcuteMalnutrition == Just True then
+                                inputsAndTasksForSign TreatedForAcuteMalnutrition
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition updateFunc
+                        ++ derivedInputs
+                    , form.childWithAcuteMalnutrition :: derivedTasks
+                    )
+
+                TreatedForAcuteMalnutrition ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | treatedForAcuteMalnutrition = Just value }
+
+                        counselling =
+                            if form.treatedForAcuteMalnutrition == Just False then
+                                [ viewCounselingLabel TreatedForAcuteMalnutrition ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc ++ counselling
+                    , [ maybeToBoolTask form.treatedForAcuteMalnutrition ]
+                    )
+
+                ChildWitDisability ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childWitDisability = Just value, receivingSupport = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childWitDisability == Just True then
+                                inputsAndTasksForSign ReceivingSupport
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput ChildWitDisability form.childWitDisability updateFunc
+                        ++ derivedInputs
+                    , form.childWitDisability :: derivedTasks
+                    )
+
+                ReceivingSupport ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | receivingSupport = Just value }
+
+                        counselling =
+                            if form.receivingSupport == Just False then
+                                [ viewCounselingLabel ReceivingSupport ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ReceivingSupport form.receivingSupport updateFunc ++ counselling
+                    , [ maybeToBoolTask form.receivingSupport ]
+                    )
+
+                ChildGotDiarrhea ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childGotDiarrhea = Just value }
+                    in
+                    ( viewNCDAInput ChildGotDiarrhea form.childGotDiarrhea updateFunc
+                    , [ maybeToBoolTask form.childGotDiarrhea ]
+                    )
+
+                HasCleanWater ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | hasCleanWater = Just value }
+
+                        counselling =
+                            if form.hasCleanWater == Just False then
+                                [ viewCounselingLabel HasCleanWater ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput HasCleanWater form.hasCleanWater updateFunc ++ counselling
+                    , [ maybeToBoolTask form.hasCleanWater ]
+                    )
+
+                HasHandwashingFacility ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | hasHandwashingFacility = Just value }
+
+                        counselling =
+                            if form.hasHandwashingFacility == Just False then
+                                [ viewCounselingLabel HasHandwashingFacility ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput HasHandwashingFacility form.hasHandwashingFacility updateFunc ++ counselling
+                    , [ maybeToBoolTask form.hasHandwashingFacility ]
+                    )
+
+                HasToilets ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | hasToilets = Just value }
+
+                        counselling =
+                            if form.hasToilets == Just False then
+                                [ viewCounselingLabel HasToilets ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput HasToilets form.hasToilets updateFunc ++ counselling
+                    , [ maybeToBoolTask form.hasToilets ]
+                    )
+
+                HasKitchenGarden ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | hasKitchenGarden = Just value }
+
+                        counselling =
+                            if form.hasKitchenGarden == Just False then
+                                [ viewCounselingLabel HasKitchenGarden ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput HasKitchenGarden form.hasKitchenGarden updateFunc ++ counselling
+                    , [ maybeToBoolTask form.hasKitchenGarden ]
+                    )
+
+                InsecticideTreatedBednets ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | insecticideTreatedBednets = Just value }
+
+                        counselling =
+                            if form.insecticideTreatedBednets == Just False then
+                                [ viewCounselingLabel InsecticideTreatedBednets ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput InsecticideTreatedBednets form.insecticideTreatedBednets updateFunc ++ counselling
+                    , [ maybeToBoolTask form.insecticideTreatedBednets ]
+                    )
+
+                NoNCDASignsNEW ->
+                    ( [], [] )
+
+        viewNCDAInput sign value updateFunc =
+            [ viewQuestionLabel language <| Translate.NCDASignNEWQuestion sign
+            , viewBoolInput
+                language
+                value
+                (setBoolInputMsg updateFunc)
+                ""
+                Nothing
+            ]
+
+        viewCounselingLabel sign =
+            viewCustomLabel language (Translate.NCDASignNEWCounceling sign) "." "label counselling"
+    in
+    case currentStep of
+        NCDAStepPillars ->
+            let
+                inputsAndTasks =
+                    []
+            in
+            ( [], [] )
+
+        NCDAStepAntenatalCare ->
+            let
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign
+                        [ NumberOfANCVisitsCorrect
+                        , SupplementsDuringPregnancy
+                        ]
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+                |> List.concat
+            )
+
+        NCDAStepUniversalInterventions ->
+            let
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign
+                        [ NumberOfMissedImmunizationAppointmentsCorrect
+                        , FoodSupplements
+                        ]
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+                |> List.concat
+            )
+
+        NCDAStepNutritionBehavior ->
+            let
+                feedingSign =
+                    ageInMonths currentDate person
+                        |> Maybe.map
+                            (\ageMonths ->
+                                if ageMonths < 7 then
+                                    [ BreastfedForSixMonths ]
+
+                                else
+                                    [ FiveFoodGroups, AppropriateComplementaryFeeding ]
+                            )
+                        |> Maybe.withDefault []
+
+                inputsAndTasks =
+                    feedingSign
+                        |> List.map inputsAndTasksForSign
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+                |> List.concat
+            )
+
+        NCDAStepTargetedInterventions ->
+            let
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign
+                        [ BeneficiaryCashTransfer
+                        , ConditionalFoodItems
+                        , ChildWithAcuteMalnutrition
+                        , ChildWitDisability
+                        , ChildGotDiarrhea
+                        ]
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+                |> List.concat
+            )
+
+        NCDAStepInfrastructureEnvironment ->
+            let
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign
+                        [ HasCleanWater
+                        , HasHandwashingFacility
+                        , HasToilets
+                        , HasKitchenGarden
+                        , InsecticideTreatedBednets
+                        ]
+            in
+            ( List.map Tuple.first inputsAndTasks
+                |> List.concat
+            , List.map Tuple.second inputsAndTasks
+                |> List.concat
+            )

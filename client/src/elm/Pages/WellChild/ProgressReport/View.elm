@@ -2120,12 +2120,12 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
         , div [ class "pane-content" ]
             [ viewTableHeader
             , viewTableRow language
-                (Translate.NCDANutritionBehaviorItemLabel BreastfedSixMonths)
+                (Translate.NCDANutritionBehaviorItemLabel Pages.WellChild.ProgressReport.Model.BreastfedSixMonths)
                 pregnancyValues
                 breastfedForSixMonthsFirstPeriod
                 breastfedForSixMonthsSecondPeriod
             , viewTableRow language
-                (Translate.NCDANutritionBehaviorItemLabel AppropriateComplementaryFeeding)
+                (Translate.NCDANutritionBehaviorItemLabel Pages.WellChild.ProgressReport.Model.AppropriateComplementaryFeeding)
                 pregnancyValues
                 appropriateComplementaryFeedingFirstPeriod
                 appropriateComplementaryFeedingSecondPeriod
@@ -2208,27 +2208,27 @@ viewInfrastructureEnvironmentWashPane language currentDate child questionnairesB
         , div [ class "pane-content" ]
             [ viewTableHeader
             , viewTableRow language
-                (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasToilets)
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel Pages.WellChild.ProgressReport.Model.HasToilets)
                 pregnancyValues
                 (List.take 6 hasToilets)
                 (List.drop 6 hasToilets)
             , viewTableRow language
-                (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasCleanWater)
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel Pages.WellChild.ProgressReport.Model.HasCleanWater)
                 pregnancyValues
                 (List.take 6 hasCleanWater)
                 (List.drop 6 hasCleanWater)
             , viewTableRow language
-                (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasHandwashingFacility)
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel Pages.WellChild.ProgressReport.Model.HasHandwashingFacility)
                 pregnancyValues
                 (List.take 6 hasHandwashingFacility)
                 (List.drop 6 hasHandwashingFacility)
             , viewTableRow language
-                (Translate.NCDAInfrastructureEnvironmentWashItemLabel InsecticideTreatedBedNets)
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel Pages.WellChild.ProgressReport.Model.InsecticideTreatedBedNets)
                 pregnancyValues
                 (List.take 6 insecticideTreatedBedNets)
                 (List.drop 6 insecticideTreatedBedNets)
             , viewTableRow language
-                (Translate.NCDAInfrastructureEnvironmentWashItemLabel HasKitchenGarden)
+                (Translate.NCDAInfrastructureEnvironmentWashItemLabel Pages.WellChild.ProgressReport.Model.HasKitchenGarden)
                 pregnancyValues
                 (List.take 6 hasKitchenGarden)
                 (List.drop 6 hasKitchenGarden)
@@ -2433,7 +2433,7 @@ viewTargetedInterventionsPane language currentDate child db questionnairesByAgeI
                 (List.take 6 conditionalCashTransferValues)
                 (List.drop 6 conditionalCashTransferValues)
             , viewTableRow language
-                (Translate.NCDATargetedInterventionsItemLabel ConditionalFoodItems)
+                (Translate.NCDATargetedInterventionsItemLabel Pages.WellChild.ProgressReport.Model.ConditionalFoodItems)
                 pregnancyValues
                 (List.take 6 conditionalFoodItemsValues)
                 (List.drop 6 conditionalFoodItemsValues)

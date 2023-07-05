@@ -14,7 +14,6 @@ import Pages.AcuteIllness.Encounter.Fetch
 import Pages.AcuteIllness.Outcome.Fetch
 import Pages.AcuteIllness.Participant.Fetch
 import Pages.AcuteIllness.ProgressReport.Fetch
-import Pages.ChildScoreboard.Activity.Fetch
 import Pages.ChildScoreboard.Encounter.Fetch
 import Pages.ChildScoreboard.Participant.Fetch
 import Pages.Clinical.Fetch
