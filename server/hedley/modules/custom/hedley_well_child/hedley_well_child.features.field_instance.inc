@@ -5471,6 +5471,52 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_ncda-field_anc_visits'.
+  $field_instances['node-well_child_ncda-field_anc_visits'] = array(
+    'bundle' => 'well_child_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_anc_visits',
+    'label' => 'ANC visits',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_ncda-field_date_measured'.
   $field_instances['node-well_child_ncda-field_date_measured'] = array(
     'bundle' => 'well_child_ncda',
@@ -5693,6 +5739,43 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_ncda-field_supplement_type'.
+  $field_instances['node-well_child_ncda-field_supplement_type'] = array(
+    'bundle' => 'well_child_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_supplement_type',
+    'label' => 'Supplement Type',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 15,
     ),
   );
 
@@ -10579,6 +10662,7 @@ function hedley_well_child_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('ANC visits');
   t('Administered Doses');
   t('Administration Dates');
   t('Administration Note');
@@ -10619,6 +10703,7 @@ function hedley_well_child_field_default_field_instances() {
   t('Scheduled Date');
   t('Send to HC');
   t('Shards');
+  t('Supplement Type');
   t('UUID');
   t('Weight');
   t('Well Child Encounter');
