@@ -5223,7 +5223,7 @@ decodeNCDAValueNEW =
     succeed NCDAValueNEW
         |> required "ncda_signs" (decodeEverySet decodeNCDASignNEW)
         |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
-        |> optional "anc_visits" (nullable decodeFloat) Nothing
+        |> optional "anc_visits" (nullable decodeInt) Nothing
         |> optional "supplement_type" (nullable decodeNutritionSupplementType) Nothing
 
 

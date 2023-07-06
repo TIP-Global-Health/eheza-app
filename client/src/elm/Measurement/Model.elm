@@ -1104,7 +1104,7 @@ type alias NCDAFormNEW =
 
     -- Step 1.
     , numberOfANCVisitsCorrect : Maybe Bool
-    , numberOfANCVisits : Maybe Float
+    , numberOfANCVisits : Maybe Int
     , supplementsDuringPregnancy : Maybe Bool
     , takenSupplementsPerGuidance : Maybe Bool
     , bornWithBirthDefect : Maybe Bool

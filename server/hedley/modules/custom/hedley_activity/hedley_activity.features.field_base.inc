@@ -1262,6 +1262,7 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         // Common.
         'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
+        'born-with-birth-defect' => 'Born With Birth Defect',
         'breastfed-for-six-months' => 'Breastfed for six months',
         'conditional-food-items' => 'Conditional Food Items',
         'five-food-groups' => 'Five Food Groups',
@@ -1296,7 +1297,6 @@ function hedley_activity_field_default_field_bases() {
         'support-child-with-disability' => 'Support Child With Disability',
 
         // @todo: decide if this is needed:
-        'born-with-birth-defect' => 'Born With Birth Defect',
         'meal-frequency-6to8m' => 'Meal Frequency 6 to 9 months',
         'meal-frequency-9to11m' => 'Meal Frequency 9 to 12 months',
         'meal-frequency-12+m' => 'Meal Frequency 12 months or more',

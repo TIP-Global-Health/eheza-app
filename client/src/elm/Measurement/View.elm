@@ -3006,7 +3006,7 @@ ncdaFormInputsAndTasksNEW language currentDate personId person setBoolInputMsg s
                             in
                             ( [ viewQuestionLabel language Translate.NCDANumberOfANCVisitsQuestion
                               , viewMeasurementInput language
-                                    form.numberOfANCVisits
+                                    (Maybe.map toFloat form.numberOfANCVisits)
                                     setNumberANCVisitsMsg
                                     "anc-visits"
                                     Translate.Visits

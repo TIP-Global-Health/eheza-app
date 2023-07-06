@@ -2774,7 +2774,7 @@ type alias ChildScoreboardNCDA =
 type alias NCDAValueNEW =
     { signs : EverySet NCDASignNEW
     , birthWeight : Maybe WeightInGrm
-    , numberOfANCVisits : Maybe Float
+    , numberOfANCVisits : Maybe Int
     , foodSupplementType : Maybe NutritionSupplementType
     }
 

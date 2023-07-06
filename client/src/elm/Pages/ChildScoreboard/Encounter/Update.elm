@@ -89,7 +89,7 @@ update msg model =
             let
                 updatedForm =
                     model.ncdaData.form
-                        |> (\form -> { form | numberOfANCVisits = String.toFloat string })
+                        |> (\form -> { form | numberOfANCVisits = String.toInt string })
 
                 updatedData =
                     model.ncdaData

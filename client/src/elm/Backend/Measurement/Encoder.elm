@@ -4887,7 +4887,7 @@ encodeNCDAValueNEWWithType type_ value =
                 |> Maybe.withDefault []
 
         numberOfANCVisits =
-            Maybe.map (\ancVisits -> [ ( "anc_visits", float ancVisits ) ])
+            Maybe.map (\ancVisits -> [ ( "anc_visits", int ancVisits ) ])
                 value.numberOfANCVisits
                 |> Maybe.withDefault []
 
