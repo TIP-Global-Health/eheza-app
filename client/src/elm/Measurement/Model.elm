@@ -243,6 +243,8 @@ type MsgChild
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetNumberANCVisits String
+    | SetNutritionSupplementType NutritionSupplementType
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
@@ -1033,74 +1035,6 @@ emptyNCDAData =
 
 type alias NCDAForm =
     { step : Maybe NCDAStep
-    , bornWithBirthDefect : Maybe Bool
-    , breastfedForSixMonths : Maybe Bool
-    , appropriateComplementaryFeeding : Maybe Bool
-    , ongeraMNP : Maybe Bool
-    , fiveFoodGroups : Maybe Bool
-    , mealFrequency6to8Months : Maybe Bool
-    , mealFrequency9to11Months : Maybe Bool
-    , mealFrequency12MonthsOrMore : Maybe Bool
-    , supportChildWithDisability : Maybe Bool
-    , conditionalCashTransfer : Maybe Bool
-    , conditionalFoodItems : Maybe Bool
-    , hasCleanWater : Maybe Bool
-    , hasHandwashingFacility : Maybe Bool
-    , hasToilets : Maybe Bool
-    , hasKitchenGarden : Maybe Bool
-    , regularPrenatalVisits : Maybe Bool
-    , ironSupplementsDuringPregnancy : Maybe Bool
-    , insecticideTreatedBednetsDuringPregnancy : Maybe Bool
-    , birthWeight : Maybe WeightInGrm
-    }
-
-
-emptyNCDAForm : NCDAForm
-emptyNCDAForm =
-    { step = Nothing
-    , bornWithBirthDefect = Nothing
-    , breastfedForSixMonths = Nothing
-    , appropriateComplementaryFeeding = Nothing
-    , ongeraMNP = Nothing
-    , fiveFoodGroups = Nothing
-    , mealFrequency6to8Months = Nothing
-    , mealFrequency9to11Months = Nothing
-    , mealFrequency12MonthsOrMore = Nothing
-    , supportChildWithDisability = Nothing
-    , conditionalCashTransfer = Nothing
-    , conditionalFoodItems = Nothing
-    , hasCleanWater = Nothing
-    , hasHandwashingFacility = Nothing
-    , hasToilets = Nothing
-    , hasKitchenGarden = Nothing
-    , regularPrenatalVisits = Nothing
-    , ironSupplementsDuringPregnancy = Nothing
-    , insecticideTreatedBednetsDuringPregnancy = Nothing
-    , birthWeight = Nothing
-    }
-
-
-type NCDAStep
-    = NCDAStepQuestionsAskedOnce
-    | NCDAStepPermanentQuestions1
-    | NCDAStepPermanentQuestions2
-
-
-type alias NCDADataNEW =
-    { form : NCDAFormNEW
-    , helperState : Maybe NCDASignNEW
-    }
-
-
-emptyNCDADataNEW : NCDADataNEW
-emptyNCDADataNEW =
-    { form = emptyNCDAFormNEW
-    , helperState = Nothing
-    }
-
-
-type alias NCDAFormNEW =
-    { step : Maybe NCDAStepNEW
 
     -- Step 1.
     , numberOfANCVisitsCorrect : Maybe Bool
@@ -1140,8 +1074,8 @@ type alias NCDAFormNEW =
     }
 
 
-emptyNCDAFormNEW : NCDAFormNEW
-emptyNCDAFormNEW =
+emptyNCDAForm : NCDAForm
+emptyNCDAForm =
     { step = Nothing
 
     -- Step 1.
@@ -1182,7 +1116,7 @@ emptyNCDAFormNEW =
     }
 
 
-type NCDAStepNEW
+type NCDAStep
     = NCDAStepAntenatalCare
     | NCDAStepUniversalInterventions
     | NCDAStepNutritionBehavior

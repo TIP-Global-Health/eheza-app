@@ -4467,97 +4467,6 @@ viewSelectInput language labelTransId formValue valueTransId valueToStringFunc v
 fromNCDAValue : Maybe NCDAValue -> NCDAForm
 fromNCDAValue saved =
     { step = Nothing
-    , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member NCDABornWithBirthDefect) saved
-    , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member NCDABreastfedForSixMonths) saved
-    , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding) saved
-    , ongeraMNP = Maybe.map (.signs >> EverySet.member NCDAOngeraMNP) saved
-    , fiveFoodGroups = Maybe.map (.signs >> EverySet.member NCDAFiveFoodGroups) saved
-    , mealFrequency6to8Months = Maybe.map (.signs >> EverySet.member NCDAMealFrequency6to8Months) saved
-    , mealFrequency9to11Months = Maybe.map (.signs >> EverySet.member NCDAMealFrequency9to11Months) saved
-    , mealFrequency12MonthsOrMore = Maybe.map (.signs >> EverySet.member NCDAMealFrequency12MonthsOrMore) saved
-    , supportChildWithDisability = Maybe.map (.signs >> EverySet.member NCDASupportChildWithDisability) saved
-    , conditionalCashTransfer = Maybe.map (.signs >> EverySet.member NCDAConditionalCashTransfer) saved
-    , conditionalFoodItems = Maybe.map (.signs >> EverySet.member NCDAConditionalFoodItems) saved
-    , hasCleanWater = Maybe.map (.signs >> EverySet.member NCDAHasCleanWater) saved
-    , hasHandwashingFacility = Maybe.map (.signs >> EverySet.member NCDAHasHandwashingFacility) saved
-    , hasToilets = Maybe.map (.signs >> EverySet.member NCDAHasToilets) saved
-    , hasKitchenGarden = Maybe.map (.signs >> EverySet.member NCDAHasKitchenGarden) saved
-    , regularPrenatalVisits = Maybe.map (.signs >> EverySet.member NCDARegularPrenatalVisits) saved
-    , ironSupplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member NCDAIronSupplementsDuringPregnancy) saved
-    , insecticideTreatedBednetsDuringPregnancy = Maybe.map (.signs >> EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy) saved
-    , birthWeight = Maybe.andThen .birthWeight saved
-    }
-
-
-ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
-ncdaFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { step = form.step
-                , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member NCDABornWithBirthDefect value.signs |> Just)
-                , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member NCDABreastfedForSixMonths value.signs |> Just)
-                , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member NCDAAppropriateComplementaryFeeding value.signs |> Just)
-                , ongeraMNP = or form.ongeraMNP (EverySet.member NCDAOngeraMNP value.signs |> Just)
-                , fiveFoodGroups = or form.fiveFoodGroups (EverySet.member NCDAFiveFoodGroups value.signs |> Just)
-                , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member NCDAMealFrequency6to8Months value.signs |> Just)
-                , mealFrequency9to11Months = or form.mealFrequency9to11Months (EverySet.member NCDAMealFrequency9to11Months value.signs |> Just)
-                , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member NCDAMealFrequency12MonthsOrMore value.signs |> Just)
-                , supportChildWithDisability = or form.supportChildWithDisability (EverySet.member NCDASupportChildWithDisability value.signs |> Just)
-                , conditionalCashTransfer = or form.conditionalCashTransfer (EverySet.member NCDAConditionalCashTransfer value.signs |> Just)
-                , conditionalFoodItems = or form.conditionalFoodItems (EverySet.member NCDAConditionalFoodItems value.signs |> Just)
-                , hasCleanWater = or form.hasCleanWater (EverySet.member NCDAHasCleanWater value.signs |> Just)
-                , hasHandwashingFacility = or form.hasHandwashingFacility (EverySet.member NCDAHasHandwashingFacility value.signs |> Just)
-                , hasToilets = or form.hasToilets (EverySet.member NCDAHasToilets value.signs |> Just)
-                , hasKitchenGarden = or form.hasKitchenGarden (EverySet.member NCDAHasKitchenGarden value.signs |> Just)
-                , regularPrenatalVisits = or form.regularPrenatalVisits (EverySet.member NCDARegularPrenatalVisits value.signs |> Just)
-                , ironSupplementsDuringPregnancy = or form.ironSupplementsDuringPregnancy (EverySet.member NCDAIronSupplementsDuringPregnancy value.signs |> Just)
-                , insecticideTreatedBednetsDuringPregnancy = or form.insecticideTreatedBednetsDuringPregnancy (EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy value.signs |> Just)
-                , birthWeight = or form.birthWeight value.birthWeight
-                }
-            )
-
-
-toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
-toNCDAValueWithDefault saved form =
-    ncdaFormWithDefault form saved
-        |> toNCDAValue
-
-
-toNCDAValue : NCDAForm -> Maybe NCDAValue
-toNCDAValue form =
-    let
-        signs =
-            [ ifNullableTrue NCDABornWithBirthDefect form.bornWithBirthDefect
-            , ifNullableTrue NCDABreastfedForSixMonths form.breastfedForSixMonths
-            , ifNullableTrue NCDAAppropriateComplementaryFeeding form.appropriateComplementaryFeeding
-            , ifNullableTrue NCDAOngeraMNP form.ongeraMNP
-            , ifNullableTrue NCDAFiveFoodGroups form.fiveFoodGroups
-            , ifNullableTrue NCDAMealFrequency6to8Months form.mealFrequency6to8Months
-            , ifNullableTrue NCDAMealFrequency9to11Months form.mealFrequency9to11Months
-            , ifNullableTrue NCDAMealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore
-            , ifNullableTrue NCDASupportChildWithDisability form.supportChildWithDisability
-            , ifNullableTrue NCDAConditionalCashTransfer form.conditionalCashTransfer
-            , ifNullableTrue NCDAConditionalFoodItems form.conditionalFoodItems
-            , ifNullableTrue NCDAHasCleanWater form.hasCleanWater
-            , ifNullableTrue NCDAHasHandwashingFacility form.hasHandwashingFacility
-            , ifNullableTrue NCDAHasToilets form.hasToilets
-            , ifNullableTrue NCDAHasKitchenGarden form.hasKitchenGarden
-            , ifNullableTrue NCDARegularPrenatalVisits form.regularPrenatalVisits
-            , ifNullableTrue NCDAIronSupplementsDuringPregnancy form.ironSupplementsDuringPregnancy
-            , ifNullableTrue NCDAInsecticideTreatedBednetsDuringPregnancy form.insecticideTreatedBednetsDuringPregnancy
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
-    in
-    Maybe.map NCDAValue signs
-        |> andMap (Just form.birthWeight)
-
-
-fromNCDAValueNEW : Maybe NCDAValueNEW -> NCDAFormNEW
-fromNCDAValueNEW saved =
-    { step = Nothing
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
     , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
     , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member BreastfedForSixMonths) saved
@@ -4594,8 +4503,8 @@ fromNCDAValueNEW saved =
     }
 
 
-ncdaFormNEWWithDefault : NCDAFormNEW -> Maybe NCDAValueNEW -> NCDAFormNEW
-ncdaFormNEWWithDefault form saved =
+ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
+ncdaFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -4638,14 +4547,14 @@ ncdaFormNEWWithDefault form saved =
             )
 
 
-toNCDAValueNEWWithDefault : Maybe NCDAValueNEW -> NCDAFormNEW -> Maybe NCDAValueNEW
-toNCDAValueNEWWithDefault saved form =
-    ncdaFormNEWWithDefault form saved
-        |> toNCDAValueNEW
+toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
+toNCDAValueWithDefault saved form =
+    ncdaFormWithDefault form saved
+        |> toNCDAValue
 
 
-toNCDAValueNEW : NCDAFormNEW -> Maybe NCDAValueNEW
-toNCDAValueNEW form =
+toNCDAValue : NCDAForm -> Maybe NCDAValue
+toNCDAValue form =
     let
         signs =
             [ ifNullableTrue AppropriateComplementaryFeeding form.appropriateComplementaryFeeding
@@ -4680,9 +4589,9 @@ toNCDAValueNEW form =
             -- , ifNullableTrue MealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASignsNEW)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
     in
-    Maybe.map NCDAValueNEW signs
+    Maybe.map NCDAValue signs
         |> andMap (Just form.birthWeight)
         |> andMap (Just form.numberOfANCVisits)
         |> andMap (Just form.foodSupplementType)

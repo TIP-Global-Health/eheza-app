@@ -85,7 +85,7 @@ import Measurement.Model
         ( FloatInputConstraints
         , GroupOfFoods(..)
         , LaboratoryTask(..)
-        , NCDAStepNEW(..)
+        , NCDAStep(..)
         , NextStepsTask(..)
         )
 import Pages.AcuteIllness.Activity.Types
@@ -1004,9 +1004,8 @@ type TranslationId
     | NationalIdNumber
     | NCDABirthweightQuestion
     | NCDADiarrheaPopupMessage
+    | NCDASignCounceling NCDASign
     | NCDASignQuestion NCDASign
-    | NCDASignNEWCounceling NCDASignNEW
-    | NCDASignNEWQuestion NCDASignNEW
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDAANCNewbornItemLabel NCDAANCNewbornItem
@@ -1019,7 +1018,7 @@ type TranslationId
     | NCDANumberOfANCVisitsQuestion
     | NCDANumberImmunizationAppointmentLabel (Maybe NominalDate)
     | NCDANumberOfMissedImmunizationAppointmentsHeader
-    | NCDAStep NCDAStepNEW
+    | NCDAStep NCDAStep
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
     | NCDExaminationTask Pages.NCD.Activity.Types.ExaminationTask
@@ -9326,104 +9325,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        NCDASignQuestion sign ->
-            case sign of
-                NCDABornWithBirthDefect ->
-                    { english = "Was the child born with a birth defect"
-                    , kinyarwanda = Just "Umwana yaba yaravukanye ubumuga"
-                    }
-
-                NCDABreastfedForSixMonths ->
-                    { english = "Breastfed baby for 6 months without interruption"
-                    , kinyarwanda = Just "Umwana yonse amezi 6 nta kindi bamuvangiye"
-                    }
-
-                NCDAAppropriateComplementaryFeeding ->
-                    { english = "Appropriate complementary feeding (6-24 months)"
-                    , kinyarwanda = Just "Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)"
-                    }
-
-                NCDAOngeraMNP ->
-                    { english = "Did you receive and use Ongera-MNP"
-                    , kinyarwanda = Just "Waba warahawe kandi ugakoresha Ongera-Intungamubiri"
-                    }
-
-                NCDAFiveFoodGroups ->
-                    { english = "Does the child receive food items from the 5 food groups"
-                    , kinyarwanda = Just "Umwana yahawe indyo irimo amoko atanu y'ibiribwa"
-                    }
-
-                NCDAMealFrequency6to8Months ->
-                    { english = "Feed your young child complementary foods 2 to 3 times a day"
-                    , kinyarwanda = Just "Gaburira umwana wawe imfashabere inshuro 2 kugera kuri 3 ku munsi"
-                    }
-
-                NCDAMealFrequency9to11Months ->
-                    { english = "Feed your young child complementary foods 3 to 4 times a day"
-                    , kinyarwanda = Just "Gaburira umwana wawe imfashabere inshuro 3 kugera kuri 4 ku munsi"
-                    }
-
-                NCDAMealFrequency12MonthsOrMore ->
-                    { english = "Feed your young child complementary foods at least 5 times a day"
-                    , kinyarwanda = Just "Gaburira umwana wawe imfashabere nibura inshuro 5 ku munsi"
-                    }
-
-                NCDASupportChildWithDisability ->
-                    { english = "Provide support to a child with a disability"
-                    , kinyarwanda = Just "Guha umwana ufite ubumuga ubufasha bwihariye"
-                    }
-
-                NCDAConditionalCashTransfer ->
-                    { english = "Receipt of conditional cash transfer e.g. NSDS, VUP"
-                    , kinyarwanda = Just "Gufata amafaranga y’inkunga agenerwa umugore utwite n’uwonsa bo mu miryango ikennye (icyiciro cya 1 n’icya 2) – NSDS, VUP"
-                    }
-
-                NCDAConditionalFoodItems ->
-                    { english = "Receipt of conditional food items including small livestock"
-                    , kinyarwanda = Just "Gufata inkunga z’ingoboka harimo ibiryo n'amatungo magufi"
-                    }
-
-                NCDAHasCleanWater ->
-                    { english = "Does the house have clean water"
-                    , kinyarwanda = Just "Urugo rufite amazi asukuye"
-                    }
-
-                NCDAHasHandwashingFacility ->
-                    { english = "Does the house have a handwashing facility"
-                    , kinyarwanda = Just "Urugo rufite kandagirukarabe kandi irakoreshwa"
-                    }
-
-                NCDAHasToilets ->
-                    { english = "Does the household have toilets"
-                    , kinyarwanda = Just "Urugo rufite ubwiherero bwujuje ibyangombwa"
-                    }
-
-                NCDAHasKitchenGarden ->
-                    { english = "Does the house have a kitchen garden"
-                    , kinyarwanda = Just "Urugo rufite umurima w’igikoni"
-                    }
-
-                NCDARegularPrenatalVisits ->
-                    { english = "Did the mother receive regular prenatal and post-partum visits"
-                    , kinyarwanda = Just "Umubyeyi yakorerwe amasura ateganijwe atwite ndetse na nyuma yo kubyara"
-                    }
-
-                NCDAIronSupplementsDuringPregnancy ->
-                    { english = "Did the mother receive iron supplements during pregnancy"
-                    , kinyarwanda = Just "Umubyeyei yahawe ibinini byongera amaraso atwite"
-                    }
-
-                NCDAInsecticideTreatedBednetsDuringPregnancy ->
-                    { english = "Did the mother receive insecticide-treated bednets during pregnancy"
-                    , kinyarwanda = Just "Umubyeyi yahawe inzitiramibu ikoranye umuti atwite"
-                    }
-
-                NoNCDASigns ->
-                    { english = "None"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    }
-
-        NCDASignNEWCounceling sign ->
+        NCDASignCounceling sign ->
             case sign of
                 NumberOfANCVisitsCorrect ->
                     { english = "Provide the counseling on the consequences that may occur to her and the baby if she doesn't attend ANC visit as per guidance"
@@ -9510,7 +9412,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        NCDASignNEWQuestion sign ->
+        NCDASignQuestion sign ->
             case sign of
                 BornWithBirthDefect ->
                     { english = "Was the child born with a birth defect"
@@ -9627,7 +9529,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NoNCDASignsNEW ->
+                NoNCDASigns ->
                     { english = "None"
                     , kinyarwanda = Just "Nta na kimwe"
                     }

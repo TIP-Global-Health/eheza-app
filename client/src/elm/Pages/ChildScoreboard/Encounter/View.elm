@@ -18,8 +18,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
-import Measurement.Model exposing (NCDADataNEW)
-import Measurement.Utils exposing (ncdaFormNEWWithDefault)
+import Measurement.Model exposing (NCDAData)
+import Measurement.Utils exposing (ncdaFormWithDefault)
 import Measurement.View
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
@@ -89,13 +89,13 @@ viewNCDAContent :
     -> NominalDate
     -> AssembledData
     -> ModelIndexedDb
-    -> NCDADataNEW
+    -> NCDAData
     -> List (Html Msg)
 viewNCDAContent language currentDate assembled db data =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
-                |> ncdaFormNEWWithDefault data.form
+                |> ncdaFormWithDefault data.form
 
         saveMsg =
             if data.form.childGotDiarrhea == Just True then
@@ -112,7 +112,7 @@ viewNCDAContent language currentDate assembled db data =
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             }
     in
-    Measurement.View.viewNCDAContentNEW language
+    Measurement.View.viewNCDAContent language
         currentDate
         personId
         assembled.person

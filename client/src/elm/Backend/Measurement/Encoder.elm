@@ -4779,6 +4779,11 @@ encodeWellChildNCDA =
     encodeWellChildMeasurement (encodeNCDAValueWithType "well_child_ncda")
 
 
+encodeChildScoreboardNCDA : ChildScoreboardNCDA -> List ( String, Value )
+encodeChildScoreboardNCDA =
+    encodeChildScoreboardMeasurement (encodeNCDAValueWithType "child_scoreboard_ncda")
+
+
 encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
 encodeNCDAValueWithType type_ value =
     let
@@ -4786,12 +4791,24 @@ encodeNCDAValueWithType type_ value =
             Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
                 value.birthWeight
                 |> Maybe.withDefault []
+
+        numberOfANCVisits =
+            Maybe.map (\ancVisits -> [ ( "anc_visits", int ancVisits ) ])
+                value.numberOfANCVisits
+                |> Maybe.withDefault []
+
+        foodSupplementType =
+            Maybe.map (\supplementType -> [ ( "supplement_type", encodeNutritionSupplementType supplementType ) ])
+                value.foodSupplementType
+                |> Maybe.withDefault []
     in
     [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
         ++ birthWeight
+        ++ numberOfANCVisits
+        ++ foodSupplementType
 
 
 encodeNCDASign : NCDASign -> Value
@@ -4871,40 +4888,3 @@ encodeHbA1cTestValue value =
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_hba1c_test" )
            ]
-
-
-encodeChildScoreboardNCDA : ChildScoreboardNCDA -> List ( String, Value )
-encodeChildScoreboardNCDA =
-    encodeChildScoreboardMeasurement (encodeNCDAValueNEWWithType "child_scoreboard_ncda")
-
-
-encodeNCDAValueNEWWithType : String -> NCDAValueNEW -> List ( String, Value )
-encodeNCDAValueNEWWithType type_ value =
-    let
-        birthWeight =
-            Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
-                value.birthWeight
-                |> Maybe.withDefault []
-
-        numberOfANCVisits =
-            Maybe.map (\ancVisits -> [ ( "anc_visits", int ancVisits ) ])
-                value.numberOfANCVisits
-                |> Maybe.withDefault []
-
-        foodSupplementType =
-            Maybe.map (\supplementType -> [ ( "supplement_type", encodeNutritionSupplementType supplementType ) ])
-                value.foodSupplementType
-                |> Maybe.withDefault []
-    in
-    [ ( "ncda_signs", encodeEverySet encodeNCDASignNEW value.signs )
-    , ( "deleted", bool False )
-    , ( "type", string type_ )
-    ]
-        ++ birthWeight
-        ++ numberOfANCVisits
-        ++ foodSupplementType
-
-
-encodeNCDASignNEW : NCDASignNEW -> Value
-encodeNCDASignNEW =
-    ncdaSignNEWToString >> string

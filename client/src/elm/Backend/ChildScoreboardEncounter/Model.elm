@@ -43,5 +43,5 @@ emptyModel =
 type Msg
     = CloseChildScoreboardEncounter
     | HandleClosedChildScoreboardEncounter (WebData ())
-    | SaveNCDA PersonId (Maybe ChildScoreboardNCDAId) NCDAValueNEW
+    | SaveNCDA PersonId (Maybe ChildScoreboardNCDAId) NCDAValue
     | HandleSavedNCDA (WebData ())

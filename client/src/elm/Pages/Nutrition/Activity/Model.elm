@@ -22,6 +22,8 @@ type Msg
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetNumberANCVisits String
+    | SetNutritionSupplementType NutritionSupplementType
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( NutritionNCDAId, NutritionNCDA ))

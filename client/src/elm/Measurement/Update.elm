@@ -291,6 +291,36 @@ updateChild msg model =
             , Nothing
             )
 
+        SetNumberANCVisits string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | numberOfANCVisits = String.toInt string })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetNutritionSupplementType value ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | foodSupplementType = Just value, takingFoodSupplements = Nothing })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
         SetNCDAHelperState state ->
             let
                 updatedData =
