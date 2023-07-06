@@ -2995,7 +2995,7 @@ ncdaFormInputsAndTasksNEW language currentDate personId person setBoolInputMsg s
                                 counselling =
                                     Maybe.map
                                         (\numberOfANCVisits ->
-                                            if numberOfANCVisits < 4 then
+                                            if numberOfANCVisits < minumalNumberOfANCVisits then
                                                 [ viewCounselingLabel NumberOfANCVisitsCorrect ]
 
                                             else
@@ -3017,7 +3017,7 @@ ncdaFormInputsAndTasksNEW language currentDate personId person setBoolInputMsg s
                     in
                     Maybe.map
                         (\numberOfEncounters ->
-                            if numberOfEncounters < 4 then
+                            if numberOfEncounters < minumalNumberOfANCVisits then
                                 let
                                     updateFunc value form_ =
                                         { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }

@@ -1261,3 +1261,8 @@ type alias NCDAHistoryData =
     { pregnancySummary : Maybe PregnancySummaryValue
     , ncdaNeverFilled : Bool
     }
+
+
+minumalNumberOfANCVisits : Int
+minumalNumberOfANCVisits =
+    4
