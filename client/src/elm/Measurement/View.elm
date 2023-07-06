@@ -125,13 +125,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
-            let
-                historyData =
-                    { pregnancySummary = getNewbornExamPregnancySummary childId db
-                    , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
-                    }
-            in
-            viewNCDA language currentDate childId child (mapMeasurementData .ncda measurements) model.ncdaData historyData db
+            viewNCDA language currentDate childId child (mapMeasurementData .ncda measurements) model.ncdaData db
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -2292,30 +2286,24 @@ viewNCDAContent :
     -> NominalDate
     -> PersonId
     -> Person
-    -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (NutritionSupplementType -> msg)
-    -> (NCDAStep -> msg)
-    -> msg
-    -> (Maybe NCDASign -> msg)
+    -> NCDAContentConfig msg
     -> Maybe NCDASign
     -> NCDAForm
     -> NCDAHistoryData
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate personId person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData db =
+viewNCDAContent language currentDate personId person config helperState form historyData db =
     let
         ( inputs, tasks ) =
             ncdaFormInputsAndTasks language
                 currentDate
                 personId
                 person
-                setBoolInputMsg
-                setBirthWeightMsg
-                setNumberANCVisitsMsg
-                setNutritionSupplementTypeMsg
-                setHelperStateMsg
+                config.setBoolInputMsg
+                config.setBirthWeightMsg
+                config.setNumberANCVisitsMsg
+                config.setNutritionSupplementTypeMsg
+                config.setHelperStateMsg
                 form
                 currentStep
                 historyData.pregnancySummary
@@ -2339,14 +2327,14 @@ viewNCDAContent language currentDate personId person setBoolInputMsg setBirthWei
                 backButton backStep =
                     button
                         [ class "ui fluid primary button"
-                        , onClick <| setStepMsg backStep
+                        , onClick <| config.setStepMsg backStep
                         ]
                         [ text <| ("< " ++ translate language Translate.Back) ]
             in
             case currentStep of
                 NCDAStepAntenatalCare ->
                     div [ class "actions" ]
-                        [ actionButton (setStepMsg NCDAStepUniversalInterventions) ]
+                        [ actionButton (config.setStepMsg NCDAStepUniversalInterventions) ]
 
                 NCDAStepUniversalInterventions ->
                     let
@@ -2355,33 +2343,34 @@ viewNCDAContent language currentDate personId person setBoolInputMsg setBirthWei
                     in
                     if initialStep == NCDAStepUniversalInterventions then
                         div [ class "actions" ]
-                            [ actionButton (setStepMsg NCDAStepNutritionBehavior) ]
+                            [ actionButton (config.setStepMsg NCDAStepNutritionBehavior) ]
 
                     else
                         div [ class "actions two" ]
                             [ backButton NCDAStepAntenatalCare
-                            , actionButton (setStepMsg NCDAStepNutritionBehavior)
+                            , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
                             ]
 
                 NCDAStepNutritionBehavior ->
                     div [ class "actions two" ]
                         [ backButton NCDAStepUniversalInterventions
-                        , actionButton (setStepMsg NCDAStepTargetedInterventions)
+                        , actionButton (config.setStepMsg NCDAStepTargetedInterventions)
                         ]
 
                 NCDAStepTargetedInterventions ->
                     div [ class "actions two" ]
                         [ backButton NCDAStepNutritionBehavior
-                        , actionButton (setStepMsg NCDAStepInfrastructureEnvironment)
+                        , actionButton (config.setStepMsg NCDAStepInfrastructureEnvironment)
                         ]
 
                 NCDAStepInfrastructureEnvironment ->
                     div [ class "actions two" ]
                         [ backButton NCDAStepTargetedInterventions
-                        , Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) saveMsg Translate.EndEncounter
+                        , Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) config.saveMsg Translate.EndEncounter
                         ]
     in
     [ div [ class "task-header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
+        |> showIf config.showTasksHeader
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
@@ -2391,7 +2380,7 @@ viewNCDAContent language currentDate personId person setBoolInputMsg setBirthWei
         , actions
         ]
     , viewModal <|
-        viewNCDAHelperDialog language (setHelperStateMsg Nothing) helperState
+        viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
     ]
 
 
@@ -3119,10 +3108,9 @@ viewNCDA :
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
     -> NCDAData
-    -> NCDAHistoryData
     -> ModelIndexedDb
     -> Html MsgChild
-viewNCDA language currentDate childId child measurement data historyData db =
+viewNCDA language currentDate childId child measurement data db =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -3133,25 +3121,33 @@ viewNCDA language currentDate childId child measurement data historyData db =
         form =
             ncdaFormWithDefault data.form saved
 
-        saveMsg =
-            toNCDAValueWithDefault saved data.form
-                |> Maybe.map (SaveNCDA existingId)
-                |> Maybe.withDefault NoOp
-                |> SendOutMsgChild
+        historyData =
+            { pregnancySummary = getNewbornExamPregnancySummary childId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
+            }
+
+        config =
+            { showTasksHeader = False
+            , setBoolInputMsg = SetNCDABoolInput
+            , setBirthWeightMsg = SetBirthWeight
+            , setNumberANCVisitsMsg = SetNumberANCVisits
+            , setNutritionSupplementTypeMsg = SetNutritionSupplementType
+            , setStepMsg = SetNCDAFormStep
+            , setHelperStateMsg = SetNCDAHelperState
+            , saveMsg =
+                toNCDAValueWithDefault saved data.form
+                    |> Maybe.map (SaveNCDA existingId)
+                    |> Maybe.withDefault NoOp
+                    |> SendOutMsgChild
+            }
     in
     viewNCDAContent language
         currentDate
         childId
         child
-        SetNCDABoolInput
-        SetBirthWeight
-        SetNumberANCVisits
-        SetNutritionSupplementType
-        SetNCDAFormStep
-        saveMsg
-        SetNCDAHelperState
+        config
         data.helperState
         form
         historyData
         db
-        |> div []
+        |> div [ class "ui form ncda" ]

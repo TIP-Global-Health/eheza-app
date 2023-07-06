@@ -704,18 +704,23 @@ viewNCDAContent language currentDate id assembled data db =
             { pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             }
+
+        config =
+            { showTasksHeader = False
+            , setBoolInputMsg = SetNCDABoolInput
+            , setBirthWeightMsg = SetBirthWeight
+            , setNumberANCVisitsMsg = SetNumberANCVisits
+            , setNutritionSupplementTypeMsg = SetNutritionSupplementType
+            , setStepMsg = SetNCDAFormStep
+            , setHelperStateMsg = SetNCDAHelperState
+            , saveMsg = SaveNCDA personId assembled.measurements.ncda
+            }
     in
     Measurement.View.viewNCDAContent language
         currentDate
         personId
         assembled.person
-        SetNCDABoolInput
-        SetBirthWeight
-        SetNumberANCVisits
-        SetNutritionSupplementType
-        SetNCDAFormStep
-        saveMsg
-        SetNCDAHelperState
+        config
         data.helperState
         form
         historyData

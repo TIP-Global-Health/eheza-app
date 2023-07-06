@@ -639,6 +639,15 @@ div.page-participant,
 div.page-activity,
 div.page-encounter.child-scoreboard {
 
+  .ui.form.ncda .label.counselling {
+    background-color: $color-pink;
+    border-radius: 5px;
+    font-style: italic;
+    padding: 15px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+  }
+
   .tasks-count {
     background: $color-primary;
     color: $color-white;
@@ -1756,25 +1765,12 @@ div.page-activity.nutrition {
       min-height: 210px;
     }
 
-    .symptoms-form.gi .symptoms {
-      margin-bottom: 30px;
+    .label {
+      margin-bottom: 5px;
     }
 
     .ui.form {
       min-height: 210px;
-    }
-
-    .ui.form.send-to-hc,
-    .ui.form.health-education {
-      h2 {
-        text-transform: uppercase;
-      }
-
-      @include next-steps;
-    }
-
-    .label {
-      margin-bottom: 5px;
     }
 
     .form-input.yes-no {
@@ -1819,6 +1815,19 @@ div.page-activity.nutrition {
         margin-left: 70px;
       }
     }
+
+    .symptoms-form.gi .symptoms {
+      margin-bottom: 30px;
+    }
+
+    .ui.form.send-to-hc,
+    .ui.form.health-education {
+      h2 {
+        text-transform: uppercase;
+      }
+
+      @include next-steps;
+    }
   }
 }
 
@@ -1844,15 +1853,6 @@ div.page-encounter.child-scoreboard {
       }
 
       .checkbox-select-input {
-        margin-bottom: 15px;
-      }
-
-      .label.counselling {
-        background-color: $color-pink;
-        border-radius: 5px;
-        font-style: italic;
-        padding: 15px;
-        margin-top: 10px;
         margin-bottom: 15px;
       }
     }

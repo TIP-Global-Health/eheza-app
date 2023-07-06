@@ -1191,6 +1191,18 @@ emptyHbA1cTestForm =
     }
 
 
+type alias NCDAContentConfig msg =
+    { showTasksHeader : Bool
+    , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
+    , setBirthWeightMsg : String -> msg
+    , setNumberANCVisitsMsg : String -> msg
+    , setNutritionSupplementTypeMsg : NutritionSupplementType -> msg
+    , setStepMsg : NCDAStep -> msg
+    , setHelperStateMsg : Maybe NCDASign -> msg
+    , saveMsg : msg
+    }
+
+
 type alias NCDAHistoryData =
     { pregnancySummary : Maybe PregnancySummaryValue
     , ncdaNeverFilled : Bool
