@@ -5,6 +5,9 @@
  * Contains HedleyRestfulFilesUploadPublic.
  */
 
+/**
+ * HedleyRestfulFilesUploadPublic.
+ */
 class HedleyRestfulFilesUploadPublic extends RestfulFilesUpload {
 
   /**
