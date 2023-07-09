@@ -82,21 +82,21 @@ while ($processed < $total) {
 
   $query = clone $base_query;
   if ($nid) {
-    $query->propertyCondition('nid', $nid, '>');
+    $query->condition('nid', $nid, '>');
   }
 
-  $result = $query
+  $ids = $query
     ->range(0, $batch)
-    ->execute();
+    ->execute()
+    ->fetchCol();
 
-  if (empty($result['node'])) {
+  if (empty($ids)) {
     // No more items left.
     break;
   }
 
   $messages = [];
   $mapping = [];
-  $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
     $wrapper = entity_metadata_wrapper('node', $node);

@@ -46,6 +46,8 @@ type CountryCode
     | CountryCodeTanzania
     | CountryCodeBurundi
     | CountryCodeUSACanada
+      -- @todo: delete this.
+    | CountryCodeIsrael
 
 
 type alias ReportComponentsConfig msg =

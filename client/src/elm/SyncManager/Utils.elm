@@ -91,24 +91,33 @@ determineSyncStatus activePage model =
 
                             RemoteData.Failure error ->
                                 let
-                                    handleNonNetworkError reason =
+                                    handleNetworkError =
                                         if errorsCount > fileUploadFailureThreshold then
-                                            -- Threshold exceeded - report an incident and stop current sync cycle.
-                                            ( SyncReportIncident (FileUploadIncident reason), syncInfoAuthorities )
+                                            -- Threshold exceeded, as there's no internet connection - stop current sync cycle.
+                                            SyncIdle
 
                                         else
                                             -- Threshold not exceeded - increase counter and try uploading again.
-                                            ( SyncUploadPhoto (errorsCount + 1) webData, syncInfoAuthorities )
+                                            SyncUploadPhoto (errorsCount + 1) webData
+
+                                    handleNonNetworkError reason =
+                                        if errorsCount > fileUploadFailureThreshold then
+                                            -- Threshold exceeded - report an incident and stop current sync cycle.
+                                            SyncReportIncident (FileUploadIncident reason)
+
+                                        else
+                                            -- Threshold not exceeded - increase counter and try uploading again.
+                                            SyncUploadPhoto (errorsCount + 1) webData
                                 in
                                 case error of
                                     NetworkError _ ->
-                                        noChange
+                                        ( handleNetworkError, syncInfoAuthorities )
 
                                     BadJson reason ->
-                                        handleNonNetworkError reason
+                                        ( handleNonNetworkError reason, syncInfoAuthorities )
 
                                     UploadError reason ->
-                                        handleNonNetworkError reason
+                                        ( handleNonNetworkError reason, syncInfoAuthorities )
 
                             _ ->
                                 noChange
@@ -127,24 +136,33 @@ determineSyncStatus activePage model =
 
                             RemoteData.Failure error ->
                                 let
-                                    handleNonNetworkError reason =
+                                    handleNetworkError =
                                         if errorsCount > fileUploadFailureThreshold then
-                                            -- Threshold exceeded - report an incident and stop current sync cycle.
-                                            ( SyncReportIncident (FileUploadIncident reason), syncInfoAuthorities )
+                                            -- Threshold exceeded, as there's no internet connection - stop current sync cycle.
+                                            SyncIdle
 
                                         else
                                             -- Threshold not exceeded - increase counter and try uploading again.
-                                            ( SyncUploadScreenshot (errorsCount + 1) webData, syncInfoAuthorities )
+                                            SyncUploadScreenshot (errorsCount + 1) webData
+
+                                    handleNonNetworkError reason =
+                                        if errorsCount > fileUploadFailureThreshold then
+                                            -- Threshold exceeded - report an incident and stop current sync cycle.
+                                            SyncReportIncident (FileUploadIncident reason)
+
+                                        else
+                                            -- Threshold not exceeded - increase counter and try uploading again.
+                                            SyncUploadScreenshot (errorsCount + 1) webData
                                 in
                                 case error of
                                     NetworkError _ ->
-                                        noChange
+                                        ( handleNetworkError, syncInfoAuthorities )
 
                                     BadJson reason ->
-                                        handleNonNetworkError reason
+                                        ( handleNonNetworkError reason, syncInfoAuthorities )
 
                                     UploadError reason ->
-                                        handleNonNetworkError reason
+                                        ( handleNonNetworkError reason, syncInfoAuthorities )
 
                             _ ->
                                 noChange
