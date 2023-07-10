@@ -3656,6 +3656,178 @@ ncdaSignFromString value =
             Nothing
 
 
+ncdaSignNEWToString : NCDASignNEW -> String
+ncdaSignNEWToString value =
+    case value of
+        AppropriateComplementaryFeeding ->
+            "appropriate-complementary-feeding"
+
+        BreastfedForSixMonths ->
+            "breastfed-for-six-months"
+
+        ConditionalFoodItems ->
+            "conditional-food-items"
+
+        FiveFoodGroups ->
+            "five-food-groups"
+
+        HasCleanWater ->
+            "has-clean-water"
+
+        HasHandwashingFacility ->
+            "has-handwashing-facility"
+
+        HasToilets ->
+            "has-toilets"
+
+        HasKitchenGarden ->
+            "has-kitchen-garden"
+
+        BeneficiaryCashTransfer ->
+            "beneficiary-cash-transfer"
+
+        ChildGotDiarrhea ->
+            "child-got-diarrhea"
+
+        ChildWithAcuteMalnutrition ->
+            "child-with-acute-malnutrition"
+
+        ChildWithDisability ->
+            "child-with-disability"
+
+        FoodSupplements ->
+            "food-supplements"
+
+        InsecticideTreatedBednets ->
+            "insecticide-treated-bednets"
+
+        NumberOfANCVisitsCorrect ->
+            "number-of-anc-visits-correct"
+
+        NumberOfMissedImmunizationAppointmentsCorrect ->
+            "number-of-missed-immunization-appointments-correct"
+
+        ReceivingCashTransfer ->
+            "receiving-cash-transfer"
+
+        ReceivingSupport ->
+            "receiving-support"
+
+        SupplementsDuringPregnancy ->
+            "supplements-during-pregnancy"
+
+        TakenSupplementsPerGuidance ->
+            "taken-supplements-per-guidance"
+
+        TakingFoodSupplements ->
+            "taking-food-supplements"
+
+        TreatedForAcuteMalnutrition ->
+            "treated-for-acute-malnutrition"
+
+        -- @todo: decide if needed.
+        -- BornWithBirthDefect ->
+        --     "born-with-birth-defect"
+        -- MealFrequency6to8Months ->
+        --     "meal-frequency-6to8m"
+        --
+        -- MealFrequency9to11Months ->
+        --     "meal-frequency-9to11m"
+        --
+        -- MealFrequency12MonthsOrMore ->
+        --     "meal-frequency-12+m"
+        NoNCDASignsNEW ->
+            "none"
+
+
+ncdaSignNEWFromString : String -> Maybe NCDASignNEW
+ncdaSignNEWFromString value =
+    case value of
+        "appropriate-complementary-feeding" ->
+            Just AppropriateComplementaryFeeding
+
+        "breastfed-for-six-months" ->
+            Just BreastfedForSixMonths
+
+        "conditional-food-items" ->
+            Just ConditionalFoodItems
+
+        "five-food-groups" ->
+            Just FiveFoodGroups
+
+        "has-clean-water" ->
+            Just HasCleanWater
+
+        "has-handwashing-facility" ->
+            Just HasHandwashingFacility
+
+        "has-toilets" ->
+            Just HasToilets
+
+        "has-kitchen-garden" ->
+            Just HasKitchenGarden
+
+        "beneficiary-cash-transfer" ->
+            Just BeneficiaryCashTransfer
+
+        "child-got-diarrhea" ->
+            Just ChildGotDiarrhea
+
+        "child-with-acute-malnutrition" ->
+            Just ChildWithAcuteMalnutrition
+
+        "child-with-disability" ->
+            Just ChildWithDisability
+
+        "food-supplements" ->
+            Just FoodSupplements
+
+        "insecticide-treated-bednets" ->
+            Just InsecticideTreatedBednets
+
+        "number-of-anc-visits-correct" ->
+            Just NumberOfANCVisitsCorrect
+
+        "number-of-missed-immunization-appointments-correct" ->
+            Just NumberOfMissedImmunizationAppointmentsCorrect
+
+        "receiving-cash-transfer" ->
+            Just ReceivingCashTransfer
+
+        "receiving-support" ->
+            Just ReceivingSupport
+
+        "supplements-during-pregnancy" ->
+            Just SupplementsDuringPregnancy
+
+        "taken-supplements-per-guidance" ->
+            Just TakenSupplementsPerGuidance
+
+        "taking-food-supplements" ->
+            Just TakingFoodSupplements
+
+        "treated-for-acute-malnutrition" ->
+            Just TreatedForAcuteMalnutrition
+
+        -- @todo: decide if needed.
+        -- "born-with-birth-defect" ->
+        --     Just BornWithBirthDefect
+        --
+        -- "meal-frequency-6to8m" ->
+        --     Just MealFrequency6to8Months
+        --
+        -- "meal-frequency-9to11m" ->
+        --     Just MealFrequency9to11Months
+        --
+        -- "meal-frequency-12+m" ->
+        --     Just MealFrequency12MonthsOrMore
+        "none" ->
+            Just NoNCDASignsNEW
+
+        _ ->
+            Nothing
+
+
 expectNCDAActivity : NominalDate -> Person -> Bool
 expectNCDAActivity currentDate person =
     -- Show for children that are younger than 2 years old.

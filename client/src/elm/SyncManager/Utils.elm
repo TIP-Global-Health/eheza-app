@@ -476,6 +476,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityChildScoreboardEncounter identifier ->
             getIdentifier identifier "child_scoreboard_encounter"
 
+        BackendAuthorityChildScoreboardNCDA identifier ->
+            getIdentifier identifier "child_scoreboard_ncda"
+
         BackendAuthorityClinic identifier ->
             getIdentifier identifier "clinic"
 
@@ -1158,6 +1161,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityChildScoreboardEncounter identifier ->
             encode Backend.ChildScoreboardEncounter.Encoder.encodeChildScoreboardEncounter identifier
 
+        BackendAuthorityChildScoreboardNCDA identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardNCDA identifier
+
         BackendAuthorityClinic identifier ->
             encode Backend.Clinic.Encoder.encodeClinic identifier
 
@@ -1795,6 +1801,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityChildScoreboardEncounter identifier ->
             ChildScoreboardEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardNCDA identifier ->
+            ChildScoreboardNCDARevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityClinic identifier ->
             ClinicRevision (toEntityUuid identifier.uuid) identifier.entity

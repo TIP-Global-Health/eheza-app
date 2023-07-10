@@ -125,14 +125,14 @@
                 else if (type === 'ncd-measurements') {
                     return viewMeasurements('ncd_encounter', uuid);
                 }
+                else if (type === 'child-scoreboard-measurements') {
+                  return viewMeasurements('child_scoreboard_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
                 else if (type === 'stock-management-measurements') {
                     return viewStockManagementMeasurements(uuid);
-                }
-                else if (type === 'child-scoreboard-measurements') {
-                  return viewMeasurements('child_scoreboard_encounter', uuid);
                 }
                 else {
                     return view(type, uuid);

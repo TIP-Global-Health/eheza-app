@@ -64,6 +64,10 @@ type alias NCDMeasurement value =
     Measurement NCDEncounterId value
 
 
+type alias ChildScoreboardMeasurement value =
+    Measurement ChildScoreboardEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -276,50 +280,50 @@ type alias NCDAValue =
 
 
 type NCDASign
-    = NCDABornWithBirthDefect
+    = NCDAAppropriateComplementaryFeeding
     | NCDABreastfedForSixMonths
-    | NCDAAppropriateComplementaryFeeding
-    | NCDAOngeraMNP
+    | NCDABornWithBirthDefect
+    | NCDAConditionalCashTransfer
+    | NCDAConditionalFoodItems
     | NCDAFiveFoodGroups
+    | NCDAHasCleanWater
+    | NCDAHasHandwashingFacility
+    | NCDAHasKitchenGarden
+    | NCDAHasToilets
+    | NCDAIronSupplementsDuringPregnancy
+    | NCDAInsecticideTreatedBednetsDuringPregnancy
     | NCDAMealFrequency6to8Months
     | NCDAMealFrequency9to11Months
     | NCDAMealFrequency12MonthsOrMore
-    | NCDASupportChildWithDisability
-    | NCDAConditionalCashTransfer
-    | NCDAConditionalFoodItems
-    | NCDAHasCleanWater
-    | NCDAHasHandwashingFacility
-    | NCDAHasToilets
-    | NCDAHasKitchenGarden
+    | NCDAOngeraMNP
     | NCDARegularPrenatalVisits
-    | NCDAIronSupplementsDuringPregnancy
-    | NCDAInsecticideTreatedBednetsDuringPregnancy
+    | NCDASupportChildWithDisability
     | NoNCDASigns
 
 
 type NCDASignNEW
-    = NumberOfANCVisitsCorrect
+    = AppropriateComplementaryFeeding
+    | BeneficiaryCashTransfer
+    | BreastfedForSixMonths
+    | ChildGotDiarrhea
+    | ChildWithAcuteMalnutrition
+    | ChildWithDisability
+    | ConditionalFoodItems
+    | FiveFoodGroups
+    | FoodSupplements
+    | HasCleanWater
+    | HasHandwashingFacility
+    | HasKitchenGarden
+    | HasToilets
+    | InsecticideTreatedBednets
+    | NumberOfANCVisitsCorrect
+    | NumberOfMissedImmunizationAppointmentsCorrect
+    | ReceivingCashTransfer
+    | ReceivingSupport
     | SupplementsDuringPregnancy
     | TakenSupplementsPerGuidance
-    | NumberOfMissedImmunizationAppointmentsCorrect
-    | FoodSupplements
     | TakingFoodSupplements
-    | FiveFoodGroups
-    | BreastfedForSixMonths
-    | AppropriateComplementaryFeeding
-    | BeneficiaryCashTransfer
-    | ReceivingCashTransfer
-    | ConditionalFoodItems
-    | ChildWithAcuteMalnutrition
     | TreatedForAcuteMalnutrition
-    | ChildWitDisability
-    | ReceivingSupport
-    | ChildGotDiarrhea
-    | HasHandwashingFacility
-    | HasCleanWater
-    | HasToilets
-    | HasKitchenGarden
-    | InsecticideTreatedBednets
     | NoNCDASignsNEW
 
 
@@ -2759,6 +2763,22 @@ type alias HbA1cTestValue =
 
 
 
+-- Child Scorecard measurements.
+
+
+type alias ChildScoreboardNCDA =
+    ChildScoreboardMeasurement NCDAValueNEW
+
+
+type alias NCDAValueNEW =
+    { signs : EverySet NCDASignNEW
+    , birthWeight : Maybe WeightInGrm
+    , numberOfANCVisits : Maybe Float
+    , foodSupplementType : Maybe NutritionSupplementType
+    }
+
+
+
 -- Stock Management:
 
 
@@ -3106,7 +3126,8 @@ type alias NCDMeasurements =
 
 
 type alias ChildScoreboardMeasurements =
-    {}
+    { ncda : Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA )
+    }
 
 
 {-| A set of measurements that includes all required data for

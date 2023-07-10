@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Gizra.Html exposing (emptyNode)
@@ -13,6 +14,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Measurement.Model exposing (NCDADataNEW)
+import Measurement.Utils exposing (ncdaFormNEWWithDefault)
 import Measurement.View
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
@@ -45,7 +47,7 @@ viewHeaderAndContent language currentDate db model assembled =
     div [ class "page-encounter child-scoreboard" ]
         [ header
         , content
-        , viewModal <| acuteIllnessEncounterPopup language assembled.participant.person model
+        , viewModal <| acuteIllnessEncounterPopup language assembled model
         ]
 
 
@@ -86,12 +88,16 @@ viewNCDAContent :
     -> List (Html Msg)
 viewNCDAContent language currentDate assembled db data =
     let
+        form =
+            getMeasurementValueFunc assembled.measurements.ncda
+                |> ncdaFormNEWWithDefault data.form
+
         saveMsg =
             if data.form.childGotDiarrhea == Just True then
                 ShowAIEncounterPopup
 
             else
-                SetActivePage PinCodePage
+                CloseEncounter assembled
     in
     Measurement.View.viewNCDAContentNEW language
         currentDate
@@ -104,11 +110,11 @@ viewNCDAContent language currentDate assembled db data =
         saveMsg
         SetNCDAHelperState
         data.helperState
-        data.form
+        form
 
 
-acuteIllnessEncounterPopup : Language -> PersonId -> Model -> Maybe (Html Msg)
-acuteIllnessEncounterPopup language childId model =
+acuteIllnessEncounterPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
+acuteIllnessEncounterPopup language assembled model =
     if model.showAIEncounterPopup then
         Just <|
             div [ class "ui active modal danger-signs-popup" ]
@@ -122,7 +128,7 @@ acuteIllnessEncounterPopup language childId model =
                 , div [ class "actions" ]
                     [ button
                         [ class "ui primary fluid button"
-                        , onClick <| TriggerAcuteIllnessEncounter childId
+                        , onClick <| TriggerAcuteIllnessEncounter assembled
                         ]
                         [ text <| translate language Translate.Continue ]
                     ]

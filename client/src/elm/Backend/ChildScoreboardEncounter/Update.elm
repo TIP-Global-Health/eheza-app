@@ -34,3 +34,13 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | closeChildScoreboardEncounter = data }
             , Cmd.none
             )
+
+        SaveNCDA personId valueId value ->
+            ( { model | saveNCDA = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value childScoreboardNCDAEndpoint HandleSavedNCDA
+            )
+
+        HandleSavedNCDA data ->
+            ( { model | saveNCDA = data }
+            , Cmd.none
+            )

@@ -21,6 +21,16 @@ function hedley_aggregated_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create child_scoreboard_ncda content'.
+  $permissions['create child_scoreboard_ncda content'] = array(
+    'name' => 'create child_scoreboard_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any child_scoreboard_encounter content'.
   $permissions['delete any child_scoreboard_encounter content'] = array(
     'name' => 'delete any child_scoreboard_encounter content',
@@ -30,9 +40,27 @@ function hedley_aggregated_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any child_scoreboard_ncda content'.
+  $permissions['delete any child_scoreboard_ncda content'] = array(
+    'name' => 'delete any child_scoreboard_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own child_scoreboard_encounter content'.
   $permissions['delete own child_scoreboard_encounter content'] = array(
     'name' => 'delete own child_scoreboard_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own child_scoreboard_ncda content'.
+  $permissions['delete own child_scoreboard_ncda content'] = array(
+    'name' => 'delete own child_scoreboard_ncda content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -49,9 +77,29 @@ function hedley_aggregated_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any child_scoreboard_ncda content'.
+  $permissions['edit any child_scoreboard_ncda content'] = array(
+    'name' => 'edit any child_scoreboard_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own child_scoreboard_encounter content'.
   $permissions['edit own child_scoreboard_encounter content'] = array(
     'name' => 'edit own child_scoreboard_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own child_scoreboard_ncda content'.
+  $permissions['edit own child_scoreboard_ncda content'] = array(
+    'name' => 'edit own child_scoreboard_ncda content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

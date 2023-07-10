@@ -462,6 +462,8 @@ type Revision
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
+    | ChildScoreboardEncounterRevision ChildScoreboardEncounterId ChildScoreboardEncounter
+    | ChildScoreboardNCDARevision ChildScoreboardNCDAId ChildScoreboardNCDA
     | ClinicRevision ClinicId Clinic
     | ContributingFactorsRevision ContributingFactorsId ContributingFactors
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
@@ -520,7 +522,6 @@ type Revision
     | NutritionCaringRevision NutritionCaringId NutritionCaring
     | NutritionContributingFactorsRevision NutritionContributingFactorsId NutritionContributingFactors
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
-    | ChildScoreboardEncounterRevision ChildScoreboardEncounterId ChildScoreboardEncounter
     | NutritionFeedingRevision NutritionFeedingId NutritionFeeding
     | NutritionFollowUpRevision NutritionFollowUpId NutritionFollowUp
     | NutritionFoodSecurityRevision NutritionFoodSecurityId NutritionFoodSecurity

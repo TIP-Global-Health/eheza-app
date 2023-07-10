@@ -3597,6 +3597,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        ChildScoreboardNCDARevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         ClinicRevision uuid data ->
             let
                 clinics =

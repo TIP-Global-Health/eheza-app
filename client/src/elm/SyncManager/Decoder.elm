@@ -501,6 +501,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.ChildScoreboardEncounter.Decoder.decodeChildScoreboardEncounter
                             BackendAuthorityChildScoreboardEncounter
 
+                    "child_scoreboard_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardNCDA
+                            BackendAuthorityChildScoreboardNCDA
+
                     "clinic" ->
                         doDecode
                             Backend.Clinic.Decoder.decodeClinic

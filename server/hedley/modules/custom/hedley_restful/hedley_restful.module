@@ -69,6 +69,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'birth_plan' => 'birth-plan',
   'call_114' => 'call-114s',
   'child_fbf' => 'child-fbfs',
+  'child_scoreboard_ncda' => 'child-scoreboard-ncda',
   'contributing_factors' => 'contributing-factors',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',

@@ -9582,7 +9582,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ChildWitDisability ->
+                ChildWithDisability ->
                     { english = "Does the child have disability"
                     , kinyarwanda = Nothing
                     }

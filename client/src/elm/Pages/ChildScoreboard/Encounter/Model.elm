@@ -33,7 +33,7 @@ type alias AssembledData =
 
 
 type Msg
-    = CloseEncounter ChildScoreboardEncounterId
+    = CloseEncounter AssembledData
     | SetActivePage Page
     | SetNCDABoolInput (Bool -> NCDAFormNEW -> NCDAFormNEW) Bool
     | SetBirthWeight String
@@ -42,4 +42,4 @@ type Msg
     | SetNCDAFormStep NCDAStepNEW
     | SetNCDAHelperState (Maybe NCDASignNEW)
     | ShowAIEncounterPopup
-    | TriggerAcuteIllnessEncounter PersonId
+    | TriggerAcuteIllnessEncounter AssembledData

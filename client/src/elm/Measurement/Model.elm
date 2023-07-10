@@ -1125,7 +1125,7 @@ type alias NCDAFormNEW =
     , conditionalFoodItems : Maybe Bool
     , childWithAcuteMalnutrition : Maybe Bool
     , treatedForAcuteMalnutrition : Maybe Bool
-    , childWitDisability : Maybe Bool
+    , childWithDisability : Maybe Bool
     , receivingSupport : Maybe Bool
     , childGotDiarrhea : Maybe Bool
 
@@ -1168,7 +1168,7 @@ emptyNCDAFormNEW =
     , conditionalFoodItems = Nothing
     , childWithAcuteMalnutrition = Nothing
     , treatedForAcuteMalnutrition = Nothing
-    , childWitDisability = Nothing
+    , childWithDisability = Nothing
     , receivingSupport = Nothing
     , childGotDiarrhea = Nothing
 
