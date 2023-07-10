@@ -10,7 +10,7 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
-        , resolvePreviousNCDAValuesForChild
+        , resolveNCDANeverFilled
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
@@ -28,7 +28,16 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (InvokationModule(..), NCDAData, PhotoForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Model
+    exposing
+        ( InvokationModule(..)
+        , NCDAData
+        , NCDAHistoryData
+        , PhotoForm
+        , VaccinationFormViewMode(..)
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
@@ -212,11 +221,12 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
 
         WellChildNCDA ->
             let
-                newbornExamPregnancySummary =
-                    getNewbornExamPregnancySummary assembled.participant.person db
+                historyData =
+                    { pregnancySummary = getNewbornExamPregnancySummary assembled.participant.person db
+                    , ncdaNeverFilled = resolveNCDANeverFilled currentDate assembled.participant.person db
+                    }
             in
-            resolvePreviousNCDAValuesForChild currentDate assembled.participant.person db
-                |> viewNCDAContent language currentDate assembled model.ncdaData newbornExamPregnancySummary
+            viewNCDAContent language currentDate assembled model.ncdaData historyData
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -2413,10 +2423,9 @@ viewNCDAContent :
     -> NominalDate
     -> AssembledData
     -> NCDAData
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> NCDAHistoryData
     -> List (Html Msg)
-viewNCDAContent language currentDate assembled data newbornExamPregnancySummary previousNCDAValues =
+viewNCDAContent language currentDate assembled data historyData =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -2435,5 +2444,4 @@ viewNCDAContent language currentDate assembled data newbornExamPregnancySummary 
         SetNCDAHelperState
         data.helperState
         form
-        newbornExamPregnancySummary
-        previousNCDAValues
+        historyData

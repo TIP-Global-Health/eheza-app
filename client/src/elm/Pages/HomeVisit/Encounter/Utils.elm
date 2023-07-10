@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant, sortTuplesByDateDesc)
 import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -45,12 +45,9 @@ generateAssembledData id db =
                     )
 
         previousMeasurementsWithDates =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ ->
-                        generatePreviousMeasurements id encounter_.participant db
-                    )
-                |> RemoteData.withDefault []
+            RemoteData.toMaybe encounter
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements id encounter_.participant db)
+                |> Maybe.withDefault []
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -60,26 +57,22 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
 
 
-generatePreviousMeasurements : HomeVisitEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, ( HomeVisitEncounterId, HomeVisitMeasurements ) ))
+generatePreviousMeasurements : HomeVisitEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List ( NominalDate, ( HomeVisitEncounterId, HomeVisitMeasurements ) )
 generatePreviousMeasurements currentEncounterId participantId db =
-    Dict.get participantId db.homeVisitEncountersByParticipant
-        |> Maybe.withDefault NotAsked
-        |> RemoteData.map
-            (Dict.toList
-                >> List.filterMap
-                    (\( encounterId, encounter ) ->
-                        -- We do not want to get data of current encounter.
-                        if encounterId == currentEncounterId then
+    getHomeVisitEncountersForParticipant db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if encounterId == currentEncounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId db.homeVisitMeasurements of
+                        Just (Success data) ->
+                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                        _ ->
                             Nothing
-
-                        else
-                            case Dict.get encounterId db.homeVisitMeasurements of
-                                Just (Success data) ->
-                                    Just ( encounter.startDate, ( encounterId, data ) )
-
-                                _ ->
-                                    Nothing
-                    )
-                -- Most recent date to least recent date.
-                >> List.sortWith sortTuplesByDateDesc
             )
+        -- Most recent date to least recent date.
+        |> List.sortWith sortTuplesByDateDesc

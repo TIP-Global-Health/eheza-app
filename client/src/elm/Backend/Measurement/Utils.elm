@@ -3662,6 +3662,9 @@ ncdaSignNEWToString value =
         AppropriateComplementaryFeeding ->
             "appropriate-complementary-feeding"
 
+        BornWithBirthDefect ->
+            "born-with-birth-defect"
+
         BreastfedForSixMonths ->
             "breastfed-for-six-months"
 
@@ -3726,8 +3729,6 @@ ncdaSignNEWToString value =
             "treated-for-acute-malnutrition"
 
         -- @todo: decide if needed.
-        -- BornWithBirthDefect ->
-        --     "born-with-birth-defect"
         -- MealFrequency6to8Months ->
         --     "meal-frequency-6to8m"
         --
@@ -3745,6 +3746,9 @@ ncdaSignNEWFromString value =
     case value of
         "appropriate-complementary-feeding" ->
             Just AppropriateComplementaryFeeding
+
+        "born-with-birth-defect" ->
+            Just BornWithBirthDefect
 
         "breastfed-for-six-months" ->
             Just BreastfedForSixMonths
@@ -3810,8 +3814,6 @@ ncdaSignNEWFromString value =
             Just TreatedForAcuteMalnutrition
 
         -- @todo: decide if needed.
-        -- "born-with-birth-defect" ->
-        --     Just BornWithBirthDefect
         --
         -- "meal-frequency-6to8m" ->
         --     Just MealFrequency6to8Months

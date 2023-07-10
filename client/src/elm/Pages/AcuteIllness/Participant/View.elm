@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples)
+import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant, sortEncounterTuples)
 import Date
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -140,11 +140,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter personId is
                         else
                             let
                                 sessionEncounters =
-                                    Dict.get sessionId db.acuteIllnessEncountersByParticipant
-                                        |> Maybe.withDefault NotAsked
-                                        |> RemoteData.toMaybe
-                                        |> Maybe.map Dict.toList
-                                        |> Maybe.withDefault []
+                                    getAcuteIllnessEncountersForParticipant db sessionId
                                         |> List.filter (Tuple.second >> filterByEncounterTypeCondition isChw)
 
                                 mActiveEncounterId =
@@ -234,11 +230,7 @@ viewManageParticipantsContent language currentDate selectedHealthCenter personId
                         else
                             let
                                 sessionEncounters =
-                                    Dict.get sessionId db.acuteIllnessEncountersByParticipant
-                                        |> Maybe.withDefault NotAsked
-                                        |> RemoteData.toMaybe
-                                        |> Maybe.map Dict.toList
-                                        |> Maybe.withDefault []
+                                    getAcuteIllnessEncountersForParticipant db sessionId
                                         |> List.filter (Tuple.second >> filterByEncounterTypeCondition isChw)
 
                                 mActiveEncounterId =
@@ -344,22 +336,14 @@ viewActiveIllness :
 viewActiveIllness language currentDate selectedHealthCenter isChw db viewMode sessionId =
     let
         sessionEncounters =
-            Dict.get sessionId db.acuteIllnessEncountersByParticipant
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map
-                    (Dict.toList
-                        >> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
-                    )
+            getAcuteIllnessEncountersForParticipant db sessionId
+                |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
 
         mDiagnosis =
-            sessionEncounters
-                |> Maybe.andThen
-                    (List.map Tuple.second
-                        >> List.filter (\encounter -> encounter.diagnosis /= NoAcuteIllnessDiagnosis)
-                        >> List.head
-                        >> Maybe.map .diagnosis
-                    )
+            List.map Tuple.second sessionEncounters
+                |> List.filter (\encounter -> encounter.diagnosis /= NoAcuteIllnessDiagnosis)
+                |> List.head
+                |> Maybe.map .diagnosis
     in
     Maybe.andThen
         (\diagnosis ->
@@ -369,20 +353,16 @@ viewActiveIllness language currentDate selectedHealthCenter isChw db viewMode se
                 Nothing
 
             else
-                sessionEncounters
-                    |> Maybe.andThen
-                        (\encounters ->
-                            case viewMode of
-                                -- No need to view illnesses for this view mode.
-                                ManageIllnesses ->
-                                    Nothing
+                case viewMode of
+                    -- No need to view illnesses for this view mode.
+                    ManageIllnesses ->
+                        Nothing
 
-                                ManageParticipants ->
-                                    viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw sessionId encounters diagnosis
+                    ManageParticipants ->
+                        viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw sessionId sessionEncounters diagnosis
 
-                                RecordOutcome ->
-                                    viewActiveIllnessForOutcome language currentDate isChw sessionId encounters diagnosis
-                        )
+                    RecordOutcome ->
+                        viewActiveIllnessForOutcome language currentDate isChw sessionId sessionEncounters diagnosis
         )
         mDiagnosis
 

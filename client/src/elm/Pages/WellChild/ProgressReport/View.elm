@@ -2347,38 +2347,33 @@ viewTargetedInterventionsPane language currentDate child db questionnairesByAgeI
                         acuteIllnesses
                         |> List.map
                             (\( participantId, participant ) ->
-                                Dict.get participantId db.acuteIllnessEncountersByParticipant
-                                    |> Maybe.andThen RemoteData.toMaybe
-                                    |> Maybe.map
-                                        (Dict.toList
-                                            >> List.filterMap
-                                                (\( encounterId, encounter ) ->
-                                                    -- We need to fetch measurements of encounters where Uncomplicated
-                                                    -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
-                                                    if encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated then
-                                                        Dict.get encounterId db.acuteIllnessMeasurements
-                                                            |> Maybe.andThen RemoteData.toMaybe
-                                                            |> Maybe.andThen
-                                                                (.medicationDistribution
-                                                                    >> getMeasurementValueFunc
-                                                                    >> Maybe.map
-                                                                        (\value ->
-                                                                            if
-                                                                                List.any (\sign -> EverySet.member sign value.distributionSigns)
-                                                                                    [ ORS, Zinc ]
-                                                                            then
-                                                                                ( encounter.startDate, NCDACellValueV )
+                                getAcuteIllnessEncountersForParticipant db participantId
+                                    |> List.filterMap
+                                        (\( encounterId, encounter ) ->
+                                            -- We need to fetch measurements of encounters where Uncomplicated
+                                            -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
+                                            if encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated then
+                                                Dict.get encounterId db.acuteIllnessMeasurements
+                                                    |> Maybe.andThen RemoteData.toMaybe
+                                                    |> Maybe.andThen
+                                                        (.medicationDistribution
+                                                            >> getMeasurementValueFunc
+                                                            >> Maybe.map
+                                                                (\value ->
+                                                                    if
+                                                                        List.any (\sign -> EverySet.member sign value.distributionSigns)
+                                                                            [ ORS, Zinc ]
+                                                                    then
+                                                                        ( encounter.startDate, NCDACellValueV )
 
-                                                                            else
-                                                                                ( encounter.startDate, NCDACellValueX )
-                                                                        )
+                                                                    else
+                                                                        ( encounter.startDate, NCDACellValueX )
                                                                 )
+                                                        )
 
-                                                    else
-                                                        Nothing
-                                                )
+                                            else
+                                                Nothing
                                         )
-                                    |> Maybe.withDefault []
                             )
                         |> List.concat
                         |> distributeByAgeInMonths child

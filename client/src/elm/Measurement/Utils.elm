@@ -4549,6 +4549,7 @@ fromNCDAValueNEW : Maybe NCDAValueNEW -> NCDAFormNEW
 fromNCDAValueNEW saved =
     { step = NCDAStepAntenatalCare
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
+    , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
     , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member BreastfedForSixMonths) saved
     , conditionalFoodItems = Maybe.map (.signs >> EverySet.member ConditionalFoodItems) saved
     , fiveFoodGroups = Maybe.map (.signs >> EverySet.member FiveFoodGroups) saved
@@ -4574,7 +4575,6 @@ fromNCDAValueNEW saved =
     , takingFoodSupplements = Maybe.map (.signs >> EverySet.member TakingFoodSupplements) saved
 
     --@todo: decide if this is needed:
-    -- , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
     -- , mealFrequency6to8Months = Maybe.map (.signs >> EverySet.member MealFrequency6to8Months) saved
     -- , mealFrequency9to11Months = Maybe.map (.signs >> EverySet.member MealFrequency9to11Months) saved
     -- , mealFrequency12MonthsOrMore = Maybe.map (.signs >> EverySet.member MealFrequency12MonthsOrMore) saved
@@ -4592,6 +4592,7 @@ ncdaFormNEWWithDefault form saved =
             (\value ->
                 { step = form.step
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
+                , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
                 , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
                 , conditionalFoodItems = or form.conditionalFoodItems (EverySet.member ConditionalFoodItems value.signs |> Just)
                 , fiveFoodGroups = or form.fiveFoodGroups (EverySet.member FiveFoodGroups value.signs |> Just)
@@ -4617,7 +4618,6 @@ ncdaFormNEWWithDefault form saved =
                 , takingFoodSupplements = or form.takingFoodSupplements (EverySet.member TakingFoodSupplements value.signs |> Just)
 
                 --@todo: decide if this is needed:
-                -- , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
                 -- , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member MealFrequency6to8Months value.signs |> Just)
                 -- , mealFrequency9to11Months = or form.mealFrequency9to11Months (EverySet.member MealFrequency9to11Months value.signs |> Just)
                 -- , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member MealFrequency12MonthsOrMore value.signs |> Just)
@@ -4639,6 +4639,7 @@ toNCDAValueNEW form =
     let
         signs =
             [ ifNullableTrue AppropriateComplementaryFeeding form.appropriateComplementaryFeeding
+            , ifNullableTrue BornWithBirthDefect form.bornWithBirthDefect
             , ifNullableTrue BreastfedForSixMonths form.breastfedForSixMonths
             , ifNullableTrue ConditionalFoodItems form.conditionalFoodItems
             , ifNullableTrue FiveFoodGroups form.fiveFoodGroups
@@ -4664,7 +4665,6 @@ toNCDAValueNEW form =
             , ifNullableTrue TakingFoodSupplements form.takingFoodSupplements
 
             --@todo: decide if this is needed:
-            -- , ifNullableTrue BornWithBirthDefect form.bornWithBirthDefect
             -- , ifNullableTrue MealFrequency6to8Months form.mealFrequency6to8Months
             -- , ifNullableTrue MealFrequency9to11Months form.mealFrequency9to11Months
             -- , ifNullableTrue MealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore

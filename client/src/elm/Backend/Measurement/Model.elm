@@ -304,6 +304,7 @@ type NCDASign
 type NCDASignNEW
     = AppropriateComplementaryFeeding
     | BeneficiaryCashTransfer
+    | BornWithBirthDefect
     | BreastfedForSixMonths
     | ChildGotDiarrhea
     | ChildWithAcuteMalnutrition

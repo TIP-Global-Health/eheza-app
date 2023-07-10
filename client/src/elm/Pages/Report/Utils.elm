@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -185,10 +186,7 @@ getAcuteIllnessEncountersForParticipant :
     -> IndividualEncounterParticipantId
     -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
 getAcuteIllnessEncountersForParticipant db participantId =
-    Dict.get participantId db.acuteIllnessEncountersByParticipant
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.withDefault []
+    Backend.NutritionEncounter.Utils.getAcuteIllnessEncountersForParticipant db participantId
         |> List.sortWith (\( _, e1 ) ( _, e2 ) -> compareAcuteIllnessEncountersDesc e1 e2)
 
 

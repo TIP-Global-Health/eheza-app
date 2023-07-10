@@ -1,7 +1,10 @@
 module Backend.NutritionEncounter.Utils exposing (..)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
+import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
@@ -15,10 +18,12 @@ import Backend.Measurement.Utils
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.NutritionActivity.Model exposing (..)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Date
@@ -27,7 +32,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isNothing)
 import Pages.Utils exposing (ifEverySetEmpty)
-import RemoteData exposing (RemoteData(..))
+import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (diffDays, zScoreWeightForAge)
@@ -232,14 +237,6 @@ generateIndividualNutritionMeasurementsForChild childId db =
         |> Maybe.withDefault []
 
 
-getNutritionEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NutritionEncounterId, NutritionEncounter )
-getNutritionEncountersForParticipant db participantId =
-    Dict.get participantId db.nutritionEncountersByParticipant
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.withDefault []
-
-
 generateIndividualWellChildMeasurementsForChild :
     PersonId
     -> ModelIndexedDb
@@ -251,6 +248,29 @@ generateIndividualWellChildMeasurementsForChild childId db =
                 >> List.filterMap
                     (\( encounterId, encounter ) ->
                         case Dict.get encounterId db.wellChildMeasurements of
+                            Just (Success data) ->
+                                Just ( encounter.startDate, ( encounterId, data ) )
+
+                            _ ->
+                                Nothing
+                    )
+                -- Most recent date to least recent date.
+                >> List.sortWith sortTuplesByDateDesc
+            )
+        |> Maybe.withDefault []
+
+
+generateIndividualChildScoreboardMeasurementsForChild :
+    PersonId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
+generateIndividualChildScoreboardMeasurementsForChild childId db =
+    resolveIndividualParticipantForPerson childId Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter db
+        |> Maybe.map
+            (getChildScoreboardEncountersForParticipant db
+                >> List.filterMap
+                    (\( encounterId, encounter ) ->
+                        case Dict.get encounterId db.childScoreboardMeasurements of
                             Just (Success data) ->
                                 Just ( encounter.startDate, ( encounterId, data ) )
 
@@ -278,9 +298,49 @@ getNewbornExamPregnancySummary childId db =
         |> List.head
 
 
+getAcuteIllnessEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( AcuteIllnessEncounterId, AcuteIllnessEncounter )
+getAcuteIllnessEncountersForParticipant =
+    getParticipantEncountersByEncounterType .acuteIllnessEncountersByParticipant
+
+
+getNutritionEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NutritionEncounterId, NutritionEncounter )
+getNutritionEncountersForParticipant =
+    getParticipantEncountersByEncounterType .nutritionEncountersByParticipant
+
+
+getHomeVisitEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( HomeVisitEncounterId, HomeVisitEncounter )
+getHomeVisitEncountersForParticipant =
+    getParticipantEncountersByEncounterType .homeVisitEncountersByParticipant
+
+
 getWellChildEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( WellChildEncounterId, WellChildEncounter )
-getWellChildEncountersForParticipant db participantId =
-    Dict.get participantId db.wellChildEncountersByParticipant
+getWellChildEncountersForParticipant =
+    getParticipantEncountersByEncounterType .wellChildEncountersByParticipant
+
+
+getNCDEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NCDEncounterId, NCDEncounter )
+getNCDEncountersForParticipant =
+    getParticipantEncountersByEncounterType .ncdEncountersByParticipant
+
+
+getChildScoreboardEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( ChildScoreboardEncounterId, ChildScoreboardEncounter )
+getChildScoreboardEncountersForParticipant =
+    getParticipantEncountersByEncounterType .childScoreboardEncountersByParticipant
+
+
+getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
+getPrenatalEncountersForParticipant =
+    getParticipantEncountersByEncounterType .prenatalEncountersByParticipant
+
+
+getParticipantEncountersByEncounterType :
+    (ModelIndexedDb -> Dict IndividualEncounterParticipantId (WebData (Dict encounterId encounter)))
+    -> ModelIndexedDb
+    -> IndividualEncounterParticipantId
+    -> List ( encounterId, encounter )
+getParticipantEncountersByEncounterType dataStructureFunc db participantId =
+    dataStructureFunc db
+        |> Dict.get participantId
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map Dict.toList
         |> Maybe.withDefault []
@@ -355,6 +415,26 @@ resolvePreviousMeasurementsSetForChild childId db =
     , weights = nutritionWeights ++ wellChildWeights ++ groupWeights |> List.sortWith sortTuplesByDateDesc
     , headCircumferences = wellChildHeadCircumferences
     }
+
+
+resolveNCDANeverFilled :
+    NominalDate
+    -> PersonId
+    -> ModelIndexedDb
+    -> Bool
+resolveNCDANeverFilled currentDate childId db =
+    let
+        previousNCDAValuesForChild =
+            resolvePreviousNCDAValuesForChild currentDate childId db
+
+        individualChildScoreboardMeasurements =
+            generateIndividualChildScoreboardMeasurementsForChild childId db
+
+        previousChildScoreboardNCDAs =
+            resolveIndividualChildScoreboardValues individualChildScoreboardMeasurements .ncda identity
+                |> List.filter (\( date, _ ) -> Date.compare date currentDate == LT)
+    in
+    List.isEmpty previousNCDAValuesForChild && List.isEmpty previousChildScoreboardNCDAs
 
 
 resolvePreviousNCDAValuesForChild :
@@ -498,6 +578,24 @@ resolveIndividualWellChildValues :
     -> (a -> b)
     -> List ( NominalDate, b )
 resolveIndividualWellChildValues measurementsWithDates measurementFunc valueFunc =
+    measurementsWithDates
+        |> List.filterMap
+            (\( date, ( _, measurements ) ) ->
+                measurementFunc measurements
+                    |> Maybe.map
+                        (\measurement ->
+                            ( date, Tuple.second measurement |> .value |> valueFunc )
+                        )
+            )
+        |> List.reverse
+
+
+resolveIndividualChildScoreboardValues :
+    List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
+    -> (ChildScoreboardMeasurements -> Maybe ( id, ChildScoreboardMeasurement a ))
+    -> (a -> b)
+    -> List ( NominalDate, b )
+resolveIndividualChildScoreboardValues measurementsWithDates measurementFunc valueFunc =
     measurementsWithDates
         |> List.filterMap
             (\( date, ( _, measurements ) ) ->

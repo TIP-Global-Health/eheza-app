@@ -3,6 +3,7 @@ module Pages.ChildScoreboard.Encounter.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Fetch
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
@@ -12,35 +13,18 @@ fetch id db =
     let
         participantId =
             Dict.get id db.childScoreboardEncounters
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .participant
 
-        personId =
+        maybePersonId =
             Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants) participantId
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .person
-
-        encountersIds =
-            Maybe.map
-                (\participantId_ ->
-                    Dict.get participantId_ db.childScoreboardEncountersByParticipant
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.map Dict.keys
-                        |> RemoteData.withDefault []
-                )
-                participantId
-                |> Maybe.withDefault []
-
-        -- We fetch measurements of all encounters.
-        fetchMeasurementsMsgs =
-            List.map FetchChildScoreboardMeasurements encountersIds
     in
     Maybe.Extra.values
-        [ Maybe.map FetchIndividualEncounterParticipant participantId
-        , Maybe.map FetchPerson personId
-        , Maybe.map FetchChildScoreboardEncountersForParticipant participantId
-        , Just <| FetchChildScoreboardEncounter id
+        [ Just <| FetchChildScoreboardEncounter id
+        , Maybe.map FetchIndividualEncounterParticipant participantId
         ]
-        ++ fetchMeasurementsMsgs
+        ++ (Maybe.map (\personId -> Backend.NutritionEncounter.Fetch.fetch personId db) maybePersonId
+                |> Maybe.withDefault []
+           )

@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Fetch
+import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Backend.Person.Utils exposing (isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
@@ -43,14 +44,8 @@ fetchForAdult personId db =
             resolveIndividualParticipantsForPerson personId AntenatalEncounter db
 
         prenatalEncountersIds =
-            List.map
-                (\participantId ->
-                    Dict.get participantId db.prenatalEncountersByParticipant
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.keys
-                )
+            List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
                 prenatalParticipantsIds
-                |> Maybe.Extra.values
                 |> List.concat
 
         fetchPrenatalEncountersMsgs =
