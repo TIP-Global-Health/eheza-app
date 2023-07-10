@@ -145,7 +145,7 @@ while ($processed < $total) {
 
       $body_param1 = new ComponentParameterText($report_type);
       $body_param2 = new ComponentParameterText($patient_name);
-      $body_param3 = new ComponentParameterDatetime('', $datetime);
+      $body_param3 = new ComponentParameterDatetime($date, $datetime);
 
       $message = new Message(
         '',
