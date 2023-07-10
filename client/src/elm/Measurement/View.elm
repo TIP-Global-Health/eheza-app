@@ -2905,34 +2905,11 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                         , onClick <| setStepMsg backStep
                         ]
                         [ text <| ("< " ++ translate language Translate.Back) ]
-
-                pillarButton pillar =
-                    button
-                        [ class "ui primary button pillars"
-                        , onClick <| setStepMsg pillar
-                        ]
-                        [ span [ class "icon" ] []
-                        , span [ class "text" ] [ text <| translate language <| Translate.NCDAStep pillar ]
-                        ]
-
-                buttons =
-                    [ pillarButton NCDAStepAntenatalCare
-                    , pillarButton NCDAStepUniversalInterventions
-                    , pillarButton NCDAStepNutritionBehavior
-                    , pillarButton NCDAStepTargetedInterventions
-                    , pillarButton NCDAStepInfrastructureEnvironment
-                    ]
             in
             case currentStep of
-                NCDAStepPillars ->
-                    div [ class "actions pillar" ]
-                        buttons
-
                 NCDAStepAntenatalCare ->
-                    div [ class "actions two" ]
-                        [ backButton NCDAStepPillars
-                        , actionButton (setStepMsg NCDAStepUniversalInterventions)
-                        ]
+                    div [ class "actions" ]
+                        [ actionButton (setStepMsg NCDAStepUniversalInterventions) ]
 
                 NCDAStepUniversalInterventions ->
                     div [ class "actions two" ]
@@ -2958,28 +2935,18 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                         , Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) saveMsg Translate.EndEncounter
                         ]
     in
-    if currentStep == NCDAStepPillars then
-        [ div [ class "ui full segment" ]
-            [ div [ class "full content" ]
-                [ actions ]
+    [ div [ class "task-header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form ncda" ]
+                inputs
             ]
-        , viewModal <|
-            viewNCDAHelperDialogNEW language (setHelperStateMsg Nothing) helperState
+        , actions
         ]
-
-    else
-        [ div [ class "task-header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
-        , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-        , div [ class "ui full segment" ]
-            [ div [ class "full content" ]
-                [ div [ class "ui form ncda" ]
-                    inputs
-                ]
-            , actions
-            ]
-        , viewModal <|
-            viewNCDAHelperDialogNEW language (setHelperStateMsg Nothing) helperState
-        ]
+    , viewModal <|
+        viewNCDAHelperDialogNEW language (setHelperStateMsg Nothing) helperState
+    ]
 
 
 ncdaFormInputsAndTasksNEW :
@@ -3436,13 +3403,6 @@ ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWe
             viewCustomLabel language (Translate.NCDASignNEWCounceling sign) "." "label counselling"
     in
     case currentStep of
-        NCDAStepPillars ->
-            let
-                inputsAndTasks =
-                    []
-            in
-            ( [], [] )
-
         NCDAStepAntenatalCare ->
             let
                 inputsAndTasks =
