@@ -2330,7 +2330,7 @@ viewNCDAContent language currentDate personId person config helperState form his
                     currentStep == Just step
 
                 isCompleted =
-                    tasksCompleted == totalTasks
+                    isTaskCompleted tasksCompletedFromTotalDict step
 
                 attributes =
                     classList
@@ -2404,19 +2404,34 @@ viewNCDAContent language currentDate personId person config helperState form his
                 currentStep
                 |> Maybe.withDefault ( [], 0, 0 )
 
-        nextStep =
-            List.filter
-                (\step ->
-                    (Just step /= currentStep)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict step)
-                )
-                steps
-                |> List.head
-
         ( header, actions ) =
             Maybe.map
                 (\step ->
                     if config.showTasksTray then
+                        let
+                            ( buttonLabel, actionMsg ) =
+                                List.filter
+                                    (\step_ ->
+                                        (Just step_ /= currentStep)
+                                            && (not <| isTaskCompleted tasksCompletedFromTotalDict step_)
+                                    )
+                                    steps
+                                    |> List.head
+                                    |> Maybe.map
+                                        (\nextStep ->
+                                            ( Translate.Save, config.setStepMsg nextStep )
+                                        )
+                                    |> Maybe.withDefault ( Translate.EndEncounter, config.saveMsg )
+                        in
+                        ( div [ class "ui task segment blue", Attr.id tasksBarId ]
+                            [ div [ class "ui five column grid" ] <|
+                                List.map viewTask steps
+                            ]
+                        , div [ class "actions" ]
+                            [ Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) actionMsg buttonLabel ]
+                        )
+
+                    else
                         let
                             actionButton =
                                 Pages.Utils.saveButton language (tasksCompleted == totalTasks)
@@ -2462,24 +2477,6 @@ viewNCDAContent language currentDate personId person config helperState form his
                                     [ backButton NCDAStepTargetedInterventions
                                     , Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) config.saveMsg Translate.EndEncounter
                                     ]
-                        )
-
-                    else
-                        let
-                            ( buttonLabel, actionMsg ) =
-                                Maybe.map
-                                    (\next ->
-                                        ( Translate.Save, config.setStepMsg next )
-                                    )
-                                    nextStep
-                                    |> Maybe.withDefault ( Translate.EndEncounter, config.saveMsg )
-                        in
-                        ( div [ class "ui task segment blue", Attr.id tasksBarId ]
-                            [ div [ class "ui five column grid" ] <|
-                                List.map viewTask steps
-                            ]
-                        , div [ class "actions" ]
-                            [ Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) actionMsg buttonLabel ]
                         )
                 )
                 currentStep
