@@ -2443,7 +2443,7 @@ viewNCDAContent language currentDate personId person config helperState form his
                                     ]
                                     [ text <| ("< " ++ translate language Translate.Back) ]
                         in
-                        ( div [ class "task-header" ] [ text <| translate language <| Translate.NCDAStep step ]
+                        ( emptyNode
                         , case step of
                             NCDAStepAntenatalCare ->
                                 div [ class "actions" ]
@@ -2475,7 +2475,7 @@ viewNCDAContent language currentDate personId person config helperState form his
                             NCDAStepInfrastructureEnvironment ->
                                 div [ class "actions two" ]
                                     [ backButton NCDAStepTargetedInterventions
-                                    , Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) config.saveMsg Translate.EndEncounter
+                                    , actionButton config.saveMsg
                                     ]
                         )
                 )
