@@ -2451,14 +2451,14 @@ viewNCDAContent language currentDate personId person config helperState form his
 
                             NCDAStepUniversalInterventions ->
                                 if expectNCDAStep historyData NCDAStepAntenatalCare then
-                                    div [ class "actions" ]
-                                        [ actionButton (config.setStepMsg NCDAStepNutritionBehavior) ]
-
-                                else
                                     div [ class "actions two" ]
                                         [ backButton NCDAStepAntenatalCare
                                         , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
                                         ]
+
+                                else
+                                    div [ class "actions" ]
+                                        [ actionButton (config.setStepMsg NCDAStepNutritionBehavior) ]
 
                             NCDAStepNutritionBehavior ->
                                 div [ class "actions two" ]
