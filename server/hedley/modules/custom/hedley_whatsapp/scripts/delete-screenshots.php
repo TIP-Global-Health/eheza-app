@@ -50,11 +50,11 @@ $executed = $count_query->execute();
 $total = $executed->rowCount();
 
 if ($total == 0) {
-  drush_print("There are no $type messages to deliver.");
+  drush_print("There are no $type screenshots to delete.");
   return;
 }
 
-drush_print("Located $total $type messages for delivery.");
+drush_print("Located $total $type screenshots for deletion.");
 
 $processed = 0;
 while ($processed < $total) {
