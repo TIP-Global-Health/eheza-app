@@ -313,6 +313,9 @@ pageToFragment current =
                 ChildScoreboardEncounterPage id ->
                     Just <| "child-scoreboard-encounter/" ++ fromEntityUuid id
 
+                ChildScoreboardActivityPage id activity ->
+                    Just <| "child-scoreboard-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.ChildScoreboardActivity.Utils.activityToString activity
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -382,8 +385,9 @@ parser =
         , map (\id activity -> UserPage <| WellChildActivityPage id activity) (s "well-child-activity" </> parseUuid </> parseWellChildActivity)
         , map (\id -> UserPage <| WellChildProgressReportPage id) (s "well-child-progress-report" </> parseUuid)
         , map (\id -> UserPage <| NCDEncounterPage id) (s "ncd-encounter" </> parseUuid)
-        , map (\id -> UserPage <| ChildScoreboardEncounterPage id) (s "child-scoreboard-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDActivityPage id activity) (s "ncd-activity" </> parseUuid </> parseNCDActivity)
+        , map (\id -> UserPage <| ChildScoreboardEncounterPage id) (s "child-scoreboard-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| ChildScoreboardActivityPage id activity) (s "child-scoreboard-activity" </> parseUuid </> parseChildScoreboardActivity)
         , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
@@ -480,6 +484,11 @@ parseNCDActivity =
 parseNCDRecurrentActivity : Parser (NCDRecurrentActivity -> c) c
 parseNCDRecurrentActivity =
     custom "NCDRecurrentActivity" Backend.NCDActivity.Utils.recurrentActivityFromString
+
+
+parseChildScoreboardActivity : Parser (ChildScoreboardActivity -> c) c
+parseChildScoreboardActivity =
+    custom "ChildScoreboardActivity" Backend.ChildScoreboardActivity.Utils.activityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

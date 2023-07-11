@@ -19713,6 +19713,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                ChildScoreboardActivityPage _ _ ->
+                    { english = "Child Scorecard Activity"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =
