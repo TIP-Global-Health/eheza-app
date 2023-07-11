@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Code for the Hedley Aggregated NCDA feature.
+ * Code for the Hedley NCDA feature.
  */
 
 include_once 'hedley_ncda.features.inc';
@@ -15,14 +15,14 @@ define('HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA', 'hedley_ncda_calculate_ncda
 function hedley_ncda_menu() {
   $items['admin/reports/aggregated-ncda'] = array(
     'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
+    'description' => 'View NCDA scoreboard',
     'page callback' => 'hedley_ncda_callback_menu',
     'access callback' => 'hedley_ncda_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%'] = array(
     'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
+    'description' => 'View NCDA scoreboard',
     'page callback' => 'hedley_ncda_callback_district',
     'page arguments' => [3, 4],
     'access callback' => 'hedley_ncda_access',
@@ -30,7 +30,7 @@ function hedley_ncda_menu() {
 
   $items['admin/reports/aggregated-ncda/%/%/%'] = array(
     'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
+    'description' => 'View NCDA scoreboard',
     'page callback' => 'hedley_ncda_callback_sector',
     'page arguments' => [3, 4, 5],
     'access callback' => 'hedley_ncda_access',
@@ -38,7 +38,7 @@ function hedley_ncda_menu() {
 
   $items['admin/reports/aggregated-ncda/%/%/%/%'] = array(
     'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
+    'description' => 'View NCDA scoreboard',
     'page callback' => 'hedley_ncda_callback_cell',
     'page arguments' => [3, 4, 5, 6],
     'access callback' => 'hedley_ncda_access',
@@ -46,7 +46,7 @@ function hedley_ncda_menu() {
 
   $items['admin/reports/aggregated-ncda/%/%/%/%/%'] = array(
     'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
+    'description' => 'View NCDA scoreboard',
     'page callback' => 'hedley_ncda_callback_village',
     'page arguments' => [3, 4, 5, 6, 7],
     'access callback' => 'hedley_ncda_access',
@@ -136,7 +136,7 @@ function hedley_ncda_calculate_ncda_data_worker($queue_item) {
 }
 
 /**
- * Determines whether current user may access Aggregated NCDA scoreboard pages.
+ * Determines whether current user may access NCDA scoreboard pages.
  *
  * @return bool
  *   TRUE if the user has access, FALSE otherwise.
@@ -166,7 +166,7 @@ function hedley_ncda_callback_menu() {
 }
 
 /**
- * Callback for aggregated NCDA elm application of district.
+ * Callback for NCDA elm application of district.
  *
  * @param int $province
  *   The province ID.
@@ -181,7 +181,7 @@ function hedley_ncda_callback_district($province, $district) {
 }
 
 /**
- * Callback for aggregated NCDA elm application of sector.
+ * Callback for NCDA elm application of sector.
  *
  * @param int $province
  *   The province ID.
@@ -198,7 +198,7 @@ function hedley_ncda_callback_sector($province, $district, $sector) {
 }
 
 /**
- * Callback for aggregated NCDA elm application of cell.
+ * Callback for NCDA elm application of cell.
  *
  * @param int $province
  *   The province ID.
@@ -217,7 +217,7 @@ function hedley_ncda_callback_cell($province, $district, $sector, $cell) {
 }
 
 /**
- * Callback for aggregated NCDA elm application of village.
+ * Callback for NCDA elm application of village.
  *
  * @param int $province
  *   The province ID.
@@ -238,7 +238,7 @@ function hedley_ncda_callback_village($province, $district, $sector, $cell, $vil
 }
 
 /**
- * Build results app for aggregated NCDA.
+ * Build results app for NCDA.
  *
  * Based on input fields, determines administrative divisions for which
  * data is provided.
@@ -283,7 +283,7 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
 }
 
 /**
- * Build Elm application for aggregated NCDA.
+ * Build Elm application for NCDA.
  *
  * @param string $page
  *   The page name.
@@ -320,7 +320,7 @@ function hedley_ncda_build_elm_app($page, array $data) {
 }
 
 /**
- * Generate aggregated NCDA data which is stored on person nodes.
+ * Generate NCDA data which is stored on person nodes.
  *
  * @param int $province
  *   The province ID.

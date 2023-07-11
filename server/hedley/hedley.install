@@ -664,7 +664,7 @@ function hedley_update_7037() {
 }
 
 /**
- * Enable the Hedley Aggregated NCDA module.
+ * Enable the Hedley NCDA module.
  */
 function hedley_update_7038() {
   module_enable(['hedley_ncda']);
