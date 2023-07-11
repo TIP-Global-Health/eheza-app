@@ -7,11 +7,6 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils
-    exposing
-        ( getNewbornExamPregnancySummary
-        , resolveNCDANeverFilled
-        )
 import Backend.Person.Model exposing (Person)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -19,9 +14,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
-import Measurement.Model exposing (NCDAData)
-import Measurement.Utils exposing (ncdaFormWithDefault)
-import Measurement.View
 import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
@@ -80,7 +72,7 @@ viewHeader language assembled =
 
 viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate db model assembled =
-    ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
+    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
         -- :: viewNCDAContent language currentDate assembled db model.ncdaData
         :: viewMainPageContent language currentDate db assembled model
     )
@@ -145,54 +137,6 @@ viewMainPageContent language currentDate db assembled model =
     [ tabs
     , content
     ]
-
-
-viewNCDAContent :
-    Language
-    -> NominalDate
-    -> AssembledData
-    -> ModelIndexedDb
-    -> NCDAData
-    -> List (Html Msg)
-viewNCDAContent language currentDate assembled db data =
-    let
-        form =
-            getMeasurementValueFunc assembled.measurements.ncda
-                |> ncdaFormWithDefault data.form
-
-        personId =
-            assembled.participant.person
-
-        historyData =
-            { pregnancySummary = getNewbornExamPregnancySummary personId db
-            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
-            }
-
-        config =
-            { showTasksTray = True
-            , setBoolInputMsg = SetNCDABoolInput
-            , setBirthWeightMsg = SetBirthWeight
-            , setNumberANCVisitsMsg = SetNumberANCVisits
-            , setNutritionSupplementTypeMsg = SetNutritionSupplementType
-            , setStepMsg = SetNCDAFormStep
-            , setHelperStateMsg = SetNCDAHelperState
-            , saveMsg =
-                if data.form.childGotDiarrhea == Just True then
-                    ShowAIEncounterPopup
-
-                else
-                    CloseEncounter assembled
-            }
-    in
-    Measurement.View.viewNCDAContent language
-        currentDate
-        personId
-        assembled.person
-        config
-        data.helperState
-        form
-        historyData
-        db
 
 
 acuteIllnessEncounterPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
