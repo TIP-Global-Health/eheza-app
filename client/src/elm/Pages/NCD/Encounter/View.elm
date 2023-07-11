@@ -2,7 +2,12 @@ module Pages.NCD.Encounter.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
+import Backend.IndividualEncounterParticipant.Model
+    exposing
+        ( IndividualEncounterParticipant
+        , IndividualEncounterType(..)
+        , IndividualParticipantInitiator(..)
+        )
 import Backend.Measurement.Model exposing (NCDMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))

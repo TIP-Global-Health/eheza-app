@@ -52,6 +52,9 @@ update msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetSelectedTab tab ->
+            ( { model | selectedTab = tab }, Cmd.none, [] )
+
         SetNCDABoolInput formUpdateFunc value ->
             let
                 updatedForm =

@@ -1,5 +1,6 @@
 module Pages.ChildScoreboard.Activity.View exposing (view)
 
+import Backend.ChildScoreboardActivity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
@@ -26,12 +27,12 @@ view :
     Language
     -> NominalDate
     -> ChildScoreboardEncounterId
-    -- -> ChildScoreboardActivity
+    -> ChildScoreboardActivity
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate id db model =
-    -- @Todo
+view language currentDate id activity db model =
+    -- @todo
     emptyNode
 
 

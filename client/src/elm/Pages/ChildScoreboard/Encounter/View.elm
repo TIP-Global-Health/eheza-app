@@ -1,6 +1,7 @@
 module Pages.ChildScoreboard.Encounter.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.ChildScoreboardActivity.Utils exposing (..)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
@@ -21,13 +22,14 @@ import Maybe.Extra exposing (isJust, unwrap)
 import Measurement.Model exposing (NCDAData)
 import Measurement.Utils exposing (ncdaFormWithDefault)
 import Measurement.View
+import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -79,9 +81,70 @@ viewHeader language assembled =
 viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate db model assembled =
     ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
-        :: viewNCDAContent language currentDate assembled db model.ncdaData
+        -- :: viewNCDAContent language currentDate assembled db model.ncdaData
+        :: viewMainPageContent language currentDate db assembled model
     )
         |> div [ class "ui unstackable items" ]
+
+
+viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate db assembled model =
+    let
+        ( completedActivities, pendingActivities ) =
+            List.filter (expectActivity currentDate assembled) allActivities
+                |> List.partition (activityCompleted currentDate assembled)
+
+        pendingTabTitle =
+            translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
+
+        completedTabTitle =
+            translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
+
+        tabs =
+            div [ class "ui tabular menu" ]
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                ]
+
+        viewCard activity =
+            activityCard language
+                (Translate.ChildScoreboardActivityTitle activity)
+                (getActivityIcon activity)
+                (SetActivePage <| UserPage <| ChildScoreboardActivityPage assembled.id activity)
+
+        ( selectedActivities, emptySectionMessage ) =
+            case model.selectedTab of
+                Pending ->
+                    ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                Completed ->
+                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+        innerContent =
+            div [ class "full content" ]
+                [ div [ class "wrap-cards" ]
+                    [ div [ class "ui four cards" ] <|
+                        if List.isEmpty selectedActivities then
+                            [ span [] [ text emptySectionMessage ] ]
+
+                        else
+                            List.map viewCard selectedActivities
+                    ]
+                ]
+
+        -- allowEndEncounter =
+        --     allowEndingEcounter pendingActivities
+        content =
+            div [ class "ui full segment" ]
+                [ innerContent
+
+                -- @todo:
+                -- , viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
+                ]
+    in
+    [ tabs
+    , content
+    ]
 
 
 viewNCDAContent :

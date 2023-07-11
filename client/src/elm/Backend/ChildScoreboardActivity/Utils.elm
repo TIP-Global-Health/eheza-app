@@ -3,8 +3,8 @@ module Backend.ChildScoreboardActivity.Utils exposing (..)
 import Backend.ChildScoreboardActivity.Model exposing (..)
 
 
-encodeActivityAsString : ChildScoreboardActivity -> String
-encodeActivityAsString activity =
+activityToString : ChildScoreboardActivity -> String
+activityToString activity =
     case activity of
         ChildScoreboardNCDA ->
             "ncda"
@@ -15,8 +15,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe ChildScoreboardActivity
-decodeActivityFromString s =
+activityFromString : String -> Maybe ChildScoreboardActivity
+activityFromString s =
     case s of
         "ncda" ->
             Just ChildScoreboardNCDA

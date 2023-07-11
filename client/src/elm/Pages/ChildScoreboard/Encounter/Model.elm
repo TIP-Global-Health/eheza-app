@@ -11,16 +11,23 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { ncdaData : NCDAData
+    { selectedTab : Tab
+    , ncdaData : NCDAData
     , showAIEncounterPopup : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
-    { ncdaData = emptyNCDAData
+    { selectedTab = Pending
+    , ncdaData = emptyNCDAData
     , showAIEncounterPopup = False
     }
+
+
+type Tab
+    = Completed
+    | Pending
 
 
 type alias AssembledData =
@@ -35,6 +42,7 @@ type alias AssembledData =
 type Msg
     = CloseEncounter AssembledData
     | SetActivePage Page
+    | SetSelectedTab Tab
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetNumberANCVisits String

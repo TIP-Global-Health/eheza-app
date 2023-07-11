@@ -11,5 +11,10 @@ type alias Model =
     {}
 
 
+emptyModel : Model
+emptyModel =
+    {}
+
+
 type Msg
     = SetActivePage Page
