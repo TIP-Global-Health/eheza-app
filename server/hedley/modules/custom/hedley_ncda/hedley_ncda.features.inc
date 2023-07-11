@@ -2,13 +2,13 @@
 
 /**
  * @file
- * hedley_aggregated_ncda.features.inc
+ * hedley_ncda.features.inc
  */
 
 /**
  * Implements hook_ctools_plugin_api().
  */
-function hedley_aggregated_ncda_ctools_plugin_api($module = NULL, $api = NULL) {
+function hedley_ncda_ctools_plugin_api($module = NULL, $api = NULL) {
   if ($module == "strongarm" && $api == "strongarm") {
     return array("version" => "1");
   }
@@ -17,7 +17,7 @@ function hedley_aggregated_ncda_ctools_plugin_api($module = NULL, $api = NULL) {
 /**
  * Implements hook_node_info().
  */
-function hedley_aggregated_ncda_node_info() {
+function hedley_ncda_node_info() {
   $items = array(
     'child_scoreboard_encounter' => array(
       'name' => t('Child Scoreboard Encounter'),

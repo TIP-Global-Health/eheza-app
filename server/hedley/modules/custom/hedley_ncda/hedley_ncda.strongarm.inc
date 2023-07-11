@@ -2,13 +2,13 @@
 
 /**
  * @file
- * hedley_aggregated_ncda.strongarm.inc
+ * hedley_ncda.strongarm.inc
  */
 
 /**
  * Implements hook_strongarm().
  */
-function hedley_aggregated_ncda_strongarm() {
+function hedley_ncda_strongarm() {
   $export = array();
 
   $strongarm = new stdClass();

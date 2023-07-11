@@ -5,7 +5,7 @@
  * Generates new revisions for all entities of certain content type.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_aggregated_ncda/scripts/generate-data-for-all.php.
+ *   profiles/hedley/modules/custom/hedley_ncda/scripts/generate-data-for-all.php.
  */
 
 if (!drupal_is_cli()) {
@@ -61,7 +61,7 @@ while (TRUE) {
     $residents = hedley_chw_get_village_residents($id);
 
     foreach ($residents as $resident) {
-      hedley_aggregated_ncda_calculate_ncda_data_for_person($resident);
+      hedley_ncda_calculate_ncda_data_for_person($resident);
     }
     $count = count($residents);
     $total += $count;
