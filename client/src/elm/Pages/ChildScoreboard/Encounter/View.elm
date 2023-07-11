@@ -5,9 +5,11 @@ import Backend.ChildScoreboardActivity.Utils exposing (..)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.Measurement.Model exposing (NCDASign(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -18,7 +20,7 @@ import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectA
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewPersonDetailsExtended, viewReportLink)
+import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterDialog, viewPersonDetails, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
@@ -73,7 +75,6 @@ viewHeader language assembled =
 viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate db model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        -- :: viewNCDAContent language currentDate assembled db model.ncdaData
         :: viewMainPageContent language currentDate db assembled model
     )
         |> div [ class "ui unstackable items" ]
@@ -124,14 +125,30 @@ viewMainPageContent language currentDate db assembled model =
                     ]
                 ]
 
-        -- allowEndEncounter =
-        --     allowEndingEcounter pendingActivities
+        allowEndEncounter =
+            List.isEmpty pendingActivities
+
+        endEncounterMsg =
+            let
+                childGotDiarrhea =
+                    getMeasurementValueFunc assembled.measurements.ncda
+                        |> Maybe.map (.signs >> EverySet.member ChildGotDiarrhea)
+                        |> Maybe.withDefault False
+            in
+            if childGotDiarrhea == True then
+                ShowAIEncounterPopup
+
+            else
+                CloseEncounter assembled.id
+
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-
-                -- @todo:
-                -- , viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
+                , viewEncounterActionButton language
+                    Translate.EndEncounter
+                    "primary"
+                    allowEndEncounter
+                    endEncounterMsg
                 ]
     in
     [ tabs

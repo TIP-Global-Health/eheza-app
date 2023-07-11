@@ -114,12 +114,6 @@ viewNCDAContent language currentDate assembled db data =
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
-
-            -- if data.form.childGotDiarrhea == Just True then
-            --     ShowAIEncounterPopup
-            --
-            -- else
-            --     CloseEncounter assembled.id
             }
     in
     Measurement.View.viewNCDAContent language
