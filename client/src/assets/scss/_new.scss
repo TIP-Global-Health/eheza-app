@@ -636,8 +636,7 @@ div.page-person {
 }
 
 div.page-participant,
-div.page-activity,
-div.page-encounter.child-scoreboard {
+div.page-activity {
 
   .ui.form.ncda .label.counselling {
     background-color: $color-pink;
@@ -1831,18 +1830,9 @@ div.page-activity.nutrition {
   }
 }
 
-div.page-encounter.child-scoreboard {
+div.page-activity.child-scoreboard {
 
   .ui.unstackable.items {
-
-    .task-header {
-      background: $color-primary;
-      font-size: 26px;
-      font-weight: bold;
-      padding-bottom: 5px;
-      padding-top: 10px;
-      text-align: center;
-    }
 
     .ui.full.segment .full.content .ui.form.ncda {
       min-height: 210px;
@@ -1857,7 +1847,6 @@ div.page-encounter.child-scoreboard {
       }
     }
   }
-
 }
 
 div.page-activity.prenatal,
@@ -3668,14 +3657,16 @@ div.page-report.acute-illness {
 }
 
 div.page-report.acute-illness,
-div.page-encounter.well-child,
 div.page-activity.trace-contact,
+div.page-encounter.well-child,
 div.page-activity.well-child,
 div.page-report.well-child,
 div.page-activity.patient-record,
 div.page-report.ncd,
 div.page-encounter.ncd,
-div.page-activity.ncd {
+div.page-activity.ncd,
+div.page-encounter.child-scoreboard,
+div.page-activity.child-scoreboard {
 
   .details {
     padding-left: 25px;
