@@ -7,7 +7,7 @@
 
 include_once 'hedley_ncda.features.inc';
 
-define('HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA', 'hedley_ncda_calculate_ncda_data');
+define('HEDLEY_NCDA_CALCULATE_NCDA_DATA', 'hedley_ncda_calculate_ncda_data');
 
 /**
  * Implements hook_menu().
@@ -83,7 +83,7 @@ function hedley_ncda_node_update($node) {
  * Implements hook_advanced_queue_info().
  */
 function hedley_ncda_advanced_queue_info() {
-  $items[HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA] = [
+  $items[HEDLEY_NCDA_CALCULATE_NCDA_DATA] = [
     'label' => t('Calculate NCDA data'),
     'worker callback' => 'hedley_ncda_calculate_ncda_data_worker',
     'groups' => [
@@ -1007,7 +1007,7 @@ function hedley_ncda_trigger_recalculation_by_measurement($node) {
 
   $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
   // Trigger recalculation using AQ.
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $person_id, [
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_NCDA_DATA, $person_id, [
     'person_id' => $person_id,
   ]);
 }
@@ -1024,7 +1024,7 @@ function hedley_ncda_trigger_recalculation_for_new_village($node) {
   $residents = hedley_chw_get_village_residents($node->nid);
 
   foreach ($residents as $resident) {
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $resident, [
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_NCDA_DATA, $resident, [
       'person_id' => $resident,
     ]);
   }
@@ -1052,7 +1052,7 @@ function hedley_ncda_trigger_recalculation_by_edited_person($node) {
     return;
   }
 
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $node->nid, [
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_NCDA_DATA, $node->nid, [
     'person_id' => $node->nid,
   ]);
 }
