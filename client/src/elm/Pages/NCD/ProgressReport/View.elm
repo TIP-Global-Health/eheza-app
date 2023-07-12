@@ -23,7 +23,6 @@ import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMe
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator(..))
-import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Utils
@@ -65,6 +64,7 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 

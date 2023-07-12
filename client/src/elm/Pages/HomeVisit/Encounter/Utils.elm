@@ -4,8 +4,9 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant, sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant)
 import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -14,6 +15,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.HomeVisit.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import ZScore.Model
 
 
@@ -46,7 +48,7 @@ generateAssembledData id db =
 
         previousMeasurementsWithDates =
             RemoteData.toMaybe encounter
-                |> Maybe.map (\encounter_ -> generatePreviousMeasurements id encounter_.participant db)
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
                 |> Maybe.withDefault []
     in
     RemoteData.map AssembledData (Success id)
@@ -57,22 +59,10 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
 
 
-generatePreviousMeasurements : HomeVisitEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List ( NominalDate, ( HomeVisitEncounterId, HomeVisitMeasurements ) )
-generatePreviousMeasurements currentEncounterId participantId db =
-    getHomeVisitEncountersForParticipant db participantId
-        |> List.filterMap
-            (\( encounterId, encounter ) ->
-                -- We do not want to get data of current encounter.
-                if encounterId == currentEncounterId then
-                    Nothing
-
-                else
-                    case Dict.get encounterId db.homeVisitMeasurements of
-                        Just (Success data) ->
-                            Just ( encounter.startDate, ( encounterId, data ) )
-
-                        _ ->
-                            Nothing
-            )
-        -- Most recent date to least recent date.
-        |> List.sortWith sortTuplesByDateDesc
+generatePreviousMeasurements :
+    Maybe HomeVisitEncounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( HomeVisitEncounterId, HomeVisitMeasurements ) )
+generatePreviousMeasurements =
+    Backend.Measurement.Utils.generatePreviousMeasurements getHomeVisitEncountersForParticipant .homeVisitMeasurements

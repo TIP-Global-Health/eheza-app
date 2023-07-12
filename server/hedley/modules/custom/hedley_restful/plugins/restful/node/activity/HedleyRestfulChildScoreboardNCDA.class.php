@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulNutritionNCDA.
  */
-class HedleyRestfulChildScoreboardNCDA extends HedleyRestfulChildScorebaordActivityBase {
+class HedleyRestfulChildScoreboardNCDA extends HedleyRestfulChildScoreboardActivityBase {
 
   /**
    * {@inheritdoc}

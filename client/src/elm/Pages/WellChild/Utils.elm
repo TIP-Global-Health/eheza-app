@@ -5,13 +5,14 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant, sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant)
 import Backend.WellChildActivity.Model exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
 import Pages.WellChild.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
 generatePreviousMeasurements :
@@ -19,24 +20,8 @@ generatePreviousMeasurements :
     -> IndividualEncounterParticipantId
     -> ModelIndexedDb
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
-generatePreviousMeasurements currentEncounterId participantId db =
-    getWellChildEncountersForParticipant db participantId
-        |> List.filterMap
-            (\( encounterId, encounter ) ->
-                -- We do not want to get data of current encounter.
-                if currentEncounterId == Just encounterId then
-                    Nothing
-
-                else
-                    case Dict.get encounterId db.wellChildMeasurements of
-                        Just (Success data) ->
-                            Just ( encounter.startDate, ( encounterId, data ) )
-
-                        _ ->
-                            Nothing
-            )
-        -- Most recent date to least recent date.
-        |> List.sortWith sortTuplesByDateDesc
+generatePreviousMeasurements =
+    Backend.Measurement.Utils.generatePreviousMeasurements getWellChildEncountersForParticipant .wellChildMeasurements
 
 
 generateGroupNutritionAssessmentEntries : ChildMeasurementList -> List ( NominalDate, List NutritionAssessment )

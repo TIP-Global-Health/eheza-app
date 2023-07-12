@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulChildScoreboardActivityBase.
  */
-abstract class HedleyRestfulChildScorebaordActivityBase extends HedleyRestfulActivityBase {
+abstract class HedleyRestfulChildScoreboardActivityBase extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}

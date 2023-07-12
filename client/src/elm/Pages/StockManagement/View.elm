@@ -13,7 +13,6 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.NutritionEncounter.Utils exposing (sortByDate, sortByDateDesc)
 import Backend.StockUpdate.Model exposing (StockManagementData)
 import Backend.StockUpdate.Utils exposing (..)
 import Date exposing (Month, Unit(..))
@@ -59,6 +58,7 @@ import SyncManager.Model exposing (SyncInfoAuthorityZipper)
 import Time
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (spinner, viewModal)
+import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
