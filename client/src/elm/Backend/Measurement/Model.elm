@@ -2751,6 +2751,34 @@ type alias ChildScoreboardNCDA =
     ChildScoreboardMeasurement NCDAValue
 
 
+type alias ChildScoreboardBCGImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardDTPImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardIPVImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardMRImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardOPVImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardPCV13Immunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardRotarixImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
 
 -- Stock Management:
 
@@ -3100,6 +3128,13 @@ type alias NCDMeasurements =
 
 type alias ChildScoreboardMeasurements =
     { ncda : Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA )
+    , bcgImmunisation : Maybe ( ChildScoreboardBCGImmunisationId, ChildScoreboardBCGImmunisation )
+    , dtpImmunisation : Maybe ( ChildScoreboardDTPImmunisationId, ChildScoreboardDTPImmunisation )
+    , ipvImmunisation : Maybe ( ChildScoreboardIPVImmunisationId, ChildScoreboardIPVImmunisation )
+    , mrImmunisation : Maybe ( ChildScoreboardMRImmunisationId, ChildScoreboardMRImmunisation )
+    , opvImmunisation : Maybe ( ChildScoreboardOPVImmunisationId, ChildScoreboardOPVImmunisation )
+    , pcv13Immunisation : Maybe ( ChildScoreboardPCV13ImmunisationId, ChildScoreboardPCV13Immunisation )
+    , rotarixImmunisation : Maybe ( ChildScoreboardRotarixImmunisationId, ChildScoreboardRotarixImmunisation )
     }
 
 
