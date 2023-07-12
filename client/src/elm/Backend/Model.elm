@@ -467,7 +467,14 @@ type Revision
     | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ChildScoreboardEncounterRevision ChildScoreboardEncounterId ChildScoreboardEncounter
+    | ChildScoreboardBCGImmunisationRevision ChildScoreboardBCGImmunisationId ChildScoreboardBCGImmunisation
+    | ChildScoreboardDTPImmunisationRevision ChildScoreboardDTPImmunisationId ChildScoreboardDTPImmunisation
+    | ChildScoreboardIPVImmunisationRevision ChildScoreboardIPVImmunisationId ChildScoreboardIPVImmunisation
+    | ChildScoreboardMRImmunisationRevision ChildScoreboardMRImmunisationId ChildScoreboardMRImmunisation
     | ChildScoreboardNCDARevision ChildScoreboardNCDAId ChildScoreboardNCDA
+    | ChildScoreboardOPVImmunisationRevision ChildScoreboardOPVImmunisationId ChildScoreboardOPVImmunisation
+    | ChildScoreboardPCV13ImmunisationRevision ChildScoreboardPCV13ImmunisationId ChildScoreboardPCV13Immunisation
+    | ChildScoreboardRotarixImmunisationRevision ChildScoreboardRotarixImmunisationId ChildScoreboardRotarixImmunisation
     | ClinicRevision ClinicId Clinic
     | ContributingFactorsRevision ContributingFactorsId ContributingFactors
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam

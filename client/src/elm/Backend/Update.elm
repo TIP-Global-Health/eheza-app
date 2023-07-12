@@ -3610,10 +3610,66 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        ChildScoreboardBCGImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | bcgImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardDTPImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardIPVImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ipvImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardMRImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mrImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         ChildScoreboardNCDARevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
                 (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardOPVImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | opvImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardPCV13ImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pcv13Immunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardRotarixImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
                 model
             , recalc
             )
