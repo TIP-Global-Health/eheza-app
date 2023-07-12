@@ -783,220 +783,220 @@ type PrenatalAppointmentConfirmationUuidType
     = PrenatalAppointmentConfirmationUuidType
 
 
-type alias WellChildEncounterId =
-    EntityUuid WellChildEncounterUuidType
+type alias ChildScoreboardEncounterId =
+    EntityUuid ChildScoreboardEncounterUuidType
 
 
-type WellChildEncounterUuidType
-    = WellChildEncounterUuidType
+type ChildScoreboardEncounterUuidType
+    = ChildScoreboardEncounterUuidType
 
 
-type alias WellChildECDId =
-    EntityUuid WellChildECDUuidType
+type alias ChildScoreboardECDId =
+    EntityUuid ChildScoreboardECDUuidType
 
 
-type WellChildECDUuidType
-    = WellChildECDUuidType
+type ChildScoreboardECDUuidType
+    = ChildScoreboardECDUuidType
 
 
-type alias WellChildNutritionId =
-    EntityUuid WellChildNutritionUuidType
+type alias ChildScoreboardNutritionId =
+    EntityUuid ChildScoreboardNutritionUuidType
 
 
-type WellChildNutritionUuidType
-    = WellChildNutritionUuidType
+type ChildScoreboardNutritionUuidType
+    = ChildScoreboardNutritionUuidType
 
 
-type alias WellChildMuacId =
-    EntityUuid WellChildMuacUuidType
+type alias ChildScoreboardMuacId =
+    EntityUuid ChildScoreboardMuacUuidType
 
 
-type WellChildMuacUuidType
-    = WellChildMuacUuidType
+type ChildScoreboardMuacUuidType
+    = ChildScoreboardMuacUuidType
 
 
-type alias WellChildHeightId =
-    EntityUuid WellChildHeightUuidType
+type alias ChildScoreboardHeightId =
+    EntityUuid ChildScoreboardHeightUuidType
 
 
-type WellChildHeightUuidType
-    = WellChildHeightUuidType
+type ChildScoreboardHeightUuidType
+    = ChildScoreboardHeightUuidType
 
 
-type alias WellChildPhotoId =
-    EntityUuid WellChildPhotoUuidType
+type alias ChildScoreboardPhotoId =
+    EntityUuid ChildScoreboardPhotoUuidType
 
 
-type WellChildPhotoUuidType
-    = WellChildPhotoUuidType
+type ChildScoreboardPhotoUuidType
+    = ChildScoreboardPhotoUuidType
 
 
-type alias WellChildWeightId =
-    EntityUuid WellChildWeightUuidType
+type alias ChildScoreboardWeightId =
+    EntityUuid ChildScoreboardWeightUuidType
 
 
-type WellChildWeightUuidType
-    = WellChildWeightUuidType
+type ChildScoreboardWeightUuidType
+    = ChildScoreboardWeightUuidType
 
 
-type alias WellChildSendToHCId =
-    EntityUuid WellChildSendToHCIdUuidType
+type alias ChildScoreboardSendToHCId =
+    EntityUuid ChildScoreboardSendToHCIdUuidType
 
 
-type WellChildSendToHCIdUuidType
-    = WellChildSendToHCIdUuidType
+type ChildScoreboardSendToHCIdUuidType
+    = ChildScoreboardSendToHCIdUuidType
 
 
-type alias WellChildHealthEducationId =
-    EntityUuid WellChildHealthEducationUuidType
+type alias ChildScoreboardHealthEducationId =
+    EntityUuid ChildScoreboardHealthEducationUuidType
 
 
-type WellChildHealthEducationUuidType
-    = WellChildHealthEducationUuidType
+type ChildScoreboardHealthEducationUuidType
+    = ChildScoreboardHealthEducationUuidType
 
 
-type alias WellChildContributingFactorsId =
-    EntityUuid WellChildContributingFactorsIdUuidType
+type alias ChildScoreboardContributingFactorsId =
+    EntityUuid ChildScoreboardContributingFactorsIdUuidType
 
 
-type WellChildContributingFactorsIdUuidType
-    = WellChildContributingFactorsIdUuidType
+type ChildScoreboardContributingFactorsIdUuidType
+    = ChildScoreboardContributingFactorsIdUuidType
 
 
-type alias WellChildFollowUpId =
-    EntityUuid WellChildFollowUpIdUuidType
+type alias ChildScoreboardFollowUpId =
+    EntityUuid ChildScoreboardFollowUpIdUuidType
 
 
-type WellChildFollowUpIdUuidType
-    = WellChildFollowUpIdUuidType
+type ChildScoreboardFollowUpIdUuidType
+    = ChildScoreboardFollowUpIdUuidType
 
 
-type alias WellChildHeadCircumferenceId =
-    EntityUuid WellChildHeadCircumferenceUuidType
+type alias ChildScoreboardHeadCircumferenceId =
+    EntityUuid ChildScoreboardHeadCircumferenceUuidType
 
 
-type WellChildHeadCircumferenceUuidType
-    = WellChildHeadCircumferenceUuidType
+type ChildScoreboardHeadCircumferenceUuidType
+    = ChildScoreboardHeadCircumferenceUuidType
 
 
-type alias WellChildSymptomsReviewId =
-    EntityUuid WellChildSymptomsReviewUuidType
+type alias ChildScoreboardSymptomsReviewId =
+    EntityUuid ChildScoreboardSymptomsReviewUuidType
 
 
-type WellChildSymptomsReviewUuidType
-    = WellChildSymptomsReviewUuidType
+type ChildScoreboardSymptomsReviewUuidType
+    = ChildScoreboardSymptomsReviewUuidType
 
 
-type alias WellChildVitalsId =
-    EntityUuid WellChildVitalsUuidType
+type alias ChildScoreboardVitalsId =
+    EntityUuid ChildScoreboardVitalsUuidType
 
 
-type WellChildVitalsUuidType
-    = WellChildVitalsUuidType
+type ChildScoreboardVitalsUuidType
+    = ChildScoreboardVitalsUuidType
 
 
-type alias WellChildMebendezoleId =
-    EntityUuid WellChildMebendezoleUuidType
+type alias ChildScoreboardMebendezoleId =
+    EntityUuid ChildScoreboardMebendezoleUuidType
 
 
-type WellChildMebendezoleUuidType
-    = WellChildMebendezoleUuidType
+type ChildScoreboardMebendezoleUuidType
+    = ChildScoreboardMebendezoleUuidType
 
 
-type alias WellChildPregnancySummaryId =
-    EntityUuid WellChildPregnancySummaryUuidType
+type alias ChildScoreboardPregnancySummaryId =
+    EntityUuid ChildScoreboardPregnancySummaryUuidType
 
 
-type WellChildPregnancySummaryUuidType
-    = WellChildPregnancySummaryUuidType
+type ChildScoreboardPregnancySummaryUuidType
+    = ChildScoreboardPregnancySummaryUuidType
 
 
-type alias WellChildVitaminAId =
-    EntityUuid WellChildVitaminAUuidType
+type alias ChildScoreboardVitaminAId =
+    EntityUuid ChildScoreboardVitaminAUuidType
 
 
-type WellChildVitaminAUuidType
-    = WellChildVitaminAUuidType
+type ChildScoreboardVitaminAUuidType
+    = ChildScoreboardVitaminAUuidType
 
 
-type alias WellChildAlbendazoleId =
-    EntityUuid WellChildAlbendazoleUuidType
+type alias ChildScoreboardAlbendazoleId =
+    EntityUuid ChildScoreboardAlbendazoleUuidType
 
 
-type WellChildAlbendazoleUuidType
-    = WellChildAlbendazoleUuidType
+type ChildScoreboardAlbendazoleUuidType
+    = ChildScoreboardAlbendazoleUuidType
 
 
-type alias WellChildNextVisitId =
-    EntityUuid WellChildNextVisitUuidType
+type alias ChildScoreboardNextVisitId =
+    EntityUuid ChildScoreboardNextVisitUuidType
 
 
-type WellChildNextVisitUuidType
-    = WellChildNextVisitUuidType
+type ChildScoreboardNextVisitUuidType
+    = ChildScoreboardNextVisitUuidType
 
 
-type alias WellChildBCGImmunisationId =
-    EntityUuid WellChildBCGImmunisationUuidType
+type alias ChildScoreboardBCGImmunisationId =
+    EntityUuid ChildScoreboardBCGImmunisationUuidType
 
 
-type WellChildBCGImmunisationUuidType
-    = WellChildBCGImmunisationUuidType
+type ChildScoreboardBCGImmunisationUuidType
+    = ChildScoreboardBCGImmunisationUuidType
 
 
-type alias WellChildDTPImmunisationId =
-    EntityUuid WellChildDTPImmunisationUuidType
+type alias ChildScoreboardDTPImmunisationId =
+    EntityUuid ChildScoreboardDTPImmunisationUuidType
 
 
-type WellChildDTPImmunisationUuidType
-    = WellChildDTPImmunisationUuidType
+type ChildScoreboardDTPImmunisationUuidType
+    = ChildScoreboardDTPImmunisationUuidType
 
 
-type alias WellChildHPVImmunisationId =
-    EntityUuid WellChildHPVImmunisationUuidType
+type alias ChildScoreboardHPVImmunisationId =
+    EntityUuid ChildScoreboardHPVImmunisationUuidType
 
 
-type WellChildHPVImmunisationUuidType
-    = WellChildHPVImmunisationUuidType
+type ChildScoreboardHPVImmunisationUuidType
+    = ChildScoreboardHPVImmunisationUuidType
 
 
-type alias WellChildIPVImmunisationId =
-    EntityUuid WellChildIPVImmunisationUuidType
+type alias ChildScoreboardIPVImmunisationId =
+    EntityUuid ChildScoreboardIPVImmunisationUuidType
 
 
-type WellChildIPVImmunisationUuidType
-    = WellChildIPVImmunisationUuidType
+type ChildScoreboardIPVImmunisationUuidType
+    = ChildScoreboardIPVImmunisationUuidType
 
 
-type alias WellChildMRImmunisationId =
-    EntityUuid WellChildMRImmunisationUuidType
+type alias ChildScoreboardMRImmunisationId =
+    EntityUuid ChildScoreboardMRImmunisationUuidType
 
 
-type WellChildMRImmunisationUuidType
-    = WellChildMRImmunisationUuidType
+type ChildScoreboardMRImmunisationUuidType
+    = ChildScoreboardMRImmunisationUuidType
 
 
-type alias WellChildOPVImmunisationId =
-    EntityUuid WellChildOPVImmunisationUuidType
+type alias ChildScoreboardOPVImmunisationId =
+    EntityUuid ChildScoreboardOPVImmunisationUuidType
 
 
-type WellChildOPVImmunisationUuidType
-    = WellChildOPVImmunisationUuidType
+type ChildScoreboardOPVImmunisationUuidType
+    = ChildScoreboardOPVImmunisationUuidType
 
 
-type alias WellChildPCV13ImmunisationId =
-    EntityUuid WellChildPCV13ImmunisationUuidType
+type alias ChildScoreboardPCV13ImmunisationId =
+    EntityUuid ChildScoreboardPCV13ImmunisationUuidType
 
 
-type WellChildPCV13ImmunisationUuidType
-    = WellChildPCV13ImmunisationUuidType
+type ChildScoreboardPCV13ImmunisationUuidType
+    = ChildScoreboardPCV13ImmunisationUuidType
 
 
-type alias WellChildRotarixImmunisationId =
-    EntityUuid WellChildRotarixImmunisationUuidType
+type alias ChildScoreboardRotarixImmunisationId =
+    EntityUuid ChildScoreboardRotarixImmunisationUuidType
 
 
-type WellChildRotarixImmunisationUuidType
-    = WellChildRotarixImmunisationUuidType
+type ChildScoreboardRotarixImmunisationUuidType
+    = ChildScoreboardRotarixImmunisationUuidType
 
 
 type alias AcuteIllnessCoreExamId =
@@ -1359,12 +1359,12 @@ type NutritionNCDAUuidType
     = NutritionNCDAUuidType
 
 
-type alias WellChildNCDAId =
-    EntityUuid WellChildNCDAUuidType
+type alias ChildScoreboardNCDAId =
+    EntityUuid ChildScoreboardNCDAUuidType
 
 
-type WellChildNCDAUuidType
-    = WellChildNCDAUuidType
+type ChildScoreboardNCDAUuidType
+    = ChildScoreboardNCDAUuidType
 
 
 type alias NCDLipidPanelTestId =
@@ -1429,3 +1429,59 @@ type alias ChildScoreboardNCDAId =
 
 type ChildScoreboardNCDAUuidType
     = ChildScoreboardNCDAUuidType
+
+
+type alias ChildScoreboardBCGImmunisationId =
+    EntityUuid ChildScoreboardBCGImmunisationUuidType
+
+
+type ChildScoreboardBCGImmunisationUuidType
+    = ChildScoreboardBCGImmunisationUuidType
+
+
+type alias ChildScoreboardDTPImmunisationId =
+    EntityUuid ChildScoreboardDTPImmunisationUuidType
+
+
+type ChildScoreboardDTPImmunisationUuidType
+    = ChildScoreboardDTPImmunisationUuidType
+
+
+type alias ChildScoreboardIPVImmunisationId =
+    EntityUuid ChildScoreboardIPVImmunisationUuidType
+
+
+type ChildScoreboardIPVImmunisationUuidType
+    = ChildScoreboardIPVImmunisationUuidType
+
+
+type alias ChildScoreboardMRImmunisationId =
+    EntityUuid ChildScoreboardMRImmunisationUuidType
+
+
+type ChildScoreboardMRImmunisationUuidType
+    = ChildScoreboardMRImmunisationUuidType
+
+
+type alias ChildScoreboardOPVImmunisationId =
+    EntityUuid ChildScoreboardOPVImmunisationUuidType
+
+
+type ChildScoreboardOPVImmunisationUuidType
+    = ChildScoreboardOPVImmunisationUuidType
+
+
+type alias ChildScoreboardPCV13ImmunisationId =
+    EntityUuid ChildScoreboardPCV13ImmunisationUuidType
+
+
+type ChildScoreboardPCV13ImmunisationUuidType
+    = ChildScoreboardPCV13ImmunisationUuidType
+
+
+type alias ChildScoreboardRotarixImmunisationId =
+    EntityUuid ChildScoreboardRotarixImmunisationUuidType
+
+
+type ChildScoreboardRotarixImmunisationUuidType
+    = ChildScoreboardRotarixImmunisationUuidType
