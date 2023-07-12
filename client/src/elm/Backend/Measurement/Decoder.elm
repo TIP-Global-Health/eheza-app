@@ -280,6 +280,13 @@ decodeChildScoreboardMeasurements : Decoder ChildScoreboardMeasurements
 decodeChildScoreboardMeasurements =
     succeed ChildScoreboardMeasurements
         |> optional "child_scoreboard_ncda" (decodeHead decodeChildScoreboardNCDA) Nothing
+        |> optional "child_scoreboard_bcg_iz" (decodeHead decodeChildScoreboardBCGImmunisation) Nothing
+        |> optional "child_scoreboard_dtp_iz" (decodeHead decodeChildScoreboardDTPImmunisation) Nothing
+        |> optional "child_scoreboard_ipv_iz" (decodeHead decodeChildScoreboardIPVImmunisation) Nothing
+        |> optional "child_scoreboard_mr_iz" (decodeHead decodeChildScoreboardMRImmunisation) Nothing
+        |> optional "child_scoreboard_opv_iz" (decodeHead decodeChildScoreboardOPVImmunisation) Nothing
+        |> optional "child_scoreboard_pcv13_iz" (decodeHead decodeChildScoreboardPCV13Immunisation) Nothing
+        |> optional "child_scoreboard_rotarix_iz" (decodeHead decodeChildScoreboardRotarixImmunisation) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -5229,3 +5236,38 @@ decodePregnancyByNewborn =
         -- we can determine that pregnancy was not tracked on E-Heza.
         , succeed Nothing
         ]
+
+
+decodeChildScoreboardBCGImmunisation : Decoder ChildScoreboardBCGImmunisation
+decodeChildScoreboardBCGImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardDTPImmunisation : Decoder ChildScoreboardDTPImmunisation
+decodeChildScoreboardDTPImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardIPVImmunisation : Decoder ChildScoreboardIPVImmunisation
+decodeChildScoreboardIPVImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardMRImmunisation : Decoder ChildScoreboardMRImmunisation
+decodeChildScoreboardMRImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardOPVImmunisation : Decoder ChildScoreboardOPVImmunisation
+decodeChildScoreboardOPVImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardPCV13Immunisation : Decoder ChildScoreboardPCV13Immunisation
+decodeChildScoreboardPCV13Immunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardRotarixImmunisation : Decoder ChildScoreboardRotarixImmunisation
+decodeChildScoreboardRotarixImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue

@@ -4888,3 +4888,38 @@ encodeHbA1cTestValue value =
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_hba1c_test" )
            ]
+
+
+encodeChildScoreboardBCGImmunisation : ChildScoreboardBCGImmunisation -> List ( String, Value )
+encodeChildScoreboardBCGImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_bcg_iz")
+
+
+encodeChildScoreboardDTPImmunisation : ChildScoreboardDTPImmunisation -> List ( String, Value )
+encodeChildScoreboardDTPImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_dtp_iz")
+
+
+encodeChildScoreboardIPVImmunisation : ChildScoreboardIPVImmunisation -> List ( String, Value )
+encodeChildScoreboardIPVImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_ipv_iz")
+
+
+encodeChildScoreboardMRImmunisation : ChildScoreboardMRImmunisation -> List ( String, Value )
+encodeChildScoreboardMRImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_mr_iz")
+
+
+encodeChildScoreboardOPVImmunisation : ChildScoreboardOPVImmunisation -> List ( String, Value )
+encodeChildScoreboardOPVImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_opv_iz")
+
+
+encodeChildScoreboardPCV13Immunisation : ChildScoreboardPCV13Immunisation -> List ( String, Value )
+encodeChildScoreboardPCV13Immunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_pcv13_iz")
+
+
+encodeChildScoreboardRotarixImmunisation : ChildScoreboardRotarixImmunisation -> List ( String, Value )
+encodeChildScoreboardRotarixImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_rotarix_iz")
