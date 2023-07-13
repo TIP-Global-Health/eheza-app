@@ -479,6 +479,7 @@ type alias VaccinationFormDynamicContentAndTasksConfig msg =
     , nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
     , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
     , firstDoseExpectedFrom : NominalDate
+    , suggestDoseToday : Bool
     }
 
 

@@ -1415,6 +1415,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                         initialVaccinationDateByBirthDate birthDate
                             initialOpvAdministered
                             ( vaccineType, VaccineDoseFirst )
+                    , suggestDoseToday = True
                     }
 
                 initialOpvAdministeredByForm =

@@ -1045,7 +1045,7 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
                                                 )
 
                                         ( todaysDoseInputs, todaysDoseTasksCompleted, todaysDoseTasksActive ) =
-                                            if form.updatePreviousVaccines == Just False then
+                                            if form.updatePreviousVaccines == Just False && config.suggestDoseToday then
                                                 let
                                                     ( whyNotIpnut, whyNotTaskCompleted, whyNotTaskActive ) =
                                                         if form.willReceiveVaccineToday == Just False then

@@ -52,7 +52,7 @@ import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.ChildScoreboard.Utils exposing (generateVaccinationProgressDicts)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewPersonDetailsExtended, viewSaveAction)
+import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewLabel, viewPersonDetailsExtended, viewSaveAction)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -169,11 +169,8 @@ viewImmunisationContent language currentDate assembled db data =
         measurements =
             assembled.measurements
 
-        ( vaccinationHistory, vaccinationProgress ) =
-            generateVaccinationProgressDicts assembled db
-
         tasks =
-            List.filter (expectImmunisationTask currentDate assembled.person vaccinationHistory) immunisationTasks
+            List.filter (expectImmunisationTask currentDate assembled.person assembled.vaccinationHistory) immunisationTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -255,8 +252,6 @@ viewImmunisationContent language currentDate assembled db data =
                     , immunisationTasksCompletedFromTotal language
                         currentDate
                         assembled
-                        vaccinationHistory
-                        vaccinationProgress
                         data
                         task
                     )
@@ -402,12 +397,10 @@ immunisationTasksCompletedFromTotal :
     Language
     -> NominalDate
     -> AssembledData
-    -> VaccinationProgressDict
-    -> VaccinationProgressDict
     -> ImmunisationData
     -> Measurement.Model.ImmunisationTask
     -> ( Int, Int )
-immunisationTasksCompletedFromTotal language currentDate assembled vaccinationHistory vaccinationProgress data task =
+immunisationTasksCompletedFromTotal language currentDate assembled data task =
     Maybe.map
         (\vaccineType ->
             let
@@ -455,9 +448,7 @@ immunisationTasksCompletedFromTotal language currentDate assembled vaccinationHi
                 ( _, tasksActive, tasksCompleted ) =
                     vaccinationFormDynamicContentAndTasks language
                         currentDate
-                        assembled.person
-                        vaccinationHistory
-                        vaccinationProgress
+                        assembled
                         vaccineType
                         form
             in
@@ -467,16 +458,36 @@ immunisationTasksCompletedFromTotal language currentDate assembled vaccinationHi
         |> Maybe.withDefault ( 0, 0 )
 
 
+viewVaccinationForm : Language -> NominalDate -> AssembledData -> WellChildVaccineType -> ChildScoreboardVaccinationForm -> Html Msg
+viewVaccinationForm language currentDate assembled vaccineType form =
+    let
+        ( contentByViewMode, _, _ ) =
+            vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form
+    in
+    div [ class "ui form vaccination" ] <|
+        [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
+        , div [ class "instructions" ] <|
+            [ div [ class "header icon-label" ] <|
+                [ i [ class "icon-open-book" ] []
+                , div []
+                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription vaccineType ]
+                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
+                    ]
+                ]
+            , viewLabel language (Translate.WellChildImmunisationHistory vaccineType)
+            ]
+                ++ contentByViewMode
+        ]
+
+
 vaccinationFormDynamicContentAndTasks :
     Language
     -> NominalDate
-    -> Person
-    -> VaccinationProgressDict
-    -> VaccinationProgressDict
+    -> AssembledData
     -> WellChildVaccineType
     -> ChildScoreboardVaccinationForm
     -> ( List (Html Msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate person vaccinationHistory vaccinationProgress vaccineType form =
+vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form =
     Maybe.map
         (\birthDate ->
             let
@@ -499,13 +510,14 @@ vaccinationFormDynamicContentAndTasks language currentDate person vaccinationHis
                         initialVaccinationDateByBirthDate birthDate
                             initialOpvAdministered
                             ( vaccineType, VaccineDoseFirst )
+                    , suggestDoseToday = False
                     }
 
                 initialOpvAdministeredByForm =
                     wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
 
                 initialOpvAdministeredByProgress =
-                    wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
+                    wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
 
                 initialOpvAdministered =
                     if form.administeredDosesDirty then
@@ -517,10 +529,10 @@ vaccinationFormDynamicContentAndTasks language currentDate person vaccinationHis
                 expectedDoses =
                     getAllDosesForVaccine initialOpvAdministered vaccineType
                         |> List.filter
-                            (\dose -> expectVaccineDoseForPerson currentDate person initialOpvAdministered ( vaccineType, dose ))
+                            (\dose -> expectVaccineDoseForPerson currentDate assembled.person initialOpvAdministered ( vaccineType, dose ))
 
                 dosesFromPreviousEncountersData =
-                    Dict.get vaccineType vaccinationHistory
+                    Dict.get vaccineType assembled.vaccinationHistory
                         |> Maybe.withDefault Dict.empty
                         |> Dict.toList
 
@@ -544,28 +556,5 @@ vaccinationFormDynamicContentAndTasks language currentDate person vaccinationHis
             in
             Measurement.Utils.vaccinationFormDynamicContentAndTasks language currentDate config (WellChildVaccine vaccineType) form
         )
-        person.birthDate
+        assembled.person.birthDate
         |> Maybe.withDefault ( [], 0, 1 )
-
-
-viewVaccinationForm : Language -> NominalDate -> AssembledData -> WellChildVaccineType -> ChildScoreboardVaccinationForm -> Html Msg
-viewVaccinationForm language currentDate assembled vaccineType form =
-    -- let
-    --     ( contentByViewMode, _, _ ) =
-    --         vaccinationFormDynamicContentAndTasks language currentDate  assembled vaccineType form
-    -- in
-    -- div [ class "ui form vaccination" ] <|
-    --     [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
-    --     , div [ class "instructions" ] <|
-    --         [ div [ class "header icon-label" ] <|
-    --             [ i [ class "icon-open-book" ] []
-    --             , div []
-    --                 [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription vaccineType ]
-    --                 , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
-    --                 ]
-    --             ]
-    --         , viewLabel language (Translate.WellChildImmunisationHistory vaccineType)
-    --         ]
-    --             ++ contentByViewMode
-    --     ]
-    emptyNode
