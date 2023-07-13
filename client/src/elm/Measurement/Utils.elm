@@ -18,6 +18,7 @@ import Backend.NutritionEncounter.Utils
         , zScoreWeightForAgeSevere
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
@@ -5049,3 +5050,368 @@ ncdaSteps =
     , NCDAStepTargetedInterventions
     , NCDAStepInfrastructureEnvironment
     ]
+
+
+generateSuggestedVaccinations :
+    NominalDate
+    -> Bool
+    -> Person
+    -> VaccinationProgressDict
+    -> VaccinationProgressDict
+    -> List ( WellChildVaccineType, VaccineDose )
+generateSuggestedVaccinations currentDate isChw person vaccinationHistory vaccinationProgress =
+    if isChw then
+        [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
+
+    else
+        let
+            initialOpvAdministered =
+                wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
+        in
+        List.filter (expectVaccineForPerson currentDate person initialOpvAdministered) allVaccineTypes
+            |> List.filterMap
+                (\vaccineType ->
+                    let
+                        suggestedDose =
+                            case latestVaccinationDataForVaccine vaccinationHistory vaccineType of
+                                Just ( lastDoseAdministered, lastDoseDate ) ->
+                                    nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
+
+                                Nothing ->
+                                    Just VaccineDoseFirst
+                    in
+                    Maybe.map (\nextDose -> ( vaccineType, nextDose )) suggestedDose
+                )
+
+
+wasInitialOpvAdministeredByVaccinationProgress : Person -> VaccinationProgressDict -> Bool
+wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress =
+    let
+        firstDoseAdminstrationDate =
+            Dict.get VaccineOPV vaccinationProgress
+                |> Maybe.andThen (Dict.get VaccineDoseFirst)
+    in
+    Maybe.map2
+        (\adminstrationDate birthDate ->
+            Date.diff Days birthDate adminstrationDate < 14
+        )
+        firstDoseAdminstrationDate
+        person.birthDate
+        |> Maybe.withDefault False
+
+
+{-| For each type of vaccine, we generate next dose and administration date.
+If there's no need for future vaccination, Nothing is returned.
+-}
+generateFutureVaccinationsData :
+    NominalDate
+    -> Person
+    -> Bool
+    -> VaccinationProgressDict
+    -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
+    let
+        initialOpvAdministered =
+            wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
+    in
+    allVaccineTypesForPerson person
+        |> List.map
+            (\vaccineType ->
+                let
+                    nextVaccinationData =
+                        case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
+                            Just ( lastDoseAdministered, lastDoseDate ) ->
+                                nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+
+                            Nothing ->
+                                -- There were no vaccination so far, so
+                                -- we offer first dose for today.
+                                let
+                                    initialDate =
+                                        Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst )) person.birthDate
+                                            |> Maybe.withDefault currentDate
+
+                                    vaccinationDate =
+                                        if scheduleFirstDoseForToday then
+                                            Date.max initialDate currentDate
+
+                                        else
+                                            initialDate
+                                in
+                                Just ( VaccineDoseFirst, vaccinationDate )
+                in
+                -- Getting Nothing at nextVaccinationData indicates that
+                -- vacination cycle is completed for this vaccine.
+                ( vaccineType, nextVaccinationData )
+            )
+
+
+{-| Check if the first dose of vaccine may be administered to the person on the limit date.
+-}
+expectVaccineForPerson : NominalDate -> Person -> Bool -> WellChildVaccineType -> Bool
+expectVaccineForPerson limitDate person initialOpvAdministered vaccineType =
+    expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType, VaccineDoseFirst )
+
+
+{-| Check if a dose of vaccine may be administered to a person on the limit date.
+For example, to check if the dose of vaccine may be administered today, we set
+limit date to current date. If we want to check in one year, we set the limit date
+to current date + 1 year.
+-}
+expectVaccineDoseForPerson : NominalDate -> Person -> Bool -> ( WellChildVaccineType, VaccineDose ) -> Bool
+expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType, vaccineDose ) =
+    person.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                let
+                    expectedDate =
+                        initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, vaccineDose )
+
+                    compared =
+                        Date.compare expectedDate limitDate
+
+                    genderCondition =
+                        if vaccineType == VaccineHPV then
+                            person.gender == Female
+
+                        else
+                            True
+                in
+                (compared == LT || compared == EQ) && genderCondition
+            )
+        |> Maybe.withDefault False
+
+
+initialVaccinationDateByBirthDate : NominalDate -> Bool -> ( WellChildVaccineType, VaccineDose ) -> NominalDate
+initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, vaccineDose ) =
+    let
+        dosesInterval =
+            vaccineDoseToComparable vaccineDose - 1
+
+        ( interval, unit ) =
+            getIntervalForVaccine vaccineType
+    in
+    case vaccineType of
+        VaccineBCG ->
+            birthDate
+
+        VaccineOPV ->
+            case vaccineDose of
+                VaccineDoseFirst ->
+                    birthDate
+
+                _ ->
+                    if initialOpvAdministered then
+                        -- Second dose is given starting from age of 6 weeks.
+                        Date.add Weeks 6 birthDate
+                            |> Date.add unit ((dosesInterval - 1) * interval)
+
+                    else
+                        -- Second dose is given starting from age of 10 weeks.
+                        Date.add Weeks 6 birthDate
+                            |> Date.add unit (dosesInterval * interval)
+
+        VaccineDTP ->
+            Date.add Weeks 6 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccinePCV13 ->
+            Date.add Weeks 6 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineRotarix ->
+            Date.add Weeks 6 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineIPV ->
+            Date.add Weeks 14 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineMR ->
+            Date.add Weeks 36 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineHPV ->
+            Date.add Years 12 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+
+latestVaccinationDataForVaccine : VaccinationProgressDict -> WellChildVaccineType -> Maybe ( VaccineDose, NominalDate )
+latestVaccinationDataForVaccine vaccinationsData vaccineType =
+    Dict.get vaccineType vaccinationsData
+        |> Maybe.andThen
+            (Dict.toList
+                >> List.sortBy (Tuple.first >> vaccineDoseToComparable)
+                >> List.reverse
+                >> List.head
+            )
+
+
+nextVaccinationDataForVaccine : WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
+    if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
+        Nothing
+
+    else
+        getNextVaccineDose lastDoseAdministered
+            |> Maybe.map
+                (\dose ->
+                    let
+                        ( interval, unit ) =
+                            getIntervalForVaccine vaccineType
+                    in
+                    ( dose, Date.add unit interval lastDoseDate )
+                )
+
+
+nextDoseForVaccine : NominalDate -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
+nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
+    nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+        |> Maybe.andThen
+            (\( dose, dueDate ) ->
+                if Date.compare dueDate currentDate == GT then
+                    Nothing
+
+                else
+                    Just dose
+            )
+
+
+immunisationTaskToVaccineType : ImmunisationTask -> Maybe WellChildVaccineType
+immunisationTaskToVaccineType task =
+    case task of
+        TaskBCG ->
+            Just VaccineBCG
+
+        TaskDTP ->
+            Just VaccineDTP
+
+        TaskHPV ->
+            Just VaccineHPV
+
+        TaskIPV ->
+            Just VaccineIPV
+
+        TaskMR ->
+            Just VaccineMR
+
+        TaskOPV ->
+            Just VaccineOPV
+
+        TaskPCV13 ->
+            Just VaccinePCV13
+
+        TaskRotarix ->
+            Just VaccineRotarix
+
+        TaskOverview ->
+            Nothing
+
+
+getAllDosesForVaccine : Bool -> WellChildVaccineType -> List VaccineDose
+getAllDosesForVaccine initialOpvAdministered vaccineType =
+    let
+        lastDose =
+            getLastDoseForVaccine initialOpvAdministered vaccineType
+    in
+    List.filterMap
+        (\dose ->
+            if vaccineDoseToComparable dose <= vaccineDoseToComparable lastDose then
+                Just dose
+
+            else
+                Nothing
+        )
+        allVaccineDoses
+
+
+getLastDoseForVaccine : Bool -> WellChildVaccineType -> VaccineDose
+getLastDoseForVaccine initialOpvAdministered vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            VaccineDoseFirst
+
+        VaccineOPV ->
+            if initialOpvAdministered then
+                VaccineDoseFourth
+
+            else
+                VaccineDoseThird
+
+        VaccineDTP ->
+            VaccineDoseThird
+
+        VaccinePCV13 ->
+            VaccineDoseThird
+
+        VaccineRotarix ->
+            VaccineDoseSecond
+
+        VaccineIPV ->
+            VaccineDoseFirst
+
+        VaccineMR ->
+            VaccineDoseSecond
+
+        VaccineHPV ->
+            VaccineDoseSecond
+
+
+getIntervalForVaccine : WellChildVaccineType -> ( Int, Unit )
+getIntervalForVaccine vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            ( 0, Days )
+
+        VaccineOPV ->
+            ( 4, Weeks )
+
+        VaccineDTP ->
+            ( 4, Weeks )
+
+        VaccinePCV13 ->
+            ( 4, Weeks )
+
+        VaccineRotarix ->
+            ( 4, Weeks )
+
+        VaccineIPV ->
+            ( 0, Days )
+
+        VaccineMR ->
+            ( 6, Months )
+
+        VaccineHPV ->
+            ( 6, Months )
+
+
+allVaccineTypesForPerson : Person -> List WellChildVaccineType
+allVaccineTypesForPerson person =
+    List.filter
+        (\vaccineType ->
+            case vaccineType of
+                VaccineHPV ->
+                    person.gender == Female
+
+                _ ->
+                    True
+        )
+        allVaccineTypes
+
+
+allVaccineTypes : List WellChildVaccineType
+allVaccineTypes =
+    [ VaccineBCG
+    , VaccineOPV
+    , VaccineDTP
+    , VaccinePCV13
+    , VaccineRotarix
+    , VaccineIPV
+    , VaccineMR
+    , VaccineHPV
+    ]
+
+
+allVaccineDoses : List VaccineDose
+allVaccineDoses =
+    [ VaccineDoseFirst, VaccineDoseSecond, VaccineDoseThird, VaccineDoseFourth ]

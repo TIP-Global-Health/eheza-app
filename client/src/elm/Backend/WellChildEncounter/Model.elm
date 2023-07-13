@@ -115,7 +115,6 @@ type alias Model =
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
-    , saveImmunisation : WebData ()
     , saveBCGImmunisation : WebData ()
     , saveDTPImmunisation : WebData ()
     , saveHPVImmunisation : WebData ()
@@ -149,7 +148,6 @@ emptyModel =
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
-    , saveImmunisation = NotAsked
     , saveBCGImmunisation = NotAsked
     , saveDTPImmunisation = NotAsked
     , saveHPVImmunisation = NotAsked

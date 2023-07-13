@@ -1212,3 +1212,19 @@ type alias NCDAHistoryData =
 minumalNumberOfANCVisits : Int
 minumalNumberOfANCVisits =
     4
+
+
+type alias VaccinationProgressDict =
+    Dict WellChildVaccineType (Dict VaccineDose NominalDate)
+
+
+type ImmunisationTask
+    = TaskBCG
+    | TaskDTP
+    | TaskHPV
+    | TaskIPV
+    | TaskMR
+    | TaskOPV
+    | TaskPCV13
+    | TaskRotarix
+    | TaskOverview

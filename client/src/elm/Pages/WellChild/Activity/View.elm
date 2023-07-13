@@ -30,11 +30,13 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model
     exposing
-        ( InvokationModule(..)
+        ( ImmunisationTask(..)
+        , InvokationModule(..)
         , NCDAData
         , NCDAHistoryData
         , PhotoForm
         , VaccinationFormViewMode(..)
+        , VaccinationProgressDict
         , VitalsForm
         , VitalsFormMode(..)
         )
@@ -76,7 +78,7 @@ import Pages.Utils
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
-import Pages.WellChild.Encounter.Model exposing (AssembledData, VaccinationProgressDict)
+import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -1241,7 +1243,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
     ]
 
 
-immunisationTasksCompletedFromTotal : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationData -> Pages.WellChild.Activity.Types.ImmunisationTask -> ( Int, Int )
+immunisationTasksCompletedFromTotal : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationData -> Measurement.Model.ImmunisationTask -> ( Int, Int )
 immunisationTasksCompletedFromTotal language currentDate isChw assembled data task =
     Maybe.map
         (\vaccineType ->

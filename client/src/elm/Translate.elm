@@ -1794,7 +1794,7 @@ type TranslationId
     | WellChildImmunisationDosage WellChildVaccineType
     | WellChildImmunisationHeader WellChildVaccineType
     | WellChildImmunisationHistory WellChildVaccineType
-    | WellChildImmunisationTask Pages.WellChild.Activity.Types.ImmunisationTask
+    | WellChildImmunisationTask Measurement.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
@@ -19014,47 +19014,47 @@ translationSet trans =
 
         WellChildImmunisationTask task ->
             case task of
-                Pages.WellChild.Activity.Types.TaskBCG ->
+                Measurement.Model.TaskBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
                     }
 
-                Pages.WellChild.Activity.Types.TaskDTP ->
+                Measurement.Model.TaskDTP ->
                     { english = "DTP - HepB - Hib"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChild.Activity.Types.TaskHPV ->
+                Measurement.Model.TaskHPV ->
                     { english = "HPV"
                     , kinyarwanda = Just "Urukingo rw'Inkondo y'Umura"
                     }
 
-                Pages.WellChild.Activity.Types.TaskIPV ->
+                Measurement.Model.TaskIPV ->
                     { english = "IPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
                     }
 
-                Pages.WellChild.Activity.Types.TaskMR ->
+                Measurement.Model.TaskMR ->
                     { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
                     }
 
-                Pages.WellChild.Activity.Types.TaskOPV ->
+                Measurement.Model.TaskOPV ->
                     { english = "OPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa"
                     }
 
-                Pages.WellChild.Activity.Types.TaskPCV13 ->
+                Measurement.Model.TaskPCV13 ->
                     { english = "PCV 13"
                     , kinyarwanda = Just "Urukingo rw'umusonga"
                     }
 
-                Pages.WellChild.Activity.Types.TaskRotarix ->
+                Measurement.Model.TaskRotarix ->
                     { english = "Rotarix"
                     , kinyarwanda = Just "Urukingo rw'impiswi"
                     }
 
-                Pages.WellChild.Activity.Types.TaskOverview ->
+                Measurement.Model.TaskOverview ->
                     { english = "Overview"
                     , kinyarwanda = Just "Ishusho Rusange"
                     }

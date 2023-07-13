@@ -50,6 +50,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
+import Measurement.Model exposing (VaccinationProgressDict)
+import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
@@ -76,12 +78,11 @@ import Pages.WellChild.Activity.Utils
     exposing
         ( expectedECDSignsOnMilestone
         , generateCompletedECDSigns
-        , generateFutureVaccinationsData
         , getPreviousMeasurements
         , mandatoryNutritionAssessmentTasksCompleted
         )
 import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
-import Pages.WellChild.Encounter.Model exposing (AssembledData, VaccinationProgressDict)
+import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils
     exposing
         ( generateAssembledData

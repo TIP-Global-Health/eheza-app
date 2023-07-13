@@ -18,6 +18,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model
     exposing
         ( HeightForm
+        , ImmunisationTask(..)
         , MuacForm
         , NutritionForm
         , PhotoForm

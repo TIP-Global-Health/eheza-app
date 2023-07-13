@@ -15,6 +15,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Model exposing (VaccinationProgressDict)
 import Pages.ChildScoreboard.Activity.Utils
 import Pages.ChildScoreboard.Encounter.Utils
 import Pages.WellChild.Activity.Utils exposing (generateVaccinationProgress, getPreviousMeasurements)

@@ -10,7 +10,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 import Pages.WellChild.Activity.Types exposing (..)
-import Pages.WellChild.Encounter.Model exposing (VaccinationProgressDict)
+import Measurement.Model exposing (VaccinationProgressDict)
 
 
 type Msg
