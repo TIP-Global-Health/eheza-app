@@ -63,7 +63,8 @@ emptyImmunisationData =
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
       -- NCDA
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String

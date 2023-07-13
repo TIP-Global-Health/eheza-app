@@ -817,6 +817,32 @@ vaccineDoseToComparable dose =
             5
 
 
+wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm : NominalDate -> VaccinationForm msg -> Bool
+wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form =
+    Maybe.map2
+        (\administeredDoses administrationDates ->
+            if EverySet.member VaccineDoseFirst administeredDoses then
+                let
+                    firstDoseAdminstrationDate =
+                        EverySet.toList administrationDates
+                            |> List.sortWith Date.compare
+                            |> List.head
+                in
+                Maybe.map
+                    (\adminstrationDate ->
+                        Date.diff Days birthDate adminstrationDate < 14
+                    )
+                    firstDoseAdminstrationDate
+                    |> Maybe.withDefault False
+
+            else
+                False
+        )
+        form.administeredDoses
+        form.administrationDates
+        |> Maybe.withDefault False
+
+
 vaccinationFormDynamicContentAndTasks :
     Language
     -> NominalDate

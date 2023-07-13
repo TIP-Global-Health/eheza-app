@@ -1418,7 +1418,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     }
 
                 initialOpvAdministeredByForm =
-                    wasInitialOpvAdministeredByVaccinationForm birthDate form
+                    wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
 
                 initialOpvAdministeredByProgress =
                     wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
