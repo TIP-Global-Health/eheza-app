@@ -2718,7 +2718,7 @@ showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
     -- Newborn exam was launched, so, it could have been filled
     -- without them.
     -- It's enough to check if one of the questions was answered,
-    -- because both answereds are required to save the form.
+    -- because both answers are required to save the form.
     Maybe.map (.birthWeight >> isNothing) newbornExamPregnancySummary
         |> Maybe.withDefault True
 
