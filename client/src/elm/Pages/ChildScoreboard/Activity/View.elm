@@ -173,6 +173,10 @@ viewImmunisationContent language currentDate assembled db data =
             -- @todo:
             Dict.empty
 
+        vaccinationProgress =
+            -- @todo:
+            Dict.empty
+
         tasks =
             List.filter (expectImmunisationTask currentDate assembled.person vaccinationHistory) immunisationTasks
 
@@ -250,7 +254,19 @@ viewImmunisationContent language currentDate assembled db data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, immunisationTasksCompletedFromTotal language currentDate assembled data task )) tasks
+            List.map
+                (\task ->
+                    ( task
+                    , immunisationTasksCompletedFromTotal language
+                        currentDate
+                        assembled
+                        vaccinationHistory
+                        vaccinationProgress
+                        data
+                        task
+                    )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -387,8 +403,16 @@ viewImmunisationContent language currentDate assembled db data =
     ]
 
 
-immunisationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> ImmunisationData -> Measurement.Model.ImmunisationTask -> ( Int, Int )
-immunisationTasksCompletedFromTotal language currentDate assembled data task =
+immunisationTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> VaccinationProgressDict
+    -> VaccinationProgressDict
+    -> ImmunisationData
+    -> Measurement.Model.ImmunisationTask
+    -> ( Int, Int )
+immunisationTasksCompletedFromTotal language currentDate assembled vaccinationHistory vaccinationProgress data task =
     Maybe.map
         (\vaccineType ->
             let
@@ -433,12 +457,14 @@ immunisationTasksCompletedFromTotal language currentDate assembled data task =
                         VaccineHPV ->
                             emptyVaccinationForm
 
-                vaccinationHistory =
-                    -- @todo:
-                    Dict.empty
-
                 ( _, tasksActive, tasksCompleted ) =
-                    vaccinationFormDynamicContentAndTasks language currentDate assembled.person vaccinationHistory vaccineType form
+                    vaccinationFormDynamicContentAndTasks language
+                        currentDate
+                        assembled.person
+                        vaccinationHistory
+                        vaccinationProgress
+                        vaccineType
+                        form
             in
             ( tasksActive, tasksCompleted )
         )
@@ -451,10 +477,11 @@ vaccinationFormDynamicContentAndTasks :
     -> NominalDate
     -> Person
     -> VaccinationProgressDict
+    -> VaccinationProgressDict
     -> WellChildVaccineType
     -> ChildScoreboardVaccinationForm
     -> ( List (Html Msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate person vaccinationHistory vaccineType form =
+vaccinationFormDynamicContentAndTasks language currentDate person vaccinationHistory vaccinationProgress vaccineType form =
     Maybe.map
         (\birthDate ->
             let
@@ -483,7 +510,7 @@ vaccinationFormDynamicContentAndTasks language currentDate person vaccinationHis
                     wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
 
                 initialOpvAdministeredByProgress =
-                    wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
+                    wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
 
                 initialOpvAdministered =
                     if form.administeredDosesDirty then

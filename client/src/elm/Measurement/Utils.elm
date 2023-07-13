@@ -58,11 +58,6 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSelectListInput
         )
-import Pages.WellChild.Utils
-    exposing
-        ( generateGroupNutritionAssessmentEntries
-        , generateIndividualNutritionAssessmentEntries
-        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -4986,7 +4981,12 @@ childDiagnosedWithMalnutrition childId db =
         individualWellChildMeasurements =
             Maybe.map
                 (\participantId ->
-                    Pages.WellChild.Utils.generatePreviousMeasurements Nothing participantId db
+                    Backend.Measurement.Utils.generatePreviousMeasurements
+                        Backend.NutritionEncounter.Utils.getWellChildEncountersForParticipant
+                        .wellChildMeasurements
+                        Nothing
+                        participantId
+                        db
                 )
                 individualWellChildParticipantId
                 |> Maybe.withDefault []
@@ -5032,7 +5032,12 @@ resoloveLastScheduledImmunizationVisitDate childId db =
         individualWellChildMeasurements =
             Maybe.map
                 (\participantId ->
-                    Pages.WellChild.Utils.generatePreviousMeasurements Nothing participantId db
+                    Backend.Measurement.Utils.generatePreviousMeasurements
+                        Backend.NutritionEncounter.Utils.getWellChildEncountersForParticipant
+                        .wellChildMeasurements
+                        Nothing
+                        participantId
+                        db
                 )
                 individualWellChildParticipantId
                 |> Maybe.withDefault []
@@ -5441,3 +5446,170 @@ allVaccineTypes =
 allVaccineDoses : List VaccineDose
 allVaccineDoses =
     [ VaccineDoseFirst, VaccineDoseSecond, VaccineDoseThird, VaccineDoseFourth ]
+
+
+getPreviousMeasurements : List ( NominalDate, ( id, a ) ) -> List a
+getPreviousMeasurements =
+    List.map (Tuple.second >> Tuple.second)
+
+
+mergeVaccinationProgressDicts : VaccinationProgressDict -> VaccinationProgressDict -> VaccinationProgressDict
+mergeVaccinationProgressDicts dict1 dict2 =
+    Dict.merge
+        (\vaccineType dosesDict -> Dict.insert vaccineType dosesDict)
+        (\vaccineType dosesDict1 dosesDict2 ->
+            Dict.merge
+                (\dose date -> Dict.insert dose date)
+                (\dose date1 date2 ->
+                    if Date.compare date1 date2 == GT then
+                        Dict.insert dose date1
+
+                    else
+                        Dict.insert dose date2
+                )
+                (\dose date -> Dict.insert dose date)
+                dosesDict1
+                dosesDict2
+                Dict.empty
+                |> Dict.insert vaccineType
+        )
+        (\vaccineType dosesDict -> Dict.insert vaccineType dosesDict)
+        dict1
+        dict2
+        Dict.empty
+
+
+generateGroupNutritionAssessmentEntries : ChildMeasurementList -> List ( NominalDate, List NutritionAssessment )
+generateGroupNutritionAssessmentEntries measurementList =
+    let
+        assessmentsFromNutrition =
+            Dict.values measurementList.nutritions
+                |> List.filterMap
+                    (\nutrition -> filterNutritionAssessmentsFromNutritionValue nutrition.dateMeasured nutrition.value)
+
+        assessmentsFromFollowUp =
+            Dict.values measurementList.followUp
+                |> List.filterMap
+                    (\followUp -> filterNutritionAssessmentsFromFollowUpValue followUp.dateMeasured followUp.value)
+    in
+    mergeNutritionAssessmentEntries
+        assessmentsFromNutrition
+        assessmentsFromFollowUp
+
+
+generateIndividualNutritionAssessmentEntries :
+    List
+        { c
+            | nutrition :
+                Maybe
+                    ( id1
+                    , { v1
+                        | dateMeasured : NominalDate
+                        , value : NutritionValue
+                      }
+                    )
+            , followUp :
+                Maybe
+                    ( id2
+                    , { v2
+                        | dateMeasured : NominalDate
+                        , value : FollowUpValue
+                      }
+                    )
+        }
+    -> List ( NominalDate, List NutritionAssessment )
+generateIndividualNutritionAssessmentEntries measurementList =
+    let
+        assessmentsFromNutrition =
+            List.map
+                (\measurements ->
+                    Maybe.map2 filterNutritionAssessmentsFromNutritionValue
+                        (getMeasurementDateMeasuredFunc measurements.nutrition)
+                        (getMeasurementValueFunc measurements.nutrition)
+                        |> Maybe.Extra.join
+                )
+                measurementList
+                |> Maybe.Extra.values
+
+        assessmentsFromFollowUp =
+            List.map
+                (\measurements ->
+                    Maybe.map2 filterNutritionAssessmentsFromFollowUpValue
+                        (getMeasurementDateMeasuredFunc measurements.followUp)
+                        (getMeasurementValueFunc measurements.followUp)
+                        |> Maybe.Extra.join
+                )
+                measurementList
+                |> Maybe.Extra.values
+    in
+    mergeNutritionAssessmentEntries
+        assessmentsFromNutrition
+        assessmentsFromFollowUp
+
+
+filterNutritionAssessmentsFromNutritionValue : NominalDate -> NutritionValue -> Maybe ( NominalDate, List NutritionAssessment )
+filterNutritionAssessmentsFromNutritionValue dateMeasured value =
+    let
+        assesments =
+            EverySet.toList value.assesment
+                |> List.filterMap
+                    (\assesment ->
+                        case assesment of
+                            NoNutritionAssessment ->
+                                Nothing
+
+                            AssesmentMalnutritionSigns _ ->
+                                Just <| AssesmentMalnutritionSigns (EverySet.toList value.signs)
+
+                            _ ->
+                                Just assesment
+                    )
+    in
+    if List.isEmpty assesments then
+        Nothing
+
+    else
+        Just ( dateMeasured, assesments )
+
+
+filterNutritionAssessmentsFromFollowUpValue : NominalDate -> FollowUpValue -> Maybe ( NominalDate, List NutritionAssessment )
+filterNutritionAssessmentsFromFollowUpValue dateMeasured value =
+    let
+        assesments =
+            EverySet.toList value.assesment
+                |> List.filterMap
+                    (\assesment ->
+                        case assesment of
+                            NoNutritionAssessment ->
+                                Nothing
+
+                            _ ->
+                                Just assesment
+                    )
+    in
+    if List.isEmpty assesments then
+        Nothing
+
+    else
+        Just ( dateMeasured, assesments )
+
+
+mergeNutritionAssessmentEntries :
+    List ( NominalDate, List NutritionAssessment )
+    -> List ( NominalDate, List NutritionAssessment )
+    -> List ( NominalDate, List NutritionAssessment )
+mergeNutritionAssessmentEntries list1 list2 =
+    Dict.merge
+        (\date assessments -> Dict.insert date assessments)
+        (\date assessments1 assessments2 ->
+            Dict.insert date
+                ((assessments1 ++ assessments2)
+                    |> EverySet.fromList
+                    |> EverySet.toList
+                )
+        )
+        (\date assessments -> Dict.insert date assessments)
+        (Dict.fromList list1)
+        (Dict.fromList list2)
+        Dict.empty
+        |> Dict.toList

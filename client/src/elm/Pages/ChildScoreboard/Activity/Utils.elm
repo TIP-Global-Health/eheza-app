@@ -2,6 +2,7 @@ module Pages.ChildScoreboard.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, VaccinationValue, VaccineDose(..), WellChildVaccineType(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -21,14 +22,15 @@ import Measurement.Utils
         ( corePhysicalExamFormWithDefault
         , generateFutureVaccinationsData
         , generateVaccinationProgressForVaccine
+        , getPreviousMeasurements
         , immunisationTaskToVaccineType
         , isTestResultValid
+        , mergeVaccinationProgressDicts
         , resolveLabTestDate
         , vitalsFormWithDefault
         )
 import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
-import Pages.ChildScoreboard.Encounter.Utils exposing (..)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -74,48 +76,6 @@ activityCompleted currentDate assembled activity =
             notExpected ChildScoreboardVaccinationHistory
                 || -- @todo:
                    False
-
-
-generateVaccinationProgress : Person -> List ChildScoreboardMeasurements -> VaccinationProgressDict
-generateVaccinationProgress person measurements =
-    let
-        bcgImmunisations =
-            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        dtpImmunisations =
-            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        ipvImmunisations =
-            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        mrImmunisations =
-            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        opvImmunisations =
-            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        pcv13Immunisations =
-            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
-                measurements
-
-        rotarixImmunisations =
-            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
-                measurements
-    in
-    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
-    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
-    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
-    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
-    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
-    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
-    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
-    ]
-        |> Dict.fromList
 
 
 expectImmunisationTask : NominalDate -> Person -> VaccinationProgressDict -> ImmunisationTask -> Bool
@@ -191,9 +151,52 @@ generateSuggestedVaccinations :
     NominalDate
     -> Person
     -> VaccinationProgressDict
+    -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate person vaccinationHistory =
-    Measurement.Utils.generateSuggestedVaccinations currentDate False person vaccinationHistory vaccinationHistory
+generateSuggestedVaccinations currentDate person vaccinationHistory vaccinationProgress =
+    Measurement.Utils.generateSuggestedVaccinations currentDate False person vaccinationHistory vaccinationProgress
+
+
+generateVaccinationProgress : List ChildScoreboardMeasurements -> VaccinationProgressDict
+generateVaccinationProgress measurements =
+    let
+        bcgImmunisations =
+            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        dtpImmunisations =
+            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        ipvImmunisations =
+            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        mrImmunisations =
+            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        opvImmunisations =
+            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        pcv13Immunisations =
+            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
+                measurements
+
+        rotarixImmunisations =
+            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
+                measurements
+    in
+    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
+    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
+    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
+    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
+    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
+    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
+    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
+    ]
+        |> Dict.fromList
 
 
 immunisationTasks : List ImmunisationTask

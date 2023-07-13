@@ -9,6 +9,7 @@ import Backend.NutritionEncounter.Utils exposing (getChildScoreboardEncountersFo
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
+import Pages.ChildScoreboard.Utils exposing (generatePreviousMeasurements)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
@@ -39,18 +40,15 @@ generateAssembledData id db =
                         Dict.get participant_.person db.people
                             |> Maybe.withDefault NotAsked
                     )
+
+        previousMeasurementsWithDates =
+            RemoteData.toMaybe encounter
+                |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
+                |> Maybe.withDefault []
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
         |> RemoteData.andMap participant
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
-
-
-generatePreviousMeasurements :
-    Maybe ChildScoreboardEncounterId
-    -> IndividualEncounterParticipantId
-    -> ModelIndexedDb
-    -> List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
-generatePreviousMeasurements =
-    Backend.Measurement.Utils.generatePreviousMeasurements getChildScoreboardEncountersForParticipant .childScoreboardMeasurements
+        |> RemoteData.andMap (Success previousMeasurementsWithDates)

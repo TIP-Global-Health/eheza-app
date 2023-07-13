@@ -33,6 +33,7 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : ChildScoreboardMeasurements
+    , previousMeasurementsWithDates : List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
     }
 
 
