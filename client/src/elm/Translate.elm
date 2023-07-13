@@ -1015,7 +1015,7 @@ type TranslationId
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
-    | NCDANumberOfANCVisitsHeader Int
+    | NCDANumberOfANCVisitsHeader (Maybe Int)
     | NCDANumberOfANCVisitsQuestion
     | NCDANumberImmunizationAppointmentLabel
     | NCDANumberOfMissedImmunizationAppointmentsHeader
@@ -9819,21 +9819,24 @@ translationSet trans =
                     , kinyarwanda = Just "Kubyimba"
                     }
 
-        NCDANumberOfANCVisitsHeader number ->
-            if number == 0 then
-                { english = "According to E-Heza, the mother had no standard ANC visits"
-                , kinyarwanda = Nothing
-                }
+        NCDANumberOfANCVisitsHeader maybeNunmber ->
+            Maybe.map
+                (\number ->
+                    if number == 1 then
+                        { english = "According to E-Heza, the mother had 1 standard ANC visit"
+                        , kinyarwanda = Nothing
+                        }
 
-            else if number == 0 then
-                { english = "According to E-Heza, the mother had 1 standard ANC visit"
-                , kinyarwanda = Nothing
-                }
-
-            else
-                { english = "According to E-Heza, the mother had " ++ String.fromInt number ++ " standard ANC visits"
-                , kinyarwanda = Nothing
-                }
+                    else
+                        { english = "According to E-Heza, the mother had " ++ String.fromInt number ++ " standard ANC visits"
+                        , kinyarwanda = Nothing
+                        }
+                )
+                maybeNunmber
+                |> Maybe.withDefault
+                    { english = "E-Heza does not have records of this pregnancy"
+                    , kinyarwanda = Nothing
+                    }
 
         NCDANumberOfANCVisitsQuestion ->
             { english = "How many ANC standard visits did the mother receive"

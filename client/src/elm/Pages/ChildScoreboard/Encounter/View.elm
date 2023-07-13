@@ -104,13 +104,17 @@ viewNCDAContent language currentDate assembled db data =
             else
                 CloseEncounter assembled
 
+        personId =
+            assembled.participant.person
+
         historyData =
-            { pregnancySummary = getNewbornExamPregnancySummary assembled.participant.person db
-            , ncdaNeverFilled = resolveNCDANeverFilled currentDate assembled.participant.person db
+            { pregnancySummary = getNewbornExamPregnancySummary personId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             }
     in
     Measurement.View.viewNCDAContentNEW language
         currentDate
+        personId
         assembled.person
         SetNCDABoolInput
         SetBirthWeight
@@ -122,6 +126,7 @@ viewNCDAContent language currentDate assembled db data =
         data.helperState
         form
         historyData
+        db
 
 
 acuteIllnessEncounterPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)

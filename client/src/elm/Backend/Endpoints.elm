@@ -1277,3 +1277,8 @@ childScoreboardNCDAEndpoint : ReadWriteEndPoint Error ChildScoreboardNCDAId Chil
 childScoreboardNCDAEndpoint =
     swEndpoint "nodes/child_scoreboard_ncda" decodeChildScoreboardNCDA
         |> withValueEncoder (object << encodeChildScoreboardNCDA)
+
+
+pregnancyByNewbornEndpoint : ReadOnlyEndPoint Error PersonId (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )) ()
+pregnancyByNewbornEndpoint =
+    swEndpoint "nodes/pregnancy-by-newborn" decodePregnancyByNewborn

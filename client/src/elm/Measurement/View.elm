@@ -45,6 +45,7 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
+import Pages.ChildScoreboard.Encounter.Utils exposing (countANCEncountersMadeForChild)
 import Pages.Utils
     exposing
         ( maybeToBoolTask
@@ -2683,24 +2684,31 @@ resolveNCDAFormStep historyData form =
 
 resolveNCDAFormInitialStep : NCDAHistoryData -> NCDAStep
 resolveNCDAFormInitialStep historyData =
-    let
-        showANCQuestions =
-            -- If NCDA was filled before, for sure it included answers to
-            -- needed questions.
-            historyData.ncdaNeverFilled
-
-        showNewbornExamQuestions =
-            (-- If NCDA was filled before, for sure it included answers to
-             -- needed questions.
-             historyData.ncdaNeverFilled
-            )
-                && showNCDAQuestionsByNewbornExam historyData.pregnancySummary
-    in
-    if showANCQuestions || showNewbornExamQuestions then
+    -- If NCDA was filled before, for sure it included answers to
+    -- needed questions.
+    if historyData.ncdaNeverFilled then
         NCDAStepQuestionsAskedOnce
 
     else
         NCDAStepPermanentQuestions1
+
+
+resolveNCDAFormStepNEW : NCDAHistoryData -> NCDAFormNEW -> NCDAStepNEW
+resolveNCDAFormStepNEW historyData form =
+    Maybe.withDefault
+        (resolveNCDAFormInitialStepNEW historyData)
+        form.step
+
+
+resolveNCDAFormInitialStepNEW : NCDAHistoryData -> NCDAStepNEW
+resolveNCDAFormInitialStepNEW historyData =
+    -- If NCDA was filled before, for sure it included answers to
+    -- needed questions.
+    if historyData.ncdaNeverFilled then
+        NCDAStepAntenatalCare
+
+    else
+        NCDAStepUniversalInterventions
 
 
 showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
@@ -2710,7 +2718,7 @@ showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
     -- Newborn exam was launched, so, it could have been filled
     -- without them.
     -- It's enough to check if one of the questions was answered,
-    -- because both answres are required to save the form.
+    -- because both answers are required to save the form.
     Maybe.map (.birthWeight >> isNothing) newbornExamPregnancySummary
         |> Maybe.withDefault True
 
@@ -2854,6 +2862,7 @@ viewNCDA language currentDate child measurement data historyData =
 viewNCDAContentNEW :
     Language
     -> NominalDate
+    -> PersonId
     -> Person
     -> ((Bool -> NCDAFormNEW -> NCDAFormNEW) -> Bool -> msg)
     -> (String -> msg)
@@ -2865,12 +2874,14 @@ viewNCDAContentNEW :
     -> Maybe NCDASignNEW
     -> NCDAFormNEW
     -> NCDAHistoryData
+    -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData =
+viewNCDAContentNEW language currentDate personId person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setStepMsg saveMsg setHelperStateMsg helperState form historyData db =
     let
         ( inputs, tasks ) =
             ncdaFormInputsAndTasksNEW language
                 currentDate
+                personId
                 person
                 setBoolInputMsg
                 setBirthWeightMsg
@@ -2880,6 +2891,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                 form
                 currentStep
                 historyData.pregnancySummary
+                db
 
         totalTasks =
             List.length tasks
@@ -2889,7 +2901,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                 |> List.sum
 
         currentStep =
-            form.step
+            resolveNCDAFormStepNEW historyData form
 
         actions =
             let
@@ -2909,10 +2921,19 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
                         [ actionButton (setStepMsg NCDAStepUniversalInterventions) ]
 
                 NCDAStepUniversalInterventions ->
-                    div [ class "actions two" ]
-                        [ backButton NCDAStepAntenatalCare
-                        , actionButton (setStepMsg NCDAStepNutritionBehavior)
-                        ]
+                    let
+                        initialStep =
+                            resolveNCDAFormInitialStepNEW historyData
+                    in
+                    if initialStep == NCDAStepUniversalInterventions then
+                        div [ class "actions" ]
+                            [ actionButton (setStepMsg NCDAStepNutritionBehavior) ]
+
+                    else
+                        div [ class "actions two" ]
+                            [ backButton NCDAStepAntenatalCare
+                            , actionButton (setStepMsg NCDAStepNutritionBehavior)
+                            ]
 
                 NCDAStepNutritionBehavior ->
                     div [ class "actions two" ]
@@ -2949,6 +2970,7 @@ viewNCDAContentNEW language currentDate person setBoolInputMsg setBirthWeightMsg
 ncdaFormInputsAndTasksNEW :
     Language
     -> NominalDate
+    -> PersonId
     -> Person
     -> ((Bool -> NCDAFormNEW -> NCDAFormNEW) -> Bool -> msg)
     -> (String -> msg)
@@ -2958,51 +2980,74 @@ ncdaFormInputsAndTasksNEW :
     -> NCDAFormNEW
     -> NCDAStepNEW
     -> Maybe PregnancySummaryValue
+    -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasksNEW language currentDate person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary =
+ncdaFormInputsAndTasksNEW language currentDate personId person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
     let
         inputsAndTasksForSign sign =
             case sign of
                 NumberOfANCVisitsCorrect ->
                     let
-                        updateFunc value form_ =
-                            { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
+                        numberOfANCEncounters =
+                            countANCEncountersMadeForChild personId db
 
-                        ( derivedInputs, derivedTasks ) =
-                            if form.numberOfANCVisitsCorrect == Just False then
-                                let
-                                    counselling =
-                                        Maybe.map
-                                            (\numberOfANCVisits ->
-                                                if numberOfANCVisits < 4 then
-                                                    [ viewCounselingLabel NumberOfANCVisitsCorrect ]
+                        ( numberOfANCVisitsInputs, numberOfANCVisitsTasks ) =
+                            let
+                                counselling =
+                                    Maybe.map
+                                        (\numberOfANCVisits ->
+                                            if numberOfANCVisits < 4 then
+                                                [ viewCounselingLabel NumberOfANCVisitsCorrect ]
 
-                                                else
-                                                    []
-                                            )
-                                            form.numberOfANCVisits
-                                            |> Maybe.withDefault []
-                                in
-                                ( [ viewQuestionLabel language Translate.NCDANumberOfANCVisitsQuestion
-                                  , viewMeasurementInput language
+                                            else
+                                                []
+                                        )
                                         form.numberOfANCVisits
-                                        setNumberANCVisitsMsg
-                                        "anc-visits"
-                                        Translate.Visits
-                                  ]
-                                    ++ counselling
-                                , [ maybeToBoolTask form.numberOfANCVisits ]
+                                        |> Maybe.withDefault []
+                            in
+                            ( [ viewQuestionLabel language Translate.NCDANumberOfANCVisitsQuestion
+                              , viewMeasurementInput language
+                                    form.numberOfANCVisits
+                                    setNumberANCVisitsMsg
+                                    "anc-visits"
+                                    Translate.Visits
+                              ]
+                                ++ counselling
+                            , [ maybeToBoolTask form.numberOfANCVisits ]
+                            )
+                    in
+                    Maybe.map
+                        (\numberOfEncounters ->
+                            if numberOfEncounters < 4 then
+                                let
+                                    updateFunc value form_ =
+                                        { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
+
+                                    ( derivedInputs, derivedTasks ) =
+                                        if form.numberOfANCVisitsCorrect == Just False then
+                                            ( numberOfANCVisitsInputs, numberOfANCVisitsTasks )
+
+                                        else
+                                            ( [], [] )
+                                in
+                                ( (viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader (Just numberOfEncounters)) "." "label"
+                                    :: viewNCDAInput NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect updateFunc
+                                  )
+                                    ++ derivedInputs
+                                , form.numberOfANCVisitsCorrect :: derivedTasks
                                 )
 
                             else
                                 ( [], [] )
-                    in
-                    ( (viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader 0) "." "label"
-                        :: viewNCDAInput NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect updateFunc
-                      )
-                        ++ derivedInputs
-                    , form.numberOfANCVisitsCorrect :: derivedTasks
-                    )
+                        )
+                        numberOfANCEncounters
+                        |> Maybe.withDefault
+                            -- Number of encounters is not known, which means that
+                            -- pregnancy was not tracked on E-Heza.
+                            ( viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader Nothing) "." "label"
+                                :: numberOfANCVisitsInputs
+                            , numberOfANCVisitsTasks
+                            )
 
                 SupplementsDuringPregnancy ->
                     let

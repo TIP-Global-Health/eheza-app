@@ -134,6 +134,9 @@
                 else if (type === 'stock-management-measurements') {
                     return viewStockManagementMeasurements(uuid);
                 }
+                else if (type === 'pregnancy-by-newborn') {
+                    return viewMeasurements('newborn', uuid);
+                }
                 else {
                     return view(type, uuid);
                 }
@@ -515,12 +518,14 @@
                     else if (key === 'child_scoreboard_encounter') {
                         target = node.child_scoreboard_encounter;
                     }
+                    else if (key === 'newborn') {
+                        target = node.newborn;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
                         data[target][node.type].push(node);
                     } else {
-                        data[target] = data[target] || {};
                         data[target][node.type] = [node];
                     }
                 });

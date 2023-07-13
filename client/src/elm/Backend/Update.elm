@@ -3335,6 +3335,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchPregnancyByNewborn id ->
+            ( { model | pregnancyByNewborn = Dict.insert id Loading model.pregnancyByNewborn }
+            , sw.get pregnancyByNewbornEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPregnancyByNewborn id)
+            , []
+            )
+
+        HandleFetchedPregnancyByNewborn id data ->
+            ( { model | pregnancyByNewborn = Dict.insert id data model.pregnancyByNewborn }
+            , Cmd.none
+            , []
+            )
+
         MsgNurse updatedNurseId subMsg ->
             let
                 requests =

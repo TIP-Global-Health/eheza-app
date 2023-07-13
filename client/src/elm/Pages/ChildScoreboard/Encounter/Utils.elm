@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
@@ -43,3 +44,22 @@ generateAssembledData id db =
         |> RemoteData.andMap participant
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
+
+
+countANCEncountersMadeForChild : PersonId -> ModelIndexedDb -> Maybe Int
+countANCEncountersMadeForChild childId db =
+    Dict.get childId db.pregnancyByNewborn
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.Extra.join
+        |> Maybe.andThen
+            (\( participantId, _ ) ->
+                Dict.get participantId db.prenatalEncountersByParticipant
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map
+                        (Dict.filter
+                            (\_ encounter ->
+                                not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+                            )
+                            >> Dict.size
+                        )
+            )

@@ -315,6 +315,11 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPregnancyByNewborn id ->
+            Dict.get id model.pregnancyByNewborn
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchResilienceSurveysForNurse id ->
             Dict.get id model.resilienceSurveysByNurse
                 |> Maybe.withDefault NotAsked
@@ -373,6 +378,9 @@ forget msg model =
 
         FetchTraceContact id ->
             { model | traceContacts = Dict.remove id model.traceContacts }
+
+        FetchPregnancyByNewborn id ->
+            { model | pregnancyByNewborn = Dict.remove id model.pregnancyByNewborn }
 
         FetchIndividualEncounterParticipantsForPerson id ->
             { model | individualParticipantsByPerson = Dict.remove id model.individualParticipantsByPerson }

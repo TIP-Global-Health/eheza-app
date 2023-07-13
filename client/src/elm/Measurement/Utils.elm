@@ -4547,7 +4547,7 @@ toNCDAValue form =
 
 fromNCDAValueNEW : Maybe NCDAValueNEW -> NCDAFormNEW
 fromNCDAValueNEW saved =
-    { step = NCDAStepAntenatalCare
+    { step = Nothing
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
     , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
     , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member BreastfedForSixMonths) saved
