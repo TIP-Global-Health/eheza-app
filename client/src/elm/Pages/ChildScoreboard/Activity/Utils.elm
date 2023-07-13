@@ -57,12 +57,16 @@ expectActivity currentDate assembled activity =
             True
 
         ChildScoreboardVaccinationHistory ->
-            -- @todo:
-            True
+            generateSuggestedVaccinations currentDate
+                assembled.person
+                assembled.vaccinationHistory
+                assembled.vaccinationProgress
+                |> List.isEmpty
+                |> not
 
 
-activityCompleted : NominalDate -> AssembledData -> ChildScoreboardActivity -> Bool
-activityCompleted currentDate assembled activity =
+activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> ChildScoreboardActivity -> Bool
+activityCompleted currentDate assembled db activity =
     let
         notExpected activityToCheck =
             not <| expectActivity currentDate assembled activityToCheck
@@ -74,8 +78,47 @@ activityCompleted currentDate assembled activity =
 
         ChildScoreboardVaccinationHistory ->
             notExpected ChildScoreboardVaccinationHistory
-                || -- @todo:
-                   False
+                || List.all (immunisationTaskCompleted currentDate assembled db) immunisationTasks
+
+
+immunisationTaskCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> Measurement.Model.ImmunisationTask -> Bool
+immunisationTaskCompleted currentDate assembled db task =
+    let
+        measurements =
+            assembled.measurements
+
+        taskExpected =
+            expectImmunisationTask currentDate assembled.person assembled.vaccinationHistory
+    in
+    case task of
+        TaskBCG ->
+            (not <| taskExpected TaskBCG) || isJust measurements.bcgImmunisation
+
+        TaskDTP ->
+            (not <| taskExpected TaskDTP) || isJust measurements.dtpImmunisation
+
+        TaskIPV ->
+            (not <| taskExpected TaskIPV) || isJust measurements.ipvImmunisation
+
+        TaskMR ->
+            (not <| taskExpected TaskMR) || isJust measurements.mrImmunisation
+
+        TaskOPV ->
+            (not <| taskExpected TaskOPV) || isJust measurements.opvImmunisation
+
+        TaskPCV13 ->
+            (not <| taskExpected TaskPCV13) || isJust measurements.pcv13Immunisation
+
+        TaskRotarix ->
+            (not <| taskExpected TaskRotarix) || isJust measurements.rotarixImmunisation
+
+        -- Task not in use.
+        TaskHPV ->
+            not <| taskExpected TaskHPV
+
+        -- Task not in use.
+        TaskOverview ->
+            not <| taskExpected TaskOverview
 
 
 expectImmunisationTask : NominalDate -> Person -> VaccinationProgressDict -> ImmunisationTask -> Bool

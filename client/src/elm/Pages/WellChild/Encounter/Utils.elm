@@ -19,7 +19,7 @@ import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils exposing (getPreviousMeasurements)
 import Pages.WellChild.Activity.Utils exposing (generateVaccinationProgress)
 import Pages.WellChild.Encounter.Model exposing (..)
-import Pages.WellChild.Utils exposing (generatePreviousMeasurements)
+import Pages.WellChild.Utils exposing (generatePreviousMeasurements, generateVaccinationProgressDicts)
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
@@ -56,72 +56,25 @@ generateAssembledData id db =
                 |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
                 |> Maybe.withDefault []
 
-        -- previousMeasurements =
-        --     getPreviousMeasurements previousMeasurementsWithDates
-        --
-        -- vaccinationProgressByChildScoreboard =
-        --     RemoteData.toMaybe participant
-        --         |> Maybe.andThen
-        --             (\participant_ ->
-        --                 let
-        --                     individualParticipants =
-        --                         Dict.get participant_.person db.individualParticipantsByPerson
-        --                             |> Maybe.andThen RemoteData.toMaybe
-        --                             |> Maybe.map Dict.toList
-        --                             |> Maybe.withDefault []
-        --
-        --                     individualChildScoreboardParticipantId =
-        --                         List.filter
-        --                             (Tuple.second
-        --                                 >> .encounterType
-        --                                 >> (==) Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
-        --                             )
-        --                             individualParticipants
-        --                             |> List.head
-        --                             |> Maybe.map Tuple.first
-        --                 in
-        --                 Maybe.map
-        --                     (\participantId ->
-        --                         Pages.ChildScoreboard.Encounter.Utils.generatePreviousMeasurements Nothing participantId db
-        --                             |> getPreviousMeasurements
-        --                             |> Pages.ChildScoreboard.Activity.Utils.generateVaccinationProgress
-        --                     )
-        --                     individualChildScoreboardParticipantId
-        --             )
-        --         |> Maybe.withDefault Dict.empty
-        --
-        -- ( vaccinationHistory, vaccinationProgress ) =
-        --     RemoteData.toMaybe person
-        --         |> Maybe.map
-        --             (\person_ ->
-        --                 let
-        --                     vaccinationHistoryByWellChild =
-        --                         generateVaccinationProgress person_ previousMeasurements
-        --
-        --                     vaccinationProgressByWellChild =
-        --                         RemoteData.toMaybe measurements
-        --                             |> Maybe.map (\measurements_ -> measurements_ :: previousMeasurements)
-        --                             |> Maybe.withDefault previousMeasurements
-        --                             |> generateVaccinationProgress person_
-        --                 in
-        --                 ( mergeVaccinationProgressDicts
-        --                     vaccinationHistoryByWellChild
-        --                     vaccinationProgressByChildScoreboard
-        --                 , mergeVaccinationProgressDicts
-        --                     vaccinationProgressByWellChild
-        --                     vaccinationProgressByChildScoreboard
-        --                 )
-        --             )
-        --         |> Maybe.withDefault ( Dict.empty, Dict.empty )
+        assembledWithEmptyVaccinationDicts =
+            RemoteData.map AssembledData (Success id)
+                |> RemoteData.andMap encounter
+                |> RemoteData.andMap participant
+                |> RemoteData.andMap person
+                |> RemoteData.andMap measurements
+                |> RemoteData.andMap (Success previousMeasurementsWithDates)
+                |> RemoteData.andMap (Success Dict.empty)
+                |> RemoteData.andMap (Success Dict.empty)
     in
-    RemoteData.map AssembledData (Success id)
-        |> RemoteData.andMap encounter
-        |> RemoteData.andMap participant
-        |> RemoteData.andMap person
-        |> RemoteData.andMap measurements
-        |> RemoteData.andMap (Success previousMeasurementsWithDates)
-        |> RemoteData.andMap (Success Dict.empty)
-        |> RemoteData.andMap (Success Dict.empty)
+    RemoteData.map
+        (\assembled ->
+            let
+                ( vaccinationHistory, vaccinationProgress ) =
+                    generateVaccinationProgressDicts assembled db
+            in
+            { assembled | vaccinationHistory = vaccinationHistory, vaccinationProgress = vaccinationProgress }
+        )
+        assembledWithEmptyVaccinationDicts
 
 
 resolvePediatricCareMilestoneOnDate : NominalDate -> NominalDate -> Maybe PediatricCareMilestone

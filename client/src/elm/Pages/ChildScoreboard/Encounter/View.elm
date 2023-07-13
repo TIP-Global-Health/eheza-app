@@ -85,7 +85,7 @@ viewMainPageContent language currentDate db assembled model =
     let
         ( completedActivities, pendingActivities ) =
             List.filter (expectActivity currentDate assembled) allActivities
-                |> List.partition (activityCompleted currentDate assembled)
+                |> List.partition (activityCompleted currentDate assembled db)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

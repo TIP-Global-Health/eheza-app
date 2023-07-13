@@ -9,7 +9,7 @@ import Backend.NutritionEncounter.Utils exposing (getChildScoreboardEncountersFo
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
-import Pages.ChildScoreboard.Utils exposing (generatePreviousMeasurements)
+import Pages.ChildScoreboard.Utils exposing (generatePreviousMeasurements, generateVaccinationProgressDicts)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
@@ -45,10 +45,23 @@ generateAssembledData id db =
             RemoteData.toMaybe encounter
                 |> Maybe.map (\encounter_ -> generatePreviousMeasurements (Just id) encounter_.participant db)
                 |> Maybe.withDefault []
+
+        assembledWithEmptyVaccinationDicts =
+            RemoteData.map AssembledData (Success id)
+                |> RemoteData.andMap encounter
+                |> RemoteData.andMap participant
+                |> RemoteData.andMap person
+                |> RemoteData.andMap measurements
+                |> RemoteData.andMap (Success previousMeasurementsWithDates)
+                |> RemoteData.andMap (Success Dict.empty)
+                |> RemoteData.andMap (Success Dict.empty)
     in
-    RemoteData.map AssembledData (Success id)
-        |> RemoteData.andMap encounter
-        |> RemoteData.andMap participant
-        |> RemoteData.andMap person
-        |> RemoteData.andMap measurements
-        |> RemoteData.andMap (Success previousMeasurementsWithDates)
+    RemoteData.map
+        (\assembled ->
+            let
+                ( vaccinationHistory, vaccinationProgress ) =
+                    generateVaccinationProgressDicts assembled db
+            in
+            { assembled | vaccinationHistory = vaccinationHistory, vaccinationProgress = vaccinationProgress }
+        )
+        assembledWithEmptyVaccinationDicts

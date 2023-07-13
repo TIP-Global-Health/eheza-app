@@ -50,6 +50,7 @@ import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
+import Pages.ChildScoreboard.Utils exposing (generateVaccinationProgressDicts)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewPersonDetailsExtended, viewSaveAction)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -104,8 +105,7 @@ viewActivity language currentDate activity assembled db model =
             viewNCDAContent language currentDate assembled db model.ncdaData
 
         ChildScoreboardVaccinationHistory ->
-            -- @todo
-            []
+            viewImmunisationContent language currentDate assembled db model.immunisationData
 
 
 viewNCDAContent :
@@ -169,13 +169,8 @@ viewImmunisationContent language currentDate assembled db data =
         measurements =
             assembled.measurements
 
-        vaccinationHistory =
-            -- @todo:
-            Dict.empty
-
-        vaccinationProgress =
-            -- @todo:
-            Dict.empty
+        ( vaccinationHistory, vaccinationProgress ) =
+            generateVaccinationProgressDicts assembled db
 
         tasks =
             List.filter (expectImmunisationTask currentDate assembled.person vaccinationHistory) immunisationTasks
