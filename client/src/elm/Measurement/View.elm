@@ -2363,6 +2363,7 @@ viewNCDAContent language currentDate personId person config helperState form his
                         currentDate
                         personId
                         person
+                        config.atHealthCenter
                         config.behindOnVaccinations
                         config.setBoolInputMsg
                         config.setBirthWeightMsg
@@ -2499,6 +2500,7 @@ ncdaFormInputsAndTasks :
     -> NominalDate
     -> PersonId
     -> Person
+    -> Bool
     -> Maybe Bool
     -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
     -> (String -> msg)
@@ -2510,7 +2512,7 @@ ncdaFormInputsAndTasks :
     -> Maybe PregnancySummaryValue
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate personId person behindOnVaccinations setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
+ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behindOnVaccinations setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -2583,7 +2585,7 @@ ncdaFormInputsAndTasks language currentDate personId person behindOnVaccinations
                             { form_ | supplementsDuringPregnancy = Just value, takenSupplementsPerGuidance = Nothing }
 
                         ( derivedInputs, derivedTasks ) =
-                            if form.supplementsDuringPregnancy == Just True then
+                            if not atHealthCenter && form.supplementsDuringPregnancy == Just True then
                                 inputsAndTasksForSign TakenSupplementsPerGuidance
 
                             else
