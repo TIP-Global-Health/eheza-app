@@ -118,7 +118,6 @@ expectActivity currentDate zscores isChw assembled db activity =
                 isChw
                 assembled.person
                 assembled.vaccinationHistory
-                assembled.vaccinationProgress
                 |> List.isEmpty
                 |> not
 
@@ -155,58 +154,8 @@ expectActivity currentDate zscores isChw assembled db activity =
 
 
 generateVaccinationProgress : Person -> List WellChildMeasurements -> VaccinationProgressDict
-generateVaccinationProgress person measurements =
-    let
-        bcgImmunisations =
-            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        dtpImmunisations =
-            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        ipvImmunisations =
-            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        mrImmunisations =
-            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        opvImmunisations =
-            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        pcv13Immunisations =
-            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
-                measurements
-
-        rotarixImmunisations =
-            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        hpvProgress =
-            if person.gender == Female then
-                let
-                    hpvImmunisations =
-                        List.filterMap (.hpvImmunisation >> getMeasurementValueFunc)
-                            measurements
-                in
-                [ ( VaccineHPV, generateVaccinationProgressForVaccine hpvImmunisations ) ]
-
-            else
-                []
-    in
-    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
-    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
-    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
-    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
-    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
-    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
-    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
-    ]
-        ++ hpvProgress
-        |> Dict.fromList
+generateVaccinationProgress =
+    Measurement.Utils.generateVaccinationProgressForWellChild
 
 
 fromPregnancySummaryValue : Maybe PregnancySummaryValue -> PregnancySummaryForm

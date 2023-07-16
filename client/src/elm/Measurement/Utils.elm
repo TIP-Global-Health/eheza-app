@@ -10,6 +10,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( calculateZScoreWeightForAge
+        , getWellChildEncountersForParticipant
         , muacModerate
         , muacSevere
         , resolveIndividualNutritionValues
@@ -58,6 +59,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSelectListInput
         )
+import Pages.WellChild.Encounter.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -4508,7 +4510,7 @@ fromNCDAValue saved =
     , foodSupplements = Maybe.map (.signs >> EverySet.member FoodSupplements) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
     , numberOfANCVisitsCorrect = Maybe.map (.signs >> EverySet.member NumberOfANCVisitsCorrect) saved
-    , numberOfMissedImmunizationAppointmentsCorrect = Maybe.map (.signs >> EverySet.member NumberOfMissedImmunizationAppointmentsCorrect) saved
+    , childBehidOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehidOnVaccination) saved
     , receivingCashTransfer = Maybe.map (.signs >> EverySet.member ReceivingCashTransfer) saved
     , receivingSupport = Maybe.map (.signs >> EverySet.member ReceivingSupport) saved
     , supplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member SupplementsDuringPregnancy) saved
@@ -4551,7 +4553,7 @@ ncdaFormWithDefault form saved =
                 , foodSupplements = or form.foodSupplements (EverySet.member FoodSupplements value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
                 , numberOfANCVisitsCorrect = or form.numberOfANCVisitsCorrect (EverySet.member NumberOfANCVisitsCorrect value.signs |> Just)
-                , numberOfMissedImmunizationAppointmentsCorrect = or form.numberOfMissedImmunizationAppointmentsCorrect (EverySet.member NumberOfMissedImmunizationAppointmentsCorrect value.signs |> Just)
+                , childBehidOnVaccination = or form.childBehidOnVaccination (EverySet.member ChildBehidOnVaccination value.signs |> Just)
                 , receivingCashTransfer = or form.receivingCashTransfer (EverySet.member ReceivingCashTransfer value.signs |> Just)
                 , receivingSupport = or form.receivingSupport (EverySet.member ReceivingSupport value.signs |> Just)
                 , supplementsDuringPregnancy = or form.supplementsDuringPregnancy (EverySet.member SupplementsDuringPregnancy value.signs |> Just)
@@ -4598,7 +4600,7 @@ toNCDAValue form =
             , ifNullableTrue FoodSupplements form.foodSupplements
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
             , ifNullableTrue NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect
-            , ifNullableTrue NumberOfMissedImmunizationAppointmentsCorrect form.numberOfMissedImmunizationAppointmentsCorrect
+            , ifNullableTrue ChildBehidOnVaccination form.childBehidOnVaccination
             , ifNullableTrue ReceivingCashTransfer form.receivingCashTransfer
             , ifNullableTrue ReceivingSupport form.receivingSupport
             , ifNullableTrue SupplementsDuringPregnancy form.supplementsDuringPregnancy
@@ -4972,7 +4974,12 @@ childDiagnosedWithMalnutrition childId db =
         individualNutritionMeasurements =
             Maybe.map
                 (\participantId ->
-                    Pages.Nutrition.Encounter.Utils.generatePreviousMeasurements Nothing participantId db
+                    Backend.Measurement.Utils.generatePreviousMeasurements
+                        Backend.NutritionEncounter.Utils.getNutritionEncountersForParticipant
+                        .nutritionMeasurements
+                        Nothing
+                        participantId
+                        db
                 )
                 individualNutritionParticipantId
                 |> Maybe.withDefault []
@@ -4982,7 +4989,7 @@ childDiagnosedWithMalnutrition childId db =
             Maybe.map
                 (\participantId ->
                     Backend.Measurement.Utils.generatePreviousMeasurements
-                        Backend.NutritionEncounter.Utils.getWellChildEncountersForParticipant
+                        getWellChildEncountersForParticipant
                         .wellChildMeasurements
                         Nothing
                         participantId
@@ -5033,7 +5040,7 @@ resoloveLastScheduledImmunizationVisitDate childId db =
             Maybe.map
                 (\participantId ->
                     Backend.Measurement.Utils.generatePreviousMeasurements
-                        Backend.NutritionEncounter.Utils.getWellChildEncountersForParticipant
+                        getWellChildEncountersForParticipant
                         .wellChildMeasurements
                         Nothing
                         participantId
@@ -5053,6 +5060,50 @@ resoloveLastScheduledImmunizationVisitDate childId db =
            -- we know that at head of list we got immunization
            -- visit date that was scheduled last.
            List.head
+
+
+behindOnVaccinationsByWellChild : NominalDate -> PersonId -> ModelIndexedDb -> Bool
+behindOnVaccinationsByWellChild currentDate childId db =
+    let
+        individualParticipants =
+            Dict.get childId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        individualWellChildParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        lastWellChildEncounterId =
+            Maybe.andThen
+                (getWellChildEncountersForParticipant db
+                    >> List.map Tuple.first
+                    >> List.head
+                )
+                individualWellChildParticipantId
+
+        maybeAssembled =
+            Maybe.andThen
+                (\id ->
+                    generateAssembledDataForWellChild id db
+                        |> RemoteData.toMaybe
+                )
+                lastWellChildEncounterId
+    in
+    Maybe.map
+        (\assembled ->
+            generateSuggestedVaccinations currentDate False assembled.person assembled.vaccinationHistory
+                |> List.isEmpty
+                |> not
+        )
+        maybeAssembled
+        |> Maybe.withDefault False
 
 
 resolveNCDASteps : NCDAHistoryData -> List NCDAStep
@@ -5088,16 +5139,15 @@ generateSuggestedVaccinations :
     -> Bool
     -> Person
     -> VaccinationProgressDict
-    -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate isChw person vaccinationHistory vaccinationProgress =
+generateSuggestedVaccinations currentDate isChw person vaccinationHistory =
     if isChw then
         [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
 
     else
         let
             initialOpvAdministered =
-                wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
+                wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
         in
         List.filter (expectVaccineForPerson currentDate person initialOpvAdministered) allVaccineTypes
             |> List.filterMap
@@ -5613,3 +5663,216 @@ mergeNutritionAssessmentEntries list1 list2 =
         (Dict.fromList list2)
         Dict.empty
         |> Dict.toList
+
+
+generateAssembledDataForWellChild : WellChildEncounterId -> ModelIndexedDb -> WebData Pages.WellChild.Encounter.Model.AssembledData
+generateAssembledDataForWellChild id db =
+    let
+        encounter =
+            Dict.get id db.wellChildEncounters
+                |> Maybe.withDefault NotAsked
+
+        measurements =
+            Dict.get id db.wellChildMeasurements
+                |> Maybe.withDefault NotAsked
+
+        participant =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter_ ->
+                        Dict.get encounter_.participant db.individualParticipants
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        person =
+            participant
+                |> RemoteData.andThen
+                    (\participant_ ->
+                        Dict.get participant_.person db.people
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        previousMeasurementsWithDates =
+            RemoteData.toMaybe encounter
+                |> Maybe.map
+                    (\encounter_ ->
+                        Backend.Measurement.Utils.generatePreviousMeasurements
+                            getWellChildEncountersForParticipant
+                            .wellChildMeasurements
+                            (Just id)
+                            encounter_.participant
+                            db
+                    )
+                |> Maybe.withDefault []
+
+        assembledWithEmptyVaccinationDicts =
+            RemoteData.map Pages.WellChild.Encounter.Model.AssembledData (Success id)
+                |> RemoteData.andMap encounter
+                |> RemoteData.andMap participant
+                |> RemoteData.andMap person
+                |> RemoteData.andMap measurements
+                |> RemoteData.andMap (Success previousMeasurementsWithDates)
+                |> RemoteData.andMap (Success Dict.empty)
+                |> RemoteData.andMap (Success Dict.empty)
+    in
+    RemoteData.map
+        (\assembled ->
+            let
+                ( vaccinationHistory, vaccinationProgress ) =
+                    generateVaccinationProgressDictsForWellChild assembled db
+            in
+            { assembled | vaccinationHistory = vaccinationHistory, vaccinationProgress = vaccinationProgress }
+        )
+        assembledWithEmptyVaccinationDicts
+
+
+generateVaccinationProgressDictsForWellChild : Pages.WellChild.Encounter.Model.AssembledData -> ModelIndexedDb -> ( VaccinationProgressDict, VaccinationProgressDict )
+generateVaccinationProgressDictsForWellChild assembled db =
+    let
+        previousMeasurements =
+            getPreviousMeasurements assembled.previousMeasurementsWithDates
+
+        vaccinationProgressByChildScoreboard =
+            let
+                individualParticipants =
+                    Dict.get assembled.participant.person db.individualParticipantsByPerson
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.toList
+                        |> Maybe.withDefault []
+
+                individualChildScoreboardParticipantId =
+                    List.filter
+                        (Tuple.second
+                            >> .encounterType
+                            >> (==) Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
+                        )
+                        individualParticipants
+                        |> List.head
+                        |> Maybe.map Tuple.first
+            in
+            Maybe.map
+                (\participantId ->
+                    Backend.Measurement.Utils.generatePreviousMeasurements
+                        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
+                        .childScoreboardMeasurements
+                        Nothing
+                        participantId
+                        db
+                        |> getPreviousMeasurements
+                        |> generateVaccinationProgressForChildScoreboard
+                )
+                individualChildScoreboardParticipantId
+                |> Maybe.withDefault Dict.empty
+
+        vaccinationHistory =
+            generateVaccinationProgressForWellChild assembled.person previousMeasurements
+
+        vaccinationProgress =
+            assembled.measurements
+                :: previousMeasurements
+                |> generateVaccinationProgressForWellChild assembled.person
+    in
+    ( mergeVaccinationProgressDicts
+        vaccinationHistory
+        vaccinationProgressByChildScoreboard
+    , mergeVaccinationProgressDicts
+        vaccinationProgress
+        vaccinationProgressByChildScoreboard
+    )
+
+
+generateVaccinationProgressForWellChild : Person -> List WellChildMeasurements -> VaccinationProgressDict
+generateVaccinationProgressForWellChild person measurements =
+    let
+        bcgImmunisations =
+            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        dtpImmunisations =
+            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        ipvImmunisations =
+            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        mrImmunisations =
+            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        opvImmunisations =
+            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        pcv13Immunisations =
+            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
+                measurements
+
+        rotarixImmunisations =
+            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        hpvProgress =
+            if person.gender == Female then
+                let
+                    hpvImmunisations =
+                        List.filterMap (.hpvImmunisation >> getMeasurementValueFunc)
+                            measurements
+                in
+                [ ( VaccineHPV, generateVaccinationProgressForVaccine hpvImmunisations ) ]
+
+            else
+                []
+    in
+    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
+    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
+    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
+    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
+    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
+    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
+    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
+    ]
+        ++ hpvProgress
+        |> Dict.fromList
+
+
+generateVaccinationProgressForChildScoreboard : List ChildScoreboardMeasurements -> VaccinationProgressDict
+generateVaccinationProgressForChildScoreboard measurements =
+    let
+        bcgImmunisations =
+            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        dtpImmunisations =
+            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        ipvImmunisations =
+            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        mrImmunisations =
+            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        opvImmunisations =
+            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        pcv13Immunisations =
+            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
+                measurements
+
+        rotarixImmunisations =
+            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
+                measurements
+    in
+    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
+    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
+    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
+    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
+    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
+    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
+    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
+    ]
+        |> Dict.fromList

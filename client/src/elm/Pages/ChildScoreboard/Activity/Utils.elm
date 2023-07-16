@@ -3,7 +3,14 @@ module Pages.ChildScoreboard.Activity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, VaccinationValue, VaccineDose(..), WellChildVaccineType(..))
+import Backend.Measurement.Model
+    exposing
+        ( ChildScoreboardMeasurements
+        , NCDASign(..)
+        , VaccinationValue
+        , VaccineDose(..)
+        , WellChildVaccineType(..)
+        )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -57,12 +64,20 @@ expectActivity currentDate assembled activity =
             True
 
         ChildScoreboardVaccinationHistory ->
-            generateSuggestedVaccinations currentDate
-                assembled.person
-                assembled.vaccinationHistory
-                assembled.vaccinationProgress
-                |> List.isEmpty
-                |> not
+            let
+                childBehidOnVaccinationByVaccinaitonHistory =
+                    generateSuggestedVaccinations currentDate
+                        assembled.person
+                        assembled.vaccinationHistory
+                        |> List.isEmpty
+                        |> not
+
+                childUpToDateByNCDAResponse =
+                    getMeasurementValueFunc assembled.measurements.ncda
+                        |> Maybe.map (.signs >> EverySet.member ChildBehidOnVaccination >> not)
+                        |> Maybe.withDefault False
+            in
+            childBehidOnVaccinationByVaccinaitonHistory && childUpToDateByNCDAResponse
 
 
 activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> ChildScoreboardActivity -> Bool
@@ -194,52 +209,14 @@ generateSuggestedVaccinations :
     NominalDate
     -> Person
     -> VaccinationProgressDict
-    -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate person vaccinationHistory vaccinationProgress =
-    Measurement.Utils.generateSuggestedVaccinations currentDate False person vaccinationHistory vaccinationProgress
+generateSuggestedVaccinations currentDate person vaccinationHistory =
+    Measurement.Utils.generateSuggestedVaccinations currentDate False person vaccinationHistory
 
 
 generateVaccinationProgress : List ChildScoreboardMeasurements -> VaccinationProgressDict
-generateVaccinationProgress measurements =
-    let
-        bcgImmunisations =
-            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        dtpImmunisations =
-            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        ipvImmunisations =
-            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        mrImmunisations =
-            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        opvImmunisations =
-            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
-                measurements
-
-        pcv13Immunisations =
-            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
-                measurements
-
-        rotarixImmunisations =
-            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
-                measurements
-    in
-    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
-    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
-    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
-    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
-    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
-    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
-    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
-    ]
-        |> Dict.fromList
+generateVaccinationProgress =
+    Measurement.Utils.generateVaccinationProgressForChildScoreboard
 
 
 immunisationTasks : List ImmunisationTask

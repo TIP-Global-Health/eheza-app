@@ -298,7 +298,7 @@ type NCDASign
     | HasToilets
     | InsecticideTreatedBednets
     | NumberOfANCVisitsCorrect
-    | NumberOfMissedImmunizationAppointmentsCorrect
+    | ChildBehidOnVaccination
     | ReceivingCashTransfer
     | ReceivingSupport
     | SupplementsDuringPregnancy

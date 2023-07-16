@@ -1008,6 +1008,7 @@ type TranslationId
     | NCDADiarrheaPopupMessage
     | NCDASignCounceling NCDASign
     | NCDASignQuestion NCDASign
+    | NCDAUpdateVaccineRecordMessage
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDAANCNewbornItemLabel NCDAANCNewbornItem
@@ -1019,7 +1020,6 @@ type TranslationId
     | NCDANumberOfANCVisitsHeader (Maybe Int)
     | NCDANumberOfANCVisitsQuestion
     | NCDANumberImmunizationAppointmentLabel (Maybe NominalDate)
-    | NCDANumberOfMissedImmunizationAppointmentsHeader
     | NCDAStep NCDAStep
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
@@ -9351,7 +9351,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NumberOfMissedImmunizationAppointmentsCorrect ->
+                ChildBehidOnVaccination ->
                     { english = "Provide the counseling to the mother to update the child's vaccination record with a Nurse through a Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
@@ -9448,8 +9448,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NumberOfMissedImmunizationAppointmentsCorrect ->
-                    { english = "Is this correct"
+                ChildBehidOnVaccination ->
+                    { english = "According to E-Heza the child is behind on vaccinations, is this correct"
                     , kinyarwanda = Nothing
                     }
 
@@ -9547,6 +9547,11 @@ translationSet trans =
                     { english = "None"
                     , kinyarwanda = Just "Nta na kimwe"
                     }
+
+        NCDAUpdateVaccineRecordMessage ->
+            { english = "Please update the childs vaccine record with information from the vaccine card at the end of this scorecard visit"
+            , kinyarwanda = Nothing
+            }
 
         NCDActivityTitle activity ->
             case activity of
@@ -9771,11 +9776,6 @@ translationSet trans =
                     { english = "According to E-Heza, you have no immunization appointment scheduled"
                     , kinyarwanda = Nothing
                     }
-
-        NCDANumberOfMissedImmunizationAppointmentsHeader ->
-            { english = "According to E-Heza, you have not missed any appointments"
-            , kinyarwanda = Nothing
-            }
 
         NCDAStep step ->
             case step of
