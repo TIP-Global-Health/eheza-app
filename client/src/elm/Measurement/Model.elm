@@ -1193,7 +1193,10 @@ emptyHbA1cTestForm =
 
 
 type alias NCDAContentConfig msg =
-    { showTasksTray : Bool
+    { -- Indicates if NCDA activity was performed at Health center,
+      -- or by CHW (during Child Scoreboard encounter).
+      atHealthCenter : Bool
+    , showTasksTray : Bool
 
     -- This allows setting desired value from invoking module.
     -- If set to Nothing, it's resolved using Well Child data.

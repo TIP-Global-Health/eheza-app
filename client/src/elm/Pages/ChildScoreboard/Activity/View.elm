@@ -130,7 +130,8 @@ viewNCDAContent language currentDate assembled db data =
             }
 
         config =
-            { showTasksTray = True
+            { atHealthCenter = False
+            , showTasksTray = True
             , behindOnVaccinations =
                 generateSuggestedVaccinations currentDate
                     assembled.person

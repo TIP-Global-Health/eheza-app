@@ -706,7 +706,8 @@ viewNCDAContent language currentDate id assembled data db =
             }
 
         config =
-            { showTasksTray = True
+            { atHealthCenter = True
+            , showTasksTray = True
             , behindOnVaccinations = Nothing
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight

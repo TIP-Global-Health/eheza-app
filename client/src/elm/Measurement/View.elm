@@ -3231,7 +3231,8 @@ viewNCDA language currentDate childId child measurement data db =
             }
 
         config =
-            { showTasksTray = False
+            { atHealthCenter = True
+            , showTasksTray = False
             , behindOnVaccinations = Nothing
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
