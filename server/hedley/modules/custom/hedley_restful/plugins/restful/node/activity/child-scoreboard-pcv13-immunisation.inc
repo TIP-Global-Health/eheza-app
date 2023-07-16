@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'child_scoreboard_pcv13_iz',
   'description' => t('Exports the Child Soreboard PCV13 Immunisation bundle.'),
-  'class' => 'HedleyRestfulChildSoreboardVaccination',
+  'class' => 'HedleyRestfulChildScoreboardVaccination',
   'authentication_types' => TRUE,
 );

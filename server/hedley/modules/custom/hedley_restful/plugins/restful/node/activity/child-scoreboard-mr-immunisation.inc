@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'child_scoreboard_mr_iz',
   'description' => t('Exports the Child Soreboard MR Immunisation bundle.'),
-  'class' => 'HedleyRestfulChildSoreboardVaccination',
+  'class' => 'HedleyRestfulChildScoreboardVaccination',
   'authentication_types' => TRUE,
 );

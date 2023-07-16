@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'child_scoreboard_ipv_iz',
   'description' => t('Exports the Child Soreboard IPV Immunisation bundle.'),
-  'class' => 'HedleyRestfulChildSoreboardVaccination',
+  'class' => 'HedleyRestfulChildScoreboardVaccination',
   'authentication_types' => TRUE,
 );
