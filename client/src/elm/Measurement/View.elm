@@ -2298,7 +2298,7 @@ viewNCDAContent :
 viewNCDAContent language currentDate personId person config helperState form historyData db =
     let
         steps =
-            resolveNCDASteps historyData
+            resolveNCDASteps currentDate person historyData
 
         currentStep =
             Maybe.Extra.or form.step (List.head steps)
@@ -2450,7 +2450,7 @@ viewNCDAContent language currentDate personId person config helperState form his
                                     [ actionButton (config.setStepMsg NCDAStepUniversalInterventions) ]
 
                             NCDAStepUniversalInterventions ->
-                                if expectNCDAStep historyData NCDAStepAntenatalCare then
+                                if expectNCDAStep currentDate person historyData NCDAStepAntenatalCare then
                                     div [ class "actions two" ]
                                         [ backButton NCDAStepAntenatalCare
                                         , actionButton (config.setStepMsg NCDAStepNutritionBehavior)

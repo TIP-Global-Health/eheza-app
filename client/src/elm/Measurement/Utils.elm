@@ -20,6 +20,7 @@ import Backend.NutritionEncounter.Utils
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
@@ -5103,18 +5104,23 @@ behindOnVaccinationsByWellChild currentDate childId db =
         |> Maybe.withDefault False
 
 
-resolveNCDASteps : NCDAHistoryData -> List NCDAStep
-resolveNCDASteps historyData =
-    List.filter (expectNCDAStep historyData) ncdaSteps
+resolveNCDASteps : NominalDate -> Person -> NCDAHistoryData -> List NCDAStep
+resolveNCDASteps currentDate person historyData =
+    List.filter (expectNCDAStep currentDate person historyData) ncdaSteps
 
 
-expectNCDAStep : NCDAHistoryData -> NCDAStep -> Bool
-expectNCDAStep historyData task =
+expectNCDAStep : NominalDate -> Person -> NCDAHistoryData -> NCDAStep -> Bool
+expectNCDAStep currentDate person historyData task =
     case task of
         -- If NCDA was filled before, for sure it included answers to
         -- needed questions.
         NCDAStepAntenatalCare ->
             historyData.ncdaNeverFilled
+
+        NCDAStepNutritionBehavior ->
+            ageInMonths currentDate person
+                |> Maybe.map (\ageMonths -> ageMonths >= 6)
+                |> Maybe.withDefault False
 
         -- All other tasks are shown always.
         _ ->
