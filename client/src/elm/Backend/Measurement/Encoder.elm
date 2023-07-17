@@ -4796,11 +4796,6 @@ encodeNCDAValueWithType type_ value =
             Maybe.map (\ancVisits -> [ ( "anc_visits", int ancVisits ) ])
                 value.numberOfANCVisits
                 |> Maybe.withDefault []
-
-        foodSupplementType =
-            Maybe.map (\supplementType -> [ ( "supplement_type", encodeNutritionSupplementType supplementType ) ])
-                value.foodSupplementType
-                |> Maybe.withDefault []
     in
     [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
     , ( "deleted", bool False )
@@ -4808,7 +4803,6 @@ encodeNCDAValueWithType type_ value =
     ]
         ++ birthWeight
         ++ numberOfANCVisits
-        ++ foodSupplementType
 
 
 encodeNCDASign : NCDASign -> Value

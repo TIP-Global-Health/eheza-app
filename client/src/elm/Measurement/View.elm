@@ -2368,7 +2368,6 @@ viewNCDAContent language currentDate personId person config helperState form his
                         config.setBoolInputMsg
                         config.setBirthWeightMsg
                         config.setNumberANCVisitsMsg
-                        config.setNutritionSupplementTypeMsg
                         config.setHelperStateMsg
                         form
                         step
@@ -2505,14 +2504,13 @@ ncdaFormInputsAndTasks :
     -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
     -> (String -> msg)
     -> (String -> msg)
-    -> (NutritionSupplementType -> msg)
     -> (Maybe NCDASign -> msg)
     -> NCDAForm
     -> NCDAStep
     -> Maybe PregnancySummaryValue
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behindOnVaccinations setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
+ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behindOnVaccinations setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -2657,31 +2655,12 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                         updateFunc value form_ =
                             { form_
                                 | foodSupplements = Just value
-                                , foodSupplementType = Nothing
                                 , takingFoodSupplements = Nothing
                             }
 
                         ( derivedInputs, derivedTasks ) =
                             if form.foodSupplements == Just True then
-                                let
-                                    ( isTakingInput, isTakingTask ) =
-                                        if isJust form.foodSupplementType then
-                                            inputsAndTasksForSign TakingFoodSupplements
-
-                                        else
-                                            ( [], [] )
-                                in
-                                ( [ viewQuestionLabel language Translate.WhatType
-                                  , viewCheckBoxSelectInput language
-                                        [ FortifiedPorridge, Rutf, Ongera, TherapeuticMilk ]
-                                        []
-                                        form.foodSupplementType
-                                        setNutritionSupplementTypeMsg
-                                        Translate.NutritionSupplementType
-                                  ]
-                                    ++ isTakingInput
-                                , maybeToBoolTask form.foodSupplementType :: isTakingTask
-                                )
+                                inputsAndTasksForSign TakingFoodSupplements
 
                             else
                                 ( [], [] )
@@ -3245,7 +3224,6 @@ viewNCDA language currentDate childId child measurement data db =
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setNumberANCVisitsMsg = SetNumberANCVisits
-            , setNutritionSupplementTypeMsg = SetNutritionSupplementType
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg =

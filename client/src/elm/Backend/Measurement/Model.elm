@@ -277,7 +277,6 @@ type alias NCDAValue =
     { signs : EverySet NCDASign
     , birthWeight : Maybe WeightInGrm
     , numberOfANCVisits : Maybe Int
-    , foodSupplementType : Maybe NutritionSupplementType
     }
 
 
@@ -286,6 +285,7 @@ type NCDASign
     | BeneficiaryCashTransfer
     | BornWithBirthDefect
     | BreastfedForSixMonths
+    | ChildBehidOnVaccination
     | ChildGotDiarrhea
     | ChildWithAcuteMalnutrition
     | ChildWithDisability
@@ -298,7 +298,6 @@ type NCDASign
     | HasToilets
     | InsecticideTreatedBednets
     | NumberOfANCVisitsCorrect
-    | ChildBehidOnVaccination
     | ReceivingCashTransfer
     | ReceivingSupport
     | SupplementsDuringPregnancy

@@ -244,7 +244,6 @@ type MsgChild
     | SetFollowUpOption FollowUpOption
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetNumberANCVisits String
-    | SetNutritionSupplementType NutritionSupplementType
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
@@ -1048,7 +1047,6 @@ type alias NCDAForm =
     -- Step 2.
     , childBehidOnVaccination : Maybe Bool
     , foodSupplements : Maybe Bool
-    , foodSupplementType : Maybe NutritionSupplementType
     , takingFoodSupplements : Maybe Bool
 
     -- Step 3.
@@ -1090,7 +1088,6 @@ emptyNCDAForm =
     -- Step 2.
     , childBehidOnVaccination = Nothing
     , foodSupplements = Nothing
-    , foodSupplementType = Nothing
     , takingFoodSupplements = Nothing
 
     -- Step 3.
@@ -1204,7 +1201,6 @@ type alias NCDAContentConfig msg =
     , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
     , setNumberANCVisitsMsg : String -> msg
-    , setNutritionSupplementTypeMsg : NutritionSupplementType -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg

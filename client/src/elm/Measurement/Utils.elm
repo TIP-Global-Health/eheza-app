@@ -4524,7 +4524,6 @@ fromNCDAValue saved =
     -- , mealFrequency12MonthsOrMore = Maybe.map (.signs >> EverySet.member MealFrequency12MonthsOrMore) saved
     , birthWeight = Maybe.andThen .birthWeight saved
     , numberOfANCVisits = Maybe.andThen .numberOfANCVisits saved
-    , foodSupplementType = Maybe.andThen .foodSupplementType saved
     }
 
 
@@ -4567,7 +4566,6 @@ ncdaFormWithDefault form saved =
                 -- , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member MealFrequency12MonthsOrMore value.signs |> Just)
                 , birthWeight = or form.birthWeight value.birthWeight
                 , numberOfANCVisits = or form.numberOfANCVisits value.numberOfANCVisits
-                , foodSupplementType = or form.foodSupplementType value.foodSupplementType
                 }
             )
 
@@ -4619,7 +4617,6 @@ toNCDAValue form =
     Maybe.map NCDAValue signs
         |> andMap (Just form.birthWeight)
         |> andMap (Just form.numberOfANCVisits)
-        |> andMap (Just form.foodSupplementType)
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
