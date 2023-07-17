@@ -291,18 +291,18 @@ type NCDASign
     | ChildWithDisability
     | ConditionalFoodItems
     | FiveFoodGroups
-    | FoodSupplements
     | HasCleanWater
     | HasHandwashingFacility
     | HasKitchenGarden
     | HasToilets
     | InsecticideTreatedBednets
     | NumberOfANCVisitsCorrect
+    | OngeraMNP
     | ReceivingCashTransfer
     | ReceivingSupport
     | SupplementsDuringPregnancy
     | TakenSupplementsPerGuidance
-    | TakingFoodSupplements
+    | TakingOngeraMNP
     | TreatedForAcuteMalnutrition
     | NoNCDASigns
 

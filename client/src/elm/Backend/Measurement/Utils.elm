@@ -3576,8 +3576,8 @@ ncdaSignFromString value =
         "child-with-disability" ->
             Just ChildWithDisability
 
-        "food-supplements" ->
-            Just FoodSupplements
+        "ongera-mnp" ->
+            Just OngeraMNP
 
         "insecticide-treated-bednets" ->
             Just InsecticideTreatedBednets
@@ -3600,8 +3600,8 @@ ncdaSignFromString value =
         "taken-supplements-per-guidance" ->
             Just TakenSupplementsPerGuidance
 
-        "taking-food-supplements" ->
-            Just TakingFoodSupplements
+        "taking-ongera-mnp" ->
+            Just TakingOngeraMNP
 
         "treated-for-acute-malnutrition" ->
             Just TreatedForAcuteMalnutrition
@@ -3665,8 +3665,8 @@ ncdaSignToString value =
         ChildWithDisability ->
             "child-with-disability"
 
-        FoodSupplements ->
-            "food-supplements"
+        OngeraMNP ->
+            "ongera-mnp"
 
         InsecticideTreatedBednets ->
             "insecticide-treated-bednets"
@@ -3689,8 +3689,8 @@ ncdaSignToString value =
         TakenSupplementsPerGuidance ->
             "taken-supplements-per-guidance"
 
-        TakingFoodSupplements ->
-            "taking-food-supplements"
+        TakingOngeraMNP ->
+            "taking-ongera-mnp"
 
         TreatedForAcuteMalnutrition ->
             "treated-for-acute-malnutrition"

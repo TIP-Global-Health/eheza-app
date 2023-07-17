@@ -1270,6 +1270,7 @@ function hedley_activity_field_default_field_bases() {
         'has-handwashing-facility' => 'Has Handwashing Facility',
         'has-toilets' => 'Has Toilets',
         'has-kitchen-garden' => 'Has Kitchen Garden',
+        'ongera-mnp' => 'Ongera-MNP',
         'none' => 'None',
 
         // New.
@@ -1277,7 +1278,6 @@ function hedley_activity_field_default_field_bases() {
         'child-got-diarrhea' => 'Child got Diarrhea',
         'child-with-acute-malnutrition' => 'Child with Acute Malnutrition',
         'child-with-disability' => 'Child with Disability',
-        'food-supplements' => 'Food Supplements',
         'insecticide-treated-bednets' => 'Insecticide Treated Bednets',
         'number-of-anc-visits-correct' => 'Number of ANC Visits Correct',
         'child-behind-on-vaccination' => 'Child behind on vaccination',
@@ -1285,11 +1285,10 @@ function hedley_activity_field_default_field_bases() {
         'receiving-support' => 'Receiving Support',
         'supplements-during-pregnancy' => 'Supplements During Pregnancy',
         'taken-supplements-per-guidance' => 'Taken Supplements per Guidance',
-        'taking-food-supplements' => 'Taking Food Supplements',
+        'taking-ongera-mnp' => 'Taking Ongera-MNP',
         'treated-for-acute-malnutrition' => 'Treated for Acute Malnutrition',
 
         // Not in use anymore.
-        'ongera-mnp' => 'Ongera Mnp',
         'conditional-cash-transfer' => 'Conditional Cash Transfer',
         'regular-prenatal-visits' => 'Regular Prenatal Visits',
         'iron-supplements-during-pregnancy' => 'Iron Supplements During Pregnancy',

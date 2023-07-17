@@ -4507,7 +4507,7 @@ fromNCDAValue saved =
     , childGotDiarrhea = Maybe.map (.signs >> EverySet.member ChildGotDiarrhea) saved
     , childWithAcuteMalnutrition = Maybe.map (.signs >> EverySet.member ChildWithAcuteMalnutrition) saved
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
-    , foodSupplements = Maybe.map (.signs >> EverySet.member FoodSupplements) saved
+    , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
     , numberOfANCVisitsCorrect = Maybe.map (.signs >> EverySet.member NumberOfANCVisitsCorrect) saved
     , childBehidOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehidOnVaccination) saved
@@ -4516,7 +4516,7 @@ fromNCDAValue saved =
     , supplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member SupplementsDuringPregnancy) saved
     , takenSupplementsPerGuidance = Maybe.map (.signs >> EverySet.member TakenSupplementsPerGuidance) saved
     , treatedForAcuteMalnutrition = Maybe.map (.signs >> EverySet.member TreatedForAcuteMalnutrition) saved
-    , takingFoodSupplements = Maybe.map (.signs >> EverySet.member TakingFoodSupplements) saved
+    , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
 
     --@todo: decide if this is needed:
     -- , mealFrequency6to8Months = Maybe.map (.signs >> EverySet.member MealFrequency6to8Months) saved
@@ -4549,7 +4549,7 @@ ncdaFormWithDefault form saved =
                 , childGotDiarrhea = or form.childGotDiarrhea (EverySet.member ChildGotDiarrhea value.signs |> Just)
                 , childWithAcuteMalnutrition = or form.childWithAcuteMalnutrition (EverySet.member ChildWithAcuteMalnutrition value.signs |> Just)
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
-                , foodSupplements = or form.foodSupplements (EverySet.member FoodSupplements value.signs |> Just)
+                , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
                 , numberOfANCVisitsCorrect = or form.numberOfANCVisitsCorrect (EverySet.member NumberOfANCVisitsCorrect value.signs |> Just)
                 , childBehidOnVaccination = or form.childBehidOnVaccination (EverySet.member ChildBehidOnVaccination value.signs |> Just)
@@ -4558,7 +4558,7 @@ ncdaFormWithDefault form saved =
                 , supplementsDuringPregnancy = or form.supplementsDuringPregnancy (EverySet.member SupplementsDuringPregnancy value.signs |> Just)
                 , takenSupplementsPerGuidance = or form.takenSupplementsPerGuidance (EverySet.member TakenSupplementsPerGuidance value.signs |> Just)
                 , treatedForAcuteMalnutrition = or form.treatedForAcuteMalnutrition (EverySet.member TreatedForAcuteMalnutrition value.signs |> Just)
-                , takingFoodSupplements = or form.takingFoodSupplements (EverySet.member TakingFoodSupplements value.signs |> Just)
+                , takingOngeraMNP = or form.takingOngeraMNP (EverySet.member TakingOngeraMNP value.signs |> Just)
 
                 --@todo: decide if this is needed:
                 -- , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member MealFrequency6to8Months value.signs |> Just)
@@ -4595,7 +4595,7 @@ toNCDAValue form =
             , ifNullableTrue ChildGotDiarrhea form.childGotDiarrhea
             , ifNullableTrue ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition
             , ifNullableTrue ChildWithDisability form.childWithDisability
-            , ifNullableTrue FoodSupplements form.foodSupplements
+            , ifNullableTrue OngeraMNP form.ongeraMNP
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
             , ifNullableTrue NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect
             , ifNullableTrue ChildBehidOnVaccination form.childBehidOnVaccination
@@ -4604,7 +4604,7 @@ toNCDAValue form =
             , ifNullableTrue SupplementsDuringPregnancy form.supplementsDuringPregnancy
             , ifNullableTrue TakenSupplementsPerGuidance form.takenSupplementsPerGuidance
             , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
-            , ifNullableTrue TakingFoodSupplements form.takingFoodSupplements
+            , ifNullableTrue TakingOngeraMNP form.takingOngeraMNP
 
             --@todo: decide if this is needed:
             -- , ifNullableTrue MealFrequency6to8Months form.mealFrequency6to8Months

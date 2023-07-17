@@ -2650,41 +2650,41 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                     else
                         ( [], [] )
 
-                FoodSupplements ->
+                OngeraMNP ->
                     let
                         updateFunc value form_ =
                             { form_
-                                | foodSupplements = Just value
-                                , takingFoodSupplements = Nothing
+                                | ongeraMNP = Just value
+                                , takingOngeraMNP = Nothing
                             }
 
                         ( derivedInputs, derivedTasks ) =
-                            if form.foodSupplements == Just True then
-                                inputsAndTasksForSign TakingFoodSupplements
+                            if form.ongeraMNP == Just True then
+                                inputsAndTasksForSign TakingOngeraMNP
 
                             else
                                 ( [], [] )
                     in
-                    ( viewNCDAInput FoodSupplements form.foodSupplements updateFunc
+                    ( viewNCDAInput OngeraMNP form.ongeraMNP updateFunc
                         ++ derivedInputs
-                    , form.foodSupplements :: derivedTasks
+                    , form.ongeraMNP :: derivedTasks
                     )
 
-                TakingFoodSupplements ->
+                TakingOngeraMNP ->
                     let
                         updateFunc value form_ =
-                            { form_ | takingFoodSupplements = Just value }
+                            { form_ | takingOngeraMNP = Just value }
 
                         counselling =
-                            if form.takingFoodSupplements == Just False then
-                                [ viewCounselingLabel TakingFoodSupplements ]
+                            if form.takingOngeraMNP == Just False then
+                                [ viewCounselingLabel TakingOngeraMNP ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput TakingFoodSupplements form.takingFoodSupplements updateFunc
+                    ( viewNCDAInput TakingOngeraMNP form.takingOngeraMNP updateFunc
                         ++ counselling
-                    , [ maybeToBoolTask form.takingFoodSupplements ]
+                    , [ maybeToBoolTask form.takingOngeraMNP ]
                     )
 
                 FiveFoodGroups ->
@@ -3014,11 +3014,11 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
             let
                 tasks =
                     if atHealthCenter then
-                        [ FoodSupplements ]
+                        [ OngeraMNP ]
 
                     else
                         [ ChildBehidOnVaccination
-                        , FoodSupplements
+                        , OngeraMNP
                         ]
 
                 inputsAndTasks =

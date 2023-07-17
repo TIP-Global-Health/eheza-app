@@ -9356,8 +9356,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TakingFoodSupplements ->
-                    { english = " Provides counseling on the importance of Ongera and FBF and advise them to go to the Health center to recieve them"
+                TakingOngeraMNP ->
+                    { english = "Provides counseling on the importance of Ongera and advise them to go to the Health center to recieve them"
                     , kinyarwanda = Nothing
                     }
 
@@ -9453,12 +9453,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                FoodSupplements ->
-                    { english = "Did the child receive food supplementation"
+                Backend.Measurement.Model.OngeraMNP ->
+                    { english = "Did the child receive Ongera-MNP"
                     , kinyarwanda = Nothing
                     }
 
-                TakingFoodSupplements ->
+                TakingOngeraMNP ->
                     { english = "Is the food supplementation being consumed"
                     , kinyarwanda = Nothing
                     }
@@ -9708,7 +9708,7 @@ translationSet trans =
                     , kinyarwanda = Just "Imiti y'inzoka"
                     }
 
-                OngeraMNP ->
+                Pages.WellChild.ProgressReport.Model.OngeraMNP ->
                     { english = "Use additional nutrients (Ongera)"
                     , kinyarwanda = Just "Koresha Ongera intungamubiri"
                     }
