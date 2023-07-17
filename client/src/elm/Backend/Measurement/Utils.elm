@@ -3585,7 +3585,7 @@ ncdaSignFromString value =
         "number-of-anc-visits-correct" ->
             Just NumberOfANCVisitsCorrect
 
-        "child-behid-on-vaccination" ->
+        "child-behind-on-vaccination" ->
             Just ChildBehidOnVaccination
 
         "receiving-cash-transfer" ->
@@ -3675,7 +3675,7 @@ ncdaSignToString value =
             "number-of-anc-visits-correct"
 
         ChildBehidOnVaccination ->
-            "child-behid-on-vaccination"
+            "child-behind-on-vaccination"
 
         ReceivingCashTransfer ->
             "receiving-cash-transfer"
