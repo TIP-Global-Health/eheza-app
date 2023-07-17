@@ -3033,11 +3033,17 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
 
         NCDAStepUniversalInterventions ->
             let
-                inputsAndTasks =
-                    List.map inputsAndTasksForSign
+                tasks =
+                    if atHealthCenter then
+                        [ FoodSupplements ]
+
+                    else
                         [ ChildBehidOnVaccination
                         , FoodSupplements
                         ]
+
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign tasks
             in
             ( List.map Tuple.first inputsAndTasks
                 |> List.concat
