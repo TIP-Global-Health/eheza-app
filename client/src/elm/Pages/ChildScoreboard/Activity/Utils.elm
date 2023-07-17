@@ -65,7 +65,7 @@ expectActivity currentDate assembled activity =
 
         ChildScoreboardVaccinationHistory ->
             let
-                childBehidOnVaccinationByVaccinaitonHistory =
+                childBehindOnVaccinationByVaccinaitonHistory =
                     generateSuggestedVaccinations currentDate
                         assembled.person
                         assembled.vaccinationHistory
@@ -74,10 +74,10 @@ expectActivity currentDate assembled activity =
 
                 childUpToDateByNCDAResponse =
                     getMeasurementValueFunc assembled.measurements.ncda
-                        |> Maybe.map (.signs >> EverySet.member ChildBehidOnVaccination >> not)
+                        |> Maybe.map (.signs >> EverySet.member ChildBehindOnVaccination >> not)
                         |> Maybe.withDefault False
             in
-            childBehidOnVaccinationByVaccinaitonHistory && childUpToDateByNCDAResponse
+            childBehindOnVaccinationByVaccinaitonHistory && childUpToDateByNCDAResponse
 
 
 activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> ChildScoreboardActivity -> Bool

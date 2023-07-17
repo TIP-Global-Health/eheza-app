@@ -4511,7 +4511,7 @@ fromNCDAValue saved =
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
     , numberOfANCVisitsCorrect = Maybe.map (.signs >> EverySet.member NumberOfANCVisitsCorrect) saved
-    , childBehidOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehidOnVaccination) saved
+    , childBehindOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehindOnVaccination) saved
     , receivingCashTransfer = Maybe.map (.signs >> EverySet.member ReceivingCashTransfer) saved
     , receivingSupport = Maybe.map (.signs >> EverySet.member ReceivingSupport) saved
     , supplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member SupplementsDuringPregnancy) saved
@@ -4553,7 +4553,7 @@ ncdaFormWithDefault form saved =
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
                 , numberOfANCVisitsCorrect = or form.numberOfANCVisitsCorrect (EverySet.member NumberOfANCVisitsCorrect value.signs |> Just)
-                , childBehidOnVaccination = or form.childBehidOnVaccination (EverySet.member ChildBehidOnVaccination value.signs |> Just)
+                , childBehindOnVaccination = or form.childBehindOnVaccination (EverySet.member ChildBehindOnVaccination value.signs |> Just)
                 , receivingCashTransfer = or form.receivingCashTransfer (EverySet.member ReceivingCashTransfer value.signs |> Just)
                 , receivingSupport = or form.receivingSupport (EverySet.member ReceivingSupport value.signs |> Just)
                 , supplementsDuringPregnancy = or form.supplementsDuringPregnancy (EverySet.member SupplementsDuringPregnancy value.signs |> Just)
@@ -4599,7 +4599,7 @@ toNCDAValue form =
             , ifNullableTrue OngeraMNP form.ongeraMNP
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
             , ifNullableTrue NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect
-            , ifNullableTrue ChildBehidOnVaccination form.childBehidOnVaccination
+            , ifNullableTrue ChildBehindOnVaccination form.childBehindOnVaccination
             , ifNullableTrue ReceivingCashTransfer form.receivingCashTransfer
             , ifNullableTrue ReceivingSupport form.receivingSupport
             , ifNullableTrue SupplementsDuringPregnancy form.supplementsDuringPregnancy

@@ -2614,7 +2614,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                     , [ maybeToBoolTask form.takenSupplementsPerGuidance ]
                     )
 
-                ChildBehidOnVaccination ->
+                ChildBehindOnVaccination ->
                     let
                         childBehindOnVaccinations =
                             Maybe.withDefault (behindOnVaccinationsByWellChild currentDate personId db)
@@ -2623,18 +2623,18 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                     if childBehindOnVaccinations then
                         let
                             updateFunc value form_ =
-                                { form_ | childBehidOnVaccination = Just value }
+                                { form_ | childBehindOnVaccination = Just value }
 
                             counselling =
                                 Maybe.map
-                                    (\childBehid ->
-                                        if childBehid then
-                                            [ viewCounselingLabel ChildBehidOnVaccination ]
+                                    (\childBehind ->
+                                        if childBehind then
+                                            [ viewCounselingLabel ChildBehindOnVaccination ]
 
                                         else
                                             [ viewCustomLabel language Translate.NCDAUpdateVaccineRecordMessage "." "label counselling" ]
                                     )
-                                    form.childBehidOnVaccination
+                                    form.childBehindOnVaccination
                                     |> Maybe.withDefault []
 
                             lastScheduledImmunizationVisitDate =
@@ -2642,9 +2642,9 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                         in
                         ( [ viewCustomLabel language (Translate.NCDANumberImmunizationAppointmentLabel lastScheduledImmunizationVisitDate) "." "label"
                           ]
-                            ++ viewNCDAInput ChildBehidOnVaccination form.childBehidOnVaccination updateFunc
+                            ++ viewNCDAInput ChildBehindOnVaccination form.childBehindOnVaccination updateFunc
                             ++ counselling
-                        , [ form.childBehidOnVaccination ]
+                        , [ form.childBehindOnVaccination ]
                         )
 
                     else
@@ -3017,7 +3017,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                         [ OngeraMNP ]
 
                     else
-                        [ ChildBehidOnVaccination
+                        [ ChildBehindOnVaccination
                         , OngeraMNP
                         ]
 

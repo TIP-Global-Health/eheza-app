@@ -1045,7 +1045,7 @@ type alias NCDAForm =
     , birthWeight : Maybe WeightInGrm
 
     -- Step 2.
-    , childBehidOnVaccination : Maybe Bool
+    , childBehindOnVaccination : Maybe Bool
     , ongeraMNP : Maybe Bool
     , takingOngeraMNP : Maybe Bool
 
@@ -1086,7 +1086,7 @@ emptyNCDAForm =
     , birthWeight = Nothing
 
     -- Step 2.
-    , childBehidOnVaccination = Nothing
+    , childBehindOnVaccination = Nothing
     , ongeraMNP = Nothing
     , takingOngeraMNP = Nothing
 

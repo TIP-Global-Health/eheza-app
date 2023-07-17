@@ -285,7 +285,7 @@ type NCDASign
     | BeneficiaryCashTransfer
     | BornWithBirthDefect
     | BreastfedForSixMonths
-    | ChildBehidOnVaccination
+    | ChildBehindOnVaccination
     | ChildGotDiarrhea
     | ChildWithAcuteMalnutrition
     | ChildWithDisability

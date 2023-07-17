@@ -9351,7 +9351,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ChildBehidOnVaccination ->
+                ChildBehindOnVaccination ->
                     { english = "Provide the counseling to the mother to update the child's vaccination record with a Nurse through a Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
@@ -9448,7 +9448,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ChildBehidOnVaccination ->
+                ChildBehindOnVaccination ->
                     { english = "According to E-Heza the child is behind on vaccinations, is this correct"
                     , kinyarwanda = Nothing
                     }
