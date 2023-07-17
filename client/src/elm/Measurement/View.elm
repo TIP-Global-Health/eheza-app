@@ -2750,7 +2750,21 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             else
                                 []
                     in
-                    ( viewNCDAInput MealsAtRecommendedTimes form.mealsAtRecommendedTimes updateFunc ++ counselling
+                    ( [ div [ class "label-with-helper" ]
+                            [ viewQuestionLabel language <| Translate.NCDASignQuestion MealsAtRecommendedTimes
+                            , div
+                                [ class "label-helper"
+                                , onClick <| config.setHelperStateMsg (Just MealsAtRecommendedTimes)
+                                ]
+                                [ img [ src "assets/images/question-mark.svg" ] [] ]
+                            ]
+                      , viewBoolInput
+                            language
+                            form.mealsAtRecommendedTimes
+                            (config.setBoolInputMsg updateFunc)
+                            ""
+                            Nothing
+                      ]
                     , [ maybeToBoolTask form.mealsAtRecommendedTimes ]
                     )
 
@@ -3150,9 +3164,34 @@ viewNCDAHelperDialog : Language -> msg -> Maybe NCDASign -> Maybe (Html msg)
 viewNCDAHelperDialog language action helperState =
     Maybe.andThen
         (\sign ->
+            let
+                viewHelperDialog dialogContent =
+                    div [ class "ui active modal ncda-helper-popup" ]
+                        [ div [ class "header" ]
+                            [ viewLabel language <| Translate.NCDASignHelperHeader sign ]
+                        , div
+                            [ class "content" ]
+                            [ dialogContent ]
+                        , div
+                            [ class "actions" ]
+                            [ button
+                                [ class "ui fluid primary button"
+                                , onClick action
+                                ]
+                                [ text <| translate language Translate.Close ]
+                            ]
+                        ]
+            in
             case sign of
                 FiveFoodGroups ->
-                    Just <| ncdaHelperDialog language action
+                    fiveFoodGroupsHelperDialog language action
+                        |> viewHelperDialog
+                        |> Just
+
+                MealsAtRecommendedTimes ->
+                    mealsAtRecommendedTimesHelperDialog language action
+                        |> viewHelperDialog
+                        |> Just
 
                 _ ->
                     Nothing
@@ -3160,36 +3199,30 @@ viewNCDAHelperDialog language action helperState =
         helperState
 
 
-ncdaHelperDialog : Language -> msg -> Html msg
-ncdaHelperDialog language action =
-    div [ class "ui active modal ncda-helper-popup" ]
-        [ div [ class "header" ]
-            [ viewQuestionLabel language <| Translate.NCDASignQuestion FiveFoodGroups ]
-        , div
-            [ class "content" ]
-            [ ol [] <|
-                List.map
-                    (\foodGroup ->
-                        li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
-                    )
-                    [ Staples
-                    , Legumes
-                    , DairyProducts
-                    , AnimalSourceFoods
-                    , Eggs
-                    , FruitsVegetables
-                    , BreastMilk
-                    , MealsWithEdibleOil
-                    ]
+fiveFoodGroupsHelperDialog : Language -> msg -> Html msg
+fiveFoodGroupsHelperDialog language action =
+    ol [] <|
+        List.map
+            (\foodGroup ->
+                li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
+            )
+            [ Staples
+            , Legumes
+            , DairyProducts
+            , AnimalSourceFoods
+            , Eggs
+            , FruitsVegetables
+            , BreastMilk
+            , MealsWithEdibleOil
             ]
-        , div
-            [ class "actions" ]
-            [ button
-                [ class "ui fluid primary button"
-                , onClick action
-                ]
-                [ text <| translate language Translate.Close ]
-            ]
+
+
+mealsAtRecommendedTimesHelperDialog : Language -> msg -> Html msg
+mealsAtRecommendedTimesHelperDialog language action =
+    ul []
+        [ li [] [ text <| translate language <| Translate.NCDAMealFrequency6to9 ]
+        , li [] [ text <| translate language <| Translate.NCDAMealFrequency9to12 ]
+        , li [] [ text <| translate language <| Translate.NCDAMealFrequency12to24 ]
         ]
 
 

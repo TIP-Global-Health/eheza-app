@@ -1006,7 +1006,11 @@ type TranslationId
     | NationalIdNumber
     | NCDABirthweightQuestion
     | NCDADiarrheaPopupMessage
+    | NCDAMealFrequency6to9
+    | NCDAMealFrequency9to12
+    | NCDAMealFrequency12to24
     | NCDASignCounceling NCDASign
+    | NCDASignHelperHeader NCDASign
     | NCDASignQuestion NCDASign
     | NCDAUpdateVaccineRecordMessage
     | NCDActivityTitle NCDActivity
@@ -9339,6 +9343,21 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        NCDAMealFrequency6to9 ->
+            { english = "A child between 6 to 9 months: Feed him/her complementary foods 2-3 times a day."
+            , kinyarwanda = Nothing
+            }
+
+        NCDAMealFrequency9to12 ->
+            { english = "A child between 9 to 12 months: Feed him/her complementary foods 3-4 times a day."
+            , kinyarwanda = Nothing
+            }
+
+        NCDAMealFrequency12to24 ->
+            { english = "A child between 12 to 24 months: Feed him/her complementary foods at least 5 times a day."
+            , kinyarwanda = Nothing
+            }
+
         NCDASignCounceling sign ->
             case sign of
                 NumberOfANCVisitsCorrect ->
@@ -9426,6 +9445,24 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDASignHelperHeader sign ->
+            case sign of
+                FiveFoodGroups ->
+                    { english = "Food groups"
+                    , kinyarwanda = Nothing
+                    }
+
+                MealsAtRecommendedTimes ->
+                    { english = "Ask and check if the daily frequency of the complementary food is enough"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Other signs don't have helper dialog.
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
