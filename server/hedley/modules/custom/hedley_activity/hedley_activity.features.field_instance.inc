@@ -4162,43 +4162,6 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-group_ncda-field_supplement_type'.
-  $field_instances['node-group_ncda-field_supplement_type'] = array(
-    'bundle' => 'group_ncda',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 9,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_supplement_type',
-    'label' => 'Supplement Type',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 14,
-    ),
-  );
-
   // Exported field_instance: 'node-group_ncda-field_uuid'.
   $field_instances['node-group_ncda-field_uuid'] = array(
     'bundle' => 'group_ncda',
@@ -8699,43 +8662,6 @@ function hedley_activity_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 7,
-    ),
-  );
-
-  // Exported field_instance: 'node-nutrition_ncda-field_supplement_type'.
-  $field_instances['node-nutrition_ncda-field_supplement_type'] = array(
-    'bundle' => 'nutrition_ncda',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 9,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_supplement_type',
-    'label' => 'Supplement Type',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 15,
     ),
   );
 
@@ -15475,7 +15401,6 @@ function hedley_activity_field_default_field_instances() {
   t('Social History');
   t('Stillbirths PreTerm');
   t('Stillbirths at Term');
-  t('Supplement Type');
   t('Syphilis Treatment');
   t('Sys');
   t('Term Pregnancy');
