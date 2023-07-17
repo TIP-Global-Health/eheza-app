@@ -9426,7 +9426,7 @@ translationSet trans =
                     }
 
                 Backend.Measurement.Model.HasToilets ->
-                    { english = "Provide counseling by telling them to buiuld toilets. If they don't have means advocate for them"
+                    { english = "Provide counseling by telling them to build toilets. If they don't have means advocate for them"
                     , kinyarwanda = Nothing
                     }
 
