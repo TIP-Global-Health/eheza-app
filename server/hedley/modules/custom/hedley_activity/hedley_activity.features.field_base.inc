@@ -1279,6 +1279,7 @@ function hedley_activity_field_default_field_bases() {
         'child-with-acute-malnutrition' => 'Child with Acute Malnutrition',
         'child-with-disability' => 'Child with Disability',
         'insecticide-treated-bednets' => 'Insecticide Treated Bednets',
+        'meals-at-recommended-times' => 'Meals at recommended times',
         'number-of-anc-visits-correct' => 'Number of ANC Visits Correct',
         'child-behind-on-vaccination' => 'Child behind on vaccination',
         'receiving-cash-transfer' => 'Receiving Cash Transfer',
@@ -1287,18 +1288,6 @@ function hedley_activity_field_default_field_bases() {
         'taken-supplements-per-guidance' => 'Taken Supplements per Guidance',
         'taking-ongera-mnp' => 'Taking Ongera-MNP',
         'treated-for-acute-malnutrition' => 'Treated for Acute Malnutrition',
-
-        // Not in use anymore.
-        'conditional-cash-transfer' => 'Conditional Cash Transfer',
-        'regular-prenatal-visits' => 'Regular Prenatal Visits',
-        'iron-supplements-during-pregnancy' => 'Iron Supplements During Pregnancy',
-        'insecticide-treated-bednets-during-pregnancy' => 'Insecticide Treated Bednets During Pregnancy',
-        'support-child-with-disability' => 'Support Child With Disability',
-
-        // @todo: decide if this is needed:
-        'meal-frequency-6to8m' => 'Meal Frequency 6 to 9 months',
-        'meal-frequency-9to11m' => 'Meal Frequency 9 to 12 months',
-        'meal-frequency-12+m' => 'Meal Frequency 12 months or more',
       ),
       'allowed_values_function' => '',
     ),

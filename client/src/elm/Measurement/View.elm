@@ -2750,6 +2750,22 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                     , [ maybeToBoolTask form.appropriateComplementaryFeeding ]
                     )
 
+                MealsAtRecommendedTimes ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | mealsAtRecommendedTimes = Just value }
+
+                        counselling =
+                            if form.mealsAtRecommendedTimes == Just False then
+                                [ viewCounselingLabel MealsAtRecommendedTimes ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput MealsAtRecommendedTimes form.mealsAtRecommendedTimes updateFunc ++ counselling
+                    , [ maybeToBoolTask form.mealsAtRecommendedTimes ]
+                    )
+
                 BeneficiaryCashTransfer ->
                     let
                         updateFunc value form_ =
@@ -3032,21 +3048,14 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
 
         NCDAStepNutritionBehavior ->
             let
-                feedingSign =
-                    ageInMonths currentDate person
-                        |> Maybe.map
-                            (\ageMonths ->
-                                if ageMonths < 7 then
-                                    [ BreastfedForSixMonths ]
+                breasdtfeedingSign =
+                    [ BreastfedForSixMonths ]
 
-                                else
-                                    [ FiveFoodGroups, AppropriateComplementaryFeeding ]
-                            )
-                        |> Maybe.withDefault []
+                signs =
+                    FiveFoodGroups :: breasdtfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
 
                 inputsAndTasks =
-                    feedingSign
-                        |> List.map inputsAndTasksForSign
+                    List.map inputsAndTasksForSign signs
             in
             ( List.map Tuple.first inputsAndTasks
                 |> List.concat

@@ -1053,6 +1053,7 @@ type alias NCDAForm =
     , fiveFoodGroups : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
+    , mealsAtRecommendedTimes : Maybe Bool
 
     -- Step 4.
     , beneficiaryCashTransfer : Maybe Bool
@@ -1094,6 +1095,7 @@ emptyNCDAForm =
     , fiveFoodGroups = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
+    , mealsAtRecommendedTimes = Nothing
 
     -- Step 4.
     , beneficiaryCashTransfer = Nothing

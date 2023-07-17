@@ -9421,6 +9421,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MealsAtRecommendedTimes ->
+                    { english = "Provide counseling on the consequences of not feeding the child at recommended times, as per the guidance"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -9540,6 +9545,11 @@ translationSet trans =
 
                 InsecticideTreatedBednets ->
                     { english = "Is the mother using the insecticide-treated bednets"
+                    , kinyarwanda = Nothing
+                    }
+
+                MealsAtRecommendedTimes ->
+                    { english = " Does the child eat at the recommended times per day"
                     , kinyarwanda = Nothing
                     }
 

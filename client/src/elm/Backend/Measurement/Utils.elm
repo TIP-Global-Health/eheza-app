@@ -3582,6 +3582,9 @@ ncdaSignFromString value =
         "insecticide-treated-bednets" ->
             Just InsecticideTreatedBednets
 
+        "meals-at-recommended-times" ->
+            Just MealsAtRecommendedTimes
+
         "number-of-anc-visits-correct" ->
             Just NumberOfANCVisitsCorrect
 
@@ -3606,16 +3609,6 @@ ncdaSignFromString value =
         "treated-for-acute-malnutrition" ->
             Just TreatedForAcuteMalnutrition
 
-        -- @todo: decide if needed.
-        --
-        -- "meal-frequency-6to8m" ->
-        --     Just MealFrequency6to8Months
-        --
-        -- "meal-frequency-9to11m" ->
-        --     Just MealFrequency9to11Months
-        --
-        -- "meal-frequency-12+m" ->
-        --     Just MealFrequency12MonthsOrMore
         "none" ->
             Just NoNCDASigns
 
@@ -3671,6 +3664,9 @@ ncdaSignToString value =
         InsecticideTreatedBednets ->
             "insecticide-treated-bednets"
 
+        MealsAtRecommendedTimes ->
+            "meals-at-recommended-times"
+
         NumberOfANCVisitsCorrect ->
             "number-of-anc-visits-correct"
 
@@ -3695,15 +3691,6 @@ ncdaSignToString value =
         TreatedForAcuteMalnutrition ->
             "treated-for-acute-malnutrition"
 
-        -- @todo: decide if needed.
-        -- MealFrequency6to8Months ->
-        --     "meal-frequency-6to8m"
-        --
-        -- MealFrequency9to11Months ->
-        --     "meal-frequency-9to11m"
-        --
-        -- MealFrequency12MonthsOrMore ->
-        --     "meal-frequency-12+m"
         NoNCDASigns ->
             "none"
 

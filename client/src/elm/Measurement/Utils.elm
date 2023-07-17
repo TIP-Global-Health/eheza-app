@@ -4518,11 +4518,7 @@ fromNCDAValue saved =
     , takenSupplementsPerGuidance = Maybe.map (.signs >> EverySet.member TakenSupplementsPerGuidance) saved
     , treatedForAcuteMalnutrition = Maybe.map (.signs >> EverySet.member TreatedForAcuteMalnutrition) saved
     , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
-
-    --@todo: decide if this is needed:
-    -- , mealFrequency6to8Months = Maybe.map (.signs >> EverySet.member MealFrequency6to8Months) saved
-    -- , mealFrequency9to11Months = Maybe.map (.signs >> EverySet.member MealFrequency9to11Months) saved
-    -- , mealFrequency12MonthsOrMore = Maybe.map (.signs >> EverySet.member MealFrequency12MonthsOrMore) saved
+    , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
     , numberOfANCVisits = Maybe.andThen .numberOfANCVisits saved
     }
@@ -4560,11 +4556,7 @@ ncdaFormWithDefault form saved =
                 , takenSupplementsPerGuidance = or form.takenSupplementsPerGuidance (EverySet.member TakenSupplementsPerGuidance value.signs |> Just)
                 , treatedForAcuteMalnutrition = or form.treatedForAcuteMalnutrition (EverySet.member TreatedForAcuteMalnutrition value.signs |> Just)
                 , takingOngeraMNP = or form.takingOngeraMNP (EverySet.member TakingOngeraMNP value.signs |> Just)
-
-                --@todo: decide if this is needed:
-                -- , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member MealFrequency6to8Months value.signs |> Just)
-                -- , mealFrequency9to11Months = or form.mealFrequency9to11Months (EverySet.member MealFrequency9to11Months value.signs |> Just)
-                -- , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member MealFrequency12MonthsOrMore value.signs |> Just)
+                , mealsAtRecommendedTimes = or form.mealsAtRecommendedTimes (EverySet.member MealsAtRecommendedTimes value.signs |> Just)
                 , birthWeight = or form.birthWeight value.birthWeight
                 , numberOfANCVisits = or form.numberOfANCVisits value.numberOfANCVisits
                 }
@@ -4606,11 +4598,7 @@ toNCDAValue form =
             , ifNullableTrue TakenSupplementsPerGuidance form.takenSupplementsPerGuidance
             , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
             , ifNullableTrue TakingOngeraMNP form.takingOngeraMNP
-
-            --@todo: decide if this is needed:
-            -- , ifNullableTrue MealFrequency6to8Months form.mealFrequency6to8Months
-            -- , ifNullableTrue MealFrequency9to11Months form.mealFrequency9to11Months
-            -- , ifNullableTrue MealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore
+            , ifNullableTrue MealsAtRecommendedTimes form.mealsAtRecommendedTimes
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)

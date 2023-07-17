@@ -296,6 +296,7 @@ type NCDASign
     | HasKitchenGarden
     | HasToilets
     | InsecticideTreatedBednets
+    | MealsAtRecommendedTimes
     | NumberOfANCVisitsCorrect
     | OngeraMNP
     | ReceivingCashTransfer
