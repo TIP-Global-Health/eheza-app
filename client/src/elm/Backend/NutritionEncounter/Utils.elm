@@ -26,7 +26,7 @@ import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
-import Date
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
@@ -424,18 +424,28 @@ resolveNCDANeverFilled :
     -> ModelIndexedDb
     -> Bool
 resolveNCDANeverFilled currentDate childId db =
-    let
-        previousNCDAValuesForChild =
+    resolvePreviousNCDAValuesForChild currentDate childId db
+        |> List.isEmpty
+
+
+resolveNCDANotFilledAfterAgeOfSixMonths :
+    NominalDate
+    -> PersonId
+    -> Person
+    -> ModelIndexedDb
+    -> Bool
+resolveNCDANotFilledAfterAgeOfSixMonths currentDate childId child db =
+    Maybe.map
+        (\birthDate ->
             resolvePreviousNCDAValuesForChild currentDate childId db
-
-        individualChildScoreboardMeasurements =
-            generateIndividualChildScoreboardMeasurementsForChild childId db
-
-        previousChildScoreboardNCDAs =
-            resolveIndividualChildScoreboardValues individualChildScoreboardMeasurements .ncda identity
-                |> List.filter (\( date, _ ) -> Date.compare date currentDate == LT)
-    in
-    List.isEmpty previousNCDAValuesForChild && List.isEmpty previousChildScoreboardNCDAs
+                |> List.filter
+                    (\( date, _ ) ->
+                        Date.diff Months birthDate date >= 6
+                    )
+                |> List.isEmpty
+        )
+        child.birthDate
+        |> Maybe.withDefault False
 
 
 resolvePreviousNCDAValuesForChild :
@@ -466,6 +476,12 @@ resolveNCDAValuesForChild childId db =
         wellChildNCDAs =
             resolveIndividualWellChildValues individualWellChildMeasurements .ncda identity
 
+        individualChildScoreboardMeasurements =
+            generateIndividualChildScoreboardMeasurementsForChild childId db
+
+        childScoreboardNCDAs =
+            resolveIndividualChildScoreboardValues individualChildScoreboardMeasurements .ncda identity
+
         groupMeasurements =
             Dict.get childId db.childMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -479,7 +495,7 @@ resolveNCDAValuesForChild childId db =
                     )
                 |> Maybe.withDefault []
     in
-    nutritionNCDAs ++ wellChildNCDAs ++ groupNCDAs
+    nutritionNCDAs ++ wellChildNCDAs ++ childScoreboardNCDAs ++ groupNCDAs
 
 
 resolvePreviousValuesSetForChild :

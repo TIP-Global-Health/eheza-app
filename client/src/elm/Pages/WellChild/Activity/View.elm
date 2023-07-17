@@ -11,6 +11,7 @@ import Backend.NutritionEncounter.Utils
         ( getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
         , resolveNCDANeverFilled
+        , resolveNCDANotFilledAfterAgeOfSixMonths
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
@@ -33,7 +34,6 @@ import Measurement.Model
         ( ImmunisationTask(..)
         , InvokationModule(..)
         , NCDAData
-        , NCDAHistoryData
         , PhotoForm
         , VaccinationFormViewMode(..)
         , VaccinationProgressDict
@@ -2431,15 +2431,13 @@ viewNCDAContent language currentDate assembled data db =
         personId =
             assembled.participant.person
 
-        historyData =
-            { pregnancySummary = getNewbornExamPregnancySummary personId db
-            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
-            }
-
         config =
             { atHealthCenter = True
             , showTasksTray = True
             , behindOnVaccinations = Nothing
+            , pregnancySummary = getNewbornExamPregnancySummary personId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
+            , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setNumberANCVisitsMsg = SetNumberANCVisits
@@ -2455,5 +2453,4 @@ viewNCDAContent language currentDate assembled data db =
         config
         data.helperState
         form
-        historyData
         db

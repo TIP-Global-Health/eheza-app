@@ -1195,23 +1195,26 @@ type alias NCDAContentConfig msg =
     { -- Indicates if NCDA activity was performed at Health center,
       -- or by CHW (during Child Scoreboard encounter).
       atHealthCenter : Bool
+
+    -- Indications if display of tasks tray is required or not.
     , showTasksTray : Bool
 
     -- This allows setting desired value from invoking module.
     -- If set to Nothing, it's resolved using Well Child data.
     , behindOnVaccinations : Maybe Bool
+
+    -- Required data, which is resolved from previous encounters.
+    , pregnancySummary : Maybe PregnancySummaryValue
+    , ncdaNeverFilled : Bool
+    , ncdaNotFilledAfterAgeOfSixMonths : Bool
+
+    -- Different actions.
     , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
     , setNumberANCVisitsMsg : String -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg
-    }
-
-
-type alias NCDAHistoryData =
-    { pregnancySummary : Maybe PregnancySummaryValue
-    , ncdaNeverFilled : Bool
     }
 
 

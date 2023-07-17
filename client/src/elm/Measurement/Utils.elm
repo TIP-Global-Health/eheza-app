@@ -5092,18 +5092,19 @@ behindOnVaccinationsByWellChild currentDate childId db =
         |> Maybe.withDefault False
 
 
-resolveNCDASteps : NominalDate -> Person -> NCDAHistoryData -> List NCDAStep
-resolveNCDASteps currentDate person historyData =
-    List.filter (expectNCDAStep currentDate person historyData) ncdaSteps
+resolveNCDASteps : NominalDate -> Person -> Bool -> List NCDAStep
+resolveNCDASteps currentDate person ncdaNeverFilled =
+    List.filter (expectNCDAStep currentDate person ncdaNeverFilled) ncdaSteps
 
 
-expectNCDAStep : NominalDate -> Person -> NCDAHistoryData -> NCDAStep -> Bool
-expectNCDAStep currentDate person historyData task =
+expectNCDAStep : NominalDate -> Person -> Bool -> NCDAStep -> Bool
+expectNCDAStep currentDate person ncdaNeverFilled task =
     case task of
         -- If NCDA was filled before, for sure it included answers to
-        -- needed questions.
+        -- needed questions. Since questions at this step are to be asked
+        -- only once, we know it can ve skipped.
         NCDAStepAntenatalCare ->
-            historyData.ncdaNeverFilled
+            ncdaNeverFilled
 
         NCDAStepNutritionBehavior ->
             ageInMonths currentDate person

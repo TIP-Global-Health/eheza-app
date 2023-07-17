@@ -11,6 +11,7 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
         , resolveNCDANeverFilled
+        , resolveNCDANotFilledAfterAgeOfSixMonths
         )
 import Backend.Person.Model exposing (Person)
 import Date
@@ -124,11 +125,6 @@ viewNCDAContent language currentDate assembled db data =
         personId =
             assembled.participant.person
 
-        historyData =
-            { pregnancySummary = getNewbornExamPregnancySummary personId db
-            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
-            }
-
         config =
             { atHealthCenter = False
             , showTasksTray = True
@@ -139,6 +135,9 @@ viewNCDAContent language currentDate assembled db data =
                     |> List.isEmpty
                     |> not
                     |> Just
+            , pregnancySummary = getNewbornExamPregnancySummary personId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
+            , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setNumberANCVisitsMsg = SetNumberANCVisits
@@ -154,7 +153,6 @@ viewNCDAContent language currentDate assembled db data =
         config
         data.helperState
         form
-        historyData
         db
 
 

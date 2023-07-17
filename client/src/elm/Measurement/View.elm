@@ -29,6 +29,7 @@ import Backend.NutritionEncounter.Utils
         , getWellChildEncountersForParticipant
         , nutritionAssessmentForBackend
         , resolveNCDANeverFilled
+        , resolveNCDANotFilledAfterAgeOfSixMonths
         )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
@@ -2292,13 +2293,12 @@ viewNCDAContent :
     -> NCDAContentConfig msg
     -> Maybe NCDASign
     -> NCDAForm
-    -> NCDAHistoryData
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate personId person config helperState form historyData db =
+viewNCDAContent language currentDate personId person config helperState form db =
     let
         steps =
-            resolveNCDASteps currentDate person historyData
+            resolveNCDASteps currentDate person config.ncdaNeverFilled
 
         currentStep =
             Maybe.Extra.or form.step (List.head steps)
@@ -2363,15 +2363,9 @@ viewNCDAContent language currentDate personId person config helperState form his
                         currentDate
                         personId
                         person
-                        config.atHealthCenter
-                        config.behindOnVaccinations
-                        config.setBoolInputMsg
-                        config.setBirthWeightMsg
-                        config.setNumberANCVisitsMsg
-                        config.setHelperStateMsg
+                        config
                         form
                         step
-                        historyData.pregnancySummary
                         db
                     )
                 )
@@ -2450,7 +2444,7 @@ viewNCDAContent language currentDate personId person config helperState form his
                                     [ actionButton (config.setStepMsg NCDAStepUniversalInterventions) ]
 
                             NCDAStepUniversalInterventions ->
-                                if expectNCDAStep currentDate person historyData NCDAStepAntenatalCare then
+                                if expectNCDAStep currentDate person config.ncdaNeverFilled NCDAStepAntenatalCare then
                                     div [ class "actions two" ]
                                         [ backButton NCDAStepAntenatalCare
                                         , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
@@ -2499,18 +2493,12 @@ ncdaFormInputsAndTasks :
     -> NominalDate
     -> PersonId
     -> Person
-    -> Bool
-    -> Maybe Bool
-    -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (Maybe NCDASign -> msg)
+    -> NCDAContentConfig msg
     -> NCDAForm
     -> NCDAStep
-    -> Maybe PregnancySummaryValue
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behindOnVaccinations setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
+ncdaFormInputsAndTasks language currentDate personId person config form currentStep db =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -2536,7 +2524,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                             ( [ viewQuestionLabel language Translate.NCDANumberOfANCVisitsQuestion
                               , viewMeasurementInput language
                                     (Maybe.map toFloat form.numberOfANCVisits)
-                                    setNumberANCVisitsMsg
+                                    config.setNumberANCVisitsMsg
                                     "anc-visits"
                                     Translate.Visits
                               ]
@@ -2583,7 +2571,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                             { form_ | supplementsDuringPregnancy = Just value, takenSupplementsPerGuidance = Nothing }
 
                         ( derivedInputs, derivedTasks ) =
-                            if not atHealthCenter && form.supplementsDuringPregnancy == Just True then
+                            if not config.atHealthCenter && form.supplementsDuringPregnancy == Just True then
                                 inputsAndTasksForSign TakenSupplementsPerGuidance
 
                             else
@@ -2618,7 +2606,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                     let
                         childBehindOnVaccinations =
                             Maybe.withDefault (behindOnVaccinationsByWellChild currentDate personId db)
-                                behindOnVaccinations
+                                config.behindOnVaccinations
                     in
                     if childBehindOnVaccinations then
                         let
@@ -2659,7 +2647,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                             }
 
                         ( derivedInputs, derivedTasks ) =
-                            if not atHealthCenter && form.ongeraMNP == Just True then
+                            if not config.atHealthCenter && form.ongeraMNP == Just True then
                                 inputsAndTasksForSign TakingOngeraMNP
 
                             else
@@ -2703,14 +2691,14 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                             [ viewQuestionLabel language <| Translate.NCDASignQuestion FiveFoodGroups
                             , div
                                 [ class "label-helper"
-                                , onClick <| setHelperStateMsg (Just FiveFoodGroups)
+                                , onClick <| config.setHelperStateMsg (Just FiveFoodGroups)
                                 ]
                                 [ img [ src "assets/images/question-mark.svg" ] [] ]
                             ]
                       , viewBoolInput
                             language
                             form.fiveFoodGroups
-                            (setBoolInputMsg updateFunc)
+                            (config.setBoolInputMsg updateFunc)
                             ""
                             Nothing
                       ]
@@ -2987,7 +2975,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
             , viewBoolInput
                 language
                 value
-                (setBoolInputMsg updateFunc)
+                (config.setBoolInputMsg updateFunc)
                 ""
                 Nothing
             ]
@@ -3005,10 +2993,10 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                         ]
 
                 ( newbornExamSection, newbornExamTasks ) =
-                    if showNCDAQuestionsByNewbornExam newbornExamPregnancySummary then
+                    if showNCDAQuestionsByNewbornExam config.pregnancySummary then
                         let
                             ( birthWeightSection, birthWeightTasks ) =
-                                birthWeightInputsAndTasks language form.birthWeight setBirthWeightMsg
+                                birthWeightInputsAndTasks language form.birthWeight config.setBirthWeightMsg
 
                             ( birthDefectSection, birthDefectTask ) =
                                 inputsAndTasksForSign BornWithBirthDefect
@@ -3029,7 +3017,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
         NCDAStepUniversalInterventions ->
             let
                 tasks =
-                    if atHealthCenter then
+                    if config.atHealthCenter then
                         [ OngeraMNP ]
 
                     else
@@ -3049,7 +3037,11 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
         NCDAStepNutritionBehavior ->
             let
                 breasdtfeedingSign =
-                    [ BreastfedForSixMonths ]
+                    if config.ncdaNotFilledAfterAgeOfSixMonths then
+                        [ BreastfedForSixMonths ]
+
+                    else
+                        []
 
                 signs =
                     FiveFoodGroups :: breasdtfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
@@ -3221,15 +3213,13 @@ viewNCDA language currentDate childId child measurement data db =
         form =
             ncdaFormWithDefault data.form saved
 
-        historyData =
-            { pregnancySummary = getNewbornExamPregnancySummary childId db
-            , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
-            }
-
         config =
             { atHealthCenter = True
             , showTasksTray = False
             , behindOnVaccinations = Nothing
+            , pregnancySummary = getNewbornExamPregnancySummary childId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
+            , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate childId child db
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setNumberANCVisitsMsg = SetNumberANCVisits
@@ -3249,6 +3239,5 @@ viewNCDA language currentDate childId child measurement data db =
         config
         data.helperState
         form
-        historyData
         db
         |> div [ class "ui form ncda" ]

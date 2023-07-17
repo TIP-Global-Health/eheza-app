@@ -9372,7 +9372,7 @@ translationSet trans =
                     }
 
                 Backend.Measurement.Model.AppropriateComplementaryFeeding ->
-                    { english = "Provide counseling on the importance of complementary feeding and using example show them some food item that can be easy to find in their area"
+                    { english = "Provide counseling on the consequences of not feeding the child complementary food at the appropriate times, as per the guidance"
                     , kinyarwanda = Nothing
                     }
 
@@ -9469,18 +9469,18 @@ translationSet trans =
                     }
 
                 FiveFoodGroups ->
-                    { english = "Does the child receive food items from the 5 food groups"
-                    , kinyarwanda = Just "Umwana yahawe indyo irimo amoko atanu y'ibiribwa"
+                    { english = "Does the child receive food items from the 5 food groups in the last 24 hours"
+                    , kinyarwanda = Nothing
                     }
 
                 BreastfedForSixMonths ->
-                    { english = "Breastfed baby for 6 months without interruption"
-                    , kinyarwanda = Just "Umwana yonse amezi 6 nta kindi bamuvangiye"
+                    { english = "Was the child breastfed for 6 months without interruption"
+                    , kinyarwanda = Nothing
                     }
 
                 Backend.Measurement.Model.AppropriateComplementaryFeeding ->
-                    { english = "Appropriate complementary feeding (6-24 months)"
-                    , kinyarwanda = Just "Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)"
+                    { english = "Does the child receive appropriate complementary feeding"
+                    , kinyarwanda = Nothing
                     }
 
                 BeneficiaryCashTransfer ->
