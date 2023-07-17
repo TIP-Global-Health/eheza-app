@@ -2659,7 +2659,7 @@ ncdaFormInputsAndTasks language currentDate personId person atHealthCenter behin
                             }
 
                         ( derivedInputs, derivedTasks ) =
-                            if form.ongeraMNP == Just True then
+                            if not atHealthCenter && form.ongeraMNP == Just True then
                                 inputsAndTasksForSign TakingOngeraMNP
 
                             else
