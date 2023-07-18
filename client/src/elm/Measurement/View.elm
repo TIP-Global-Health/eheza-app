@@ -2571,7 +2571,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | supplementsDuringPregnancy = Just value, takenSupplementsPerGuidance = Nothing }
 
                         ( derivedInputs, derivedTasks ) =
-                            if not config.atHealthCenter && form.supplementsDuringPregnancy == Just True then
+                            if form.supplementsDuringPregnancy == Just True then
                                 inputsAndTasksForSign TakenSupplementsPerGuidance
 
                             else
