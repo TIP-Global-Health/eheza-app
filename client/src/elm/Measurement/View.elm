@@ -3096,9 +3096,14 @@ ncdaFormInputsAndTasksNEW language currentDate personId person setBoolInputMsg s
 
                             else
                                 []
+
+                        lastScheduledImmunizationVisitDate =
+                            resoloveLastScheduledImmunizationVisitDate personId db
                     in
-                    ( [ viewCustomLabel language Translate.NCDANumberImmunizationAppointmentLabel "." "label"
-                      , viewCustomLabel language Translate.NCDANumberOfMissedImmunizationAppointmentsHeader "." "label"
+                    ( [ viewCustomLabel language (Translate.NCDANumberImmunizationAppointmentLabel lastScheduledImmunizationVisitDate) "." "label"
+
+                      -- @todo: revise, per 'missed appointment' definition.
+                      -- , viewCustomLabel language Translate.NCDANumberOfMissedImmunizationAppointmentsHeader "." "label"
                       ]
                         ++ viewNCDAInput NumberOfANCVisitsCorrect form.numberOfMissedImmunizationAppointmentsCorrect updateFunc
                         ++ counselling

@@ -1853,13 +1853,13 @@ nextVisitRequired : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bo
 nextVisitRequired currentDate isChw assembled db =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-            generateNextVisitDates currentDate isChw assembled db
+            generateNextVisitDates currentDate assembled db
     in
     isJust nextDateForImmunisationVisit || isJust nextDateForPediatricVisit
 
 
-generateNextVisitDates : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> ( Maybe NominalDate, Maybe NominalDate )
-generateNextVisitDates currentDate isChw assembled db =
+generateNextVisitDates : NominalDate -> AssembledData -> ModelIndexedDb -> ( Maybe NominalDate, Maybe NominalDate )
+generateNextVisitDates currentDate assembled db =
     let
         nextVisitDateForECD =
             generateNextDateForECDVisit currentDate assembled db
@@ -1867,7 +1867,7 @@ generateNextVisitDates currentDate isChw assembled db =
         nextVisitDateForMedication =
             generateNextDateForMedicationVisit currentDate assembled db
     in
-    ( generateNextDateForImmunisationVisit currentDate isChw assembled db
+    ( generateNextDateForImmunisationVisit currentDate assembled db
     , Maybe.Extra.values [ nextVisitDateForECD, nextVisitDateForMedication ]
         |> List.sortWith Date.compare
         |> List.head
@@ -1982,8 +1982,8 @@ generateNextDateForMedicationVisit currentDate assembled db =
             )
 
 
-generateNextDateForImmunisationVisit : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateNextDateForImmunisationVisit currentDate isChw assembled db =
+generateNextDateForImmunisationVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextDateForImmunisationVisit currentDate assembled db =
     let
         futureVaccinationsData =
             generateFutureVaccinationsData currentDate assembled.person True assembled.vaccinationProgress
