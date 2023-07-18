@@ -1650,7 +1650,7 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
             distributeByAgeInMonths child chwNCDAQuestionnaires
     in
     [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
-    , viewANCNewbornPane language currentDate db child nurseNCDAQuestionnaires chwNCDAQuestionnaires
+    , viewANCNewbornPane language currentDate db child allNCDAQuestionnaires
     , viewUniversalInterventionsPane language
         currentDate
         child
@@ -1853,13 +1853,9 @@ viewANCNewbornPane :
     -> ModelIndexedDb
     -> Person
     -> List ( NominalDate, NCDAValue )
-    -> List ( NominalDate, NCDAValue )
     -> Html any
-viewANCNewbornPane language currentDate db child nurseNCDAQuestionnaires chwNCDAQuestionnaires =
+viewANCNewbornPane language currentDate db child allNCDAQuestionnaires =
     let
-        allNCDAQuestionnaires =
-            nurseNCDAQuestionnaires ++ chwNCDAQuestionnaires
-
         pregnancyValuesForRegularPrenatalVisits =
             if List.isEmpty allNCDAQuestionnaires then
                 List.repeat 9 NCDACellValueEmpty
@@ -1885,29 +1881,20 @@ viewANCNewbornPane language currentDate db child nurseNCDAQuestionnaires chwNCDA
                         (List.repeat 9 NCDACellValueV)
 
         pregnancyValuesForIron =
-            if not <| List.isEmpty chwNCDAQuestionnaires then
+            if List.isEmpty allNCDAQuestionnaires then
+                List.repeat 9 NCDACellValueEmpty
+
+            else
                 let
                     takenSupplements =
-                        List.any
-                            (\( _, value ) ->
-                                EverySet.member TakenSupplementsPerGuidance value.signs
-                            )
-                            chwNCDAQuestionnaires
+                        List.any (Tuple.second >> .signs >> EverySet.member TakenSupplementsPerGuidance)
+                            allNCDAQuestionnaires
                 in
                 if takenSupplements then
                     List.repeat 9 NCDACellValueV
 
                 else
                     List.repeat 9 NCDACellValueX
-
-            else if not <| List.isEmpty nurseNCDAQuestionnaires then
-                -- No matter if Iron was given or not, we won't know if
-                -- it was taken. Therefore, per current requirements, we
-                -- set red indicator.
-                List.repeat 9 NCDACellValueX
-
-            else
-                List.repeat 9 NCDACellValueEmpty
 
         zeroToFiveValues =
             List.repeat 6 NCDACellValueDash
