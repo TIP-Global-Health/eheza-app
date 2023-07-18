@@ -693,6 +693,7 @@ type TranslationId
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
     | FollowUpDueOption FollowUpDueOption
+    | FoodSupplementationConsumedQuestion
     | ForIllustrativePurposesOnly
     | FormError (ErrorValue ValidationError)
     | FormField String
@@ -5560,6 +5561,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ukwezi gutaha"
                     }
 
+        FoodSupplementationConsumedQuestion ->
+            { english = "Is the food supplementation being consumed"
+            , kinyarwanda = Nothing
+            }
+
         ForIllustrativePurposesOnly ->
             { english = "For illustrative purposes only"
             , kinyarwanda = Just "Ku mpamvu zumvikana gusa"
@@ -9445,6 +9451,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                ChildReceivesFBF ->
+                    { english = "Provides counseling on the importance of FBF and advise them to go to the Health center to recieve them"
+                    , kinyarwanda = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -9501,9 +9512,7 @@ translationSet trans =
                     }
 
                 TakingOngeraMNP ->
-                    { english = "Is the food supplementation being consumed"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet FoodSupplementationConsumedQuestion
 
                 FiveFoodGroups ->
                     { english = "Does the child receive food items from the 5 food groups in the last 24 hours"
@@ -9589,6 +9598,14 @@ translationSet trans =
                     { english = " Does the child eat at the recommended times per day"
                     , kinyarwanda = Nothing
                     }
+
+                ChildReceivesFBF ->
+                    { english = "Did the child receive FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildTakingFBF ->
+                    translationSet FoodSupplementationConsumedQuestion
 
                 NoNCDASigns ->
                     { english = "None"

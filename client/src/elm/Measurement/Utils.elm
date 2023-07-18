@@ -4506,6 +4506,8 @@ fromNCDAValue saved =
     -- New:
     , beneficiaryCashTransfer = Maybe.map (.signs >> EverySet.member BeneficiaryCashTransfer) saved
     , childGotDiarrhea = Maybe.map (.signs >> EverySet.member ChildGotDiarrhea) saved
+    , childReceivesFBF = Maybe.map (.signs >> EverySet.member ChildReceivesFBF) saved
+    , childTakingFBF = Maybe.map (.signs >> EverySet.member ChildTakingFBF) saved
     , childWithAcuteMalnutrition = Maybe.map (.signs >> EverySet.member ChildWithAcuteMalnutrition) saved
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
@@ -4544,6 +4546,8 @@ ncdaFormWithDefault form saved =
                 -- New:
                 , beneficiaryCashTransfer = or form.beneficiaryCashTransfer (EverySet.member BeneficiaryCashTransfer value.signs |> Just)
                 , childGotDiarrhea = or form.childGotDiarrhea (EverySet.member ChildGotDiarrhea value.signs |> Just)
+                , childReceivesFBF = or form.childReceivesFBF (EverySet.member ChildReceivesFBF value.signs |> Just)
+                , childTakingFBF = or form.childTakingFBF (EverySet.member ChildTakingFBF value.signs |> Just)
                 , childWithAcuteMalnutrition = or form.childWithAcuteMalnutrition (EverySet.member ChildWithAcuteMalnutrition value.signs |> Just)
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
@@ -4586,6 +4590,8 @@ toNCDAValue form =
             -- New:
             , ifNullableTrue BeneficiaryCashTransfer form.beneficiaryCashTransfer
             , ifNullableTrue ChildGotDiarrhea form.childGotDiarrhea
+            , ifNullableTrue ChildReceivesFBF form.childReceivesFBF
+            , ifNullableTrue ChildTakingFBF form.childTakingFBF
             , ifNullableTrue ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition
             , ifNullableTrue ChildWithDisability form.childWithDisability
             , ifNullableTrue OngeraMNP form.ongeraMNP

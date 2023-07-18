@@ -287,6 +287,8 @@ type NCDASign
     | BreastfedForSixMonths
     | ChildBehindOnVaccination
     | ChildGotDiarrhea
+    | ChildReceivesFBF
+    | ChildTakingFBF
     | ChildWithAcuteMalnutrition
     | ChildWithDisability
     | ConditionalFoodItems

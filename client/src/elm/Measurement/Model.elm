@@ -1056,6 +1056,8 @@ type alias NCDAForm =
     , mealsAtRecommendedTimes : Maybe Bool
 
     -- Step 4.
+    , childReceivesFBF : Maybe Bool
+    , childTakingFBF : Maybe Bool
     , beneficiaryCashTransfer : Maybe Bool
     , receivingCashTransfer : Maybe Bool
     , conditionalFoodItems : Maybe Bool
@@ -1098,6 +1100,8 @@ emptyNCDAForm =
     , mealsAtRecommendedTimes = Nothing
 
     -- Step 4.
+    , childReceivesFBF = Nothing
+    , childTakingFBF = Nothing
     , beneficiaryCashTransfer = Nothing
     , receivingCashTransfer = Nothing
     , conditionalFoodItems = Nothing

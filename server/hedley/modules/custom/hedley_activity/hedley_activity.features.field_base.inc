@@ -1276,6 +1276,8 @@ function hedley_activity_field_default_field_bases() {
         // New.
         'beneficiary-cash-transfer' => 'Beneficiary Cash Transfer',
         'child-got-diarrhea' => 'Child got Diarrhea',
+        'child-receives-fbf' => 'Child receives FBF',
+        'child-taking-fbf' => 'Child Taking FBF',
         'child-with-acute-malnutrition' => 'Child with Acute Malnutrition',
         'child-with-disability' => 'Child with Disability',
         'insecticide-treated-bednets' => 'Insecticide Treated Bednets',

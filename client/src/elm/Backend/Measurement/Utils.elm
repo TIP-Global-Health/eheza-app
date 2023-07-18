@@ -3570,6 +3570,12 @@ ncdaSignFromString value =
         "child-got-diarrhea" ->
             Just ChildGotDiarrhea
 
+        "child-receives-fbf" ->
+            Just ChildReceivesFBF
+
+        "child-taking-fbf" ->
+            Just ChildTakingFBF
+
         "child-with-acute-malnutrition" ->
             Just ChildWithAcuteMalnutrition
 
@@ -3651,6 +3657,12 @@ ncdaSignToString value =
 
         ChildGotDiarrhea ->
             "child-got-diarrhea"
+
+        ChildReceivesFBF ->
+            "child-receives-fbf"
+
+        ChildTakingFBF ->
+            "child-taking-fbf"
 
         ChildWithAcuteMalnutrition ->
             "child-with-acute-malnutrition"

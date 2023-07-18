@@ -2768,6 +2768,40 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     , [ maybeToBoolTask form.mealsAtRecommendedTimes ]
                     )
 
+                ChildReceivesFBF ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childReceivesFBF = Just value, childTakingFBF = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childReceivesFBF == Just True then
+                                inputsAndTasksForSign ChildTakingFBF
+
+                            else
+                                ( [], [] )
+
+                        counselling =
+                            if form.childReceivesFBF == Just False then
+                                [ viewCounselingLabel ChildReceivesFBF ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ChildReceivesFBF form.childReceivesFBF updateFunc
+                        ++ counselling
+                        ++ derivedInputs
+                    , form.childReceivesFBF :: derivedTasks
+                    )
+
+                ChildTakingFBF ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childTakingFBF = Just value }
+                    in
+                    ( viewNCDAInput ChildTakingFBF form.childTakingFBF updateFunc
+                    , [ maybeToBoolTask form.childTakingFBF ]
+                    )
+
                 BeneficiaryCashTransfer ->
                     let
                         updateFunc value form_ =
@@ -3071,6 +3105,13 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
 
         NCDAStepTargetedInterventions ->
             let
+                childReceivesFBFSign =
+                    if config.atHealthCenter then
+                        []
+
+                    else
+                        [ ChildReceivesFBF ]
+
                 childWithAcuteMalnutritionSign =
                     if config.atHealthCenter || childDiagnosedWithMalnutrition personId db then
                         []
@@ -3085,14 +3126,17 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     else
                         [ ChildGotDiarrhea ]
 
-                inputsAndTasks =
-                    [ BeneficiaryCashTransfer
-                    , ConditionalFoodItems
-                    ]
+                signs =
+                    childReceivesFBFSign
+                        ++ [ BeneficiaryCashTransfer
+                           , ConditionalFoodItems
+                           ]
                         ++ childWithAcuteMalnutritionSign
                         ++ [ ChildWithDisability ]
                         ++ childGotDiarrheaSign
-                        |> List.map inputsAndTasksForSign
+
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign signs
             in
             ( List.map Tuple.first inputsAndTasks
                 |> List.concat
