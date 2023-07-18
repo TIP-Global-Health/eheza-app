@@ -1642,6 +1642,12 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
 
         questionnairesByAgeInMonths =
             distributeByAgeInMonths child allNCDAQuestionnaires
+
+        nurseQuestionnairesByAgeInMonths =
+            distributeByAgeInMonths child nurseNCDAQuestionnaires
+
+        chwQuestionnairesByAgeInMonths =
+            distributeByAgeInMonths child chwNCDAQuestionnaires
     in
     [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
     , viewANCNewbornPane language currentDate db child nurseNCDAQuestionnaires chwNCDAQuestionnaires
@@ -1649,7 +1655,8 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
         currentDate
         child
         db
-        questionnairesByAgeInMonths
+        nurseQuestionnairesByAgeInMonths
+        chwQuestionnairesByAgeInMonths
         reportData.maybeAssembled
         reportData.wellChildEncounters
         reportData.individualWellChildMeasurementsWithDates
@@ -2353,11 +2360,12 @@ viewUniversalInterventionsPane :
     -> Person
     -> ModelIndexedDb
     -> Maybe (Dict Int NCDAValue)
+    -> Maybe (Dict Int NCDAValue)
     -> Maybe AssembledData
     -> List ( WellChildEncounterId, WellChildEncounter )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> Html any
-viewUniversalInterventionsPane language currentDate child db questionnairesByAgeInMonths maybeAssembled wellChildEncounters individualWellChildMeasurementsWithDates =
+viewUniversalInterventionsPane language currentDate child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonths maybeAssembled wellChildEncounters individualWellChildMeasurementsWithDates =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
@@ -2546,9 +2554,26 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
             else
                 NCDACellValueX
 
+        questionnairesByAgeInMonths =
+            case ( nurseQuestionnairesByAgeInMonths, chwQuestionnairesByAgeInMonths ) of
+                ( Just nurseDict, Just chwDict ) ->
+                    Dict.merge
+                        (\key value -> Dict.insert key value)
+                        -- In case we got both valus for months, we give prefference to
+                        -- CHW value, because it's the one that can tell us if supplement was
+                        -- taken, or not.
+                        (\key nurseValue chwValue -> Dict.insert key chwValue)
+                        (\key value -> Dict.insert key value)
+                        nurseDict
+                        chwDict
+                        Dict.empty
+                        |> Just
+
+                _ ->
+                    Maybe.Extra.or nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonths
+
         ongeraMNPValues =
-            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAOngeraMNP)
-            List.repeat 25 NCDACellValueDash
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member TakingOngeraMNP)
 
         ecdValues =
             ageInMonths currentDate child
