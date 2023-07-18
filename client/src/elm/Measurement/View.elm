@@ -3030,7 +3030,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
 
         NCDAStepUniversalInterventions ->
             let
-                tasks =
+                signs =
                     if config.atHealthCenter then
                         [ OngeraMNP ]
 
@@ -3040,7 +3040,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         ]
 
                 inputsAndTasks =
-                    List.map inputsAndTasksForSign tasks
+                    List.map inputsAndTasksForSign signs
             in
             ( List.map Tuple.first inputsAndTasks
                 |> List.concat
@@ -3071,22 +3071,28 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
 
         NCDAStepTargetedInterventions ->
             let
+                childWithAcuteMalnutritionSign =
+                    if config.atHealthCenter || childDiagnosedWithMalnutrition personId db then
+                        []
+
+                    else
+                        [ ChildWithAcuteMalnutrition ]
+
+                childGotDiarrheaSign =
+                    if config.atHealthCenter then
+                        []
+
+                    else
+                        [ ChildGotDiarrhea ]
+
                 inputsAndTasks =
                     [ BeneficiaryCashTransfer
                     , ConditionalFoodItems
                     ]
                         ++ childWithAcuteMalnutritionSign
-                        ++ [ ChildWithDisability
-                           , ChildGotDiarrhea
-                           ]
+                        ++ [ ChildWithDisability ]
+                        ++ childGotDiarrheaSign
                         |> List.map inputsAndTasksForSign
-
-                childWithAcuteMalnutritionSign =
-                    if childDiagnosedWithMalnutrition personId db then
-                        []
-
-                    else
-                        [ ChildWithAcuteMalnutrition ]
             in
             ( List.map Tuple.first inputsAndTasks
                 |> List.concat
