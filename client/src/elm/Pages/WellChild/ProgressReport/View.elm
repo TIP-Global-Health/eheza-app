@@ -1640,7 +1640,7 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
         allNCDAQuestionnaires =
             nurseNCDAQuestionnaires ++ chwNCDAQuestionnaires
 
-        questionnairesByAgeInMonths =
+        allQuestionnairesByAgeInMonths =
             distributeByAgeInMonths child allNCDAQuestionnaires
 
         nurseQuestionnairesByAgeInMonths =
@@ -1660,17 +1660,17 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
         reportData.maybeAssembled
         reportData.wellChildEncounters
         reportData.individualWellChildMeasurementsWithDates
-    , viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
+    , viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQuestionnairesByAgeInMonths
     , viewTargetedInterventionsPane language
         currentDate
         child
         db
-        questionnairesByAgeInMonths
+        allQuestionnairesByAgeInMonths
         reportData.groupNutritionMeasurements
         reportData.individualNutritionMeasurementsWithDates
         reportData.individualWellChildMeasurementsWithDates
         reportData.acuteIllnesses
-    , viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths
+    , viewInfrastructureEnvironmentWashPane language currentDate child allQuestionnairesByAgeInMonths
     , viewFillTheBlanksPane language
         currentDate
         zscores
@@ -1937,84 +1937,77 @@ viewNutritionBehaviorPane :
     Language
     -> NominalDate
     -> Person
+    -> List ( NominalDate, NCDAValue )
     -> Maybe (Dict Int NCDAValue)
     -> Html any
-viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths =
+viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQuestionnairesByAgeInMonths =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
 
+        breastfedForSixMonthsByAgeInMonths =
+            if List.isEmpty allNCDAQuestionnaires then
+                List.range 0 24
+                    |> List.map (\month -> ( month, NCDACellValueDash ))
+                    |> Dict.fromList
+
+            else
+                let
+                    breastfedForSixMonths =
+                        List.map (Tuple.second >> .signs >> EverySet.member BreastfedForSixMonths) allNCDAQuestionnaires
+                            |> List.any ((==) True)
+
+                    firstPeriodIndicator =
+                        if breastfedForSixMonths then
+                            NCDACellValueV
+
+                        else
+                            NCDACellValueX
+
+                    firstPeriod =
+                        List.range 0 5
+                            |> List.map (\month -> ( month, firstPeriodIndicator ))
+
+                    secondPeriod =
+                        List.range 6 24
+                            |> List.map (\month -> ( month, NCDACellValueDash ))
+                in
+                firstPeriod
+                    ++ secondPeriod
+                    |> Dict.fromList
+
         breastfedForSixMonthsValues =
-            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDABreastfedForSixMonths)
-            List.repeat 25 NCDACellValueDash
+            generateValues currentDate child (Just breastfedForSixMonthsByAgeInMonths) ((==) NCDACellValueV)
 
         appropriateComplementaryFeedingValues =
-            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding)
-            List.repeat 25 NCDACellValueDash
-
-        mealsADayValues =
-            -- generateValues currentDate
-            --     child
-            --     questionnairesByAgeInMonths
-            --     (\questionnaire ->
-            --         List.any (\sign -> EverySet.member sign questionnaire.signs)
-            --             [ NCDAMealFrequency6to8Months
-            --             , NCDAMealFrequency9to11Months
-            --             , NCDAMealFrequency12MonthsOrMore
-            --             ]
-            --     )
-            List.repeat 25 NCDACellValueDash
+            generateValues currentDate
+                child
+                allQuestionnairesByAgeInMonths
+                (.signs >> EverySet.member Backend.Measurement.Model.AppropriateComplementaryFeeding)
 
         diverseDietValues =
-            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAFiveFoodGroups)
-            List.repeat 25 NCDACellValueDash
+            generateValues currentDate child allQuestionnairesByAgeInMonths (.signs >> EverySet.member FiveFoodGroups)
 
-        -- Here we are interested only at answer given when child was 6 months old.
-        -- For months before that, and after, will show dahses, in case child has
+        mealsADayValues =
+            generateValues currentDate child allQuestionnairesByAgeInMonths (.signs >> EverySet.member MealsAtRecommendedTimes)
+
+        -- Here we are interested only at 0 to 5 months period.
+        -- Months after that, will show dahses, in case child has
         -- reached the age for which value is given (empty value otherwise).
         ( breastfedForSixMonthsFirstPeriod, breastfedForSixMonthsSecondPeriod ) =
             let
                 firstPeriod =
                     List.take 6 breastfedForSixMonthsValues
-                        |> List.map setDashIfNotEmpty
 
                 secondPeriod =
-                    let
-                        generated =
-                            List.drop 6 breastfedForSixMonthsValues
-                    in
-                    List.take 1 generated
-                        ++ (List.drop 1 generated
-                                |> List.map setDashIfNotEmpty
-                           )
-            in
-            ( firstPeriod, secondPeriod )
-
-        -- Here we are interested only at answer given when child has reached
-        -- the age of 7 months.
-        -- For prior period we show dahses, in case child has reached
-        -- the age for which value is given (empty value otherwise).
-        ( appropriateComplementaryFeedingFirstPeriod, appropriateComplementaryFeedingSecondPeriod ) =
-            let
-                firstPeriod =
-                    List.take 6 appropriateComplementaryFeedingValues
+                    List.drop 6 breastfedForSixMonthsValues
                         |> List.map setDashIfNotEmpty
-
-                secondPeriod =
-                    let
-                        generated =
-                            List.drop 6 appropriateComplementaryFeedingValues
-                    in
-                    (List.take 1 generated
-                        |> List.map setDashIfNotEmpty
-                    )
-                        ++ List.drop 1 generated
             in
             ( firstPeriod, secondPeriod )
 
         -- generateValues() may generate values at certain periods that are
         -- not relevant, which we want to replace them with dashes.
-        -- However, if child has not yeat reach the age of month for which
+        -- However, if child has not yet reach the age of month for which
         -- value is presented, generateValues() will preperly set
         -- NCDACellValueEmpty there, and we want to keep it.
         setDashIfNotEmpty value =
@@ -2036,8 +2029,8 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
             , viewTableRow language
                 (Translate.NCDANutritionBehaviorItemLabel Pages.WellChild.ProgressReport.Model.AppropriateComplementaryFeeding)
                 pregnancyValues
-                appropriateComplementaryFeedingFirstPeriod
-                appropriateComplementaryFeedingSecondPeriod
+                (List.take 6 appropriateComplementaryFeedingValues)
+                (List.drop 6 appropriateComplementaryFeedingValues)
             , viewTableRow language
                 (Translate.NCDANutritionBehaviorItemLabel DiverseDiet)
                 pregnancyValues
