@@ -9381,7 +9381,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                TakingOngeraMNP ->
+                OngeraMNP ->
                     { english = "Provides counseling on the importance of Ongera and advise them to go to the Health center to recieve them"
                     , kinyarwanda = Nothing
                     }
@@ -9401,7 +9401,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ReceivingCashTransfer ->
+                BeneficiaryCashTransfer ->
                     { english = "Provide counseling to the mother to go to the local government in charge and advocate for them"
                     , kinyarwanda = Nothing
                     }

@@ -2652,9 +2652,17 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
 
                             else
                                 ( [], [] )
+
+                        counselling =
+                            if form.ongeraMNP == Just False || form.takingOngeraMNP == Just False then
+                                [ viewCounselingLabel OngeraMNP ]
+
+                            else
+                                []
                     in
                     ( viewNCDAInput OngeraMNP form.ongeraMNP updateFunc
                         ++ derivedInputs
+                        ++ counselling
                     , form.ongeraMNP :: derivedTasks
                     )
 
@@ -2662,16 +2670,8 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     let
                         updateFunc value form_ =
                             { form_ | takingOngeraMNP = Just value }
-
-                        counselling =
-                            if form.takingOngeraMNP == Just False then
-                                [ viewCounselingLabel TakingOngeraMNP ]
-
-                            else
-                                []
                     in
                     ( viewNCDAInput TakingOngeraMNP form.takingOngeraMNP updateFunc
-                        ++ counselling
                     , [ maybeToBoolTask form.takingOngeraMNP ]
                     )
 
@@ -2813,9 +2813,17 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
 
                             else
                                 ( [], [] )
+
+                        counselling =
+                            if form.beneficiaryCashTransfer == Just False || form.receivingCashTransfer == Just False then
+                                [ viewCounselingLabel BeneficiaryCashTransfer ]
+
+                            else
+                                []
                     in
                     ( viewNCDAInput BeneficiaryCashTransfer form.beneficiaryCashTransfer updateFunc
                         ++ derivedInputs
+                        ++ counselling
                     , form.beneficiaryCashTransfer :: derivedTasks
                     )
 
@@ -2823,15 +2831,8 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     let
                         updateFunc value form_ =
                             { form_ | receivingCashTransfer = Just value }
-
-                        counselling =
-                            if form.receivingCashTransfer == Just False then
-                                [ viewCounselingLabel ReceivingCashTransfer ]
-
-                            else
-                                []
                     in
-                    ( viewNCDAInput ReceivingCashTransfer form.receivingCashTransfer updateFunc ++ counselling
+                    ( viewNCDAInput ReceivingCashTransfer form.receivingCashTransfer updateFunc
                     , [ maybeToBoolTask form.receivingCashTransfer ]
                     )
 
