@@ -1611,23 +1611,6 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
         reportData =
             assembleProgresReportData childId db
 
-        allNCDAQuestionnaires =
-            List.map
-                (\ncda ->
-                    ( ncda.dateMeasured, ncda.value )
-                )
-                groupNCDAs
-                ++ List.map
-                    (\ncda ->
-                        ( ncda.dateMeasured, ncda.value )
-                    )
-                    nutritionNCDAs
-                ++ List.map
-                    (\ncda ->
-                        ( ncda.dateMeasured, ncda.value )
-                    )
-                    wellChildNCDAs
-
         groupNCDAs =
             Dict.values reportData.groupNutritionMeasurements.ncda
 
@@ -1641,11 +1624,27 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
                 reportData.individualWellChildMeasurementsWithDates
                 |> Maybe.Extra.values
 
+        childScoreboardNCDAs =
+            List.map (Tuple.second >> Tuple.second >> .ncda >> Maybe.map Tuple.second)
+                reportData.individualChildScoreboardMeasurementsWithDates
+                |> Maybe.Extra.values
+
+        nurseNCDAQuestionnaires =
+            List.map (\ncda -> ( ncda.dateMeasured, ncda.value )) groupNCDAs
+                ++ List.map (\ncda -> ( ncda.dateMeasured, ncda.value )) nutritionNCDAs
+                ++ List.map (\ncda -> ( ncda.dateMeasured, ncda.value )) wellChildNCDAs
+
+        chwNCDAQuestionnaires =
+            List.map (\ncda -> ( ncda.dateMeasured, ncda.value )) childScoreboardNCDAs
+
+        allNCDAQuestionnaires =
+            nurseNCDAQuestionnaires ++ chwNCDAQuestionnaires
+
         questionnairesByAgeInMonths =
             distributeByAgeInMonths child allNCDAQuestionnaires
     in
     [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
-    , viewANCNewbornPane language currentDate db child allNCDAQuestionnaires
+    , viewANCNewbornPane language currentDate db child nurseNCDAQuestionnaires chwNCDAQuestionnaires
     , viewUniversalInterventionsPane language
         currentDate
         child
@@ -1847,26 +1846,61 @@ viewANCNewbornPane :
     -> ModelIndexedDb
     -> Person
     -> List ( NominalDate, NCDAValue )
+    -> List ( NominalDate, NCDAValue )
     -> Html any
-viewANCNewbornPane language currentDate db child allNCDAQuestionnaires =
+viewANCNewbornPane language currentDate db child nurseNCDAQuestionnaires chwNCDAQuestionnaires =
     let
-        pregnancyValues =
-            List.repeat 9 NCDACellValueEmpty
+        allNCDAQuestionnaires =
+            nurseNCDAQuestionnaires ++ chwNCDAQuestionnaires
 
-        pregnancyValuesForANCSign sign =
+        pregnancyValuesForRegularPrenatalVisits =
             if List.isEmpty allNCDAQuestionnaires then
-                List.repeat 9 NCDACellValueDash
+                List.repeat 9 NCDACellValueEmpty
 
             else
+                List.filterMap (Tuple.second >> .numberOfANCVisits)
+                    allNCDAQuestionnaires
+                    |> List.head
+                    |> Maybe.map
+                        (\numberOfANCVisits ->
+                            if numberOfANCVisits < 4 then
+                                List.repeat 9 NCDACellValueX
+
+                            else
+                                List.repeat 9 NCDACellValueV
+                        )
+                    |> Maybe.withDefault
+                        -- Number of ANC visits question is not asked when we know
+                        -- from E-Heza data that there were at least 4 ANC encounters.
+                        -- Therefore, if we have at least one questionnaire filled, and
+                        -- have no data for ANC encounters, we know that ANC encounters
+                        -- question was not asked, because there were at least 4 ANC encounters.
+                        (List.repeat 9 NCDACellValueV)
+
+        pregnancyValuesForIron =
+            if not <| List.isEmpty chwNCDAQuestionnaires then
                 let
-                    signConfirmed =
-                        List.any (\( _, value ) -> EverySet.member sign value.signs) allNCDAQuestionnaires
+                    takenSupplements =
+                        List.any
+                            (\( _, value ) ->
+                                EverySet.member TakenSupplementsPerGuidance value.signs
+                            )
+                            chwNCDAQuestionnaires
                 in
-                if signConfirmed then
+                if takenSupplements then
                     List.repeat 9 NCDACellValueV
 
                 else
                     List.repeat 9 NCDACellValueX
+
+            else if not <| List.isEmpty nurseNCDAQuestionnaires then
+                -- No matter if Iron was given or not, we won't know if
+                -- it was taken. Therefore, per current requirements, we
+                -- set red indicator.
+                List.repeat 9 NCDACellValueX
+
+            else
+                List.repeat 9 NCDACellValueEmpty
 
         zeroToFiveValues =
             List.repeat 6 NCDACellValueDash
@@ -1880,16 +1914,12 @@ viewANCNewbornPane language currentDate db child allNCDAQuestionnaires =
             [ viewTableHeader
             , viewTableRow language
                 (Translate.NCDAANCNewbornItemLabel RegularCheckups)
-                -- @todo:
-                -- (pregnancyValuesForANCSign NCDARegularPrenatalVisits)
-                (List.repeat 9 NCDACellValueDash)
+                pregnancyValuesForRegularPrenatalVisits
                 zeroToFiveValues
                 sixToTwentyFourValues
             , viewTableRow language
                 (Translate.NCDAANCNewbornItemLabel IronDuringPregnancy)
-                -- @todo:
-                -- (pregnancyValuesForANCSign NCDAIronSupplementsDuringPregnancy)
-                (List.repeat 9 NCDACellValueDash)
+                pregnancyValuesForIron
                 zeroToFiveValues
                 sixToTwentyFourValues
             ]
