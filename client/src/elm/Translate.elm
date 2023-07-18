@@ -9381,7 +9381,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                OngeraMNP ->
+                Backend.Measurement.Model.OngeraMNP ->
                     { english = "Provides counseling on the importance of Ongera and advise them to go to the Health center to recieve them"
                     , kinyarwanda = Nothing
                     }
