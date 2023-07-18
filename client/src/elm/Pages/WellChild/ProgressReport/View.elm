@@ -1947,9 +1947,7 @@ viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQu
 
         breastfedForSixMonthsByAgeInMonths =
             if List.isEmpty allNCDAQuestionnaires then
-                List.range 0 24
-                    |> List.map (\month -> ( month, NCDACellValueDash ))
-                    |> Dict.fromList
+                Dict.empty
 
             else
                 let
