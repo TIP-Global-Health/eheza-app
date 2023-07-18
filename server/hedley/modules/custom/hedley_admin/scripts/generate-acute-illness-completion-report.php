@@ -12,9 +12,11 @@ require_once __DIR__ . '/report_common.inc';
 $start_date = drush_get_option('start_date', FALSE);
 $end_date = drush_get_option('end_date', FALSE);
 $name = drush_get_option('name', FALSE);
-$type = drush_get_option('type', FALSE);
+$type = drush_get_option('mode', FALSE);
 
 //region is a stand in for either the hc or district parameter
+
+
 
 if (!$start_date) {
   drush_print('Please specify --start_date option');
@@ -25,12 +27,14 @@ if (!$end_date) {
   drush_print('Please specify --end_date option');
   exit;
 } 
-else if (strtolower($type) != 'h' &&  strtolower($type) != 'd') {
+
+if (!$type){
+  $type = FALSE;
+}
+elseif (strtolower($type) != 'h' &&  strtolower($type) != 'd') {
   $type = FALSE;
 } 
-else {
-  $type = strtoupper($type);
-}
+
 
 
 
@@ -84,7 +88,7 @@ function get_health_center_id($health_center_name = NULL) {
 function get_district_name($district = NULL) {
   if ($district) {
     $district = str_replace(['_', '-', '.'], ' ', $district);
-    $results = db_query("SELECT DISTINCT d FROM field_data_field_district WHERE field_district_value = :district", array(
+    $results = db_query("SELECT DISTINCT field_district_value FROM field_data_field_district WHERE field_district_value = :district", array(
       ':district' => $district,
     ));
     if (!$results->fetchField()) {
@@ -132,15 +136,28 @@ function get_health_center($health_center_id = NULL) {
   }
 }
 
-$name = get_district_name($region);
 
 
 
 
+if($type == 'H') {
+  $name = get_health_center_id($name);
+}
+elseif($type == 'D') {
+  $name = get_district_name($name);
+}
 
 
+if(!$type) {
+  drush_print("# Acute Illness Completion Report - Mode: ALL - " . $start_date . " - " . $end_date);
+}
+elseif($type == 'D') {
+  drush_print("# Acute Illness Completion Report - Mode: Districts - " . $name . " - " . $start_date . " - " . $end_date);
+}
+elseif($type == 'H') {
+  drush_print("# Acute Illness Completion Report - Mode: Health Center - " . get_health_center($name) . " - " . $start_date . " - " . $end_date);
 
-
+}
 
 
 function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $mode = FALSE) {
@@ -153,7 +170,7 @@ function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $m
     OR field_ai_encounter_type_value is NULL)
     AND field_health_center_target_id='$name'";
   }
-  else if($type == 'D') {
+  elseif($type == 'D') {
     $name_clause = "AND field_district_value='$name'";
   }
   
@@ -188,20 +205,21 @@ function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $m
   if($mode == "gi_one") {
     $mode_clause = "AND (field_bloody_diarrhea_period_value = 0 OR field_bloody_diarrhea_period_value = 1)
     AND (field_nausea_period_value = 0 OR field_nausea_period_value = 1)
+    AND (field_abdominal_pain_period_value = 0 OR field_abdominal_pain_period_value = 1)
     AND (field_non_bloody_diarrhea_period_value = 0 OR field_non_bloody_diarrhea_period_value = 1)
-    AND (field_vomiting_period_value = 0 OR field_vomiting_period_value = 1)
-    AND (field_abdominal_pain_period = 0 OR field_abdominal_pain_period = 1)";
+    AND (field_vomiting_period_value = 0 OR field_vomiting_period_value = 1)";
+    //";
   }
-  else if($mode == 'general_complete') {
+  elseif($mode == 'general_complete') {
    $mode_clause =  "AND field_fever_period_value IS NOT NULL";
   }
-  else if($mode == 'respiratory_complete') {
+  elseif($mode == 'respiratory_complete') {
     $mode_clause = "AND field_cough_period_value IS NOT NULL";
   }
-  else if($mode == 'gi_complete') {
+  elseif($mode == 'gi_complete') {
     $mode_clause = "AND field_nausea_period_value IS NOT NULL";
   }
-  else if($mode == 'all_complete') {
+  elseif($mode == 'all_complete') {
     $mode_clause = "AND field_fever_period_value IS NOT NULL AND field_cough_period_value IS NOT NULL AND field_nausea_period_value IS NOT NULL";
   }
 
@@ -239,12 +257,74 @@ function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $m
     LEFT JOIN field_data_field_nausea_period nau ON node.nid=nau.entity_id
     LEFT JOIN field_data_field_non_bloody_diarrhea_period non ON node.nid=non.entity_id
     LEFT JOIN field_data_field_vomiting_period vom ON node.nid=vom.entity_id
-    LEFT JOIN field_data_field_abdominal_pain_period abdo ON node.nid=abdo.entity_id
     LEFT JOIN field_data_field_convulsions_period covu ON node.nid=covu.entity_id
     LEFT JOIN field_data_field_severe_weakness_period weak ON node.nid=weak.entity_id
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       {$mode_clause}
+      AND FROM_UNIXTIME(node.created) < :end_date" 
+    , [
+      ':start_date' => $start_date,
+      ':end_date' => $end_date,
+    ])->fetchField();
+}
+
+
+function symptom_general_one($start_date, $end_date, $type = FALSE, $name = FALSE) {
+  $name_clause = "";
+
+  //name clause
+  if($type == 'H') {
+    $name_clause = "AND (field_ai_encounter_type_value='nurse-encounter'
+    OR field_ai_encounter_type_value is NULL)
+    AND field_health_center_target_id='$name'";
+  }
+  elseif($type == 'D') {
+    $name_clause = "AND field_district_value='$name'";
+  }
+
+  return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
+    FROM field_data_field_acute_illness_encounter e
+    LEFT JOIN node ON e.entity_id=node.nid
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+    LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_ai_encounter_type t ON e.field_acute_illness_encounter_target_id=t.entity_id
+    LEFT JOIN field_data_field_fever_period fev ON node.nid=fev.entity_id
+    LEFT JOIN field_data_field_chills_period chi ON node.nid=chi.entity_id
+    LEFT JOIN field_data_field_night_sweats_period nig ON node.nid=nig.entity_id
+    LEFT JOIN field_data_field_body_aches_period bod ON node.nid=bod.entity_id
+    LEFT JOIN field_data_field_headache_period hea ON node.nid=hea.entity_id
+    LEFT JOIN field_data_field_lethargy_period let ON node.nid=let.entity_id
+    LEFT JOIN field_data_field_poor_suck_period poo ON node.nid=poo.entity_id
+    LEFT JOIN field_data_field_unable_to_drink_period und ON node.nid=und.entity_id
+    LEFT JOIN field_data_field_unable_to_eat_period une ON node.nid=une.entity_id
+    LEFT JOIN field_data_field_increased_thirst_period inc ON node.nid=inc.entity_id
+    LEFT JOIN field_data_field_dry_mouth_period dry ON node.nid=dry.entity_id
+    LEFT JOIN field_data_field_yellow_eyes_period yel ON node.nid=yel.entity_id
+    LEFT JOIN field_data_field_coke_colored_urine_period cok ON node.nid=cok.entity_id
+    LEFT JOIN field_data_field_spontaneos_bleeding_period spo ON node.nid=spo.entity_id
+    LEFT JOIN field_data_field_severe_weakness_period weak ON node.nid=weak.entity_id
+    LEFT JOIN field_data_field_convulsions_period conv ON node.nid=conv.entity_id
+    WHERE FROM_UNIXTIME(node.created) > :start_date
+      AND (field_yellow_eyes_period_value = 0 OR field_yellow_eyes_period_value = 1)
+      AND (field_fever_period_value = 0 OR field_fever_period_value = 1)
+      AND (field_chills_period_value = 0 OR field_chills_period_value = 1)
+      AND (field_night_sweats_period_value = 0 OR field_night_sweats_period_value = 1)
+      AND (field_body_aches_period_value = 0 OR field_body_aches_period_value = 1)
+      AND (field_headache_period_value = 0 OR field_headache_period_value = 1)
+      AND (field_lethargy_period_value = 0 OR field_lethargy_period_value = 1)
+      AND (field_poor_suck_period_value = 0 OR field_poor_suck_period_value = 1)
+      AND (field_unable_to_drink_period_value = 0 OR field_unable_to_drink_period_value = 1)
+      AND (field_unable_to_eat_period_value = 0 OR field_unable_to_eat_period_value = 1)
+      AND (field_increased_thirst_period_value = 0 OR field_increased_thirst_period_value = 1)
+      AND (field_dry_mouth_period_value = 0 OR field_dry_mouth_period_value = 1)
+      AND (field_coke_colored_urine_period_value = 0 OR field_coke_colored_urine_period_value  = 1)
+      AND (field_convulsions_period_value = 0 OR field_convulsions_period_value = 1)
+      AND (field_severe_weakness_period_value = 0 OR field_severe_weakness_period_value = 1)
+      AND (field_spontaneos_bleeding_period_value = 0 OR field_spontaneos_bleeding_period_value = 1)
+      {$name_clause}
       AND FROM_UNIXTIME(node.created) < :end_date" 
     , [
       ':start_date' => $start_date,
@@ -260,10 +340,10 @@ function exposure_travel_history($start_date, $end_date, $type = FALSE, $name = 
   if($mode == "exposure_complete") {
     $mode_clause = "AND field_exposure_value IS NOT NULL";
   }
-  else if($mode == "travel_complete") {
+  elseif($mode == "travel_complete") {
     $mode_clause = "AND field_travel_history_value IS NOT NULL";
   }
-  else if($mode == "all_complete") {
+  elseif($mode == "all_complete") {
     $mode_clause = "AND field_exposure_value IS NOT NULL AND field_travel_history_value IS NOT NULL";
   }
 
@@ -274,7 +354,7 @@ function exposure_travel_history($start_date, $end_date, $type = FALSE, $name = 
     OR field_ai_encounter_type_value is NULL)
     AND field_health_center_target_id='$name'";
   }
-  else if($type == 'D') {
+  elseif($type == 'D') {
     $name_clause = "AND field_district_value='$name'";
   }
   
@@ -315,7 +395,7 @@ function treatment_history($start_date, $end_date, $type = FALSE, $name = FALSE,
     OR field_ai_encounter_type_value is NULL)
     AND field_health_center_target_id='$name'";
   }
-  else if($type == 'D') {
+  elseif($type == 'D') {
     $name_clause = "AND field_district_value='$name'";
   }
 
@@ -348,45 +428,45 @@ function physical_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $mo
   //mode clause
   if($mode == "physical_complete") {
     $mode_clause = "AND field_sys_value IS NOT NULL AND field_dia_value IS NOT NULL 
-    AND field_heart_rate_value IS NOT NULL AND AND field_respiratory_rate_value IS NOT NULL
+    AND field_heart_rate_value IS NOT NULL AND field_respiratory_rate_value IS NOT NULL
     AND field_body_temperature_value IS NOT NULL AND  field_heart_value IS NOT NULL 
     AND field_lungs_value IS NOT NULL AND field_muac_value IS NOT NULL AND field_nutrition_signs_value IS NOT NULL
     AND field_findings_signs_general_value IS NOT NULL AND field_findings_signs_respiratory_value IS NOT NULL";
   }
-  else if($mode == 'BP_complete') {
+  elseif($mode == 'BP_complete') {
     $mode_clause = "AND field_sys_value IS NOT NULL AND field_dia_value IS NOT NULL";
   }
-  else if($mode == 'heart_rate_complete') {
+  elseif($mode == 'heart_rate_complete') {
     $mode_clause = "AND field_heart_rate_value IS NOT NULL";
   }
-  else if($mode == 'heart_rate_normal') {
+  elseif($mode == 'heart_rate_normal') {
     $mode_clause = "AND field_heart_rate_value > 80 AND field_heart_rate_value < 160"; //TODO: GET REAL VALUES
   }
-  else if($mode == 'resp_rate_complete') {
+  elseif($mode == 'resp_rate_complete') {
     $mode_clause = "AND field_respiratory_rate_value IS NOT NULL";
   }
-  else if($mode == 'resp_rate_normal') {
+  elseif($mode == 'resp_rate_normal') {
     $mode_clause = "AND field_respiratory_rate_value IS NOT NULL";
   }
-  else if($mode == 'body_complete') {
+  elseif($mode == 'body_complete') {
     $mode_clause = "AND field_body_temperature_value IS NOT NULL";
   }
-  else if($mode == 'body_normal') {
+  elseif($mode == 'body_normal') {
     $mode_clause = "AND field_body_temperature_value > 31 AND field_body_temperature_value < 39"; //TODO: GET REAL VALUES
   }
-  else if($mode == 'core_complete') {
+  elseif($mode == 'core_complete') {
     $mode_clause = "AND  field_heart_value IS NOT NULL AND field_lungs_value IS NOT NULL";
   }
-  else if($mode == 'muac_complete') {
+  elseif($mode == 'muac_complete') {
     $mode_clause = "AND field_muac_value IS NOT NULL";
   }
-  else if($mode == 'muac_normal') {
+  elseif($mode == 'muac_normal') {
     $mode_clause = "AND field_muac_value > 8 AND field_muac_value < 18"; //TODO: GET REAL VALUES
   }
-  else if($mode == 'nutrition_complete'){
+  elseif($mode == 'nutrition_complete'){
     $mode_clause = "AND field_nutrition_signs_value IS NOT NULL";
   }
-  else if($mode == 'acute_complete') {
+  elseif($mode == 'acute_complete') {
     $mode_clause = "AND field_findings_signs_general_value IS NOT NULL AND field_findings_signs_respiratory_value IS NOT NULL";
   }
   
@@ -400,7 +480,7 @@ function physical_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $mo
     OR field_ai_encounter_type_value is NULL)
     AND field_health_center_target_id='$name'";
   }
-  else if($type == 'D') {
+  elseif($type == 'D') {
     $name_clause = "AND field_district_value='$name'";
   }
   
@@ -422,6 +502,7 @@ function physical_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $mo
     LEFT JOIN field_data_field_body_temperature bod ON node.nid=bod.entity_id
     LEFT JOIN field_data_field_dia dia ON node.nid=dia.entity_id
     LEFT JOIN field_data_field_sys sys ON node.nid=sys.entity_id
+    LEFT JOIN field_data_field_muac muac ON node.nid=muac.entity_id
     LEFT JOIN field_data_field_nutrition_signs nutr ON node.nid=nutr.entity_id
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
@@ -445,7 +526,7 @@ function core_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $comple
     OR field_ai_encounter_type_value is NULL)
     AND field_health_center_target_id='$name'";
   }
-  else if($type == 'D') {
+  elseif($type == 'D') {
     $region_clause = "AND field_district_value='$region'";
   }
   
@@ -482,7 +563,7 @@ function acute_findings($start_date, $end_date, $type = FALSE, $name = FALSE, $c
     OR field_ai_encounter_type_value is NULL)
     AND field_health_center_target_id='$name'";
   }
-  else if($type == 'D') {
+  elseif($type == 'D') {
     $region_clause = "AND field_district_value='$region'";
   }
   
@@ -519,7 +600,7 @@ function vitals($start_date, $end_date, $type = FALSE, $name = FALSE, $complete 
     OR field_ai_encounter_type_value is NULL)
     AND field_health_center_target_id='$name'";
   }
-  else if($type == 'D') {
+  elseif($type == 'D') {
     $region_clause = "AND field_district_value='$region'";
   }
   
@@ -550,42 +631,137 @@ function vitals($start_date, $end_date, $type = FALSE, $name = FALSE, $complete 
 
 $encounters = [
   [
+    //SYMPTOM REVIEW
     'Symptom Review (total)',
-    symptom_review($start_date, $end_date, $type, $name, 'all_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
-    symptom_review($start_date, $end_date, $type, $name, 'all_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') * 100 . '%'
+    symptom_review($start_date, $end_date, $type, $name, 'all_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name),
+    ROUND(symptom_review($start_date, $end_date, $type, $name, 'all_complete') / symptom_review($start_date, $end_date, $type, $name) * 100, 3) . '%'
 
   ],
   [
     '  General',
-    symptom_review($start_date, $end_date, $type, $name, 'general_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
-    symptom_review($start_date, $end_date, $type, $name, 'general_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') * 100 . '%'
+    symptom_review($start_date, $end_date, $type, $name, 'general_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name),
+    ROUND(symptom_review($start_date, $end_date, $type, $name, 'general_complete') / symptom_review($start_date, $end_date, $type, $name) * 100, 3) . '%'
   ],
+  /*
   [
     '   General days = 0/1',
     symptom_review($start_date, $end_date, $type, $name, 'general_one') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'general_complete'),
-    symptom_review($start_date, $end_date, $type, $name, 'general_one') / symptom_review($start_date, $end_date, $type, $name, 'general_complete')* 100 . '%'
+    ROUND(symptom_review($start_date, $end_date, $type, $name, 'general_one') / symptom_review($start_date, $end_date, $type, $name, 'general_complete')* 100, 3) . '%'
   ],
+  */
   [
     '  Respiratory',
-    symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
-    symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') * 100 . '%'
+    symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name),
+    ROUND(symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete') / symptom_review($start_date, $end_date, $type, $name) * 100, 3) . '%'
   ],
   [
-    '   Respiratory = 0/1',
+    '    Respiratory = 0/1',
     symptom_review($start_date, $end_date, $type, $name, 'respiratory_one') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete'),
-    symptom_review($start_date, $end_date, $type, $name, 'respiratory_one') / symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete')* 100 . '%'
+    ROUND(symptom_review($start_date, $end_date, $type, $name, 'respiratory_one') / symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete')* 100, 3) . '%'
   ],
   [
     '  GI',
-    symptom_review($start_date, $end_date, $type, $name, 'gi_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
-    symptom_review($start_date, $end_date, $type, $name, 'gi_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') * 100 . '%'
+    symptom_review($start_date, $end_date, $type, $name, 'gi_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name),
+    ROUND(symptom_review($start_date, $end_date, $type, $name, 'gi_complete') / symptom_review($start_date, $end_date, $type, $name) * 100, 3) . '%'
   ],
   [
-    '   GI days = 0/1',
-    symptom_review($start_date, $end_date, $type, $name, 'gi_one') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'gi_complete'),
-    symptom_review($start_date, $end_date, $type, $name, 'gi_one') / symptom_review($start_date, $end_date, $type, $name, 'gi_complete')* 100 . '%'
-  ]
+    '    GI days = 0/1',
+    symptom_review($start_date, $end_date, $type, $name, 'gi_one') . ' / ' . symptom_general_one($start_date, $end_date, $type, $name),
+    ROUND(symptom_review($start_date, $end_date, $type, $name, 'gi_one') / symptom_general_one($start_date, $end_date, $type, $name)* 100, 3) . '%'
+  ],
+  ["","",""],
+  [
+    'Exposure/Travel History',
+    exposure_travel_history($start_date, $end_date, $type, $name, 'all_complete') . ' / ' . exposure_travel_history($start_date, $end_date, $type, $name),
+    ROUND(exposure_travel_history($start_date, $end_date, $type, $name, 'all_complete') / exposure_travel_history($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '  Travel History',
+    exposure_travel_history($start_date, $end_date, $type, $name, 'travel_complete') . ' / ' . exposure_travel_history($start_date, $end_date, $type, $name),
+    ROUND(exposure_travel_history($start_date, $end_date, $type, $name, 'travel_complete') / exposure_travel_history($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '  Contact Exposure',
+    exposure_travel_history($start_date, $end_date, $type, $name, 'exposure_complete') . ' / ' . exposure_travel_history($start_date, $end_date, $type, $name),
+    ROUND(exposure_travel_history($start_date, $end_date, $type, $name, 'exposure_complete') / exposure_travel_history($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  ["","",""],
+  [
+    'Prior Treatment History',
+    treatment_history($start_date, $end_date, $type, $name, 'complete') . ' / ' . treatment_history($start_date, $end_date, $type, $name),
+    ROUND(treatment_history($start_date, $end_date, $type, $name, 'complete') / treatment_history($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  ["","",""],
+  [
+    'Physical Exam',
+    physical_exam($start_date, $end_date, $type, $name, 'physical_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'physical_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '  Blood Presure',
+    physical_exam($start_date, $end_date, $type, $name, 'BP_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'BP_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '  Heart Rate',
+    physical_exam($start_date, $end_date, $type, $name, 'heart_rate_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'heart_rate_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '    Heart Rate Normal',
+    physical_exam($start_date, $end_date, $type, $name, 'heart_rate_normal') . ' / ' . physical_exam($start_date, $end_date, $type, $name, 'heart_rate_complete'),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'heart_rate_normal') / physical_exam($start_date, $end_date, $type, $name, 'heart_rate_complete') * 100, 3) . '%'
+  ],
+  [
+    '  Respitory Rate',
+    physical_exam($start_date, $end_date, $type, $name, 'resp_rate_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'resp_rate_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '    Respitory Rate Normal',
+    physical_exam($start_date, $end_date, $type, $name, 'resp_rate_normal') . ' / ' . physical_exam($start_date, $end_date, $type, $name, 'resp_rate_complete'),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'resp_rate_normal') / physical_exam($start_date, $end_date, $type, $name, 'resp_rate_complete') * 100, 3) . '%'
+  ],
+  [
+    '  Body Temp',
+    physical_exam($start_date, $end_date, $type, $name, 'body_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'body_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '    Body Temp Normal',
+    physical_exam($start_date, $end_date, $type, $name, 'body_normal') . ' / ' . physical_exam($start_date, $end_date, $type, $name, 'body_complete'),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'body_normal') / physical_exam($start_date, $end_date, $type, $name, 'body_complete') * 100, 3) . '%'
+  ],
+  [
+    '  Core Exam',
+    physical_exam($start_date, $end_date, $type, $name, 'core_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'core_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '  MUAC',
+    physical_exam($start_date, $end_date, $type, $name, 'muac_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'muac_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '    MUAC Normal',
+    physical_exam($start_date, $end_date, $type, $name, 'muac_normal') . ' / ' . physical_exam($start_date, $end_date, $type, $name, 'muac_complete'),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'muac_normal') / physical_exam($start_date, $end_date, $type, $name, 'muac_complete') * 100, 3) . '%'
+  ],
+  [
+    '  Nutrition',
+    physical_exam($start_date, $end_date, $type, $name, 'nutrition_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'nutrition_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+  [
+    '  Acute Findings',
+    physical_exam($start_date, $end_date, $type, $name, 'acute_complete') . ' / ' . physical_exam($start_date, $end_date, $type, $name),
+    ROUND(physical_exam($start_date, $end_date, $type, $name, 'acute_complete') / physical_exam($start_date, $end_date, $type, $name) * 100, 3) . '%'
+  ],
+
+  //
 ];
+
+
 
 
 
