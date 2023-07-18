@@ -449,7 +449,7 @@ class RoboFile extends Tasks {
    * Generates the acute illness completion report
    */
   public function reportAiComplete($start_date = NULL, $end_date = NULL, $mode = NULL, $name = NULL) {
-    $this->_exec("/Users/silermericle/Documents/Gizra/eheza-app/server/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-completion-report.php --start_date=$start_date --end_date=$end_date --mode=$mode --name=$name");
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-completion-report.php --start_date=$start_date --end_date=$end_date --mode=$mode --name=$name");
   }
 
 }

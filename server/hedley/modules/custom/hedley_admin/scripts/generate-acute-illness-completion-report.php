@@ -133,8 +133,6 @@ function get_health_center($health_center_id = NULL) {
 }
 
 $name = get_district_name($region);
-drush_print(treatment_history($start_date, $end_date, ));
-
 
 
 
@@ -160,7 +158,7 @@ function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $m
   }
   
   //mode clause
-  if($mode == "all_one") {
+  if($mode == "general_one") {
     $mode_clause = "AND (field_yellow_eyes_period_value = 0 OR field_yellow_eyes_period_value = 1)
     AND (field_fever_period_value = 0 OR field_fever_period_value = 1)
     AND (field_chills_period_value = 0 OR field_chills_period_value = 1)
@@ -173,24 +171,31 @@ function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $m
     AND (field_unable_to_eat_period_value = 0 OR field_unable_to_eat_period_value = 1)
     AND (field_increased_thirst_period_value = 0 OR field_increased_thirst_period_value = 1)
     AND (field_dry_mouth_period_value = 0 OR field_dry_mouth_period_value = 1)
-    AND (field_coke_colored_urine_period_value  = 0 OR field_coke_colored_urine_period_value  = 1)
-    AND (field_spontaneos_bleeding_period_value = 0 OR field_spontaneos_bleeding_period_value = 1)
-    AND (field_cough_period_value = 0 OR field_cough_period_value = 1)
-    AND (field_shortness_of_breath_period_value = 0 OR field_shortness_of_breath_period__period_value = 1)
+    AND (field_coke_colored_urine_period_value = 0 OR field_coke_colored_urine_period_value  = 1)
+    AND (field_convulsions_period_value = 0 OR field_convulsions_period_value = 1)
+    AND (field_severe_weakness_period_value = 0 OR field_severe_weakness_period_value = 1)
+    AND (field_spontaneos_bleeding_period_value = 0 OR field_spontaneos_bleeding_period_value = 1)";
+  }
+  if($mode == "respiratory_one") {
+    $mode_clause = "AND (field_cough_period_value = 0 OR field_cough_period_value = 1)
+    AND (field_shortness_of_breath_period_value = 0 OR field_shortness_of_breath_period_value = 1)
     AND (field_nasal_congestion_period_value = 0 OR field_nasal_congestion_period_value = 1)
     AND (field_blood_in_sputum_period_value = 0 OR field_blood_in_sputum_period_value = 1)
     AND (field_sore_throat_period_value = 0 OR field_sore_throat_period_value = 1)
     AND (field_loss_of_smell_period_value = 0 OR field_loss_of_smell_period_value = 1)
-    AND (field_stabbing_chest_pain_period_value = 0 OR field_stabbing_chest_pain_period_value = 1)
-    AND (field_bloody_diarrhea_period_value = 0 OR field_bloody_diarrhea_period_value = 1)
+    AND (field_stabbing_chest_pain_period_value = 0 OR field_stabbing_chest_pain_period_value = 1)";
+  }
+  if($mode == "gi_one") {
+    $mode_clause = "AND (field_bloody_diarrhea_period_value = 0 OR field_bloody_diarrhea_period_value = 1)
     AND (field_nausea_period_value = 0 OR field_nausea_period_value = 1)
     AND (field_non_bloody_diarrhea_period_value = 0 OR field_non_bloody_diarrhea_period_value = 1)
-    AND (field_vomiting_period_value = 0 OR field_vomiting_period_value = 1)";
+    AND (field_vomiting_period_value = 0 OR field_vomiting_period_value = 1)
+    AND (field_abdominal_pain_period = 0 OR field_abdominal_pain_period = 1)";
   }
   else if($mode == 'general_complete') {
    $mode_clause =  "AND field_fever_period_value IS NOT NULL";
   }
-  else if($mode == 'resperatory_complete') {
+  else if($mode == 'respiratory_complete') {
     $mode_clause = "AND field_cough_period_value IS NOT NULL";
   }
   else if($mode == 'gi_complete') {
@@ -200,7 +205,7 @@ function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $m
     $mode_clause = "AND field_fever_period_value IS NOT NULL AND field_cough_period_value IS NOT NULL AND field_nausea_period_value IS NOT NULL";
   }
 
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
+  return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
     FROM field_data_field_acute_illness_encounter e
     LEFT JOIN node ON e.entity_id=node.nid
     LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
@@ -224,16 +229,19 @@ function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $m
     LEFT JOIN field_data_field_spontaneos_bleeding_period spo ON node.nid=spo.entity_id
     LEFT JOIN field_data_field_cough_period cou ON node.nid=cou.entity_id
     LEFT JOIN field_data_field_shortness_of_breath_period sho ON node.nid=sho.entity_id
-    LEFT JOIN field_data_field_nasal_congestion_period ON node.nid=nas.entity_id
+    LEFT JOIN field_data_field_nasal_congestion_period nas ON node.nid=nas.entity_id
     LEFT JOIN field_data_field_blood_in_sputum_period blo ON node.nid=blo.entity_id
     LEFT JOIN field_data_field_sore_throat_period sor ON node.nid=sor.entity_id
     LEFT JOIN field_data_field_loss_of_smell_period los ON node.nid=los.entity_id
     LEFT JOIN field_data_field_stabbing_chest_pain_period sta ON node.nid=sta.entity_id
     LEFT JOIN field_data_field_abdominal_pain_period abd ON node.nid=abd.entity_id
-    LEFT JOIN field_data_field_bloody_diarrhea_period blo ON node.nid=blo.entity_id
+    LEFT JOIN field_data_field_bloody_diarrhea_period blod ON node.nid=blod.entity_id
     LEFT JOIN field_data_field_nausea_period nau ON node.nid=nau.entity_id
     LEFT JOIN field_data_field_non_bloody_diarrhea_period non ON node.nid=non.entity_id
     LEFT JOIN field_data_field_vomiting_period vom ON node.nid=vom.entity_id
+    LEFT JOIN field_data_field_abdominal_pain_period abdo ON node.nid=abdo.entity_id
+    LEFT JOIN field_data_field_convulsions_period covu ON node.nid=covu.entity_id
+    LEFT JOIN field_data_field_severe_weakness_period weak ON node.nid=weak.entity_id
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       {$mode_clause}
@@ -241,7 +249,7 @@ function symptom_review($start_date, $end_date, $type = FALSE, $name = FALSE, $m
     , [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
-    ])->fetch_field();
+    ])->fetchField();
 }
 
 
@@ -271,7 +279,7 @@ function exposure_travel_history($start_date, $end_date, $type = FALSE, $name = 
   }
   
 
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
+  return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
     FROM field_data_field_acute_illness_encounter e
     LEFT JOIN node ON e.entity_id=node.nid
     LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
@@ -288,7 +296,7 @@ function exposure_travel_history($start_date, $end_date, $type = FALSE, $name = 
     , [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
-    ])->fetch_field();
+    ])->fetchField();
 }
 
 
@@ -297,8 +305,8 @@ function treatment_history($start_date, $end_date, $type = FALSE, $name = FALSE,
   //mode clause
   $mode_clause = "";
 
-  if($mode = 'complete') {
-    $mode_clause = "AND field_treatment_history_value IS NOT NULL"
+  if($mode == 'complete') {
+    $mode_clause = "AND field_treatment_history_value IS NOT NULL";
   }
 
   //name clause maker
@@ -312,7 +320,7 @@ function treatment_history($start_date, $end_date, $type = FALSE, $name = FALSE,
   }
 
   
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
+  return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
     FROM field_data_field_acute_illness_encounter e
     LEFT JOIN node ON e.entity_id=node.nid
     LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
@@ -328,7 +336,7 @@ function treatment_history($start_date, $end_date, $type = FALSE, $name = FALSE,
     , [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
-    ])->fetch_field();
+    ])->fetchField();
 }
 
 
@@ -361,10 +369,10 @@ function physical_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $mo
     $mode_clause = "AND field_respiratory_rate_value IS NOT NULL";
   }
   else if($mode == 'body_complete') {
-    $mode_clause = "AND field_body_temperature_value IS NOT NULL"
+    $mode_clause = "AND field_body_temperature_value IS NOT NULL";
   }
   else if($mode == 'body_normal') {
-    $mode_clause = "AND field_body_temperature_value > 31 AND field_body_temperature_value < 39" //TODO: GET REAL VALUES
+    $mode_clause = "AND field_body_temperature_value > 31 AND field_body_temperature_value < 39"; //TODO: GET REAL VALUES
   }
   else if($mode == 'core_complete') {
     $mode_clause = "AND  field_heart_value IS NOT NULL AND field_lungs_value IS NOT NULL";
@@ -397,7 +405,7 @@ function physical_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $mo
   }
   
 
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
+  return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
     FROM field_data_field_acute_illness_encounter e
     LEFT JOIN node ON e.entity_id=node.nid
     LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
@@ -422,7 +430,7 @@ function physical_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $mo
     , [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
-    ])->fetch_field();
+    ])->fetchField();
 }
 
 
@@ -442,7 +450,7 @@ function core_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $comple
   }
   
 
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
+  return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
     FROM field_data_field_acute_illness_encounter e
     LEFT JOIN node ON e.entity_id=node.nid
     LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
@@ -459,7 +467,7 @@ function core_exam($start_date, $end_date, $type = FALSE, $name = FALSE, $comple
     , [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
-    ])->fetch_field();
+    ])->fetchField();
 }
 
 
@@ -479,7 +487,7 @@ function acute_findings($start_date, $end_date, $type = FALSE, $name = FALSE, $c
   }
   
 
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
+  return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
     FROM field_data_field_acute_illness_encounter e
     LEFT JOIN node ON e.entity_id=node.nid
     LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
@@ -496,7 +504,7 @@ function acute_findings($start_date, $end_date, $type = FALSE, $name = FALSE, $c
     , [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
-    ])->fetch_field();
+    ])->fetchField();
 }
 
 
@@ -516,7 +524,7 @@ function vitals($start_date, $end_date, $type = FALSE, $name = FALSE, $complete 
   }
   
 
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
+  return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
     FROM field_data_field_acute_illness_encounter e
     LEFT JOIN node ON e.entity_id=node.nid
     LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
@@ -536,7 +544,7 @@ function vitals($start_date, $end_date, $type = FALSE, $name = FALSE, $complete 
     , [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
-    ])->fetch_field();
+    ])->fetchField();
 }
 
 
@@ -544,31 +552,40 @@ $encounters = [
   [
     'Symptom Review (total)',
     symptom_review($start_date, $end_date, $type, $name, 'all_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
-    symptom_review($start_date, $end_date, $type, $name, 'all_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') . '%'
+    symptom_review($start_date, $end_date, $type, $name, 'all_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') * 100 . '%'
 
   ],
   [
-    '   General',
+    '  General',
     symptom_review($start_date, $end_date, $type, $name, 'general_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
-    symptom_review($start_date, $end_date, $type, $name, 'general_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') . '%'
+    symptom_review($start_date, $end_date, $type, $name, 'general_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') * 100 . '%'
   ],
   [
-    '   Respiratory',
-    symptom_review($start_date, $end_date, $type, $name, 'resperatory_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
-    symptom_review($start_date, $end_date, $type, $name, 'resperatory_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') . '%'
+    '   General days = 0/1',
+    symptom_review($start_date, $end_date, $type, $name, 'general_one') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'general_complete'),
+    symptom_review($start_date, $end_date, $type, $name, 'general_one') / symptom_review($start_date, $end_date, $type, $name, 'general_complete')* 100 . '%'
   ],
   [
-    '   GI',
+    '  Respiratory',
+    symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
+    symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') * 100 . '%'
+  ],
+  [
+    '   Respiratory = 0/1',
+    symptom_review($start_date, $end_date, $type, $name, 'respiratory_one') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete'),
+    symptom_review($start_date, $end_date, $type, $name, 'respiratory_one') / symptom_review($start_date, $end_date, $type, $name, 'respiratory_complete')* 100 . '%'
+  ],
+  [
+    '  GI',
     symptom_review($start_date, $end_date, $type, $name, 'gi_complete') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all'),
-    symptom_review($start_date, $end_date, $type, $name, 'gi_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') . '%'
+    symptom_review($start_date, $end_date, $type, $name, 'gi_complete') / symptom_review($start_date, $end_date, $type, $name, 'all') * 100 . '%'
   ],
   [
-    '   all days = 0 or 1',
-    symptom_review($start_date, $end_date, $type, $name, 'all_one') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'all_complete'),
-    symptom_review($start_date, $end_date, $type, $name, 'all_one') / symptom_review($start_date, $end_date, $type, $name, 'all_complete') . '%'
+    '   GI days = 0/1',
+    symptom_review($start_date, $end_date, $type, $name, 'gi_one') . ' / ' . symptom_review($start_date, $end_date, $type, $name, 'gi_complete'),
+    symptom_review($start_date, $end_date, $type, $name, 'gi_one') / symptom_review($start_date, $end_date, $type, $name, 'gi_complete')* 100 . '%'
   ]
-
-]
+];
 
 
 
@@ -579,125 +596,3 @@ $text_table = new HedleyAdminTextTable([
 ]);
 
 drush_print($text_table->render($encounters));
-
-
-
-
-
-/* BACKUPS
-function symptom_respiratory($start_date, $end_date, $complete = FALSE, $type = FALSE, $name = FALSE) {
-  $region_clause = "";
-  //complete clause
-  $complete_clause = ($complete) ? "TODO: ADD LINE" : "";
-
-  //region clause maker
-  if($type == 'H') {
-    $region_clause = "AND (field_ai_encounter_type_value='nurse-encounter'
-    OR field_ai_encounter_type_value is NULL)
-    AND field_health_center_target_id='$name'";
-  }
-  else if($type == 'D') {
-    $region_clause = "AND field_district_value='$region'";
-  }
-
-  
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
-    FROM field_data_field_acute_illness_encounter e
-    LEFT JOIN node ON e.entity_id=node.nid
-    LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
-    LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
-    LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
-    LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
-    LEFT JOIN field_data_field_ai_encounter_type t ON e.field_acute_illness_encounter_target_id=t.entity_id
-    LEFT JOIN field_data_field_cough_period cou ON node.nid=cou.entity_id
-    LEFT JOIN field_data_field_shortness_of_breath_period sho ON node.nid=sho.entity_id
-    LEFT JOIN field_data_field_nasal_congestion_period ON node.nid=nas.entity_id
-    LEFT JOIN field_data_field_blood_in_sputum_period blo ON node.nid=blo.entity_id
-    LEFT JOIN field_data_field_sore_throat_period sor ON node.nid=sor.entity_id
-    LEFT JOIN field_data_field_loss_of_smell_period los ON node.nid=los.entity_id
-    LEFT JOIN field_data_field_stabbing_chest_pain_period sta ON node.nid=sta.entity_id
-    WHERE FROM_UNIXTIME(node.created) > :start_date
-      {$region_clause}
-      {$complete_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date" 
-    , [
-      ':start_date' => $start_date,
-      ':end_date' => $end_date,
-    ])->fetch_field();
-}
-
-function exposure_history($start_date, $end_date, $complete = FALSE, $type = FALSE, $name = FALSE) {
-  $region_clause = "";
-  //complete clause
-  $complete_clause = ($complete) ? "TODO: ADD LINE" : "";
-
-  //region clause maker
-  if($type == 'H') {
-    $region_clause = "AND (field_ai_encounter_type_value='nurse-encounter'
-    OR field_ai_encounter_type_value is NULL)
-    AND field_health_center_target_id='$name'";
-  }
-  else if($type == 'D') {
-    $region_clause = "AND field_district_value='$region'";
-  }
-  
-
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
-    FROM field_data_field_acute_illness_encounter e
-    LEFT JOIN node ON e.entity_id=node.nid
-    LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
-    LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
-    LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
-    LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
-    LEFT JOIN field_data_field_ai_encounter_type t ON e.field_acute_illness_encounter_target_id=t.entity_id
-    LEFT JOIN field_data_field_exposure exp ON node.nid=exp.entity_id
-    WHERE FROM_UNIXTIME(node.created) > :start_date
-      {$region_clause}
-      {$complete_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date" 
-    , [
-      ':start_date' => $start_date,
-      ':end_date' => $end_date,
-    ])->fetch_field();
-}
-
-function symptom_gi($start_date, $end_date, $complete = FALSE, $type = FALSE, $name = FALSE) {
-  $region_clause = "";
-  //complete clause
-  $complete_clause = ($complete) ? "TODO: ADD LINE" : "";
-
-  //region clause maker
-  if($type == 'H') {
-    $region_clause = "AND (field_ai_encounter_type_value='nurse-encounter'
-    OR field_ai_encounter_type_value is NULL)
-    AND field_health_center_target_id='$name'";
-  }
-  else if($type == 'D') {
-    $region_clause = "AND field_district_value='$region'";
-  }
-  
-  //DO I NEED LASE LEFT JOIN LINE?????
-  return db_querry("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
-    FROM field_data_field_acute_illness_encounter e
-    LEFT JOIN node ON e.entity_id=node.nid
-    LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
-    LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
-    LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
-    LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
-    LEFT JOIN field_data_field_ai_encounter_type t ON e.field_acute_illness_encounter_target_id=t.entity_id
-    LEFT JOIN field_data_field_abdominal_pain_period abd ON node.nid=abd.entity_id
-    LEFT JOIN field_data_field_bloody_diarrhea_period blo ON node.nid=blo.entity_id
-    LEFT JOIN field_data_field_nausea_period nau ON node.nid=nau.entity_id
-    LEFT JOIN field_data_field_non_bloody_diarrhea_period non ON node.nid=non.entity_id
-    LEFT JOIN field_data_field_vomiting_period vom ON node.nid=vom.entity_id
-    WHERE FROM_UNIXTIME(node.created) > :start_date
-      {$region_clause}
-      {$complete_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date" 
-    , [
-      ':start_date' => $start_date,
-      ':end_date' => $end_date,
-    ])->fetch_field();
-}
-
-*/
