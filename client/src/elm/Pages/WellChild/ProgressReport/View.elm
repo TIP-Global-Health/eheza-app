@@ -2036,65 +2036,25 @@ viewInfrastructureEnvironmentWashPane :
     -> Person
     -> Maybe (Dict Int NCDAValue)
     -> Html any
-viewInfrastructureEnvironmentWashPane language currentDate child questionnairesByAgeInMonths =
+viewInfrastructureEnvironmentWashPane language currentDate child allQuestionnairesByAgeInMonths =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
 
         hasToilets =
-            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasToilets)
-            List.repeat 25 NCDACellValueDash
+            generateValues currentDate child allQuestionnairesByAgeInMonths (.signs >> EverySet.member Backend.Measurement.Model.HasToilets)
 
         hasCleanWater =
-            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasCleanWater)
-            List.repeat 25 NCDACellValueDash
+            generateValues currentDate child allQuestionnairesByAgeInMonths (.signs >> EverySet.member Backend.Measurement.Model.HasCleanWater)
 
         hasHandwashingFacility =
-            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasHandwashingFacility)
-            List.repeat 25 NCDACellValueDash
+            generateValues currentDate child allQuestionnairesByAgeInMonths (.signs >> EverySet.member Backend.Measurement.Model.HasHandwashingFacility)
 
         hasKitchenGarden =
-            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasKitchenGarden)
-            List.repeat 25 NCDACellValueDash
+            generateValues currentDate child allQuestionnairesByAgeInMonths (.signs >> EverySet.member Backend.Measurement.Model.HasKitchenGarden)
 
         insecticideTreatedBedNets =
-            let
-                byMonths =
-                    -- generateValues currentDate
-                    --     child
-                    --     questionnairesByAgeInMonths
-                    --     (.signs >> EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy)
-                    --     List.repeat 9 NCDACellValueDash
-                    List.repeat 25 NCDACellValueDash
-
-                answer =
-                    List.foldl
-                        (\cellValue answerSoFar ->
-                            if List.member cellValue [ NCDACellValueV, NCDACellValueX ] then
-                                Just cellValue
-
-                            else
-                                answerSoFar
-                        )
-                        Nothing
-                        byMonths
-            in
-            -- This question is asked once. If answer was given,
-            -- we display it throughout the whole period.
-            Maybe.map
-                (\answer_ ->
-                    List.map
-                        (\monthValue ->
-                            if monthValue /= NCDACellValueEmpty then
-                                answer_
-
-                            else
-                                NCDACellValueEmpty
-                        )
-                        byMonths
-                )
-                answer
-                |> Maybe.withDefault byMonths
+            generateValues currentDate child allQuestionnairesByAgeInMonths (.signs >> EverySet.member Backend.Measurement.Model.InsecticideTreatedBednets)
     in
     div [ class "pane infrastructure-environment-wash" ]
         [ viewPaneHeading language Translate.InfrastructureEnvironmentWash
