@@ -133,23 +133,45 @@ fetchForChildScoreboard id db =
 
 fetchForNCDAScoreboard : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForNCDAScoreboard id db =
-    resolveIndividualParticipantsForPerson id AcuteIllnessEncounter db
-        |> List.map
-            (\participantId ->
-                let
-                    fetchMeasurementsMsgs =
-                        getAcuteIllnessEncountersForParticipant db participantId
-                            |> List.filterMap
-                                (\( encounterId, encounter ) ->
-                                    -- We need to fetch measurements of encounters where Uncomplicated
-                                    -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
-                                    if encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated then
-                                        Just <| FetchAcuteIllnessMeasurements encounterId
+    let
+        fetchPrenatalDataMsgs =
+            let
+                -- Trying to resolve the pregnancy tracked on E-Heza, at which
+                -- the child was registered on E-Heza (during CHW Postpartum
+                -- encounter).
+                maybePregnancyId =
+                    Dict.get id db.pregnancyByNewborn
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.Extra.join
+                        |> Maybe.map Tuple.first
+            in
+            FetchPregnancyByNewborn id
+                :: Maybe.Extra.values
+                    [ -- Loading data for pregnancy participant and encounters.
+                      Maybe.map FetchIndividualEncounterParticipant maybePregnancyId
+                    , Maybe.map FetchPrenatalEncountersForParticipant maybePregnancyId
+                    ]
 
-                                    else
-                                        Nothing
-                                )
-                in
-                FetchAcuteIllnessEncountersForParticipant participantId :: fetchMeasurementsMsgs
-            )
-        |> List.concat
+        fetchAcuteIllnessDataMsgs =
+            resolveIndividualParticipantsForPerson id AcuteIllnessEncounter db
+                |> List.map
+                    (\participantId ->
+                        let
+                            fetchMeasurementsMsgs =
+                                getAcuteIllnessEncountersForParticipant db participantId
+                                    |> List.filterMap
+                                        (\( encounterId, encounter ) ->
+                                            -- We need to fetch measurements of encounters where Uncomplicated
+                                            -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
+                                            if encounter.diagnosis == DiagnosisGastrointestinalInfectionUncomplicated then
+                                                Just <| FetchAcuteIllnessMeasurements encounterId
+
+                                            else
+                                                Nothing
+                                        )
+                        in
+                        FetchAcuteIllnessEncountersForParticipant participantId :: fetchMeasurementsMsgs
+                    )
+                |> List.concat
+    in
+    fetchAcuteIllnessDataMsgs ++ fetchPrenatalDataMsgs

@@ -3531,218 +3531,8 @@ unitOfMeasurementFromString value =
             Nothing
 
 
-ncdaSignToString : NCDASign -> String
-ncdaSignToString value =
-    case value of
-        NCDABornWithBirthDefect ->
-            "born-with-birth-defect"
-
-        NCDABreastfedForSixMonths ->
-            "breastfed-for-six-months"
-
-        NCDAAppropriateComplementaryFeeding ->
-            "appropriate-complementary-feeding"
-
-        NCDAOngeraMNP ->
-            "ongera-mnp"
-
-        NCDAFiveFoodGroups ->
-            "five-food-groups"
-
-        NCDAMealFrequency6to8Months ->
-            "meal-frequency-6to8m"
-
-        NCDAMealFrequency9to11Months ->
-            "meal-frequency-9to11m"
-
-        NCDAMealFrequency12MonthsOrMore ->
-            "meal-frequency-12+m"
-
-        NCDASupportChildWithDisability ->
-            "support-child-with-disability"
-
-        NCDAConditionalCashTransfer ->
-            "conditional-cash-transfer"
-
-        NCDAConditionalFoodItems ->
-            "conditional-food-items"
-
-        NCDAHasCleanWater ->
-            "has-clean-water"
-
-        NCDAHasHandwashingFacility ->
-            "has-handwashing-facility"
-
-        NCDAHasToilets ->
-            "has-toilets"
-
-        NCDAHasKitchenGarden ->
-            "has-kitchen-garden"
-
-        NCDARegularPrenatalVisits ->
-            "regular-prenatal-visits"
-
-        NCDAIronSupplementsDuringPregnancy ->
-            "iron-supplements-during-pregnancy"
-
-        NCDAInsecticideTreatedBednetsDuringPregnancy ->
-            "insecticide-treated-bednets-during-pregnancy"
-
-        NoNCDASigns ->
-            "none"
-
-
 ncdaSignFromString : String -> Maybe NCDASign
 ncdaSignFromString value =
-    case value of
-        "born-with-birth-defect" ->
-            Just NCDABornWithBirthDefect
-
-        "breastfed-for-six-months" ->
-            Just NCDABreastfedForSixMonths
-
-        "appropriate-complementary-feeding" ->
-            Just NCDAAppropriateComplementaryFeeding
-
-        "ongera-mnp" ->
-            Just NCDAOngeraMNP
-
-        "five-food-groups" ->
-            Just NCDAFiveFoodGroups
-
-        "meal-frequency-6to8m" ->
-            Just NCDAMealFrequency6to8Months
-
-        "meal-frequency-9to11m" ->
-            Just NCDAMealFrequency9to11Months
-
-        "meal-frequency-12+m" ->
-            Just NCDAMealFrequency12MonthsOrMore
-
-        "support-child-with-disability" ->
-            Just NCDASupportChildWithDisability
-
-        "conditional-cash-transfer" ->
-            Just NCDAConditionalCashTransfer
-
-        "conditional-food-items" ->
-            Just NCDAConditionalFoodItems
-
-        "has-clean-water" ->
-            Just NCDAHasCleanWater
-
-        "has-handwashing-facility" ->
-            Just NCDAHasHandwashingFacility
-
-        "has-toilets" ->
-            Just NCDAHasToilets
-
-        "has-kitchen-garden" ->
-            Just NCDAHasKitchenGarden
-
-        "regular-prenatal-visits" ->
-            Just NCDARegularPrenatalVisits
-
-        "iron-supplements-during-pregnancy" ->
-            Just NCDAIronSupplementsDuringPregnancy
-
-        "insecticide-treated-bednets-during-pregnancy" ->
-            Just NCDAInsecticideTreatedBednetsDuringPregnancy
-
-        "none" ->
-            Just NoNCDASigns
-
-        _ ->
-            Nothing
-
-
-ncdaSignNEWToString : NCDASignNEW -> String
-ncdaSignNEWToString value =
-    case value of
-        AppropriateComplementaryFeeding ->
-            "appropriate-complementary-feeding"
-
-        BornWithBirthDefect ->
-            "born-with-birth-defect"
-
-        BreastfedForSixMonths ->
-            "breastfed-for-six-months"
-
-        ConditionalFoodItems ->
-            "conditional-food-items"
-
-        FiveFoodGroups ->
-            "five-food-groups"
-
-        HasCleanWater ->
-            "has-clean-water"
-
-        HasHandwashingFacility ->
-            "has-handwashing-facility"
-
-        HasToilets ->
-            "has-toilets"
-
-        HasKitchenGarden ->
-            "has-kitchen-garden"
-
-        BeneficiaryCashTransfer ->
-            "beneficiary-cash-transfer"
-
-        ChildGotDiarrhea ->
-            "child-got-diarrhea"
-
-        ChildWithAcuteMalnutrition ->
-            "child-with-acute-malnutrition"
-
-        ChildWithDisability ->
-            "child-with-disability"
-
-        FoodSupplements ->
-            "food-supplements"
-
-        InsecticideTreatedBednets ->
-            "insecticide-treated-bednets"
-
-        NumberOfANCVisitsCorrect ->
-            "number-of-anc-visits-correct"
-
-        NumberOfMissedImmunizationAppointmentsCorrect ->
-            "number-of-missed-immunization-appointments-correct"
-
-        ReceivingCashTransfer ->
-            "receiving-cash-transfer"
-
-        ReceivingSupport ->
-            "receiving-support"
-
-        SupplementsDuringPregnancy ->
-            "supplements-during-pregnancy"
-
-        TakenSupplementsPerGuidance ->
-            "taken-supplements-per-guidance"
-
-        TakingFoodSupplements ->
-            "taking-food-supplements"
-
-        TreatedForAcuteMalnutrition ->
-            "treated-for-acute-malnutrition"
-
-        -- @todo: decide if needed.
-        -- MealFrequency6to8Months ->
-        --     "meal-frequency-6to8m"
-        --
-        -- MealFrequency9to11Months ->
-        --     "meal-frequency-9to11m"
-        --
-        -- MealFrequency12MonthsOrMore ->
-        --     "meal-frequency-12+m"
-        NoNCDASignsNEW ->
-            "none"
-
-
-ncdaSignNEWFromString : String -> Maybe NCDASignNEW
-ncdaSignNEWFromString value =
     case value of
         "appropriate-complementary-feeding" ->
             Just AppropriateComplementaryFeeding
@@ -3824,10 +3614,95 @@ ncdaSignNEWFromString value =
         -- "meal-frequency-12+m" ->
         --     Just MealFrequency12MonthsOrMore
         "none" ->
-            Just NoNCDASignsNEW
+            Just NoNCDASigns
 
         _ ->
             Nothing
+
+
+ncdaSignToString : NCDASign -> String
+ncdaSignToString value =
+    case value of
+        AppropriateComplementaryFeeding ->
+            "appropriate-complementary-feeding"
+
+        BornWithBirthDefect ->
+            "born-with-birth-defect"
+
+        BreastfedForSixMonths ->
+            "breastfed-for-six-months"
+
+        ConditionalFoodItems ->
+            "conditional-food-items"
+
+        FiveFoodGroups ->
+            "five-food-groups"
+
+        HasCleanWater ->
+            "has-clean-water"
+
+        HasHandwashingFacility ->
+            "has-handwashing-facility"
+
+        HasToilets ->
+            "has-toilets"
+
+        HasKitchenGarden ->
+            "has-kitchen-garden"
+
+        BeneficiaryCashTransfer ->
+            "beneficiary-cash-transfer"
+
+        ChildGotDiarrhea ->
+            "child-got-diarrhea"
+
+        ChildWithAcuteMalnutrition ->
+            "child-with-acute-malnutrition"
+
+        ChildWithDisability ->
+            "child-with-disability"
+
+        FoodSupplements ->
+            "food-supplements"
+
+        InsecticideTreatedBednets ->
+            "insecticide-treated-bednets"
+
+        NumberOfANCVisitsCorrect ->
+            "number-of-anc-visits-correct"
+
+        NumberOfMissedImmunizationAppointmentsCorrect ->
+            "number-of-missed-immunization-appointments-correct"
+
+        ReceivingCashTransfer ->
+            "receiving-cash-transfer"
+
+        ReceivingSupport ->
+            "receiving-support"
+
+        SupplementsDuringPregnancy ->
+            "supplements-during-pregnancy"
+
+        TakenSupplementsPerGuidance ->
+            "taken-supplements-per-guidance"
+
+        TakingFoodSupplements ->
+            "taking-food-supplements"
+
+        TreatedForAcuteMalnutrition ->
+            "treated-for-acute-malnutrition"
+
+        -- @todo: decide if needed.
+        -- MealFrequency6to8Months ->
+        --     "meal-frequency-6to8m"
+        --
+        -- MealFrequency9to11Months ->
+        --     "meal-frequency-9to11m"
+        --
+        -- MealFrequency12MonthsOrMore ->
+        --     "meal-frequency-12+m"
+        NoNCDASigns ->
+            "none"
 
 
 expectNCDAActivity : NominalDate -> Person -> Bool

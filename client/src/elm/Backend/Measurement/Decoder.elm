@@ -5144,6 +5144,8 @@ decodeNCDAValue =
     succeed NCDAValue
         |> required "ncda_signs" (decodeEverySet decodeNCDASign)
         |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> optional "anc_visits" (nullable decodeInt) Nothing
+        |> optional "supplement_type" (nullable decodeNutritionSupplementType) Nothing
 
 
 decodeNCDASign : Decoder NCDASign
@@ -5170,6 +5172,11 @@ decodeNutritionNCDA =
 decodeWellChildNCDA : Decoder WellChildNCDA
 decodeWellChildNCDA =
     decodeWellChildMeasurement decodeNCDAValue
+
+
+decodeChildScoreboardNCDA : Decoder ChildScoreboardNCDA
+decodeChildScoreboardNCDA =
+    decodeChildScoreboardMeasurement decodeNCDAValue
 
 
 decodeNCDLipidPanelTest : Decoder NCDLipidPanelTest
@@ -5211,31 +5218,6 @@ decodeHbA1cTestValue =
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "hba1c_result" (nullable decodeFloat) Nothing
-
-
-decodeChildScoreboardNCDA : Decoder ChildScoreboardNCDA
-decodeChildScoreboardNCDA =
-    decodeChildScoreboardMeasurement decodeNCDAValueNEW
-
-
-decodeNCDAValueNEW : Decoder NCDAValueNEW
-decodeNCDAValueNEW =
-    succeed NCDAValueNEW
-        |> required "ncda_signs" (decodeEverySet decodeNCDASignNEW)
-        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
-        |> optional "anc_visits" (nullable decodeFloat) Nothing
-        |> optional "supplement_type" (nullable decodeNutritionSupplementType) Nothing
-
-
-decodeNCDASignNEW : Decoder NCDASignNEW
-decodeNCDASignNEW =
-    string
-        |> andThen
-            (\s ->
-                ncdaSignNEWFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDASignNEW")
-            )
 
 
 decodePregnancyByNewborn : Decoder (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))

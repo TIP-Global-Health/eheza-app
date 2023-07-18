@@ -1705,6 +1705,36 @@ update currentDate isChw id db msg model =
             , []
             )
 
+        SetNumberANCVisits string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | numberOfANCVisits = String.toInt string })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNutritionSupplementType value ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | foodSupplementType = Just value, takingFoodSupplements = Nothing })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetNCDAFormStep step ->
             let
                 updatedForm =

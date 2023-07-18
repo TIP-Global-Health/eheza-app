@@ -276,32 +276,12 @@ type alias GroupNCDA =
 type alias NCDAValue =
     { signs : EverySet NCDASign
     , birthWeight : Maybe WeightInGrm
+    , numberOfANCVisits : Maybe Int
+    , foodSupplementType : Maybe NutritionSupplementType
     }
 
 
 type NCDASign
-    = NCDAAppropriateComplementaryFeeding
-    | NCDABreastfedForSixMonths
-    | NCDABornWithBirthDefect
-    | NCDAConditionalCashTransfer
-    | NCDAConditionalFoodItems
-    | NCDAFiveFoodGroups
-    | NCDAHasCleanWater
-    | NCDAHasHandwashingFacility
-    | NCDAHasKitchenGarden
-    | NCDAHasToilets
-    | NCDAIronSupplementsDuringPregnancy
-    | NCDAInsecticideTreatedBednetsDuringPregnancy
-    | NCDAMealFrequency6to8Months
-    | NCDAMealFrequency9to11Months
-    | NCDAMealFrequency12MonthsOrMore
-    | NCDAOngeraMNP
-    | NCDARegularPrenatalVisits
-    | NCDASupportChildWithDisability
-    | NoNCDASigns
-
-
-type NCDASignNEW
     = AppropriateComplementaryFeeding
     | BeneficiaryCashTransfer
     | BornWithBirthDefect
@@ -325,7 +305,7 @@ type NCDASignNEW
     | TakenSupplementsPerGuidance
     | TakingFoodSupplements
     | TreatedForAcuteMalnutrition
-    | NoNCDASignsNEW
+    | NoNCDASigns
 
 
 
@@ -2768,15 +2748,7 @@ type alias HbA1cTestValue =
 
 
 type alias ChildScoreboardNCDA =
-    ChildScoreboardMeasurement NCDAValueNEW
-
-
-type alias NCDAValueNEW =
-    { signs : EverySet NCDASignNEW
-    , birthWeight : Maybe WeightInGrm
-    , numberOfANCVisits : Maybe Float
-    , foodSupplementType : Maybe NutritionSupplementType
-    }
+    ChildScoreboardMeasurement NCDAValue
 
 
 

@@ -220,13 +220,7 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewPhotoContent language currentDate assembled model.photoForm
 
         WellChildNCDA ->
-            let
-                historyData =
-                    { pregnancySummary = getNewbornExamPregnancySummary assembled.participant.person db
-                    , ncdaNeverFilled = resolveNCDANeverFilled currentDate assembled.participant.person db
-                    }
-            in
-            viewNCDAContent language currentDate assembled model.ncdaData historyData
+            viewNCDAContent language currentDate assembled model.ncdaData db
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -2423,25 +2417,39 @@ viewNCDAContent :
     -> NominalDate
     -> AssembledData
     -> NCDAData
-    -> NCDAHistoryData
+    -> ModelIndexedDb
     -> List (Html Msg)
-viewNCDAContent language currentDate assembled data historyData =
+viewNCDAContent language currentDate assembled data db =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
                 |> ncdaFormWithDefault data.form
 
-        saveMsg =
-            SaveNCDA assembled.participant.person assembled.measurements.ncda
+        personId =
+            assembled.participant.person
+
+        historyData =
+            { pregnancySummary = getNewbornExamPregnancySummary personId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
+            }
+
+        config =
+            { showTasksHeader = False
+            , setBoolInputMsg = SetNCDABoolInput
+            , setBirthWeightMsg = SetBirthWeight
+            , setNumberANCVisitsMsg = SetNumberANCVisits
+            , setNutritionSupplementTypeMsg = SetNutritionSupplementType
+            , setStepMsg = SetNCDAFormStep
+            , setHelperStateMsg = SetNCDAHelperState
+            , saveMsg = SaveNCDA personId assembled.measurements.ncda
+            }
     in
     Measurement.View.viewNCDAContent language
         currentDate
+        personId
         assembled.person
-        SetNCDABoolInput
-        SetBirthWeight
-        SetNCDAFormStep
-        saveMsg
-        SetNCDAHelperState
+        config
         data.helperState
         form
         historyData
+        db

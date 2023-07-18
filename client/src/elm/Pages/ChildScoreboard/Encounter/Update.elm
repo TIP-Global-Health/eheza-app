@@ -8,7 +8,7 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
-import Measurement.Utils exposing (toNCDAValueNEWWithDefault)
+import Measurement.Utils exposing (toNCDAValueWithDefault)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 
@@ -26,7 +26,7 @@ update msg model =
 
                 saveNCDAMsg =
                     model.ncdaData.form
-                        |> toNCDAValueNEWWithDefault measurement
+                        |> toNCDAValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
@@ -89,7 +89,7 @@ update msg model =
             let
                 updatedForm =
                     model.ncdaData.form
-                        |> (\form -> { form | numberOfANCVisits = String.toFloat string })
+                        |> (\form -> { form | numberOfANCVisits = String.toInt string })
 
                 updatedData =
                     model.ncdaData

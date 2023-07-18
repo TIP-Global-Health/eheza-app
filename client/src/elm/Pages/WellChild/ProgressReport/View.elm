@@ -1762,7 +1762,7 @@ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( chil
 
             else
                 List.any
-                    (\( _, value ) -> EverySet.member NCDABornWithBirthDefect value.signs)
+                    (\( _, value ) -> EverySet.member BornWithBirthDefect value.signs)
                     allNCDAQuestionnaires
                     |> Just
 
@@ -1868,107 +1868,19 @@ viewANCNewbornPane language currentDate db child allNCDAQuestionnaires =
             [ viewTableHeader
             , viewTableRow language
                 (Translate.NCDAANCNewbornItemLabel RegularCheckups)
-                (pregnancyValuesForANCSign NCDARegularPrenatalVisits)
+                -- @todo:
+                -- (pregnancyValuesForANCSign NCDARegularPrenatalVisits)
+                (List.repeat 9 NCDACellValueDash)
                 zeroToFiveValues
                 sixToTwentyFourValues
             , viewTableRow language
                 (Translate.NCDAANCNewbornItemLabel IronDuringPregnancy)
-                (pregnancyValuesForANCSign NCDAIronSupplementsDuringPregnancy)
+                -- @todo:
+                -- (pregnancyValuesForANCSign NCDAIronSupplementsDuringPregnancy)
+                (List.repeat 9 NCDACellValueDash)
                 zeroToFiveValues
                 sixToTwentyFourValues
             ]
-        ]
-
-
-viewTableHeader : Html any
-viewTableHeader =
-    div [ class "table-header" ]
-        [ div [ class "activity" ] [ text "Activity" ]
-        , div [ class "flex-column pregnancy" ]
-            [ div [ class "column-heading" ] [ text "Pregnancy (1-9)" ]
-            , List.repeat 9 ""
-                |> List.indexedMap
-                    (\index _ ->
-                        div [ class "month" ] [ text <| String.fromInt <| index + 1 ]
-                    )
-                |> div [ class "months" ]
-            ]
-        , div [ class "flex-column 0-5" ]
-            [ div [ class "column-heading" ] [ text "Child (0-5)" ]
-            , List.repeat 6 ""
-                |> List.indexedMap
-                    (\index _ ->
-                        div [ class "month" ] [ text <| String.fromInt index ]
-                    )
-                |> div [ class "months" ]
-            ]
-        , div [ class "flex-column 6-24" ]
-            [ div [ class "column-heading" ] [ text "Child (6-24 months)" ]
-            , List.repeat 19 ""
-                |> List.indexedMap
-                    (\index _ ->
-                        div [ class "month" ] [ text <| String.fromInt <| index + 6 ]
-                    )
-                |> div [ class "months" ]
-            ]
-        ]
-
-
-viewTableRow : Language -> TranslationId -> List NCDACellValue -> List NCDACellValue -> List NCDACellValue -> Html any
-viewTableRow language itemTransId pregnancyValues zeroToFiveValues sixToTwentyFourValues =
-    let
-        viewCellValue cellValue =
-            case cellValue of
-                NCDACellValueV ->
-                    span [ class "green" ] [ text "v" ]
-
-                NCDACellValueX ->
-                    span [ class "red" ] [ text "x" ]
-
-                NCDACellValueDash ->
-                    span [] [ text "-" ]
-
-                NCDACellValueC ->
-                    span [ class "green" ] [ text "c" ]
-
-                NCDACellValueH ->
-                    span [ class "orange" ] [ text "h" ]
-
-                NCDACellValueT ->
-                    span [ class "red" ] [ text "t" ]
-
-                NCDACellValueEmpty ->
-                    emptyNode
-    in
-    div [ class "table-row" ]
-        [ div [ class "activity" ] [ text <| translate language itemTransId ]
-        , List.indexedMap
-            (\index value ->
-                div [ class "month" ]
-                    [ span [ class "hidden" ] [ text <| String.fromInt <| index + 1 ]
-                    , viewCellValue value
-                    ]
-            )
-            pregnancyValues
-            |> div [ class "months" ]
-        , List.indexedMap
-            (\index value ->
-                div [ class "month" ]
-                    [ span [ class "hidden" ] [ text <| String.fromInt index ]
-                    , viewCellValue value
-                    ]
-            )
-            zeroToFiveValues
-            |> div [ class "months" ]
-        , List.indexedMap
-            (\index value ->
-                div [ class "month" ]
-                    [ span [ class "hidden" ] [ text <| String.fromInt <| index + 6 ]
-                    , viewCellValue value
-                    ]
-            )
-            sixToTwentyFourValues
-            |> div [ class "months" ]
         ]
 
 
@@ -1984,25 +1896,29 @@ viewNutritionBehaviorPane language currentDate child questionnairesByAgeInMonths
             List.repeat 9 NCDACellValueDash
 
         breastfedForSixMonthsValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDABreastfedForSixMonths)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDABreastfedForSixMonths)
+            List.repeat 25 NCDACellValueDash
 
         appropriateComplementaryFeedingValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding)
+            List.repeat 25 NCDACellValueDash
 
         mealsADayValues =
-            generateValues currentDate
-                child
-                questionnairesByAgeInMonths
-                (\questionnaire ->
-                    List.any (\sign -> EverySet.member sign questionnaire.signs)
-                        [ NCDAMealFrequency6to8Months
-                        , NCDAMealFrequency9to11Months
-                        , NCDAMealFrequency12MonthsOrMore
-                        ]
-                )
+            -- generateValues currentDate
+            --     child
+            --     questionnairesByAgeInMonths
+            --     (\questionnaire ->
+            --         List.any (\sign -> EverySet.member sign questionnaire.signs)
+            --             [ NCDAMealFrequency6to8Months
+            --             , NCDAMealFrequency9to11Months
+            --             , NCDAMealFrequency12MonthsOrMore
+            --             ]
+            --     )
+            List.repeat 25 NCDACellValueDash
 
         diverseDietValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAFiveFoodGroups)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAFiveFoodGroups)
+            List.repeat 25 NCDACellValueDash
 
         -- Here we are interested only at answer given when child was 6 months old.
         -- For months before that, and after, will show dahses, in case child has
@@ -2099,24 +2015,30 @@ viewInfrastructureEnvironmentWashPane language currentDate child questionnairesB
             List.repeat 9 NCDACellValueDash
 
         hasToilets =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasToilets)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasToilets)
+            List.repeat 25 NCDACellValueDash
 
         hasCleanWater =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasCleanWater)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasCleanWater)
+            List.repeat 25 NCDACellValueDash
 
         hasHandwashingFacility =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasHandwashingFacility)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasHandwashingFacility)
+            List.repeat 25 NCDACellValueDash
 
         hasKitchenGarden =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasKitchenGarden)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAHasKitchenGarden)
+            List.repeat 25 NCDACellValueDash
 
         insecticideTreatedBedNets =
             let
                 byMonths =
-                    generateValues currentDate
-                        child
-                        questionnairesByAgeInMonths
-                        (.signs >> EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy)
+                    -- generateValues currentDate
+                    --     child
+                    --     questionnairesByAgeInMonths
+                    --     (.signs >> EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy)
+                    --     List.repeat 9 NCDACellValueDash
+                    List.repeat 25 NCDACellValueDash
 
                 answer =
                     List.foldl
@@ -2334,13 +2256,16 @@ viewTargetedInterventionsPane language currentDate child db questionnairesByAgeI
             generateValues currentDate child diarrheaTreatmenByAgeInMonths ((==) NCDACellValueV)
 
         supportChildWithDisabilityValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDASupportChildWithDisability)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDASupportChildWithDisability)
+            List.repeat 25 NCDACellValueDash
 
         conditionalCashTransferValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAConditionalCashTransfer)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAConditionalCashTransfer)
+            List.repeat 25 NCDACellValueDash
 
         conditionalFoodItemsValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAConditionalFoodItems)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAConditionalFoodItems)
+            List.repeat 25 NCDACellValueDash
     in
     div [ class "pane targeted-interventions" ]
         [ viewPaneHeading language Translate.TargetedInterventions
@@ -2580,7 +2505,8 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                 NCDACellValueX
 
         ongeraMNPValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAOngeraMNP)
+            -- generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member NCDAOngeraMNP)
+            List.repeat 25 NCDACellValueDash
 
         ecdValues =
             ageInMonths currentDate child
@@ -2948,6 +2874,98 @@ viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasur
                 (List.take 6 nutritionsValues)
                 (List.drop 6 nutritionsValues)
             ]
+        ]
+
+
+viewTableHeader : Html any
+viewTableHeader =
+    div [ class "table-header" ]
+        [ div [ class "activity" ] [ text "Activity" ]
+        , div [ class "flex-column pregnancy" ]
+            [ div [ class "column-heading" ] [ text "Pregnancy (1-9)" ]
+            , List.repeat 9 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        div [ class "month" ] [ text <| String.fromInt <| index + 1 ]
+                    )
+                |> div [ class "months" ]
+            ]
+        , div [ class "flex-column 0-5" ]
+            [ div [ class "column-heading" ] [ text "Child (0-5)" ]
+            , List.repeat 6 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        div [ class "month" ] [ text <| String.fromInt index ]
+                    )
+                |> div [ class "months" ]
+            ]
+        , div [ class "flex-column 6-24" ]
+            [ div [ class "column-heading" ] [ text "Child (6-24 months)" ]
+            , List.repeat 19 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        div [ class "month" ] [ text <| String.fromInt <| index + 6 ]
+                    )
+                |> div [ class "months" ]
+            ]
+        ]
+
+
+viewTableRow : Language -> TranslationId -> List NCDACellValue -> List NCDACellValue -> List NCDACellValue -> Html any
+viewTableRow language itemTransId pregnancyValues zeroToFiveValues sixToTwentyFourValues =
+    let
+        viewCellValue cellValue =
+            case cellValue of
+                NCDACellValueV ->
+                    span [ class "green" ] [ text "v" ]
+
+                NCDACellValueX ->
+                    span [ class "red" ] [ text "x" ]
+
+                NCDACellValueDash ->
+                    span [] [ text "-" ]
+
+                NCDACellValueC ->
+                    span [ class "green" ] [ text "c" ]
+
+                NCDACellValueH ->
+                    span [ class "orange" ] [ text "h" ]
+
+                NCDACellValueT ->
+                    span [ class "red" ] [ text "t" ]
+
+                NCDACellValueEmpty ->
+                    emptyNode
+    in
+    div [ class "table-row" ]
+        [ div [ class "activity" ] [ text <| translate language itemTransId ]
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt <| index + 1 ]
+                    , viewCellValue value
+                    ]
+            )
+            pregnancyValues
+            |> div [ class "months" ]
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt index ]
+                    , viewCellValue value
+                    ]
+            )
+            zeroToFiveValues
+            |> div [ class "months" ]
+        , List.indexedMap
+            (\index value ->
+                div [ class "month" ]
+                    [ span [ class "hidden" ] [ text <| String.fromInt <| index + 6 ]
+                    , viewCellValue value
+                    ]
+            )
+            sixToTwentyFourValues
+            |> div [ class "months" ]
         ]
 
 
