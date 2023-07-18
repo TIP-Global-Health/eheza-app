@@ -19,7 +19,8 @@ import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMe
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getNewbornExamPregnancySummary
+        ( generateIndividualChildScoreboardMeasurementsForChild
+        , getNewbornExamPregnancySummary
         , getNutritionEncountersForParticipant
         , getWellChildEncountersForParticipant
         )
@@ -408,6 +409,8 @@ assembleProgresReportData childId db =
             )
             maybeAssembled
             |> Maybe.withDefault []
+    , individualChildScoreboardMeasurementsWithDates =
+        generateIndividualChildScoreboardMeasurementsForChild childId db
     }
 
 
