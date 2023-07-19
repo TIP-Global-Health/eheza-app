@@ -2565,11 +2565,11 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
 
         -- When nurse conducts NCDA, questionnaire only asks if Ongera-MNP was
         -- distributed. There's no follow up question asking if it was actually
-        -- consumed, while this data is what we actually need to map.
+        -- consumed, while this data is what we need to map.
         -- Therefore, in case we have YES answer for Ongera-MNP distributed question,
         -- we don't know if it was consumed.
         -- To prevent 'false negative' results, we'll filter out nurse questionnaires
-        -- that got YES answer for Ongera-MNP distributed question.
+        -- that got YES answer for 'Ongera-MNP distributed' question.
         nurseQuestionnairesByAgeInMonthsEliminatingFalseNegatives =
             Maybe.map
                 (Dict.filter

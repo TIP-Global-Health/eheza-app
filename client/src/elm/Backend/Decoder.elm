@@ -111,7 +111,7 @@ decodeRevision =
                     "child_scoreboard_pcv13_iz" ->
                         decodeWithUuid ChildScoreboardPCV13ImmunisationRevision decodeChildScoreboardPCV13Immunisation
 
-                    "well_child_rotarix_iz" ->
+                    "child_scoreboard_rotarix_iz" ->
                         decodeWithUuid ChildScoreboardRotarixImmunisationRevision decodeChildScoreboardRotarixImmunisation
 
                     "clinic" ->
