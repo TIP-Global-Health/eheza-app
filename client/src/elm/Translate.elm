@@ -9748,7 +9748,7 @@ translationSet trans =
         NCDANumberImmunizationAppointmentLabel maybeDate ->
             Maybe.map
                 (\date ->
-                    { english = "According to E-Heza, you have immunization appointment scheduled to " ++ formatDDMMYYYY date
+                    { english = "According to E-Heza, you have immunization appointment scheduled for " ++ formatDDMMYYYY date
                     , kinyarwanda = Nothing
                     }
                 )
