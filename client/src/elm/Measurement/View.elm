@@ -2308,24 +2308,19 @@ viewNCDAContent language currentDate personId person config helperState form his
                 iconClass =
                     case step of
                         NCDAStepAntenatalCare ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-antenatal"
 
                         NCDAStepUniversalInterventions ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-universal-intervention"
 
                         NCDAStepNutritionBehavior ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-nutrition-behavior"
 
                         NCDAStepTargetedInterventions ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-targeted-intervention"
 
                         NCDAStepInfrastructureEnvironment ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-infrastructure-environment"
 
                 isActive =
                     currentStep == Just step
