@@ -2563,8 +2563,24 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
             else
                 NCDACellValueX
 
+        -- When nurse conducts NCDA, questionnaire only asks if Ongera-MNP was
+        -- distributed. There's no follow up question asking if it was actually
+        -- consumed, while this data is what we actually need to map.
+        -- Therefore, in case we have YES answer for Ongera-MNP distributed question,
+        -- we don't know if it was consumed.
+        -- To prevent 'false negative' results, we'll filter out nurse questionnaires
+        -- that got YES answer for Ongera-MNP distributed question.
+        nurseQuestionnairesByAgeInMonthsEliminatingFalseNegatives =
+            Maybe.map
+                (Dict.filter
+                    (\_ value ->
+                        not <| EverySet.member Backend.Measurement.Model.OngeraMNP value.signs
+                    )
+                )
+                nurseQuestionnairesByAgeInMonths
+
         questionnairesByAgeInMonths =
-            case ( nurseQuestionnairesByAgeInMonths, chwQuestionnairesByAgeInMonths ) of
+            case ( nurseQuestionnairesByAgeInMonthsEliminatingFalseNegatives, chwQuestionnairesByAgeInMonths ) of
                 ( Just nurseDict, Just chwDict ) ->
                     Dict.merge
                         (\key value -> Dict.insert key value)
@@ -2579,7 +2595,7 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                         |> Just
 
                 _ ->
-                    Maybe.Extra.or nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonths
+                    Maybe.Extra.or nurseQuestionnairesByAgeInMonthsEliminatingFalseNegatives chwQuestionnairesByAgeInMonths
 
         ongeraMNPValues =
             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member TakingOngeraMNP)
