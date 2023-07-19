@@ -2524,7 +2524,7 @@ ncdaFormInputsAndTasks language currentDate personId person behindOnVaccinations
                                 counselling =
                                     Maybe.map
                                         (\numberOfANCVisits ->
-                                            if numberOfANCVisits < minumalNumberOfANCVisits then
+                                            if numberOfANCVisits < minimalNumberOfANCVisits then
                                                 [ viewCounselingLabel NumberOfANCVisitsCorrect ]
 
                                             else
@@ -2546,7 +2546,7 @@ ncdaFormInputsAndTasks language currentDate personId person behindOnVaccinations
                     in
                     Maybe.map
                         (\numberOfEncounters ->
-                            if numberOfEncounters < minumalNumberOfANCVisits then
+                            if numberOfEncounters < minimalNumberOfANCVisits then
                                 let
                                     updateFunc value form_ =
                                         { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
