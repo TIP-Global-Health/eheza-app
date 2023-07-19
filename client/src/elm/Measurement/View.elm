@@ -2308,24 +2308,19 @@ viewNCDAContent language currentDate personId person config helperState form db 
                 iconClass =
                     case step of
                         NCDAStepAntenatalCare ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-antenatal"
 
                         NCDAStepUniversalInterventions ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-universal-intervention"
 
                         NCDAStepNutritionBehavior ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-nutrition-behavior"
 
                         NCDAStepTargetedInterventions ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-targeted-intervention"
 
                         NCDAStepInfrastructureEnvironment ->
-                            -- @todo: replace when icon is provided.
-                            "next-steps-health-education"
+                            "ncda-infrastructure-environment"
 
                 isActive =
                     currentStep == Just step
@@ -2512,7 +2507,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 counselling =
                                     Maybe.map
                                         (\numberOfANCVisits ->
-                                            if numberOfANCVisits < minumalNumberOfANCVisits then
+                                            if numberOfANCVisits < minimalNumberOfANCVisits then
                                                 [ viewCounselingLabel NumberOfANCVisitsCorrect ]
 
                                             else
@@ -2534,7 +2529,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     in
                     Maybe.map
                         (\numberOfEncounters ->
-                            if numberOfEncounters < minumalNumberOfANCVisits then
+                            if numberOfEncounters < minimalNumberOfANCVisits then
                                 let
                                     updateFunc value form_ =
                                         { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
