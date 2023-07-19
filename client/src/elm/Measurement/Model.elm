@@ -1209,6 +1209,6 @@ type alias NCDAHistoryData =
     }
 
 
-minumalNumberOfANCVisits : Int
-minumalNumberOfANCVisits =
+minimalNumberOfANCVisits : Int
+minimalNumberOfANCVisits =
     4
