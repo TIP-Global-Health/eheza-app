@@ -1222,8 +1222,8 @@ type alias NCDAContentConfig msg =
     }
 
 
-minumalNumberOfANCVisits : Int
-minumalNumberOfANCVisits =
+minimalNumberOfANCVisits : Int
+minimalNumberOfANCVisits =
     4
 
 
