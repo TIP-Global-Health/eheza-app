@@ -191,6 +191,11 @@ endField =
     "end"
 
 
+sortTuplesByDate : ( NominalDate, a ) -> ( NominalDate, a ) -> Order
+sortTuplesByDate =
+    sortByDate Tuple.first
+
+
 sortTuplesByDateDesc : ( NominalDate, a ) -> ( NominalDate, a ) -> Order
 sortTuplesByDateDesc =
     sortByDateDesc Tuple.first
