@@ -819,8 +819,13 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     }
   }
 
-  // Third step is to add treatment dates taken from questionnaires data, as
-  // long as they were recorded before first diagnosis date.
+  // Per requirements, treatment question appears only at Child Scorecard
+  // encounter, and only in case Malnutrition was not diagnosed previously
+  // (at any of different types of Nutrition encounters).
+  // Therefore, we need to analyse only those questionnaires that
+  // were filled before first diagnose of Malnutrition.
+  // Hence, third step is to add treatment dates taken from questionnaires
+  // data, as long as they were recorded before first diagnosis date.
   if (!$first_diagnosis_date) {
     // No diagnosis was made, so naturally, no treatment was given.
     // Therefore, we're left with treatment data from questionnaires, which
