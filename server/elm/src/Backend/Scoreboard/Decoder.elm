@@ -381,7 +381,7 @@ rawVaccinationDataToVaccinationProgressDict data =
 decodeNutritionBehaviorData : NominalDate -> Decoder NutritionBehaviorData
 decodeNutritionBehaviorData currentDate =
     succeed NutritionBehaviorData
-        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row1" bool False
         |> optional "row2" (decodeMonthlyValues currentDate) []
         |> optional "row3" (decodeMonthlyValues currentDate) []
         |> optional "row4" (decodeMonthlyValues currentDate) []

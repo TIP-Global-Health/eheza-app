@@ -410,6 +410,9 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 v
 viewANCNewbornPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
 viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
+        _ =
+            Debug.log "monthsGap" monthsGap
+
         rows =
             List.map2
                 (\item itemValues ->
@@ -425,6 +428,9 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                     let
                         ageInMonths =
                             diffMonths record.birthDate currentDate
+
+                        _ =
+                            Debug.log "ageInM1onths" ageInMonths
                     in
                     List.indexedMap
                         (\index accumValue ->
@@ -697,8 +703,8 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
             List.foldl
                 (\record accum ->
                     let
-                        row1AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row1
+                        ageInMonths =
+                            diffMonths record.birthDate currentDate
 
                         row2AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row2
@@ -715,8 +721,11 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            gap =
+                                                ageInMonths - gapInMonths
+
                                             row1 =
-                                                if List.member gapInMonths row1AsAgeInMonths then
+                                                if gap >= 0 && gap < 6 && record.ncda.nutritionBehavior.row1 then
                                                     accumValue.row1 + 1
 
                                                 else
