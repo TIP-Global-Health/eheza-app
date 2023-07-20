@@ -695,7 +695,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
           break;
 
         case 'breastfed-for-six-months':
-          $data['ncda']['pane3']['row1'][] = TRUE;
+          $data['ncda']['pane3']['row1'] = TRUE;
           break;
 
         case 'appropriate-complementary-feeding':
