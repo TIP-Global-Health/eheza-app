@@ -686,7 +686,7 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
 function treatment_history($start_date, $end_date, $name_clause, $mode = FALSE) {
   $mode_clause = "";
 
-  if ($mode == 'complete' || $mode =='Complete') {
+  if ($mode == 'complete' || $mode == 'Complete') {
     $mode_clause = "AND field_treatment_history_value IS NOT NULL";
   }
   return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
