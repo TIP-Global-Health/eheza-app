@@ -2,13 +2,13 @@
 
 /**
  * @file
- * hedley_aggregated_ncda.features.field_instance.inc
+ * hedley_ncda.features.field_instance.inc
  */
 
 /**
  * Implements hook_field_default_field_instances().
  */
-function hedley_aggregated_ncda_field_default_field_instances() {
+function hedley_ncda_field_default_field_instances() {
   $field_instances = array();
 
   // Exported field_instance:

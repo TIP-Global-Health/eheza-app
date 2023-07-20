@@ -2402,9 +2402,13 @@ viewNCDAContent language currentDate personId person config helperState form his
         ( header, actions ) =
             Maybe.map
                 (\step ->
+                    let
+                        actionButton =
+                            Pages.Utils.saveButton language (tasksCompleted == totalTasks)
+                    in
                     if config.showTasksTray then
                         let
-                            ( buttonLabel, actionMsg ) =
+                            actionMsg =
                                 List.filter
                                     (\step_ ->
                                         (Just step_ /= currentStep)
@@ -2412,25 +2416,19 @@ viewNCDAContent language currentDate personId person config helperState form his
                                     )
                                     steps
                                     |> List.head
-                                    |> Maybe.map
-                                        (\nextStep ->
-                                            ( Translate.Save, config.setStepMsg nextStep )
-                                        )
-                                    |> Maybe.withDefault ( Translate.EndEncounter, config.saveMsg )
+                                    |> Maybe.map config.setStepMsg
+                                    |> Maybe.withDefault config.saveMsg
                         in
                         ( div [ class "ui task segment blue", Attr.id tasksBarId ]
                             [ div [ class "ui five column grid" ] <|
                                 List.map viewTask steps
                             ]
                         , div [ class "actions" ]
-                            [ Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) actionMsg buttonLabel ]
+                            [ actionButton actionMsg ]
                         )
 
                     else
                         let
-                            actionButton =
-                                Pages.Utils.saveButton language (tasksCompleted == totalTasks)
-
                             backButton backStep =
                                 button
                                     [ class "ui fluid primary button"

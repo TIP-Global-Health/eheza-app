@@ -27,6 +27,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
@@ -499,6 +500,7 @@ type TranslationId
     | Children
     | ChildrenNames
     | ChildrenNationalId
+    | ChildScoreboardActivityTitle ChildScoreboardActivity
     | ChooseOne
     | CHWAction CHWAction
     | ChwActivity
@@ -3698,6 +3700,18 @@ translationSet trans =
             { english = "Children's National ID"
             , kinyarwanda = Just "Indangamuntu y'umwana"
             }
+
+        ChildScoreboardActivityTitle activity ->
+            case activity of
+                ChildScoreboardNCDA ->
+                    { english = "Child Scorecard"
+                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
+                    }
+
+                ChildScoreboardVaccinationHistory ->
+                    { english = "Vaccination History"
+                    , kinyarwanda = Nothing
+                    }
 
         ChooseOne ->
             { english = "Choose one"
@@ -19710,6 +19724,11 @@ translateActivePage page =
 
                 ChildScoreboardEncounterPage _ ->
                     { english = "Child Scorecard Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildScoreboardActivityPage _ _ ->
+                    { english = "Child Scorecard Activity"
                     , kinyarwanda = Nothing
                     }
 

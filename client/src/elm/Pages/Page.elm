@@ -51,6 +51,7 @@ choices about what to show the user, rather than the details).
 import Activity.Model exposing (Activity(..))
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
@@ -195,6 +196,7 @@ type UserPage
     | NCDProgressReportPage NCDProgressReportInitiator
     | ChildScoreboardParticipantPage PersonId
     | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- nutrition activities index.
+    | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

@@ -3,24 +3,28 @@ module Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Backend.ChildScoreboardEncounter.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, NCDASign, NutritionSupplementType)
+import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, NutritionSupplementType)
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (NCDAData, NCDAForm, NCDAStep, emptyNCDAData)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { ncdaData : NCDAData
+    { selectedTab : Tab
     , showAIEncounterPopup : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
-    { ncdaData = emptyNCDAData
+    { selectedTab = Pending
     , showAIEncounterPopup = False
     }
+
+
+type Tab
+    = Completed
+    | Pending
 
 
 type alias AssembledData =
@@ -33,13 +37,8 @@ type alias AssembledData =
 
 
 type Msg
-    = CloseEncounter AssembledData
+    = CloseEncounter ChildScoreboardEncounterId
     | SetActivePage Page
-    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
-    | SetBirthWeight String
-    | SetNumberANCVisits String
-    | SetNutritionSupplementType NutritionSupplementType
-    | SetNCDAFormStep NCDAStep
-    | SetNCDAHelperState (Maybe NCDASign)
+    | SetSelectedTab Tab
     | ShowAIEncounterPopup
     | TriggerAcuteIllnessEncounter AssembledData

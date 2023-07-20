@@ -2,13 +2,13 @@
 
 /**
  * @file
- * hedley_aggregated_ncda.features.user_permission.inc
+ * hedley_ncda.features.user_permission.inc
  */
 
 /**
  * Implements hook_user_default_permissions().
  */
-function hedley_aggregated_ncda_user_default_permissions() {
+function hedley_ncda_user_default_permissions() {
   $permissions = array();
 
   // Exported permission: 'create child_scoreboard_encounter content'.

@@ -2,13 +2,13 @@
 
 /**
  * @file
- * hedley_aggregated_ncda.features.field_base.inc
+ * hedley_ncda.features.field_base.inc
  */
 
 /**
  * Implements hook_field_default_field_bases().
  */
-function hedley_aggregated_ncda_field_default_field_bases() {
+function hedley_ncda_field_default_field_bases() {
   $field_bases = array();
 
   // Exported field_base: 'field_anc_visits'.

@@ -2,54 +2,54 @@
 
 /**
  * @file
- * Code for the Hedley Aggregated NCDA feature.
+ * Code for the Hedley NCDA feature.
  */
 
-include_once 'hedley_aggregated_ncda.features.inc';
+include_once 'hedley_ncda.features.inc';
 
-define('HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA', 'hedley_aggregated_ncda_calculate_ncda_data');
+define('HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA', 'hedley_ncda_calculate_ncda_data');
 
 /**
  * Implements hook_menu().
  */
-function hedley_aggregated_ncda_menu() {
+function hedley_ncda_menu() {
   $items['admin/reports/aggregated-ncda'] = array(
-    'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
-    'page callback' => 'hedley_aggregated_ncda_callback_menu',
-    'access callback' => 'hedley_aggregated_ncda_access',
+    'title' => 'Aggregated NCDA scoreboard',
+    'description' => 'View Aggregated NCDA scoreboard',
+    'page callback' => 'hedley_ncda_aggregated_callback_menu',
+    'access callback' => 'hedley_ncda_aggregated_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%'] = array(
-    'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
-    'page callback' => 'hedley_aggregated_ncda_callback_district',
+    'title' => 'Aggregated NCDA scoreboard for district',
+    'description' => 'View Aggregated NCDA scoreboard for district',
+    'page callback' => 'hedley_ncda_aggregated_callback_district',
     'page arguments' => [3, 4],
-    'access callback' => 'hedley_aggregated_ncda_access',
+    'access callback' => 'hedley_ncda_aggregated_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%'] = array(
-    'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
-    'page callback' => 'hedley_aggregated_ncda_callback_sector',
+    'title' => 'Aggregated NCDA scoreboard for sector',
+    'description' => 'View Aggregated NCDA scoreboard for sector',
+    'page callback' => 'hedley_ncda_aggregated_callback_sector',
     'page arguments' => [3, 4, 5],
-    'access callback' => 'hedley_aggregated_ncda_access',
+    'access callback' => 'hedley_ncda_aggregated_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%/%'] = array(
-    'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
-    'page callback' => 'hedley_aggregated_ncda_callback_cell',
+    'title' => 'Aggregated NCDA scoreboard for cell',
+    'description' => 'View Aggregated NCDA scoreboard for cell',
+    'page callback' => 'hedley_ncda_aggregated_callback_cell',
     'page arguments' => [3, 4, 5, 6],
-    'access callback' => 'hedley_aggregated_ncda_access',
+    'access callback' => 'hedley_ncda_aggregated_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%/%/%'] = array(
-    'title' => 'NCDA scoreboard',
-    'description' => 'View aggregated NCDA scoreboard',
-    'page callback' => 'hedley_aggregated_ncda_callback_village',
+    'title' => 'Aggregated NCDA scoreboard for village',
+    'description' => 'View Aggregated NCDA scoreboard for village',
+    'page callback' => 'hedley_ncda_aggregated_callback_village',
     'page arguments' => [3, 4, 5, 6, 7],
-    'access callback' => 'hedley_aggregated_ncda_access',
+    'access callback' => 'hedley_ncda_aggregated_access',
   );
 
   return $items;
@@ -58,34 +58,34 @@ function hedley_aggregated_ncda_menu() {
 /**
  * Implements hook_node_insert().
  */
-function hedley_aggregated_ncda_node_insert($node) {
+function hedley_ncda_node_insert($node) {
   if ($node->type == 'village') {
-    hedley_aggregated_ncda_trigger_recalculation_for_new_village($node);
+    hedley_ncda_trigger_recalculation_for_new_village($node);
     return;
   }
 
-  hedley_aggregated_ncda_trigger_recalculation_by_measurement($node);
+  hedley_ncda_trigger_recalculation_by_measurement($node);
 }
 
 /**
  * Implements hook_node_update().
  */
-function hedley_aggregated_ncda_node_update($node) {
+function hedley_ncda_node_update($node) {
   if ($node->type == 'person') {
-    hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node);
+    hedley_ncda_trigger_recalculation_by_edited_person($node);
     return;
   }
 
-  hedley_aggregated_ncda_trigger_recalculation_by_measurement($node);
+  hedley_ncda_trigger_recalculation_by_measurement($node);
 }
 
 /**
  * Implements hook_advanced_queue_info().
  */
-function hedley_aggregated_ncda_advanced_queue_info() {
-  $items[HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA] = [
-    'label' => t('Calculate NCDA data'),
-    'worker callback' => 'hedley_aggregated_ncda_calculate_ncda_data_worker',
+function hedley_ncda_advanced_queue_info() {
+  $items[HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA] = [
+    'label' => t('Calculate Aggregated NCDA data'),
+    'worker callback' => 'hedley_ncda_calculate_aggregated_data_worker',
     'groups' => [
       'hedley',
     ],
@@ -99,7 +99,7 @@ function hedley_aggregated_ncda_advanced_queue_info() {
 }
 
 /**
- * Advanced queue worker; Calculate NCDA data for person.
+ * Advanced queue worker; Calculate aggregated NCDA data for person.
  *
  * @param object $queue_item
  *   The item object to process.
@@ -108,7 +108,7 @@ function hedley_aggregated_ncda_advanced_queue_info() {
  *   Array indicating if the process succeeded, or an array with
  *   "status" and "result" keys.
  */
-function hedley_aggregated_ncda_calculate_ncda_data_worker($queue_item) {
+function hedley_ncda_calculate_aggregated_data_worker($queue_item) {
   if (!$person_id = $queue_item->data['person_id']) {
     return [
       'status' => ADVANCEDQUEUE_STATUS_FAILURE,
@@ -117,7 +117,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_worker($queue_item) {
   }
 
   try {
-    hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id);
+    hedley_ncda_calculate_aggregated_data_for_person($person_id);
   }
   catch (Exception $e) {
     return [
@@ -131,17 +131,17 @@ function hedley_aggregated_ncda_calculate_ncda_data_worker($queue_item) {
   ];
   return [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
-    'result' => t('NCDA data has been calculated for person ID: @nid', $params),
+    'result' => t('Aggregated NCDA data has been calculated for person ID: @nid', $params),
   ];
 }
 
 /**
- * Determines whether current user may access Aggregated NCDA scoreboard pages.
+ * Determines whether current user may access aggregated NCDA scoreboard pages.
  *
  * @return bool
  *   TRUE if the user has access, FALSE otherwise.
  */
-function hedley_aggregated_ncda_access() {
+function hedley_ncda_aggregated_access() {
   global $user;
 
   if (user_is_anonymous()) {
@@ -161,8 +161,8 @@ function hedley_aggregated_ncda_access() {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_aggregated_ncda_callback_menu() {
-  return hedley_aggregated_ncda_build_elm_app('menu', []);
+function hedley_ncda_aggregated_callback_menu() {
+  return hedley_ncda_build_elm_app('menu', []);
 }
 
 /**
@@ -176,8 +176,8 @@ function hedley_aggregated_ncda_callback_menu() {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_aggregated_ncda_callback_district($province, $district) {
-  return hedley_aggregated_ncda_build_results_app($province, $district);
+function hedley_ncda_aggregated_callback_district($province, $district) {
+  return hedley_ncda_build_results_app($province, $district);
 }
 
 /**
@@ -193,8 +193,8 @@ function hedley_aggregated_ncda_callback_district($province, $district) {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_aggregated_ncda_callback_sector($province, $district, $sector) {
-  return hedley_aggregated_ncda_build_results_app($province, $district, $sector);
+function hedley_ncda_aggregated_callback_sector($province, $district, $sector) {
+  return hedley_ncda_build_results_app($province, $district, $sector);
 }
 
 /**
@@ -212,8 +212,8 @@ function hedley_aggregated_ncda_callback_sector($province, $district, $sector) {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_aggregated_ncda_callback_cell($province, $district, $sector, $cell) {
-  return hedley_aggregated_ncda_build_results_app($province, $district, $sector, $cell);
+function hedley_ncda_aggregated_callback_cell($province, $district, $sector, $cell) {
+  return hedley_ncda_build_results_app($province, $district, $sector, $cell);
 }
 
 /**
@@ -233,8 +233,8 @@ function hedley_aggregated_ncda_callback_cell($province, $district, $sector, $ce
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_aggregated_ncda_callback_village($province, $district, $sector, $cell, $village) {
-  return hedley_aggregated_ncda_build_results_app($province, $district, $sector, $cell, $village);
+function hedley_ncda_aggregated_callback_village($province, $district, $sector, $cell, $village) {
+  return hedley_ncda_build_results_app($province, $district, $sector, $cell, $village);
 }
 
 /**
@@ -257,7 +257,7 @@ function hedley_aggregated_ncda_callback_village($province, $district, $sector, 
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_aggregated_ncda_build_results_app($province, $district, $sector = NULL, $cell = NULL, $village = NULL) {
+function hedley_ncda_build_results_app($province, $district, $sector = NULL, $cell = NULL, $village = NULL) {
   $data = [];
 
   if (empty($sector)) {
@@ -277,9 +277,9 @@ function hedley_aggregated_ncda_build_results_app($province, $district, $sector 
     $data['entity_type'] = 'village';
   }
 
-  $data['results'] = hedley_aggregated_ncda_generate_results_data($province, $district, $sector, $cell, $village);
+  $data['results'] = hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village);
 
-  return hedley_aggregated_ncda_build_elm_app('results', $data);
+  return hedley_ncda_build_elm_app('results', $data);
 }
 
 /**
@@ -293,13 +293,13 @@ function hedley_aggregated_ncda_build_results_app($province, $district, $sector 
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_aggregated_ncda_build_elm_app($page, array $data) {
+function hedley_ncda_build_elm_app($page, array $data) {
   // Add application.
-  drupal_add_js(drupal_get_path('module', 'hedley_aggregated_ncda') . '/js/elm-main.js');
-  drupal_add_js(drupal_get_path('module', 'hedley_aggregated_ncda') . '/js/elm.js');
+  drupal_add_js(drupal_get_path('module', 'hedley_ncda') . '/js/elm-main.js');
+  drupal_add_js(drupal_get_path('module', 'hedley_ncda') . '/js/elm.js');
 
   // Add CSS.
-  drupal_add_css(drupal_get_path('module', 'hedley_aggregated_ncda') . '/css/aggregated-ncda.css', 'file');
+  drupal_add_css(drupal_get_path('module', 'hedley_ncda') . '/css/aggregated-ncda.css', 'file');
 
   // Getting a unique ID for the app.
   $app_id = drupal_html_id('elm-app');
@@ -336,7 +336,7 @@ function hedley_aggregated_ncda_build_elm_app($page, array $data) {
  * @return array
  *   An array of generated data.
  */
-function hedley_aggregated_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
+function hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
@@ -398,14 +398,14 @@ function hedley_aggregated_ncda_generate_results_data($province, $district, $sec
 }
 
 /**
- * Generates NCDA data for a given person, and stores in field on person node.
+ * Generate aggregated NCDA data for person, and store in field on person node.
  *
  * @param int $person_id
  *   The ID of the person for whom to generate the NCDA data.
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
+function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
   $person = node_load($person_id);
   $wrapper = entity_metadata_wrapper('node', $person);
   $birth_date = $wrapper->field_birth_date->value();
@@ -425,7 +425,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
     'birth_date' => date("Y-m-d", $birth_date),
   ];
 
-  $content_types_to_load = hedley_aggregated_ncda_get_triggering_measurement_types();
+  $content_types_to_load = hedley_ncda_get_triggering_measurement_types();
 
   $heights = $weights = $muacs = $ncdas = $fbfs = $nutritions = $send_to_hcs = [];
   $medication_distributions = $mebendezoles = $vitamins_a = $immunisations = $ecds = [];
@@ -534,7 +534,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
 
   foreach ($heights as $height) {
     if (!empty($height->field_zscore_age) && !empty($height->field_zscore_age[LANGUAGE_NONE][0]['value'])) {
-      $date_measured = hedley_aggregated_ncda_get_date_measured($height);
+      $date_measured = hedley_ncda_get_date_measured($height);
       if (!$date_measured) {
         continue;
       }
@@ -553,7 +553,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
   }
 
   foreach ($weights as $weight) {
-    $date_measured = hedley_aggregated_ncda_get_date_measured($weight);
+    $date_measured = hedley_ncda_get_date_measured($weight);
     if (!$date_measured) {
       continue;
     }
@@ -587,7 +587,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
 
   foreach ($muacs as $muac) {
     if (!empty($muac->field_muac) && !empty($muac->field_muac[LANGUAGE_NONE][0]['value'])) {
-      $date_measured = hedley_aggregated_ncda_get_date_measured($muac);
+      $date_measured = hedley_ncda_get_date_measured($muac);
       if (!$date_measured) {
         continue;
       }
@@ -659,7 +659,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
       continue;
     }
 
-    $date_measured = hedley_aggregated_ncda_get_date_measured($ncda);
+    $date_measured = hedley_ncda_get_date_measured($ncda);
     if (!$date_measured) {
       continue;
     }
@@ -737,7 +737,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
     // We record all occurrences of FBF distribution, if there was
     // at least one portion distributed.
     if (!empty($fbf->field_distributed_amount) && !empty($fbf->field_distributed_amount[LANGUAGE_NONE][0]['value'])) {
-      $date_measured = hedley_aggregated_ncda_get_date_measured($fbf);
+      $date_measured = hedley_ncda_get_date_measured($fbf);
       if (!$date_measured) {
         continue;
       }
@@ -766,14 +766,14 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
       continue;
     }
 
-    $date_measured = hedley_aggregated_ncda_get_date_measured($send_to_hc);
+    $date_measured = hedley_ncda_get_date_measured($send_to_hc);
     if (!$date_measured) {
       continue;
     }
 
     foreach ($items as $item) {
       if ($item['value'] == 'refer-to-hc') {
-        $type = hedley_aggregated_ncda_bundle_to_encounter_type($send_to_hc);
+        $type = hedley_ncda_bundle_to_encounter_type($send_to_hc);
         $referrals_to_hc[$type][] = $date_measured;
         break;
       }
@@ -788,14 +788,14 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
       continue;
     }
 
-    $date_measured = hedley_aggregated_ncda_get_date_measured($nutrition);
+    $date_measured = hedley_ncda_get_date_measured($nutrition);
     if (!$date_measured) {
       continue;
     }
 
     foreach ($items as $item) {
       if (in_array($item['value'], ['malnutrition-moderate', 'malnutrition-severe'])) {
-        $type = hedley_aggregated_ncda_bundle_to_encounter_type($nutrition);
+        $type = hedley_ncda_bundle_to_encounter_type($nutrition);
         if (in_array($date_measured, $referrals_to_hc[$type])) {
           $data['ncda']['pane4']['row2'][] = $date_measured;
           break;
@@ -813,7 +813,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
       continue;
     }
 
-    $date_measured = hedley_aggregated_ncda_get_date_measured($medication_distribution);
+    $date_measured = hedley_ncda_get_date_measured($medication_distribution);
     if (!$date_measured) {
       continue;
     }
@@ -832,7 +832,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
       continue;
     }
 
-    $date_measured = hedley_aggregated_ncda_get_date_measured($vitamin_a);
+    $date_measured = hedley_ncda_get_date_measured($vitamin_a);
     if (!$date_measured) {
       continue;
     }
@@ -851,7 +851,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
       continue;
     }
 
-    $date_measured = hedley_aggregated_ncda_get_date_measured($mebendezole);
+    $date_measured = hedley_ncda_get_date_measured($mebendezole);
     if (!$date_measured) {
       continue;
     }
@@ -912,7 +912,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
       continue;
     }
 
-    $date_measured = hedley_aggregated_ncda_get_date_measured($ecd);
+    $date_measured = hedley_ncda_get_date_measured($ecd);
     $ecd_entries[$date_measured] = [
       'signs' => [],
     ];
@@ -930,7 +930,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
     $ecd_encounters = node_load_multiple($ecd_encounters_ids);
     foreach ($ecd_encounters as $ecd_encounter) {
       // Retrieve encounter date.
-      $encounter_date = hedley_aggregated_ncda_get_date_filed_value($ecd_encounter, 'field_scheduled_date');
+      $encounter_date = hedley_ncda_get_date_filed_value($ecd_encounter, 'field_scheduled_date');
       $items = field_get_items('node', $ecd_encounter, 'field_encounter_warnings');
 
       foreach ($items as $item) {
@@ -965,7 +965,7 @@ function hedley_aggregated_ncda_calculate_ncda_data_for_person($person_id) {
  * @return string|bool
  *   The corresponding encounter type, or FALSE if not found.
  */
-function hedley_aggregated_ncda_bundle_to_encounter_type($node) {
+function hedley_ncda_bundle_to_encounter_type($node) {
   switch ($node->type) {
     case HEDLEY_ACTIVITY_GROUP_SEND_TO_HC_CONTENT_TYPE:
     case HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE:
@@ -992,8 +992,8 @@ function hedley_aggregated_ncda_bundle_to_encounter_type($node) {
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_aggregated_ncda_trigger_recalculation_by_measurement($node) {
-  $triggering_measurement_types = hedley_aggregated_ncda_get_triggering_measurement_types();
+function hedley_ncda_trigger_recalculation_by_measurement($node) {
+  $triggering_measurement_types = hedley_ncda_get_triggering_measurement_types();
   if (!in_array($node->type, $triggering_measurement_types)) {
     // Not a triggering measurement.
     return;
@@ -1007,7 +1007,7 @@ function hedley_aggregated_ncda_trigger_recalculation_by_measurement($node) {
 
   $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
   // Trigger recalculation using AQ.
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $person_id, [
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $person_id, [
     'person_id' => $person_id,
   ]);
 }
@@ -1020,11 +1020,11 @@ function hedley_aggregated_ncda_trigger_recalculation_by_measurement($node) {
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_aggregated_ncda_trigger_recalculation_for_new_village($node) {
+function hedley_ncda_trigger_recalculation_for_new_village($node) {
   $residents = hedley_chw_get_village_residents($node->nid);
 
   foreach ($residents as $resident) {
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $resident, [
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $resident, [
       'person_id' => $resident,
     ]);
   }
@@ -1041,7 +1041,7 @@ function hedley_aggregated_ncda_trigger_recalculation_for_new_village($node) {
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node) {
+function hedley_ncda_trigger_recalculation_by_edited_person($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper_orig = entity_metadata_wrapper('node', $node->original);
 
@@ -1052,7 +1052,7 @@ function hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node) {
     return;
   }
 
-  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_AGGREGATED_NCDA_CALCULATE_NCDA_DATA, $node->nid, [
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $node->nid, [
     'person_id' => $node->nid,
   ]);
 }
@@ -1066,8 +1066,8 @@ function hedley_aggregated_ncda_trigger_recalculation_by_edited_person($node) {
  * @return string|bool
  *   The date measured or FALSE if not found.
  */
-function hedley_aggregated_ncda_get_date_measured($node) {
-  return hedley_aggregated_ncda_get_date_filed_value($node, 'field_date_measured');
+function hedley_ncda_get_date_measured($node) {
+  return hedley_ncda_get_date_filed_value($node, 'field_date_measured');
 }
 
 /**
@@ -1081,7 +1081,7 @@ function hedley_aggregated_ncda_get_date_measured($node) {
  * @return string|bool
  *   The value of date field, or FALSE if not found.
  */
-function hedley_aggregated_ncda_get_date_filed_value($node, $field_name) {
+function hedley_ncda_get_date_filed_value($node, $field_name) {
   if (!field_info_field($field_name)) {
     return FALSE;
   }
@@ -1102,7 +1102,7 @@ function hedley_aggregated_ncda_get_date_filed_value($node, $field_name) {
  * @return array
  *   The array of triggering measurement types.
  */
-function hedley_aggregated_ncda_get_triggering_measurement_types() {
+function hedley_ncda_get_triggering_measurement_types() {
   return array_merge(
     [
       HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE,

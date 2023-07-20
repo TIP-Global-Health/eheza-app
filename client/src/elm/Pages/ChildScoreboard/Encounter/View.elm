@@ -1,33 +1,29 @@
 module Pages.ChildScoreboard.Encounter.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.ChildScoreboardActivity.Utils exposing (..)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.Measurement.Model exposing (NCDASign(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils
-    exposing
-        ( getNewbornExamPregnancySummary
-        , resolveNCDANeverFilled
-        )
 import Backend.Person.Model exposing (Person)
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
-import Measurement.Model exposing (NCDAData)
-import Measurement.Utils exposing (ncdaFormWithDefault)
-import Measurement.View
+import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewPersonDetailsExtended, viewReportLink)
+import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterDialog, viewPersonDetails, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -78,58 +74,86 @@ viewHeader language assembled =
 
 viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate db model assembled =
-    ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
-        :: viewNCDAContent language currentDate assembled db model.ncdaData
+    ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+        :: viewMainPageContent language currentDate db assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewNCDAContent :
-    Language
-    -> NominalDate
-    -> AssembledData
-    -> ModelIndexedDb
-    -> NCDAData
-    -> List (Html Msg)
-viewNCDAContent language currentDate assembled db data =
+viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate db assembled model =
     let
-        form =
-            getMeasurementValueFunc assembled.measurements.ncda
-                |> ncdaFormWithDefault data.form
+        ( completedActivities, pendingActivities ) =
+            List.filter (expectActivity currentDate assembled) allActivities
+                |> List.partition (activityCompleted currentDate assembled)
 
-        personId =
-            assembled.participant.person
+        pendingTabTitle =
+            translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
 
-        historyData =
-            { pregnancySummary = getNewbornExamPregnancySummary personId db
-            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
-            }
+        completedTabTitle =
+            translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
 
-        config =
-            { showTasksTray = True
-            , setBoolInputMsg = SetNCDABoolInput
-            , setBirthWeightMsg = SetBirthWeight
-            , setNumberANCVisitsMsg = SetNumberANCVisits
-            , setNutritionSupplementTypeMsg = SetNutritionSupplementType
-            , setStepMsg = SetNCDAFormStep
-            , setHelperStateMsg = SetNCDAHelperState
-            , saveMsg =
-                if data.form.childGotDiarrhea == Just True then
-                    ShowAIEncounterPopup
+        tabs =
+            div [ class "ui tabular menu" ]
+                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                ]
 
-                else
-                    CloseEncounter assembled
-            }
+        viewCard activity =
+            activityCard language
+                (Translate.ChildScoreboardActivityTitle activity)
+                (getActivityIcon activity)
+                (SetActivePage <| UserPage <| ChildScoreboardActivityPage assembled.id activity)
+
+        ( selectedActivities, emptySectionMessage ) =
+            case model.selectedTab of
+                Pending ->
+                    ( pendingActivities, translate language Translate.NoActivitiesPending )
+
+                Completed ->
+                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+        innerContent =
+            div [ class "full content" ]
+                [ div [ class "wrap-cards" ]
+                    [ div [ class "ui four cards" ] <|
+                        if List.isEmpty selectedActivities then
+                            [ span [] [ text emptySectionMessage ] ]
+
+                        else
+                            List.map viewCard selectedActivities
+                    ]
+                ]
+
+        allowEndEncounter =
+            List.isEmpty pendingActivities
+
+        endEncounterMsg =
+            let
+                childGotDiarrhea =
+                    getMeasurementValueFunc assembled.measurements.ncda
+                        |> Maybe.map (.signs >> EverySet.member ChildGotDiarrhea)
+                        |> Maybe.withDefault False
+            in
+            if childGotDiarrhea == True then
+                ShowAIEncounterPopup
+
+            else
+                CloseEncounter assembled.id
+
+        content =
+            div [ class "ui full segment" ]
+                [ innerContent
+                , viewEncounterActionButton language
+                    Translate.EndEncounter
+                    "primary"
+                    allowEndEncounter
+                    endEncounterMsg
+                ]
     in
-    Measurement.View.viewNCDAContent language
-        currentDate
-        personId
-        assembled.person
-        config
-        data.helperState
-        form
-        historyData
-        db
+    [ tabs
+    , content
+    ]
 
 
 acuteIllnessEncounterPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
