@@ -23,16 +23,15 @@ if (!$start_date) {
 if (!$end_date) {
   drush_print('Please specify --end_date option');
   exit;
-} 
+}
 
 if (!$type) {
   $type = FALSE;
 }
 elseif (strtolower($type) != 'h' &&  strtolower($type) != 'd') {
   $type = FALSE;
-} 
+}
 
-//Set Name Clause
 $name_clause = "";
 if ($type == 'H') {
   $name = get_health_center_id($name);
@@ -63,7 +62,7 @@ $encounters = [
   [
     '   General days = 0/1',
     symptom_general_one($start_date, $end_date, $name_clause) . ' / ' . symptom_review($start_date, $end_date, $name_clause, 'general_complete'),
-    round(symptom_general_one($start_date, $end_date, $name_clause) / symptom_review($start_date, $end_date, $name_clause, 'general_complete')* 100, 3) . '%',
+    round(symptom_general_one($start_date, $end_date, $name_clause) / symptom_review($start_date, $end_date, $name_clause, 'general_complete') * 100, 3) . '%',
   ],
   [
     '  Respiratory',
@@ -73,7 +72,7 @@ $encounters = [
   [
     '    Respiratory = 0/1',
     symptom_review($start_date, $end_date, $name_clause, 'respiratory_one') . ' / ' . symptom_review($start_date, $end_date, $name_clause, 'respiratory_complete'),
-    round(symptom_review($start_date, $end_date, $name_clause, 'respiratory_one') / symptom_review($start_date, $end_date, $name_clause, 'respiratory_complete')* 100, 3) . '%',
+    round(symptom_review($start_date, $end_date, $name_clause, 'respiratory_one') / symptom_review($start_date, $end_date, $name_clause, 'respiratory_complete') * 100, 3) . '%',
   ],
   [
     '  GI',
@@ -85,7 +84,7 @@ $encounters = [
     symptom_review($start_date, $end_date, $name_clause, 'gi_one') . ' / ' . symptom_review($start_date, $end_date, $name_clause, 'gi_complete'),
     round(symptom_review($start_date, $end_date, $name_clause, 'gi_one') / symptom_review($start_date, $end_date, $name_clause, 'gi_complete') * 100, 3) . '%',
   ],
-  ["","",""], 
+  ["", "", ""],
   [
     'Exposure/Travel History',
     exposure_travel_history($start_date, $end_date, $name_clause, 'all_complete') . ' / ' . exposure_travel_history($start_date, $end_date, $name_clause),
@@ -101,22 +100,22 @@ $encounters = [
     exposure_travel_history($start_date, $end_date, $name_clause, 'exposure_complete') . ' / ' . exposure_travel_history($start_date, $end_date, $name_clause),
     round(exposure_travel_history($start_date, $end_date, $name_clause, 'exposure_complete') / exposure_travel_history($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
-  ["","",""],
+  ["", "", ""],
   [
     'Prior Treatment History',
     treatment_history($start_date, $end_date, $name_clause, 'complete') . ' / ' . treatment_history($start_date, $end_date, $name_clause),
     round(treatment_history($start_date, $end_date, $name_clause, 'complete') / treatment_history($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
-  ["","",""],
+  ["", "", ""],
   [
     'Physical Exam',
     physical_exam_total($start_date, $end_date, $name_clause) . ' / ' . physical_exam($start_date, $end_date, $name_clause),
     round(physical_exam_total($start_date, $end_date, $name_clause) / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
-    '  Blood Presure',
-    physical_exam($start_date, $end_date, $name_clause, 'bp_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'bp_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    '  Blood Pressure',
+    physical_exam($start_date, $end_date, $name_clause, 'BP_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'BP_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
     '  Heart Rate',
@@ -173,7 +172,7 @@ $encounters = [
     physical_exam($start_date, $end_date, $name_clause, 'acute_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
     round(physical_exam($start_date, $end_date, $name_clause, 'acute_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
-  ["","",""],
+  ["", "", ""],
   [
     'Total Encounter Complete',
     physical_exam_total($start_date, $end_date, $name_clause) . ' / ' . physical_exam($start_date, $end_date, $name_clause),
@@ -189,9 +188,6 @@ $text_table = new HedleyAdminTextTable([
 ]);
 
 drush_print($text_table->render($encounters));
-
-
-
 
 /**
  * Gets the node ID of the health center.
@@ -339,7 +335,7 @@ function get_id_list($start_date, $end_date, $name_clause) {
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       AND FROM_UNIXTIME(node.created) < :end_date",
-      [
+    [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
     ])->fetchAll(PDO::FETCH_COLUMN);
@@ -355,18 +351,18 @@ function get_id_list($start_date, $end_date, $name_clause) {
  * @param string $name_clause
  *   The district/health-center SQL clause.
  * @param string $mode
- *   resperatory_zero: all resp encounters with days = 0
+ *   Resperatory_zero: all resp encounters with days = 0
  *   respiratory_one: all resp encounters with days = 0/1
  *   respiratory_complete: all completed resp encounters
  *   gi_zero: all resp encounters with days = 0
  *   gi_one: all resp encounters with days = 0/1
  *   gi_complete: all completed resp encounters
- *   general_complete: all completed resp encounter
+ *   general_complete: all completed resp encounter.
  *
  * @return int
  *   Number of encounters based on mode.
  */
-function symptom_review($start_date, $end_date, $name_clause, $mode = FALSE) { 
+function symptom_review($start_date, $end_date, $name_clause, $mode = FALSE) {
   $mode_clause = "";
 
   if ($mode == "respiratory_one") {
@@ -378,7 +374,7 @@ function symptom_review($start_date, $end_date, $name_clause, $mode = FALSE) {
     AND (field_loss_of_smell_period_value = 0 OR field_loss_of_smell_period_value = 1)
     AND (field_stabbing_chest_pain_period_value = 0 OR field_stabbing_chest_pain_period_value = 1)";
   }
-  elseif ($mode == "respiratory_zero") {
+  elseif ($mode == "respiratory_zero" || $mode == 'Resperatory_zero') {
     $mode_clause = "AND field_cough_period_value = 0
     AND field_shortness_of_breath_period_value = 0
     AND field_nasal_congestion_period_value = 0
@@ -402,7 +398,7 @@ function symptom_review($start_date, $end_date, $name_clause, $mode = FALSE) {
     AND field_vomiting_period_value = 0";
   }
   elseif ($mode == 'general_complete') {
-   $mode_clause =  "AND field_fever_period_value IS NOT NULL";
+    $mode_clause = "AND field_fever_period_value IS NOT NULL";
   }
   elseif ($mode == 'respiratory_complete') {
     $mode_clause = "AND field_cough_period_value IS NOT NULL";
@@ -435,8 +431,8 @@ function symptom_review($start_date, $end_date, $name_clause, $mode = FALSE) {
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       {$mode_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date"
-      , [
+      AND FROM_UNIXTIME(node.created) < :end_date",
+    [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
     ])->fetchField();
@@ -461,7 +457,7 @@ function symptom_total($start_date, $end_date, $name_clause) {
   $constraints = [
     "AND field_fever_period_value IS NOT NULL",
     "AND field_cough_period_value IS NOT NULL",
-    "AND field_nausea_period_value IS NOT NULL"
+    "AND field_nausea_period_value IS NOT NULL",
   ];
 
   foreach ($constraints as $constraint_clause) {
@@ -479,8 +475,8 @@ function symptom_total($start_date, $end_date, $name_clause) {
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       {$constraint_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date"
-      , [
+      AND FROM_UNIXTIME(node.created) < :end_date",
+      [
         ':start_date' => $start_date,
         ':end_date' => $end_date,
       ])->fetchAll(PDO::FETCH_COLUMN);
@@ -533,7 +529,7 @@ function symptom_general_one($start_date, $end_date, $name_clause) {
     "AND (field_coke_colored_urine_period_value = 0 OR field_coke_colored_urine_period_value  = 1)",
     "AND (field_convulsions_period_value = 0 OR field_convulsions_period_value = 1)",
     "AND (field_severe_weakness_period_value = 0 OR field_severe_weakness_period_value = 1)",
-    "AND (field_spontaneos_bleeding_period_value = 0 OR field_spontaneos_bleeding_period_value = 1)"
+    "AND (field_spontaneos_bleeding_period_value = 0 OR field_spontaneos_bleeding_period_value = 1)",
   ];
 
   foreach ($constraints as $constraint_clause) {
@@ -564,8 +560,8 @@ function symptom_general_one($start_date, $end_date, $name_clause) {
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       {$constraint_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date"
-      , [
+      AND FROM_UNIXTIME(node.created) < :end_date",
+      [
         ':start_date' => $start_date,
         ':end_date' => $end_date,
       ])->fetchAll(PDO::FETCH_COLUMN);
@@ -586,7 +582,7 @@ function symptom_general_one($start_date, $end_date, $name_clause) {
 }
 
 /**
- * Gets various number of encouters related to the exposure travel history review.
+ * Gets number of encouters related to the exposure travel history review.
  *
  * @param string $start_date
  *   The starting date.
@@ -595,9 +591,9 @@ function symptom_general_one($start_date, $end_date, $name_clause) {
  * @param string $name_clause
  *   The district/health-center SQL clause.
  * @param string $mode
- *   exposure_complete: completed contact exposures
+ *   Exposure_complete: completed contact exposures
  *   travel_complete: completed travel histories
- *   all_complete: completed both contact exposure and travel history
+ *   all_complete: completed both contact exposure and travel history.
  *
  * @return int
  *   Number of encounters based on mode.
@@ -606,7 +602,7 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
   if ($mode != "all_complete") {
     $mode_clause = "";
 
-    if ($mode == "exposure_complete") {
+    if ($mode == "exposure_complete" || $mode == "Exposure_complete") {
       $mode_clause = "AND field_exposure_value IS NOT NULL";
     }
     elseif ($mode == "travel_complete") {
@@ -626,8 +622,8 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
       WHERE FROM_UNIXTIME(node.created) > :start_date
         {$name_clause}
         {$mode_clause}
-        AND FROM_UNIXTIME(node.created) < :end_date"
-      , [
+        AND FROM_UNIXTIME(node.created) < :end_date",
+      [
         ':start_date' => $start_date,
         ':end_date' => $end_date,
       ])->fetchField();
@@ -637,9 +633,8 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
 
     $constraints = [
       "AND field_exposure_value IS NOT NULL",
-      "AND field_travel_history_value IS NOT NULL"
+      "AND field_travel_history_value IS NOT NULL",
     ];
-  
     foreach ($constraints as $constraint_clause) {
       $results = db_query("SELECT DISTINCT field_acute_illness_encounter_target_id
       FROM field_data_field_acute_illness_encounter e
@@ -654,24 +649,21 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
       WHERE FROM_UNIXTIME(node.created) > :start_date
         {$name_clause}
         {$constraint_clause}
-        AND FROM_UNIXTIME(node.created) < :end_date"
-        , [
-          ':start_date' => $start_date,
-          ':end_date' => $end_date,
-        ])->fetchAll(PDO::FETCH_COLUMN);
-  
+        AND FROM_UNIXTIME(node.created) < :end_date",
+      [
+        ':start_date' => $start_date,
+        ':end_date' => $end_date,
+      ])->fetchAll(PDO::FETCH_COLUMN);
       foreach ($results as $result) {
         $ids[$result] += 1;
       }
     }
-  
     $count = 0;
     foreach ($ids as $id) {
       if ($id == count($constraints)) {
         ++$count;
       }
     }
-    
     return $count;
   }
 }
@@ -686,7 +678,7 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
  * @param string $name_clause
  *   The district/health-center SQL clause.
  * @param string $mode
- *   complete: completed treatment history
+ *   Complete: completed treatment history.
  *
  * @return int
  *   Number of encounters based on mode.
@@ -694,10 +686,9 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
 function treatment_history($start_date, $end_date, $name_clause, $mode = FALSE) {
   $mode_clause = "";
 
-  if ($mode == 'complete') {
+  if ($mode == 'complete' || $mode =='Complete') {
     $mode_clause = "AND field_treatment_history_value IS NOT NULL";
   }
-  
   return db_query("SELECT COUNT (DISTINCT field_acute_illness_encounter_target_id)
     FROM field_data_field_acute_illness_encounter e
     LEFT JOIN node ON e.entity_id=node.nid
@@ -710,8 +701,8 @@ function treatment_history($start_date, $end_date, $name_clause, $mode = FALSE) 
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       {$mode_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date"
-    , [
+      AND FROM_UNIXTIME(node.created) < :end_date",
+    [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
     ])->fetchField();
@@ -727,19 +718,19 @@ function treatment_history($start_date, $end_date, $name_clause, $mode = FALSE) 
  * @param string $name_clause
  *   The district/health-center SQL clause.
  * @param string $mode
- *   bp_complete: completed systolic and diastolic measurments
+ *   BP_complete: completed systolic and diastolic measurments
  *   heart_rate_complete: completed heart rate measurments
- *   heart_rate_normal: heart rate measurments within the range of STILL_NEED_RANGE
+ *   heart_rate_normal: heart rate measurments ranging from !NEED_RANGE!
  *   resp_rate_complete: completed respiratory rate measurments
- *   resp_rate_normal: respiratory rate measurments within the range of STILL_NEED_RANGE
+ *   resp_rate_normal: respiratory rate measurments ranging from !NEED_RANGE!
  *   body_rate_complete: completed body temp measurments
- *   body_rate_normal: body temp measurments within the range of STILL_NEED_RANGE
+ *   body_rate_normal: body temp measurments within the range of !NEED_RANGE!
  *   core_complete: completed core exam section
  *   muac_complete: completed MUAC measurments
- *   muac_normal: MUAC measurments within the range of STILL_NEED_RANGE
+ *   muac_normal: MUAC measurments ranging from !NEED_RANGE!
  *   nutrition_complete: completed nutrition measurments
- *   nutrition_normal: nutrition measurments within the range of STILL_NEED_RANGE
- *   acute_complete: completed acute findings section
+ *   nutrition_normal: nutrition measurments ranging from !NEED_RANGE!
+ *   acute_complete: completed acute findings section.
  *
  * @return int
  *   Number of encounters based on mode.
@@ -754,14 +745,14 @@ function physical_exam($start_date, $end_date, $name_clause, $mode = FALSE) {
     AND field_lungs_value IS NOT NULL AND field_muac_value IS NOT NULL AND field_nutrition_signs_value IS NOT NULL
     AND field_findings_signs_general_value IS NOT NULL AND field_findings_signs_respiratory_value IS NOT NULL";
   }
-  elseif ($mode == 'bp_complete') {
+  elseif ($mode == 'BP_complete') {
     $mode_clause = "AND field_sys_value IS NOT NULL AND field_dia_value IS NOT NULL";
   }
   elseif ($mode == 'heart_rate_complete') {
     $mode_clause = "AND field_heart_rate_value IS NOT NULL";
   }
   elseif ($mode == 'heart_rate_normal') {
-    $mode_clause = "AND field_heart_rate_value > 80 AND field_heart_rate_value < 160"; //TODO: GET REAL VALUES
+    $mode_clause = "AND field_heart_rate_value > 80 AND field_heart_rate_value < 160";
   }
   elseif ($mode == 'resp_rate_complete') {
     $mode_clause = "AND field_respiratory_rate_value IS NOT NULL";
@@ -773,7 +764,7 @@ function physical_exam($start_date, $end_date, $name_clause, $mode = FALSE) {
     $mode_clause = "AND field_body_temperature_value IS NOT NULL";
   }
   elseif ($mode == 'body_normal') {
-    $mode_clause = "AND field_body_temperature_value > 31 AND field_body_temperature_value < 39"; //TODO: GET REAL VALUES
+    $mode_clause = "AND field_body_temperature_value > 31 AND field_body_temperature_value < 39";
   }
   elseif ($mode == 'core_complete') {
     $mode_clause = "AND  field_heart_value IS NOT NULL AND field_lungs_value IS NOT NULL";
@@ -782,7 +773,7 @@ function physical_exam($start_date, $end_date, $name_clause, $mode = FALSE) {
     $mode_clause = "AND field_muac_value IS NOT NULL";
   }
   elseif ($mode == 'muac_normal') {
-    $mode_clause = "AND field_muac_value > 8 AND field_muac_value < 18"; //TODO: GET REAL VALUES
+    $mode_clause = "AND field_muac_value > 8 AND field_muac_value < 18";
   }
   elseif ($mode == 'nutrition_complete') {
     $mode_clause = "AND field_nutrition_signs_value IS NOT NULL";
@@ -814,7 +805,7 @@ function physical_exam($start_date, $end_date, $name_clause, $mode = FALSE) {
       {$name_clause}
       {$mode_clause}
       AND FROM_UNIXTIME(node.created) < :end_date",
-      [
+    [
       ':start_date' => $start_date,
       ':end_date' => $end_date,
     ])->fetchField();
@@ -874,8 +865,8 @@ function physical_exam_total($start_date, $end_date, $name_clause) {
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       {$constraint_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date"
-      , [
+      AND FROM_UNIXTIME(node.created) < :end_date",
+      [
         ':start_date' => $start_date,
         ':end_date' => $end_date,
       ])->fetchAll(PDO::FETCH_COLUMN);
@@ -962,8 +953,8 @@ function enconter_complete($start_date, $end_date, $name_clause) {
     WHERE FROM_UNIXTIME(node.created) > :start_date
       {$name_clause}
       {$constraint_clause}
-      AND FROM_UNIXTIME(node.created) < :end_date"
-      , [
+      AND FROM_UNIXTIME(node.created) < :end_date",
+      [
         ':start_date' => $start_date,
         ':end_date' => $end_date,
       ])->fetchAll(PDO::FETCH_COLUMN);
