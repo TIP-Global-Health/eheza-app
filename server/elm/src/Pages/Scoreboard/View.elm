@@ -611,7 +611,7 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row3
 
                                             row4 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -856,7 +856,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row3
 
                                             row4 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -867,7 +867,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row4
 
                                             row5 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -878,7 +878,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row5
 
                                             row6 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
