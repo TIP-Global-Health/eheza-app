@@ -1192,7 +1192,7 @@ emptyHbA1cTestForm =
 
 
 type alias NCDAContentConfig msg =
-    { showTasksHeader : Bool
+    { showTasksTray : Bool
     , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
     , setNumberANCVisitsMsg : String -> msg

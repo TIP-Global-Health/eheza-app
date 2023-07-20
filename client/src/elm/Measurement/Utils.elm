@@ -5020,3 +5020,31 @@ resoloveLastScheduledImmunizationVisitDate childId db =
            -- we know that at head of list we got immunization
            -- visit date that was scheduled last.
            List.head
+
+
+resolveNCDASteps : NCDAHistoryData -> List NCDAStep
+resolveNCDASteps historyData =
+    List.filter (expectNCDAStep historyData) ncdaSteps
+
+
+expectNCDAStep : NCDAHistoryData -> NCDAStep -> Bool
+expectNCDAStep historyData task =
+    case task of
+        -- If NCDA was filled before, for sure it included answers to
+        -- needed questions.
+        NCDAStepAntenatalCare ->
+            historyData.ncdaNeverFilled
+
+        -- All other tasks are shown always.
+        _ ->
+            True
+
+
+ncdaSteps : List NCDAStep
+ncdaSteps =
+    [ NCDAStepAntenatalCare
+    , NCDAStepUniversalInterventions
+    , NCDAStepNutritionBehavior
+    , NCDAStepTargetedInterventions
+    , NCDAStepInfrastructureEnvironment
+    ]

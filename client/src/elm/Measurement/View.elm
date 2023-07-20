@@ -47,8 +47,10 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( maybeToBoolTask
+        ( isTaskCompleted
+        , maybeToBoolTask
         , taskCompleted
+        , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -2294,89 +2296,192 @@ viewNCDAContent :
     -> List (Html msg)
 viewNCDAContent language currentDate personId person config helperState form historyData db =
     let
-        ( inputs, tasks ) =
-            ncdaFormInputsAndTasks language
-                currentDate
-                personId
-                person
-                config.setBoolInputMsg
-                config.setBirthWeightMsg
-                config.setNumberANCVisitsMsg
-                config.setNutritionSupplementTypeMsg
-                config.setHelperStateMsg
-                form
-                currentStep
-                historyData.pregnancySummary
-                db
-
-        totalTasks =
-            List.length tasks
-
-        tasksCompleted =
-            List.map taskCompleted tasks
-                |> List.sum
+        steps =
+            resolveNCDASteps historyData
 
         currentStep =
-            resolveNCDAFormStep historyData form
+            Maybe.Extra.or form.step (List.head steps)
 
-        actions =
+        viewTask step =
             let
-                actionButton =
-                    Pages.Utils.saveButton language (tasksCompleted == totalTasks)
+                iconClass =
+                    case step of
+                        NCDAStepAntenatalCare ->
+                            "ncda-antenatal"
 
-                backButton backStep =
-                    button
-                        [ class "ui fluid primary button"
-                        , onClick <| config.setStepMsg backStep
+                        NCDAStepUniversalInterventions ->
+                            "ncda-universal-intervention"
+
+                        NCDAStepNutritionBehavior ->
+                            "ncda-nutrition-behavior"
+
+                        NCDAStepTargetedInterventions ->
+                            "ncda-targeted-intervention"
+
+                        NCDAStepInfrastructureEnvironment ->
+                            "ncda-infrastructure-environment"
+
+                isActive =
+                    currentStep == Just step
+
+                isCompleted =
+                    isTaskCompleted tasksCompletedFromTotalDict step
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
                         ]
-                        [ text <| ("< " ++ translate language Translate.Back) ]
-            in
-            case currentStep of
-                NCDAStepAntenatalCare ->
-                    div [ class "actions" ]
-                        [ actionButton (config.setStepMsg NCDAStepUniversalInterventions) ]
+                        :: navigationAction
 
-                NCDAStepUniversalInterventions ->
-                    let
-                        initialStep =
-                            resolveNCDAFormInitialStep historyData
-                    in
-                    if initialStep == NCDAStepUniversalInterventions then
-                        div [ class "actions" ]
-                            [ actionButton (config.setStepMsg NCDAStepNutritionBehavior) ]
+                navigationAction =
+                    if isActive then
+                        []
 
                     else
-                        div [ class "actions two" ]
-                            [ backButton NCDAStepAntenatalCare
-                            , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
+                        [ onClick <| config.setStepMsg step ]
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.NCDAStep step)
+                    ]
+                ]
+
+        formHtmlAndTasks =
+            List.map
+                (\step ->
+                    ( step
+                    , ncdaFormInputsAndTasks language
+                        currentDate
+                        personId
+                        person
+                        config.setBoolInputMsg
+                        config.setBirthWeightMsg
+                        config.setNumberANCVisitsMsg
+                        config.setNutritionSupplementTypeMsg
+                        config.setHelperStateMsg
+                        form
+                        step
+                        historyData.pregnancySummary
+                        db
+                    )
+                )
+                steps
+                |> Dict.fromList
+
+        tasksCompletedFromTotalDict =
+            Dict.map
+                (\_ ( _, tasks_ ) ->
+                    ( List.map taskCompleted tasks_
+                        |> List.sum
+                    , List.length tasks_
+                    )
+                )
+                formHtmlAndTasks
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.map
+                (\step ->
+                    let
+                        html =
+                            Dict.get step formHtmlAndTasks
+                                |> Maybe.map Tuple.first
+                                |> Maybe.withDefault []
+
+                        ( completed, total ) =
+                            Dict.get step tasksCompletedFromTotalDict
+                                |> Maybe.withDefault ( 0, 0 )
+                    in
+                    ( html, completed, total )
+                )
+                currentStep
+                |> Maybe.withDefault ( [], 0, 0 )
+
+        ( header, actions ) =
+            Maybe.map
+                (\step ->
+                    if config.showTasksTray then
+                        let
+                            ( buttonLabel, actionMsg ) =
+                                List.filter
+                                    (\step_ ->
+                                        (Just step_ /= currentStep)
+                                            && (not <| isTaskCompleted tasksCompletedFromTotalDict step_)
+                                    )
+                                    steps
+                                    |> List.head
+                                    |> Maybe.map
+                                        (\nextStep ->
+                                            ( Translate.Save, config.setStepMsg nextStep )
+                                        )
+                                    |> Maybe.withDefault ( Translate.EndEncounter, config.saveMsg )
+                        in
+                        ( div [ class "ui task segment blue", Attr.id tasksBarId ]
+                            [ div [ class "ui five column grid" ] <|
+                                List.map viewTask steps
                             ]
+                        , div [ class "actions" ]
+                            [ Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) actionMsg buttonLabel ]
+                        )
 
-                NCDAStepNutritionBehavior ->
-                    div [ class "actions two" ]
-                        [ backButton NCDAStepUniversalInterventions
-                        , actionButton (config.setStepMsg NCDAStepTargetedInterventions)
-                        ]
+                    else
+                        let
+                            actionButton =
+                                Pages.Utils.saveButton language (tasksCompleted == totalTasks)
 
-                NCDAStepTargetedInterventions ->
-                    div [ class "actions two" ]
-                        [ backButton NCDAStepNutritionBehavior
-                        , actionButton (config.setStepMsg NCDAStepInfrastructureEnvironment)
-                        ]
+                            backButton backStep =
+                                button
+                                    [ class "ui fluid primary button"
+                                    , onClick <| config.setStepMsg backStep
+                                    ]
+                                    [ text <| ("< " ++ translate language Translate.Back) ]
+                        in
+                        ( emptyNode
+                        , case step of
+                            NCDAStepAntenatalCare ->
+                                div [ class "actions" ]
+                                    [ actionButton (config.setStepMsg NCDAStepUniversalInterventions) ]
 
-                NCDAStepInfrastructureEnvironment ->
-                    div [ class "actions two" ]
-                        [ backButton NCDAStepTargetedInterventions
-                        , Pages.Utils.customSaveButton language (tasksCompleted == totalTasks) config.saveMsg Translate.EndEncounter
-                        ]
+                            NCDAStepUniversalInterventions ->
+                                if expectNCDAStep historyData NCDAStepAntenatalCare then
+                                    div [ class "actions two" ]
+                                        [ backButton NCDAStepAntenatalCare
+                                        , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
+                                        ]
+
+                                else
+                                    div [ class "actions" ]
+                                        [ actionButton (config.setStepMsg NCDAStepNutritionBehavior) ]
+
+                            NCDAStepNutritionBehavior ->
+                                div [ class "actions two" ]
+                                    [ backButton NCDAStepUniversalInterventions
+                                    , actionButton (config.setStepMsg NCDAStepTargetedInterventions)
+                                    ]
+
+                            NCDAStepTargetedInterventions ->
+                                div [ class "actions two" ]
+                                    [ backButton NCDAStepNutritionBehavior
+                                    , actionButton (config.setStepMsg NCDAStepInfrastructureEnvironment)
+                                    ]
+
+                            NCDAStepInfrastructureEnvironment ->
+                                div [ class "actions two" ]
+                                    [ backButton NCDAStepTargetedInterventions
+                                    , actionButton config.saveMsg
+                                    ]
+                        )
+                )
+                currentStep
+                |> Maybe.withDefault ( emptyNode, emptyNode )
     in
-    [ div [ class "task-header" ] [ text <| translate language <| Translate.NCDAStep currentStep ]
-        |> showIf config.showTasksHeader
+    [ header
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form ncda" ]
-                inputs
-            ]
+            [ div [ class "ui form ncda" ] viewForm ]
         , actions
         ]
     , viewModal <|
@@ -2988,24 +3093,6 @@ ncdaFormInputsAndTasks language currentDate personId person setBoolInputMsg setB
             )
 
 
-resolveNCDAFormStep : NCDAHistoryData -> NCDAForm -> NCDAStep
-resolveNCDAFormStep historyData form =
-    Maybe.withDefault
-        (resolveNCDAFormInitialStep historyData)
-        form.step
-
-
-resolveNCDAFormInitialStep : NCDAHistoryData -> NCDAStep
-resolveNCDAFormInitialStep historyData =
-    -- If NCDA was filled before, for sure it included answers to
-    -- needed questions.
-    if historyData.ncdaNeverFilled then
-        NCDAStepAntenatalCare
-
-    else
-        NCDAStepUniversalInterventions
-
-
 showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
 showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
     -- Verify that NCDA related questions were not answered at Neborn exam.
@@ -3127,7 +3214,7 @@ viewNCDA language currentDate childId child measurement data db =
             }
 
         config =
-            { showTasksHeader = False
+            { showTasksTray = False
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setNumberANCVisitsMsg = SetNumberANCVisits
