@@ -672,6 +672,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     $data['ncda']['pane1']['row1'] = TRUE;
   }
 
+  $malnutrition_treatment_by_questionnaires = [];
   foreach ($ncdas as $ncda) {
     $items = field_get_items('node', $ncda, 'field_ncda_signs');
     if (!$items) {
@@ -711,6 +712,10 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
 
         case 'child-taking-fbf':
           $data['ncda']['pane4']['row1'][] = $date_measured;
+          break;
+
+        case 'treated-for-acute-malnutrition':
+          $malnutrition_treatment_by_questionnaires[] = $date_measured;
           break;
 
         case 'receiving-support':
@@ -781,6 +786,9 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
 
   // Second step is to check when malnutrition assessments were made, and
   // check if patient was referred to HC on those dates.
+  // Also, we store the date of first malnutrition diagnosis, to be able
+  // to filter the data we get from questionnaires.
+  $first_diagnosis_date = FALSE;
   foreach ($nutritions as $nutrition) {
     $items = field_get_items('node', $nutrition, 'field_nutrition_assesment');
     if (!$items) {
@@ -794,11 +802,36 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
 
     foreach ($items as $item) {
       if (in_array($item['value'], ['malnutrition-moderate', 'malnutrition-severe'])) {
+        $timestamp = DateTime::createFromFormat('yy-m-d', $date_measured)->getTimestamp();
+        if (!$first_diagnosis_date) {
+          $first_diagnosis_date = $timestamp;
+        }
+        else if ($timestamp < $first_diagnosis_date) {
+          $first_diagnosis_date = $timestamp;
+        }
+
         $type = hedley_ncda_bundle_to_encounter_type($nutrition);
         if (in_array($date_measured, $referrals_to_hc[$type])) {
           $data['ncda']['pane4']['row2'][] = $date_measured;
           break;
         }
+      }
+    }
+  }
+
+  // Third step is to add treatment dates taken from questionnaires data, as
+  // long as they were recorded before first diagnosis date.
+  if (!$first_diagnosis_date) {
+    // No diagnosis was made, so naturally, no treatment was given.
+    // Therefore, we're left with treatment data from questionnaires, which
+    // can be set as is.
+    $data['ncda']['pane4']['row2'] = $malnutrition_treatment_by_questionnaires;
+  }
+  else {
+    foreach ($malnutrition_treatment_by_questionnaires as $date_measured) {
+      $timestamp = DateTime::createFromFormat('yy-m-d', $date_measured)->getTimestamp();
+      if ($timestamp < $first_diagnosis_date) {
+        $data['ncda']['pane4']['row2'][] = $date_measured;
       }
     }
   }
