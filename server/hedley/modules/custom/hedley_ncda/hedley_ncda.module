@@ -806,7 +806,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
         if (!$first_diagnosis_date) {
           $first_diagnosis_date = $timestamp;
         }
-        else if ($timestamp < $first_diagnosis_date) {
+        elseif ($timestamp < $first_diagnosis_date) {
           $first_diagnosis_date = $timestamp;
         }
 
