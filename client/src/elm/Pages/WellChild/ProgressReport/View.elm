@@ -2113,7 +2113,7 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
                 chwQuestionnairesByAgeInMonthsWithDate
 
         -- Malnutrition treatment mapping logic:
-        -- Per requirements, treatmnent question appears only at Child Scorecard
+        -- Per requirements, treatment question appears only at Child Scorecard
         -- encounter, and only in case Malnutrition was not diagnosed previously
         -- (at any of different types of Nutrition encounters).
         -- Therefore, we need to analyse only those questionnaires that
