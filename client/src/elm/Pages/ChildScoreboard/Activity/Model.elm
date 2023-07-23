@@ -21,7 +21,7 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { ncdaData : NCDAData
+    { ncdaData : NCDAData Msg
     , immunisationData : ImmunisationData
     }
 
@@ -66,7 +66,7 @@ type Msg
     = NoOp
     | SetActivePage Page
       -- NCDA
-    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
     | SetBirthWeight String
     | SetNumberANCVisits String
     | SetNCDAFormStep NCDAStep

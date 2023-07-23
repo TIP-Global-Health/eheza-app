@@ -4798,6 +4798,7 @@ encodeNCDAValueWithType type_ value =
                 |> Maybe.withDefault []
     in
     [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
+    , ( "anc_visits_dates", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.ancVisitsDates )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]

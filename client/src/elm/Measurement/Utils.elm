@@ -4490,7 +4490,7 @@ viewSelectInput language labelTransId formValue valueTransId valueToStringFunc v
     ]
 
 
-fromNCDAValue : Maybe NCDAValue -> NCDAForm
+fromNCDAValue : Maybe NCDAValue -> NCDAForm msg
 fromNCDAValue saved =
     { step = Nothing
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
@@ -4523,16 +4523,30 @@ fromNCDAValue saved =
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
     , numberOfANCVisits = Maybe.andThen .numberOfANCVisits saved
+    , updateANCVisits = Nothing
+    , ancVisitsViewMode = ANCVisitsInitialMode
+    , ancVisitsDates = Maybe.map .ancVisitsDates saved
+    , dateSelectorPopupState = Nothing
     }
 
 
-ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
+
+
+ncdaFormWithDefault : NCDAForm msg -> Maybe NCDAValue -> NCDAForm msg
 ncdaFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
                 { step = form.step
+
+                --
+                , updateANCVisits = or form.updateANCVisits (Just False)
+                , ancVisitsViewMode = form.ancVisitsViewMode
+                , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
+                , dateSelectorPopupState = form.dateSelectorPopupState
+
+                --
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
                 , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
                 , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
@@ -4567,13 +4581,13 @@ ncdaFormWithDefault form saved =
             )
 
 
-toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
+toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm msg -> Maybe NCDAValue
 toNCDAValueWithDefault saved form =
     ncdaFormWithDefault form saved
         |> toNCDAValue
 
 
-toNCDAValue : NCDAForm -> Maybe NCDAValue
+toNCDAValue : NCDAForm msg -> Maybe NCDAValue
 toNCDAValue form =
     let
         signs =
@@ -4608,10 +4622,14 @@ toNCDAValue form =
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
+
+        ancVisitsDates =
+            Maybe.withDefault EverySet.empty form.ancVisitsDates
     in
     Maybe.map NCDAValue signs
         |> andMap (Just form.birthWeight)
         |> andMap (Just form.numberOfANCVisits)
+        |> andMap (Just ancVisitsDates)
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,

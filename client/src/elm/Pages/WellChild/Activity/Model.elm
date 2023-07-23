@@ -98,7 +98,7 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
       -- NCDA
-    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
     | SetBirthWeight String
     | SetNumberANCVisits String
     | SetNCDAFormStep NCDAStep
@@ -115,7 +115,7 @@ type alias Model =
     , medicationData : MedicationData
     , nextStepsData : NextStepsData
     , photoForm : PhotoForm
-    , ncdaData : NCDAData
+    , ncdaData : NCDAData Msg
     , warningPopupState : Maybe WarningPopupType
     }
 

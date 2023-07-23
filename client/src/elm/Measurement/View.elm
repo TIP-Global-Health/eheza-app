@@ -2292,7 +2292,7 @@ viewNCDAContent :
     -> Person
     -> NCDAContentConfig msg
     -> Maybe NCDASign
-    -> NCDAForm
+    -> NCDAForm msg
     -> ModelIndexedDb
     -> List (Html msg)
 viewNCDAContent language currentDate personId person config helperState form db =
@@ -2489,7 +2489,7 @@ ncdaFormInputsAndTasks :
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
-    -> NCDAForm
+    -> NCDAForm msg
     -> NCDAStep
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
@@ -3278,7 +3278,7 @@ viewNCDA :
     -> PersonId
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
-    -> NCDAData
+    -> NCDAData MsgChild
     -> ModelIndexedDb
     -> Html MsgChild
 viewNCDA language currentDate childId child measurement data db =

@@ -114,7 +114,7 @@ viewNCDAContent :
     -> NominalDate
     -> AssembledData
     -> ModelIndexedDb
-    -> NCDAData
+    -> NCDAData Msg
     -> List (Html Msg)
 viewNCDAContent language currentDate assembled db data =
     let

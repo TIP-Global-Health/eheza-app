@@ -2419,7 +2419,7 @@ viewNCDAContent :
     Language
     -> NominalDate
     -> AssembledData
-    -> NCDAData
+    -> NCDAData Msg
     -> ModelIndexedDb
     -> List (Html Msg)
 viewNCDAContent language currentDate assembled data db =

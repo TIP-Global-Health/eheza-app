@@ -277,6 +277,7 @@ type alias NCDAValue =
     { signs : EverySet NCDASign
     , birthWeight : Maybe WeightInGrm
     , numberOfANCVisits : Maybe Int
+    , ancVisitsDates : EverySet NominalDate
     }
 
 

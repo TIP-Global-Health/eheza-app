@@ -685,7 +685,7 @@ viewNCDAContent :
     -> NominalDate
     -> NutritionEncounterId
     -> AssembledData
-    -> NCDAData
+    -> NCDAData Msg
     -> ModelIndexedDb
     -> List (Html Msg)
 viewNCDAContent language currentDate id assembled data db =
