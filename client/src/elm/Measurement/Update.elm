@@ -258,6 +258,68 @@ updateChild msg model =
             , Nothing
             )
 
+        SetANCVisitsViewMode viewMode ->
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedForm =
+                    { form | ancVisitsViewMode = viewMode }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetUpdateANCVisits value ->
+            -- @todo:
+            ( model
+            , Cmd.none
+            , Nothing
+            )
+
+        SetANCVisitUpdateDateSelectorState state ->
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetANCVisitUpdateDate date ->
+            -- @todo:
+            ( model
+            , Cmd.none
+            , Nothing
+            )
+
+        SaveANCVisitUpdateDate ->
+            -- @todo:
+            ( model
+            , Cmd.none
+            , Nothing
+            )
+
+        DeleteANCVisitUpdateDate date ->
+            -- @todo:
+            ( model
+            , Cmd.none
+            , Nothing
+            )
+
         SetNCDABoolInput formUpdateFunc value ->
             let
                 updatedForm =

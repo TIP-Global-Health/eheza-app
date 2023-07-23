@@ -242,6 +242,12 @@ type MsgChild
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
+    | SetANCVisitsViewMode ANCVisitsViewMode
+    | SetUpdateANCVisits Bool
+    | SetANCVisitUpdateDateSelectorState (Maybe (DateSelectorConfig MsgChild))
+    | SetANCVisitUpdateDate NominalDate
+    | SaveANCVisitUpdateDate
+    | DeleteANCVisitUpdateDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm MsgChild -> NCDAForm MsgChild) Bool
     | SetNumberANCVisits String
     | SetBirthWeight String
@@ -1033,8 +1039,6 @@ emptyNCDAData =
     }
 
 
-
-
 type alias NCDAForm msg =
     { step : Maybe NCDAStep
 
@@ -1047,6 +1051,7 @@ type alias NCDAForm msg =
     , updateANCVisits : Maybe Bool
     , ancVisitsViewMode : ANCVisitsViewMode
     , ancVisitsDates : Maybe (EverySet NominalDate)
+    , ancVisitsUpdateDate : Maybe NominalDate
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
 
     -- Old inputs:
@@ -1097,6 +1102,7 @@ emptyNCDAForm =
     , updateANCVisits = Nothing
     , ancVisitsViewMode = ANCVisitsInitialMode
     , ancVisitsDates = Nothing
+    , ancVisitsUpdateDate = Nothing
     , dateSelectorPopupState = Nothing
     , supplementsDuringPregnancy = Nothing
     , takenSupplementsPerGuidance = Nothing
@@ -1232,7 +1238,15 @@ type alias NCDAContentConfig msg =
     , ncdaNeverFilled : Bool
     , ncdaNotFilledAfterAgeOfSixMonths : Bool
 
-    -- Different actions.
+    -- ANC Visit actions.
+    , setANCVisitsViewModeMsg : ANCVisitsViewMode -> msg
+    , setUpdateANCVisitsMsg : Bool -> msg
+    , setANCVisitUpdateDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setANCVisitUpdateDateMsg : NominalDate -> msg
+    , saveANCVisitUpdateDateMsg : msg
+    , deleteANCVisitUpdateDateMsg : NominalDate -> msg
+
+    -- Other actions.
     , setBoolInputMsg : (Bool -> NCDAForm msg -> NCDAForm msg) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
     , setNumberANCVisitsMsg : String -> msg

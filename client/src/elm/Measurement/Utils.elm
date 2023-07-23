@@ -4526,10 +4526,9 @@ fromNCDAValue saved =
     , updateANCVisits = Nothing
     , ancVisitsViewMode = ANCVisitsInitialMode
     , ancVisitsDates = Maybe.map .ancVisitsDates saved
+    , ancVisitsUpdateDate = Nothing
     , dateSelectorPopupState = Nothing
     }
-
-
 
 
 ncdaFormWithDefault : NCDAForm msg -> Maybe NCDAValue -> NCDAForm msg
@@ -4544,6 +4543,7 @@ ncdaFormWithDefault form saved =
                 , updateANCVisits = or form.updateANCVisits (Just False)
                 , ancVisitsViewMode = form.ancVisitsViewMode
                 , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
+                , ancVisitsUpdateDate = form.ancVisitsUpdateDate
                 , dateSelectorPopupState = form.dateSelectorPopupState
 
                 --
@@ -4930,6 +4930,10 @@ isTestResultValid =
            Maybe.withDefault True
 
 
+
+-- @todo: remove
+
+
 countANCEncountersMadeForChild : PersonId -> ModelIndexedDb -> Maybe Int
 countANCEncountersMadeForChild childId db =
     Dict.get childId db.pregnancyByNewborn
@@ -4947,6 +4951,31 @@ countANCEncountersMadeForChild childId db =
                             >> Dict.size
                         )
             )
+
+
+resolveChildANCEncountersDates : PersonId -> ModelIndexedDb -> EverySet NominalDate
+resolveChildANCEncountersDates childId db =
+    Dict.get childId db.pregnancyByNewborn
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.Extra.join
+        |> Maybe.andThen
+            (\( participantId, _ ) ->
+                Dict.get participantId db.prenatalEncountersByParticipant
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map
+                        (Dict.values
+                            >> List.filterMap
+                                (\encounter ->
+                                    if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
+                                        Just encounter.startDate
+
+                                    else
+                                        Nothing
+                                )
+                            >> EverySet.fromList
+                        )
+            )
+        |> Maybe.withDefault EverySet.empty
 
 
 childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool

@@ -98,6 +98,12 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
       -- NCDA
+    | SetANCVisitsViewMode ANCVisitsViewMode
+    | SetUpdateANCVisits Bool
+    | SetANCVisitUpdateDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetANCVisitUpdateDate NominalDate
+    | SaveANCVisitUpdateDate
+    | DeleteANCVisitUpdateDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
     | SetBirthWeight String
     | SetNumberANCVisits String

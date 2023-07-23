@@ -414,6 +414,7 @@ type TranslationId
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
+    | ANCEncountersNotRecordedQuestion
     | ANCNewborn
     | And
     | AndSentence
@@ -2987,6 +2988,11 @@ translationSet trans =
         AmbulancArrivalPeriodQuestion ->
             { english = "How long did it take the ambulance to arrive"
             , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
+            }
+
+        ANCEncountersNotRecordedQuestion ->
+            { english = "Were there any ANC encounters that are not recorded above"
+            , kinyarwanda = Nothing
             }
 
         ANCNewborn ->

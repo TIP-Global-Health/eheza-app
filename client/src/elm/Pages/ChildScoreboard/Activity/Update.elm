@@ -58,6 +58,68 @@ update currentDate id db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetANCVisitsViewMode viewMode ->
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedForm =
+                    { form | ancVisitsViewMode = viewMode }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetUpdateANCVisits value ->
+            -- @todo:
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SetANCVisitUpdateDateSelectorState state ->
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedForm =
+                    { form | dateSelectorPopupState = state }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetANCVisitUpdateDate date ->
+            -- @todo:
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SaveANCVisitUpdateDate ->
+            -- @todo:
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        DeleteANCVisitUpdateDate date ->
+            -- @todo:
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetNCDABoolInput formUpdateFunc value ->
             let
                 updatedForm =
