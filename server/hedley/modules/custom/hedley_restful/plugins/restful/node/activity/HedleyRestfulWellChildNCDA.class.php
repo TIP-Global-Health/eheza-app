@@ -30,7 +30,7 @@ class HedleyRestfulWellChildNCDA extends HedleyRestfulWellChildActivityBase {
    * {@inheritdoc}
    */
   protected $multiDateFields = [
-    'field_administration_dates',
+    'field_anc_visits_dates',
   ];
 
 }

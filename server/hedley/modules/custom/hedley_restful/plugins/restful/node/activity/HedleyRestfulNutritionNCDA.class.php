@@ -30,7 +30,7 @@ class HedleyRestfulNutritionNCDA extends HedleyRestfulNutritionActivityBase {
    * {@inheritdoc}
    */
   protected $multiDateFields = [
-    'field_administration_dates',
+    'field_anc_visits_dates',
   ];
 
 }
