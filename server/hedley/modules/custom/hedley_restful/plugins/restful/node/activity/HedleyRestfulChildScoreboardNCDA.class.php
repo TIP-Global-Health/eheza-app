@@ -23,6 +23,7 @@ class HedleyRestfulChildScoreboardNCDA extends HedleyRestfulChildScoreboardActiv
    */
   protected $multiFields = [
     'field_ncda_signs',
+    'field_anc_visits_dates',
   ];
 
 }

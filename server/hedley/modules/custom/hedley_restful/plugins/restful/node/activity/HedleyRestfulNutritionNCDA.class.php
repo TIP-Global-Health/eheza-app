@@ -23,6 +23,7 @@ class HedleyRestfulNutritionNCDA extends HedleyRestfulNutritionActivityBase {
    */
   protected $multiFields = [
     'field_ncda_signs',
+    'field_anc_visits_dates',
   ];
 
 }
