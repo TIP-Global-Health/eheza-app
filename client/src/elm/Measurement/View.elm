@@ -75,7 +75,7 @@ import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (renderDate)
+import Utils.NominalDate exposing (renderDate, sortTuplesByDate)
 import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
@@ -3034,37 +3034,42 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
             let
                 ( ancVisitsSection, ancVisitsTasks ) =
                     ancVisitsInpustAndTasks language currentDate personId person config form db
-
-                inputsAndTasks =
-                    List.map inputsAndTasksForSign
-                        [ -- NumberOfANCVisitsCorrect
-                          -- ,
-                          SupplementsDuringPregnancy
-                        ]
-
-                ( newbornExamSection, newbornExamTasks ) =
-                    if showNCDAQuestionsByNewbornExam config.pregnancySummary then
-                        let
-                            ( birthWeightSection, birthWeightTasks ) =
-                                birthWeightInputsAndTasks language form.birthWeight config.setBirthWeightMsg
-
-                            ( birthDefectSection, birthDefectTask ) =
-                                inputsAndTasksForSign BornWithBirthDefect
-                        in
-                        ( birthWeightSection ++ birthDefectSection
-                        , birthDefectTask ++ birthWeightTasks
-                        )
-
-                    else
-                        ( [], [] )
             in
-            ( ancVisitsSection
-                ++ (List.map Tuple.first inputsAndTasks |> List.concat)
-                ++ newbornExamSection
-            , ancVisitsTasks
-                ++ (List.map Tuple.second inputsAndTasks |> List.concat)
-                ++ newbornExamTasks
-            )
+            if form.updateANCVisits == Just False then
+                let
+                    inputsAndTasks =
+                        List.map inputsAndTasksForSign
+                            [ -- NumberOfANCVisitsCorrect
+                              -- ,
+                              SupplementsDuringPregnancy
+                            ]
+
+                    ( newbornExamSection, newbornExamTasks ) =
+                        if showNCDAQuestionsByNewbornExam config.pregnancySummary then
+                            let
+                                ( birthWeightSection, birthWeightTasks ) =
+                                    birthWeightInputsAndTasks language form.birthWeight config.setBirthWeightMsg
+
+                                ( birthDefectSection, birthDefectTask ) =
+                                    inputsAndTasksForSign BornWithBirthDefect
+                            in
+                            ( birthWeightSection ++ birthDefectSection
+                            , birthDefectTask ++ birthWeightTasks
+                            )
+
+                        else
+                            ( [], [] )
+                in
+                ( ancVisitsSection
+                    ++ (List.map Tuple.first inputsAndTasks |> List.concat)
+                    ++ newbornExamSection
+                , ancVisitsTasks
+                    ++ (List.map Tuple.second inputsAndTasks |> List.concat)
+                    ++ newbornExamTasks
+                )
+
+            else
+                ( ancVisitsSection, ancVisitsTasks )
 
         NCDAStepUniversalInterventions ->
             let
@@ -3188,27 +3193,33 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
             encountersDatesFromForm =
                 -- Since ANC step of NCDA form is filled only onces, we know
                 -- that current activity is the first one filled, and there's
-                -- no need to examoine existing NCDA activities.
+                -- no need to examine existing NCDA activities.
                 Maybe.withDefault EverySet.empty form.ancVisitsDates
 
             historySection =
                 case form.ancVisitsViewMode of
                     ANCVisitsInitialMode ->
                         let
-                            encountersDatesFromANCDataEntries =
+                            datesFromANCData =
                                 EverySet.toList encountersDatesFromANCData
-                                    |> List.map (\date -> viewHistoryEntry (Just date) False)
+                                    |> List.map (\date -> ( date, False ))
 
-                            encountersDatesFromFormEntries =
+                            datesFromForm =
                                 EverySet.toList encountersDatesFromForm
-                                    |> List.map (\date -> viewHistoryEntry (Just date) True)
+                                    |> List.map (\date -> ( date, True ))
 
                             entriesForView =
-                                encountersDatesFromANCDataEntries ++ encountersDatesFromFormEntries
+                                datesFromANCData
+                                    ++ datesFromForm
+                                    |> List.sortWith sortTuplesByDate
+                                    |> List.indexedMap
+                                        (\index ( date, allowDelete ) ->
+                                            viewHistoryEntry (String.fromInt <| index + 1) (Just date) allowDelete
+                                        )
 
                             dosesForView =
                                 if List.isEmpty entriesForView then
-                                    [ viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader Nothing) "." "label" ]
+                                    [ viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader Nothing) "." "label-normal" ]
 
                                 else
                                     entriesForView
@@ -3219,10 +3230,10 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
 
                     ANCVisitsUpdateMode ->
                         [ div [ class "history" ]
-                            [ viewHistoryEntry Nothing False ]
+                            [ viewHistoryEntry "" Nothing False ]
                         ]
 
-            viewHistoryEntry date deleteAllowed =
+            viewHistoryEntry index date deleteAllowed =
                 let
                     dateForView =
                         Maybe.map formatDDMMYYYY date
@@ -3241,7 +3252,8 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                             |> Maybe.withDefault emptyNode
                 in
                 div [ class "history-entry" ]
-                    [ div [ class "date" ] [ text dateForView ]
+                    [ div [ class "dose" ] [ text index ]
+                    , div [ class "date" ] [ text dateForView ]
                     , showIf deleteAllowed <| deleteButton
                     ]
 
@@ -3302,13 +3314,13 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                             [ text <| translate language Translate.Save ]
                                         ]
                                   ]
-                                , [ Nothing ]
+                                , [ maybeToBoolTask form.ancVisitsUpdateDate ]
                                 )
                             )
                             person.birthDate
                             |> Maybe.withDefault ( [], [] )
         in
-        ( historySection ++ inputs, tasks )
+        ( (viewLabel language Translate.AntenatalVisistsHistory :: historySection) ++ inputs, tasks )
 
 
 showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool

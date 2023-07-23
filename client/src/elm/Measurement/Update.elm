@@ -15,8 +15,9 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
+import Maybe.Extra
 import Measurement.Model exposing (..)
-import Pages.Utils exposing (setMultiSelectInputValue)
+import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue)
 
 
 {-| The strategy used here, for the moment, is that the `model` tracks the UI,
@@ -276,8 +277,25 @@ updateChild msg model =
             )
 
         SetUpdateANCVisits value ->
-            -- @todo:
-            ( model
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedForm =
+                    if value == True then
+                        { form
+                            | ancVisitsViewMode = ANCVisitsUpdateMode
+                            , updateANCVisits = Nothing
+                        }
+
+                    else
+                        { form | updateANCVisits = Just False }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
             , Cmd.none
             , Nothing
             )
@@ -287,8 +305,11 @@ updateChild msg model =
                 form =
                     model.ncdaData.form
 
+                defaultSelection =
+                    Maybe.Extra.or form.ancVisitsUpdateDate (Maybe.andThen .dateDefault state)
+
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { form | dateSelectorPopupState = state, ancVisitsUpdateDate = defaultSelection }
 
                 updatedData =
                     model.ncdaData
@@ -300,22 +321,73 @@ updateChild msg model =
             )
 
         SetANCVisitUpdateDate date ->
-            -- @todo:
-            ( model
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedForm =
+                    { form | ancVisitsUpdateDate = Just date }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
             , Cmd.none
             , Nothing
             )
 
         SaveANCVisitUpdateDate ->
-            -- @todo:
-            ( model
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedModel =
+                    Maybe.map
+                        (\date ->
+                            let
+                                updatedForm =
+                                    { form
+                                        | ancVisitsDates = insertIntoSet date form.ancVisitsDates
+                                        , ancVisitsViewMode = ANCVisitsInitialMode
+                                        , ancVisitsUpdateDate = Nothing
+                                    }
+
+                                updatedData =
+                                    model.ncdaData
+                                        |> (\data -> { data | form = updatedForm })
+                            in
+                            { model | ncdaData = updatedData }
+                        )
+                        form.ancVisitsUpdateDate
+                        |> Maybe.withDefault model
+            in
+            ( updatedModel
             , Cmd.none
             , Nothing
             )
 
-        DeleteANCVisitUpdateDate date ->
-            -- @todo:
-            ( model
+        DeleteANCVisitUpdateDate dateToDelete ->
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedDates =
+                    Maybe.map
+                        (EverySet.toList
+                            >> List.filter ((/=) dateToDelete)
+                            >> EverySet.fromList
+                        )
+                        form.ancVisitsDates
+
+                updatedForm =
+                    { form | ancVisitsDates = updatedDates }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
             , Cmd.none
             , Nothing
             )

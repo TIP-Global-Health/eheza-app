@@ -420,6 +420,7 @@ type TranslationId
     | AndSentence
     | AntenatalCare
     | AntenatalProgressReport
+    | AntenatalVisistsHistory
     | AppName
     | AppointmentConfirmation
     | AppointmentConfirmationInstrunction
@@ -2982,6 +2983,11 @@ translationSet trans =
 
         AntenatalProgressReport ->
             { english = "Antenatal Progress Report"
+            , kinyarwanda = Nothing
+            }
+
+        AntenatalVisistsHistory ->
+            { english = "Antenatal Visits History"
             , kinyarwanda = Nothing
             }
 

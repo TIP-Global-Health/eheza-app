@@ -17,7 +17,8 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model
     exposing
-        ( HeightForm
+        ( ANCVisitsViewMode(..)
+        , HeightForm
         , ImmunisationTask(..)
         , MuacForm
         , NutritionForm
@@ -66,6 +67,16 @@ update currentDate isChw id db msg model =
                         >> vaccinationFormWithDefault form
                     )
                 |> Maybe.withDefault form
+
+        ncdaForm =
+            Dict.get id db.wellChildMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.ncda
+                        >> getMeasurementValueFunc
+                        >> ncdaFormWithDefault model.ncdaData.form
+                    )
+                |> Maybe.withDefault model.ncdaData.form
 
         generateNutritionAssessmentMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ]) nextTask
@@ -1691,19 +1702,33 @@ update currentDate isChw id db msg model =
             )
 
         SetUpdateANCVisits value ->
-            -- @todo:
-            ( model
+            let
+                updatedForm =
+                    if value == True then
+                        { ncdaForm
+                            | ancVisitsViewMode = ANCVisitsUpdateMode
+                            , updateANCVisits = Nothing
+                        }
+
+                    else
+                        { ncdaForm | updateANCVisits = Just False }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
             , Cmd.none
             , []
             )
 
         SetANCVisitUpdateDateSelectorState state ->
             let
-                form =
-                    model.ncdaData.form
+                defaultSelection =
+                    Maybe.Extra.or ncdaForm.ancVisitsUpdateDate (Maybe.andThen .dateDefault state)
 
                 updatedForm =
-                    { form | dateSelectorPopupState = state }
+                    { ncdaForm | dateSelectorPopupState = state, ancVisitsUpdateDate = defaultSelection }
 
                 updatedData =
                     model.ncdaData
@@ -1715,22 +1740,66 @@ update currentDate isChw id db msg model =
             )
 
         SetANCVisitUpdateDate date ->
-            -- @todo:
-            ( model
+            let
+                updatedForm =
+                    { ncdaForm | ancVisitsUpdateDate = Just date }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
             , Cmd.none
             , []
             )
 
         SaveANCVisitUpdateDate ->
-            -- @todo:
-            ( model
+            let
+                updatedModel =
+                    Maybe.map
+                        (\date ->
+                            let
+                                updatedForm =
+                                    { ncdaForm
+                                        | ancVisitsDates = insertIntoSet date ncdaForm.ancVisitsDates
+                                        , ancVisitsViewMode = ANCVisitsInitialMode
+                                        , ancVisitsUpdateDate = Nothing
+                                    }
+
+                                updatedData =
+                                    model.ncdaData
+                                        |> (\data -> { data | form = updatedForm })
+                            in
+                            { model | ncdaData = updatedData }
+                        )
+                        ncdaForm.ancVisitsUpdateDate
+                        |> Maybe.withDefault model
+            in
+            ( updatedModel
             , Cmd.none
             , []
             )
 
-        DeleteANCVisitUpdateDate date ->
-            -- @todo:
-            ( model
+        DeleteANCVisitUpdateDate dateToDelete ->
+            let
+                updatedDates =
+                    Maybe.map
+                        (EverySet.toList
+                            >> List.filter ((/=) dateToDelete)
+                            >> EverySet.fromList
+                        )
+                        ncdaForm.ancVisitsDates
+
+                updatedForm =
+                    { ncdaForm
+                        | ancVisitsDates = updatedDates
+                    }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
             , Cmd.none
             , []
             )
