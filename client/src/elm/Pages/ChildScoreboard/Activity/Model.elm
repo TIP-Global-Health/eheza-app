@@ -75,7 +75,6 @@ type Msg
     | DeleteANCVisitUpdateDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
     | SetBirthWeight String
-    | SetNumberANCVisits String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA ))

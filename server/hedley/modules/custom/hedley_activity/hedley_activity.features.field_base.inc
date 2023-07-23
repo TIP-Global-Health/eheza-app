@@ -1311,7 +1311,6 @@ function hedley_activity_field_default_field_bases() {
         'child-with-disability' => 'Child with Disability',
         'insecticide-treated-bednets' => 'Insecticide Treated Bednets',
         'meals-at-recommended-times' => 'Meals at recommended times',
-        'number-of-anc-visits-correct' => 'Number of ANC Visits Correct',
         'child-behind-on-vaccination' => 'Child behind on vaccination',
         'receiving-cash-transfer' => 'Receiving Cash Transfer',
         'receiving-support' => 'Receiving Support',

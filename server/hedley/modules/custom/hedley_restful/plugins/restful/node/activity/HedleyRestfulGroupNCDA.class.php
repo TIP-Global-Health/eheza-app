@@ -15,7 +15,6 @@ class HedleyRestfulGroupNCDA extends HedleyRestfulGroupActivityBase {
    */
   protected $fields = [
     'field_weight',
-    'field_anc_visits',
   ];
 
   /**

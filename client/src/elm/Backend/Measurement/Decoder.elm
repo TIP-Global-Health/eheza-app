@@ -5151,7 +5151,6 @@ decodeNCDAValue =
     succeed NCDAValue
         |> required "ncda_signs" (decodeEverySet decodeNCDASign)
         |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
-        |> optional "anc_visits" (nullable decodeInt) Nothing
         |> required "anc_visits_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
 
 

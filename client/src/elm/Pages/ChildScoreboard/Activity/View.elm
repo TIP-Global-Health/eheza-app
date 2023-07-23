@@ -146,7 +146,6 @@ viewNCDAContent language currentDate assembled db data =
             , deleteANCVisitUpdateDateMsg = DeleteANCVisitUpdateDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
-            , setNumberANCVisitsMsg = SetNumberANCVisits
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg = SaveNCDA personId assembled.measurements.ncda

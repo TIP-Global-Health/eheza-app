@@ -11,22 +11,6 @@
 function hedley_ncda_field_default_field_bases() {
   $field_bases = array();
 
-  // Exported field_base: 'field_anc_visits'.
-  $field_bases['field_anc_visits'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_id_type' => NULL,
-    'entity_types' => array(),
-    'field_name' => 'field_anc_visits',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(),
-    'translatable' => 0,
-    'type' => 'number_integer',
-  );
-
   // Exported field_base: 'field_child_scoreboard_encounter'.
   $field_bases['field_child_scoreboard_encounter'] = array(
     'active' => 1,

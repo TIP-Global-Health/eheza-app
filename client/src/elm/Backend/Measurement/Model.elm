@@ -276,7 +276,6 @@ type alias GroupNCDA =
 type alias NCDAValue =
     { signs : EverySet NCDASign
     , birthWeight : Maybe WeightInGrm
-    , numberOfANCVisits : Maybe Int
     , ancVisitsDates : EverySet NominalDate
     }
 
@@ -300,7 +299,6 @@ type NCDASign
     | HasToilets
     | InsecticideTreatedBednets
     | MealsAtRecommendedTimes
-    | NumberOfANCVisitsCorrect
     | OngeraMNP
     | ReceivingCashTransfer
     | ReceivingSupport

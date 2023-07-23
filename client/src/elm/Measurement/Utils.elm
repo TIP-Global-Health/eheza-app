@@ -4512,7 +4512,6 @@ fromNCDAValue saved =
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
-    , numberOfANCVisitsCorrect = Maybe.map (.signs >> EverySet.member NumberOfANCVisitsCorrect) saved
     , childBehindOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehindOnVaccination) saved
     , receivingCashTransfer = Maybe.map (.signs >> EverySet.member ReceivingCashTransfer) saved
     , receivingSupport = Maybe.map (.signs >> EverySet.member ReceivingSupport) saved
@@ -4522,7 +4521,6 @@ fromNCDAValue saved =
     , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
-    , numberOfANCVisits = Maybe.andThen .numberOfANCVisits saved
     , updateANCVisits = Nothing
     , ancVisitsViewMode = ANCVisitsInitialMode
     , ancVisitsDates = Maybe.map .ancVisitsDates saved
@@ -4566,7 +4564,6 @@ ncdaFormWithDefault form saved =
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
-                , numberOfANCVisitsCorrect = or form.numberOfANCVisitsCorrect (EverySet.member NumberOfANCVisitsCorrect value.signs |> Just)
                 , childBehindOnVaccination = or form.childBehindOnVaccination (EverySet.member ChildBehindOnVaccination value.signs |> Just)
                 , receivingCashTransfer = or form.receivingCashTransfer (EverySet.member ReceivingCashTransfer value.signs |> Just)
                 , receivingSupport = or form.receivingSupport (EverySet.member ReceivingSupport value.signs |> Just)
@@ -4576,7 +4573,6 @@ ncdaFormWithDefault form saved =
                 , takingOngeraMNP = or form.takingOngeraMNP (EverySet.member TakingOngeraMNP value.signs |> Just)
                 , mealsAtRecommendedTimes = or form.mealsAtRecommendedTimes (EverySet.member MealsAtRecommendedTimes value.signs |> Just)
                 , birthWeight = or form.birthWeight value.birthWeight
-                , numberOfANCVisits = or form.numberOfANCVisits value.numberOfANCVisits
                 }
             )
 
@@ -4610,7 +4606,6 @@ toNCDAValue form =
             , ifNullableTrue ChildWithDisability form.childWithDisability
             , ifNullableTrue OngeraMNP form.ongeraMNP
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
-            , ifNullableTrue NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect
             , ifNullableTrue ChildBehindOnVaccination form.childBehindOnVaccination
             , ifNullableTrue ReceivingCashTransfer form.receivingCashTransfer
             , ifNullableTrue ReceivingSupport form.receivingSupport
@@ -4628,7 +4623,6 @@ toNCDAValue form =
     in
     Maybe.map NCDAValue signs
         |> andMap (Just form.birthWeight)
-        |> andMap (Just form.numberOfANCVisits)
         |> andMap (Just ancVisitsDates)
 
 

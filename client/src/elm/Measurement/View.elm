@@ -2499,69 +2499,6 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
     let
         inputsAndTasksForSign sign =
             case sign of
-                NumberOfANCVisitsCorrect ->
-                    let
-                        numberOfANCEncounters =
-                            countANCEncountersMadeForChild personId db
-
-                        ( numberOfANCVisitsInputs, numberOfANCVisitsTasks ) =
-                            let
-                                counselling =
-                                    Maybe.map
-                                        (\numberOfANCVisits ->
-                                            if numberOfANCVisits < minimalNumberOfANCVisits then
-                                                [ viewCounselingLabel NumberOfANCVisitsCorrect ]
-
-                                            else
-                                                []
-                                        )
-                                        form.numberOfANCVisits
-                                        |> Maybe.withDefault []
-                            in
-                            ( [ viewQuestionLabel language Translate.NCDANumberOfANCVisitsQuestion
-                              , viewMeasurementInput language
-                                    (Maybe.map toFloat form.numberOfANCVisits)
-                                    config.setNumberANCVisitsMsg
-                                    "anc-visits"
-                                    Translate.Visits
-                              ]
-                                ++ counselling
-                            , [ maybeToBoolTask form.numberOfANCVisits ]
-                            )
-                    in
-                    Maybe.map
-                        (\numberOfEncounters ->
-                            if numberOfEncounters < minimalNumberOfANCVisits then
-                                let
-                                    updateFunc value form_ =
-                                        { form_ | numberOfANCVisitsCorrect = Just value, numberOfANCVisits = Nothing }
-
-                                    ( derivedInputs, derivedTasks ) =
-                                        if form.numberOfANCVisitsCorrect == Just False then
-                                            ( numberOfANCVisitsInputs, numberOfANCVisitsTasks )
-
-                                        else
-                                            ( [], [] )
-                                in
-                                ( (viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader (Just numberOfEncounters)) "." "label"
-                                    :: viewNCDAInput NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect updateFunc
-                                  )
-                                    ++ derivedInputs
-                                , form.numberOfANCVisitsCorrect :: derivedTasks
-                                )
-
-                            else
-                                ( [], [] )
-                        )
-                        numberOfANCEncounters
-                        |> Maybe.withDefault
-                            -- Number of encounters is not known, which means that
-                            -- pregnancy was not tracked on E-Heza.
-                            ( viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader Nothing) "." "label"
-                                :: numberOfANCVisitsInputs
-                            , numberOfANCVisitsTasks
-                            )
-
                 SupplementsDuringPregnancy ->
                     let
                         updateFunc value form_ =
@@ -3037,12 +2974,8 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
             in
             if form.updateANCVisits == Just False then
                 let
-                    inputsAndTasks =
-                        List.map inputsAndTasksForSign
-                            [ -- NumberOfANCVisitsCorrect
-                              -- ,
-                              SupplementsDuringPregnancy
-                            ]
+                    ( signsInputs, signTasks ) =
+                        inputsAndTasksForSign SupplementsDuringPregnancy
 
                     ( newbornExamSection, newbornExamTasks ) =
                         if showNCDAQuestionsByNewbornExam config.pregnancySummary then
@@ -3061,10 +2994,10 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             ( [], [] )
                 in
                 ( ancVisitsSection
-                    ++ (List.map Tuple.first inputsAndTasks |> List.concat)
+                    ++ signsInputs
                     ++ newbornExamSection
                 , ancVisitsTasks
-                    ++ (List.map Tuple.second inputsAndTasks |> List.concat)
+                    ++ signTasks
                     ++ newbornExamTasks
                 )
 
@@ -3472,7 +3405,6 @@ viewNCDA language currentDate childId child measurement data db =
             , deleteANCVisitUpdateDateMsg = DeleteANCVisitUpdateDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
-            , setNumberANCVisitsMsg = SetNumberANCVisits
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg =

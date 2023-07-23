@@ -9378,11 +9378,6 @@ translationSet trans =
 
         NCDASignCounceling sign ->
             case sign of
-                NumberOfANCVisitsCorrect ->
-                    { english = "Provide the counseling on the consequences that may occur to her and the baby if she doesn't attend ANC visit as per guidance"
-                    , kinyarwanda = Nothing
-                    }
-
                 SupplementsDuringPregnancy ->
                     { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and refer the mother to the HC to receive the Iron/Folic Acid/MMS"
                     , kinyarwanda = Nothing
@@ -9496,11 +9491,6 @@ translationSet trans =
                 BornWithBirthDefect ->
                     { english = "Was the child born with a birth defect"
                     , kinyarwanda = Just "Umwana yaba yaravukanye ubumuga"
-                    }
-
-                NumberOfANCVisitsCorrect ->
-                    { english = "Is this correct"
-                    , kinyarwanda = Nothing
                     }
 
                 SupplementsDuringPregnancy ->

@@ -249,7 +249,6 @@ type MsgChild
     | SaveANCVisitUpdateDate
     | DeleteANCVisitUpdateDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm MsgChild -> NCDAForm MsgChild) Bool
-    | SetNumberANCVisits String
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
@@ -1041,20 +1040,11 @@ emptyNCDAData =
 
 type alias NCDAForm msg =
     { step : Maybe NCDAStep
-
-    -- Step 1.
-    -- @todo: remove old ANC Visits inputs.
-    , numberOfANCVisitsCorrect : Maybe Bool
-    , numberOfANCVisits : Maybe Int
-
-    -- New ANC Visits inputs.
     , updateANCVisits : Maybe Bool
     , ancVisitsViewMode : ANCVisitsViewMode
     , ancVisitsDates : Maybe (EverySet NominalDate)
     , ancVisitsUpdateDate : Maybe NominalDate
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
-
-    -- Old inputs:
     , supplementsDuringPregnancy : Maybe Bool
     , takenSupplementsPerGuidance : Maybe Bool
     , bornWithBirthDefect : Maybe Bool
@@ -1097,8 +1087,6 @@ emptyNCDAForm =
     { step = Nothing
 
     -- Step 1.
-    , numberOfANCVisitsCorrect = Nothing
-    , numberOfANCVisits = Nothing
     , updateANCVisits = Nothing
     , ancVisitsViewMode = ANCVisitsInitialMode
     , ancVisitsDates = Nothing
@@ -1249,7 +1237,6 @@ type alias NCDAContentConfig msg =
     -- Other actions.
     , setBoolInputMsg : (Bool -> NCDAForm msg -> NCDAForm msg) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
-    , setNumberANCVisitsMsg : String -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg
