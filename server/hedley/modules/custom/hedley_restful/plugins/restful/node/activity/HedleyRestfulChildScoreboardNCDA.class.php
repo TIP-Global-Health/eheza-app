@@ -26,4 +26,11 @@ class HedleyRestfulChildScoreboardNCDA extends HedleyRestfulChildScoreboardActiv
     'field_anc_visits_dates',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
+  protected $multiDateFields = [
+    'field_administration_dates',
+  ];
+
 }
