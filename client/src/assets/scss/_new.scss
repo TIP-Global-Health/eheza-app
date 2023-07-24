@@ -732,148 +732,146 @@ div.page-person {
 div.page-participant,
 div.page-activity {
 
-  .form-content {
+  .tasks-count {
+    background: $color-primary;
+    color: $color-white;
+    padding: 5px 15px;
+    font-size: 18px;
+    font-weight: bold;
+  }
 
-    @include ncda-vaccination;
+  .ui.full.segment .content {
 
-    .tasks-count {
-      background: $color-primary;
-      color: $color-white;
-      padding: 5px 15px;
-      font-size: 18px;
-      font-weight: bold;
+    .activity-helper {
+      margin-bottom: 5px;
     }
 
-    .ui.full.segment .content {
+    .range-helper {
+      margin-top: 0;
+    }
 
-      .activity-helper {
-        margin-bottom: 5px;
+    .fbf-to-receive {
+      border-bottom: 2px solid;
+      border-top: 2px solid;
+      font-size: 1.8rem;
+      font-weight: 500;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
+    .label {
+      margin-bottom: 10px;
+    }
+
+    .label-with-helper {
+      display: flex;
+
+      .label-helper {
+        margin-left: 15px;
+        margin-top: -10px;
       }
+    }
 
-      .range-helper {
-        margin-top: 0;
-      }
+    .form-input {
+      margin-bottom: 30px;
 
-      .fbf-to-receive {
-        border-bottom: 2px solid;
-        border-top: 2px solid;
-        font-size: 1.8rem;
-        font-weight: 500;
-        margin-bottom: 30px;
-        margin-top: 30px;
-        padding-bottom: 10px;
-        padding-top: 10px;
-      }
+      // Number inputs
+      &.measurement,
+      &.number {
+        height: 50px;
 
-      .label {
-        margin-bottom: 10px;
-      }
-
-      .label-with-helper {
-        display: flex;
-
-        .label-helper {
-          margin-left: 15px;
-          margin-top: -10px;
-        }
-      }
-
-      .form-input {
-        margin-bottom: 30px;
-
-        // Number inputs
-        &.measurement,
-        &.number {
-          height: 50px;
-
-          input,
-          select {
-            background-color: $color-white;
-            border: 2px solid $color-gray-border;
-            color: $color-text;
-            float: left;
-            width: 60%;
-          }
-        }
-
-        &.measurement .unit {
+        input,
+        select {
+          background-color: $color-white;
+          border: 2px solid $color-gray-border;
+          color: $color-text;
           float: left;
-          font-weight: normal;
-          margin-left: 20px;
-          margin-top: 10px;
-          width: 35%;
-        }
-
-        &.number {
-
-          input,
-          select {
-            text-align: center;
-          }
-        }
-
-        // Bool inputs
-        &.yes-no {
-          padding-bottom: 15px;
-          margin-left: 25px;
-
-          label {
-            font-size: 25px;
-            margin-left: 10px;
-          }
-
-          label:before {
-            content: " ";
-            display: inline-block;
-            position: relative;
-            top: 5px;
-            margin-right: 10px;
-            width: 26px;
-            height: 26px;
-            border-radius: 13px;
-            border: 2px solid $color-gray-border;
-            background-color: transparent;
-          }
-
-          input[type=radio] {
-            display: none;
-          }
-
-          input[type=radio]:checked + label:after {
-            content: " ";
-            border-radius: 7px;
-            width: 14px;
-            height: 14px;
-            position: absolute;
-            top: 25px;
-            left: 30px;
-            display: block;
-            background: $color-text;
-          }
+          width: 60%;
         }
       }
 
-      .ui.form.ncda .label.counselling {
-        background-color: $color-pink;
-        border-radius: 5px;
-        font-style: italic;
-        padding: 15px;
+      &.measurement .unit {
+        float: left;
+        font-weight: normal;
+        margin-left: 20px;
         margin-top: 10px;
-        margin-bottom: 15px;
+        width: 35%;
       }
 
-    }
+      &.number {
 
-    .ui.full.segment .actions.two button {
-      width: 50%;
-      float: left;
-      margin: 0;
+        input,
+        select {
+          text-align: center;
+        }
+      }
 
-      &.active {
-        border-left: 1px solid $color-white;
+      // Bool inputs
+      &.yes-no {
+        padding-bottom: 15px;
+        margin-left: 25px;
+
+        label {
+          font-size: 25px;
+          margin-left: 10px;
+        }
+
+        label:before {
+          content: " ";
+          display: inline-block;
+          position: relative;
+          top: 5px;
+          margin-right: 10px;
+          width: 26px;
+          height: 26px;
+          border-radius: 13px;
+          border: 2px solid $color-gray-border;
+          background-color: transparent;
+        }
+
+        input[type=radio] {
+          display: none;
+        }
+
+        input[type=radio]:checked + label:after {
+          content: " ";
+          border-radius: 7px;
+          width: 14px;
+          height: 14px;
+          position: absolute;
+          top: 25px;
+          left: 30px;
+          display: block;
+          background: $color-text;
+        }
       }
     }
 
+    .ui.form.ncda .label.counselling {
+      background-color: $color-pink;
+      border-radius: 5px;
+      font-style: italic;
+      padding: 15px;
+      margin-top: 10px;
+      margin-bottom: 15px;
+    }
+
+  }
+
+  .ui.full.segment .actions.two button {
+    width: 50%;
+    float: left;
+    margin: 0;
+
+    &.active {
+      border-left: 1px solid $color-white;
+    }
+  }
+
+  .form-content.ncda {
+    @include ncda-vaccination;
   }
 }
 
