@@ -1916,7 +1916,7 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
                                         cellValue
                                 )
                             |> -- Reversing values, to have proper 1 - 9 pregnancy
-                               -- month order.
+                               -- months order.
                                List.reverse
                 )
                 child.birthDate

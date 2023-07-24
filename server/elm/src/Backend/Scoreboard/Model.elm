@@ -80,14 +80,14 @@ emptyNCDAData =
 
 
 type alias ANCNewbornData =
-    { row1 : Bool
+    { row1 : List NominalDate
     , row2 : Bool
     }
 
 
 emptyANCNewbornData : ANCNewbornData
 emptyANCNewbornData =
-    ANCNewbornData False False
+    ANCNewbornData [] False
 
 
 type alias UniversalInterventionData =

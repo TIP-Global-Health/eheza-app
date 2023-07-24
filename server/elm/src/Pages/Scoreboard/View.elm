@@ -410,9 +410,6 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 v
 viewANCNewbornPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
 viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
-        _ =
-            Debug.log "monthsGap" monthsGap
-
         rows =
             List.map2
                 (\item itemValues ->
@@ -429,8 +426,8 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                         ageInMonths =
                             diffMonths record.birthDate currentDate
 
-                        _ =
-                            Debug.log "ageInM1onths" ageInMonths
+                        row1AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.ancNewborn.row1
                     in
                     List.indexedMap
                         (\index accumValue ->
@@ -442,7 +439,7 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                 gapInMonths - ageInMonths
 
                                             row1 =
-                                                if record.ncda.ancNewborn.row1 && gap > 0 && gap < 10 then
+                                                if List.member gapInMonths row1AsAgeInMonths then
                                                     accumValue.row1 + 1
 
                                                 else
