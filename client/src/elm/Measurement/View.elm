@@ -3204,7 +3204,7 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                             EverySet.size encountersDatesFromForm
                                     in
                                     if (ancDataVisits + formVisists) < 4 then
-                                        viewCustomLabel language Translate.NCDANoANVCVisitsOnRecord "." "label counselling"
+                                        viewCustomLabel language Translate.NCDAANCVisitsCounseling "." "label counselling"
 
                                     else
                                         emptyNode
