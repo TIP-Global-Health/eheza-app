@@ -4924,29 +4924,6 @@ isTestResultValid =
            Maybe.withDefault True
 
 
-
--- @todo: remove
-
-
-countANCEncountersMadeForChild : PersonId -> ModelIndexedDb -> Maybe Int
-countANCEncountersMadeForChild childId db =
-    Dict.get childId db.pregnancyByNewborn
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.Extra.join
-        |> Maybe.andThen
-            (\( participantId, _ ) ->
-                Dict.get participantId db.prenatalEncountersByParticipant
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map
-                        (Dict.filter
-                            (\_ encounter ->
-                                not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                            )
-                            >> Dict.size
-                        )
-            )
-
-
 resolveChildANCEncountersDates : PersonId -> ModelIndexedDb -> EverySet NominalDate
 resolveChildANCEncountersDates childId db =
     Dict.get childId db.pregnancyByNewborn
