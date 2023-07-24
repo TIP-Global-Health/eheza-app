@@ -5149,7 +5149,7 @@ expectNCDAStep currentDate person ncdaNeverFilled task =
     case task of
         -- If NCDA was filled before, for sure it included answers to
         -- needed questions. Since questions at this step are to be asked
-        -- only once, we know it can ve skipped.
+        -- only once, we know it can be skipped.
         NCDAStepAntenatalCare ->
             ncdaNeverFilled
 

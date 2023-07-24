@@ -1863,24 +1863,26 @@ viewANCNewbornPane language currentDate db child allNCDAQuestionnaires =
                 List.repeat 9 NCDACellValueEmpty
 
             else
-                List.filterMap (Tuple.second >> .numberOfANCVisits)
-                    allNCDAQuestionnaires
-                    |> List.head
-                    |> Maybe.map
-                        (\numberOfANCVisits ->
-                            if numberOfANCVisits < 4 then
-                                List.repeat 9 NCDACellValueX
-
-                            else
-                                List.repeat 9 NCDACellValueV
-                        )
-                    |> Maybe.withDefault
-                        -- Number of ANC visits question is not asked when we know
-                        -- from E-Heza data that there were at least 4 ANC encounters.
-                        -- Therefore, if we have at least one questionnaire filled, and
-                        -- have no data for ANC encounters, we know that ANC encounters
-                        -- question was not asked, because there were at least 4 ANC encounters.
-                        (List.repeat 9 NCDACellValueV)
+                -- List.filterMap (Tuple.second >> .numberOfANCVisits)
+                --     allNCDAQuestionnaires
+                --     |> List.head
+                --     |> Maybe.map
+                --         (\numberOfANCVisits ->
+                --             if numberOfANCVisits < 4 then
+                --                 List.repeat 9 NCDACellValueX
+                --
+                --             else
+                --                 List.repeat 9 NCDACellValueV
+                --         )
+                --     |> Maybe.withDefault
+                --         -- Number of ANC visits question is not asked when we know
+                --         -- from E-Heza data that there were at least 4 ANC encounters.
+                --         -- Therefore, if we have at least one questionnaire filled, and
+                --         -- have no data for ANC encounters, we know that ANC encounters
+                --         -- question was not asked, because there were at least 4 ANC encounters.
+                --         (List.repeat 9 NCDACellValueV)
+                -- @todo
+                List.repeat 9 NCDACellValueEmpty
 
         pregnancyValuesForIron =
             if List.isEmpty allNCDAQuestionnaires then

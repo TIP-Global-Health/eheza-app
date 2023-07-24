@@ -1024,7 +1024,7 @@ type TranslationId
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
-    | NCDANumberOfANCVisitsHeader (Maybe Int)
+    | NCDANoANVCVisitsOnRecord
     | NCDANumberOfANCVisitsQuestion
     | NCDANumberImmunizationAppointmentLabel (Maybe NominalDate)
     | NCDAStep NCDAStep
@@ -9806,24 +9806,10 @@ translationSet trans =
                     , kinyarwanda = Just "Kubyimba"
                     }
 
-        NCDANumberOfANCVisitsHeader maybeNunmber ->
-            Maybe.map
-                (\number ->
-                    if number == 1 then
-                        { english = "According to E-Heza, the mother had 1 standard ANC visit"
-                        , kinyarwanda = Nothing
-                        }
-
-                    else
-                        { english = "According to E-Heza, the mother had " ++ String.fromInt number ++ " standard ANC visits"
-                        , kinyarwanda = Nothing
-                        }
-                )
-                maybeNunmber
-                |> Maybe.withDefault
-                    { english = "E-Heza does not have records of this pregnancy"
-                    , kinyarwanda = Nothing
-                    }
+        NCDANoANVCVisitsOnRecord ->
+            { english = "There are no recorded ANC visits for this child"
+            , kinyarwanda = Nothing
+            }
 
         NCDANumberOfANCVisitsQuestion ->
             { english = "How many ANC standard visits did the mother receive"

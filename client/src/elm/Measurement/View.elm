@@ -3152,7 +3152,7 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
 
                             dosesForView =
                                 if List.isEmpty entriesForView then
-                                    [ viewCustomLabel language (Translate.NCDANumberOfANCVisitsHeader Nothing) "." "label-normal" ]
+                                    [ viewCustomLabel language Translate.NCDANoANVCVisitsOnRecord "." "label-normal" ]
 
                                 else
                                     entriesForView
