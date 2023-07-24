@@ -128,12 +128,12 @@ $encounters = [
     round(physical_exam($start_date, $end_date, $name_clause, 'heart_rate_normal') / physical_exam($start_date, $end_date, $name_clause, 'heart_rate_complete') * 100, 3) . '%',
   ],
   [
-    '  Respitory Rate',
+    '  Respiratory Rate',
     physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
     round(physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
-    '    Respitory Rate Normal',
+    '    Respiratory Rate Normal',
     physical_exam($start_date, $end_date, $name_clause, 'resp_rate_normal') . ' / ' . physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete'),
     round(physical_exam($start_date, $end_date, $name_clause, 'resp_rate_normal') / physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') * 100, 3) . '%',
   ],
