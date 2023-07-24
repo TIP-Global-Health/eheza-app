@@ -167,6 +167,100 @@
   }
 }
 
+@mixin ncda-vaccination {
+
+  .ui.form.vaccination .header.icon-label {
+    align-items: flex-start;
+    font-weight: 500;
+
+    .description,
+    .dosage {
+      margin-bottom: 30px;
+    }
+  }
+
+  .ui.form.vaccination .history,
+  .ui.form.ncda .history {
+    padding: 20px 0;
+
+    .label,
+    .label-normal {
+      font-weight: 500;
+      margin-left: 10px;
+    }
+  }
+
+  .ui.form.vaccination .form-input.date,
+  .ui.form.ncda .form-input.date {
+    border: 2px solid $color-light-gray;
+    color: $color-text;
+    height: 2em;
+    margin-bottom: 30px;
+    padding: 5px;
+    text-align: center;
+    width: 50%;
+  }
+
+  .ui.form.vaccination .history .history-entry,
+  .ui.form.ncda .history .history-entry {
+    align-items: flex-start;
+    display: flex;
+    font-weight: normal;
+    margin-left: 55px;
+
+    .dose {
+      background: $color-primary;
+      border-radius: 5px;
+      color: $color-white;
+      font-size: 17px;
+      padding: 0 10px;
+    }
+
+    .date {
+      margin-bottom: 20px;
+      margin-left: 30px;
+      width: 150px;
+    }
+
+    .update,
+    .delete {
+      border-radius: 3px;
+      color: $color-white;
+      font-size: 17px;
+      padding: 0 20px;
+      text-transform: uppercase;
+    }
+
+    .update {
+      background: $color-primary;
+    }
+
+    .delete {
+      background: $color-velvet;
+    }
+  }
+
+  .ui.form.vaccination .update.actions,
+  .ui.form.ncda .update.actions {
+    display: flex;
+    justify-content: space-evenly;
+    margin-bottom: 40px;
+
+    .button {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 32px;
+      padding: 15px;
+      width: 250px;
+    }
+  }
+
+  .ui.form.vaccination-overview .heading .date {
+    margin-bottom: 0;
+  }
+
+}
+
 // We design for a minimum width of 800px.
 html,
 body {
@@ -638,141 +732,148 @@ div.page-person {
 div.page-participant,
 div.page-activity {
 
-  .ui.form.ncda .label.counselling {
-    background-color: $color-pink;
-    border-radius: 5px;
-    font-style: italic;
-    padding: 15px;
-    margin-top: 10px;
-    margin-bottom: 15px;
-  }
+  .form-content {
 
-  .tasks-count {
-    background: $color-primary;
-    color: $color-white;
-    padding: 5px 15px;
-    font-size: 18px;
-    font-weight: bold;
-  }
+    @include ncda-vaccination;
 
-  .ui.full.segment .content {
-
-    .activity-helper {
-      margin-bottom: 5px;
+    .tasks-count {
+      background: $color-primary;
+      color: $color-white;
+      padding: 5px 15px;
+      font-size: 18px;
+      font-weight: bold;
     }
 
-    .range-helper {
-      margin-top: 0;
-    }
+    .ui.full.segment .content {
 
-    .fbf-to-receive {
-      border-bottom: 2px solid;
-      border-top: 2px solid;
-      font-size: 1.8rem;
-      font-weight: 500;
-      margin-bottom: 30px;
-      margin-top: 30px;
-      padding-bottom: 10px;
-      padding-top: 10px;
-    }
-
-    .label {
-      margin-bottom: 10px;
-    }
-
-    .label-with-helper {
-      display: flex;
-
-      .label-helper {
-        margin-left: 15px;
-        margin-top: -10px;
+      .activity-helper {
+        margin-bottom: 5px;
       }
-    }
 
-    .form-input {
-      margin-bottom: 30px;
+      .range-helper {
+        margin-top: 0;
+      }
 
-      // Number inputs
-      &.measurement,
-      &.number {
-        height: 50px;
+      .fbf-to-receive {
+        border-bottom: 2px solid;
+        border-top: 2px solid;
+        font-size: 1.8rem;
+        font-weight: 500;
+        margin-bottom: 30px;
+        margin-top: 30px;
+        padding-bottom: 10px;
+        padding-top: 10px;
+      }
 
-        input,
-        select {
-          background-color: $color-white;
-          border: 2px solid $color-gray-border;
-          color: $color-text;
+      .label {
+        margin-bottom: 10px;
+      }
+
+      .label-with-helper {
+        display: flex;
+
+        .label-helper {
+          margin-left: 15px;
+          margin-top: -10px;
+        }
+      }
+
+      .form-input {
+        margin-bottom: 30px;
+
+        // Number inputs
+        &.measurement,
+        &.number {
+          height: 50px;
+
+          input,
+          select {
+            background-color: $color-white;
+            border: 2px solid $color-gray-border;
+            color: $color-text;
+            float: left;
+            width: 60%;
+          }
+        }
+
+        &.measurement .unit {
           float: left;
-          width: 60%;
+          font-weight: normal;
+          margin-left: 20px;
+          margin-top: 10px;
+          width: 35%;
+        }
+
+        &.number {
+
+          input,
+          select {
+            text-align: center;
+          }
+        }
+
+        // Bool inputs
+        &.yes-no {
+          padding-bottom: 15px;
+          margin-left: 25px;
+
+          label {
+            font-size: 25px;
+            margin-left: 10px;
+          }
+
+          label:before {
+            content: " ";
+            display: inline-block;
+            position: relative;
+            top: 5px;
+            margin-right: 10px;
+            width: 26px;
+            height: 26px;
+            border-radius: 13px;
+            border: 2px solid $color-gray-border;
+            background-color: transparent;
+          }
+
+          input[type=radio] {
+            display: none;
+          }
+
+          input[type=radio]:checked + label:after {
+            content: " ";
+            border-radius: 7px;
+            width: 14px;
+            height: 14px;
+            position: absolute;
+            top: 25px;
+            left: 30px;
+            display: block;
+            background: $color-text;
+          }
         }
       }
 
-      &.measurement .unit {
-        float: left;
-        font-weight: normal;
-        margin-left: 20px;
+      .ui.form.ncda .label.counselling {
+        background-color: $color-pink;
+        border-radius: 5px;
+        font-style: italic;
+        padding: 15px;
         margin-top: 10px;
-        width: 35%;
+        margin-bottom: 15px;
       }
 
-      &.number {
+    }
 
-        input,
-        select {
-          text-align: center;
-        }
-      }
+    .ui.full.segment .actions.two button {
+      width: 50%;
+      float: left;
+      margin: 0;
 
-      // Bool inputs
-      &.yes-no {
-        padding-bottom: 15px;
-        margin-left: 25px;
-
-        label {
-          font-size: 25px;
-          margin-left: 10px;
-        }
-
-        label:before {
-          content: " ";
-          display: inline-block;
-          position: relative;
-          top: 5px;
-          margin-right: 10px;
-          width: 26px;
-          height: 26px;
-          border-radius: 13px;
-          border: 2px solid $color-gray-border;
-          background-color: transparent;
-        }
-
-        input[type=radio] {
-          display: none;
-        }
-
-        input[type=radio]:checked + label:after {
-          content: " ";
-          border-radius: 7px;
-          width: 14px;
-          height: 14px;
-          position: absolute;
-          top: 25px;
-          left: 30px;
-          display: block;
-          background: $color-text;
-        }
+      &.active {
+        border-left: 1px solid $color-white;
       }
     }
-  }
 
-  .ui.full.segment .actions.two button {
-    width: 50%;
-    float: left;
-    margin: 0;
-
-    &.active {
-      border-left: 1px solid $color-white;
-    }
   }
 }
 
@@ -1762,6 +1863,8 @@ div.page-activity.nutrition {
 
     .full.content {
       min-height: 210px;
+
+      @include ncda-vaccination;
     }
 
     .label {
@@ -2038,75 +2141,7 @@ div.page-activity.prenatal {
         margin-bottom: 20px;
       }
 
-      .ui.form.vaccination .header.icon-label {
-        align-items: flex-start;
-        font-weight: 500;
-
-        .description,
-        .dosage {
-          margin-bottom: 30px;
-        }
-      }
-
-      .ui.form.vaccination .history {
-        padding: 20px 0;
-
-        .label {
-          font-weight: 500;
-          margin-left: 10px;
-        }
-      }
-
-      .ui.form.vaccination .history .history-entry {
-        align-items: flex-start;
-        display: flex;
-        font-weight: normal;
-        margin-left: 55px;
-
-        .dose {
-          background: $color-primary;
-          border-radius: 5px;
-          color: $color-white;
-          font-size: 17px;
-          padding: 0 10px;
-        }
-
-        .date {
-          margin-bottom: 20px;
-          margin-left: 30px;
-          width: 150px;
-        }
-
-        .update,
-        .delete {
-          border-radius: 3px;
-          color: $color-white;
-          font-size: 17px;
-          padding: 0 20px;
-          text-transform: uppercase;
-        }
-
-        .update {
-          background: $color-primary;
-        }
-
-        .delete {
-          background: $color-velvet;
-        }
-      }
-
-      .ui.form.vaccination .update.actions {
-        display: flex;
-        justify-content: space-evenly;
-        margin-bottom: 40px;
-
-        .button {
-          font-size: 18px;
-          font-weight: 600;
-          padding: 15px;
-          width: 250px;
-        }
-      }
+      @include ncda-vaccination;
 
       .ui.form.labs-history {
 
@@ -2214,6 +2249,8 @@ div.page-activity.child-scoreboard {
 
     .full.content {
 
+      @include ncda-vaccination;
+
       .date {
         margin-bottom: 20px;
       }
@@ -2272,79 +2309,6 @@ div.page-activity.child-scoreboard {
 
       .button.review-history {
         margin-bottom: 30px;
-      }
-
-      .ui.form.vaccination .header.icon-label {
-        align-items: flex-start;
-        font-weight: 500;
-
-        .description,
-        .dosage {
-          margin-bottom: 30px;
-        }
-      }
-
-      .ui.form.vaccination .history {
-        padding: 20px 0;
-
-        .label {
-          font-weight: 500;
-          margin-left: 10px;
-        }
-      }
-
-      .ui.form.vaccination .history .history-entry {
-        align-items: flex-start;
-        display: flex;
-        font-weight: normal;
-        margin-left: 55px;
-
-        .dose {
-          background: $color-primary;
-          border-radius: 5px;
-          color: $color-white;
-          font-size: 17px;
-          padding: 0 10px;
-        }
-
-        .date {
-          margin-left: 30px;
-          width: 150px;
-        }
-
-        .update,
-        .delete {
-          border-radius: 3px;
-          color: $color-white;
-          font-size: 17px;
-          padding: 0 20px;
-          text-transform: uppercase;
-        }
-
-        .update {
-          background: $color-primary;
-        }
-
-        .delete {
-          background: $color-velvet;
-        }
-      }
-
-      .ui.form.vaccination .update.actions {
-        display: flex;
-        justify-content: space-evenly;
-        margin-bottom: 40px;
-
-        .button {
-          font-size: 18px;
-          font-weight: 600;
-          padding: 15px;
-          width: 250px;
-        }
-      }
-
-      .ui.form.vaccination-overview .heading .date {
-        margin-bottom: 0;
       }
 
       .ui.form.pregnancy-summary {

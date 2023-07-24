@@ -3422,4 +3422,4 @@ viewNCDA language currentDate childId child measurement data db =
         data.helperState
         form
         db
-        |> div [ class "ui form ncda" ]
+        |> div [ class "form-content" ]
