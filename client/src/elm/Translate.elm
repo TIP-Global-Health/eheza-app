@@ -1007,12 +1007,13 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
+    | NCDAANCVisitsCounseling
     | NCDABirthweightQuestion
     | NCDADiarrheaPopupMessage
     | NCDAMealFrequency6to9
     | NCDAMealFrequency9to12
     | NCDAMealFrequency12to24
-    | NCDASignCounceling NCDASign
+    | NCDASignCounseling NCDASign
     | NCDASignHelperHeader NCDASign
     | NCDASignQuestion NCDASign
     | NCDAUpdateVaccineRecordMessage
@@ -9351,6 +9352,11 @@ translationSet trans =
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
 
+        NCDAANCVisitsCounseling ->
+            { english = "Provide the counseling on the consequences that may occur to her and the baby if she doesn't attend ANC visit as per guidance"
+            , kinyarwanda = Nothing
+            }
+
         NCDABirthweightQuestion ->
             { english = "What was the child's birthweight"
             , kinyarwanda = Just "Umwana yavukanye ibiro bingahe"
@@ -9376,7 +9382,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        NCDASignCounceling sign ->
+        NCDASignCounseling sign ->
             case sign of
                 SupplementsDuringPregnancy ->
                     { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and refer the mother to the HC to receive the Iron/Folic Acid/MMS"

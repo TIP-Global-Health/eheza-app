@@ -2964,7 +2964,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
             ]
 
         viewCounselingLabel sign =
-            viewCustomLabel language (Translate.NCDASignCounceling sign) "." "label counselling"
+            viewCustomLabel language (Translate.NCDASignCounseling sign) "." "label counselling"
     in
     case currentStep of
         NCDAStepAntenatalCare ->
@@ -3193,6 +3193,25 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
             ( inputs, tasks ) =
                 case form.ancVisitsViewMode of
                     ANCVisitsInitialMode ->
+                        let
+                            counseling =
+                                if form.updateANCVisits == Just False then
+                                    let
+                                        ancDataVisits =
+                                            EverySet.size encountersDatesFromANCData
+
+                                        formVisists =
+                                            EverySet.size encountersDatesFromForm
+                                    in
+                                    if (ancDataVisits + formVisists) < 4 then
+                                        viewCustomLabel language Translate.NCDANoANVCVisitsOnRecord "." "label counselling"
+
+                                    else
+                                        emptyNode
+
+                                else
+                                    emptyNode
+                        in
                         ( [ viewQuestionLabel language Translate.ANCEncountersNotRecordedQuestion
                           , viewBoolInput
                                 language
@@ -3200,6 +3219,7 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                 config.setUpdateANCVisitsMsg
                                 ""
                                 Nothing
+                          , counseling
                           ]
                         , [ form.updateANCVisits ]
                         )
