@@ -4524,7 +4524,7 @@ fromNCDAValue saved =
     , updateANCVisits = Nothing
     , ancVisitsViewMode = ANCVisitsInitialMode
     , ancVisitsDates = Maybe.map .ancVisitsDates saved
-    , ancVisitsUpdateDate = Nothing
+    , ancVisitUpdateDate = Nothing
     , dateSelectorPopupState = Nothing
     }
 
@@ -4541,7 +4541,7 @@ ncdaFormWithDefault form saved =
                 , updateANCVisits = or form.updateANCVisits (Just False)
                 , ancVisitsViewMode = form.ancVisitsViewMode
                 , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
-                , ancVisitsUpdateDate = form.ancVisitsUpdateDate
+                , ancVisitUpdateDate = form.ancVisitUpdateDate
                 , dateSelectorPopupState = form.dateSelectorPopupState
 
                 --

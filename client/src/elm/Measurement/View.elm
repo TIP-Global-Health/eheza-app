@@ -3228,8 +3228,8 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                         Maybe.map
                             (\birthDate ->
                                 let
-                                    ancVisitsUpdateDateForView =
-                                        Maybe.map formatDDMMYYYY form.ancVisitsUpdateDate
+                                    ancVisitUpdateDateForView =
+                                        Maybe.map formatDDMMYYYY form.ancVisitUpdateDate
                                             |> Maybe.withDefault ""
 
                                     dateFrom =
@@ -3248,8 +3248,8 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                         [ class "form-input date"
                                         , onClick <| config.setANCVisitUpdateDateSelectorStateMsg (Just dateSelectorConfig)
                                         ]
-                                        [ text ancVisitsUpdateDateForView ]
-                                  , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.ancVisitsUpdateDate
+                                        [ text ancVisitUpdateDateForView ]
+                                  , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.ancVisitUpdateDate
                                   , div [ class "update actions" ]
                                         [ div
                                             [ class "ui primary button"
@@ -3260,14 +3260,14 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                         , div
                                             [ classList
                                                 [ ( "ui primary button", True )
-                                                , ( "disabled", isNothing form.ancVisitsUpdateDate )
+                                                , ( "disabled", isNothing form.ancVisitUpdateDate )
                                                 ]
                                             , onClick config.saveANCVisitUpdateDateMsg
                                             ]
                                             [ text <| translate language Translate.Save ]
                                         ]
                                   ]
-                                , [ maybeToBoolTask form.ancVisitsUpdateDate ]
+                                , [ maybeToBoolTask form.ancVisitUpdateDate ]
                                 )
                             )
                             person.birthDate

@@ -297,10 +297,10 @@ update currentDate id db msg model =
         SetANCVisitUpdateDateSelectorState state ->
             let
                 defaultSelection =
-                    Maybe.Extra.or ncdaForm.ancVisitsUpdateDate (Maybe.andThen .dateDefault state)
+                    Maybe.Extra.or ncdaForm.ancVisitUpdateDate (Maybe.andThen .dateDefault state)
 
                 updatedForm =
-                    { ncdaForm | dateSelectorPopupState = state, ancVisitsUpdateDate = defaultSelection }
+                    { ncdaForm | dateSelectorPopupState = state, ancVisitUpdateDate = defaultSelection }
 
                 updatedData =
                     model.ncdaData
@@ -314,7 +314,7 @@ update currentDate id db msg model =
         SetANCVisitUpdateDate date ->
             let
                 updatedForm =
-                    { ncdaForm | ancVisitsUpdateDate = Just date }
+                    { ncdaForm | ancVisitUpdateDate = Just date }
 
                 updatedData =
                     model.ncdaData
@@ -335,7 +335,7 @@ update currentDate id db msg model =
                                     { ncdaForm
                                         | ancVisitsDates = insertIntoSet date ncdaForm.ancVisitsDates
                                         , ancVisitsViewMode = ANCVisitsInitialMode
-                                        , ancVisitsUpdateDate = Nothing
+                                        , ancVisitUpdateDate = Nothing
                                     }
 
                                 updatedData =
@@ -344,7 +344,7 @@ update currentDate id db msg model =
                             in
                             { model | ncdaData = updatedData }
                         )
-                        ncdaForm.ancVisitsUpdateDate
+                        ncdaForm.ancVisitUpdateDate
                         |> Maybe.withDefault model
             in
             ( updatedModel

@@ -1043,7 +1043,7 @@ type alias NCDAForm msg =
     , updateANCVisits : Maybe Bool
     , ancVisitsViewMode : ANCVisitsViewMode
     , ancVisitsDates : Maybe (EverySet NominalDate)
-    , ancVisitsUpdateDate : Maybe NominalDate
+    , ancVisitUpdateDate : Maybe NominalDate
     , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
     , supplementsDuringPregnancy : Maybe Bool
     , takenSupplementsPerGuidance : Maybe Bool
@@ -1090,7 +1090,7 @@ emptyNCDAForm =
     , updateANCVisits = Nothing
     , ancVisitsViewMode = ANCVisitsInitialMode
     , ancVisitsDates = Nothing
-    , ancVisitsUpdateDate = Nothing
+    , ancVisitUpdateDate = Nothing
     , dateSelectorPopupState = Nothing
     , supplementsDuringPregnancy = Nothing
     , takenSupplementsPerGuidance = Nothing

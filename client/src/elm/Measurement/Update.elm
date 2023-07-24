@@ -306,10 +306,10 @@ updateChild msg model =
                     model.ncdaData.form
 
                 defaultSelection =
-                    Maybe.Extra.or form.ancVisitsUpdateDate (Maybe.andThen .dateDefault state)
+                    Maybe.Extra.or form.ancVisitUpdateDate (Maybe.andThen .dateDefault state)
 
                 updatedForm =
-                    { form | dateSelectorPopupState = state, ancVisitsUpdateDate = defaultSelection }
+                    { form | dateSelectorPopupState = state, ancVisitUpdateDate = defaultSelection }
 
                 updatedData =
                     model.ncdaData
@@ -326,7 +326,7 @@ updateChild msg model =
                     model.ncdaData.form
 
                 updatedForm =
-                    { form | ancVisitsUpdateDate = Just date }
+                    { form | ancVisitUpdateDate = Just date }
 
                 updatedData =
                     model.ncdaData
@@ -350,7 +350,7 @@ updateChild msg model =
                                     { form
                                         | ancVisitsDates = insertIntoSet date form.ancVisitsDates
                                         , ancVisitsViewMode = ANCVisitsInitialMode
-                                        , ancVisitsUpdateDate = Nothing
+                                        , ancVisitUpdateDate = Nothing
                                     }
 
                                 updatedData =
@@ -359,7 +359,7 @@ updateChild msg model =
                             in
                             { model | ncdaData = updatedData }
                         )
-                        form.ancVisitsUpdateDate
+                        form.ancVisitUpdateDate
                         |> Maybe.withDefault model
             in
             ( updatedModel
