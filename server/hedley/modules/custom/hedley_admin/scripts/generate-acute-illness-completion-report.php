@@ -721,7 +721,7 @@ function treatment_history($start_date, $end_date, $name_clause, $mode = FALSE) 
  *   BP: completed systolic and diastolic measurments
  *   heart_rate: completed heart rate measurments
  *   resp_rate: completed respiratory rate measurments
- *   body_rate: completed body temp measurments
+ *   body: completed body temp measurments
  *   core: completed core exam section
  *   muac: completed MUAC measurments
  *   nutrition: completed nutrition measurments
@@ -866,12 +866,34 @@ function physical_exam_total($start_date, $end_date, $name_clause) {
   return $count;
 }
 
+/**
+ * Gets various number of encouters related to the physical examination.
+ *
+ * @param string $start_date
+ *   The starting date.
+ * @param string $end_date
+ *   The ending date.
+ * @param string $name_clause
+ *   The district/health-center SQL clause.
+ * @param string $mode
+ *   Heart: completed heart rate measurments with an age
+ *   heart_abnormal: abnormal heart rate measurments for age
+ *   respiration: completed respiratory rate measurments with an age
+ *   respiration_abnormal: completed respiratory rate measurments for age
+ *   temp: completed body temp measurments with an age
+ *   temp_abnormal: completed body temp measurments with an age
+ *   muac: completed MUAC measurments with an age
+ *   muac_abnormal: completed MUAC measurments with an age.
+ *
+ * @return int
+ *   Number of encounters based on mode.
+ */
 function physical_exam_abnormal($start_date, $end_date, $name_clause, $mode) {
   $ids = array_fill_keys(get_id_list($start_date, $end_date, $name_clause), 0);
-  if ($mode == "heart" || $mode == "Heart"){
+
+  if ($mode == "heart" || $mode == "Heart") {
     $constraints = ["AND age IS NOT NULL AND field_heart_rate_value IS NOT NULL"];
   }
-  
   elseif ($mode == "heart_abnormal") {
     $constraints = [
       "AND age = 'mt50y' AND (field_heart_rate_value > 160 OR field_heart_rate_value < 110)",
@@ -881,7 +903,7 @@ function physical_exam_abnormal($start_date, $end_date, $name_clause, $mode) {
       "AND (age = 'lt20y' OR age = 'lt50y') AND (field_heart_rate_value > 100 OR field_heart_rate_value < 60)",
     ];
   }
-  elseif ($mode == "respiratory"){
+  elseif ($mode == "respiratory") {
     $constraints = ["AND age IS NOT NULL AND field_respiratory_rate_value IS NOT NULL"];
   }
   elseif ($mode == "respiratory_abnormal") {
@@ -891,20 +913,17 @@ function physical_exam_abnormal($start_date, $end_date, $name_clause, $mode) {
       "AND (age = 'lt10y' OR age = 'lt20y' OR age = 'lt50y') AND (field_respiratory_rate_value > 100 OR field_respiratory_rate_value < 60)",
     ];
   }
-  elseif ($mode == "temp"){
+  elseif ($mode == "temp") {
     $constraints = ["AND age IS NOT NULL AND field_body_temperature_value IS NOT NULL"];
   }
   elseif ($mode == "temp_abnormal") {
     $constraints = ["AND age IS NOT NULL AND (field_body_temperature_value > 37.5 OR field_body_temperature_value < 35)"];
   }
-  elseif ($mode == "muac"){
+  elseif ($mode == "muac") {
     $constraints = ["AND age IS NOT NULL AND field_muac_value IS NOT NULL"];
   }
   elseif ($mode == "muac_abnormal") {
     $constraints = ["AND age IS NOT NULL AND field_muac_value < 14.5"];
-  }
-  else{
-    exit;
   }
 
   foreach ($constraints as $constraint_clause) {
