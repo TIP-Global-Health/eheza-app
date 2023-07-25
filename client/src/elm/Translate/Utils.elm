@@ -13,17 +13,20 @@ import Translate.Model exposing (..)
 
 selectLanguage : Language -> TranslationSet a -> a
 selectLanguage lang set =
+    let
+        optinal resolveSetFunc =
+            resolveSetFunc set
+                |> Maybe.withDefault set.english
+    in
     case lang of
         English ->
             set.english
 
         Kinyarwanda ->
-            case set.kinyarwanda of
-                Just trans ->
-                    trans
+            optinal .kinyarwanda
 
-                Nothing ->
-                    set.english
+        Kirundi ->
+            optinal .kirundi
 
 
 languageFromString : String -> Result String Language
@@ -34,6 +37,9 @@ languageFromString str =
 
         "Kinyarwanda" ->
             Ok Kinyarwanda
+
+        "Kirundi" ->
+            Ok Kirundi
 
         _ ->
             Err "Not a language"
@@ -48,6 +54,9 @@ languageFromCode str =
         "rw" ->
             Ok Kinyarwanda
 
+        "bu" ->
+            Ok Kirundi
+
         _ ->
             Err "Not a language"
 
@@ -60,6 +69,9 @@ languageToCode lang =
 
         Kinyarwanda ->
             "rw"
+
+        Kirundi ->
+            "bu"
 
 
 decodeLanguage : Decoder Language
