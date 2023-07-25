@@ -668,8 +668,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     if (!empty($ncda->field_anc_visits_dates) && !empty($ncda->field_anc_visits_dates[LANGUAGE_NONE])) {
       $anc_visits_dates = $ncda->field_anc_visits_dates[LANGUAGE_NONE];
       foreach ($anc_visits_dates as $date) {
-        $parts = explode(' ', $date['value']);
-        $data['ncda']['pane1']['row1'][] = $parts[0];
+        $data['ncda']['pane1']['row1'][] = hedley_restful_timestamp_only_date($date['value']);
       }
 
       // ANC visits question is asked once. If answered previously, no
@@ -924,35 +923,35 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     }
 
     foreach ($items as $item) {
-      $parts = explode(' ', $item['value']);
+      $vaccination_date = hedley_restful_timestamp_only_date($item['value']);
 
       switch ($immunisation->type) {
         case HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['bcg'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['bcg'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['opv'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['opv'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['dtp'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['dtp'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['pcv13'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['pcv13'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['rotarix'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['rotarix'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['ipv'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['ipv'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['mr'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['mr'][] = $vaccination_date;
           break;
       }
     }
@@ -1145,8 +1144,7 @@ function hedley_ncda_get_date_filed_value($node, $field_name) {
     return FALSE;
   }
 
-  $parts = explode(' ', $field[LANGUAGE_NONE][0]['value']);
-  return $parts[0];
+  return hedley_restful_timestamp_only_date($field[LANGUAGE_NONE][0]['value']);
 }
 
 /**
