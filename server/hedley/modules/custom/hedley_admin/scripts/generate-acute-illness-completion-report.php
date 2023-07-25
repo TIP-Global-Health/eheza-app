@@ -129,13 +129,13 @@ $encounters = [
   ],
   [
     '  Respiratory Rate',
-    physical_exam($start_date, $end_date, $name_clause, 'resp_rate') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'resp_rate') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
-    '    Respiratory Rate Outside Normal',
-    physical_exam_abnormal($start_date, $end_date, $name_clause, 'respiratory_abnormal') . ' / ' . physical_exam_abnormal($start_date, $end_date, $name_clause, 'respiratory'),
-    round(physical_exam_abnormal($start_date, $end_date, $name_clause, 'respiratory_abnormal') / physical_exam_abnormal($start_date, $end_date, $name_clause, 'respiratory') * 100, 3) . '%',
+    '    Respiratory Rate Normal',
+    physical_exam($start_date, $end_date, $name_clause, 'resp_rate_normal') . ' / ' . physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete'),
+    round(physical_exam($start_date, $end_date, $name_clause, 'resp_rate_normal') / physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') * 100, 3) . '%',
   ],
   [
     '  Body Temp',
