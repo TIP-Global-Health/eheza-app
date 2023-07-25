@@ -1,4 +1,4 @@
-module Config.Model exposing (BackendUrl, Model)
+module Config.Model exposing (BackendUrl, Model, Site(..))
 
 
 type alias BackendUrl =
@@ -6,8 +6,13 @@ type alias BackendUrl =
 
 
 type alias Model =
-    { backendUrl : BackendUrl
+    { site : Site
+    , backendUrl : BackendUrl
     , name : String
     , debug : Bool
-    , sandbox : Bool
     }
+
+
+type Site
+    = SiteRwanda
+    | SiteBurundi

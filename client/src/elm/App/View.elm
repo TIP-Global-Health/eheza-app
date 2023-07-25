@@ -7,6 +7,7 @@ import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
+import Config.Model as Config exposing (Site(..))
 import Config.View
 import Date
 import Error.View
@@ -183,6 +184,33 @@ viewLanguageSwitcherAndVersion model =
                         , class "sync-icon"
                         ]
                         [ i [ class "icon undo" ] [] ]
+
+        siteDependentLanguage =
+            RemoteData.toMaybe model.configuration
+                |> Maybe.map
+                    (\configured ->
+                        let
+                            -- @todo: also replace flag
+                            label =
+                                case configured.config.site of
+                                    SiteRwanda ->
+                                        "Kinyarwanda"
+
+                                    SiteBurundi ->
+                                        "Kirundi"
+                        in
+                        li
+                            [ classList
+                                [ ( "item kinyarwanda", True )
+                                , ( "active", model.language == Kinyarwanda )
+                                ]
+                            , onClick <| SetLanguage Kinyarwanda
+                            ]
+                            [ text label
+                            , a [] [ span [ class "icon-kinyarwanda" ] [] ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
     in
     div
         [ class "ui language-switcher" ]
@@ -198,16 +226,7 @@ viewLanguageSwitcherAndVersion model =
                 [ text "English"
                 , a [] [ span [ class "icon-english" ] [] ]
                 ]
-            , li
-                [ classList
-                    [ ( "item kinyarwanda", True )
-                    , ( "active", model.language == Kinyarwanda )
-                    ]
-                , onClick <| SetLanguage Kinyarwanda
-                ]
-                [ text "Kinyarwanda"
-                , a [] [ span [ class "icon-kinyarwanda" ] [] ]
-                ]
+            , siteDependentLanguage
             ]
         , devicePageShortcut
         , span

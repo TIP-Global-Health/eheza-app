@@ -6,10 +6,10 @@ import Config.Model as Config exposing (Model)
 
 local : Model
 local =
-    { backendUrl = "https://eheza-app.ddev.site:4443"
+    { site = SiteRwanda
+    , backendUrl = "https://eheza-app.ddev.site:4443"
     , name = "local"
     , debug = True
-    , sandbox = False
     }
 
 
