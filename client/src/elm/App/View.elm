@@ -191,20 +191,20 @@ viewLanguageSwitcherAndVersion model =
                     (\configured ->
                         let
                             -- @todo: also replace flag
-                            label =
+                            ( language, label ) =
                                 case configured.config.site of
                                     SiteRwanda ->
-                                        "Kinyarwanda"
+                                        ( Kinyarwanda, "Kinyarwanda" )
 
                                     SiteBurundi ->
-                                        "Kirundi"
+                                        ( Kirundi, "Kirundi" )
                         in
                         li
                             [ classList
-                                [ ( "item kinyarwanda", True )
-                                , ( "active", model.language == Kinyarwanda )
+                                [ ( "item", True )
+                                , ( "active", model.language == language )
                                 ]
-                            , onClick <| SetLanguage Kinyarwanda
+                            , onClick <| SetLanguage language
                             ]
                             [ text label
                             , a [] [ span [ class "icon-kinyarwanda" ] [] ]
