@@ -114,63 +114,63 @@ $encounters = [
   ],
   [
     '  Blood Pressure',
-    physical_exam($start_date, $end_date, $name_clause, 'BP_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'BP_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    physical_exam($start_date, $end_date, $name_clause, 'BP') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'BP') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
     '  Heart Rate',
-    physical_exam($start_date, $end_date, $name_clause, 'heart_rate_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'heart_rate_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    physical_exam($start_date, $end_date, $name_clause, 'heart_rate') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'heart_rate') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
-    '    Heart Rate Normal',
-    physical_exam($start_date, $end_date, $name_clause, 'heart_rate_normal') . ' / ' . physical_exam($start_date, $end_date, $name_clause, 'heart_rate_complete'),
-    round(physical_exam($start_date, $end_date, $name_clause, 'heart_rate_normal') / physical_exam($start_date, $end_date, $name_clause, 'heart_rate_complete') * 100, 3) . '%',
+    '    Heart Rate Outside Normal',
+    physical_exam_abnormal($start_date, $end_date, $name_clause, 'heart_abnormal') . ' / ' . physical_exam_abnormal($start_date, $end_date, $name_clause, 'heart'),
+    round(physical_exam_abnormal($start_date, $end_date, $name_clause, 'heart_abnormal') / physical_exam_abnormal($start_date, $end_date, $name_clause, 'heart') * 100, 3) . '%',
   ],
   [
-    '  Respitory Rate',
-    physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    '  Respiratory Rate',
+    physical_exam($start_date, $end_date, $name_clause, 'resp_rate') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'resp_rate') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
-    '    Respitory Rate Normal',
-    physical_exam($start_date, $end_date, $name_clause, 'resp_rate_normal') . ' / ' . physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete'),
-    round(physical_exam($start_date, $end_date, $name_clause, 'resp_rate_normal') / physical_exam($start_date, $end_date, $name_clause, 'resp_rate_complete') * 100, 3) . '%',
+    '    Respiratory Rate Outside Normal',
+    physical_exam_abnormal($start_date, $end_date, $name_clause, 'respiratory_abnormal') . ' / ' . physical_exam_abnormal($start_date, $end_date, $name_clause, 'respiratory'),
+    round(physical_exam_abnormal($start_date, $end_date, $name_clause, 'respiratory_abnormal') / physical_exam_abnormal($start_date, $end_date, $name_clause, 'respiratory') * 100, 3) . '%',
   ],
   [
     '  Body Temp',
-    physical_exam($start_date, $end_date, $name_clause, 'body_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'body_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    physical_exam($start_date, $end_date, $name_clause, 'body') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'body') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
-    '    Body Temp Normal',
-    physical_exam($start_date, $end_date, $name_clause, 'body_normal') . ' / ' . physical_exam($start_date, $end_date, $name_clause, 'body_complete'),
-    round(physical_exam($start_date, $end_date, $name_clause, 'body_normal') / physical_exam($start_date, $end_date, $name_clause, 'body_complete') * 100, 3) . '%',
+    '    Body Temp Outside Normal',
+    physical_exam_abnormal($start_date, $end_date, $name_clause, 'temp_abnormal') . ' / ' . physical_exam_abnormal($start_date, $end_date, $name_clause, 'temp'),
+    round(physical_exam_abnormal($start_date, $end_date, $name_clause, 'temp_abnormal') / physical_exam_abnormal($start_date, $end_date, $name_clause, 'temp') * 100, 3) . '%',
   ],
   [
     '  Core Exam',
-    physical_exam($start_date, $end_date, $name_clause, 'core_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'core_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    physical_exam($start_date, $end_date, $name_clause, 'core') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'core') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
     '  MUAC',
-    physical_exam($start_date, $end_date, $name_clause, 'muac_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'muac_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    physical_exam($start_date, $end_date, $name_clause, 'muac') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'muac') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
-    '    MUAC Normal',
-    physical_exam($start_date, $end_date, $name_clause, 'muac_normal') . ' / ' . physical_exam($start_date, $end_date, $name_clause, 'muac_complete'),
-    round(physical_exam($start_date, $end_date, $name_clause, 'muac_normal') / physical_exam($start_date, $end_date, $name_clause, 'muac_complete') * 100, 3) . '%',
+    '    MUAC Outside Normal',
+    physical_exam_abnormal($start_date, $end_date, $name_clause, 'muac_abnormal') . ' / ' . physical_exam_abnormal($start_date, $end_date, $name_clause, 'muac'),
+    round(physical_exam_abnormal($start_date, $end_date, $name_clause, 'muac_abnormal') / physical_exam_abnormal($start_date, $end_date, $name_clause, 'muac') * 100, 3) . '%',
   ],
   [
     '  Nutrition',
-    physical_exam($start_date, $end_date, $name_clause, 'nutrition_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'nutrition_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    physical_exam($start_date, $end_date, $name_clause, 'nutrition') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'nutrition') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   [
     '  Acute Findings',
-    physical_exam($start_date, $end_date, $name_clause, 'acute_complete') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
-    round(physical_exam($start_date, $end_date, $name_clause, 'acute_complete') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
+    physical_exam($start_date, $end_date, $name_clause, 'acute') . ' / ' . physical_exam($start_date, $end_date, $name_clause),
+    round(physical_exam($start_date, $end_date, $name_clause, 'acute') / physical_exam($start_date, $end_date, $name_clause) * 100, 3) . '%',
   ],
   ["", "", ""],
   [
@@ -718,19 +718,14 @@ function treatment_history($start_date, $end_date, $name_clause, $mode = FALSE) 
  * @param string $name_clause
  *   The district/health-center SQL clause.
  * @param string $mode
- *   BP_complete: completed systolic and diastolic measurments
- *   heart_rate_complete: completed heart rate measurments
- *   heart_rate_normal: heart rate measurments ranging from !NEED_RANGE!
- *   resp_rate_complete: completed respiratory rate measurments
- *   resp_rate_normal: respiratory rate measurments ranging from !NEED_RANGE!
- *   body_rate_complete: completed body temp measurments
- *   body_rate_normal: body temp measurments within the range of !NEED_RANGE!
- *   core_complete: completed core exam section
- *   muac_complete: completed MUAC measurments
- *   muac_normal: MUAC measurments ranging from !NEED_RANGE!
- *   nutrition_complete: completed nutrition measurments
- *   nutrition_normal: nutrition measurments ranging from !NEED_RANGE!
- *   acute_complete: completed acute findings section.
+ *   BP: completed systolic and diastolic measurments
+ *   heart_rate: completed heart rate measurments
+ *   resp_rate: completed respiratory rate measurments
+ *   body_rate: completed body temp measurments
+ *   core: completed core exam section
+ *   muac: completed MUAC measurments
+ *   nutrition: completed nutrition measurments
+ *   acute: completed acute findings section.
  *
  * @return int
  *   Number of encounters based on mode.
@@ -738,47 +733,28 @@ function treatment_history($start_date, $end_date, $name_clause, $mode = FALSE) 
 function physical_exam($start_date, $end_date, $name_clause, $mode = FALSE) {
   $mode_clause = "";
 
-  if ($mode == "physical_complete") {
-    $mode_clause = "AND field_sys_value IS NOT NULL AND field_dia_value IS NOT NULL 
-    AND field_heart_rate_value IS NOT NULL AND field_respiratory_rate_value IS NOT NULL
-    AND field_body_temperature_value IS NOT NULL AND  field_heart_value IS NOT NULL 
-    AND field_lungs_value IS NOT NULL AND field_muac_value IS NOT NULL AND field_nutrition_signs_value IS NOT NULL
-    AND field_findings_signs_general_value IS NOT NULL AND field_findings_signs_respiratory_value IS NOT NULL";
-  }
-  elseif ($mode == 'BP_complete') {
+  if ($mode == 'BP') {
     $mode_clause = "AND field_sys_value IS NOT NULL AND field_dia_value IS NOT NULL";
   }
-  elseif ($mode == 'heart_rate_complete') {
+  elseif ($mode == 'heart_rate') {
     $mode_clause = "AND field_heart_rate_value IS NOT NULL";
   }
-  elseif ($mode == 'heart_rate_normal') {
-    $mode_clause = "AND field_heart_rate_value > 80 AND field_heart_rate_value < 160";
-  }
-  elseif ($mode == 'resp_rate_complete') {
+  elseif ($mode == 'resp_rate') {
     $mode_clause = "AND field_respiratory_rate_value IS NOT NULL";
   }
-  elseif ($mode == 'resp_rate_normal') {
-    $mode_clause = "AND field_respiratory_rate_value IS NOT NULL";
-  }
-  elseif ($mode == 'body_complete') {
+  elseif ($mode == 'body') {
     $mode_clause = "AND field_body_temperature_value IS NOT NULL";
   }
-  elseif ($mode == 'body_normal') {
-    $mode_clause = "AND field_body_temperature_value > 31 AND field_body_temperature_value < 39";
-  }
-  elseif ($mode == 'core_complete') {
+  elseif ($mode == 'core') {
     $mode_clause = "AND  field_heart_value IS NOT NULL AND field_lungs_value IS NOT NULL";
   }
-  elseif ($mode == 'muac_complete') {
+  elseif ($mode == 'muac') {
     $mode_clause = "AND field_muac_value IS NOT NULL";
   }
-  elseif ($mode == 'muac_normal') {
-    $mode_clause = "AND field_muac_value > 8 AND field_muac_value < 18";
-  }
-  elseif ($mode == 'nutrition_complete') {
+  elseif ($mode == 'nutrition') {
     $mode_clause = "AND field_nutrition_signs_value IS NOT NULL";
   }
-  elseif ($mode == 'acute_complete') {
+  elseif ($mode == 'acute') {
     $mode_clause = "AND field_findings_signs_general_value IS NOT NULL AND field_findings_signs_respiratory_value IS NOT NULL";
   }
 
@@ -883,6 +859,83 @@ function physical_exam_total($start_date, $end_date, $name_clause) {
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints) - $modifier) {
+      ++$count;
+    }
+  }
+
+  return $count;
+}
+
+function physical_exam_abnormal($start_date, $end_date, $name_clause, $mode) {
+  $ids = array_fill_keys(get_id_list($start_date, $end_date, $name_clause), 0);
+  if ($mode == "heart" || $mode == "Heart"){
+    $constraints = ["AND age IS NOT NULL AND field_heart_rate_value IS NOT NULL"];
+  }
+  
+  elseif ($mode == "heart_abnormal") {
+    $constraints = [
+      "AND age = 'mt50y' AND (field_heart_rate_value > 160 OR field_heart_rate_value < 110)",
+      "AND age = 'lt2y' AND (field_heart_rate_value > 150 OR field_heart_rate_value < 100)",
+      "AND age = 'lt5y' AND (field_heart_rate_value > 140 OR field_heart_rate_value < 95)",
+      "AND age = 'lt10y' AND (field_heart_rate_value > 120 OR field_heart_rate_value < 80)",
+      "AND (age = 'lt20y' OR age = 'lt50y') AND (field_heart_rate_value > 100 OR field_heart_rate_value < 60)",
+    ];
+  }
+  elseif ($mode == "respiratory"){
+    $constraints = ["AND age IS NOT NULL AND field_respiratory_rate_value IS NOT NULL"];
+  }
+  elseif ($mode == "respiratory_abnormal") {
+    $constraints = [
+      "AND age = 'mt50y' AND (field_respiratory_rate_value > 49 OR field_respiratory_rate_value < 30)",
+      "AND (age = 'lt2y' OR age = 'lt5y') AND (field_respiratory_rate_value > 39 OR field_respiratory_rate_value < 24)",
+      "AND (age = 'lt10y' OR age = 'lt20y' OR age = 'lt50y') AND (field_respiratory_rate_value > 100 OR field_respiratory_rate_value < 60)",
+    ];
+  }
+  elseif ($mode == "temp"){
+    $constraints = ["AND age IS NOT NULL AND field_body_temperature_value IS NOT NULL"];
+  }
+  elseif ($mode == "temp_abnormal") {
+    $constraints = ["AND age IS NOT NULL AND (field_body_temperature_value > 37.5 OR field_body_temperature_value < 35)"];
+  }
+  elseif ($mode == "muac"){
+    $constraints = ["AND age IS NOT NULL AND field_muac_value IS NOT NULL"];
+  }
+  elseif ($mode == "muac_abnormal") {
+    $constraints = ["AND age IS NOT NULL AND field_muac_value < 14.5"];
+  }
+  else{
+    exit;
+  }
+
+  foreach ($constraints as $constraint_clause) {
+    $results = db_query("SELECT DISTINCT field_acute_illness_encounter_target_id from field_data_field_acute_illness_encounter e
+    LEFT JOIN node ON e.entity_id=node.nid
+	  LEFT JOIN field_data_field_individual_participant ip ON e.field_acute_illness_encounter_target_id=ip.entity_id
+  	LEFT JOIN field_data_field_person per on ip.field_individual_participant_target_id = per.entity_id
+    LEFT JOIN person_classified cla on per.field_person_target_id = cla.entity_id
+    LEFT JOIN field_data_field_health_center hc ON per.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_district district ON per.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_heart_rate her ON node.nid=her.entity_id
+    LEFT JOIN field_data_field_respiratory_rate rer ON node.nid=rer.entity_id
+    LEFT JOIN field_data_field_body_temperature bod ON node.nid=bod.entity_id
+    LEFT JOIN field_data_field_muac muac ON node.nid=muac.entity_id
+    WHERE FROM_UNIXTIME(node.created) > :start_date
+      {$name_clause}
+      {$constraint_clause}
+      AND FROM_UNIXTIME(node.created) < :end_date",
+      [
+        ':start_date' => $start_date,
+        ':end_date' => $end_date,
+      ])->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach ($results as $result) {
+      $ids[$result] += 1;
+    }
+  }
+
+  $count = 0;
+  foreach ($ids as $id) {
+    if ($id == 1) {
       ++$count;
     }
   }
