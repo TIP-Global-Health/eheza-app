@@ -11,6 +11,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
+import Config.Model as Config exposing (Site(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -66,17 +67,17 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw initiator db model =
+view : Language -> NominalDate -> Maybe Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id isChw initiator db model =
     let
         assembled =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewContent language currentDate id isChw initiator model) identity assembled
+    viewWebData language (viewContent language currentDate site id isChw initiator model) identity assembled
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw initiator model assembled =
+viewContent : Language -> NominalDate -> Maybe Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site id isChw initiator model assembled =
     let
         ( _, pendingActivities ) =
             partitionActivities currentDate isChw assembled
@@ -133,6 +134,7 @@ viewContent language currentDate id isChw initiator model assembled =
             (Components.SendViaWhatsAppDialog.View.view
                 language
                 currentDate
+                site
                 ( assembled.participant.person, assembled.person )
                 Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness
                 Nothing

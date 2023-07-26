@@ -14,6 +14,7 @@ import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
+import Config.Model as Config exposing (Site(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -52,8 +53,8 @@ import Utils.NominalDate exposing (sortByDate, sortTuplesByDateDesc)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw initiator db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Maybe Site -> PersonId -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id isChw initiator db model =
     Dict.get id db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -77,7 +78,7 @@ view language currentDate zscores id isChw initiator db model =
 
                     ViewPatientRecord ->
                         if patientType == PatientChild then
-                            viewContentForChild language currentDate zscores id person isChw initiator db model
+                            viewContentForChild language currentDate zscores site id person isChw initiator db model
 
                         else
                             viewContentForOther language currentDate isChw id person patientType initiator db model
@@ -149,8 +150,8 @@ viewStartEncounterPage language currentDate isChw personId person patientType in
         ]
 
 
-viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewContentForChild language currentDate zscores childId child isChw initiator db model =
+viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> Maybe Site -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewContentForChild language currentDate zscores site childId child isChw initiator db model =
     let
         wellChildReportInitiator =
             Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
@@ -167,6 +168,7 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
     Pages.WellChild.ProgressReport.View.viewProgressReport language
         currentDate
         zscores
+        site
         isChw
         wellChildReportInitiator
         False

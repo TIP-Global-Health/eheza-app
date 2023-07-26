@@ -42,6 +42,7 @@ import Backend.WellChildEncounter.Model
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
+import Config.Model exposing (Site)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -121,8 +122,8 @@ import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightFo
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Maybe Site -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id isChw db model =
     let
         encounter =
             Dict.get id db.wellChildEncounters
@@ -179,6 +180,7 @@ view language currentDate zscores id isChw db model =
         (viewProgressReport language
             currentDate
             zscores
+            site
             isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
@@ -202,6 +204,7 @@ viewProgressReport :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Maybe Site
     -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
@@ -218,7 +221,7 @@ viewProgressReport :
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
     let
         content =
             case activeTab of
@@ -226,6 +229,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                     viewContent language
                         currentDate
                         zscores
+                        site
                         isChw
                         initiator
                         mandatoryNutritionAssessmentMeasurementsTaken
@@ -420,6 +424,7 @@ viewContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Maybe Site
     -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
@@ -433,7 +438,7 @@ viewContent :
     -> Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
     -> ( PersonId, Person )
     -> List (Html msg)
-viewContent language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
+viewContent language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
     let
         reportData =
             assembleProgresReportData childId db
@@ -544,6 +549,7 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
                 (Components.SendViaWhatsAppDialog.View.view
                     language
                     currentDate
+                    site
                     ( childId, child )
                     Components.SendViaWhatsAppDialog.Model.ReportWellChild
                     componentsConfig

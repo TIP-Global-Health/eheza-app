@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model exposing (..)
 import Components.SendViaWhatsAppDialog.Utils exposing (..)
+import Config.Model as Config exposing (Site(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -17,8 +18,8 @@ import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewCustomModal)
 
 
-view : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
-view language currentDate ( personId, person ) reportType componentsConfig model =
+view : Language -> NominalDate -> Maybe Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
+view language currentDate site ( personId, person ) reportType componentsConfig model =
     viewCustomModal [ "bright" ] <|
         Maybe.map (viewDialog language currentDate ( personId, person ) reportType componentsConfig) model.state
 

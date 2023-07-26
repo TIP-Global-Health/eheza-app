@@ -1,7 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedInData, getSite)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
@@ -319,6 +319,9 @@ viewUserPage page deviceName model configured =
                 currentDate =
                     fromLocalDateTime model.currentTime
 
+                site =
+                    getSite model
+
                 isChw =
                     Tuple.second loggedInModel.nurse
                         |> isCommunityHealthWorker
@@ -356,7 +359,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get prenatalEncounterId loggedInModel.clinicalProgressReportPages
                                     |> Maybe.withDefault Pages.Prenatal.ProgressReport.Model.emptyModel
                         in
-                        Pages.Prenatal.ProgressReport.View.view model.language currentDate prenatalEncounterId isChw initiator model.indexedDb page_
+                        Pages.Prenatal.ProgressReport.View.view model.language currentDate site prenatalEncounterId isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageClinicalProgressReport prenatalEncounterId)
                             |> flexPageWrapper model
 
@@ -525,6 +528,7 @@ viewUserPage page deviceName model configured =
                             model.language
                             currentDate
                             model.zscores
+                            site
                             isChw
                             (Tuple.second loggedInModel.nurse)
                             sessionId
@@ -624,7 +628,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.nutritionProgressReportPages
                                     |> Maybe.withDefault Pages.Nutrition.ProgressReport.Model.emptyModel
                         in
-                        Pages.Nutrition.ProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
+                        Pages.Nutrition.ProgressReport.View.view model.language currentDate model.zscores site encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionProgressReport encounterId)
                             |> flexPageWrapper model
 
@@ -654,7 +658,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.acuteIllnessProgressReportPages
                                     |> Maybe.withDefault Pages.AcuteIllness.ProgressReport.Model.emptyModel
                         in
-                        Pages.AcuteIllness.ProgressReport.View.view model.language currentDate encounterId isChw initiator model.indexedDb page_
+                        Pages.AcuteIllness.ProgressReport.View.view model.language currentDate site encounterId isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> flexPageWrapper model
 
@@ -714,7 +718,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.wellChildProgressReportPages
                                     |> Maybe.withDefault Pages.WellChild.ProgressReport.Model.emptyModel
                         in
-                        Pages.WellChild.ProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
+                        Pages.WellChild.ProgressReport.View.view model.language currentDate model.zscores site encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
                             |> flexPageWrapper model
 
@@ -772,7 +776,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.ncdProgressReportPages
                                     |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
                         in
-                        Pages.NCD.ProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
+                        Pages.NCD.ProgressReport.View.view model.language currentDate site encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
                             |> flexPageWrapper model
 
@@ -819,6 +823,7 @@ viewUserPage page deviceName model configured =
                         Pages.PatientRecord.View.view model.language
                             currentDate
                             model.zscores
+                            site
                             personId
                             isChw
                             initiator

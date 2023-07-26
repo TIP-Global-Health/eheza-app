@@ -9,6 +9,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
+import Config.Model as Config exposing (Site(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -33,8 +34,8 @@ import ZScore.Utils exposing (diffDays)
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Maybe Site -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id isChw db model =
     let
         encounter =
             Dict.get id db.nutritionEncounters
@@ -92,6 +93,7 @@ view language currentDate zscores id isChw db model =
         (viewProgressReport language
             currentDate
             zscores
+            site
             isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken

@@ -1,7 +1,7 @@
 module LocalConfig exposing (localConfigs)
 
 import AssocList as Dict exposing (..)
-import Config.Model as Config exposing (Model)
+import Config.Model as Config exposing (Model, Site(..))
 
 
 local : Model

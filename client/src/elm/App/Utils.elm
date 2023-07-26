@@ -2,6 +2,7 @@ module App.Utils exposing (..)
 
 import App.Model exposing (..)
 import Backend.Entities exposing (HealthCenterId)
+import Config.Model exposing (Site)
 import Error.Model exposing (Error)
 import Maybe.Extra exposing (unwrap)
 import RemoteData
@@ -12,10 +13,17 @@ import Task
 -}
 getLoggedInData : Model -> Maybe ( HealthCenterId, LoggedInModel )
 getLoggedInData model =
-    model.configuration
-        |> RemoteData.toMaybe
+    RemoteData.toMaybe model.configuration
         |> Maybe.andThen (.loggedIn >> RemoteData.toMaybe)
         |> Maybe.map2 (\healthCenterId loggedIn -> ( healthCenterId, loggedIn )) model.healthCenterId
+
+
+{-| Returns the logged in model and selected health center, if we're logged in.
+-}
+getSite : Model -> Maybe Site
+getSite model =
+    RemoteData.toMaybe model.configuration
+        |> Maybe.map (.config >> .site)
 
 
 {-| If there was an error, add it to the top of the list,
