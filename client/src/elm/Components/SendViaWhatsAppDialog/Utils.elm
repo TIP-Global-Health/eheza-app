@@ -1,6 +1,7 @@
 module Components.SendViaWhatsAppDialog.Utils exposing (..)
 
 import Components.SendViaWhatsAppDialog.Model exposing (..)
+import Config.Model exposing (Site(..))
 import EverySet exposing (EverySet)
 
 
@@ -90,6 +91,22 @@ countryCodeToString code =
 
         CountryCodeUSACanada ->
             "1"
+
+
+siteToCountryCode : Maybe Site -> CountryCode
+siteToCountryCode =
+    Maybe.map
+        (\site ->
+            case site of
+                SiteRwanda ->
+                    CountryCodeRwanda
+
+                SiteBurundi ->
+                    CountryCodeBurundi
+        )
+        >> -- We should never get here, as the should always
+           -- be info of the site at which device operate.
+           Maybe.withDefault CountryCodeRwanda
 
 
 trimLeadingZeros : String -> String
