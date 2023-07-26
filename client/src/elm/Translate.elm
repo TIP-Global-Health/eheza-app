@@ -8195,9 +8195,7 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.SixMonthsOrMore ->
                     { english = "Within 6 months, or more"
-
-                    -- @todo
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu mezi atandatu no hejuru"
                     }
 
         LoggedInAsPhrase ->
