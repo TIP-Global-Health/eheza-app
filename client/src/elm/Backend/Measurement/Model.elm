@@ -260,7 +260,7 @@ type FollowUpOption
     | ThreeDays
     | OneWeek
     | TwoWeeks
-    | OneMonths
+    | OneMonth
     | TwoMonths
     | ThreeMonths
 
