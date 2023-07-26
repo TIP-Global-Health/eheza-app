@@ -3446,7 +3446,7 @@ lastMenstrualPeriodFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { lmpRange = or form.lmpRange (Just SixMonth)
+                { lmpRange = or form.lmpRange (Just SixMonthsOrMore)
                 , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
@@ -6145,13 +6145,13 @@ toSpecialityCareValue form =
 lmpRangeToString : LmpRange -> String
 lmpRangeToString range =
     case range of
-        OneMonth ->
+        Pages.Prenatal.Activity.Types.OneMonth ->
             "one-month"
 
-        ThreeMonth ->
+        Pages.Prenatal.Activity.Types.ThreeMonths ->
             "three-month"
 
-        SixMonth ->
+        SixMonthsOrMore ->
             "six-month"
 
 
@@ -6159,13 +6159,13 @@ lmpRangeFromString : String -> Maybe LmpRange
 lmpRangeFromString s =
     case s of
         "one-month" ->
-            Just OneMonth
+            Just Pages.Prenatal.Activity.Types.OneMonth
 
         "three-month" ->
-            Just ThreeMonth
+            Just Pages.Prenatal.Activity.Types.ThreeMonths
 
         "six-month" ->
-            Just SixMonth
+            Just SixMonthsOrMore
 
         _ ->
             Nothing

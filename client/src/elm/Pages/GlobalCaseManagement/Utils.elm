@@ -314,7 +314,7 @@ calculateDueDate dateMeasured option =
         TwoWeeks ->
             Date.add Days 14 dateMeasured
 
-        OneMonths ->
+        OneMonth ->
             Date.add Months 1 dateMeasured
 
         TwoMonths ->
