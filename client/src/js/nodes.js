@@ -67,6 +67,7 @@
                 dbSync[table.name] = table;
             });
 
+            // This hook is activated as a result of new content being created on device.
             dbSync.shards.hook('creating', function (primKey, obj, trans) {
               if (obj.type === 'person') {
                 if (typeof obj.label == 'string') {
@@ -75,6 +76,7 @@
               }
             });
 
+            // This hook is activated as a result of content being edited on device.
             dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
               if (obj.type === 'person') {
                 if (mods.hasOwnProperty("label")) {
