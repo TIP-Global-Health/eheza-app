@@ -226,7 +226,7 @@ function _consolidate_patients_execute() {
  */
 function _consolidate_session_content_validate(array $measurements, $original) {
   $count = count($measurements);
-  drush_print("Duplicate got $count group measurements.");
+  drush_print("Duplicate got $count group encounter measurements.");
 
   $clinics_duplicate = [];
   // Generate a list of Groups to which measurements (of the duplicate) belong.
