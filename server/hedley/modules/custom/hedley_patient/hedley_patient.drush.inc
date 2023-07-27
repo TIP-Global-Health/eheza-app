@@ -546,7 +546,7 @@ function _consolidate_well_child_encounter_content_execute(array $measurements, 
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_ncd_encounter_content_validate(array $measurements, $original, $duplicate) {
-  _consolidate_single_participant_content_validate($measurements, $original, $duplicate, 'child_scoreboard_encounter');
+  return _consolidate_single_participant_content_validate($measurements, $original, $duplicate, 'child_scoreboard_encounter');
 }
 
 /**
@@ -568,10 +568,10 @@ function _consolidate_ncd_encounter_content_execute(array $measurements, $origin
 }
 
 /**
- * Performs validations before consolidation of Child Scoreboard encounters content.
+ * Runs validations before consolidation of Child Scoreboard encounters content.
  *
  * @param array $measurements
- *   A list of Child Scoreboard measurements belonging to the 'duplicate' patient.
+ *   Child Scoreboard measurements belonging to the 'duplicate' patient.
  * @param int $original
  *   Node ID of the 'original' patient.
  * @param int $duplicate
@@ -585,14 +585,14 @@ function _consolidate_ncd_encounter_content_execute(array $measurements, $origin
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_child_scoreboard_encounter_content_validate(array $measurements, $original, $duplicate) {
-  _consolidate_single_participant_content_validate($measurements, $original, $duplicate, 'child_scoreboard_encounter');
+  return _consolidate_single_participant_content_validate($measurements, $original, $duplicate, 'child_scoreboard_encounter');
 }
 
 /**
  * Performs consolidation of Child Scoreboard encounters content.
  *
  * @param array $measurements
- *   A list of Child Scoreboard measurements belonging to the 'duplicate' patient.
+ *   Child Scoreboard measurements belonging to the 'duplicate' patient.
  * @param int $original
  *   Node ID of the 'original' patient.
  * @param int $duplicate
@@ -606,12 +606,6 @@ function _consolidate_child_scoreboard_encounter_content_execute(array $measurem
   _consolidate_single_participant_content_execute($measurements, $original, $duplicate, 'child_scoreboard_encounter');
 }
 
-
-
-
-
-
-
 /**
  * Performs validations before consolidation for single participant use cases.
  *
@@ -623,7 +617,6 @@ function _consolidate_child_scoreboard_encounter_content_execute(array $measurem
  * system design), because all content is being transferred. If measurements
  * exist, it should have at least one participant, because otherwise we can't
  * transfer encounters, to which measurements are associated.
- *
  *
  * @param array $measurements
  *   A list of measurements belonging to the 'duplicate' patient.
