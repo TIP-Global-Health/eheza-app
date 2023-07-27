@@ -804,7 +804,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     }
   }
 
-  // To track treatment for diarrhea, we can analyse medications that were
+  // To track treatment for diarrhea, we can analyze medications that were
   // distributed during acute illness encounters.
   // In case ORS or Zinc were prescribed, we know it was for diarrhea diagnosis.
   foreach ($medication_distributions as $medication_distribution) {
