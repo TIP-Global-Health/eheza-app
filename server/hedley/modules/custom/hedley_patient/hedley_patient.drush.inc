@@ -52,32 +52,24 @@ function hedley_patient_patient_measurements_report() {
   // Get all measurements that belong to duplicate patient.
   $measurements = hedley_general_get_person_measurements($patient);
   // If no measurements found, mark duplicate patient as 'Deleted'.
-  if (count($measurements) == 0) {
+  if (empty($measurements)) {
     drush_print('Patient got no measurements.');
     return;
   }
 
-  list(
-    $group_measurements,
-    $antenatal_measurements,
-    $nutrition_measurements,
-    $acute_illness_measurements,
-    $home_visit_measurements,
-    $well_child_measurements
-    ) = _group_measurements_by_encounter_type($measurements);
+  $measurements_by_encounter_type = _group_measurements_by_encounter_type($measurements);
+  foreach ($measurements_by_encounter_type as $encounter_type => $measurements) {
+    $count = count($measurements);
 
-  $count = count($group_measurements);
-  drush_print("Patient got $count Group measurements.");
-  $count = count($antenatal_measurements);
-  drush_print("Patient got $count Antenatal measurements.");
-  $count = count($nutrition_measurements);
-  drush_print("Patient got $count Nutrition measurements.");
-  $count = count($acute_illness_measurements);
-  drush_print("Patient got $count Acute Illness measurements.");
-  $count = count($home_visit_measurements);
-  drush_print("Patient got $count Home Visit measurements.");
-  $count = count($well_child_measurements);
-  drush_print("Patient got $count Well Child measurements.");
+    if ($encounter_type == 'session') {
+      $encounter_indicator = 'group encounter';
+    }
+    else {
+      $encounter_indicator = str_replace('_', ' ', $encounter_type);
+    }
+
+    drush_print("Patient got $count measurements from $encounter_indicator.");
+  }
 }
 
 /**
@@ -752,55 +744,25 @@ function _consolidate_acute_illness_content_execute(array $measurements, $origin
  *   List of measurements, grouped by encounter type.
  */
 function _group_measurements_by_encounter_type(array $measurements) {
-  $group_measurements = [];
-  $antenatal_measurements = [];
-  $nutrition_measurements = [];
-  $acute_illness_measurements = [];
-  $home_visit_measurements = [];
-  $well_child_measurements = [];
+  $encounter_types = hedley_general_get_encounter_types();
+  $measurements_by_encounter_type = [];
+  foreach ($encounter_types as $encounter_type) {
+    $measurements_by_encounter_type[$encounter_type] = [];
+  }
 
   // Group the measurements using encounter type indicator field.
   foreach ($measurements as $measurement) {
     $wrapper = entity_metadata_wrapper('node', $measurement);
 
-    if ($wrapper->__isset('field_session')) {
-      $group_measurements[] = $measurement;
-      continue;
-    }
-
-    if ($wrapper->__isset('field_prenatal_encounter')) {
-      $antenatal_measurements[] = $measurement;
-      continue;
-    }
-
-    if ($wrapper->__isset('field_nutrition_encounter')) {
-      $nutrition_measurements[] = $measurement;
-      continue;
-    }
-
-    if ($wrapper->__isset('field_acute_illness_encounter')) {
-      $acute_illness_measurements[] = $measurement;
-      continue;
-    }
-
-    if ($wrapper->__isset('field_home_visit_encounter')) {
-      $home_visit_measurements[] = $measurement;
-      continue;
-    }
-
-    if ($wrapper->__isset('field_well_child_encounter')) {
-      $well_child_measurements[] = $measurement;
+    foreach ($encounter_types as $encounter_type) {
+      if ($wrapper->__isset("field_$encounter_type")) {
+        $measurements_by_encounter_type[$encounter_type][] = $measurement;
+        break;
+      }
     }
   }
 
-  return [
-    $group_measurements,
-    $antenatal_measurements,
-    $nutrition_measurements,
-    $acute_illness_measurements,
-    $home_visit_measurements,
-    $well_child_measurements,
-  ];
+  return $measurements_by_encounter_type;
 }
 
 /**
