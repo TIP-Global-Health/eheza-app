@@ -9595,7 +9595,7 @@ translationSet trans =
                     }
 
                 MealsAtRecommendedTimes ->
-                    { english = " Does the child eat at the recommended times per day"
+                    { english = "Does the child eat at the recommended times per day"
                     , kinyarwanda = Nothing
                     }
 
