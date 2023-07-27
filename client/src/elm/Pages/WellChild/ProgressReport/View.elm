@@ -2117,7 +2117,7 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
         -- encounter, and only in case Malnutrition was not diagnosed previously
         -- (at any of different types of Nutrition encounters).
         -- Therefore, we need to analyze only those questionnaires that
-        -- were filled before first diagnose of Malnutrition.
+        -- were filled before the first diagnosis of Malnutrition.
         -- This way we solve possibility 'false negative' at questionnaires
         -- that don't show Malnutrition question (and don't have Malnutrition
         -- sign set, which is interpretred as 'No' answer).
