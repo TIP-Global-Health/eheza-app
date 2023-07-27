@@ -97,7 +97,7 @@ function hedley_patient_consolidate_patients() {
     drush_print('Executing consolidation ...');
     drush_print('');
 
-    // _consolidate_patients_execute();
+    _consolidate_patients_execute();
   }
 }
 
