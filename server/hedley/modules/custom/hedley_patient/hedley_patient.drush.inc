@@ -305,15 +305,15 @@ function _consolidate_session_content_execute(array $measurements, $original) {
  */
 function _consolidate_prenatal_encounter_content_validate(array $measurements, $original, $duplicate) {
   $count = count($measurements);
-  drush_print("Duplicate got $count Prenatal measurements.");
+  drush_print("Duplicate got $count prenatal_encounter measurements.");
 
   $participants_original = hedley_person_individual_participants_for_person($original, 'antenatal', 'DESC');
   $count = count($participants_original);
-  drush_print("Original got $count Prenatal Participants.");
+  drush_print("Original got $count prenatal_encounter participants.");
 
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'antenatal', 'DESC');
   $count = count($participants_duplicate);
-  drush_print("Duplicate got $count Prenatal Participants.");
+  drush_print("Duplicate got $count prenatal_encounter participants.");
 
   return TRUE;
 }
@@ -546,7 +546,7 @@ function _consolidate_well_child_encounter_content_execute(array $measurements, 
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_ncd_encounter_content_validate(array $measurements, $original, $duplicate) {
-  return _consolidate_single_participant_content_validate($measurements, $original, $duplicate, 'child_scoreboard_encounter');
+  return _consolidate_single_participant_content_validate($measurements, $original, $duplicate, 'ncd_encounter');
 }
 
 /**
@@ -650,8 +650,7 @@ function _consolidate_single_participant_content_validate(array $measurements, $
     return FALSE;
   }
 
-  $list = implode(',', $participants_original);
-  drush_print("Original got $count_original $encounter_type Participants: $list");
+  drush_print("Original got $count_original $encounter_type participants.");
 
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, $encounter_type_value, 'DESC');
   $count_duplicate = count($participants_duplicate);
@@ -745,11 +744,11 @@ function _consolidate_single_participant_content_execute(array $measurements, $o
  */
 function _consolidate_acute_illness_encounter_content_validate(array $measurements, $original, $duplicate) {
   $count = count($measurements);
-  drush_print("Duplicate got $count Acute Illness measurements.");
+  drush_print("Duplicate got $count acute_illness measurements.");
 
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'acute_illness', 'DESC');
   $count = count($participants_duplicate);
-  drush_print("Duplicate got $count  Acute Illness Participants.");
+  drush_print("Duplicate got $count acute_illness Participants.");
 
   return TRUE;
 }
