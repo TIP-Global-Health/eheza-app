@@ -2116,8 +2116,8 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
         -- Per requirements, treatment question appears only at Child Scorecard
         -- encounter, and only in case Malnutrition was not diagnosed previously
         -- (at any of different types of Nutrition encounters).
-        -- Therefore, we need to analyse only those questionnaires that
-        -- were filled before first diagnose of Malnutrition.
+        -- Therefore, we need to analyze only those questionnaires that
+        -- were filled before the first diagnosis of Malnutrition.
         -- This way we solve possibility 'false negative' at questionnaires
         -- that don't show Malnutrition question (and don't have Malnutrition
         -- sign set, which is interpretred as 'No' answer).
@@ -2174,7 +2174,7 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
                 ( Just treatmentsDict, Just treatmentsByChwDict ) ->
                     Dict.merge
                         (\key value -> Dict.insert key (Tuple.second value))
-                        -- In case we got both values for months, we give prefference to
+                        -- In case we got both values for months, we give preference to
                         -- the one with more recent date.
                         (\key value chwValue ->
                             if Date.compare (Tuple.first value) (Tuple.first chwValue) == GT then
@@ -2584,7 +2584,7 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                 ( Just nurseDict, Just chwDict ) ->
                     Dict.merge
                         (\key value -> Dict.insert key value)
-                        -- In case we got both values for months, we give prefference to
+                        -- In case we got both values for months, we give preference to
                         -- CHW value, because it's the one that can tell us if supplement was
                         -- taken, or not.
                         (\key nurseValue chwValue -> Dict.insert key chwValue)
