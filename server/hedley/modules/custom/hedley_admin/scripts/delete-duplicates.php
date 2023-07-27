@@ -53,7 +53,7 @@ foreach ($chunks as $uuids) {
 
     $ids = array_keys($result['node']);
     // Extract first node from the list.
-    // Since updates are performed used UUID, it does not really matter
+    // Since updates are performed using UUID, it does not really matter
     // which node we keep, as they all share same UUID.
     $first = array_shift($ids);
     $node = node_load($first);
