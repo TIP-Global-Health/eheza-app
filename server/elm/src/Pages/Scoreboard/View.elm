@@ -410,9 +410,6 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 v
 viewANCNewbornPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
 viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
-        _ =
-            Debug.log "monthsGap" monthsGap
-
         rows =
             List.map2
                 (\item itemValues ->
@@ -428,9 +425,6 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                     let
                         ageInMonths =
                             diffMonths record.birthDate currentDate
-
-                        _ =
-                            Debug.log "ageInM1onths" ageInMonths
                     in
                     List.indexedMap
                         (\index accumValue ->
