@@ -693,6 +693,7 @@ type TranslationId
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
     | FollowUpDueOption FollowUpDueOption
+    | FoodSupplementationConsumedQuestion
     | ForIllustrativePurposesOnly
     | FormError (ErrorValue ValidationError)
     | FormField String
@@ -1006,7 +1007,11 @@ type TranslationId
     | NationalIdNumber
     | NCDABirthweightQuestion
     | NCDADiarrheaPopupMessage
+    | NCDAMealFrequency6to9
+    | NCDAMealFrequency9to12
+    | NCDAMealFrequency12to24
     | NCDASignCounceling NCDASign
+    | NCDASignHelperHeader NCDASign
     | NCDASignQuestion NCDASign
     | NCDAUpdateVaccineRecordMessage
     | NCDActivityTitle NCDActivity
@@ -5556,6 +5561,11 @@ translationSet trans =
                     , kinyarwanda = Just "Ukwezi gutaha"
                     }
 
+        FoodSupplementationConsumedQuestion ->
+            { english = "Is the food supplementation being consumed"
+            , kinyarwanda = Nothing
+            }
+
         ForIllustrativePurposesOnly ->
             { english = "For illustrative purposes only"
             , kinyarwanda = Just "Ku mpamvu zumvikana gusa"
@@ -9339,6 +9349,21 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        NCDAMealFrequency6to9 ->
+            { english = "A child between 6 to 9 months: Feed him/her complementary foods 2-3 times a day."
+            , kinyarwanda = Nothing
+            }
+
+        NCDAMealFrequency9to12 ->
+            { english = "A child between 9 to 12 months: Feed him/her complementary foods 3-4 times a day."
+            , kinyarwanda = Nothing
+            }
+
+        NCDAMealFrequency12to24 ->
+            { english = "A child between 12 to 24 months: Feed him/her complementary foods at least 5 times a day."
+            , kinyarwanda = Nothing
+            }
+
         NCDASignCounceling sign ->
             case sign of
                 NumberOfANCVisitsCorrect ->
@@ -9351,13 +9376,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ChildBehidOnVaccination ->
+                ChildBehindOnVaccination ->
                     { english = "Provide the counseling to the mother to update the child's vaccination record with a Nurse through a Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
 
-                TakingFoodSupplements ->
-                    { english = " Provides counseling on the importance of Ongera and FBF and advise them to go to the Health center to recieve them"
+                Backend.Measurement.Model.OngeraMNP ->
+                    { english = "Provides counseling on the importance of Ongera and advise them to go to the Health center to recieve them"
                     , kinyarwanda = Nothing
                     }
 
@@ -9372,11 +9397,11 @@ translationSet trans =
                     }
 
                 Backend.Measurement.Model.AppropriateComplementaryFeeding ->
-                    { english = "Provide counseling on the importance of complementary feeding and using example show them some food item that can be easy to find in their area"
+                    { english = "Provide counseling on the consequences of not feeding the child complementary food at the appropriate times, as per the guidance"
                     , kinyarwanda = Nothing
                     }
 
-                ReceivingCashTransfer ->
+                BeneficiaryCashTransfer ->
                     { english = "Provide counseling to the mother to go to the local government in charge and advocate for them"
                     , kinyarwanda = Nothing
                     }
@@ -9407,7 +9432,7 @@ translationSet trans =
                     }
 
                 Backend.Measurement.Model.HasToilets ->
-                    { english = "Provide counseling by telling them to buiuld toilets. If they don't have means advocate for them"
+                    { english = "Provide counseling by telling them to build toilets. If they don't have means advocate for them"
                     , kinyarwanda = Nothing
                     }
 
@@ -9421,6 +9446,34 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MealsAtRecommendedTimes ->
+                    { english = "Provide counseling on the consequences of not feeding the child at recommended times, as per the guidance"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildReceivesFBF ->
+                    { english = "Provides counseling on the importance of FBF and advise them to go to the Health center to recieve them"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+        NCDASignHelperHeader sign ->
+            case sign of
+                FiveFoodGroups ->
+                    { english = "Food groups"
+                    , kinyarwanda = Nothing
+                    }
+
+                MealsAtRecommendedTimes ->
+                    { english = "Ask and check if the daily frequency of the complementary food is enough"
+                    , kinyarwanda = Nothing
+                    }
+
+                -- Other signs don't have helper dialog.
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -9448,34 +9501,32 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ChildBehidOnVaccination ->
+                ChildBehindOnVaccination ->
                     { english = "According to E-Heza the child is behind on vaccinations, is this correct"
                     , kinyarwanda = Nothing
                     }
 
-                FoodSupplements ->
-                    { english = "Did the child receive food supplementation"
+                Backend.Measurement.Model.OngeraMNP ->
+                    { english = "Did the child receive Ongera-MNP"
                     , kinyarwanda = Nothing
                     }
 
-                TakingFoodSupplements ->
-                    { english = "Is the food supplementation being consumed"
-                    , kinyarwanda = Nothing
-                    }
+                TakingOngeraMNP ->
+                    translationSet FoodSupplementationConsumedQuestion
 
                 FiveFoodGroups ->
-                    { english = "Does the child receive food items from the 5 food groups"
-                    , kinyarwanda = Just "Umwana yahawe indyo irimo amoko atanu y'ibiribwa"
+                    { english = "Does the child receive food items from the 5 food groups in the last 24 hours"
+                    , kinyarwanda = Nothing
                     }
 
                 BreastfedForSixMonths ->
-                    { english = "Breastfed baby for 6 months without interruption"
-                    , kinyarwanda = Just "Umwana yonse amezi 6 nta kindi bamuvangiye"
+                    { english = "Was the child breastfed for 6 months without interruption"
+                    , kinyarwanda = Nothing
                     }
 
                 Backend.Measurement.Model.AppropriateComplementaryFeeding ->
-                    { english = "Appropriate complementary feeding (6-24 months)"
-                    , kinyarwanda = Just "Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)"
+                    { english = "Does the child receive appropriate complementary feeding"
+                    , kinyarwanda = Nothing
                     }
 
                 BeneficiaryCashTransfer ->
@@ -9542,6 +9593,19 @@ translationSet trans =
                     { english = "Is the mother using the insecticide-treated bednets"
                     , kinyarwanda = Nothing
                     }
+
+                MealsAtRecommendedTimes ->
+                    { english = "Does the child eat at the recommended times per day"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildReceivesFBF ->
+                    { english = "Did the child receive FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildTakingFBF ->
+                    translationSet FoodSupplementationConsumedQuestion
 
                 NoNCDASigns ->
                     { english = "None"
@@ -9708,7 +9772,7 @@ translationSet trans =
                     , kinyarwanda = Just "Imiti y'inzoka"
                     }
 
-                OngeraMNP ->
+                Pages.WellChild.ProgressReport.Model.OngeraMNP ->
                     { english = "Use additional nutrients (Ongera)"
                     , kinyarwanda = Just "Koresha Ongera intungamubiri"
                     }

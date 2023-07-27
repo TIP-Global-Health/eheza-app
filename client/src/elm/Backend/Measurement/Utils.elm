@@ -3570,23 +3570,32 @@ ncdaSignFromString value =
         "child-got-diarrhea" ->
             Just ChildGotDiarrhea
 
+        "child-receives-fbf" ->
+            Just ChildReceivesFBF
+
+        "child-taking-fbf" ->
+            Just ChildTakingFBF
+
         "child-with-acute-malnutrition" ->
             Just ChildWithAcuteMalnutrition
 
         "child-with-disability" ->
             Just ChildWithDisability
 
-        "food-supplements" ->
-            Just FoodSupplements
+        "ongera-mnp" ->
+            Just OngeraMNP
 
         "insecticide-treated-bednets" ->
             Just InsecticideTreatedBednets
 
+        "meals-at-recommended-times" ->
+            Just MealsAtRecommendedTimes
+
         "number-of-anc-visits-correct" ->
             Just NumberOfANCVisitsCorrect
 
-        "child-behid-on-vaccination" ->
-            Just ChildBehidOnVaccination
+        "child-behind-on-vaccination" ->
+            Just ChildBehindOnVaccination
 
         "receiving-cash-transfer" ->
             Just ReceivingCashTransfer
@@ -3600,22 +3609,12 @@ ncdaSignFromString value =
         "taken-supplements-per-guidance" ->
             Just TakenSupplementsPerGuidance
 
-        "taking-food-supplements" ->
-            Just TakingFoodSupplements
+        "taking-ongera-mnp" ->
+            Just TakingOngeraMNP
 
         "treated-for-acute-malnutrition" ->
             Just TreatedForAcuteMalnutrition
 
-        -- @todo: decide if needed.
-        --
-        -- "meal-frequency-6to8m" ->
-        --     Just MealFrequency6to8Months
-        --
-        -- "meal-frequency-9to11m" ->
-        --     Just MealFrequency9to11Months
-        --
-        -- "meal-frequency-12+m" ->
-        --     Just MealFrequency12MonthsOrMore
         "none" ->
             Just NoNCDASigns
 
@@ -3659,23 +3658,32 @@ ncdaSignToString value =
         ChildGotDiarrhea ->
             "child-got-diarrhea"
 
+        ChildReceivesFBF ->
+            "child-receives-fbf"
+
+        ChildTakingFBF ->
+            "child-taking-fbf"
+
         ChildWithAcuteMalnutrition ->
             "child-with-acute-malnutrition"
 
         ChildWithDisability ->
             "child-with-disability"
 
-        FoodSupplements ->
-            "food-supplements"
+        OngeraMNP ->
+            "ongera-mnp"
 
         InsecticideTreatedBednets ->
             "insecticide-treated-bednets"
 
+        MealsAtRecommendedTimes ->
+            "meals-at-recommended-times"
+
         NumberOfANCVisitsCorrect ->
             "number-of-anc-visits-correct"
 
-        ChildBehidOnVaccination ->
-            "child-behid-on-vaccination"
+        ChildBehindOnVaccination ->
+            "child-behind-on-vaccination"
 
         ReceivingCashTransfer ->
             "receiving-cash-transfer"
@@ -3689,21 +3697,12 @@ ncdaSignToString value =
         TakenSupplementsPerGuidance ->
             "taken-supplements-per-guidance"
 
-        TakingFoodSupplements ->
-            "taking-food-supplements"
+        TakingOngeraMNP ->
+            "taking-ongera-mnp"
 
         TreatedForAcuteMalnutrition ->
             "treated-for-acute-malnutrition"
 
-        -- @todo: decide if needed.
-        -- MealFrequency6to8Months ->
-        --     "meal-frequency-6to8m"
-        --
-        -- MealFrequency9to11Months ->
-        --     "meal-frequency-9to11m"
-        --
-        -- MealFrequency12MonthsOrMore ->
-        --     "meal-frequency-12+m"
         NoNCDASigns ->
             "none"
 

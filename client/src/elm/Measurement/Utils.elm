@@ -20,6 +20,7 @@ import Backend.NutritionEncounter.Utils
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
@@ -4505,26 +4506,23 @@ fromNCDAValue saved =
     -- New:
     , beneficiaryCashTransfer = Maybe.map (.signs >> EverySet.member BeneficiaryCashTransfer) saved
     , childGotDiarrhea = Maybe.map (.signs >> EverySet.member ChildGotDiarrhea) saved
+    , childReceivesFBF = Maybe.map (.signs >> EverySet.member ChildReceivesFBF) saved
+    , childTakingFBF = Maybe.map (.signs >> EverySet.member ChildTakingFBF) saved
     , childWithAcuteMalnutrition = Maybe.map (.signs >> EverySet.member ChildWithAcuteMalnutrition) saved
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
-    , foodSupplements = Maybe.map (.signs >> EverySet.member FoodSupplements) saved
+    , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
     , numberOfANCVisitsCorrect = Maybe.map (.signs >> EverySet.member NumberOfANCVisitsCorrect) saved
-    , childBehidOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehidOnVaccination) saved
+    , childBehindOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehindOnVaccination) saved
     , receivingCashTransfer = Maybe.map (.signs >> EverySet.member ReceivingCashTransfer) saved
     , receivingSupport = Maybe.map (.signs >> EverySet.member ReceivingSupport) saved
     , supplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member SupplementsDuringPregnancy) saved
     , takenSupplementsPerGuidance = Maybe.map (.signs >> EverySet.member TakenSupplementsPerGuidance) saved
     , treatedForAcuteMalnutrition = Maybe.map (.signs >> EverySet.member TreatedForAcuteMalnutrition) saved
-    , takingFoodSupplements = Maybe.map (.signs >> EverySet.member TakingFoodSupplements) saved
-
-    --@todo: decide if this is needed:
-    -- , mealFrequency6to8Months = Maybe.map (.signs >> EverySet.member MealFrequency6to8Months) saved
-    -- , mealFrequency9to11Months = Maybe.map (.signs >> EverySet.member MealFrequency9to11Months) saved
-    -- , mealFrequency12MonthsOrMore = Maybe.map (.signs >> EverySet.member MealFrequency12MonthsOrMore) saved
+    , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
+    , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
     , numberOfANCVisits = Maybe.andThen .numberOfANCVisits saved
-    , foodSupplementType = Maybe.andThen .foodSupplementType saved
     }
 
 
@@ -4548,26 +4546,23 @@ ncdaFormWithDefault form saved =
                 -- New:
                 , beneficiaryCashTransfer = or form.beneficiaryCashTransfer (EverySet.member BeneficiaryCashTransfer value.signs |> Just)
                 , childGotDiarrhea = or form.childGotDiarrhea (EverySet.member ChildGotDiarrhea value.signs |> Just)
+                , childReceivesFBF = or form.childReceivesFBF (EverySet.member ChildReceivesFBF value.signs |> Just)
+                , childTakingFBF = or form.childTakingFBF (EverySet.member ChildTakingFBF value.signs |> Just)
                 , childWithAcuteMalnutrition = or form.childWithAcuteMalnutrition (EverySet.member ChildWithAcuteMalnutrition value.signs |> Just)
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
-                , foodSupplements = or form.foodSupplements (EverySet.member FoodSupplements value.signs |> Just)
+                , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
                 , numberOfANCVisitsCorrect = or form.numberOfANCVisitsCorrect (EverySet.member NumberOfANCVisitsCorrect value.signs |> Just)
-                , childBehidOnVaccination = or form.childBehidOnVaccination (EverySet.member ChildBehidOnVaccination value.signs |> Just)
+                , childBehindOnVaccination = or form.childBehindOnVaccination (EverySet.member ChildBehindOnVaccination value.signs |> Just)
                 , receivingCashTransfer = or form.receivingCashTransfer (EverySet.member ReceivingCashTransfer value.signs |> Just)
                 , receivingSupport = or form.receivingSupport (EverySet.member ReceivingSupport value.signs |> Just)
                 , supplementsDuringPregnancy = or form.supplementsDuringPregnancy (EverySet.member SupplementsDuringPregnancy value.signs |> Just)
                 , takenSupplementsPerGuidance = or form.takenSupplementsPerGuidance (EverySet.member TakenSupplementsPerGuidance value.signs |> Just)
                 , treatedForAcuteMalnutrition = or form.treatedForAcuteMalnutrition (EverySet.member TreatedForAcuteMalnutrition value.signs |> Just)
-                , takingFoodSupplements = or form.takingFoodSupplements (EverySet.member TakingFoodSupplements value.signs |> Just)
-
-                --@todo: decide if this is needed:
-                -- , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member MealFrequency6to8Months value.signs |> Just)
-                -- , mealFrequency9to11Months = or form.mealFrequency9to11Months (EverySet.member MealFrequency9to11Months value.signs |> Just)
-                -- , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member MealFrequency12MonthsOrMore value.signs |> Just)
+                , takingOngeraMNP = or form.takingOngeraMNP (EverySet.member TakingOngeraMNP value.signs |> Just)
+                , mealsAtRecommendedTimes = or form.mealsAtRecommendedTimes (EverySet.member MealsAtRecommendedTimes value.signs |> Just)
                 , birthWeight = or form.birthWeight value.birthWeight
                 , numberOfANCVisits = or form.numberOfANCVisits value.numberOfANCVisits
-                , foodSupplementType = or form.foodSupplementType value.foodSupplementType
                 }
             )
 
@@ -4595,23 +4590,21 @@ toNCDAValue form =
             -- New:
             , ifNullableTrue BeneficiaryCashTransfer form.beneficiaryCashTransfer
             , ifNullableTrue ChildGotDiarrhea form.childGotDiarrhea
+            , ifNullableTrue ChildReceivesFBF form.childReceivesFBF
+            , ifNullableTrue ChildTakingFBF form.childTakingFBF
             , ifNullableTrue ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition
             , ifNullableTrue ChildWithDisability form.childWithDisability
-            , ifNullableTrue FoodSupplements form.foodSupplements
+            , ifNullableTrue OngeraMNP form.ongeraMNP
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
             , ifNullableTrue NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect
-            , ifNullableTrue ChildBehidOnVaccination form.childBehidOnVaccination
+            , ifNullableTrue ChildBehindOnVaccination form.childBehindOnVaccination
             , ifNullableTrue ReceivingCashTransfer form.receivingCashTransfer
             , ifNullableTrue ReceivingSupport form.receivingSupport
             , ifNullableTrue SupplementsDuringPregnancy form.supplementsDuringPregnancy
             , ifNullableTrue TakenSupplementsPerGuidance form.takenSupplementsPerGuidance
             , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
-            , ifNullableTrue TakingFoodSupplements form.takingFoodSupplements
-
-            --@todo: decide if this is needed:
-            -- , ifNullableTrue MealFrequency6to8Months form.mealFrequency6to8Months
-            -- , ifNullableTrue MealFrequency9to11Months form.mealFrequency9to11Months
-            -- , ifNullableTrue MealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore
+            , ifNullableTrue TakingOngeraMNP form.takingOngeraMNP
+            , ifNullableTrue MealsAtRecommendedTimes form.mealsAtRecommendedTimes
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
@@ -4619,7 +4612,6 @@ toNCDAValue form =
     Maybe.map NCDAValue signs
         |> andMap (Just form.birthWeight)
         |> andMap (Just form.numberOfANCVisits)
-        |> andMap (Just form.foodSupplementType)
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
@@ -5106,18 +5098,24 @@ behindOnVaccinationsByWellChild currentDate childId db =
         |> Maybe.withDefault False
 
 
-resolveNCDASteps : NCDAHistoryData -> List NCDAStep
-resolveNCDASteps historyData =
-    List.filter (expectNCDAStep historyData) ncdaSteps
+resolveNCDASteps : NominalDate -> Person -> Bool -> List NCDAStep
+resolveNCDASteps currentDate person ncdaNeverFilled =
+    List.filter (expectNCDAStep currentDate person ncdaNeverFilled) ncdaSteps
 
 
-expectNCDAStep : NCDAHistoryData -> NCDAStep -> Bool
-expectNCDAStep historyData task =
+expectNCDAStep : NominalDate -> Person -> Bool -> NCDAStep -> Bool
+expectNCDAStep currentDate person ncdaNeverFilled task =
     case task of
         -- If NCDA was filled before, for sure it included answers to
-        -- needed questions.
+        -- needed questions. Since questions at this step are to be asked
+        -- only once, we know it can ve skipped.
         NCDAStepAntenatalCare ->
-            historyData.ncdaNeverFilled
+            ncdaNeverFilled
+
+        NCDAStepNutritionBehavior ->
+            ageInMonths currentDate person
+                |> Maybe.map (\ageMonths -> ageMonths >= 6)
+                |> Maybe.withDefault False
 
         -- All other tasks are shown always.
         _ ->

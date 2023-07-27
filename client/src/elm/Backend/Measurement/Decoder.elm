@@ -5152,7 +5152,6 @@ decodeNCDAValue =
         |> required "ncda_signs" (decodeEverySet decodeNCDASign)
         |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
         |> optional "anc_visits" (nullable decodeInt) Nothing
-        |> optional "supplement_type" (nullable decodeNutritionSupplementType) Nothing
 
 
 decodeNCDASign : Decoder NCDASign

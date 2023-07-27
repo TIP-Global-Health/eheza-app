@@ -244,7 +244,6 @@ type MsgChild
     | SetFollowUpOption FollowUpOption
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetNumberANCVisits String
-    | SetNutritionSupplementType NutritionSupplementType
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
@@ -1046,17 +1045,19 @@ type alias NCDAForm =
     , birthWeight : Maybe WeightInGrm
 
     -- Step 2.
-    , childBehidOnVaccination : Maybe Bool
-    , foodSupplements : Maybe Bool
-    , foodSupplementType : Maybe NutritionSupplementType
-    , takingFoodSupplements : Maybe Bool
+    , childBehindOnVaccination : Maybe Bool
+    , ongeraMNP : Maybe Bool
+    , takingOngeraMNP : Maybe Bool
 
     -- Step 3.
     , fiveFoodGroups : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
+    , mealsAtRecommendedTimes : Maybe Bool
 
     -- Step 4.
+    , childReceivesFBF : Maybe Bool
+    , childTakingFBF : Maybe Bool
     , beneficiaryCashTransfer : Maybe Bool
     , receivingCashTransfer : Maybe Bool
     , conditionalFoodItems : Maybe Bool
@@ -1088,17 +1089,19 @@ emptyNCDAForm =
     , birthWeight = Nothing
 
     -- Step 2.
-    , childBehidOnVaccination = Nothing
-    , foodSupplements = Nothing
-    , foodSupplementType = Nothing
-    , takingFoodSupplements = Nothing
+    , childBehindOnVaccination = Nothing
+    , ongeraMNP = Nothing
+    , takingOngeraMNP = Nothing
 
     -- Step 3.
     , fiveFoodGroups = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
+    , mealsAtRecommendedTimes = Nothing
 
     -- Step 4.
+    , childReceivesFBF = Nothing
+    , childTakingFBF = Nothing
     , beneficiaryCashTransfer = Nothing
     , receivingCashTransfer = Nothing
     , conditionalFoodItems = Nothing
@@ -1193,24 +1196,29 @@ emptyHbA1cTestForm =
 
 
 type alias NCDAContentConfig msg =
-    { showTasksTray : Bool
+    { -- Indicates if NCDA activity was performed at Health center,
+      -- or by CHW (during Child Scoreboard encounter).
+      atHealthCenter : Bool
+
+    -- Indications if display of tasks tray is required or not.
+    , showTasksTray : Bool
 
     -- This allows setting desired value from invoking module.
     -- If set to Nothing, it's resolved using Well Child data.
     , behindOnVaccinations : Maybe Bool
+
+    -- Required data, which is resolved from previous encounters.
+    , pregnancySummary : Maybe PregnancySummaryValue
+    , ncdaNeverFilled : Bool
+    , ncdaNotFilledAfterAgeOfSixMonths : Bool
+
+    -- Different actions.
     , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
     , setNumberANCVisitsMsg : String -> msg
-    , setNutritionSupplementTypeMsg : NutritionSupplementType -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg
-    }
-
-
-type alias NCDAHistoryData =
-    { pregnancySummary : Maybe PregnancySummaryValue
-    , ncdaNeverFilled : Bool
     }
 
 

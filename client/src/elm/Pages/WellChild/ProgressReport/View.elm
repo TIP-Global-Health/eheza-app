@@ -2638,7 +2638,7 @@ viewUniversalInterventionsPane language currentDate child db questionnairesByAge
                 (List.take 6 dewormerValues)
                 (List.drop 6 dewormerValues)
             , viewTableRow language
-                (Translate.NCDAUniversalInterventionsItemLabel OngeraMNP)
+                (Translate.NCDAUniversalInterventionsItemLabel Pages.WellChild.ProgressReport.Model.OngeraMNP)
                 pregnancyValues
                 (List.take 6 ongeraMNPValues)
                 (List.drop 6 ongeraMNPValues)

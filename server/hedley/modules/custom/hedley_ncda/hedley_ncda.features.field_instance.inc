@@ -2139,44 +2139,6 @@ function hedley_ncda_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance:
-  // 'node-child_scoreboard_ncda-field_supplement_type'.
-  $field_instances['node-child_scoreboard_ncda-field_supplement_type'] = array(
-    'bundle' => 'child_scoreboard_ncda',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 9,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_supplement_type',
-    'label' => 'Supplement Type',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
-      'weight' => 13,
-    ),
-  );
-
   // Exported field_instance: 'node-child_scoreboard_ncda-field_uuid'.
   $field_instances['node-child_scoreboard_ncda-field_uuid'] = array(
     'bundle' => 'child_scoreboard_ncda',
@@ -3498,7 +3460,6 @@ function hedley_ncda_field_default_field_instances() {
   t('Person');
   t('Scheduled Date');
   t('Shards');
-  t('Supplement Type');
   t('UUID');
   t('Weight');
 
