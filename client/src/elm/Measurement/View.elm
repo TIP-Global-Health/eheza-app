@@ -26,6 +26,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
+        , getWellChildEncountersForParticipant
         , nutritionAssessmentForBackend
         , resolveNCDANeverFilled
         )
@@ -2357,6 +2358,7 @@ viewNCDAContent language currentDate personId person config helperState form his
                         currentDate
                         personId
                         person
+                        config.behindOnVaccinations
                         config.setBoolInputMsg
                         config.setBirthWeightMsg
                         config.setNumberANCVisitsMsg
@@ -2492,6 +2494,7 @@ ncdaFormInputsAndTasks :
     -> NominalDate
     -> PersonId
     -> Person
+    -> Maybe Bool
     -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
     -> (String -> msg)
     -> (String -> msg)
@@ -2502,7 +2505,7 @@ ncdaFormInputsAndTasks :
     -> Maybe PregnancySummaryValue
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate personId person setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
+ncdaFormInputsAndTasks language currentDate personId person behindOnVaccinations setBoolInputMsg setBirthWeightMsg setNumberANCVisitsMsg setNutritionSupplementTypeMsg setHelperStateMsg form currentStep newbornExamPregnancySummary db =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -2606,30 +2609,41 @@ ncdaFormInputsAndTasks language currentDate personId person setBoolInputMsg setB
                     , [ maybeToBoolTask form.takenSupplementsPerGuidance ]
                     )
 
-                NumberOfMissedImmunizationAppointmentsCorrect ->
+                ChildBehidOnVaccination ->
                     let
-                        updateFunc value form_ =
-                            { form_ | numberOfMissedImmunizationAppointmentsCorrect = Just value }
-
-                        counselling =
-                            if form.numberOfMissedImmunizationAppointmentsCorrect == Just False then
-                                [ viewCounselingLabel NumberOfMissedImmunizationAppointmentsCorrect ]
-
-                            else
-                                []
-
-                        lastScheduledImmunizationVisitDate =
-                            resoloveLastScheduledImmunizationVisitDate personId db
+                        childBehindOnVaccinations =
+                            Maybe.withDefault (behindOnVaccinationsByWellChild currentDate personId db)
+                                behindOnVaccinations
                     in
-                    ( [ viewCustomLabel language (Translate.NCDANumberImmunizationAppointmentLabel lastScheduledImmunizationVisitDate) "." "label"
+                    if childBehindOnVaccinations then
+                        let
+                            updateFunc value form_ =
+                                { form_ | childBehidOnVaccination = Just value }
 
-                      -- @todo: revise, per 'missed appointment' definition.
-                      -- , viewCustomLabel language Translate.NCDANumberOfMissedImmunizationAppointmentsHeader "." "label"
-                      ]
-                        ++ viewNCDAInput NumberOfANCVisitsCorrect form.numberOfMissedImmunizationAppointmentsCorrect updateFunc
-                        ++ counselling
-                    , [ form.numberOfMissedImmunizationAppointmentsCorrect ]
-                    )
+                            counselling =
+                                Maybe.map
+                                    (\childBehid ->
+                                        if childBehid then
+                                            [ viewCounselingLabel ChildBehidOnVaccination ]
+
+                                        else
+                                            [ viewCustomLabel language Translate.NCDAUpdateVaccineRecordMessage "." "label counselling" ]
+                                    )
+                                    form.childBehidOnVaccination
+                                    |> Maybe.withDefault []
+
+                            lastScheduledImmunizationVisitDate =
+                                resoloveLastScheduledImmunizationVisitDate personId db
+                        in
+                        ( [ viewCustomLabel language (Translate.NCDANumberImmunizationAppointmentLabel lastScheduledImmunizationVisitDate) "." "label"
+                          ]
+                            ++ viewNCDAInput ChildBehidOnVaccination form.childBehidOnVaccination updateFunc
+                            ++ counselling
+                        , [ form.childBehidOnVaccination ]
+                        )
+
+                    else
+                        ( [], [] )
 
                 FoodSupplements ->
                     let
@@ -3014,7 +3028,7 @@ ncdaFormInputsAndTasks language currentDate personId person setBoolInputMsg setB
             let
                 inputsAndTasks =
                     List.map inputsAndTasksForSign
-                        [ NumberOfMissedImmunizationAppointmentsCorrect
+                        [ ChildBehidOnVaccination
                         , FoodSupplements
                         ]
             in
@@ -3213,6 +3227,7 @@ viewNCDA language currentDate childId child measurement data db =
 
         config =
             { showTasksTray = False
+            , behindOnVaccinations = Nothing
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setNumberANCVisitsMsg = SetNumberANCVisits

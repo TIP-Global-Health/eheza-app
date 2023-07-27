@@ -16,7 +16,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant, sortEncounterTuplesDesc)
+import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant)
 import Backend.Person.Model
 import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -41,6 +41,7 @@ import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
+import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 

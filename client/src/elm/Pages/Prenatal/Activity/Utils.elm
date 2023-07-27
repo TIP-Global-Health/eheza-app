@@ -5548,6 +5548,7 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                     , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType
                     , getIntervalForVaccine = getIntervalForVaccine vaccineType
                     , firstDoseExpectedFrom = birthDate
+                    , suggestDoseToday = True
                     }
 
                 egaInWeeks =

@@ -13,5 +13,6 @@ files[] = plugins/restful/node/activity/HedleyRestfulPrenatalActivityBase.class.
 files[] = plugins/restful/node/activity/HedleyRestfulAcuteIllnessActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulHomeVisitActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulWellChildActivityBase.class.php
+files[] = plugins/restful/node/activity/HedleyRestfulChildScoreboardActivityBase.class.php
 files[] = plugins/restful/node/HedleyRestfulEntityBaseNode.php
 files[] = plugins/restful/node/HedleyRestfulSyncBase.class.php

@@ -34,6 +34,7 @@ import Maybe.Extra exposing (isNothing)
 import Pages.Utils exposing (ifEverySetEmpty)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (diffDays, zScoreWeightForAge)
 
@@ -668,38 +669,3 @@ nutritionAssessmentForBackend : List NutritionAssessment -> EverySet NutritionAs
 nutritionAssessmentForBackend assesment =
     EverySet.fromList assesment
         |> ifEverySetEmpty NoNutritionAssessment
-
-
-sortTuplesByDateDesc : ( NominalDate, a ) -> ( NominalDate, a ) -> Order
-sortTuplesByDateDesc =
-    sortByDateDesc Tuple.first
-
-
-sortEncounterTuples : ( id, { e | startDate : NominalDate } ) -> ( id, { e | startDate : NominalDate } ) -> Order
-sortEncounterTuples =
-    sortByDate (Tuple.second >> .startDate)
-
-
-sortEncounterTuplesDesc : ( id, { e | startDate : NominalDate } ) -> ( id, { e | startDate : NominalDate } ) -> Order
-sortEncounterTuplesDesc =
-    sortByDateDesc (Tuple.second >> .startDate)
-
-
-sortByStartDateDesc : { e | startDate : NominalDate } -> { e | startDate : NominalDate } -> Order
-sortByStartDateDesc =
-    sortByDateDesc .startDate
-
-
-sortDatesDesc : NominalDate -> NominalDate -> Order
-sortDatesDesc =
-    sortByDateDesc identity
-
-
-sortByDate : (a -> NominalDate) -> a -> a -> Order
-sortByDate getDateFunc entity1 entity2 =
-    Date.compare (getDateFunc entity1) (getDateFunc entity2)
-
-
-sortByDateDesc : (a -> NominalDate) -> a -> a -> Order
-sortByDateDesc getDateFunc entity1 entity2 =
-    Date.compare (getDateFunc entity2) (getDateFunc entity1)

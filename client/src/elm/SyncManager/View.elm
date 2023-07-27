@@ -420,8 +420,29 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityChildScoreboardEncounter identifier ->
                 text ("Child Scoreboard Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
+            BackendAuthorityChildScoreboardBCGImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard BCG Immunisation"
+
+            BackendAuthorityChildScoreboardDTPImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard DTP Immunisation"
+
+            BackendAuthorityChildScoreboardIPVImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard IPV Immunisation"
+
+            BackendAuthorityChildScoreboardMRImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard MR Immunisation"
+
             BackendAuthorityChildScoreboardNCDA identifier ->
                 viewMeasurement identifier "Child Scoreboard NCDA"
+
+            BackendAuthorityChildScoreboardOPVImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard OPV Immunisation"
+
+            BackendAuthorityChildScoreboardPCV13Immunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard PCV13 Immunisation"
+
+            BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard Rotarix Immunisation"
 
             BackendAuthorityClinic identifier ->
                 text <| "Clinic " ++ identifier.entity.name

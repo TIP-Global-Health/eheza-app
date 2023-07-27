@@ -707,6 +707,7 @@ viewNCDAContent language currentDate id assembled data db =
 
         config =
             { showTasksTray = True
+            , behindOnVaccinations = Nothing
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setNumberANCVisitsMsg = SetNumberANCVisits

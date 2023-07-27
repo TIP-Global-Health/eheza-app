@@ -22,18 +22,6 @@ type NutritionAssessmentTask
     | TaskWeight
 
 
-type ImmunisationTask
-    = TaskBCG
-    | TaskDTP
-    | TaskHPV
-    | TaskIPV
-    | TaskMR
-    | TaskOPV
-    | TaskPCV13
-    | TaskRotarix
-    | TaskOverview
-
-
 type MedicationTask
     = TaskAlbendazole
     | TaskMebendezole

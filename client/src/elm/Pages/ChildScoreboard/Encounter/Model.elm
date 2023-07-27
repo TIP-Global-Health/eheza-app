@@ -6,6 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (ChildScoreboardMeasurements, NutritionSupplementType)
 import Backend.Person.Model exposing (Person)
 import Gizra.NominalDate exposing (NominalDate)
+import Measurement.Model exposing (VaccinationProgressDict)
 import Pages.Page exposing (Page)
 
 
@@ -33,6 +34,11 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : ChildScoreboardMeasurements
+    , previousMeasurementsWithDates : List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
+    , vaccinationHistory : VaccinationProgressDict
+
+    -- Similar to vaccinationHistory, but includes immunisation data of current encounter.
+    , vaccinationProgress : VaccinationProgressDict
     }
 
 

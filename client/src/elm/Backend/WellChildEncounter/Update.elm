@@ -212,7 +212,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         HandleSavedBCGImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveBCGImmunisation = data }
             , Cmd.none
             )
 
@@ -222,7 +222,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         HandleSavedDTPImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveDTPImmunisation = data }
             , Cmd.none
             )
 
@@ -232,7 +232,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         HandleSavedHPVImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveHPVImmunisation = data }
             , Cmd.none
             )
 
@@ -242,7 +242,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         HandleSavedIPVImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveIPVImmunisation = data }
             , Cmd.none
             )
 
@@ -252,7 +252,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         HandleSavedMRImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveMRImmunisation = data }
             , Cmd.none
             )
 
@@ -262,7 +262,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         HandleSavedOPVImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveOPVImmunisation = data }
             , Cmd.none
             )
 
@@ -272,7 +272,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         HandleSavedPCV13Immunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | savePCV13Immunisation = data }
             , Cmd.none
             )
 
@@ -282,7 +282,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             )
 
         HandleSavedRotarixImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveRotarixImmunisation = data }
             , Cmd.none
             )
 

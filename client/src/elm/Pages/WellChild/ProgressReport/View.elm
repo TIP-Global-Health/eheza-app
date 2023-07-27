@@ -22,11 +22,6 @@ import Backend.NutritionEncounter.Utils
         ( getNewbornExamPregnancySummary
         , getNutritionEncountersForParticipant
         , getWellChildEncountersForParticipant
-        , sortByDate
-        , sortByDateDesc
-        , sortDatesDesc
-        , sortEncounterTuplesDesc
-        , sortTuplesByDateDesc
         )
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
@@ -55,6 +50,14 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isNothing)
+import Measurement.Model exposing (VaccinationProgressDict)
+import Measurement.Utils
+    exposing
+        ( generateFutureVaccinationsData
+        , generateGroupNutritionAssessmentEntries
+        , generateIndividualNutritionAssessmentEntries
+        , getPreviousMeasurements
+        )
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
@@ -81,12 +84,10 @@ import Pages.WellChild.Activity.Utils
     exposing
         ( expectedECDSignsOnMilestone
         , generateCompletedECDSigns
-        , generateFutureVaccinationsData
-        , getPreviousMeasurements
         , mandatoryNutritionAssessmentTasksCompleted
         )
 import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
-import Pages.WellChild.Encounter.Model exposing (AssembledData, VaccinationProgressDict)
+import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils
     exposing
         ( generateAssembledData
@@ -102,7 +103,15 @@ import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays)
+import Utils.NominalDate
+    exposing
+        ( renderAgeMonthsDays
+        , sortByDate
+        , sortByDateDesc
+        , sortDatesDesc
+        , sortEncounterTuplesDesc
+        , sortTuplesByDateDesc
+        )
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
 import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightForAge)

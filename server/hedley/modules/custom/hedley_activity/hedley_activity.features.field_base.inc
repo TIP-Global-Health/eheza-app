@@ -1280,7 +1280,7 @@ function hedley_activity_field_default_field_bases() {
         'food-supplements' => 'Food Supplements',
         'insecticide-treated-bednets' => 'Insecticide Treated Bednets',
         'number-of-anc-visits-correct' => 'Number of ANC Visits Correct',
-        'number-of-missed-immunization-appointments-correct' => 'Number of Missed Immunization Appointments Correct',
+        'child-behid-on-vaccination' => 'Child behind on vaccination',
         'receiving-cash-transfer' => 'Receiving Cash Transfer',
         'receiving-support' => 'Receiving Support',
         'supplements-during-pregnancy' => 'Supplements During Pregnancy',

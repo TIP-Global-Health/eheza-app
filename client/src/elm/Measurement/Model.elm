@@ -479,6 +479,7 @@ type alias VaccinationFormDynamicContentAndTasksConfig msg =
     , nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
     , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
     , firstDoseExpectedFrom : NominalDate
+    , suggestDoseToday : Bool
     }
 
 
@@ -1045,7 +1046,7 @@ type alias NCDAForm =
     , birthWeight : Maybe WeightInGrm
 
     -- Step 2.
-    , numberOfMissedImmunizationAppointmentsCorrect : Maybe Bool
+    , childBehidOnVaccination : Maybe Bool
     , foodSupplements : Maybe Bool
     , foodSupplementType : Maybe NutritionSupplementType
     , takingFoodSupplements : Maybe Bool
@@ -1087,7 +1088,7 @@ emptyNCDAForm =
     , birthWeight = Nothing
 
     -- Step 2.
-    , numberOfMissedImmunizationAppointmentsCorrect = Nothing
+    , childBehidOnVaccination = Nothing
     , foodSupplements = Nothing
     , foodSupplementType = Nothing
     , takingFoodSupplements = Nothing
@@ -1193,6 +1194,10 @@ emptyHbA1cTestForm =
 
 type alias NCDAContentConfig msg =
     { showTasksTray : Bool
+
+    -- This allows setting desired value from invoking module.
+    -- If set to Nothing, it's resolved using Well Child data.
+    , behindOnVaccinations : Maybe Bool
     , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
     , setNumberANCVisitsMsg : String -> msg
@@ -1212,3 +1217,19 @@ type alias NCDAHistoryData =
 minimalNumberOfANCVisits : Int
 minimalNumberOfANCVisits =
     4
+
+
+type alias VaccinationProgressDict =
+    Dict WellChildVaccineType (Dict VaccineDose NominalDate)
+
+
+type ImmunisationTask
+    = TaskBCG
+    | TaskDTP
+    | TaskHPV
+    | TaskIPV
+    | TaskMR
+    | TaskOPV
+    | TaskPCV13
+    | TaskRotarix
+    | TaskOverview

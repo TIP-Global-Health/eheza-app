@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant, sortEncounterTuples)
+import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Date
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -23,6 +23,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.NominalDate exposing (sortEncounterTuples)
 import Utils.WebData exposing (viewWebData)
 
 

@@ -3,6 +3,7 @@ module Backend.Measurement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (ageInMonths, isAdult)
 import Backend.Session.Model exposing (OfflineSession)
@@ -12,7 +13,9 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
+import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
@@ -3582,8 +3585,8 @@ ncdaSignFromString value =
         "number-of-anc-visits-correct" ->
             Just NumberOfANCVisitsCorrect
 
-        "number-of-missed-immunization-appointments-correct" ->
-            Just NumberOfMissedImmunizationAppointmentsCorrect
+        "child-behid-on-vaccination" ->
+            Just ChildBehidOnVaccination
 
         "receiving-cash-transfer" ->
             Just ReceivingCashTransfer
@@ -3671,8 +3674,8 @@ ncdaSignToString value =
         NumberOfANCVisitsCorrect ->
             "number-of-anc-visits-correct"
 
-        NumberOfMissedImmunizationAppointmentsCorrect ->
-            "number-of-missed-immunization-appointments-correct"
+        ChildBehidOnVaccination ->
+            "child-behid-on-vaccination"
 
         ReceivingCashTransfer ->
             "receiving-cash-transfer"
@@ -3781,3 +3784,30 @@ bloodSmearResultFromString value =
 
         _ ->
             Nothing
+
+
+generatePreviousMeasurements :
+    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
+    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
+    -> Maybe encounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( encounterId, measurements ) )
+generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantId db =
+    encountersByParticipantFunc db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if currentEncounterId == Just encounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId (measurementsByEncouterFunc db) of
+                        Just (Success data) ->
+                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                        _ ->
+                            Nothing
+            )
+        -- Most recent date to least recent date.
+        |> List.sortWith sortTuplesByDateDesc

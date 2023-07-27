@@ -1008,6 +1008,7 @@ type TranslationId
     | NCDADiarrheaPopupMessage
     | NCDASignCounceling NCDASign
     | NCDASignQuestion NCDASign
+    | NCDAUpdateVaccineRecordMessage
     | NCDActivityTitle NCDActivity
     | NCDANCServicesInstructions
     | NCDAANCNewbornItemLabel NCDAANCNewbornItem
@@ -1019,7 +1020,6 @@ type TranslationId
     | NCDANumberOfANCVisitsHeader (Maybe Int)
     | NCDANumberOfANCVisitsQuestion
     | NCDANumberImmunizationAppointmentLabel (Maybe NominalDate)
-    | NCDANumberOfMissedImmunizationAppointmentsHeader
     | NCDAStep NCDAStep
     | NCDDangerSign NCDDangerSign
     | NCDDiagnosisForProgressReport Bool Bool NCDDiagnosis
@@ -1794,7 +1794,7 @@ type TranslationId
     | WellChildImmunisationDosage WellChildVaccineType
     | WellChildImmunisationHeader WellChildVaccineType
     | WellChildImmunisationHistory WellChildVaccineType
-    | WellChildImmunisationTask Pages.WellChild.Activity.Types.ImmunisationTask
+    | WellChildImmunisationTask Measurement.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
@@ -9351,7 +9351,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NumberOfMissedImmunizationAppointmentsCorrect ->
+                ChildBehidOnVaccination ->
                     { english = "Provide the counseling to the mother to update the child's vaccination record with a Nurse through a Standard Pediatric Visit"
                     , kinyarwanda = Nothing
                     }
@@ -9448,8 +9448,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                NumberOfMissedImmunizationAppointmentsCorrect ->
-                    { english = "Is this correct"
+                ChildBehidOnVaccination ->
+                    { english = "According to E-Heza the child is behind on vaccinations, is this correct"
                     , kinyarwanda = Nothing
                     }
 
@@ -9547,6 +9547,11 @@ translationSet trans =
                     { english = "None"
                     , kinyarwanda = Just "Nta na kimwe"
                     }
+
+        NCDAUpdateVaccineRecordMessage ->
+            { english = "Please update the childs vaccine record with information from the vaccine card at the end of this scorecard visit"
+            , kinyarwanda = Nothing
+            }
 
         NCDActivityTitle activity ->
             case activity of
@@ -9771,11 +9776,6 @@ translationSet trans =
                     { english = "According to E-Heza, you have no immunization appointment scheduled"
                     , kinyarwanda = Nothing
                     }
-
-        NCDANumberOfMissedImmunizationAppointmentsHeader ->
-            { english = "According to E-Heza, you have not missed any appointments"
-            , kinyarwanda = Nothing
-            }
 
         NCDAStep step ->
             case step of
@@ -19014,47 +19014,47 @@ translationSet trans =
 
         WellChildImmunisationTask task ->
             case task of
-                Pages.WellChild.Activity.Types.TaskBCG ->
+                Measurement.Model.TaskBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
                     }
 
-                Pages.WellChild.Activity.Types.TaskDTP ->
+                Measurement.Model.TaskDTP ->
                     { english = "DTP - HepB - Hib"
                     , kinyarwanda = Nothing
                     }
 
-                Pages.WellChild.Activity.Types.TaskHPV ->
+                Measurement.Model.TaskHPV ->
                     { english = "HPV"
                     , kinyarwanda = Just "Urukingo rw'Inkondo y'Umura"
                     }
 
-                Pages.WellChild.Activity.Types.TaskIPV ->
+                Measurement.Model.TaskIPV ->
                     { english = "IPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa rutangwa mu rushinge"
                     }
 
-                Pages.WellChild.Activity.Types.TaskMR ->
+                Measurement.Model.TaskMR ->
                     { english = "Measles-Rubella"
                     , kinyarwanda = Just "Urukingo rw'Iseru na Rubeyole"
                     }
 
-                Pages.WellChild.Activity.Types.TaskOPV ->
+                Measurement.Model.TaskOPV ->
                     { english = "OPV"
                     , kinyarwanda = Just "Urukingo rw'imbasa"
                     }
 
-                Pages.WellChild.Activity.Types.TaskPCV13 ->
+                Measurement.Model.TaskPCV13 ->
                     { english = "PCV 13"
                     , kinyarwanda = Just "Urukingo rw'umusonga"
                     }
 
-                Pages.WellChild.Activity.Types.TaskRotarix ->
+                Measurement.Model.TaskRotarix ->
                     { english = "Rotarix"
                     , kinyarwanda = Just "Urukingo rw'impiswi"
                     }
 
-                Pages.WellChild.Activity.Types.TaskOverview ->
+                Measurement.Model.TaskOverview ->
                     { english = "Overview"
                     , kinyarwanda = Just "Ishusho Rusange"
                     }

@@ -30,6 +30,13 @@ to peform the updates indicated by the `Msg` type below.
 type alias Model =
     { closeChildScoreboardEncounter : WebData ()
     , saveNCDA : WebData ()
+    , saveBCGImmunisation : WebData ()
+    , saveDTPImmunisation : WebData ()
+    , saveIPVImmunisation : WebData ()
+    , saveMRImmunisation : WebData ()
+    , saveOPVImmunisation : WebData ()
+    , savePCV13Immunisation : WebData ()
+    , saveRotarixImmunisation : WebData ()
     }
 
 
@@ -37,6 +44,13 @@ emptyModel : Model
 emptyModel =
     { closeChildScoreboardEncounter = NotAsked
     , saveNCDA = NotAsked
+    , saveBCGImmunisation = NotAsked
+    , saveDTPImmunisation = NotAsked
+    , saveIPVImmunisation = NotAsked
+    , saveMRImmunisation = NotAsked
+    , saveOPVImmunisation = NotAsked
+    , savePCV13Immunisation = NotAsked
+    , saveRotarixImmunisation = NotAsked
     }
 
 
@@ -45,3 +59,17 @@ type Msg
     | HandleClosedChildScoreboardEncounter (WebData ())
     | SaveNCDA PersonId (Maybe ChildScoreboardNCDAId) NCDAValue
     | HandleSavedNCDA (WebData ())
+    | SaveBCGImmunisation PersonId (Maybe ChildScoreboardBCGImmunisationId) VaccinationValue
+    | HandleSavedBCGImmunisation (WebData ())
+    | SaveDTPImmunisation PersonId (Maybe ChildScoreboardDTPImmunisationId) VaccinationValue
+    | HandleSavedDTPImmunisation (WebData ())
+    | SaveIPVImmunisation PersonId (Maybe ChildScoreboardIPVImmunisationId) VaccinationValue
+    | HandleSavedIPVImmunisation (WebData ())
+    | SaveMRImmunisation PersonId (Maybe ChildScoreboardMRImmunisationId) VaccinationValue
+    | HandleSavedMRImmunisation (WebData ())
+    | SaveOPVImmunisation PersonId (Maybe ChildScoreboardOPVImmunisationId) VaccinationValue
+    | HandleSavedOPVImmunisation (WebData ())
+    | SavePCV13Immunisation PersonId (Maybe ChildScoreboardPCV13ImmunisationId) VaccinationValue
+    | HandleSavedPCV13Immunisation (WebData ())
+    | SaveRotarixImmunisation PersonId (Maybe ChildScoreboardRotarixImmunisationId) VaccinationValue
+    | HandleSavedRotarixImmunisation (WebData ())

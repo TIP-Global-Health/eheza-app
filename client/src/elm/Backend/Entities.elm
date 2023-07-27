@@ -1429,3 +1429,59 @@ type alias ChildScoreboardNCDAId =
 
 type ChildScoreboardNCDAUuidType
     = ChildScoreboardNCDAUuidType
+
+
+type alias ChildScoreboardBCGImmunisationId =
+    EntityUuid ChildScoreboardBCGImmunisationUuidType
+
+
+type ChildScoreboardBCGImmunisationUuidType
+    = ChildScoreboardBCGImmunisationUuidType
+
+
+type alias ChildScoreboardDTPImmunisationId =
+    EntityUuid ChildScoreboardDTPImmunisationUuidType
+
+
+type ChildScoreboardDTPImmunisationUuidType
+    = ChildScoreboardDTPImmunisationUuidType
+
+
+type alias ChildScoreboardIPVImmunisationId =
+    EntityUuid ChildScoreboardIPVImmunisationUuidType
+
+
+type ChildScoreboardIPVImmunisationUuidType
+    = ChildScoreboardIPVImmunisationUuidType
+
+
+type alias ChildScoreboardMRImmunisationId =
+    EntityUuid ChildScoreboardMRImmunisationUuidType
+
+
+type ChildScoreboardMRImmunisationUuidType
+    = ChildScoreboardMRImmunisationUuidType
+
+
+type alias ChildScoreboardOPVImmunisationId =
+    EntityUuid ChildScoreboardOPVImmunisationUuidType
+
+
+type ChildScoreboardOPVImmunisationUuidType
+    = ChildScoreboardOPVImmunisationUuidType
+
+
+type alias ChildScoreboardPCV13ImmunisationId =
+    EntityUuid ChildScoreboardPCV13ImmunisationUuidType
+
+
+type ChildScoreboardPCV13ImmunisationUuidType
+    = ChildScoreboardPCV13ImmunisationUuidType
+
+
+type alias ChildScoreboardRotarixImmunisationId =
+    EntityUuid ChildScoreboardRotarixImmunisationUuidType
+
+
+type ChildScoreboardRotarixImmunisationUuidType
+    = ChildScoreboardRotarixImmunisationUuidType
