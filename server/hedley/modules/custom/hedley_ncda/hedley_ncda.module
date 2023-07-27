@@ -837,8 +837,8 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
   // Per requirements, treatment question appears only at Child Scorecard
   // encounter, and only in case Malnutrition was not diagnosed previously
   // (at any of different types of Nutrition encounters).
-  // Therefore, we need to analyse only those questionnaires that
-  // were filled before first diagnose of Malnutrition.
+  // Therefore, we need to analyze only those questionnaires that
+  // were filled before the first diagnosis of Malnutrition.
   // Hence, third step is to add treatment dates taken from questionnaires
   // data, as long as they were recorded before first diagnosis date.
   if (!$first_diagnosis_date) {
@@ -856,7 +856,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     }
   }
 
-  // To track treatment for diarrhea, we can analyse medications that were
+  // To track treatment for diarrhea, we can analyze medications that were
   // distributed during acute illness encounters.
   // In case ORS or Zinc were prescribed, we know it was for diarrhea diagnosis.
   foreach ($medication_distributions as $medication_distribution) {
