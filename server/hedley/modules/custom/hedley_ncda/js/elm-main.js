@@ -6915,8 +6915,8 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionBehaviorData = fun
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 					'row1',
-					$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
-					_List_Nil,
+					$elm$json$Json$Decode$bool,
+					false,
 					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NutritionBehaviorData)))));
 };
 var $author$project$Backend$Scoreboard$Model$TargetedInterventionsData = F6(
@@ -7335,7 +7335,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeUniversalInterventionData =
 };
 var $author$project$Backend$Scoreboard$Model$emptyANCNewbornData = A2($author$project$Backend$Scoreboard$Model$ANCNewbornData, false, false);
 var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
-var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
+var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, false, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData = A6($author$project$Backend$Scoreboard$Model$TargetedInterventionsData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData = A5($author$project$Backend$Scoreboard$Model$UniversalInterventionData, $pzp1997$assoc_list$AssocList$empty, _List_Nil, _List_Nil, _List_Nil, $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionECDData);
 var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = function (currentDate) {
@@ -27887,6 +27887,7 @@ var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
 	return {$: 'NCDAANCNewbornItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckups'};
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
@@ -28254,6 +28255,7 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 			F2(
 				function (record, accum) {
 					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					var _v1 = A2($elm$core$Debug$log, 'ageInM1onths', ageInMonths);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -28305,6 +28307,7 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 			_List_fromArray(
 				[$author$project$Pages$Scoreboard$Model$RegularCheckups, $author$project$Pages$Scoreboard$Model$IronDuringPregnancy]),
 			values);
+		var _v0 = A2($elm$core$Debug$log, 'monthsGap', monthsGap);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -28840,12 +28843,7 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
 							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
 						},
 						record.ncda.nutritionBehavior.row2);
-					var row1AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.nutritionBehavior.row1);
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -28859,7 +28857,8 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
 											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
 											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
 											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											var gap = ageInMonths - gapInMonths;
+											var row1 = ((gap >= 0) && ((gap < 6) && record.ncda.nutritionBehavior.row1)) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3, row4: row4};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));

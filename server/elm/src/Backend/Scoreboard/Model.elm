@@ -236,7 +236,7 @@ type ECDStatus
 
 
 type alias NutritionBehaviorData =
-    { row1 : List NominalDate
+    { row1 : Bool
     , row2 : List NominalDate
     , row3 : List NominalDate
     , row4 : List NominalDate
@@ -245,7 +245,7 @@ type alias NutritionBehaviorData =
 
 emptyNutritionBehaviorData : NutritionBehaviorData
 emptyNutritionBehaviorData =
-    NutritionBehaviorData [] [] [] []
+    NutritionBehaviorData False [] [] []
 
 
 type alias TargetedInterventionsData =

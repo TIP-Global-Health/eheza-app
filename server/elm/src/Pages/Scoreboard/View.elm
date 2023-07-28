@@ -611,7 +611,7 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row3
 
                                             row4 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -697,8 +697,8 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
             List.foldl
                 (\record accum ->
                     let
-                        row1AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row1
+                        ageInMonths =
+                            diffMonths record.birthDate currentDate
 
                         row2AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row2
@@ -715,8 +715,11 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            gap =
+                                                ageInMonths - gapInMonths
+
                                             row1 =
-                                                if List.member gapInMonths row1AsAgeInMonths then
+                                                if gap >= 0 && gap < 6 && record.ncda.nutritionBehavior.row1 then
                                                     accumValue.row1 + 1
 
                                                 else
@@ -856,7 +859,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row3
 
                                             row4 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -867,7 +870,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row4
 
                                             row5 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -878,7 +881,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row5
 
                                             row6 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.

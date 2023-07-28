@@ -61,7 +61,7 @@ while (TRUE) {
     $residents = hedley_chw_get_village_residents($id);
 
     foreach ($residents as $resident) {
-      hedley_ncda_calculate_ncda_data_for_person($resident);
+      hedley_ncda_calculate_aggregated_data_for_person($resident);
     }
     $count = count($residents);
     $total += $count;
