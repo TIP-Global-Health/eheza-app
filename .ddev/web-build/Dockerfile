@@ -1,7 +1,7 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests python2.7 build-essential
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests python2.7 build-essential autoconf autotools-dev automake
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
 # Elm - directly downloading the binary.
 RUN wget https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
