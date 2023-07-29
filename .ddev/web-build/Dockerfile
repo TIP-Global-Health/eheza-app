@@ -15,5 +15,5 @@ RUN npm -g config set user root
 RUN npm install -g elm-test@0.19.1-revision6
 
 RUN if [ "$(uname -m)" = "aarch64" ]; then \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests autoconf autotools-dev automake \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests autoconf autotools-dev automake; \
     fi
