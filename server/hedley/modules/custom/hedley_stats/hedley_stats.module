@@ -1092,7 +1092,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
       $expected_person = [
         'name' => $child_node->title,
         'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
-        'birth_date' => hedley_stats_convert_timestamp_to_nominal($child_node->field_birth_date[LANGUAGE_NONE][0]['value']),
+        'birth_date' => hedley_restful_timestamp_only_date($child_node->field_birth_date[LANGUAGE_NONE][0]['value']),
         'mother_name' => $mother_node->title,
         'phone_number' => $mother_node->field_phone_number[LANGUAGE_NONE][0]['value'],
         'expected_date' => NULL,
