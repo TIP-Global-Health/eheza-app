@@ -925,7 +925,7 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
   $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
-  foreach ($result as $row) {
+  foreach ($result as $key => $row) {
     // Using node_load() instead of entity_metadata_wrapper(), because latter
     // has shown excessive memory usage, and did not respond when
     // drupal_static_reset() was invoked to free up memory.
@@ -955,7 +955,9 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
     ];
 
     // Free up memory.
-    drupal_static_reset();
+    if ($key % 500 == 0) {
+      drupal_static_reset();
+    }
   }
 
   return $items;
@@ -1059,25 +1061,23 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
   $completed_program = [];
   $missed_session = [];
-  $measurements_types = array_keys(heldey_stats_get_nutrition_measurements_mapping_for_group_encounter());
-  // Add photo the content types to make sure the person also has a photo.
-  $measurements_types[] = 'photo';
 
   // Loop through the clinics and get sessions for each clinic and from there
   // get expected people for each clinic.
   foreach ($fbf_clinics as $clinic_id) {
-    // Get PMTCT participants by clinic and session dates
-    // (all expected people).
-    $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
-    if (empty($pmtct_by_clinic)) {
-      // No participants were found.
-      continue;
+    $sessions_by_period = $periods_ranges = [];
+    foreach ($periods as $period) {
+      $sessions_by_period[$period] = hedley_stats_get_clinic_sessions_by_period($clinic_id, $period);
+      $periods_ranges[$period] = hedley_stats_get_period($period);
     }
 
-    foreach ($pmtct_by_clinic as $pmtct_id) {
-      $pmtct_node = node_load($pmtct_id);
-      $child_id = $pmtct_node->field_person[LANGUAGE_NONE][0]['target_id'];
-      $mother_id = $pmtct_node->field_adult[LANGUAGE_NONE][0]['target_id'];
+    // Get PMTCT participants by clinic.
+    $participants_ids = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
+
+    foreach ($participants_ids as $participant_id) {
+      $participant_node = node_load($participant_id);
+      $child_id = $participant_node->field_person[LANGUAGE_NONE][0]['target_id'];
+      $mother_id = $participant_node->field_adult[LANGUAGE_NONE][0]['target_id'];
 
       if (empty($child_id) || empty($mother_id)) {
         continue;
@@ -1085,8 +1085,8 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
       $child_node = node_load($child_id);
       $mother_node = node_load($mother_id);
-      $pmtct_join_date = $pmtct_node->created;
-      $pmtct_graduate_date = strtotime($pmtct_node->field_expected[LANGUAGE_NONE][0]['value2']);
+      $participant_join_date = $participant_node->created;
+      $participant_graduate_date = strtotime($participant_node->field_expected[LANGUAGE_NONE][0]['value2']);
       $phone_number = !empty($mother_node->field_phone_number) ? $mother_node->field_phone_number[LANGUAGE_NONE][0]['value'] : '';
 
       $expected_person = [
@@ -1098,56 +1098,39 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         'expected_date' => NULL,
       ];
 
-      foreach ($periods as $period_name) {
-        $sessions = hedley_stats_get_clinic_sessions_by_period($clinic_id, $period_name, 1);
-        if (empty($sessions)) {
+      foreach ($periods as $period) {
+        $start_timestamp = strtotime($periods_ranges[$period]['start']);
+        // Participant has graduated before period has started.
+        if ($participant_graduate_date < $start_timestamp) {
           continue;
         }
 
-        // We know there's only one session, as we have set range to 1.
-        $session_id = reset($sessions);
-        $session_node = node_load($session_id);
-        $session_start_date = strtotime($session_node->field_scheduled_date[LANGUAGE_NONE][0]['value']);
-
-        // Participant has graduated before the session has begun.
-        if ($pmtct_graduate_date < $session_start_date) {
+        $end_timestamp = strtotime($periods_ranges[$period]['end']);
+        // Participant has joined after the period has ended.
+        if ($participant_join_date > $end_timestamp) {
           continue;
         }
 
-        if (!empty($session_node->field_scheduled_date[LANGUAGE_NONE][0]['value2'])) {
-          // Since start and end dates for session are always set to 00:00,
-          // we add one day to session end date.
-          // Otherwise, if session was started and ended at same day, it's
-          // as if session was stated and ended on exact same time.
-          $session_end_date = strtotime($session_node->field_scheduled_date[LANGUAGE_NONE][0]['value2']) + 24 * 60 * 60;
-          // Participant has joined after the session has ended.
-          if ($pmtct_join_date > $session_end_date) {
-            continue;
-          }
-        }
+        $expected_person['expected_date'] = hedley_stats_convert_timestamp_to_nominal($start_timestamp);
 
-        $period = hedley_stats_get_period($period_name);
-
-        // Check if patient has missed the session. This can happen
-        // only if session has started before patient has graduated the program.
-        if ($session_start_date < $pmtct_graduate_date) {
-          // Check if the person (patient) has any measurements.
-          $measurements = hedley_activity_get_person_measurements_by_period($child_id, $measurements_types, $period, 1);
+        $sessions_ids = $sessions_by_period[$period];
+        if (!empty($sessions_ids)) {
+          $measurements = hedley_activity_get_person_measurements_during_sessions_by_period($child_id, $sessions_ids, $periods_ranges[$period]);
           if (empty($measurements)) {
             // This person missed the session because they don't have any
             // measurements found for that session on this date, so we add it to
             // the list of dates, to be able to filter it in the frontend.
-            $expected_person['expected_date'] = hedley_stats_convert_timestamp_to_nominal($session_start_date);
             $missed_session[] = $expected_person;
           }
         }
 
-        if ($pmtct_graduate_date >= $period['start'] && $pmtct_graduate_date <= $period['end']) {
-          $expected_person['expected_date'] = hedley_stats_convert_timestamp_to_nominal($session_start_date);
+        if ($participant_graduate_date <= $end_timestamp) {
+          // Graduation date is within the period.
           $completed_program[] = $expected_person;
         }
       }
     }
+
     // Free up memory.
     drupal_static_reset();
   }
@@ -1738,11 +1721,7 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
   $query = db_select('node', 'node');
   $query->fields('node', ['nid', 'type', 'created']);
 
-  $encounter_types = [
-    'acute_illness_encounter',
-    'nutrition_encounter',
-    'prenatal_encounter',
-  ];
+  $encounter_types = hedley_general_get_individual_encounter_types();
   $participant_types = [
     'individual_participant',
     'pmtct_participant',
