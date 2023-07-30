@@ -114,7 +114,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
 
         -- Counseling ->
-        --    viewCounselingSession language (mapMeasurementData .counsellingSession measurements) session model.counselling
+        --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
             viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousValuesSet.weight zscores model
 
@@ -771,10 +771,10 @@ viewChildFbf language currentDate child clinicType measurement form =
                    completed =
                        isJust measurement.current
 
-                   -- For counselling sessions, we don't allow saves unless all the
+                   -- For counseling sessions, we don't allow saves unless all the
                    -- topics are checked. Also, we don't allow an update if the
                    -- activity has been completed. That is, once the nurse says the
-                   -- counselling session is done, the nurse cannot correct that.
+                   -- counseling session is done, the nurse cannot correct that.
                    saveMsg =
                        if allTopicsChecked && not completed then
                            SaveCounselingSession existingId timing topics
@@ -790,8 +790,8 @@ viewChildFbf language currentDate child clinicType measurement form =
                            |> Maybe.withDefault Dict.empty
                in
                div
-                   [ class "ui full segment counselling"
-                   , id "counsellingSessionEntryForm"
+                   [ class "ui full segment counseling"
+                   , id "counselingSessionEntryForm"
                    ]
                    [ div [ class "content" ]
                        [ h3 [ class "ui header" ]
@@ -821,7 +821,7 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
             (\topicId topic ->
                 let
                     inputId =
-                        "counselling-checkbox-" ++ fromEntityUuid topicId
+                        "counseling-checkbox-" ++ fromEntityUuid topicId
 
                     isChecked =
                         EverySet.member topicId selectedTopics
@@ -2511,7 +2511,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             else
                                 ( [], [] )
 
-                        counselling =
+                        counseling =
                             if
                                 (form.supplementsDuringPregnancy == Just False)
                                     || (form.takenSupplementsPerGuidance == Just False)
@@ -2523,7 +2523,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     in
                     ( viewNCDAInput SupplementsDuringPregnancy form.supplementsDuringPregnancy updateFunc
                         ++ derivedInputs
-                        ++ counselling
+                        ++ counseling
                     , form.supplementsDuringPregnancy :: derivedTasks
                     )
 
@@ -2547,14 +2547,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             updateFunc value form_ =
                                 { form_ | childBehindOnVaccination = Just value }
 
-                            counselling =
+                            counseling =
                                 Maybe.map
                                     (\childBehind ->
                                         if childBehind then
                                             [ viewCounselingLabel ChildBehindOnVaccination ]
 
                                         else
-                                            [ viewCustomLabel language Translate.NCDAUpdateVaccineRecordMessage "." "label counselling" ]
+                                            [ viewCustomLabel language Translate.NCDAUpdateVaccineRecordMessage "." "label counseling" ]
                                     )
                                     form.childBehindOnVaccination
                                     |> Maybe.withDefault []
@@ -2565,7 +2565,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         ( [ viewCustomLabel language (Translate.NCDANumberImmunizationAppointmentLabel lastScheduledImmunizationVisitDate) "." "label"
                           ]
                             ++ viewNCDAInput ChildBehindOnVaccination form.childBehindOnVaccination updateFunc
-                            ++ counselling
+                            ++ counseling
                         , [ form.childBehindOnVaccination ]
                         )
 
@@ -2587,7 +2587,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             else
                                 ( [], [] )
 
-                        counselling =
+                        counseling =
                             if form.ongeraMNP == Just False || form.takingOngeraMNP == Just False then
                                 [ viewCounselingLabel OngeraMNP ]
 
@@ -2596,7 +2596,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     in
                     ( viewNCDAInput OngeraMNP form.ongeraMNP updateFunc
                         ++ derivedInputs
-                        ++ counselling
+                        ++ counseling
                     , form.ongeraMNP :: derivedTasks
                     )
 
@@ -2614,7 +2614,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | fiveFoodGroups = Just value }
 
-                        counselling =
+                        counseling =
                             if form.fiveFoodGroups == Just False then
                                 [ viewCounselingLabel FiveFoodGroups ]
 
@@ -2636,7 +2636,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             ""
                             Nothing
                       ]
-                        ++ counselling
+                        ++ counseling
                     , [ form.fiveFoodGroups ]
                     )
 
@@ -2645,14 +2645,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | breastfedForSixMonths = Just value }
 
-                        counselling =
+                        counseling =
                             if form.breastfedForSixMonths == Just False then
                                 [ viewCounselingLabel BreastfedForSixMonths ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput BreastfedForSixMonths form.breastfedForSixMonths updateFunc ++ counselling
+                    ( viewNCDAInput BreastfedForSixMonths form.breastfedForSixMonths updateFunc ++ counseling
                     , [ maybeToBoolTask form.breastfedForSixMonths ]
                     )
 
@@ -2661,14 +2661,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | appropriateComplementaryFeeding = Just value }
 
-                        counselling =
+                        counseling =
                             if form.appropriateComplementaryFeeding == Just False then
                                 [ viewCounselingLabel AppropriateComplementaryFeeding ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput AppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc ++ counselling
+                    ( viewNCDAInput AppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc ++ counseling
                     , [ maybeToBoolTask form.appropriateComplementaryFeeding ]
                     )
 
@@ -2677,7 +2677,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | mealsAtRecommendedTimes = Just value }
 
-                        counselling =
+                        counseling =
                             if form.mealsAtRecommendedTimes == Just False then
                                 [ viewCounselingLabel MealsAtRecommendedTimes ]
 
@@ -2714,7 +2714,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             else
                                 ( [], [] )
 
-                        counselling =
+                        counseling =
                             if form.childReceivesFBF == Just False then
                                 [ viewCounselingLabel ChildReceivesFBF ]
 
@@ -2722,7 +2722,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput ChildReceivesFBF form.childReceivesFBF updateFunc
-                        ++ counselling
+                        ++ counseling
                         ++ derivedInputs
                     , form.childReceivesFBF :: derivedTasks
                     )
@@ -2748,7 +2748,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             else
                                 ( [], [] )
 
-                        counselling =
+                        counseling =
                             if form.beneficiaryCashTransfer == Just False || form.receivingCashTransfer == Just False then
                                 [ viewCounselingLabel BeneficiaryCashTransfer ]
 
@@ -2757,7 +2757,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     in
                     ( viewNCDAInput BeneficiaryCashTransfer form.beneficiaryCashTransfer updateFunc
                         ++ derivedInputs
-                        ++ counselling
+                        ++ counseling
                     , form.beneficiaryCashTransfer :: derivedTasks
                     )
 
@@ -2775,14 +2775,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | conditionalFoodItems = Just value }
 
-                        counselling =
+                        counseling =
                             if form.conditionalFoodItems == Just False then
                                 [ viewCounselingLabel ConditionalFoodItems ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput ConditionalFoodItems form.conditionalFoodItems updateFunc ++ counselling
+                    ( viewNCDAInput ConditionalFoodItems form.conditionalFoodItems updateFunc ++ counseling
                     , [ maybeToBoolTask form.conditionalFoodItems ]
                     )
 
@@ -2808,14 +2808,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | treatedForAcuteMalnutrition = Just value }
 
-                        counselling =
+                        counseling =
                             if form.treatedForAcuteMalnutrition == Just False then
                                 [ viewCounselingLabel TreatedForAcuteMalnutrition ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc ++ counselling
+                    ( viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc ++ counseling
                     , [ maybeToBoolTask form.treatedForAcuteMalnutrition ]
                     )
 
@@ -2841,14 +2841,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | receivingSupport = Just value }
 
-                        counselling =
+                        counseling =
                             if form.receivingSupport == Just False then
                                 [ viewCounselingLabel ReceivingSupport ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput ReceivingSupport form.receivingSupport updateFunc ++ counselling
+                    ( viewNCDAInput ReceivingSupport form.receivingSupport updateFunc ++ counseling
                     , [ maybeToBoolTask form.receivingSupport ]
                     )
 
@@ -2866,14 +2866,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | hasCleanWater = Just value }
 
-                        counselling =
+                        counseling =
                             if form.hasCleanWater == Just False then
                                 [ viewCounselingLabel HasCleanWater ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput HasCleanWater form.hasCleanWater updateFunc ++ counselling
+                    ( viewNCDAInput HasCleanWater form.hasCleanWater updateFunc ++ counseling
                     , [ maybeToBoolTask form.hasCleanWater ]
                     )
 
@@ -2882,14 +2882,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | hasHandwashingFacility = Just value }
 
-                        counselling =
+                        counseling =
                             if form.hasHandwashingFacility == Just False then
                                 [ viewCounselingLabel HasHandwashingFacility ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput HasHandwashingFacility form.hasHandwashingFacility updateFunc ++ counselling
+                    ( viewNCDAInput HasHandwashingFacility form.hasHandwashingFacility updateFunc ++ counseling
                     , [ maybeToBoolTask form.hasHandwashingFacility ]
                     )
 
@@ -2898,14 +2898,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | hasToilets = Just value }
 
-                        counselling =
+                        counseling =
                             if form.hasToilets == Just False then
                                 [ viewCounselingLabel HasToilets ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput HasToilets form.hasToilets updateFunc ++ counselling
+                    ( viewNCDAInput HasToilets form.hasToilets updateFunc ++ counseling
                     , [ maybeToBoolTask form.hasToilets ]
                     )
 
@@ -2914,14 +2914,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | hasKitchenGarden = Just value }
 
-                        counselling =
+                        counseling =
                             if form.hasKitchenGarden == Just False then
                                 [ viewCounselingLabel HasKitchenGarden ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput HasKitchenGarden form.hasKitchenGarden updateFunc ++ counselling
+                    ( viewNCDAInput HasKitchenGarden form.hasKitchenGarden updateFunc ++ counseling
                     , [ maybeToBoolTask form.hasKitchenGarden ]
                     )
 
@@ -2930,14 +2930,14 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         updateFunc value form_ =
                             { form_ | insecticideTreatedBednets = Just value }
 
-                        counselling =
+                        counseling =
                             if form.insecticideTreatedBednets == Just False then
                                 [ viewCounselingLabel InsecticideTreatedBednets ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput InsecticideTreatedBednets form.insecticideTreatedBednets updateFunc ++ counselling
+                    ( viewNCDAInput InsecticideTreatedBednets form.insecticideTreatedBednets updateFunc ++ counseling
                     , [ maybeToBoolTask form.insecticideTreatedBednets ]
                     )
 
@@ -2964,7 +2964,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
             ]
 
         viewCounselingLabel sign =
-            viewCustomLabel language (Translate.NCDASignCounseling sign) "." "label counselling"
+            viewCustomLabel language (Translate.NCDASignCounseling sign) "." "label counseling"
     in
     case currentStep of
         NCDAStepAntenatalCare ->
@@ -3204,7 +3204,7 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                             EverySet.size encountersDatesFromForm
                                     in
                                     if (ancDataVisits + formVisists) < 4 then
-                                        viewCustomLabel language Translate.NCDAANCVisitsCounseling "." "label counselling"
+                                        viewCustomLabel language Translate.NCDAANCVisitsCounseling "." "label counseling"
 
                                     else
                                         emptyNode
