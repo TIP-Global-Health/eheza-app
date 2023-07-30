@@ -1080,7 +1080,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
       $child_id = $pmtct_node->field_person[LANGUAGE_NONE][0]['target_id'];
       $mother_id = $pmtct_node->field_adult[LANGUAGE_NONE][0]['target_id'];
 
-      if (empty($child_wrapper) || empty($mother_wrapper)) {
+      if (empty($child_id) || empty($mother_id)) {
         continue;
       }
 
@@ -1094,7 +1094,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
         'birth_date' => hedley_stats_convert_timestamp_to_nominal($child_node->field_birth_date[LANGUAGE_NONE][0]['value']),
         'mother_name' => $mother_node->title,
-        'phone_number' => $mother_wrapper->field_phone_number[LANGUAGE_NONE][0]['value'],
+        'phone_number' => $mother_node->field_phone_number[LANGUAGE_NONE][0]['value'],
         'expected_date' => NULL,
       ];
 
