@@ -4537,7 +4537,6 @@ ncdaFormWithDefault form saved =
             (\value ->
                 { step = form.step
 
-                --
                 , updateANCVisits = or form.updateANCVisits (Just False)
                 , ancVisitsViewMode = form.ancVisitsViewMode
                 , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
