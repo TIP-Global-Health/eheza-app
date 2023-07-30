@@ -494,10 +494,9 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
 
   $result = [];
   foreach ($villages_ids as $village_id) {
-    $wrapper = entity_metadata_wrapper('node', $village_id);
-    $village_uuid = $wrapper->field_uuid->value();
-    $residents = hedley_chw_get_village_residents($village_id);
-    $result[$village_uuid] = $residents;
+    $village_node = node_load($villages_ids);
+    $village_uuid = $village_node->field_uuid[LANGUAGE_NONE][0]['value'];
+    $result[$village_uuid] = hedley_chw_get_village_residents($village_id);
   }
 
   // Store in cache.
@@ -1106,21 +1105,20 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
         // We know there's only one session, as we have set range to 1.
         $session_id = reset($sessions);
-        $session_wrapper = entity_metadata_wrapper('node', $session_id);
-        $session_schedule = $session_wrapper->field_scheduled_date->value();
-        $session_start_date = strtotime($session_schedule['value']);
+        $session_node = node_load($session_id);
+        $session_start_date = strtotime($session_node->field_scheduled_date[LANGUAGE_NONE][0]['value']);
 
         // Participant has graduated before the session has begun.
         if ($pmtct_graduate_date < $session_start_date) {
           continue;
         }
 
-        if (!empty($session_schedule['value2'])) {
+        if (!empty($session_node->field_scheduled_date[LANGUAGE_NONE][0]['value2'])) {
           // Since start and end dates for session are always set to 00:00,
           // we add one day to session end date.
           // Otherwise, if session was started and ended at same day, it's
           // as if session was stated and ended on exact same time.
-          $session_end_date = strtotime($session_schedule['value2']) + 24 * 60 * 60;
+          $session_end_date = strtotime($session_node->field_scheduled_date[LANGUAGE_NONE][0]['value2']) + 24 * 60 * 60;
           // Participant has joined after the session has ended.
           if ($pmtct_join_date > $session_end_date) {
             continue;
