@@ -494,7 +494,7 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
 
   $result = [];
   foreach ($villages_ids as $village_id) {
-    $village_node = node_load($villages_ids);
+    $village_node = node_load($village_id);
     $village_uuid = $village_node->field_uuid[LANGUAGE_NONE][0]['value'];
     $result[$village_uuid] = hedley_chw_get_village_residents($village_id);
   }
@@ -1087,13 +1087,14 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
       $mother_node = node_load($mother_id);
       $pmtct_join_date = $pmtct_node->created;
       $pmtct_graduate_date = strtotime($pmtct_node->field_expected[LANGUAGE_NONE][0]['value2']);
+      $phone_number = !empty($mother_node->field_phone_number) ? $mother_node->field_phone_number[LANGUAGE_NONE][0]['value'] : '';
 
       $expected_person = [
         'name' => $child_node->title,
         'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
         'birth_date' => hedley_restful_timestamp_only_date($child_node->field_birth_date[LANGUAGE_NONE][0]['value']),
         'mother_name' => $mother_node->title,
-        'phone_number' => $mother_node->field_phone_number[LANGUAGE_NONE][0]['value'],
+        'phone_number' => $phone_number,
         'expected_date' => NULL,
       ];
 
