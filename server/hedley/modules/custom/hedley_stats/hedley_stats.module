@@ -1076,25 +1076,25 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
     }
 
     foreach ($pmtct_by_clinic as $pmtct_id) {
-      $pmtct_wrapper = entity_metadata_wrapper('node', $pmtct_id);
-      $child_id = $pmtct_wrapper->field_person->getIdentifier();
-      $child_wrapper = $pmtct_wrapper->field_person;
-      $mother_wrapper = $pmtct_wrapper->field_adult;
+      $pmtct_node = node_load($pmtct_id);
+      $child_id = $pmtct_node->field_person[LANGUAGE_NONE][0]['target_id'];
+      $mother_id = $pmtct_node->field_adult[LANGUAGE_NONE][0]['target_id'];
 
       if (empty($child_wrapper) || empty($mother_wrapper)) {
         continue;
       }
 
-      $pmtct_join_date = $pmtct_wrapper->created->raw();
-      $pmtct_schedule = $pmtct_wrapper->field_expected->value();
-      $pmtct_graduate_date = strtotime($pmtct_schedule['value2']);
+      $child_node = node_load($child_id);
+      $mother_node = node_load($mother_id);
+      $pmtct_join_date = $pmtct_node->created;
+      $pmtct_graduate_date = strtotime($pmtct_node->field_expected[LANGUAGE_NONE][0]['value2']);
 
       $expected_person = [
-        'name' => $child_wrapper->label(),
-        'gender' => $child_wrapper->field_gender->value(),
-        'birth_date' => hedley_stats_convert_timestamp_to_nominal($child_wrapper->field_birth_date->value()),
-        'mother_name' => $mother_wrapper->label(),
-        'phone_number' => $mother_wrapper->field_phone_number->value(),
+        'name' => $child_node->title,
+        'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
+        'birth_date' => hedley_stats_convert_timestamp_to_nominal($child_node->field_birth_date[LANGUAGE_NONE][0]['value']),
+        'mother_name' => $mother_node->title,
+        'phone_number' => $mother_wrapper->field_phone_number[LANGUAGE_NONE][0]['value'],
         'expected_date' => NULL,
       ];
 
