@@ -18,7 +18,7 @@ import List.Zipper as Zipper
 import Maybe.Extra
 import Pages.Page exposing (Page)
 import RemoteData
-import Restful.Endpoint exposing (fromEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseAuthorityStats, decodeDownloadSyncResponseGeneral)
 import SyncManager.Encoder
 import SyncManager.Model exposing (..)
@@ -168,7 +168,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 currentZipper =
                     Zipper.current zipper
 
-                ( saveFetchedDataCmd, modelUpdated ) =
+                ( saveFetchedDataCmd, modelUpdated, extraMsgs ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             let
@@ -178,22 +178,36 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
                                             []
                                         |> List.reverse
+
+                                -- When authority completes download, we mark stock managemend data of that
+                                -- health center as obsolete, as there may have been Fbf/Stock update
+                                -- entries downloaded.
+                                stockManagementDataMsg =
+                                    if data.revisionCount == 0 then
+                                        [ Backend.Model.MarkForRecalculationStockManagementData (toEntityUuid currentZipper.uuid)
+                                            |> App.Model.MsgIndexedDb
+                                        ]
+
+                                    else
+                                        []
                             in
                             ( sendSyncedDataToIndexDb { table = "Authority", data = dataToSend, shard = currentZipper.uuid, timestamp = requestTimestamp }
                             , { model | downloadAuthorityResponse = webData }
+                            , stockManagementDataMsg
                             )
 
                         Nothing ->
                             ( Cmd.none
                             , SyncManager.Utils.determineSyncStatus activePage
                                 { model | syncStatus = SyncDownloadAuthority webData }
+                            , []
                             )
             in
             SubModelReturn
                 modelUpdated
                 saveFetchedDataCmd
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
-                []
+                extraMsgs
 
         BackendAuthorityFetchedDataSavedHandle timestamp ->
             if requestTimestamp /= timestamp then
@@ -217,11 +231,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         data.entities
                                             |> List.foldl
                                                 (\entity accum ->
-                                                    case SyncManager.Utils.getPhotoFromBackendAuthorityEntity entity of
-                                                        Just photoUrl ->
+                                                    case SyncManager.Utils.getImageFromBackendAuthorityEntity entity of
+                                                        Just imageUrl ->
                                                             (entity
                                                                 |> SyncManager.Utils.getBackendAuthorityEntityIdentifier
-                                                                |> SyncManager.Encoder.encodeDataForDeferredPhotos photoUrl
+                                                                |> SyncManager.Encoder.encodeDataForDeferredPhotos imageUrl
                                                             )
                                                                 :: accum
 
@@ -1090,6 +1104,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 _ ->
                     noChange
 
+        -- We should never get here.
         BackendUploadAuthority Nothing ->
             let
                 syncStatus =
@@ -1116,17 +1131,26 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                     else
                         let
-                            recordUpdated =
-                                { record
-                                    | backendRemoteData =
-                                        if List.isEmpty result.entities then
-                                            -- There were no entities for upload.
-                                            RemoteData.NotAsked
+                            ( backendRemoteData, indexDbRemoteData, uploadCmd ) =
+                                if List.isEmpty result.entities then
+                                    ( RemoteData.NotAsked
+                                    , RemoteData.Success Nothing
+                                    , Cmd.none
+                                    )
 
-                                        else
-                                            RemoteData.Loading
-                                    , indexDbRemoteData = RemoteData.Success (Just result)
-                                }
+                                else
+                                    ( RemoteData.Loading
+                                    , RemoteData.Success (Just result)
+                                    , HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
+                                        -- We don't need to decode anything, as we just want to have
+                                        -- the browser download it.
+                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
+                                    )
+
+                            recordUpdated =
+                                { record | backendRemoteData = backendRemoteData, indexDbRemoteData = indexDbRemoteData }
 
                             ( syncInfoAuthorities, setSyncInfoAurhoritiesCmd ) =
                                 model.syncInfoAuthorities
@@ -1153,25 +1177,12 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         )
                                     |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
 
-                            cmd =
-                                if List.isEmpty result.entities then
-                                    -- There were no entities for upload.
-                                    Cmd.none
-
-                                else
-                                    HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
-                                        -- We don't need to decode anything, as we just want to have
-                                        -- the browser download it.
-                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
-
                             modelUpdated =
                                 { model | syncStatus = SyncUploadAuthority recordUpdated, syncInfoAuthorities = syncInfoAuthorities }
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus activePage modelUpdated)
-                            (Cmd.batch [ cmd, setSyncInfoAurhoritiesCmd ])
+                            (Cmd.batch [ uploadCmd, setSyncInfoAurhoritiesCmd ])
                             noError
                             []
 
@@ -1280,6 +1291,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 _ ->
                     noChange
 
+        -- We should never get here.
         BackendUploadGeneral Nothing ->
             let
                 syncStatus =
@@ -1306,17 +1318,26 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                     else
                         let
-                            recordUpdated =
-                                { record
-                                    | backendRemoteData =
-                                        if List.isEmpty result.entities then
-                                            -- There were no entities for upload.
-                                            RemoteData.NotAsked
+                            ( backendRemoteData, indexDbRemoteData, uploadCmd ) =
+                                if List.isEmpty result.entities then
+                                    ( RemoteData.NotAsked
+                                    , RemoteData.Success Nothing
+                                    , Cmd.none
+                                    )
 
-                                        else
-                                            RemoteData.Loading
-                                    , indexDbRemoteData = RemoteData.Success (Just result)
-                                }
+                                else
+                                    ( RemoteData.Loading
+                                    , RemoteData.Success (Just result)
+                                    , HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
+                                        -- We don't need to decode anything, as we just want to have
+                                        -- the browser download it.
+                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
+                                    )
+
+                            recordUpdated =
+                                { record | backendRemoteData = backendRemoteData, indexDbRemoteData = indexDbRemoteData }
 
                             syncInfoGeneral =
                                 if model.syncInfoGeneral.status == Uploading then
@@ -1333,25 +1354,12 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 else
                                     sendSyncInfoGeneralCmd syncInfoGeneral
 
-                            cmd =
-                                if List.isEmpty result.entities then
-                                    -- There were no entities for upload.
-                                    Cmd.none
-
-                                else
-                                    HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
-                                        -- We don't need to decode anything, as we just want to have
-                                        -- the browser download it.
-                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
-
                             modelUpdated =
                                 { model | syncStatus = SyncUploadGeneral recordUpdated, syncInfoGeneral = syncInfoGeneral }
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus activePage modelUpdated)
-                            (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
+                            (Cmd.batch [ uploadCmd, setSyncInfoGeneralCmd ])
                             noError
                             []
 
@@ -1430,6 +1438,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 _ ->
                     noChange
 
+        -- We should never get here.
         BackendUploadWhatsApp Nothing ->
             let
                 syncStatus =
@@ -1456,17 +1465,24 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                     else
                         let
-                            recordUpdated =
-                                { record
-                                    | backendRemoteData =
-                                        if List.isEmpty result.entities then
-                                            -- There were no entities for upload.
-                                            RemoteData.NotAsked
+                            ( backendRemoteData, indexDbRemoteData, uploadCmd ) =
+                                if List.isEmpty result.entities then
+                                    ( RemoteData.NotAsked
+                                    , RemoteData.Success Nothing
+                                    , Cmd.none
+                                    )
 
-                                        else
-                                            RemoteData.Loading
-                                    , indexDbRemoteData = RemoteData.Success (Just result)
-                                }
+                                else
+                                    ( RemoteData.Loading
+                                    , RemoteData.Success (Just result)
+                                    , HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadWhatsAppResultRecord dbVersion result)
+                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadWhatsAppHandle result)
+                                    )
+
+                            recordUpdated =
+                                { record | backendRemoteData = backendRemoteData, indexDbRemoteData = indexDbRemoteData }
 
                             syncInfoGeneral =
                                 if model.syncInfoGeneral.status == Uploading then
@@ -1483,23 +1499,12 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 else
                                     sendSyncInfoGeneralCmd syncInfoGeneral
 
-                            cmd =
-                                if List.isEmpty result.entities then
-                                    -- There were no entities for upload.
-                                    Cmd.none
-
-                                else
-                                    HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadWhatsAppResultRecord dbVersion result)
-                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadWhatsAppHandle result)
-
                             modelUpdated =
                                 { model | syncStatus = SyncUploadWhatsApp recordUpdated, syncInfoGeneral = syncInfoGeneral }
                         in
                         SubModelReturn
                             (SyncManager.Utils.determineSyncStatus activePage modelUpdated)
-                            (Cmd.batch [ cmd, setSyncInfoGeneralCmd ])
+                            (Cmd.batch [ uploadCmd, setSyncInfoGeneralCmd ])
                             noError
                             []
 

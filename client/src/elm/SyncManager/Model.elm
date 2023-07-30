@@ -175,6 +175,7 @@ type BackendAuthorityEntity
     | BackendAuthoritySendToHC (BackendEntity SendToHC)
     | BackendAuthoritySession (BackendEntity Session)
     | BackendAuthoritySocialHistory (BackendEntity SocialHistory)
+    | BackendAuthorityStockUpdate (BackendEntity StockUpdate)
     | BackendAuthoritySymptomsGeneral (BackendEntity SymptomsGeneral)
     | BackendAuthoritySymptomsGI (BackendEntity SymptomsGI)
     | BackendAuthoritySymptomsRespiratory (BackendEntity SymptomsRespiratory)

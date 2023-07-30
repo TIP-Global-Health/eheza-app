@@ -1446,10 +1446,10 @@ div.page-activity.trace-contact  {
   }
 }
 
-// Prenatal, Nutrition and Home Visit activity pages
 div.page-activity.prenatal,
 div.page-activity.nutrition,
-div.page-activity.home-visit {
+div.page-activity.home-visit,
+div.page-activity.stock-management {
 
   .ui.full.segment {
 
@@ -3248,7 +3248,7 @@ div.page-encounter-types {
     text-align: center;
   }
 
-    button.ui.primary.button {
+  button.ui.primary.button {
       height: 60px;
       margin-bottom: 10px;
       margin-left: auto;
@@ -4553,6 +4553,22 @@ div.page-activity.ncd {
     }
   }
 }
+div.page-activity.wellbeing {
+
+  .ui.button .counter {
+    background-color: $color-velvet;
+    border-radius: 50%;
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    height: 30px;
+    left: 5px;
+    line-height: 30px;
+    position: relative;
+    top: -15px;
+    width: 30px;
+  }
+}
 
 div.page-activity.messaging-center {
 
@@ -4814,4 +4830,392 @@ div.page-activity.messaging-center {
       margin-bottom: 20px;
     }
   }
+}
+
+div.dashboard,
+div.page-activity.stock-management {
+
+  .dashboard-card {
+    padding: 15px 5px 20px;
+    border-radius: 1px;
+    min-height: 130px;
+
+    .header {
+      font-size: 20px;
+      text-align: center;
+      font-weight: bolder;
+      line-height: 20px;
+      height: 65px;
+    }
+
+    .this-year {
+      font-size: 40px;
+      line-height: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .last-year {
+      position: absolute;
+      right: 20px;
+      top: 60px;
+      max-width: 80px;
+
+      .percentage {
+        display: block;
+        text-align: center;
+        font-size: 20px;
+        line-height: 16px;
+        position: relative;
+
+        .arrow {
+          display: inline-block;
+          height: 15px;
+          margin-right: 2px;
+        }
+      }
+
+      .percentage-label {
+        display: block;
+        font-size: 12px;
+        line-height: 12px;
+        color: $color-background;
+      }
+    }
+
+    .new-cases {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      line-height: 13px;
+      margin: 15px 0 -15px;
+
+      .new-cases-value {
+
+        &:before {
+          content: ":";
+          margin-right: 2px;
+        }
+      }
+    }
+
+    &.link {
+      cursor: pointer;
+      background: white url(#{$img-path}icon-card-link.svg) no-repeat 97% 7px;
+    }
+
+    &.stats-card {
+      min-height: 135px;
+      padding: 1.5rem 2.5rem;
+
+      .header {
+        padding: 0 10px;
+      }
+
+      .last-year {
+        right: 5px;
+        top: 76px;
+        max-width: 65px;
+        text-align: center;
+
+        .percentage {
+          font-size: 16px;
+        }
+
+        .percentage-label {
+          font-size: 10px;
+          line-height: 10px;
+        }
+      }
+    }
+  }
+
+  .dashboard-card.chw {
+    min-height: 150px;
+    padding: 20px 10px 20px;
+    border-top:4px solid $color-primary;
+
+    .value {
+      color: $color-light-background;
+    }
+  }
+
+  .month-selector {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+
+    .label {
+      color: white;
+      font-size: 25px;
+      margin: 0 40px;
+    }
+
+    .icon-back.rotate-180 {
+      transform: rotate(180deg);
+    }
+
+    .icon-back.hidden {
+      visibility: hidden;
+    }
+  }
+
+  .timestamp {
+    color: $color-white;
+    text-align: left;
+    margin: 30px 0px 10px;
+    font-size: 18px;
+  }
+}
+
+div.page-activity.stock-management {
+
+  .navigation-buttons .ui.primary.button {
+      padding: 0;
+      width: 100%;
+
+    .text {
+      float: left;
+      line-height: 60px;
+      margin-left: 40px;
+      text-align: left;
+      width: 80%;
+    }
+
+    .icon-back {
+      float: left;
+      margin-top: 17px;
+      transform: rotate(180deg);
+    }
+  }
+
+  .label.logged-in span {
+    color: $color-primary;
+    font-size: 25px;
+    margin-left: 10px;
+  }
+
+  .ui.full.segment {
+
+    .form-input.batch-number,
+    .form-input.correction-type,
+    .form-input.correction-reason {
+      background: $color-white;
+      border: 2px solid $color-light-gray;
+      color: $color-text;
+      padding: 5px;
+      text-align: center;
+      width: 50%;
+    }
+
+    .form-input.quantity,
+    .months-of-stock {
+      border: 2px solid $color-light-gray;
+      margin-bottom: 30px;
+      width: 50%;
+    }
+
+    .months-of-stock {
+      font-weight: 300;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
+    }
+
+    .form-input.quantity input {
+      background: $color-white;
+      border: none;
+      color: $color-text;
+      font-weight: 300;
+      height: 100%;
+    }
+
+    .form-input.textarea {
+      background: $color-white;
+      border: 2px solid $color-light-gray;
+      color: $color-text;
+      padding: 10px;
+    }
+
+    .correction-reason.hidden {
+      display: none;
+    }
+
+    .signature {
+      border: 2px solid $color-light-gray;
+    }
+
+    .signature img {
+      width: 600px;
+    }
+
+    .signature-pad {
+      display: flex;
+      flex-direction: column;
+      font-size: 10px;
+      height: 260px;
+      position: relative;
+      width: 100%;
+
+      .signature-pad--body {
+        border: 2px solid $color-light-gray;
+        flex: 1;
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .signature-pad--body canvas {
+        border-radius: 4px;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+
+      .signature-pad--footer {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .signature-pad--footer button {
+        background-color: $color-velvet;
+        border: none;
+        color: $color-white;
+        font-size: 18px;
+        font-weight: 700;
+        height: 36px;
+        line-height: 30px;
+        width: 120px;
+      }
+
+      .signature-pad--footer button.primary {
+        background-color: $color-primary;
+        margin-right: 25px;
+      }
+    }
+  }
+
+  .navigation-buttons {
+    margin-bottom: 40px;
+    margin-top: 30px;
+  }
+
+  .pane {
+    background-color: $color-primary;
+    color: $color-white;
+
+    .pane-heading {
+      font-weight: 700;
+      font-size: 20px;
+      margin-left: 40px;
+      padding: 5px 0;
+      text-transform: uppercase;
+    }
+
+    .pane-content {
+      background-color: $color-white;
+      color: $color-text;
+
+      .row {
+        border-bottom: 1px solid $color-text;
+        display: flex;
+
+        .cell {
+          border-right: 1px solid $color-text;
+          font-size: 20px;
+          line-height: 30px;
+          padding: 5px;
+          text-align: center;
+          width: 105px;
+        }
+
+        .cell.month {
+          width: 140px;
+        }
+      }
+
+      .row.header {
+        line-height: 60px;
+
+        .cell {
+          font-size: 22px;
+        }
+      }
+    }
+  }
+
+  .pane.history {
+
+    .pane-content {
+      background-color: $color-white;
+      color: $color-text;
+
+      .row {
+
+        .cell.month {
+          width: 140px;
+        }
+
+        .cell.starting-stock {
+          width: 170px;
+        }
+
+        .cell button {
+          background: $color-primary;
+          border: none;
+          color: $color-white;
+          font-size: 16px;
+          line-height: 26px;
+          text-transform: uppercase;
+          font-weight: normal;
+          padding: 0 10px;
+          border-radius: 5px;
+        }
+      }
+    }
+  }
+
+  .pane.month-details {
+
+    .pane-content {
+
+      .row {
+
+        .cell {
+          font-size: 16px;
+          line-height: 22px;
+          padding: 5px;
+          text-align: center;
+          width: 75px;
+        }
+
+        .cell.from-to,
+        .cell.signature {
+          width: 100px;
+        }
+
+        .cell.received {
+          width: 85px;
+        }
+      }
+
+      .row.header {
+        line-height: 40px;
+
+        .cell {
+          font-size: 17px;
+        }
+      }
+    }
+  }
+
+  .timestamp {
+    margin-top: 20px;
+    padding-bottom: 40px;
+  }
+
 }

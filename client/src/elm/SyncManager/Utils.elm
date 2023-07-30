@@ -9,7 +9,7 @@ import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
-import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Measurement.Model exposing (ImageUrl(..))
 import Backend.Model exposing (Revision(..))
 import Backend.NCDEncounter.Encoder
 import Backend.Nurse.Encoder
@@ -22,6 +22,7 @@ import Backend.Relationship.Encoder
 import Backend.ResilienceMessage.Encoder
 import Backend.ResilienceSurvey.Encoder
 import Backend.Session.Encoder
+import Backend.StockUpdate.Encoder
 import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
@@ -786,6 +787,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthoritySocialHistory identifier ->
             getIdentifier identifier "social_history"
 
+        BackendAuthorityStockUpdate identifier ->
+            getIdentifier identifier "stock_update"
+
         BackendAuthoritySymptomsGeneral identifier ->
             getIdentifier identifier "symptoms_general"
 
@@ -897,12 +901,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
 {-| Return a photo from a "Authority" entity.
 -}
-getPhotoFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
-getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
+getImageFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
+getImageFromBackendAuthorityEntity backendAuthorityEntity =
     let
-        getPhotoFromMeasurement identifier =
+        getImageFromMeasurement identifier =
             let
-                (PhotoUrl url) =
+                (ImageUrl url) =
                     identifier.entity.value
             in
             Just url
@@ -912,13 +916,20 @@ getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
             identifier.entity.avatarUrl
 
         BackendAuthorityPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
 
         BackendAuthorityNutritionPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
 
         BackendAuthorityPrenatalPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
+
+        BackendAuthorityStockUpdate identifier ->
+            let
+                (ImageUrl url) =
+                    identifier.entity.signature
+            in
+            Just url
 
         _ ->
             Nothing
@@ -1454,6 +1465,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthoritySocialHistory identifier ->
             encode Backend.Measurement.Encoder.encodeSocialHistory identifier
+
+        BackendAuthorityStockUpdate identifier ->
+            encode Backend.StockUpdate.Encoder.encodeStockUpdate identifier
 
         BackendAuthoritySymptomsGeneral identifier ->
             encode Backend.Measurement.Encoder.encodeSymptomsGeneral identifier
@@ -2086,6 +2100,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthoritySocialHistory identifier ->
             SocialHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityStockUpdate identifier ->
+            StockUpdateRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthoritySymptomsGeneral identifier ->
             SymptomsGeneralRevision (toEntityUuid identifier.uuid) identifier.entity

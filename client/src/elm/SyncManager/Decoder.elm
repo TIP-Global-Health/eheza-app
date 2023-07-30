@@ -26,6 +26,7 @@ import Backend.Relationship.Decoder
 import Backend.ResilienceMessage.Decoder
 import Backend.ResilienceSurvey.Decoder
 import Backend.Session.Decoder
+import Backend.StockUpdate.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
 import Components.SendViaWhatsAppDialog.Decoder exposing (decodeReportType)
@@ -53,31 +54,16 @@ decodeIndexDbQueryTypeResult =
                             |> andThen (\val -> succeed (IndexDbQueryUploadScreenshotResult val))
 
                     "IndexDbQueryUploadAuthorityResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadAuthorityResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
-
-                            -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadAuthorityResult Nothing)
-                            ]
+                        field "data" decodeIndexDbQueryUploadAuthorityResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
 
                     "IndexDbQueryUploadGeneralResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadGeneralResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
-
-                            -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadGeneralResult Nothing)
-                            ]
+                        field "data" decodeIndexDbQueryUploadGeneralResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
 
                     "IndexDbQueryUploadWhatsAppResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
-
-                            -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadWhatsAppResult Nothing)
-                            ]
+                        field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
 
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf
@@ -1016,6 +1002,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Dashboard.Decoder.decodeDashboardStatsRaw
                             BackendAuthorityDashboardStats
+
+                    "stock_update" ->
+                        doDecode
+                            Backend.StockUpdate.Decoder.decodeStockUpdate
+                            BackendAuthorityStockUpdate
 
                     "symptoms_general" ->
                         doDecode

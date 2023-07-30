@@ -15,7 +15,7 @@ import List as List
 import LocalData
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (backFromSessionPage, viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterDialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
@@ -111,20 +111,17 @@ view language nurse ( sessionId, session ) model =
                     ( completedActivities, translate language Trans.NoActivitiesCompleted )
 
         goBackPage =
-            backFromSessionPage nurse session.offlineSession
-
-        endSessionAction =
             if isCommunityHealthWorker nurse then
-                SetRedirectPage goBackPage
+                UserPage ClinicalPage
 
             else
-                ShowEndSessionDialog True
+                UserPage ClinicsPage
 
         endSessionButton =
             div [ class "actions" ]
                 [ button
-                    [ class "ui fluid primary button"
-                    , onClick endSessionAction
+                    [ class "ui fluid button green"
+                    , onClick <| SetRedirectPage <| UserPage ClinicalPage
                     ]
                     [ text <| translate language Trans.EndGroupEncounter ]
                 ]

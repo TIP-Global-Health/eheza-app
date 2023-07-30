@@ -286,6 +286,7 @@ dbSync.version(20).stores({
  * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
  */
 
+// This hook is activated as a result of new content that is being synced from backend.
 dbSync.shards.hook('creating', function (primKey, obj, trans) {
   if (obj.type === 'person') {
     if (typeof obj.label == 'string') {
@@ -294,6 +295,7 @@ dbSync.shards.hook('creating', function (primKey, obj, trans) {
   }
 });
 
+// This hook is activated as a result of updated content that is being synced from backend.
 dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
   if (obj.type === 'person') {
     if (mods.hasOwnProperty("label")) {
@@ -793,8 +795,12 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .count();
 
         if (totalEntites == 0) {
-          // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+            // No entities for upload found.
+            let resultToSend = {
+              'entities': [],
+              'remaining': 0
+            };
+            return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -827,7 +833,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -862,7 +872,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -1184,7 +1198,6 @@ function reportProgressReportScreenshotResult(result) {
   }
 }
 
-
 function getRandom8Digits () {
   var timestamp = String(performance.timeOrigin + performance.now());
   timestamp = timestamp.replace('.', '');
@@ -1204,6 +1217,119 @@ Dropzone.autoDiscover = false;
 elmApp.ports.bindDropZone.subscribe(function() {
   waitForElement('dropzone', attachDropzone, null);
 });
+
+
+// Signature Pad.
+
+// https://github.com/szimek/signature_pad
+var canvas = undefined;
+var signaturePad = undefined;
+
+var signaturePadSelector = 'signature-pad';
+
+elmApp.ports.bindSignaturePad.subscribe(function() {
+  waitForElement(signaturePadSelector, attachSignaturePad, null);
+});
+
+elmApp.ports.clearSignaturePad.subscribe(function() {
+  if (signaturePad === undefined) {
+    return;
+  }
+  signaturePad.clear();
+});
+
+elmApp.ports.storeSignature.subscribe(function(data) {
+  if (signaturePad === undefined) {
+    return;
+  }
+
+  if (signaturePad.isEmpty()) {
+    return;
+  }
+
+  storeSignatureFromPad();
+});
+
+function attachSignaturePad() {
+  const wrapper = document.getElementById("signature-pad");
+  canvas = wrapper.querySelector("canvas");
+  signaturePad = new SignaturePad(canvas, {
+    // It's Necessary to use an opaque color when saving image as JPEG;
+    // this option can be omitted if only saving as PNG or SVG
+    backgroundColor: 'rgb(255, 255, 255)'
+  });
+
+  // Adjust canvas coordinate space taking into account pixel ratio,
+  // to make it look crisp on mobile devices.
+  // This also causes canvas to be cleared.
+  function resizeCanvas() {
+    // When zoomed out to less than 100%, for some very strange reason,
+    // some browsers report devicePixelRatio as less than 1
+    // and only part of the canvas is cleared then.
+    const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+
+    // This part causes the canvas to be cleared
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext("2d").scale(ratio, ratio);
+    signaturePad.clear();
+  }
+
+  window.onresize = resizeCanvas;
+  resizeCanvas();
+}
+
+function storeSignatureFromPad() {
+  (async () => {
+    const uploadCache = 'photos-upload';
+    const cache = await caches.open(uploadCache);
+
+    signaturePad.canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      const imageName = 'signature-' + getRandom8Digits() + '.png';
+      formData.set('file', blob, imageName);
+
+      const url = "cache-upload/images/" + Date.now();
+
+      try {
+        var response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // This prevents attaching cookies to request, to prevent
+          // sending authentication cookie, as our desired
+          // authentication method is token.
+          credentials: 'omit'
+        });
+
+        if (response.ok) {
+         var json = await response.json();
+         reportSignaturePadResult(json.url);
+        }
+        else {
+          // If something goes wrong while storing signature in cache,
+          // currently we do nothing.
+          // This situation is very rare, and if it does happen, user
+          // will most likely repeat the action.
+        }
+      }
+      catch (e) {
+        // Something was wrong with storing signature in cache.
+        // Take no action (for now).
+      }
+    });
+   })();
+}
+
+function reportSignaturePadResult(url) {
+  var element = document.getElementById(signaturePadSelector);
+  if (element) {
+    var event = makeCustomEvent("signaturecomplete", {
+      url: url
+    });
+
+    element.dispatchEvent(event);
+  }
+}
 
 /**
  * Wait for id to appear before invoking related functions.

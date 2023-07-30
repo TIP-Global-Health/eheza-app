@@ -256,13 +256,18 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                                 , DevicePage
                                 )
 
-                            MenuMessagingCenter ->
+                            MenuWellbeing ->
                                 ( "messaging-center"
-                                , UserPage MessagingCenterPage
+                                , UserPage WellbeingPage
+                                )
+
+                            MenuStockManagement ->
+                                ( "stock-management"
+                                , UserPage StockManagementPage
                                 )
 
                     viewCardFunc =
-                        if activity == MenuMessagingCenter then
+                        if activity == MenuWellbeing then
                             resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
                                 |> activityCardWithCounter
 
@@ -282,7 +287,17 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                 , MenuDeviceStatus
                 ]
                     ++ (if nurse.resilienceProgramEnabled then
-                            [ MenuMessagingCenter ]
+                            [ MenuWellbeing ]
+
+                        else
+                            []
+                       )
+                    ++ (if
+                            -- For now, Stock Management feature is not launched.
+                            False
+                                && not isChw
+                        then
+                            [ MenuStockManagement ]
 
                         else
                             []

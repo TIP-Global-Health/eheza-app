@@ -112,7 +112,7 @@ import Pages.Utils
         , viewInstructionsLabel
         , viewLabel
         , viewMeasurementInput
-        , viewPhotoThumbFromPhotoUrl
+        , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
         , viewQuestionLabel
         , viewRedAlertForBool
@@ -412,7 +412,10 @@ viewPregnancyDatingContent language currentDate assembled data =
                 lmpRangeInput =
                     viewSelectListInput language
                         form.lmpRange
-                        [ OneMonth, ThreeMonth, SixMonth ]
+                        [ Pages.Prenatal.Activity.Types.OneMonth
+                        , Pages.Prenatal.Activity.Types.ThreeMonths
+                        , SixMonthsOrMore
+                        ]
                         lmpRangeToString
                         SetLmpRange
                         Translate.LmpRange
@@ -426,14 +429,14 @@ viewPregnancyDatingContent language currentDate assembled data =
                                     let
                                         dateFrom =
                                             case range of
-                                                OneMonth ->
+                                                Pages.Prenatal.Activity.Types.OneMonth ->
                                                     Date.add Months -1 currentDate
 
-                                                ThreeMonth ->
+                                                Pages.Prenatal.Activity.Types.ThreeMonths ->
                                                     Date.add Months -3 currentDate
 
-                                                SixMonth ->
-                                                    Date.add Months -6 currentDate
+                                                SixMonthsOrMore ->
+                                                    Date.add Months -36 currentDate
 
                                         dateSelectorConfig =
                                             { select = SetLmpDate
@@ -1291,7 +1294,7 @@ viewPrenatalPhotoContent language currentDate assembled data =
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
+                [ Maybe.map viewPhotoThumbFromImageUrl displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]
@@ -3748,7 +3751,11 @@ viewFollowUpForm language assembled currentDate form =
     div [ class "ui form follow-up" ]
         [ viewLabel language Translate.FollowUpWithMotherLabel
         , viewCheckBoxSelectInput language
-            [ ThreeDays, OneMonths, TwoMonths, ThreeMonths ]
+            [ ThreeDays
+            , Backend.Measurement.Model.OneMonth
+            , TwoMonths
+            , Backend.Measurement.Model.ThreeMonths
+            ]
             []
             form.option
             SetFollowUpOption

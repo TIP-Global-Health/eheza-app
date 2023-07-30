@@ -67,6 +67,7 @@
                 dbSync[table.name] = table;
             });
 
+            // This hook is activated as a result of new content being created on device.
             dbSync.shards.hook('creating', function (primKey, obj, trans) {
               if (obj.type === 'person') {
                 if (typeof obj.label == 'string') {
@@ -75,6 +76,7 @@
               }
             });
 
+            // This hook is activated as a result of content being edited on device.
             dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
               if (obj.type === 'person') {
                 if (mods.hasOwnProperty("label")) {
@@ -122,11 +124,14 @@
                 else if (type === 'well-child-measurements') {
                     return viewMeasurements('well_child_encounter', uuid);
                 }
+                else if (type === 'ncd-measurements') {
+                    return viewMeasurements('ncd_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
-                else if (type === 'ncd-measurements') {
-                    return viewMeasurements('ncd_encounter', uuid);
+                else if (type === 'stock-management-measurements') {
+                    return viewStockManagementMeasurements(uuid);
                 }
                 else {
                     return view(type, uuid);
@@ -144,8 +149,10 @@
 
         if (event.request.method === 'PUT') {
             if (uuid) {
-                return putNode(event.request, type, uuid);
+                return patchNode(event.request, type, uuid);
             }
+
+            return postNode(event.request, type);
         }
 
         if (event.request.method === 'POST') {
@@ -217,41 +224,6 @@
         }).catch(sendErrorResponses);
     }
 
-    function putNode (request, type, uuid) {
-        return dbSync.open().catch(databaseError).then(function () {
-            return getTableForType(type).then(function (table) {
-                return request.json().catch(jsonError).then(function (json) {
-                    json.uuid = uuid;
-                    json.type = type;
-
-                    return table.put(json).catch(databaseError).then(function () {
-                        return sendRevisedNode(table, uuid).then(function () {
-                            // For hooks to be able to work, we need to declare the
-                            // tables that may be altered due to a change. In this case
-                            // We want to allow adding pending upload photos.
-                            // See for example dbSync.nodeChanges.hook().
-                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
-                                var body = JSON.stringify({
-                                    data: [json]
-                                });
-
-                                var response = new Response(body, {
-                                    status: 200,
-                                    statusText: 'OK',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
-
-                                return Promise.resolve(response);
-                            });
-                        });
-                    });
-                });
-            });
-        }).catch(sendErrorResponses);
-    }
-
     function patchNode (request, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
@@ -282,7 +254,9 @@
                                             uuid: uuid,
                                             method: 'PATCH',
                                             data: json,
-                                            timestamp: Date.now()
+                                            timestamp: Date.now(),
+                                            // Mark entity as not synced.
+                                            isSynced: 0
                                         };
 
                                         var changeTable = dbSync.nodeChanges;
@@ -302,7 +276,6 @@
                                         }
 
                                         return addShard.then(function () {
-                                            change.isSynced = 0;
                                             return changeTable.add(change).then(function (localId) {
                                                 return Promise.resolve(response);
                                             });
@@ -380,6 +353,13 @@
 
                                           return changeTable.add(change).then(function (localId) {
                                               return Promise.resolve(response);
+                                          }).catch(function (err) {
+                                            // If there was a failure, we try again, assuming it
+                                            // may have been a glitch. If operation fails again,
+                                            // we leave it with no ftther handling.
+                                            return changeTable.add(change).then(function (localId) {
+                                                return Promise.resolve(response);
+                                            })
                                           });
                                     });
                                 });
@@ -510,6 +490,12 @@
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
                         data[target][node.type].push(node);
+                        if (key !== 'person') {
+                          // Sorting DESC, so that node with highest vid
+                          // is selected first, as it was edited last, and
+                          // got most recent data.
+                          data[target][node.type].sort((a,b) => (b.vid - a.vid));
+                        }
                     } else {
                         data[target] = data[target] || {};
                         data[target][node.type] = [node];
@@ -595,6 +581,60 @@
                         }
                     }
 
+                    if (data[node.type]) {
+                        data[node.type].push(node);
+                    } else {
+                        data[node.type] = [node];
+                    }
+                });
+
+                var body = JSON.stringify({
+                    // Decoder is expecting a list.
+                    data: [data]
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
+        }).catch(sendErrorResponses);
+    }
+
+    var stockManagementMeasurementsTypes = [
+      'child_fbf',
+      'mother_fbf',
+      'stock_update'
+    ];
+
+    function viewStockManagementMeasurements (shard) {
+        // Load all types of follow up measurements that belong to provided healh center.
+        var query = dbSync.shards.where('type').anyOf(stockManagementMeasurementsTypes).and(function (item) {
+          return item.shard === shard;
+        });
+
+        // Build an empty list of measurements, so we return some value, even
+        // if no measurements were ever taken.
+        var data = {};
+        data = {};
+        // Decoder is expecting to have the health center UUID.
+        data.uuid = shard;
+
+        return query.toArray().catch(databaseError).then(function (nodes) {
+            if (nodes) {
+                nodes.forEach(function (node) {
                     if (data[node.type]) {
                         data[node.type].push(node);
                     } else {
@@ -968,12 +1008,20 @@
      * Helper function to add a record to authority PhotoUploadChanges.
      */
     function addPhotoUploadChanges(tableHook, table, obj) {
-        if (!obj.data.hasOwnProperty('photo')) {
-            // Entity doesn't have a photo.
-            return;
+        var url;
+
+        if (obj.data.hasOwnProperty('photo')) {
+          url = obj.data.photo;
+        }
+        else if (obj.data.hasOwnProperty('signature')) {
+          url = obj.data.signature;
+        }
+        else {
+          // Entity doesn't have an image.
+          return;
         }
 
-        if (!photosUploadUrlRegex.test(obj.data.photo)) {
+        if (!photosUploadUrlRegex.test(url)) {
             // Photo URL doesn't point to the local cache.
             return;
         }
@@ -984,7 +1032,7 @@
             const result = await table.add({
                 localId : primaryKey,
                 uuid: obj.uuid,
-                photo: obj.data.photo,
+                photo: url,
                 // Drupal's file ID.
                 fileId: null,
                 // The file name on Drupal.

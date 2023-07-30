@@ -85,6 +85,8 @@ import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View
+import Pages.StockManagement.Model
+import Pages.StockManagement.View
 import Pages.TraceContact.Model
 import Pages.TraceContact.View
 import Pages.WellChild.Activity.Model
@@ -94,6 +96,7 @@ import Pages.WellChild.Encounter.View
 import Pages.WellChild.Participant.View
 import Pages.WellChild.ProgressReport.Model
 import Pages.WellChild.ProgressReport.View
+import Pages.Wellbeing.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import SyncManager.View
@@ -311,12 +314,11 @@ viewUserPage page deviceName model configured =
                         Pages.Clinical.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw model
                             |> flexPageWrapper model
 
-                    ClinicsPage clinicId ->
+                    ClinicsPage ->
                         Pages.Clinics.View.view model.language
                             currentDate
                             (Tuple.second loggedInModel.nurse)
                             healthCenterId
-                            clinicId
                             loggedInModel.clinicsPage
                             model.indexedDb
                             model.syncManager
@@ -792,6 +794,40 @@ viewUserPage page deviceName model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper model
+
+                    WellbeingPage ->
+                        let
+                            ( nurseId, nurse ) =
+                                loggedInModel.nurse
+
+                            page_ =
+                                Dict.get nurseId loggedInModel.messagingCenterPages
+                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                        in
+                        Pages.Wellbeing.View.view model.language
+                            model.currentTime
+                            nurseId
+                            nurse
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper model
+
+                    StockManagementPage ->
+                        let
+                            ( nurseId, nurse ) =
+                                loggedInModel.nurse
+                        in
+                        Pages.StockManagement.View.view model.language
+                            currentDate
+                            model.healthCenterId
+                            nurseId
+                            nurse
+                            model.syncManager.syncInfoAuthorities
+                            model.indexedDb
+                            loggedInModel.stockManagementPage
+                            |> Html.map (MsgLoggedIn << MsgPageStockManagement)
                             |> flexPageWrapper model
 
             else
