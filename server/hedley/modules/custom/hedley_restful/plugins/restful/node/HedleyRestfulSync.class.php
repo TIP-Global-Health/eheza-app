@@ -414,7 +414,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           }
           elseif (in_array($key, ['label', 'first_name', 'second_name'])) {
             // Verify there are only plain characters at patient name.
-            $data[$key] = trim(preg_replace('/[^a-zA-Z0-9_ -]/s','', $value));
+            $data[$key] = trim(preg_replace('/[^a-zA-Z0-9_ -]/s', '', $value));
           }
           else {
             $data[$key] = $value;
