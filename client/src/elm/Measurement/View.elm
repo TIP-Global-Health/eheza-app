@@ -3124,7 +3124,7 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
     else
         let
             encountersDatesFromForm =
-                -- Since ANC step of NCDA form is filled only onces, we know
+                -- Since ANC step of NCDA form is filled only once, we know
                 -- that current activity is the first one filled, and there's
                 -- no need to examine existing NCDA activities.
                 Maybe.withDefault EverySet.empty form.ancVisitsDates
