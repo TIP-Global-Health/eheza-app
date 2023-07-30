@@ -4536,13 +4536,11 @@ ncdaFormWithDefault form saved =
             form
             (\value ->
                 { step = form.step
-
                 , updateANCVisits = or form.updateANCVisits (Just False)
                 , ancVisitsViewMode = form.ancVisitsViewMode
                 , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
                 , ancVisitUpdateDate = form.ancVisitUpdateDate
                 , dateSelectorPopupState = form.dateSelectorPopupState
-
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
                 , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
                 , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
