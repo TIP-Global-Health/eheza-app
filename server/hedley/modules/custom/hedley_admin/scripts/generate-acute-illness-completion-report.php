@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Generates 'Demographics' report.
+ * Generates 'acute illness completion' report.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php.
+ * profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-completion-report.php.
  */
 
 require_once __DIR__ . '/report_common.inc';
@@ -199,7 +199,10 @@ drush_print($text_table->render($encounters));
  *   The node ID of the health center.
  */
 function get_health_center_id($health_center_name = NULL) {
-  if ($health_center_name) {
+  if (!$health_center_name) {
+      return NULL;
+  }
+  else {
     $health_center_name = str_replace(['_', '-', '.'], ' ', $health_center_name);
     $results = db_query("SELECT nid FROM node WHERE title = :title AND type = :type", array(
       ':title' => $health_center_name,
@@ -212,7 +215,7 @@ function get_health_center_id($health_center_name = NULL) {
       ));
       if (!$results->fetchField()) {
         drush_print('No health centers match the name provided');
-        exit;
+        exit(1);
       }
       elseif (!$results->fetchField()) {
         return db_query("SELECT nid FROM node WHERE title LIKE :title AND type = :type LIMIT 1", array(
@@ -228,7 +231,7 @@ function get_health_center_id($health_center_name = NULL) {
         drush_print('Multiple health centers match the name provided including ' .
           get_health_center($results->fetchField()) . ', ' . get_health_center($results->fetchField()) .
           ", etc. \r\nPlease use a more specific name");
-        exit();
+        exit(1);
       }
     }
     else {
@@ -237,9 +240,6 @@ function get_health_center_id($health_center_name = NULL) {
         ':type' => 'health_center',
       ))->fetchField();
     }
-  }
-  else {
-    return NULL;
   }
 }
 
@@ -253,7 +253,10 @@ function get_health_center_id($health_center_name = NULL) {
  *   The name of the district as stored in SQL.
  */
 function get_district_name($district = NULL) {
-  if ($district) {
+  if (!$district) {
+    return NULL;
+  }
+  else {
     $district = str_replace(['_', '-', '.'], ' ', $district);
     $results = db_query("SELECT DISTINCT field_district_value FROM field_data_field_district WHERE field_district_value = :district", array(
       ':district' => $district,
@@ -264,7 +267,7 @@ function get_district_name($district = NULL) {
       ));
       if (!$results->fetchField()) {
         drush_print('No districts match the name provided');
-        exit;
+        exit(1);
       }
       elseif (!$results->fetchField()) {
         return db_query("SELECT DISTINCT field_district_value FROM field_data_field_district WHERE field_district_value LIKE :district LIMIT 1", array(
@@ -278,7 +281,7 @@ function get_district_name($district = NULL) {
         drush_print('Multiple districts match the name provided including ' .
           $results->fetchField() . ', ' . $results->fetchField() .
           ", etc. \r\nPlease use a more specific name");
-        exit();
+        exit(1);
       }
     }
     else {
@@ -286,9 +289,6 @@ function get_district_name($district = NULL) {
         ':district' => $district,
       ))->fetchField();
     }
-  }
-  else {
-    return NULL;
   }
 }
 
@@ -486,6 +486,7 @@ function symptom_total($start_date, $end_date, $name_clause) {
     }
   }
 
+  //count number of encounter IDs that meet all the constraints 
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints)) {
@@ -571,6 +572,7 @@ function symptom_general_one($start_date, $end_date, $name_clause) {
     }
   }
 
+  //count number of encounter IDs that meet all the constraints.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints)) {
@@ -658,6 +660,8 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
         $ids[$result] += 1;
       }
     }
+
+    //Count number of encounter IDs that meet all the constraints.
     $count = 0;
     foreach ($ids as $id) {
       if ($id == count($constraints)) {
@@ -851,11 +855,13 @@ function physical_exam_total($start_date, $end_date, $name_clause) {
       $ids[$result] += 1;
       $at_least_one = TRUE;
     }
+    //Counts how many constraint aren't true for any IDs.
     if (!$at_least_one) {
       $modifier += 1;
     }
   }
 
+  //Counts number of encounter IDs that meet all constraints except those who arn't true for any IDs.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints) - $modifier) {
@@ -934,6 +940,7 @@ function physical_exam_abnormal($start_date, $end_date, $name_clause, $mode) {
     LEFT JOIN person_classified cla on per.field_person_target_id = cla.entity_id
     LEFT JOIN field_data_field_health_center hc ON per.field_person_target_id=hc.entity_id
     LEFT JOIN field_data_field_district district ON per.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_ai_encounter_type t ON e.field_acute_illness_encounter_target_id=t.entity_id
     LEFT JOIN field_data_field_heart_rate her ON node.nid=her.entity_id
     LEFT JOIN field_data_field_respiratory_rate rer ON node.nid=rer.entity_id
     LEFT JOIN field_data_field_body_temperature bod ON node.nid=bod.entity_id
@@ -951,7 +958,7 @@ function physical_exam_abnormal($start_date, $end_date, $name_clause, $mode) {
       $ids[$result] += 1;
     }
   }
-
+  //Count number of encounter IDs that meet all the constraints.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == 1) {
@@ -1035,12 +1042,13 @@ function enconter_complete($start_date, $end_date, $name_clause) {
       $ids[$result] += 1;
       $at_least_one = TRUE;
     }
+    //Counts how many constraint aren't true for any IDs.
     if (!$at_least_one) {
       $modifier += 1;
     }
 
   }
-
+  //Counts number of encounter IDs that meet all constraints except those who arn't true for any IDs.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints) - $modifier) {
