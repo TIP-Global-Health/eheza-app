@@ -1544,39 +1544,36 @@ function hedley_stats_get_all_clinic_types() {
  * @throws \Exception
  */
 function hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, $extend = FALSE) {
-  $clinic_types = hedley_stats_get_all_clinic_types();
-
-  $result = [];
-  foreach ($clinic_types as $clinic_type) {
-    $result[$clinic_type] = hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_person($health_center_id, $clinic_type, $period, $extend);
-  }
-
+  $result = hedley_stats_get_nutrition_measurements_grouped_by_clinic_type_and_person($health_center_id, $period, $extend);
   $result['individual'] = hedley_stats_get_nutrition_measurements_for_individual_encounters_grouped_by_person($health_center_id, $period, $extend);
 
   return $result;
 }
 
 /**
- * Gets all nutrition measurements by clinic type, for a health center.
+ * Gets all group encounter nutrition measurements, for a health center.
  *
- * Results are for certain period, and grouped by person.
+ * Results are for certain period, and grouped by clinic type and person.
  *
  * @param int $health_center_id
  *   The Health center node ID.
- * @param string $clinic_type
- *   The type of the clinic.
  * @param string $period
  *   The period to query.
  * @param bool $extend
  *   Optional; If True, data goes back one more month for 'one year' period.
  *
  * @return array
- *   Nutrition measurements by clinic type, for a health center,
- *   within given period.
+ *   Nutrition measurements grouped by clinic type and person.
  *
  * @throws \Exception
  */
-function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_person($health_center_id, $clinic_type, $period, $extend = FALSE) {
+function hedley_stats_get_nutrition_measurements_grouped_by_clinic_type_and_person($health_center_id, $period, $extend = FALSE) {
+  $result = [];
+  $clinic_types = hedley_stats_get_all_clinic_types();
+  foreach ($clinic_types as $clinic_type) {
+    $result[$clinic_type] = [];
+  }
+
   // All group measurements with nutrition fields mapping.
   $node_types = heldey_stats_get_nutrition_measurements_mapping_for_group_encounter();
 
@@ -1598,23 +1595,19 @@ function hedley_stats_get_nutrition_measurements_for_clinic_type_grouped_by_pers
   hedley_general_join_field_to_query($query, 'node', 'field_muac', FALSE);
   hedley_general_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
 
-  // Filter by clinic type.
-  $query->condition('field_group_type.field_group_type_value', $clinic_type);
-
-  $result = hedley_stats_run_node_query_in_batches($query);
+  $rows = hedley_stats_run_node_query_in_batches($query);
 
   // Group measurements by person.
-  $people = [];
-  foreach ($result as $measurement) {
+  foreach ($rows as $row) {
     // Get fields for current node type.
-    $measurement_fields = $node_types[$measurement->type];
+    $measurement_fields = $node_types[$row->type];
 
     foreach ($measurement_fields as $measurement_field) {
-      $people[$measurement->field_person][$measurement->type][$measurement->field_date_measured][$measurement_field] = $measurement->{$measurement_field};
+      $result[$row->field_group_type][$row->field_person][$row->type][$row->field_date_measured][$measurement_field] = $row->{$measurement_field};
     }
   }
 
-  return $people;
+  return $result;
 }
 
 /**
