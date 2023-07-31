@@ -1134,7 +1134,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
           $count = hedley_activity_count_person_measurements_taken_during_sessions($child_id, $sessions_ids);
           if ($count == 0) {
             // The child missed the session during given period, because
-            // no measurements was taken for him.
+            // no measurements was taken for them.
             $missed_session[] = $expected_person;
           }
         }
