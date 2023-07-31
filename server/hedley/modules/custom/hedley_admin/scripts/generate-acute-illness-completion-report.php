@@ -200,7 +200,7 @@ drush_print($text_table->render($encounters));
  */
 function get_health_center_id($health_center_name = NULL) {
   if (!$health_center_name) {
-      return NULL;
+    return NULL;
   }
   else {
     $health_center_name = str_replace(['_', '-', '.'], ' ', $health_center_name);
@@ -486,7 +486,7 @@ function symptom_total($start_date, $end_date, $name_clause) {
     }
   }
 
-  //count number of encounter IDs that meet all the constraints 
+  // Count number of encounter IDs that meet all constraints.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints)) {
@@ -572,7 +572,7 @@ function symptom_general_one($start_date, $end_date, $name_clause) {
     }
   }
 
-  //count number of encounter IDs that meet all the constraints.
+  // Count number of encounter IDs that meet all the constraints.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints)) {
@@ -661,7 +661,7 @@ function exposure_travel_history($start_date, $end_date, $name_clause, $mode = F
       }
     }
 
-    //Count number of encounter IDs that meet all the constraints.
+    // Count number of encounter IDs that meet all the constraints.
     $count = 0;
     foreach ($ids as $id) {
       if ($id == count($constraints)) {
@@ -855,13 +855,13 @@ function physical_exam_total($start_date, $end_date, $name_clause) {
       $ids[$result] += 1;
       $at_least_one = TRUE;
     }
-    //Counts how many constraint aren't true for any IDs.
+    // Counts how many constraint aren't true for any IDs.
     if (!$at_least_one) {
       $modifier += 1;
     }
   }
 
-  //Counts number of encounter IDs that meet all constraints except those who arn't true for any IDs.
+  // Counts IDs that meet all constraints except those who arn't true for any IDs.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints) - $modifier) {
@@ -958,7 +958,7 @@ function physical_exam_abnormal($start_date, $end_date, $name_clause, $mode) {
       $ids[$result] += 1;
     }
   }
-  //Count number of encounter IDs that meet all the constraints.
+  // Count number of encounter IDs that meet at least one constraint.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == 1) {
@@ -1048,7 +1048,7 @@ function enconter_complete($start_date, $end_date, $name_clause) {
     }
 
   }
-  //Counts number of encounter IDs that meet all constraints except those who arn't true for any IDs.
+  // Counts IDs that meet all constraints except those who arn't true for any IDs.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints) - $modifier) {
