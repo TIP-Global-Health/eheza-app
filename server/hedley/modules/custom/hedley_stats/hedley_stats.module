@@ -1495,7 +1495,7 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
       $people_info[$node->nid] = [
         'id' => $node->nid,
         'name' => $node->title,
-        'birth_date' => $node->field_birth_date[LANGUAGE_NONE][0]['value'],
+        'birth_date' => hedley_restful_timestamp_only_date($node->field_birth_date[LANGUAGE_NONE][0]['value']),
         'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
       ];
     }
