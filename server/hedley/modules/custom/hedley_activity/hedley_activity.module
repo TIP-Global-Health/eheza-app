@@ -340,21 +340,17 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
 }
 
 /**
- * Get measurements taken for person during one of sessions, within a period.
+ * Counts measurements taken for person during all given sessions.
  *
  * @param int $person_id
  *   The person node ID.
  * @param array $sessions_ids
- *   The IDs of sessions.
- * @param array $period
- *   The period of the measurement, contains a start and an end.
- * @param int $range
- *   Optional; The query's range.
+ *   The IDs of the sessions.
  *
- * @return array
- *   Node IDs if they exist or empty array if no nodes exist.
+ * @return int
+ *   Number of measurements.
  */
-function hedley_activity_get_person_measurements_during_sessions_by_period($person_id, array $sessions_ids, array $period, $range = 100) {
+function hedley_activity_count_person_measurements_taken_during_sessions($person_id, array $sessions_ids) {
   $query = db_select('node', 'node');
   $query->fields('node', ['nid']);
   $query->condition('status', NODE_PUBLISHED);
@@ -369,14 +365,5 @@ function hedley_activity_get_person_measurements_during_sessions_by_period($pers
   $session_field_name = $session_field . '.' . $session_field . '_target_id';
   $query->condition($session_field_name, $sessions_ids, 'IN');
 
-  $date_field = 'field_date_measured';
-  hedley_general_join_field_to_query($query, 'node', $date_field);
-  $date_field_name = $date_field . '.' . $date_field . '_value';
-  $query->condition($date_field_name, [$period['start'], $period['end']], 'BETWEEN');
-
-  $query->range(0, $range);
-
-  return $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  return $query->countQuery()->execute()->fetchField();
 }

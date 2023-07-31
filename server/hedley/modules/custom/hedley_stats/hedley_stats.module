@@ -1026,9 +1026,23 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
 }
 
 /**
- * Return Session attendance related states by health center.
+ * Return FBF sessions attendance related states by health center.
  *
- * The period of this statistic is hardcoded for the last three months.
+ * The statistics we need are:
+ *  - Children that have missed sessions by period.
+ *  - Children that are graduating the program, by period.
+ *
+ * The logic:
+ *   1. Pull all participants (mother+child pair) of FBF clinics
+ *      of the health center.
+ *   2. Pull all FBF sessions that have were performed during given periods.
+ *   3. For each participant, for each of periods:
+ *     - Determine if participant was supposed to participate in a session.
+ *     - If so:
+ *        3.1. Load all measurements taken for child during FFB sessions
+ *           (resolved at point 2). If there are no measurements, we know that
+ *           child has missed the session.
+ *        3.2. Determine if child graduates within given period.
  *
  * @param int $health_center_id
  *   The Health center node ID.
@@ -1036,9 +1050,7 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
  *   A list of FBF clinics IDs that belong to health center.
  *
  * @return array
- *   Array with the result.
- *
- * @throws \Exception
+ *   Array with the results.
  */
 function hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, array $fbf_clinics) {
   // Return the cache if exists.
@@ -1054,6 +1066,10 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
   }
 
   $periods = [
+    // On front-end, we have a selection only for 2 periods -
+    // this month and previous month.
+    // We add the 'two months ago' period, to support display of
+    // the '% from previous months' located on cards.
     HEDLEY_STATS_PERIOD_TWO_MONTHS_AGO,
     HEDLEY_STATS_PERIOD_LAST_MONTH,
     HEDLEY_STATS_PERIOD_THIS_MONTH,
@@ -1062,8 +1078,6 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
   $completed_program = [];
   $missed_session = [];
 
-  // Loop through the clinics and get sessions for each clinic and from there
-  // get expected people for each clinic.
   foreach ($fbf_clinics as $clinic_id) {
     $sessions_by_period = $periods_ranges = [];
     foreach ($periods as $period) {
@@ -1111,15 +1125,16 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
           continue;
         }
 
+        // Setting expected date to first day in range, to allow proper
+        // filtering on front-end.
         $expected_person['expected_date'] = hedley_stats_convert_timestamp_to_nominal($start_timestamp);
 
         $sessions_ids = $sessions_by_period[$period];
         if (!empty($sessions_ids)) {
-          $measurements = hedley_activity_get_person_measurements_during_sessions_by_period($child_id, $sessions_ids, $periods_ranges[$period]);
-          if (empty($measurements)) {
-            // This person missed the session because they don't have any
-            // measurements found for that session on this date, so we add it to
-            // the list of dates, to be able to filter it in the frontend.
+          $count = hedley_activity_count_person_measurements_taken_during_sessions($child_id, $sessions_ids);
+          if ($count == 0) {
+            // The child missed the session during given period, because
+            // no measurements was taken for him.
             $missed_session[] = $expected_person;
           }
         }
