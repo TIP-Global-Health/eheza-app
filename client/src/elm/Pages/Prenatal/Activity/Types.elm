@@ -19,8 +19,8 @@ type HistoryTask
 
 type LmpRange
     = OneMonth
-    | ThreeMonth
-    | SixMonth
+    | ThreeMonths
+    | SixMonthsOrMore
 
 
 type NextStepsTask

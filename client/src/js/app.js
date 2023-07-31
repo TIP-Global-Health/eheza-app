@@ -286,6 +286,7 @@ dbSync.version(20).stores({
  * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
  */
 
+// This hook is activated as a result of new content that is being synced from backend.
 dbSync.shards.hook('creating', function (primKey, obj, trans) {
   if (obj.type === 'person') {
     if (typeof obj.label == 'string') {
@@ -294,6 +295,7 @@ dbSync.shards.hook('creating', function (primKey, obj, trans) {
   }
 });
 
+// This hook is activated as a result of updated content that is being synced from backend.
 dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
   if (obj.type === 'person') {
     if (mods.hasOwnProperty("label")) {
@@ -793,8 +795,12 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .count();
 
         if (totalEntites == 0) {
-          // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+            // No entities for upload found.
+            let resultToSend = {
+              'entities': [],
+              'remaining': 0
+            };
+            return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -827,7 +833,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -862,7 +872,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync

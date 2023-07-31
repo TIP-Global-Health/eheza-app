@@ -412,10 +412,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
               $data[$key][] = strtotime($date);
             }
           }
-          elseif ($key == 'nutrition_signs' && empty($data[$key])) {
-            // Temporary workaround to resolve sync issue on production.
-            // To be removed once fix is deployed, and devices update APP.
-            $data[$key] = ['none'];
+          elseif (in_array($key, ['label', 'first_name', 'second_name'])) {
+            // Verify there are only plain characters at patient name.
+            $data[$key] = trim(preg_replace('/[^a-zA-Z0-9_ -]/s', '', $value));
           }
           else {
             $data[$key] = $value;
