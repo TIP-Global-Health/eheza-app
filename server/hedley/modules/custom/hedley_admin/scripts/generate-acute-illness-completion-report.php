@@ -861,7 +861,7 @@ function physical_exam_total($start_date, $end_date, $name_clause) {
     }
   }
 
-  // Counts IDs that meet all constraints except those who arn't true for any IDs.
+  // Counts IDs that meet all constraints minus ones who arn't true for any IDs.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints) - $modifier) {
@@ -1042,13 +1042,13 @@ function enconter_complete($start_date, $end_date, $name_clause) {
       $ids[$result] += 1;
       $at_least_one = TRUE;
     }
-    //Counts how many constraint aren't true for any IDs.
+    // Counts how many constraint aren't true for any IDs.
     if (!$at_least_one) {
       $modifier += 1;
     }
 
   }
-  // Counts IDs that meet all constraints except those who arn't true for any IDs.
+  // Counts IDs that meet all constraints minus ones who arn't true for any IDs.
   $count = 0;
   foreach ($ids as $id) {
     if ($id == count($constraints) - $modifier) {
