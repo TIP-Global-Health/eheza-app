@@ -65,14 +65,8 @@ pageToFragment current =
                 ClinicalPage ->
                     Just "clinical"
 
-                ClinicsPage clinicId ->
-                    let
-                        clinic =
-                            clinicId
-                                |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
-                                |> Maybe.withDefault ""
-                    in
-                    Just ("clinics" ++ clinic)
+                ClinicsPage ->
+                    Just "clinics"
 
                 DashboardPage subPage ->
                     let
@@ -341,8 +335,7 @@ pageToFragment current =
 parser : Parser (Page -> c) c
 parser =
     oneOf
-        [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
-        , map (UserPage (ClinicsPage Nothing)) (s "clinics")
+        [ map (UserPage ClinicsPage) (s "clinics")
         , map DevicePage (s "device")
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")

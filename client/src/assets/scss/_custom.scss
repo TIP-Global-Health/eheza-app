@@ -267,6 +267,10 @@ h3.ui.header {
     background: $color-cyan;
   }
 
+  &.green {
+    background: $color-green;
+  }
+
   &.disabled {
     background: $color-background !important;
     color: #fff !important;

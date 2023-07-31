@@ -3020,26 +3020,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
         PostSession session ->
             ( { model | postSession = Loading }
             , sw.post sessionEndpoint session
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession session.clinicType)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession)
             , []
             )
 
-        HandlePostedSession clinicType data ->
+        HandlePostedSession data ->
             let
                 msgs =
-                    if clinicType == Chw then
+                    RemoteData.map
+                        (\sessionId ->
+                            SessionPage sessionId AttendancePage
+                                |> UserPage
+                                |> App.Model.SetActivePage
+                                |> List.singleton
+                        )
                         data
-                            |> RemoteData.map
-                                (\sessionId ->
-                                    SessionPage sessionId AttendancePage
-                                        |> UserPage
-                                        |> App.Model.SetActivePage
-                                        |> List.singleton
-                                )
-                            |> RemoteData.withDefault []
-
-                    else
-                        []
+                        |> RemoteData.withDefault []
             in
             ( { model | postSession = data }
             , Cmd.none

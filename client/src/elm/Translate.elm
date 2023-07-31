@@ -128,7 +128,6 @@ import Pages.Prenatal.Activity.Types
         , HeartburnReliefMethod(..)
         , HistoryTask(..)
         , LegCrampsReliefMethod(..)
-        , LmpRange(..)
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
@@ -903,7 +902,7 @@ type TranslationId
     | LmpDateHeader
     | LmpLabel
     | LmpRangeHeader
-    | LmpRange LmpRange
+    | LmpRange Pages.Prenatal.Activity.Types.LmpRange
     | LoggedInAsPhrase
     | Location
     | LoginPhrase LoginPhrase
@@ -5519,7 +5518,7 @@ translationSet trans =
                     , kinyarwanda = Just "Ibyumweru 2"
                     }
 
-                OneMonths ->
+                OneMonth ->
                     { english = "1 Month"
                     , kinyarwanda = Just "Ukwezi 1"
                     }
@@ -8251,19 +8250,19 @@ translationSet trans =
 
         LmpRange range ->
             case range of
-                OneMonth ->
+                Pages.Prenatal.Activity.Types.OneMonth ->
                     { english = "Within 1 month"
                     , kinyarwanda = Just "Mu kwezi kumwe"
                     }
 
-                ThreeMonth ->
+                Pages.Prenatal.Activity.Types.ThreeMonths ->
                     { english = "Within 3 months"
                     , kinyarwanda = Just "Mu mezi atatu"
                     }
 
-                SixMonth ->
-                    { english = "Within 6 months"
-                    , kinyarwanda = Just "Mu mezi atandatu"
+                Pages.Prenatal.Activity.Types.SixMonthsOrMore ->
+                    { english = "Within 6 months, or more"
+                    , kinyarwanda = Just "Mu mezi atandatu, no hejuru"
                     }
 
         LoggedInAsPhrase ->
@@ -19472,7 +19471,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                ClinicsPage _ ->
+                ClinicsPage ->
                     { english = "Groups"
                     , kinyarwanda = Just "Itsinda"
                     }
