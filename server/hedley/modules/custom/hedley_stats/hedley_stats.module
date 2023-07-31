@@ -493,10 +493,12 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
   $villages_ids = hedley_health_center_get_villages_by_health_center($health_center_id);
 
   $result = [];
-  foreach ($villages_ids as $village_id) {
-    $village_node = node_load($village_id);
-    $village_uuid = $village_node->field_uuid[LANGUAGE_NONE][0]['value'];
-    $result[$village_uuid] = hedley_chw_get_village_residents($village_id);
+  foreach (array_chunk($villages_ids, 500) as $ids) {
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $village_uuid = $node->field_uuid[LANGUAGE_NONE][0]['value'];
+      $result[$village_uuid] = hedley_chw_get_village_residents($node->nid);
+    }
   }
 
   // Store in cache.
