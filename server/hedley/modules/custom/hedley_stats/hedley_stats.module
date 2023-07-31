@@ -499,6 +499,8 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
       $village_uuid = $node->field_uuid[LANGUAGE_NONE][0]['value'];
       $result[$village_uuid] = hedley_chw_get_village_residents($node->nid);
     }
+    // Free up memory.
+    drupal_static_reset();
   }
 
   // Store in cache.
