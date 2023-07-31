@@ -1398,8 +1398,28 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
   ];
 
   $data = hedley_stats_get_nutrition_measurements_grouped_by_person($health_center_id, $period, $extend);
-  $result = [];
 
+  $people = [];
+  foreach ($data as $people_data) {
+    $people = array_merge($people, array_keys($people_data));
+  }
+  $people = array_unique($people);
+  $people_info = [];
+  foreach (array_chunk($people, 500) as $ids) {
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $people_info[$node->nid] = [
+        'id' => $node->nid,
+        'name' => $node->title,
+        'birth_date' => $node->field_birth_date[LANGUAGE_NONE][0]['value'],
+        'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
+      ];
+    }
+    // Free up memory.
+    drupal_static_reset();
+  }
+
+  $result = [];
   foreach ($data as $program_type => $people_data) {
     if (empty($people_data)) {
       $result[$program_type] = [];
@@ -1408,19 +1428,8 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
 
     $people = [];
     foreach ($people_data as $id => $person) {
-      // Using node_load() instead of entity_metadata_wrapper(), because latter
-      // has shown excessive memory usage, and did not respond when
-      // drupal_static_reset() was invoked to free up memory.
-      $node = node_load($id);
-      $birth_date = $node->field_birth_date[LANGUAGE_NONE][0]['value'];
-
-      $item = [
-        'id' => $id,
-        'name' => $node->title,
-        'birth_date' => date("Y-m-d", strtotime($birth_date)),
-        'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
-        'nutrition' => $nutrition_per_person,
-      ];
+      $item = $people_info[$id];
+      $item['nutrition'] = $nutrition_per_person;
 
       foreach ($person as $type => $measurement) {
         $one_day = 24 * 60 * 60;
@@ -1500,8 +1509,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
     }
 
     $result[$program_type] = $people;
-    // Free up memory.
-    drupal_static_reset();
   }
 
   // Set the cache.
