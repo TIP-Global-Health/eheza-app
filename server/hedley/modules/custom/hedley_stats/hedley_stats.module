@@ -855,43 +855,66 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
 
   $result = hedley_stats_run_node_query_in_batches($query);
 
+  $adults = $children = [];
+  foreach ($result as $row) {
+    $adults[] = $row->field_adult;
+    $children[] = $row->field_person;
+  }
+  $adults = array_unique($adults);
+  $children = array_unique($children);
+
+  $adults_info = $children_info = [];
+  foreach (array_chunk($adults, 500) as $ids) {
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $adults_info[$node->nid] = [
+        'name' => $node->title,
+        'phone_number' => empty($node->field_phone_number) ? '' : $node->field_phone_number[LANGUAGE_NONE][0]['value'],
+      ];
+    }
+    // Free up memory.
+    drupal_static_reset();
+  }
+  foreach (array_chunk($children, 500) as $ids) {
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $children_info[$node->nid] = [
+        'id' => $node->nid,
+        'name' => $node->title,
+        'birth_date' => $node->field_birth_date[LANGUAGE_NONE][0]['value'],
+        'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
+      ];
+    }
+    // Free up memory.
+    drupal_static_reset();
+  }
+
   $items = [];
   foreach (hedley_stats_get_all_clinic_types() as $clinic_type) {
     $items[$clinic_type] = [];
   }
 
   foreach ($result as $row) {
-    $clinic_type = $row->field_group_type;
-    // Using node_load() instead of entity_metadata_wrapper(), because latter
-    // has shown excessive memory usage, and did not respond when
-    // drupal_static_reset() was invoked to free up memory.
-    $child_node = node_load($row->field_person);
-    $birth_date = $child_node->field_birth_date[LANGUAGE_NONE][0]['value'];
-
+    $child_id = $row->field_person;
+    $birth_date = $children_info[$child_id]['birth_date'];
     if (empty($birth_date)) {
       // Child got no birthdate set. We can't process
       // its data on client, so we skip it.
       continue;
     }
 
-    // Using node_load() instead of entity_metadata_wrapper(), because latter
-    // has shown excessive memory usage, and did not respond when
-    // drupal_static_reset() was invoked to free up memory.
-    $adult_node = node_load($row->field_adult);
-    $phone_number = empty($adult_node->field_phone_number) ? '' : $adult_node->field_phone_number[LANGUAGE_NONE][0]['value'];
-
+    $adult_id = $row->field_adult;
+    $clinic_type = $row->field_group_type;
     $items[$clinic_type][] = [
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
-      'id' => $child_node->nid,
-      'name' => $child_node->title,
+      'id' => $children_info[$child_id]['id'],
+      'name' => $children_info[$child_id]['name'],
       'birth_date' => date("Y-m-d", strtotime($birth_date)),
-      'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
-      'mother_name' => $adult_node->title,
-      'phone_number' => $phone_number,
+      'gender' => $children_info[$child_id]['gender'],
+      'mother_name' => $adults_info[$adult_id]['name'],
+      'phone_number' => $adults_info[$adult_id]['phone_number'],
       'graduation_date' => date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
     ];
-    // Free up memory.
-    drupal_static_reset();
   }
 
   return $items;
@@ -924,40 +947,54 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
 
   $result = hedley_stats_run_node_query_in_batches($query);
 
+  $children = [];
+  foreach ($result as $row) {
+    $children[] = $row->field_person;
+  }
+  $children = array_unique($children);
+
+  $children_info = [];
+  foreach (array_chunk($children, 500) as $ids) {
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $children_info[$node->nid] = [
+        'id' => $node->nid,
+        'name' => $node->title,
+        'birth_date' => $node->field_birth_date[LANGUAGE_NONE][0]['value'],
+        'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
+      ];
+    }
+    // Free up memory.
+    drupal_static_reset();
+  }
+
   $items = [];
-  foreach ($result as $key => $row) {
-    // Using node_load() instead of entity_metadata_wrapper(), because latter
-    // has shown excessive memory usage, and did not respond when
-    // drupal_static_reset() was invoked to free up memory.
-    $child_node = node_load($row->field_person);
-    $birth_date = strtotime($child_node->field_birth_date[LANGUAGE_NONE][0]['value']);
+  foreach ($result as $row) {
+    $child_id = $row->field_person;
+    $birth_date = $children_info[$child_id]['birth_date'];
 
     if (empty($birth_date)) {
       // Child got no birthdate set. We can't process
       // its data on client, so we skip it.
       continue;
     }
+    $birth_date = strtotime($birth_date);
 
     // Child graduates at age of 13.
     $graduation_date = strtotime('+13 years', $birth_date);
 
     $items[] = [
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
-      'id' => $child_node->nid,
-      'name' => $child_node->title,
+      'id' => $children_info[$child_id]['id'],
+      'name' => $children_info[$child_id]['name'],
       'birth_date' => date("Y-m-d", $birth_date),
-      'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
+      'gender' => $children_info[$child_id]['gender'],
       'graduation_date' => hedley_stats_convert_timestamp_to_nominal($graduation_date),
       // No need to provide mother details, because we do not present
       // it anywhere, when it comes to individual participant data.
       'mother_name' => '',
       'phone_number' => '',
     ];
-
-    // Free up memory.
-    if ($key % 500 == 0) {
-      drupal_static_reset();
-    }
   }
 
   return $items;
@@ -1087,28 +1124,71 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
     // Get PMTCT participants by clinic.
     $participants_ids = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
+    $participants_info = [];
+    $children = $mothers = [];
+    foreach (array_chunk($participants_ids, 500) as $ids) {
+      $nodes = node_load_multiple($ids);
+      foreach ($nodes as $node) {
+        $children[] = $node->field_person[LANGUAGE_NONE][0]['target_id'];
+        $mothers[] = $node->field_adult[LANGUAGE_NONE][0]['target_id'];
+        $participants_info[$node->nid] = [
+          'child_id' => $node->field_person[LANGUAGE_NONE][0]['target_id'],
+          'mother_id' => $node->field_adult[LANGUAGE_NONE][0]['target_id'],
+          'join_date' => $node->created,
+          'graduate_date' => strtotime($node->field_expected[LANGUAGE_NONE][0]['value2']),
+        ];
+      }
+      // Free up memory.
+      drupal_static_reset();
+    }
+
+    $children = array_unique($children);
+    $mothers = array_unique($mothers);
+    $children_info = $mothers_info = [];
+    foreach (array_chunk($mothers, 500) as $ids) {
+      $nodes = node_load_multiple($ids);
+      foreach ($nodes as $node) {
+        $mothers_info[$node->nid] = [
+          'name' => $node->title,
+          'phone_number' => empty($node->field_phone_number) ? '' : $node->field_phone_number[LANGUAGE_NONE][0]['value'],
+        ];
+      }
+      // Free up memory.
+      drupal_static_reset();
+    }
+    foreach (array_chunk($children, 500) as $ids) {
+      $nodes = node_load_multiple($ids);
+      foreach ($nodes as $node) {
+        $children_info[$node->nid] = [
+          'name' => $node->title,
+          'birth_date' => $node->field_birth_date[LANGUAGE_NONE][0]['value'],
+          'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
+        ];
+      }
+      // Free up memory.
+      drupal_static_reset();
+    }
 
     foreach ($participants_ids as $participant_id) {
-      $participant_node = node_load($participant_id);
-      $child_id = $participant_node->field_person[LANGUAGE_NONE][0]['target_id'];
-      $mother_id = $participant_node->field_adult[LANGUAGE_NONE][0]['target_id'];
+      $participant_info = $participants_info[$participant_id];
+      $child_id = $participant_info['child_id'];
+      $mother_id = $participant_info['mother_id'];
 
       if (empty($child_id) || empty($mother_id)) {
         continue;
       }
 
-      $child_node = node_load($child_id);
-      $mother_node = node_load($mother_id);
-      $participant_join_date = $participant_node->created;
-      $participant_graduate_date = strtotime($participant_node->field_expected[LANGUAGE_NONE][0]['value2']);
-      $phone_number = !empty($mother_node->field_phone_number) ? $mother_node->field_phone_number[LANGUAGE_NONE][0]['value'] : '';
+      $child_info = $children_info[$child_id];
+      $mother_info = $mothers_info[$mother_id];
+      $participant_join_date = $participant_info['join_date'];
+      $participant_graduate_date = $participant_info['graduate_date'];
 
       $expected_person = [
-        'name' => $child_node->title,
-        'gender' => $child_node->field_gender[LANGUAGE_NONE][0]['value'],
-        'birth_date' => hedley_restful_timestamp_only_date($child_node->field_birth_date[LANGUAGE_NONE][0]['value']),
-        'mother_name' => $mother_node->title,
-        'phone_number' => $phone_number,
+        'name' => $child_info['name'],
+        'gender' => $child_info['gender'],
+        'birth_date' => hedley_restful_timestamp_only_date($child_info['birth_date']),
+        'mother_name' => $mother_info['name'],
+        'phone_number' => $mother_info['phone_number'],
         'expected_date' => NULL,
       ];
 
