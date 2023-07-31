@@ -413,11 +413,13 @@ type TranslationId
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
+    | ANCEncountersNotRecordedQuestion
     | ANCNewborn
     | And
     | AndSentence
     | AntenatalCare
     | AntenatalProgressReport
+    | AntenatalVisistsHistory
     | AppName
     | AppointmentConfirmation
     | AppointmentConfirmationInstrunction
@@ -1004,12 +1006,13 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | Name
     | NationalIdNumber
+    | NCDAANCVisitsCounseling
     | NCDABirthweightQuestion
     | NCDADiarrheaPopupMessage
     | NCDAMealFrequency6to9
     | NCDAMealFrequency9to12
     | NCDAMealFrequency12to24
-    | NCDASignCounceling NCDASign
+    | NCDASignCounseling NCDASign
     | NCDASignHelperHeader NCDASign
     | NCDASignQuestion NCDASign
     | NCDAUpdateVaccineRecordMessage
@@ -1021,7 +1024,7 @@ type TranslationId
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionsItemLabel NCDAUniversalInterventionsItem
     | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
-    | NCDANumberOfANCVisitsHeader (Maybe Int)
+    | NCDANoANVCVisitsOnRecord
     | NCDANumberOfANCVisitsQuestion
     | NCDANumberImmunizationAppointmentLabel (Maybe NominalDate)
     | NCDAStep NCDAStep
@@ -2983,9 +2986,19 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        AntenatalVisistsHistory ->
+            { english = "Antenatal Visits History"
+            , kinyarwanda = Nothing
+            }
+
         AmbulancArrivalPeriodQuestion ->
             { english = "How long did it take the ambulance to arrive"
             , kinyarwanda = Just "Bitwara igihe kingana gute ngo imbangukiragutabara ihagere"
+            }
+
+        ANCEncountersNotRecordedQuestion ->
+            { english = "Were there any ANC encounters that are not recorded above"
+            , kinyarwanda = Nothing
             }
 
         ANCNewborn ->
@@ -9338,6 +9351,11 @@ translationSet trans =
             , kinyarwanda = Just "Numero y'irangamuntu"
             }
 
+        NCDAANCVisitsCounseling ->
+            { english = "Provide the counseling on the consequences that may occur to her and the baby if she doesn't attend ANC visit as per guidance"
+            , kinyarwanda = Nothing
+            }
+
         NCDABirthweightQuestion ->
             { english = "What was the child's birthweight"
             , kinyarwanda = Just "Umwana yavukanye ibiro bingahe"
@@ -9363,13 +9381,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        NCDASignCounceling sign ->
+        NCDASignCounseling sign ->
             case sign of
-                NumberOfANCVisitsCorrect ->
-                    { english = "Provide the counseling on the consequences that may occur to her and the baby if she doesn't attend ANC visit as per guidance"
-                    , kinyarwanda = Nothing
-                    }
-
                 SupplementsDuringPregnancy ->
                     { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and refer the mother to the HC to receive the Iron/Folic Acid/MMS"
                     , kinyarwanda = Nothing
@@ -9483,11 +9496,6 @@ translationSet trans =
                 BornWithBirthDefect ->
                     { english = "Was the child born with a birth defect"
                     , kinyarwanda = Just "Umwana yaba yaravukanye ubumuga"
-                    }
-
-                NumberOfANCVisitsCorrect ->
-                    { english = "Is this correct"
-                    , kinyarwanda = Nothing
                     }
 
                 SupplementsDuringPregnancy ->
@@ -9803,24 +9811,10 @@ translationSet trans =
                     , kinyarwanda = Just "Kubyimba"
                     }
 
-        NCDANumberOfANCVisitsHeader maybeNunmber ->
-            Maybe.map
-                (\number ->
-                    if number == 1 then
-                        { english = "According to E-Heza, the mother had 1 standard ANC visit"
-                        , kinyarwanda = Nothing
-                        }
-
-                    else
-                        { english = "According to E-Heza, the mother had " ++ String.fromInt number ++ " standard ANC visits"
-                        , kinyarwanda = Nothing
-                        }
-                )
-                maybeNunmber
-                |> Maybe.withDefault
-                    { english = "E-Heza does not have records of this pregnancy"
-                    , kinyarwanda = Nothing
-                    }
+        NCDANoANVCVisitsOnRecord ->
+            { english = "There are no recorded ANC visits for this child"
+            , kinyarwanda = Nothing
+            }
 
         NCDANumberOfANCVisitsQuestion ->
             { english = "How many ANC standard visits did the mother receive"

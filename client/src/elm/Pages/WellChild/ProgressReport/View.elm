@@ -58,6 +58,7 @@ import Measurement.Utils
         , generateGroupNutritionAssessmentEntries
         , generateIndividualNutritionAssessmentEntries
         , getPreviousMeasurements
+        , resolveChildANCEncountersDates
         )
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
@@ -1653,7 +1654,7 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
             distributeByAgeInMonthsWithDate child chwNCDAQuestionnaires
     in
     [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
-    , viewANCNewbornPane language currentDate db child allNCDAQuestionnaires
+    , viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires
     , viewUniversalInterventionsPane language
         currentDate
         child
@@ -1855,34 +1856,73 @@ viewANCNewbornPane :
     Language
     -> NominalDate
     -> ModelIndexedDb
+    -> PersonId
     -> Person
     -> List ( NominalDate, NCDAValue )
     -> Html any
-viewANCNewbornPane language currentDate db child allNCDAQuestionnaires =
+viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
     let
         pregnancyValuesForRegularPrenatalVisits =
-            if List.isEmpty allNCDAQuestionnaires then
-                List.repeat 9 NCDACellValueEmpty
+            Maybe.map
+                (\birthDate ->
+                    let
+                        encountersDatesFromANCData =
+                            resolveChildANCEncountersDates childId db
 
-            else
-                List.filterMap (Tuple.second >> .numberOfANCVisits)
-                    allNCDAQuestionnaires
-                    |> List.head
-                    |> Maybe.map
-                        (\numberOfANCVisits ->
-                            if numberOfANCVisits < 4 then
-                                List.repeat 9 NCDACellValueX
+                        encountersDatesFromNCDAdata =
+                            List.filterMap
+                                (\( _, value ) ->
+                                    if EverySet.isEmpty value.ancVisitsDates then
+                                        Nothing
+
+                                    else
+                                        Just value.ancVisitsDates
+                                )
+                                allNCDAQuestionnaires
+                                |> List.head
+                                |> Maybe.withDefault EverySet.empty
+
+                        allEncountersDates =
+                            EverySet.union encountersDatesFromANCData encountersDatesFromNCDAdata
+                                |> EverySet.toList
+
+                        cellValueForMonth =
+                            -- Per requirements, if there were at least 4 encounters, we
+                            -- green V. If less, red X.
+                            if List.length allEncountersDates < 4 then
+                                NCDACellValueX
 
                             else
-                                List.repeat 9 NCDACellValueV
-                        )
-                    |> Maybe.withDefault
-                        -- Number of ANC visits question is not asked when we know
-                        -- from E-Heza data that there were at least 4 ANC encounters.
-                        -- Therefore, if we have at least one questionnaire filled, and
-                        -- have no data for ANC encounters, we know that ANC encounters
-                        -- question was not asked, because there were at least 4 ANC encounters.
-                        (List.repeat 9 NCDACellValueV)
+                                NCDACellValueV
+                    in
+                    if List.isEmpty allEncountersDates then
+                        List.repeat 9 NCDACellValueEmpty
+
+                    else
+                        List.repeat 9 NCDACellValueDash
+                            |> List.indexedMap
+                                (\index cellValue ->
+                                    if
+                                        List.any
+                                            (\encounterDate ->
+                                                -- Index here represents the month of pregnancy,
+                                                -- in reverse. Meaning that 0 stands for months 9,
+                                                -- 1 for month 8, and 8 for first month.
+                                                diffMonths encounterDate birthDate == index
+                                            )
+                                            allEncountersDates
+                                    then
+                                        cellValueForMonth
+
+                                    else
+                                        cellValue
+                                )
+                            |> -- Reversing values, to have proper 1 - 9 pregnancy
+                               -- months order.
+                               List.reverse
+                )
+                child.birthDate
+                |> Maybe.withDefault (List.repeat 9 NCDACellValueEmpty)
 
         pregnancyValuesForIron =
             if List.isEmpty allNCDAQuestionnaires then

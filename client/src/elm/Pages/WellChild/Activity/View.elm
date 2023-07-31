@@ -2419,7 +2419,7 @@ viewNCDAContent :
     Language
     -> NominalDate
     -> AssembledData
-    -> NCDAData
+    -> NCDAData Msg
     -> ModelIndexedDb
     -> List (Html Msg)
 viewNCDAContent language currentDate assembled data db =
@@ -2438,9 +2438,14 @@ viewNCDAContent language currentDate assembled data db =
             , pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
+            , setANCVisitsViewModeMsg = SetANCVisitsViewMode
+            , setUpdateANCVisitsMsg = SetUpdateANCVisits
+            , setANCVisitUpdateDateSelectorStateMsg = SetANCVisitUpdateDateSelectorState
+            , setANCVisitUpdateDateMsg = SetANCVisitUpdateDate
+            , saveANCVisitUpdateDateMsg = SaveANCVisitUpdateDate
+            , deleteANCVisitUpdateDateMsg = DeleteANCVisitUpdateDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
-            , setNumberANCVisitsMsg = SetNumberANCVisits
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg = SaveNCDA personId assembled.measurements.ncda

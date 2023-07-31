@@ -136,17 +136,17 @@ sainitzeCriterionBySeverities currentDate data =
 decodeNCDAData : NominalDate -> Decoder NCDAData
 decodeNCDAData currentDate =
     succeed NCDAData
-        |> optional "pane1" decodeANCNewbornData emptyANCNewbornData
+        |> optional "pane1" (decodeANCNewbornData currentDate) emptyANCNewbornData
         |> optional "pane2" (decodeUniversalInterventionData currentDate) emptyUniversalInterventionData
         |> optional "pane3" (decodeNutritionBehaviorData currentDate) emptyNutritionBehaviorData
         |> optional "pane4" (decodeTargetedInterventionsData currentDate) emptyTargetedInterventionsData
         |> optional "pane5" (decodeInfrastructureEnvironmentWashData currentDate) emptyInfrastructureEnvironmentWashData
 
 
-decodeANCNewbornData : Decoder ANCNewbornData
-decodeANCNewbornData =
+decodeANCNewbornData : NominalDate -> Decoder ANCNewbornData
+decodeANCNewbornData currentDate =
     succeed ANCNewbornData
-        |> optional "row1" bool False
+        |> optional "row1" (decodeMonthlyValues currentDate) []
         |> optional "row2" bool False
 
 

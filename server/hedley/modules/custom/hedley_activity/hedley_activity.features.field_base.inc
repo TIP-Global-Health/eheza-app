@@ -57,6 +57,38 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_anc_visits_dates'.
+  $field_bases['field_anc_visits_dates'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_anc_visits_dates',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
   // Exported field_base: 'field_anemia_treatment'.
   $field_bases['field_anemia_treatment'] = array(
     'active' => 1,
@@ -1260,7 +1292,6 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        // Common.
         'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
         'born-with-birth-defect' => 'Born With Birth Defect',
         'breastfed-for-six-months' => 'Breastfed for six months',
@@ -1272,8 +1303,6 @@ function hedley_activity_field_default_field_bases() {
         'has-kitchen-garden' => 'Has Kitchen Garden',
         'ongera-mnp' => 'Ongera-MNP',
         'none' => 'None',
-
-        // New.
         'beneficiary-cash-transfer' => 'Beneficiary Cash Transfer',
         'child-got-diarrhea' => 'Child got Diarrhea',
         'child-receives-fbf' => 'Child receives FBF',
@@ -1282,7 +1311,6 @@ function hedley_activity_field_default_field_bases() {
         'child-with-disability' => 'Child with Disability',
         'insecticide-treated-bednets' => 'Insecticide Treated Bednets',
         'meals-at-recommended-times' => 'Meals at recommended times',
-        'number-of-anc-visits-correct' => 'Number of ANC Visits Correct',
         'child-behind-on-vaccination' => 'Child behind on vaccination',
         'receiving-cash-transfer' => 'Receiving Cash Transfer',
         'receiving-support' => 'Receiving Support',

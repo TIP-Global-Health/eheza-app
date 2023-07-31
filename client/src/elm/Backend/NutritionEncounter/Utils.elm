@@ -574,7 +574,9 @@ resolveIndividualNutritionValues measurementsWithDates measurementFunc valueFunc
                 measurementFunc measurements
                     |> Maybe.map
                         (\measurement ->
-                            ( date, Tuple.second measurement |> .value |> valueFunc )
+                            ( Tuple.second measurement |> .dateMeasured
+                            , Tuple.second measurement |> .value |> valueFunc
+                            )
                         )
             )
         |> List.reverse
@@ -597,11 +599,13 @@ resolveIndividualWellChildValues :
 resolveIndividualWellChildValues measurementsWithDates measurementFunc valueFunc =
     measurementsWithDates
         |> List.filterMap
-            (\( date, ( _, measurements ) ) ->
+            (\( _, ( _, measurements ) ) ->
                 measurementFunc measurements
                     |> Maybe.map
                         (\measurement ->
-                            ( date, Tuple.second measurement |> .value |> valueFunc )
+                            ( Tuple.second measurement |> .dateMeasured
+                            , Tuple.second measurement |> .value |> valueFunc
+                            )
                         )
             )
         |> List.reverse
@@ -615,11 +619,13 @@ resolveIndividualChildScoreboardValues :
 resolveIndividualChildScoreboardValues measurementsWithDates measurementFunc valueFunc =
     measurementsWithDates
         |> List.filterMap
-            (\( date, ( _, measurements ) ) ->
+            (\( _, ( _, measurements ) ) ->
                 measurementFunc measurements
                     |> Maybe.map
                         (\measurement ->
-                            ( date, Tuple.second measurement |> .value |> valueFunc )
+                            ( Tuple.second measurement |> .dateMeasured
+                            , Tuple.second measurement |> .value |> valueFunc
+                            )
                         )
             )
         |> List.reverse

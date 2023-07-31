@@ -7,7 +7,8 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
-        ( ImmunisationTask(..)
+        ( ANCVisitsViewMode(..)
+        , ImmunisationTask(..)
         , NCDAData
         , NCDAForm
         , NCDAStep
@@ -21,7 +22,7 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { ncdaData : NCDAData
+    { ncdaData : NCDAData Msg
     , immunisationData : ImmunisationData
     }
 
@@ -66,9 +67,14 @@ type Msg
     = NoOp
     | SetActivePage Page
       -- NCDA
-    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetANCVisitsViewMode ANCVisitsViewMode
+    | SetUpdateANCVisits Bool
+    | SetANCVisitUpdateDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetANCVisitUpdateDate NominalDate
+    | SaveANCVisitUpdateDate
+    | DeleteANCVisitUpdateDate NominalDate
+    | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
     | SetBirthWeight String
-    | SetNumberANCVisits String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA ))

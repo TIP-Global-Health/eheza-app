@@ -603,7 +603,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
   $data['ncda'] = [
     // ANC + Newborn pane.
     'pane1' => [
-      'row1' => FALSE,
+      'row1' => [],
       'row2' => FALSE,
     ],
     // Universal Intervention pane.
@@ -648,28 +648,43 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     ],
   ];
 
-  // Data for 'Regular prenatal and postpartum checkups' per
-  // recorded number of ANC visits.
-  $anc_visits_set = FALSE;
-  foreach ($ncdas as $ncda) {
-    if (!empty($ncda->field_anc_visits) && !empty($ncda->field_anc_visits[LANGUAGE_NONE][0]['value'])) {
-      $anc_visits = $ncda->field_anc_visits[LANGUAGE_NONE][0]['value'];
-      $data['ncda']['pane1']['row1'] = ($anc_visits >= 4);
-      $anc_visits_set = TRUE;
+  $newborn_participant_id = hedley_general_ncda_newborn_participant($person_id);
+  if ($newborn_participant_id) {
+    $encounters_ids = hedley_person_encounters_for_individual_participant($newborn_participant_id);
+    if (!empty($encounters_ids)) {
+      $encounters = node_load_multiple($encounters_ids);
+      foreach ($encounters as $encounter) {
+        $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+        if (in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum'])) {
+          continue;
+        }
+
+        $data['ncda']['pane1']['row1'][] = hedley_ncda_get_date_filed_value($encounter, 'field_scheduled_date');
+      }
     }
-    // ANC visits question is asked once. If answered previously, no
-    // other NCDA activity will ask it.
-    // Therefore, if we found one answer, no further processing
-    // is required.
-    break;
   }
-  // Number of ANC visits question is not asked when we know
-  // from E-Heza data that there were at least 4 ANC encounters.
-  // Therefore, if we have at least one questionnaire filled, and
-  // have no data for ANC encounters, we know that ANC encounters
-  // question was not asked, because there were at least 4 ANC encounters.
-  if (!$anc_visits_set && !empty($ncdas)) {
-    $data['ncda']['pane1']['row1'] = TRUE;
+
+  foreach ($ncdas as $ncda) {
+    if (!empty($ncda->field_anc_visits_dates) && !empty($ncda->field_anc_visits_dates[LANGUAGE_NONE])) {
+      $anc_visits_dates = $ncda->field_anc_visits_dates[LANGUAGE_NONE];
+      foreach ($anc_visits_dates as $date) {
+        $data['ncda']['pane1']['row1'][] = hedley_restful_timestamp_only_date($date['value']);
+      }
+
+      // ANC visits question is asked once. If answered previously, no
+      // other NCDA activity will ask it.
+      // Therefore, if we found one answer, no further processing
+      // is required.
+      break;
+    }
+  }
+  // ANC visits for person will be counted for person, only for
+  // positive value. Positive value is set in case there are at least
+  // 4 anc visits.
+  // Therefore, if there are less than 4, we don't pass the data
+  // to front-end application.
+  if (count($data['ncda']['pane1']['row1']) < 4) {
+    $data['ncda']['pane1']['row1'] = [];
   }
 
   $malnutrition_treatment_by_questionnaires = [];
@@ -908,35 +923,35 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     }
 
     foreach ($items as $item) {
-      $parts = explode(' ', $item['value']);
+      $vaccination_date = hedley_restful_timestamp_only_date($item['value']);
 
       switch ($immunisation->type) {
         case HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['bcg'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['bcg'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['opv'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['opv'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['dtp'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['dtp'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['pcv13'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['pcv13'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['rotarix'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['rotarix'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['ipv'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['ipv'][] = $vaccination_date;
           break;
 
         case HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE:
-          $data['ncda']['pane2']['row1']['mr'][] = $parts[0];
+          $data['ncda']['pane2']['row1']['mr'][] = $vaccination_date;
           break;
       }
     }
@@ -1129,8 +1144,27 @@ function hedley_ncda_get_date_filed_value($node, $field_name) {
     return FALSE;
   }
 
-  $parts = explode(' ', $field[LANGUAGE_NONE][0]['value']);
-  return $parts[0];
+  return hedley_restful_timestamp_only_date($field[LANGUAGE_NONE][0]['value']);
+}
+
+/**
+ * Resolves the participant (pregnancy) of newborn child.
+ *
+ * @param int $child_id
+ *   Child ID.
+ *
+ * @return int|bool
+ *   Participant ID, FALSE if not found.
+ */
+function hedley_general_ncda_newborn_participant($child_id) {
+  $query = db_select('field_data_field_newborn', 't');
+  $query->addField('t', 'entity_id');
+  $query->condition('field_newborn_target_id', $child_id);
+  $query->range(0, 1);
+
+  $result = $query->execute()->fetchCol();
+
+  return !empty($result) ? $result[0] : FALSE;
 }
 
 /**

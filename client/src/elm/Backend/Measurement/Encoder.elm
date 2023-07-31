@@ -4791,18 +4791,13 @@ encodeNCDAValueWithType type_ value =
             Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
                 value.birthWeight
                 |> Maybe.withDefault []
-
-        numberOfANCVisits =
-            Maybe.map (\ancVisits -> [ ( "anc_visits", int ancVisits ) ])
-                value.numberOfANCVisits
-                |> Maybe.withDefault []
     in
     [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
+    , ( "anc_visits_dates", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.ancVisitsDates )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
         ++ birthWeight
-        ++ numberOfANCVisits
 
 
 encodeNCDASign : NCDASign -> Value

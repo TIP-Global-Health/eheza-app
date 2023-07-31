@@ -425,6 +425,9 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                     let
                         ageInMonths =
                             diffMonths record.birthDate currentDate
+
+                        row1AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.ancNewborn.row1
                     in
                     List.indexedMap
                         (\index accumValue ->
@@ -436,7 +439,7 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                 gapInMonths - ageInMonths
 
                                             row1 =
-                                                if record.ncda.ancNewborn.row1 && gap > 0 && gap < 10 then
+                                                if List.member gapInMonths row1AsAgeInMonths then
                                                     accumValue.row1 + 1
 
                                                 else

@@ -50,7 +50,7 @@ type alias ModelChild =
     , followUpForm : FollowUpForm
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
-    , ncdaData : NCDAData
+    , ncdaData : NCDAData MsgChild
     }
 
 
@@ -242,8 +242,13 @@ type MsgChild
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
-    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
-    | SetNumberANCVisits String
+    | SetANCVisitsViewMode ANCVisitsViewMode
+    | SetUpdateANCVisits Bool
+    | SetANCVisitUpdateDateSelectorState (Maybe (DateSelectorConfig MsgChild))
+    | SetANCVisitUpdateDate NominalDate
+    | SaveANCVisitUpdateDate
+    | DeleteANCVisitUpdateDate NominalDate
+    | SetNCDABoolInput (Bool -> NCDAForm MsgChild -> NCDAForm MsgChild) Bool
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
@@ -1020,25 +1025,26 @@ emptyLiverFunctionResultForm =
     LiverFunctionResultForm Nothing Nothing Nothing Nothing
 
 
-type alias NCDAData =
-    { form : NCDAForm
+type alias NCDAData msg =
+    { form : NCDAForm msg
     , helperState : Maybe NCDASign
     }
 
 
-emptyNCDAData : NCDAData
+emptyNCDAData : NCDAData msg
 emptyNCDAData =
     { form = emptyNCDAForm
     , helperState = Nothing
     }
 
 
-type alias NCDAForm =
+type alias NCDAForm msg =
     { step : Maybe NCDAStep
-
-    -- Step 1.
-    , numberOfANCVisitsCorrect : Maybe Bool
-    , numberOfANCVisits : Maybe Int
+    , updateANCVisits : Maybe Bool
+    , ancVisitsViewMode : ANCVisitsViewMode
+    , ancVisitsDates : Maybe (EverySet NominalDate)
+    , ancVisitUpdateDate : Maybe NominalDate
+    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
     , supplementsDuringPregnancy : Maybe Bool
     , takenSupplementsPerGuidance : Maybe Bool
     , bornWithBirthDefect : Maybe Bool
@@ -1076,13 +1082,16 @@ type alias NCDAForm =
     }
 
 
-emptyNCDAForm : NCDAForm
+emptyNCDAForm : NCDAForm msg
 emptyNCDAForm =
     { step = Nothing
 
     -- Step 1.
-    , numberOfANCVisitsCorrect = Nothing
-    , numberOfANCVisits = Nothing
+    , updateANCVisits = Nothing
+    , ancVisitsViewMode = ANCVisitsInitialMode
+    , ancVisitsDates = Nothing
+    , ancVisitUpdateDate = Nothing
+    , dateSelectorPopupState = Nothing
     , supplementsDuringPregnancy = Nothing
     , takenSupplementsPerGuidance = Nothing
     , bornWithBirthDefect = Nothing
@@ -1126,6 +1135,11 @@ type NCDAStep
     | NCDAStepNutritionBehavior
     | NCDAStepTargetedInterventions
     | NCDAStepInfrastructureEnvironment
+
+
+type ANCVisitsViewMode
+    = ANCVisitsInitialMode
+    | ANCVisitsUpdateMode
 
 
 type GroupOfFoods
@@ -1212,10 +1226,17 @@ type alias NCDAContentConfig msg =
     , ncdaNeverFilled : Bool
     , ncdaNotFilledAfterAgeOfSixMonths : Bool
 
-    -- Different actions.
-    , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
+    -- ANC Visit actions.
+    , setANCVisitsViewModeMsg : ANCVisitsViewMode -> msg
+    , setUpdateANCVisitsMsg : Bool -> msg
+    , setANCVisitUpdateDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setANCVisitUpdateDateMsg : NominalDate -> msg
+    , saveANCVisitUpdateDateMsg : msg
+    , deleteANCVisitUpdateDateMsg : NominalDate -> msg
+
+    -- Other actions.
+    , setBoolInputMsg : (Bool -> NCDAForm msg -> NCDAForm msg) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
-    , setNumberANCVisitsMsg : String -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg

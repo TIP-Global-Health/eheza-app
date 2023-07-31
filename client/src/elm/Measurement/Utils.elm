@@ -4490,7 +4490,7 @@ viewSelectInput language labelTransId formValue valueTransId valueToStringFunc v
     ]
 
 
-fromNCDAValue : Maybe NCDAValue -> NCDAForm
+fromNCDAValue : Maybe NCDAValue -> NCDAForm msg
 fromNCDAValue saved =
     { step = Nothing
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
@@ -4512,7 +4512,6 @@ fromNCDAValue saved =
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
-    , numberOfANCVisitsCorrect = Maybe.map (.signs >> EverySet.member NumberOfANCVisitsCorrect) saved
     , childBehindOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehindOnVaccination) saved
     , receivingCashTransfer = Maybe.map (.signs >> EverySet.member ReceivingCashTransfer) saved
     , receivingSupport = Maybe.map (.signs >> EverySet.member ReceivingSupport) saved
@@ -4522,17 +4521,26 @@ fromNCDAValue saved =
     , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
-    , numberOfANCVisits = Maybe.andThen .numberOfANCVisits saved
+    , updateANCVisits = Nothing
+    , ancVisitsViewMode = ANCVisitsInitialMode
+    , ancVisitsDates = Maybe.map .ancVisitsDates saved
+    , ancVisitUpdateDate = Nothing
+    , dateSelectorPopupState = Nothing
     }
 
 
-ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
+ncdaFormWithDefault : NCDAForm msg -> Maybe NCDAValue -> NCDAForm msg
 ncdaFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
                 { step = form.step
+                , updateANCVisits = or form.updateANCVisits (Just False)
+                , ancVisitsViewMode = form.ancVisitsViewMode
+                , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
+                , ancVisitUpdateDate = form.ancVisitUpdateDate
+                , dateSelectorPopupState = form.dateSelectorPopupState
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
                 , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
                 , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
@@ -4552,7 +4560,6 @@ ncdaFormWithDefault form saved =
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
-                , numberOfANCVisitsCorrect = or form.numberOfANCVisitsCorrect (EverySet.member NumberOfANCVisitsCorrect value.signs |> Just)
                 , childBehindOnVaccination = or form.childBehindOnVaccination (EverySet.member ChildBehindOnVaccination value.signs |> Just)
                 , receivingCashTransfer = or form.receivingCashTransfer (EverySet.member ReceivingCashTransfer value.signs |> Just)
                 , receivingSupport = or form.receivingSupport (EverySet.member ReceivingSupport value.signs |> Just)
@@ -4562,18 +4569,17 @@ ncdaFormWithDefault form saved =
                 , takingOngeraMNP = or form.takingOngeraMNP (EverySet.member TakingOngeraMNP value.signs |> Just)
                 , mealsAtRecommendedTimes = or form.mealsAtRecommendedTimes (EverySet.member MealsAtRecommendedTimes value.signs |> Just)
                 , birthWeight = or form.birthWeight value.birthWeight
-                , numberOfANCVisits = or form.numberOfANCVisits value.numberOfANCVisits
                 }
             )
 
 
-toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
+toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm msg -> Maybe NCDAValue
 toNCDAValueWithDefault saved form =
     ncdaFormWithDefault form saved
         |> toNCDAValue
 
 
-toNCDAValue : NCDAForm -> Maybe NCDAValue
+toNCDAValue : NCDAForm msg -> Maybe NCDAValue
 toNCDAValue form =
     let
         signs =
@@ -4596,7 +4602,6 @@ toNCDAValue form =
             , ifNullableTrue ChildWithDisability form.childWithDisability
             , ifNullableTrue OngeraMNP form.ongeraMNP
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
-            , ifNullableTrue NumberOfANCVisitsCorrect form.numberOfANCVisitsCorrect
             , ifNullableTrue ChildBehindOnVaccination form.childBehindOnVaccination
             , ifNullableTrue ReceivingCashTransfer form.receivingCashTransfer
             , ifNullableTrue ReceivingSupport form.receivingSupport
@@ -4608,10 +4613,13 @@ toNCDAValue form =
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
+
+        ancVisitsDates =
+            Maybe.withDefault EverySet.empty form.ancVisitsDates
     in
     Maybe.map NCDAValue signs
         |> andMap (Just form.birthWeight)
-        |> andMap (Just form.numberOfANCVisits)
+        |> andMap (Just ancVisitsDates)
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
@@ -4912,8 +4920,8 @@ isTestResultValid =
            Maybe.withDefault True
 
 
-countANCEncountersMadeForChild : PersonId -> ModelIndexedDb -> Maybe Int
-countANCEncountersMadeForChild childId db =
+resolveChildANCEncountersDates : PersonId -> ModelIndexedDb -> EverySet NominalDate
+resolveChildANCEncountersDates childId db =
     Dict.get childId db.pregnancyByNewborn
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.Extra.join
@@ -4922,13 +4930,19 @@ countANCEncountersMadeForChild childId db =
                 Dict.get participantId db.prenatalEncountersByParticipant
                     |> Maybe.andThen RemoteData.toMaybe
                     |> Maybe.map
-                        (Dict.filter
-                            (\_ encounter ->
-                                not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
-                            )
-                            >> Dict.size
+                        (Dict.values
+                            >> List.filterMap
+                                (\encounter ->
+                                    if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
+                                        Just encounter.startDate
+
+                                    else
+                                        Nothing
+                                )
+                            >> EverySet.fromList
                         )
             )
+        |> Maybe.withDefault EverySet.empty
 
 
 childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool
@@ -5108,7 +5122,7 @@ expectNCDAStep currentDate person ncdaNeverFilled task =
     case task of
         -- If NCDA was filled before, for sure it included answers to
         -- needed questions. Since questions at this step are to be asked
-        -- only once, we know it can ve skipped.
+        -- only once, we know it can be skipped.
         NCDAStepAntenatalCare ->
             ncdaNeverFilled
 

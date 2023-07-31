@@ -2,7 +2,9 @@ module Pages.Nutrition.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 
@@ -20,9 +22,14 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
-    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
+    | SetANCVisitsViewMode ANCVisitsViewMode
+    | SetUpdateANCVisits Bool
+    | SetANCVisitUpdateDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetANCVisitUpdateDate NominalDate
+    | SaveANCVisitUpdateDate
+    | DeleteANCVisitUpdateDate NominalDate
+    | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
     | SetBirthWeight String
-    | SetNumberANCVisits String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( NutritionNCDAId, NutritionNCDA ))
@@ -46,7 +53,7 @@ type alias Model =
     , nutritionData : NutritionData
     , photoData : PhotoData
     , weightData : WeightData
-    , ncdaData : NCDAData
+    , ncdaData : NCDAData Msg
     , nextStepsData : NextStepsData
     , warningPopupState : List NutritionAssessment
     }

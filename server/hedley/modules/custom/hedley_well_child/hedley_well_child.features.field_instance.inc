@@ -5471,24 +5471,26 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-well_child_ncda-field_anc_visits'.
-  $field_instances['node-well_child_ncda-field_anc_visits'] = array(
+  // Exported field_instance: 'node-well_child_ncda-field_anc_visits_dates'.
+  $field_instances['node-well_child_ncda-field_anc_visits_dates'] = array(
     'bundle' => 'well_child_ncda',
-    'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'number',
+        'module' => 'date',
         'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 0,
-          'thousand_separator' => '',
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
         ),
-        'type' => 'number_integer',
-        'weight' => 8,
+        'type' => 'date_default',
+        'weight' => 9,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -5498,22 +5500,30 @@ function hedley_well_child_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_anc_visits',
-    'label' => 'ANC visits',
+    'field_name' => 'field_anc_visits_dates',
+    'label' => 'ANC visits dates',
     'required' => 0,
     'settings' => array(
-      'max' => '',
-      'min' => '',
-      'prefix' => '',
-      'suffix' => '',
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
-      'weight' => 13,
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 15,
     ),
   );
 
@@ -10625,7 +10635,7 @@ function hedley_well_child_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
-  t('ANC visits');
+  t('ANC visits dates');
   t('Administered Doses');
   t('Administration Dates');
   t('Administration Note');

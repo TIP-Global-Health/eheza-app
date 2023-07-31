@@ -3591,9 +3591,6 @@ ncdaSignFromString value =
         "meals-at-recommended-times" ->
             Just MealsAtRecommendedTimes
 
-        "number-of-anc-visits-correct" ->
-            Just NumberOfANCVisitsCorrect
-
         "child-behind-on-vaccination" ->
             Just ChildBehindOnVaccination
 
@@ -3678,9 +3675,6 @@ ncdaSignToString value =
 
         MealsAtRecommendedTimes ->
             "meals-at-recommended-times"
-
-        NumberOfANCVisitsCorrect ->
-            "number-of-anc-visits-correct"
 
         ChildBehindOnVaccination ->
             "child-behind-on-vaccination"
