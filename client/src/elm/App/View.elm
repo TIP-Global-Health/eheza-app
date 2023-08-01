@@ -31,6 +31,8 @@ import Pages.ChildScoreboard.Activity.View
 import Pages.ChildScoreboard.Encounter.Model
 import Pages.ChildScoreboard.Encounter.View
 import Pages.ChildScoreboard.Participant.View
+import Pages.ChildScoreboard.Report.Model
+import Pages.ChildScoreboard.Report.View
 import Pages.Clinical.View
 import Pages.Clinics.View
 import Pages.Dashboard.View
@@ -774,6 +776,16 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.ChildScoreboard.Activity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity)
+                            |> flexPageWrapper model
+
+                    ChildScoreboardReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.childScoreboardReportPages
+                                    |> Maybe.withDefault Pages.ChildScoreboard.Report.Model.emptyModel
+                        in
+                        Pages.ChildScoreboard.Report.View.view model.language currentDate encounterId model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageChildScoreboardReport encounterId)
                             |> flexPageWrapper model
 
                     TraceContactPage traceContactId ->

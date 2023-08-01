@@ -42,6 +42,8 @@ import Pages.ChildScoreboard.Activity.Model
 import Pages.ChildScoreboard.Activity.Update
 import Pages.ChildScoreboard.Encounter.Model
 import Pages.ChildScoreboard.Encounter.Update
+import Pages.ChildScoreboard.Report.Model
+import Pages.ChildScoreboard.Report.Update
 import Pages.Clinics.Update
 import Pages.Dashboard.Model
 import Pages.Dashboard.Update
@@ -713,6 +715,18 @@ update msg model =
                             in
                             ( { data | ncdProgressReportPages = Dict.insert id subModel data.ncdProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNCDProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageChildScoreboardReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    Dict.get id data.childScoreboardReportPages
+                                        |> Maybe.withDefault Pages.ChildScoreboard.Report.Model.emptyModel
+                                        |> Pages.ChildScoreboard.Report.Update.update subMsg
+                            in
+                            ( { data | childScoreboardReportPages = Dict.insert id subModel data.childScoreboardReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardReport id) subCmd
                             , extraMsgs
                             )
 
