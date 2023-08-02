@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.Encounter.View exposing (view)
+module Pages.ChildScoreboard.Encounter.View exposing (acuteIllnessEncounterPopup, view, viewEndEncounterButton)
 
 import AssocList as Dict exposing (Dict)
 import Backend.ChildScoreboardActivity.Utils exposing (..)
@@ -48,7 +48,7 @@ viewHeaderAndContent language currentDate db model assembled =
     div [ class "page-encounter child-scoreboard" ]
         [ header
         , content
-        , viewModal <| acuteIllnessEncounterPopup language assembled model
+        , viewModal <| acuteIllnessEncounterPopup language assembled model.showAIEncounterPopup TriggerAcuteIllnessEncounter
         ]
 
 
@@ -144,27 +144,10 @@ viewMainPageContent language currentDate db assembled model =
         allowEndEncounter =
             List.isEmpty pendingActivities
 
-        endEncounterMsg =
-            let
-                childGotDiarrhea =
-                    getMeasurementValueFunc assembled.measurements.ncda
-                        |> Maybe.map (.signs >> EverySet.member ChildGotDiarrhea)
-                        |> Maybe.withDefault False
-            in
-            if childGotDiarrhea == True then
-                ShowAIEncounterPopup
-
-            else
-                CloseEncounter assembled.id
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEncounterActionButton language
-                    Translate.EndEncounter
-                    "primary"
-                    allowEndEncounter
-                    endEncounterMsg
+                , viewEndEncounterButton language assembled allowEndEncounter ShowAIEncounterPopup CloseEncounter
                 ]
     in
     [ tabs
@@ -172,9 +155,32 @@ viewMainPageContent language currentDate db assembled model =
     ]
 
 
-acuteIllnessEncounterPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
-acuteIllnessEncounterPopup language assembled model =
-    if model.showAIEncounterPopup then
+viewEndEncounterButton : Language -> AssembledData -> Bool -> msg -> (ChildScoreboardEncounterId -> msg) -> Html msg
+viewEndEncounterButton language assembled allowEndEncounter showAIEncounterPopupMsg closeEncounterMsg =
+    let
+        endEncounterMsg =
+            let
+                childGotDiarrhea =
+                    getMeasurementValueFunc assembled.measurements.ncda
+                        |> Maybe.map (.signs >> EverySet.member ChildGotDiarrhea)
+                        |> Maybe.withDefault False
+            in
+            if childGotDiarrhea then
+                showAIEncounterPopupMsg
+
+            else
+                closeEncounterMsg assembled.id
+    in
+    viewEncounterActionButton language
+        Translate.EndEncounter
+        "primary"
+        allowEndEncounter
+        endEncounterMsg
+
+
+acuteIllnessEncounterPopup : Language -> AssembledData -> Bool -> (AssembledData -> msg) -> Maybe (Html msg)
+acuteIllnessEncounterPopup language assembled showAIEncounterPopup triggerAcuteIllnessEncounterMsg =
+    if showAIEncounterPopup then
         Just <|
             div [ class "ui active modal danger-signs-popup" ]
                 [ div [ class "content" ]
@@ -187,7 +193,7 @@ acuteIllnessEncounterPopup language assembled model =
                 , div [ class "actions" ]
                     [ button
                         [ class "ui primary fluid button"
-                        , onClick <| TriggerAcuteIllnessEncounter assembled
+                        , onClick <| triggerAcuteIllnessEncounterMsg assembled
                         ]
                         [ text <| translate language Translate.Continue ]
                     ]

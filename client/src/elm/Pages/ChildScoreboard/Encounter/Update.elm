@@ -3,11 +3,8 @@ module Pages.ChildScoreboard.Encounter.Update exposing (update)
 import App.Model
 import Backend.ChildScoreboardEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model
 import Gizra.Update exposing (sequenceExtra)
-import Maybe.Extra exposing (unwrap)
-import Measurement.Utils exposing (toNCDAValueWithDefault)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 
