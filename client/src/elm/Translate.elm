@@ -1556,6 +1556,7 @@ type TranslationId
     | SavedMoneyQuestion
     | SaveError
     | ScheduleFollowUp
+    | Scorecard
     | Search
     | SearchByName
     | SearchEhezaForExistingParticipants
@@ -17037,6 +17038,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Scorecard ->
+            { english = "Scorecard"
+            , kinyarwanda = Nothing
+            }
+
         Search ->
             { english = "Search"
             , kinyarwanda = Nothing
@@ -19790,9 +19796,7 @@ translateActivePage page =
                     }
 
                 ChildScoreboardReportPage _ ->
-                    { english = "Scorecard"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet Scorecard
 
 
 translateAdherence : Adherence -> TranslationSet String
