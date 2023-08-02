@@ -28,9 +28,11 @@ view language currentDate zscores id db model =
 
 viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate zscores db model assembled =
-    div [ class "page-report child-scoreboard" ] <|
-        viewHeader language assembled.id
-            :: viewNCDAScorecard language currentDate zscores ( assembled.participant.person, assembled.person ) db
+    div [ class "page-report child-scoreboard" ]
+        [ viewHeader language assembled.id
+        , div [ class "ui report unstackable items" ] <|
+            viewNCDAScorecard language currentDate zscores ( assembled.participant.person, assembled.person ) db
+        ]
 
 
 viewHeader : Language -> ChildScoreboardEncounterId -> Html Msg

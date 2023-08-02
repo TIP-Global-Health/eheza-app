@@ -93,10 +93,23 @@ viewMainPageContent language currentDate db assembled model =
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
 
+        scorecardTabTitle =
+            translate language Translate.Scorecard
+
         tabs =
             div [ class "ui tabular menu" ]
-                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
-                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                [ tabItem pendingTabTitle
+                    (model.selectedTab == Pending)
+                    "pending"
+                    (SetSelectedTab Pending)
+                , tabItem completedTabTitle
+                    (model.selectedTab == Completed)
+                    "completed"
+                    (SetSelectedTab Completed)
+                , tabItem scorecardTabTitle
+                    (model.selectedTab == Scorecard)
+                    "scorecard"
+                    (SetActivePage <| UserPage <| ChildScoreboardReportPage assembled.id)
                 ]
 
         viewCard activity =
@@ -112,6 +125,9 @@ viewMainPageContent language currentDate db assembled model =
 
                 Completed ->
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                Scorecard ->
+                    ( [], "" )
 
         innerContent =
             div [ class "full content" ]
