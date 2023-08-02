@@ -56,7 +56,7 @@ viewHeader : Language -> ChildScoreboardEncounterId -> Html Msg
 viewHeader language id =
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language Translate.Scorecard ]
+            [ text <| translate language Translate.ChildScorecard ]
         , span
             [ class "link-back"
             , onClick <| SetActivePage (UserPage <| ChildScoreboardEncounterPage id)

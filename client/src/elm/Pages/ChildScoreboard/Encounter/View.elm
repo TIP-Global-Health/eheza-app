@@ -94,7 +94,7 @@ viewMainPageContent language currentDate db assembled model =
             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
 
         scorecardTabTitle =
-            translate language Translate.Scorecard
+            translate language Translate.ChildScorecard
 
         tabs =
             div [ class "ui tabular menu" ]
