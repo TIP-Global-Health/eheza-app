@@ -128,7 +128,6 @@ import Pages.Prenatal.Activity.Types
         , HeartburnReliefMethod(..)
         , HistoryTask(..)
         , LegCrampsReliefMethod(..)
-        , LmpRange(..)
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
@@ -503,6 +502,7 @@ type TranslationId
     | ChildrenNames
     | ChildrenNationalId
     | ChildScoreboardActivityTitle ChildScoreboardActivity
+    | ChildScorecard
     | ChooseOne
     | CHWAction CHWAction
     | ChwActivity
@@ -905,7 +905,7 @@ type TranslationId
     | LmpDateHeader
     | LmpLabel
     | LmpRangeHeader
-    | LmpRange LmpRange
+    | LmpRange Pages.Prenatal.Activity.Types.LmpRange
     | LoggedInAsPhrase
     | Location
     | LoginPhrase LoginPhrase
@@ -2707,10 +2707,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    , kirundi = Nothing
-                    }
+                    translationSet ChildScorecard
 
         ActivitiesLabel activity ->
             case activity of
@@ -2901,10 +2898,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    , kirundi = Nothing
-                    }
+                    translationSet ChildScorecard
 
         ActivitityTitleAchi ->
             { english = "Aheza Child"
@@ -3004,10 +2998,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    , kirundi = Nothing
-                    }
+                    translationSet ChildScorecard
 
         ActivitiesToComplete count ->
             { english = "To Do (" ++ String.fromInt count ++ ")"
@@ -4088,6 +4079,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+        ChildScorecard ->
+            { english = "Child Scorecard"
+            , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
+            , kirundi = Nothing
+            }
 
         ChooseOne ->
             { english = "Choose one"
@@ -6232,7 +6229,7 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                OneMonths ->
+                OneMonth ->
                     { english = "1 Month"
                     , kinyarwanda = Just "Ukwezi 1"
                     , kirundi = Nothing
@@ -7400,10 +7397,7 @@ translationSet trans =
                     translationSet AntenatalCare
 
                 ChildScoreboardEncounter ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet ChildScorecard
 
                 HomeVisitEncounter ->
                     { english = "Home Visit"
@@ -9461,21 +9455,21 @@ translationSet trans =
 
         LmpRange range ->
             case range of
-                OneMonth ->
+                Pages.Prenatal.Activity.Types.OneMonth ->
                     { english = "Within 1 month"
                     , kinyarwanda = Just "Mu kwezi kumwe"
                     , kirundi = Nothing
                     }
 
-                ThreeMonth ->
+                Pages.Prenatal.Activity.Types.ThreeMonths ->
                     { english = "Within 3 months"
                     , kinyarwanda = Just "Mu mezi atatu"
                     , kirundi = Nothing
                     }
 
-                SixMonth ->
-                    { english = "Within 6 months"
-                    , kinyarwanda = Just "Mu mezi atandatu"
+                Pages.Prenatal.Activity.Types.SixMonthsOrMore ->
+                    { english = "Within 6 months, or more"
+                    , kinyarwanda = Just "Mu mezi atandatu, no hejuru"
                     , kirundi = Nothing
                     }
 
@@ -11044,7 +11038,7 @@ translationSet trans =
                     }
 
                 MealsAtRecommendedTimes ->
-                    { english = " Does the child eat at the recommended times per day"
+                    { english = "Does the child eat at the recommended times per day"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -12440,10 +12434,7 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    , kirundi = Nothing
-                    }
+                    translationSet ChildScorecard
 
                 Backend.NutritionActivity.Model.NextSteps ->
                     { english = "Next Steps"
@@ -12484,10 +12475,7 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    , kirundi = Nothing
-                    }
+                    translationSet ChildScorecard
 
                 Backend.NutritionActivity.Model.NextSteps ->
                     { english = "Next Steps"
@@ -18255,10 +18243,7 @@ translationSet trans =
                     }
 
                 TabNCDAScoreboard ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    , kirundi = Nothing
-                    }
+                    translationSet ChildScorecard
 
         Reports ->
             { english = "Reports"
@@ -21983,10 +21968,7 @@ translationSet trans =
                     }
 
                 WellChildNCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    , kirundi = Nothing
-                    }
+                    translationSet ChildScorecard
 
         WellChildDangerSignsTask task ->
             case task of
@@ -22767,7 +22749,7 @@ translateActivePage page =
                     , kirundi = Nothing
                     }
 
-                ClinicsPage _ ->
+                ClinicsPage ->
                     { english = "Groups"
                     , kinyarwanda = Just "Itsinda"
                     , kirundi = Nothing
@@ -23154,6 +23136,9 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+                ChildScoreboardReportPage _ ->
+                    translationSet ChildScorecard
 
 
 translateAdherence : Adherence -> TranslationSet String

@@ -278,15 +278,6 @@ viewNameFilter language filterInput setFilterMsg =
         ]
 
 
-backFromSessionPage : Nurse -> OfflineSession -> Page
-backFromSessionPage nurse offlineSession =
-    if isCommunityHealthWorker nurse then
-        UserPage ClinicalPage
-
-    else
-        UserPage <| ClinicsPage (Just offlineSession.session.clinicId)
-
-
 viewLabel : Language -> TranslationId -> Html any
 viewLabel language translationId =
     viewCustomLabel language translationId ":" "label"

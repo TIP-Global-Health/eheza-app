@@ -2712,7 +2712,7 @@ encodeFollowUpOption option =
             TwoWeeks ->
                 "2-w"
 
-            OneMonths ->
+            OneMonth ->
                 "1-m"
 
             TwoMonths ->

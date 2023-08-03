@@ -657,8 +657,8 @@ function hedley_update_7036() {
 }
 
 /**
-* Enable the Hedley Stock Management module.
-*/
+ * Enable the Hedley Stock Management module.
+ */
 function hedley_update_7037() {
   module_enable(['hedley_stock_management']);
 }

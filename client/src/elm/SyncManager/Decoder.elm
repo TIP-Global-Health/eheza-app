@@ -55,31 +55,16 @@ decodeIndexDbQueryTypeResult =
                             |> andThen (\val -> succeed (IndexDbQueryUploadScreenshotResult val))
 
                     "IndexDbQueryUploadAuthorityResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadAuthorityResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
-
-                            -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadAuthorityResult Nothing)
-                            ]
+                        field "data" decodeIndexDbQueryUploadAuthorityResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
 
                     "IndexDbQueryUploadGeneralResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadGeneralResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
-
-                            -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadGeneralResult Nothing)
-                            ]
+                        field "data" decodeIndexDbQueryUploadGeneralResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
 
                     "IndexDbQueryUploadWhatsAppResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
-
-                            -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadWhatsAppResult Nothing)
-                            ]
+                        field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
 
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf

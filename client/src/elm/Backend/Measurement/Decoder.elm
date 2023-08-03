@@ -3235,7 +3235,7 @@ decodeFollowUpOption =
                         succeed TwoWeeks
 
                     "1-m" ->
-                        succeed OneMonths
+                        succeed OneMonth
 
                     "2-m" ->
                         succeed TwoMonths

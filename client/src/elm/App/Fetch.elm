@@ -17,6 +17,7 @@ import Pages.AcuteIllness.ProgressReport.Fetch
 import Pages.ChildScoreboard.Activity.Fetch
 import Pages.ChildScoreboard.Encounter.Fetch
 import Pages.ChildScoreboard.Participant.Fetch
+import Pages.ChildScoreboard.Report.Fetch
 import Pages.Clinical.Fetch
 import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
@@ -111,9 +112,14 @@ fetch model =
                 Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (ClinicsPage clinicId) ->
-                Pages.Clinics.Fetch.fetch clinicId
-                    |> List.map MsgIndexedDb
+            UserPage ClinicsPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( healthCenterId, loggedIn ) ->
+                            Pages.Clinics.Fetch.fetch healthCenterId model.indexedDb model.syncManager loggedIn.clinicsPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
             UserPage (DashboardPage subPage) ->
                 getLoggedInData model
@@ -350,6 +356,10 @@ fetch model =
                                 id
                 in
                 Pages.NCD.ProgressReport.Fetch.fetch encounterId model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (ChildScoreboardReportPage id) ->
+                Pages.ChildScoreboard.Report.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (AcuteIllnessOutcomePage id) ->

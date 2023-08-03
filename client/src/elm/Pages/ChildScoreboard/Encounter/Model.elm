@@ -26,6 +26,7 @@ emptyModel =
 type Tab
     = Completed
     | Pending
+    | Scorecard
 
 
 type alias AssembledData =

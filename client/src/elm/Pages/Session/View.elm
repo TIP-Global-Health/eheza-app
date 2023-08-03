@@ -58,7 +58,7 @@ wrapError language sessionId errorHtml =
                 [ text <| translate language Translate.GroupEncounterLoading ]
             , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Nothing
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -179,7 +179,7 @@ viewClosedSession language sessionId session db =
                 ]
             , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.clinicId
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -209,7 +209,7 @@ viewUnauthorizedSession language sessionId session db =
                 ]
             , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.clinicId
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []

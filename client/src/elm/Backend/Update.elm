@@ -7,6 +7,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Update
+import Backend.ChildScoreboardActivity.Utils
 import Backend.ChildScoreboardEncounter.Model
 import Backend.ChildScoreboardEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
@@ -102,6 +103,8 @@ import Pages.AcuteIllness.Activity.Utils
         )
 import Pages.AcuteIllness.Encounter.Model
 import Pages.AcuteIllness.Encounter.Utils
+import Pages.ChildScoreboard.Activity.Utils
+import Pages.ChildScoreboard.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
 import Pages.GlobalCaseManagement.Utils
@@ -2406,6 +2409,118 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults
                     )
 
+                [ ChildScoreboardNCDARevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardBCGImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardDTPImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardIPVImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardMRImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardOPVImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardPCV13ImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardRotarixImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =
@@ -3020,26 +3135,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
         PostSession session ->
             ( { model | postSession = Loading }
             , sw.post sessionEndpoint session
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession session.clinicType)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession)
             , []
             )
 
-        HandlePostedSession clinicType data ->
+        HandlePostedSession data ->
             let
                 msgs =
-                    if clinicType == Chw then
+                    RemoteData.map
+                        (\sessionId ->
+                            SessionPage sessionId AttendancePage
+                                |> UserPage
+                                |> App.Model.SetActivePage
+                                |> List.singleton
+                        )
                         data
-                            |> RemoteData.map
-                                (\sessionId ->
-                                    SessionPage sessionId AttendancePage
-                                        |> UserPage
-                                        |> App.Model.SetActivePage
-                                        |> List.singleton
-                                )
-                            |> RemoteData.withDefault []
-
-                    else
-                        []
+                        |> RemoteData.withDefault []
             in
             ( { model | postSession = data }
             , Cmd.none
@@ -6209,6 +6320,24 @@ generateWellChildDangerSignsAlertMsgs currentDate maybeId =
             ]
         )
         maybeId
+        |> Maybe.withDefault []
+
+
+generateChildScoreboardAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> ChildScoreboardEncounterId -> List App.Model.Msg
+generateChildScoreboardAssesmentCompletedMsgs currentDate after id =
+    Pages.ChildScoreboard.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                if
+                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate assembled after)
+                        Backend.ChildScoreboardActivity.Utils.allActivities
+                then
+                    [ App.Model.SetActivePage (UserPage (ChildScoreboardReportPage id)) ]
+
+                else
+                    []
+            )
         |> Maybe.withDefault []
 
 
