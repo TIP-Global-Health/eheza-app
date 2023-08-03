@@ -42,7 +42,6 @@ import Backend.WellChildEncounter.Model
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
-import Config.Model exposing (Site)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -103,6 +102,7 @@ import Pages.WellChild.ProgressReport.Model exposing (..)
 import Pages.WellChild.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
@@ -122,7 +122,7 @@ import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightFo
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Maybe Site -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate zscores site id isChw db model =
     let
         encounter =
@@ -204,7 +204,7 @@ viewProgressReport :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> Maybe Site
+    -> Site
     -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
@@ -424,7 +424,7 @@ viewContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> Maybe Site
+    -> Site
     -> Bool
     -> WellChildProgressReportInitiator
     -> Bool

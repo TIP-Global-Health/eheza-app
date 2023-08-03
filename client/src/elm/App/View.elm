@@ -1,13 +1,12 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInData, getSite)
+import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
-import Config.Model as Config exposing (Site(..))
 import Config.View
 import Date
 import Error.View
@@ -107,6 +106,7 @@ import Pages.WellChild.ProgressReport.View
 import Pages.Wellbeing.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
+import SyncManager.Model exposing (Site(..))
 import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
@@ -188,31 +188,28 @@ viewLanguageSwitcherAndVersion model =
                         [ i [ class "icon undo" ] [] ]
 
         siteDependentLanguage =
-            RemoteData.toMaybe model.configuration
-                |> Maybe.map
-                    (\configured ->
-                        let
-                            -- @todo: also replace flag
-                            ( language, label ) =
-                                case configured.config.site of
-                                    SiteRwanda ->
-                                        ( Kinyarwanda, "Kinyarwanda" )
+            let
+                viewItem language label =
+                    li
+                        [ classList
+                            [ ( "item", True )
+                            , ( "active", model.language == language )
+                            ]
+                        , onClick <| SetLanguage language
+                        ]
+                        [ text label
+                        , a [] [ span [ class "icon-kinyarwanda" ] [] ]
+                        ]
+            in
+            case model.syncManager.syncInfoGeneral.site of
+                SiteRwanda ->
+                    viewItem Kinyarwanda "Kinyarwanda"
 
-                                    SiteBurundi ->
-                                        ( Kirundi, "Kirundi" )
-                        in
-                        li
-                            [ classList
-                                [ ( "item", True )
-                                , ( "active", model.language == language )
-                                ]
-                            , onClick <| SetLanguage language
-                            ]
-                            [ text label
-                            , a [] [ span [ class "icon-kinyarwanda" ] [] ]
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
+                SiteBurundi ->
+                    viewItem Kirundi "Kirundi"
+
+                SiteUnknown ->
+                    emptyNode
     in
     div
         [ class "ui language-switcher" ]
@@ -281,6 +278,9 @@ viewConfiguredModel model configured =
 
                 else
                     Just model.syncManager.syncInfoGeneral.deviceName
+
+            site =
+                model.syncManager.syncInfoGeneral.site
         in
         case model.activePage of
             DevicePage ->
@@ -310,19 +310,16 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper model
 
             UserPage userPage ->
-                viewUserPage userPage deviceName model configured
+                viewUserPage userPage deviceName site model configured
 
 
-viewUserPage : UserPage -> Maybe String -> Model -> ConfiguredModel -> Html Msg
-viewUserPage page deviceName model configured =
+viewUserPage : UserPage -> Maybe String -> Site -> Model -> ConfiguredModel -> Html Msg
+viewUserPage page deviceName site model configured =
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
                 currentDate =
                     fromLocalDateTime model.currentTime
-
-                site =
-                    getSite model
 
                 isChw =
                     Tuple.second loggedInModel.nurse

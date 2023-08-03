@@ -8,7 +8,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isClosed)
-import Config.Model as Config exposing (Site(..))
+import SyncManager.Model exposing (Site(..))
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -34,7 +34,7 @@ import Utils.WebData exposing (viewError, viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Maybe Site -> Bool -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
 view language currentDate zscores site isChw nurse sessionId page model db =
     let
         sessionData =
@@ -68,7 +68,7 @@ wrapError language sessionId errorHtml =
         ]
 
 
-viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Maybe Site -> Bool -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
+viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
 viewFoundSession language currentDate zscores site isChw nurse ( sessionId, session ) page model db =
     let
         editableSession =
@@ -99,7 +99,7 @@ viewEditableSession :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> Maybe Site
+    -> Site
     -> Bool
     -> Nurse
     -> SessionId

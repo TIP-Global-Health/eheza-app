@@ -1713,6 +1713,32 @@ syncInfoStatusFromString status =
             Nothing
 
 
+siteToString : Site -> String
+siteToString site =
+    case site of
+        SiteRwanda ->
+            "Rwanda"
+
+        SiteBurundi ->
+            "Burundi"
+
+        SiteUnknown ->
+            ""
+
+
+siteFromString : String -> Site
+siteFromString str =
+    case str of
+        "Rwanda" ->
+            SiteRwanda
+
+        "Burundi" ->
+            SiteBurundi
+
+        _ ->
+            SiteUnknown
+
+
 syncInfoGeneralForPort : SyncInfoGeneral -> SyncInfoGeneralForPort
 syncInfoGeneralForPort info =
     SyncInfoGeneralForPort
@@ -1722,6 +1748,7 @@ syncInfoGeneralForPort info =
         info.remainingToDownload
         info.deviceName
         (syncInfoStatusToString info.status)
+        (siteToString info.site)
 
 
 syncInfoAuthorityForPort : SyncInfoAuthority -> SyncInfoAuthorityForPort
@@ -1745,6 +1772,7 @@ syncInfoGeneralFromPort info =
         info.remainingToDownload
         info.deviceName
         (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
+        (siteFromString info.site)
 
 
 syncInfoAuthorityFromPort : SyncInfoAuthorityForPort -> SyncInfoAuthority

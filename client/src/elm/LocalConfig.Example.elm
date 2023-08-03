@@ -1,15 +1,15 @@
 module LocalConfig exposing (localConfigs)
 
 import AssocList as Dict exposing (..)
-import Config.Model as Config exposing (Model, Site(..))
+import Config.Model as Config exposing (Model)
 
 
 local : Model
 local =
-    { site = SiteRwanda
-    , backendUrl = "https://eheza-app.ddev.site:4443"
+    { backendUrl = "https://eheza-app.ddev.site:4443"
     , name = "local"
     , debug = True
+    , sandbox = False
     }
 
 

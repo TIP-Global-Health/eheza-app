@@ -4,7 +4,6 @@ import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model exposing (..)
 import Components.SendViaWhatsAppDialog.Utils exposing (..)
-import Config.Model as Config exposing (Site(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -14,17 +13,18 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewCustomModal)
 
 
-view : Language -> NominalDate -> Maybe Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
+view : Language -> NominalDate -> Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
 view language currentDate site ( personId, person ) reportType componentsConfig model =
     viewCustomModal [ "bright" ] <|
         Maybe.map (viewDialog language currentDate site ( personId, person ) reportType componentsConfig) model.state
 
 
-viewDialog : Language -> NominalDate -> Maybe Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
+viewDialog : Language -> NominalDate -> Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
 viewDialog language currentDate site ( personId, person ) reportType componentsConfig state =
     let
         content =
@@ -140,7 +140,7 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
     ]
 
 
-viewPhoneInput : Language -> NominalDate -> Maybe Site -> PhoneData -> List (Html (Msg msg))
+viewPhoneInput : Language -> NominalDate -> Site -> PhoneData -> List (Html (Msg msg))
 viewPhoneInput language currentDate site data =
     let
         countryCodeOptions =
@@ -484,7 +484,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
     ]
 
 
-viewConfirmationBeforeExecuting : Language -> NominalDate -> Maybe Site -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
+viewConfirmationBeforeExecuting : Language -> NominalDate -> Site -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
 viewConfirmationBeforeExecuting language currentDate site reportType personId phoneNumber clearComponentsMsg =
     let
         localCountryCode =

@@ -253,6 +253,7 @@ type alias SyncInfoGeneral =
     , remainingToDownload : Int
     , deviceName : String
     , status : SyncInfoStatus
+    , site : Site
     }
 
 
@@ -263,6 +264,7 @@ type alias SyncInfoGeneralForPort =
     , remainingToDownload : Int
     , deviceName : String
     , status : String
+    , site : String
     }
 
 
@@ -394,6 +396,7 @@ type alias DownloadSyncResponse a =
     { entities : List a
     , revisionCount : Int
     , deviceName : String
+    , site : Site
     }
 
 
@@ -659,6 +662,12 @@ type alias IncidentContnentIdentifier =
     -- For file upload incident, identifier is the cache url of file.
     -- For content upload, it's the UUID of uploaded entity.
     String
+
+
+type Site
+    = SiteRwanda
+    | SiteBurundi
+    | SiteUnknown
 
 
 type Msg

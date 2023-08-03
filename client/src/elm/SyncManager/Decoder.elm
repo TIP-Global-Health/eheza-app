@@ -37,6 +37,7 @@ import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
+import SyncManager.Utils exposing (siteFromString)
 import Time
 
 
@@ -290,6 +291,7 @@ decodeDownloadSyncResponseGeneral =
             |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "revision_count" decodeInt
             |> optional "device_name" string ""
+            |> optional "site" decodeSite SiteRwanda
         )
 
 
@@ -353,6 +355,12 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
             )
 
 
+decodeSite : Decoder Site
+decodeSite =
+    string
+        |> andThen (siteFromString >> succeed)
+
+
 decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
 decodeDownloadSyncResponseAuthority =
     field "data"
@@ -360,6 +368,7 @@ decodeDownloadSyncResponseAuthority =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "revision_count" decodeInt
             |> hardcoded ""
+            |> hardcoded SiteUnknown
         )
 
 
@@ -370,6 +379,7 @@ decodeDownloadSyncResponseAuthorityStats =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> hardcoded 0
             |> hardcoded ""
+            |> hardcoded SiteUnknown
         )
 
 

@@ -52,7 +52,7 @@ import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
-import Config.Model as Config exposing (Site(..))
+import SyncManager.Model exposing (Site(..))
 import Date exposing (Interval(..), Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
@@ -114,7 +114,7 @@ import Utils.WebData exposing (viewWebData)
 view :
     Language
     -> NominalDate
-    -> Maybe Site
+    -> Site
     -> PrenatalEncounterId
     -> Bool
     -> PrenatalProgressReportInitiator
@@ -129,7 +129,7 @@ view language currentDate site id isChw initiator db model =
     viewWebData language (viewContentAndHeader language currentDate site isChw initiator model) identity assembled
 
 
-viewContentAndHeader : Language -> NominalDate -> Maybe Site -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContentAndHeader : Language -> NominalDate -> Site -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
 viewContentAndHeader language currentDate site isChw initiator model assembled =
     let
         endEncounterDialog =

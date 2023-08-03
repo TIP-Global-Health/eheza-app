@@ -792,6 +792,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                                 , remainingToDownload = data.revisionCount
                                                 , deviceName = data.deviceName
                                                 , status = status
+                                                , site = data.site
                                             }
                                        )
 

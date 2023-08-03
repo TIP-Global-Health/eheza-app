@@ -8,7 +8,7 @@ import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
-import Config.Model as Config exposing (Site(..))
+import SyncManager.Model exposing (Site(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,7 +22,7 @@ import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Maybe Site -> Bool -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Model -> Html Msg
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate zscores site isChw childId ( sessionId, session ) db model =
     let
         childData =

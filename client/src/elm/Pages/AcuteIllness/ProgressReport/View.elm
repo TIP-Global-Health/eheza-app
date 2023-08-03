@@ -11,7 +11,6 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
-import Config.Model as Config exposing (Site(..))
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -53,6 +52,7 @@ import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProg
 import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
@@ -67,7 +67,7 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> Maybe Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate site id isChw initiator db model =
     let
         assembled =
@@ -76,7 +76,7 @@ view language currentDate site id isChw initiator db model =
     viewWebData language (viewContent language currentDate site id isChw initiator model) identity assembled
 
 
-viewContent : Language -> NominalDate -> Maybe Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContent : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site id isChw initiator model assembled =
     let
         ( _, pendingActivities ) =

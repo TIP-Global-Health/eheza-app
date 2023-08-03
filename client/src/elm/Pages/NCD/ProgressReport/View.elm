@@ -27,7 +27,7 @@ import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
-import Config.Model as Config exposing (Site(..))
+import SyncManager.Model exposing (Site(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -69,7 +69,7 @@ import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Maybe Site -> NCDEncounterId -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view : Language -> NominalDate -> Site -> NCDEncounterId -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate site id initiator db model =
     let
         assembled =
@@ -186,7 +186,7 @@ viewHeader language initiator model =
         ]
 
 
-viewContent : Language -> NominalDate -> Maybe Site -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent : Language -> NominalDate -> Site -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site initiator db model assembled =
     let
         derivedContent =
