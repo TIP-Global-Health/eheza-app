@@ -382,43 +382,30 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
 }
 
 /**
- * Get a measurement by the measurement types and period.
+ * Counts measurements taken for person during all given sessions.
  *
  * @param int $person_id
  *   The person node ID.
- * @param array $measurement_bundles
- *   The measurement node bundle.
- * @param array $period
- *   The period of the measurement, contains a start and an end.
- * @param int $range
- *   Optional; The query's range.
+ * @param array $sessions_ids
+ *   The IDs of the sessions.
  *
- * @return array
- *   Node IDs if they exist or empty array if no nodes exist.
+ * @return int
+ *   Number of measurements.
  */
-function hedley_activity_get_person_measurements_by_period($person_id, array $measurement_bundles, array $period, $range = 100) {
+function hedley_activity_count_person_measurements_taken_during_sessions($person_id, array $sessions_ids) {
   $query = db_select('node', 'node');
-  $query->fields('node', ['nid', 'created', 'type']);
+  $query->fields('node', ['nid']);
+  $query->condition('status', NODE_PUBLISHED);
 
   $person_field = 'field_person';
   hedley_general_join_field_to_query($query, 'node', $person_field);
   $person_field_name = $person_field . '.' . $person_field . '_target_id';
   $query->condition($person_field_name, $person_id);
 
-  $query
-    ->condition('type', $measurement_bundles, 'IN')
-    ->condition('status', NODE_PUBLISHED);
+  $session_field = 'field_session';
+  hedley_general_join_field_to_query($query, 'node', $session_field);
+  $session_field_name = $session_field . '.' . $session_field . '_target_id';
+  $query->condition($session_field_name, $sessions_ids, 'IN');
 
-  hedley_general_join_field_to_query($query, 'node', 'field_session');
-  $date_field = 'field_scheduled_date';
-  hedley_general_join_field_to_query($query, 'node', $date_field, TRUE, "field_session.field_session_target_id");
-  $date_field_name = $date_field . '.' . $date_field . '_value';
-
-  $query->condition($date_field_name, [$period['start'], $period['end']], 'BETWEEN');
-
-  $query->range(0, $range);
-
-  return $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  return $query->countQuery()->execute()->fetchField();
 }
