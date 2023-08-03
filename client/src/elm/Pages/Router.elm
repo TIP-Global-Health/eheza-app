@@ -312,6 +312,9 @@ pageToFragment current =
                 ChildScoreboardActivityPage id activity ->
                     Just <| "child-scoreboard-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.ChildScoreboardActivity.Utils.activityToString activity
 
+                ChildScoreboardReportPage id ->
+                    Just <| "child-scoreboard-report/" ++ fromEntityUuid id
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -383,6 +386,7 @@ parser =
         , map (\id activity -> UserPage <| NCDActivityPage id activity) (s "ncd-activity" </> parseUuid </> parseNCDActivity)
         , map (\id -> UserPage <| ChildScoreboardEncounterPage id) (s "child-scoreboard-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| ChildScoreboardActivityPage id activity) (s "child-scoreboard-activity" </> parseUuid </> parseChildScoreboardActivity)
+        , map (\id -> UserPage <| ChildScoreboardReportPage id) (s "child-scoreboard-report" </> parseUuid)
         , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)

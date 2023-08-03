@@ -191,12 +191,13 @@ type UserPage
     | NCDParticipantPage IndividualParticipantInitiator PersonId
     | NCDEncounterPage NCDEncounterId -- NCD activities index.
     | NCDActivityPage NCDEncounterId NCDActivity -- record NCD activity.
-    | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index
-    | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity
+    | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index.
+    | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity.
     | NCDProgressReportPage NCDProgressReportInitiator
     | ChildScoreboardParticipantPage PersonId
-    | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- nutrition activities index.
+    | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- Child Scoreboard activities index.
     | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
+    | ChildScoreboardReportPage ChildScoreboardEncounterId -- Scorecard.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

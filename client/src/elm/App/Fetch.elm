@@ -17,6 +17,7 @@ import Pages.AcuteIllness.ProgressReport.Fetch
 import Pages.ChildScoreboard.Activity.Fetch
 import Pages.ChildScoreboard.Encounter.Fetch
 import Pages.ChildScoreboard.Participant.Fetch
+import Pages.ChildScoreboard.Report.Fetch
 import Pages.Clinical.Fetch
 import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
@@ -355,6 +356,10 @@ fetch model =
                                 id
                 in
                 Pages.NCD.ProgressReport.Fetch.fetch encounterId model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (ChildScoreboardReportPage id) ->
+                Pages.ChildScoreboard.Report.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (AcuteIllnessOutcomePage id) ->

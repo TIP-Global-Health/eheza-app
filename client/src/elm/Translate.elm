@@ -502,6 +502,7 @@ type TranslationId
     | ChildrenNames
     | ChildrenNationalId
     | ChildScoreboardActivityTitle ChildScoreboardActivity
+    | ChildScorecard
     | ChooseOne
     | CHWAction CHWAction
     | ChwActivity
@@ -2565,9 +2566,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    }
+                    translationSet ChildScorecard
 
         ActivitiesLabel activity ->
             case activity of
@@ -2729,9 +2728,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    }
+                    translationSet ChildScorecard
 
         ActivitityTitleAchi ->
             { english = "Aheza Child"
@@ -2816,9 +2813,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    }
+                    translationSet ChildScorecard
 
         ActivitiesToComplete count ->
             { english = "To Do (" ++ String.fromInt count ++ ")"
@@ -3721,14 +3716,17 @@ translationSet trans =
         ChildScoreboardActivityTitle activity ->
             case activity of
                 ChildScoreboardNCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    }
+                    translationSet ChildScorecard
 
                 ChildScoreboardVaccinationHistory ->
                     { english = "Vaccination History"
                     , kinyarwanda = Nothing
                     }
+
+        ChildScorecard ->
+            { english = "Child Scorecard"
+            , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
+            }
 
         ChooseOne ->
             { english = "Choose one"
@@ -6518,9 +6516,7 @@ translationSet trans =
                     translationSet AntenatalCare
 
                 ChildScoreboardEncounter ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet ChildScorecard
 
                 HomeVisitEncounter ->
                     { english = "Home Visit"
@@ -10785,9 +10781,7 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    }
+                    translationSet ChildScorecard
 
                 Backend.NutritionActivity.Model.NextSteps ->
                     { english = "Next Steps"
@@ -10822,9 +10816,7 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.NCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    }
+                    translationSet ChildScorecard
 
                 Backend.NutritionActivity.Model.NextSteps ->
                     { english = "Next Steps"
@@ -15675,9 +15667,7 @@ translationSet trans =
                     }
 
                 TabNCDAScoreboard ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    }
+                    translationSet ChildScorecard
 
         Reports ->
             { english = "Reports"
@@ -18804,9 +18794,7 @@ translationSet trans =
                     }
 
                 WellChildNCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    }
+                    translationSet ChildScorecard
 
         WellChildDangerSignsTask task ->
             case task of
@@ -19788,6 +19776,9 @@ translateActivePage page =
                     { english = "Child Scorecard Activity"
                     , kinyarwanda = Nothing
                     }
+
+                ChildScoreboardReportPage _ ->
+                    translationSet ChildScorecard
 
 
 translateAdherence : Adherence -> TranslationSet String

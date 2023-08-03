@@ -3629,7 +3629,8 @@ div.page-report.ncd,
 div.page-encounter.ncd,
 div.page-activity.ncd,
 div.page-encounter.child-scoreboard,
-div.page-activity.child-scoreboard {
+div.page-activity.child-scoreboard,
+div.page-report.child-scoreboard {
 
   .details {
     padding-left: 25px;
@@ -3657,6 +3658,7 @@ div.page-activity.child-scoreboard {
 div.page-activity.well-child,
 div.page-report.acute-illness,
 div.page-report.well-child,
+div.page-report.child-scoreboard,
 div.page-activity.patient-record {
 
   .heading {
@@ -3777,6 +3779,7 @@ div.page-report.well-child,
 div.page-report.clinical,
 div.page-report.demographics,
 div.page-activity.patient-record,
+div.page-report.child-scoreboard,
 div.page-report.ncd {
   background: unset;
 
@@ -4039,7 +4042,8 @@ div.page-report.ncd {
 
 div.page-case-management,
 div.page-activity.patient-record,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-report.child-scoreboard {
   padding: 0 30px 30px 30px;
 
   .ui.segment.tabs,
