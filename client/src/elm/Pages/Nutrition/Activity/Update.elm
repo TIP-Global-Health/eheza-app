@@ -276,14 +276,16 @@ update currentDate id db msg model =
         SetUpdateANCVisits value ->
             let
                 updatedForm =
-                    if value == True then
-                        { ncdaForm
-                            | ancVisitsViewMode = ANCVisitsUpdateMode
-                            , updateANCVisits = Nothing
-                        }
-
-                    else
-                        { ncdaForm | updateANCVisits = Just False }
+                    -- @todo: remove
+                    --     if value == True then
+                    --         { ncdaForm
+                    --             | ancVisitsViewMode = ANCVisitsUpdateMode
+                    --             , updateANCVisits = Nothing
+                    --         }
+                    --
+                    --     else
+                    --         { ncdaForm | updateANCVisits = Just False }
+                    { ncdaForm | updateANCVisits = Just value }
 
                 updatedData =
                     model.ncdaData

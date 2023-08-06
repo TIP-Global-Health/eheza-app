@@ -849,6 +849,61 @@ div.page-activity {
       }
     }
 
+    .ui.form.ncda .form-input.anc-months {
+      display: flex;
+
+      .item {
+        text-align: center;
+        width: 100%
+      }
+
+      .item.month-4,
+      .item.month-7 {
+        border-left: 1px solid black;
+      }
+
+      .item .month-number {
+        border-bottom: 1px solid black;
+        margin-bottom: 15px;
+      }
+
+      .item .month-radio {
+        margin-top: 15px;
+      }
+
+      .item .radio-label {
+        margin-left: 10px;
+      }
+
+      .item .radio-label:before {
+        content: " ";
+        display: inline-block;
+        position: relative;
+        top: 5px;
+        margin-right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 13px;
+        border: 2px solid $color-gray-border;
+        background-color: transparent;
+      }
+
+      .item input[type=radio] {
+        display: none;
+      }
+
+      .item input[type=radio]:checked + .radio-label:after {
+        content: " ";
+        background: $color-text;
+        border-radius: 7px;
+        display: block;
+        height: 14px;
+        margin-left: 19px;
+        margin-top: -24px;
+        width: 14px;
+      }
+    }
+
     .ui.form.ncda .label.counseling {
       background-color: $color-pink;
       border-radius: 5px;
