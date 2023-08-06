@@ -871,11 +871,11 @@ div.page-activity {
         margin-top: 15px;
       }
 
-      .item .radio-label {
+      .item label {
         margin-left: 10px;
       }
 
-      .item .radio-label:before {
+      .item label:before {
         content: " ";
         display: inline-block;
         position: relative;
@@ -892,13 +892,13 @@ div.page-activity {
         display: none;
       }
 
-      .item input[type=radio]:checked + .radio-label:after {
+      .item input[type=radio]:checked + label:after {
         content: " ";
         background: $color-text;
         border-radius: 7px;
         display: block;
         height: 14px;
-        margin-left: 19px;
+        margin-left: 29px;
         margin-top: -24px;
         width: 14px;
       }

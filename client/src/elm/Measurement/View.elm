@@ -3206,21 +3206,21 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                                             --  , onCheck (always (setMsg value))
                                                             ]
                                                             []
-                                                        , div
-                                                            [ class "radio-label"
-
-                                                            -- onClick <| setMsg value
+                                                        , label
+                                                            [-- onClick <| setMsg value
                                                             ]
                                                             [ text "" ]
                                                         ]
                                             in
-                                            ( div [ class "form-input anc-months" ]
-                                                content
+                                            ( [ viewLabel language Translate.ANCIndicateVisitsMonthsPhrase
+                                              , div [ class "form-input anc-months" ]
+                                                    content
+                                              ]
                                             , [ maybeToBoolTask form.ancVisitUpdateDate ]
                                             )
 
                                         else
-                                            ( emptyNode, [] )
+                                            ( [], [] )
 
                                     counseling =
                                         if form.updateANCVisits == Just False then
@@ -3247,9 +3247,9 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                         config.setUpdateANCVisitsMsg
                                         ""
                                         Nothing
-                                  , derivedInputs
-                                  , counseling
                                   ]
+                                    ++ derivedInputs
+                                    ++ [ counseling ]
                                 , [ form.updateANCVisits ] ++ derivedTasks
                                 )
 

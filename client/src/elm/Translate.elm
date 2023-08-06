@@ -414,6 +414,7 @@ type TranslationId
     | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
     | ANCEncountersNotRecordedQuestion
+    | ANCIndicateVisitsMonthsPhrase
     | ANCNewborn
     | And
     | AndSentence
@@ -2993,6 +2994,11 @@ translationSet trans =
 
         ANCEncountersNotRecordedQuestion ->
             { english = "Were there any ANC encounters that are not recorded above"
+            , kinyarwanda = Nothing
+            }
+
+        ANCIndicateVisitsMonthsPhrase ->
+            { english = "Indicate the months of pregnancy in which a visit occured"
             , kinyarwanda = Nothing
             }
 
