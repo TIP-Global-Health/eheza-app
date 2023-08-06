@@ -3116,7 +3116,8 @@ ancVisitsInpustAndTasks :
 ancVisitsInpustAndTasks language currentDate personId person config form db =
     let
         encountersDatesFromANCData =
-            resolveChildANCEncountersDates personId db
+            resolveChildANCPregnancyData personId db
+                |> Tuple.second
     in
     if EverySet.size encountersDatesFromANCData >= 4 then
         ( [], [] )

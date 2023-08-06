@@ -4920,29 +4920,34 @@ isTestResultValid =
            Maybe.withDefault True
 
 
-resolveChildANCEncountersDates : PersonId -> ModelIndexedDb -> EverySet NominalDate
-resolveChildANCEncountersDates childId db =
+resolveChildANCPregnancyData : PersonId -> ModelIndexedDb -> ( Maybe NominalDate, EverySet NominalDate )
+resolveChildANCPregnancyData childId db =
     Dict.get childId db.pregnancyByNewborn
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.Extra.join
-        |> Maybe.andThen
-            (\( participantId, _ ) ->
-                Dict.get participantId db.prenatalEncountersByParticipant
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map
-                        (Dict.values
-                            >> List.filterMap
-                                (\encounter ->
-                                    if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
-                                        Just encounter.startDate
+        |> Maybe.map
+            (\( participantId, participant ) ->
+                let
+                    encountersDates =
+                        Dict.get participantId db.prenatalEncountersByParticipant
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map
+                                (Dict.values
+                                    >> List.filterMap
+                                        (\encounter ->
+                                            if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
+                                                Just encounter.startDate
 
-                                    else
-                                        Nothing
+                                            else
+                                                Nothing
+                                        )
+                                    >> EverySet.fromList
                                 )
-                            >> EverySet.fromList
-                        )
+                            |> Maybe.withDefault EverySet.empty
+                in
+                ( participant.eddDate, encountersDates )
             )
-        |> Maybe.withDefault EverySet.empty
+        |> Maybe.withDefault ( Nothing, EverySet.empty )
 
 
 childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool

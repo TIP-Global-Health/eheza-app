@@ -58,7 +58,7 @@ import Measurement.Utils
         , generateGroupNutritionAssessmentEntries
         , generateIndividualNutritionAssessmentEntries
         , getPreviousMeasurements
-        , resolveChildANCEncountersDates
+        , resolveChildANCPregnancyData
         )
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
@@ -1865,7 +1865,8 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
                 (\birthDate ->
                     let
                         encountersDatesFromANCData =
-                            resolveChildANCEncountersDates childId db
+                            resolveChildANCPregnancyData childId db
+                                |> Tuple.second
 
                         encountersDatesFromNCDAdata =
                             List.filterMap
