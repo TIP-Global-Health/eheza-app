@@ -289,6 +289,11 @@ type NCDASign
     | ChildGotDiarrhea
     | ChildReceivesFBF
     | ChildTakingFBF
+    | ChildReceivesVitaminA
+    | ChildTakingVitaminA
+    | ChildReceivesDewormer
+    | ChildTakingDewormer
+    | ChildReceivesECD
     | ChildWithAcuteMalnutrition
     | ChildWithDisability
     | ConditionalFoodItems

@@ -3576,6 +3576,21 @@ ncdaSignFromString value =
         "child-taking-fbf" ->
             Just ChildTakingFBF
 
+        "child-receives-vitamin-a" ->
+            Just ChildReceivesVitaminA
+
+        "child-taking-vitamin-a" ->
+            Just ChildTakingVitaminA
+
+        "child-receives-dewormer" ->
+            Just ChildReceivesDewormer
+
+        "child-taking-dewormer" ->
+            Just ChildTakingDewormer
+
+        "child-receives-ecd" ->
+            Just ChildReceivesECD
+
         "child-with-acute-malnutrition" ->
             Just ChildWithAcuteMalnutrition
 
@@ -3660,6 +3675,21 @@ ncdaSignToString value =
 
         ChildTakingFBF ->
             "child-taking-fbf"
+
+        ChildReceivesVitaminA ->
+            "child-receives-vitamin-a"
+
+        ChildTakingVitaminA ->
+            "child-taking-vitamin-a"
+
+        ChildReceivesDewormer ->
+            "child-receives-dewormer"
+
+        ChildTakingDewormer ->
+            "child-taking-dewormer"
+
+        ChildReceivesECD ->
+            "child-receives-ecd"
 
         ChildWithAcuteMalnutrition ->
             "child-with-acute-malnutrition"

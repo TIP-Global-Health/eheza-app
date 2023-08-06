@@ -1052,8 +1052,13 @@ type alias NCDAForm msg =
 
     -- Step 2.
     , childBehindOnVaccination : Maybe Bool
+    , childReceivesVitaminA : Maybe Bool
+    , childTakingVitaminA : Maybe Bool
+    , childReceivesDewormer : Maybe Bool
+    , childTakingDewormer : Maybe Bool
     , ongeraMNP : Maybe Bool
     , takingOngeraMNP : Maybe Bool
+    , childReceivesECD : Maybe Bool
 
     -- Step 3.
     , fiveFoodGroups : Maybe Bool
@@ -1099,8 +1104,13 @@ emptyNCDAForm =
 
     -- Step 2.
     , childBehindOnVaccination = Nothing
+    , childReceivesVitaminA = Nothing
+    , childTakingVitaminA = Nothing
+    , childReceivesDewormer = Nothing
+    , childTakingDewormer = Nothing
     , ongeraMNP = Nothing
     , takingOngeraMNP = Nothing
+    , childReceivesECD = Nothing
 
     -- Step 3.
     , fiveFoodGroups = Nothing
