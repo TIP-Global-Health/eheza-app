@@ -9466,7 +9466,22 @@ translationSet trans =
                     }
 
                 ChildReceivesFBF ->
-                    { english = "Provides counseling on the importance of FBF and advise them to go to the Health center to recieve them"
+                    { english = "Provide counseling on the importance of FBF and advise them to go to the Health center to recieve them"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildReceivesVitaminA ->
+                    { english = "Provide counseling on the importance of Vitamin A advise them to go to the Health center to recieve it"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildReceivesDewormer ->
+                    { english = "Provide counseling on the importance of deworming medication and advise them to go to the Health Center to receive it"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildReceivesECD ->
+                    { english = "Provide counseling on the importance of brain stimulatio activities for the development of the child"
                     , kinyarwanda = Nothing
                     }
 
@@ -9615,6 +9630,31 @@ translationSet trans =
 
                 ChildTakingFBF ->
                     translationSet FoodSupplementationConsumedQuestion
+
+                ChildReceivesVitaminA ->
+                    { english = "Did the child receive Vitamin A"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildTakingVitaminA ->
+                    { english = "Is the Vitamin A being consumed"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildReceivesDewormer ->
+                    { english = "Did the child receive deworming medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildTakingDewormer ->
+                    { english = "Is the deworming medication being consumed"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildReceivesECD ->
+                    { english = "Do you sing lullabies, poems, and read books to your child, or play games with your child"
+                    , kinyarwanda = Nothing
+                    }
 
                 NoNCDASigns ->
                     { english = "None"
