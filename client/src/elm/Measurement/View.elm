@@ -2749,7 +2749,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 ( [], [] )
 
                         counseling =
-                            if form.beneficiaryCashTransfer == Just False || form.receivingCashTransfer == Just False then
+                            if form.receivingCashTransfer == Just False then
                                 [ viewCounselingLabel BeneficiaryCashTransfer ]
 
                             else
