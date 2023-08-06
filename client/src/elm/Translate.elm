@@ -9476,12 +9476,12 @@ translationSet trans =
                     }
 
                 ChildReceivesDewormer ->
-                    { english = "Provide counseling on the importance of deworming medication and advise them to go to the Health Center to receive it"
+                    { english = "Provide counseling on the importance of deworming medication and advise them to go to the Health center to receive it"
                     , kinyarwanda = Nothing
                     }
 
                 ChildReceivesECD ->
-                    { english = "Provide counseling on the importance of brain stimulatio activities for the development of the child"
+                    { english = "Provide counseling on the importance of brain stimulation activities for the development of the child"
                     , kinyarwanda = Nothing
                     }
 

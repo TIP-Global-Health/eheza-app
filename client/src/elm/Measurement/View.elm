@@ -2819,7 +2819,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     in
                     ( viewNCDAInput ChildReceivesECD form.childReceivesECD updateFunc
                         ++ counseling
-                    , form.childReceivesECD
+                    , [ form.childReceivesECD ]
                     )
 
                 BeneficiaryCashTransfer ->
