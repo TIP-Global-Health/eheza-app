@@ -9808,7 +9808,7 @@ translationSet trans =
                     }
 
         NCDANoANVCVisitsOnRecord ->
-            { english = "There are no recorded ANC visits for this child"
+            { english = "There are no recorded ANC visits for the mother of this child"
             , kinyarwanda = Nothing
             }
 
