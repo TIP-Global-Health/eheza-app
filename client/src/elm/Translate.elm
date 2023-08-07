@@ -9632,7 +9632,7 @@ translationSet trans =
                     translationSet FoodSupplementationConsumedQuestion
 
                 ChildReceivesVitaminA ->
-                    { english = "Did the child receive Vitamin A"
+                    { english = "Did the child receive Vitamin A in the last six months"
                     , kinyarwanda = Nothing
                     }
 
@@ -9642,7 +9642,7 @@ translationSet trans =
                     }
 
                 ChildReceivesDewormer ->
-                    { english = "Did the child receive deworming medication"
+                    { english = "Did the child receive deworming medication in the last six months"
                     , kinyarwanda = Nothing
                     }
 
