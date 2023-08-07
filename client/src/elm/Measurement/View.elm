@@ -46,6 +46,7 @@ import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput)
 import Html.Parser.Util exposing (toVirtualDom)
 import Json.Decode
+import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
@@ -3136,14 +3137,17 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
 
                     historySection =
                         let
-                            -- datesFromForm =
-                            --     EverySet.toList encountersDatesFromForm
-                            --         |> List.map (\date -> ( date, True ))
                             entriesForView =
                                 EverySet.toList encountersDatesFromANCData
                                     |> List.sortWith Date.compare
                                     |> List.indexedMap
                                         (\index date -> viewHistoryEntry (String.fromInt <| index + 1) date)
+
+                            viewHistoryEntry index date =
+                                div [ class "history-entry" ]
+                                    [ div [ class "dose" ] [ text index ]
+                                    , div [ class "date" ] [ text <| formatDDMMYYYY date ]
+                                    ]
 
                             visitsForView =
                                 if List.isEmpty entriesForView then
@@ -3152,15 +3156,8 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                 else
                                     entriesForView
                         in
-                        [ div [ class "history" ]
+                        div [ class "history" ]
                             visitsForView
-                        ]
-
-                    viewHistoryEntry index date =
-                        div [ class "history-entry" ]
-                            [ div [ class "dose" ] [ text index ]
-                            , div [ class "date" ] [ text <| formatDDMMYYYY date ]
-                            ]
 
                     ( inputs, tasks ) =
                         let
@@ -3185,14 +3182,24 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                             List.range 1 9
                                                 |> List.map
                                                     (\monthNumber ->
-                                                        let
-                                                            monthNumberAsString =
-                                                                String.fromInt monthNumber
-                                                        in
-                                                        div [ class <| "item " ++ "month-" ++ monthNumberAsString ]
-                                                            [ div [ class "month-number" ] [ text monthNumberAsString ]
+                                                        div [ class "item" ]
+                                                            [ div [ class "month-number" ] [ text <| String.fromInt monthNumber ]
                                                             , viewRadioButton monthNumber
                                                             ]
+                                                    )
+                                                |> greedyGroupsOf 3
+                                                |> List.map (div [ class "trimester" ])
+                                                |> List.intersperse
+                                                    (div [ class "trimesters-separator" ]
+                                                        [ div [ class "section left" ]
+                                                            [ div [ class "top" ] []
+                                                            , div [ class "bottom" ] []
+                                                            ]
+                                                        , div [ class "section right" ]
+                                                            [ div [ class "top" ] []
+                                                            , div [ class "bottom" ] []
+                                                            ]
+                                                        ]
                                                     )
 
                                         viewRadioButton monthNumber =
@@ -3262,7 +3269,12 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                         , [ form.updateANCVisits ] ++ derivedTasks
                         )
                 in
-                ( (viewLabel language Translate.AntenatalVisistsHistory :: historySection) ++ inputs, tasks )
+                ( [ viewLabel language Translate.AntenatalVisistsHistory
+                  , historySection
+                  ]
+                    ++ inputs
+                , tasks
+                )
             )
             person.birthDate
             |> Maybe.withDefault ( [], [] )

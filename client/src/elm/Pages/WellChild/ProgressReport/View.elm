@@ -49,7 +49,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths, diffWeeks, formatDDM
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra exposing (greedyGroupsOf)
+import List.Extra
 import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils
