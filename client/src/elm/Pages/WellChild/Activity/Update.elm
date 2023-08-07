@@ -1711,10 +1711,16 @@ update currentDate isChw id db msg model =
                         )
                         ncdaForm.ancVisitsDates
                         |> Maybe.withDefault (EverySet.singleton date)
-                        |> Just
+
+                updateANCVisits =
+                    if EverySet.isEmpty updatedANCVisitsDates then
+                        Just False
+
+                    else
+                        ncdaForm.updateANCVisits
 
                 updatedForm =
-                    { ncdaForm | ancVisitsDates = updatedANCVisitsDates }
+                    { ncdaForm | ancVisitsDates = Just updatedANCVisitsDates, updateANCVisits = updateANCVisits }
 
                 updatedData =
                     model.ncdaData

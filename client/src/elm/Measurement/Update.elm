@@ -292,10 +292,16 @@ updateChild msg model =
                         )
                         form.ancVisitsDates
                         |> Maybe.withDefault (EverySet.singleton date)
-                        |> Just
+
+                updateANCVisits =
+                    if EverySet.isEmpty updatedANCVisitsDates then
+                        Just False
+
+                    else
+                        form.updateANCVisits
 
                 updatedForm =
-                    { form | ancVisitsDates = updatedANCVisitsDates }
+                    { form | ancVisitsDates = Just updatedANCVisitsDates, updateANCVisits = updateANCVisits }
 
                 updatedData =
                     model.ncdaData

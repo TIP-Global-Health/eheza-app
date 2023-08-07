@@ -4492,6 +4492,14 @@ viewSelectInput language labelTransId formValue valueTransId valueToStringFunc v
 
 fromNCDAValue : Maybe NCDAValue -> NCDAForm
 fromNCDAValue saved =
+    let
+        ancVisitsDates =
+            Maybe.map .ancVisitsDates saved
+
+        updateANCVisits =
+            Maybe.map (EverySet.isEmpty >> not)
+                ancVisitsDates
+    in
     { step = Nothing
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
     , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
@@ -4521,8 +4529,8 @@ fromNCDAValue saved =
     , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
-    , updateANCVisits = Nothing
-    , ancVisitsDates = Maybe.map .ancVisitsDates saved
+    , updateANCVisits = updateANCVisits
+    , ancVisitsDates = ancVisitsDates
     }
 
 
@@ -4532,8 +4540,12 @@ ncdaFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    updateANCVisits =
+                        EverySet.isEmpty value.ancVisitsDates |> not
+                in
                 { step = form.step
-                , updateANCVisits = or form.updateANCVisits (Just False)
+                , updateANCVisits = or form.updateANCVisits (Just updateANCVisits)
                 , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
                 , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)

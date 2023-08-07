@@ -1893,7 +1893,7 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
                                 |> EverySet.toList
 
                         cellValueForMonth =
-                            -- Per requirements, if there were at least 4 encounters, we
+                            -- Per requirements, if there were at least 4 encounters, we put
                             -- green V. If less, red X.
                             if List.length allEncountersDates < 4 then
                                 NCDACellValueX
