@@ -144,6 +144,7 @@ viewNCDAContent language currentDate assembled db data =
             , setANCVisitUpdateDateMsg = SetANCVisitUpdateDate
             , saveANCVisitUpdateDateMsg = SaveANCVisitUpdateDate
             , deleteANCVisitUpdateDateMsg = DeleteANCVisitUpdateDate
+            , toggleANCVisitDateMsg = ToggleANCVisitDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setStepMsg = SetNCDAFormStep

@@ -851,6 +851,7 @@ div.page-activity {
 
     .ui.form.ncda .form-input.anc-months {
       display: flex;
+      margin-bottom: 45px;
 
       .item {
         text-align: center;
@@ -902,6 +903,11 @@ div.page-activity {
         margin-top: -24px;
         width: 14px;
       }
+
+      .item input[type=radio]:checked.disabled + label:after {
+        // pointer-events: none;
+        opacity: 0.5;
+      }
     }
 
     .ui.form.ncda .label.counseling {
@@ -911,6 +917,10 @@ div.page-activity {
       padding: 15px;
       margin-top: 10px;
       margin-bottom: 15px;
+    }
+
+    .ui.form.ncda .form-input.measurement.birth-weight {
+      margin-bottom: 30px;
     }
 
   }

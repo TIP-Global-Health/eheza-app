@@ -2972,38 +2972,33 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
             let
                 ( ancVisitsSection, ancVisitsTasks ) =
                     ancVisitsInpustAndTasks language currentDate personId person config form db
+
+                ( signsInputs, signTasks ) =
+                    inputsAndTasksForSign SupplementsDuringPregnancy
+
+                ( newbornExamSection, newbornExamTasks ) =
+                    if showNCDAQuestionsByNewbornExam config.pregnancySummary then
+                        let
+                            ( birthWeightSection, birthWeightTasks ) =
+                                birthWeightInputsAndTasks language form.birthWeight config.setBirthWeightMsg
+
+                            ( birthDefectSection, birthDefectTask ) =
+                                inputsAndTasksForSign BornWithBirthDefect
+                        in
+                        ( birthWeightSection ++ birthDefectSection
+                        , birthDefectTask ++ birthWeightTasks
+                        )
+
+                    else
+                        ( [], [] )
             in
-            if form.updateANCVisits == Just False then
-                let
-                    ( signsInputs, signTasks ) =
-                        inputsAndTasksForSign SupplementsDuringPregnancy
-
-                    ( newbornExamSection, newbornExamTasks ) =
-                        if showNCDAQuestionsByNewbornExam config.pregnancySummary then
-                            let
-                                ( birthWeightSection, birthWeightTasks ) =
-                                    birthWeightInputsAndTasks language form.birthWeight config.setBirthWeightMsg
-
-                                ( birthDefectSection, birthDefectTask ) =
-                                    inputsAndTasksForSign BornWithBirthDefect
-                            in
-                            ( birthWeightSection ++ birthDefectSection
-                            , birthDefectTask ++ birthWeightTasks
-                            )
-
-                        else
-                            ( [], [] )
-                in
-                ( ancVisitsSection
-                    ++ signsInputs
-                    ++ newbornExamSection
-                , ancVisitsTasks
-                    ++ signTasks
-                    ++ newbornExamTasks
-                )
-
-            else
-                ( ancVisitsSection, ancVisitsTasks )
+            ( ancVisitsSection
+                ++ signsInputs
+                ++ newbornExamSection
+            , ancVisitsTasks
+                ++ signTasks
+                ++ newbornExamTasks
+            )
 
         NCDAStepUniversalInterventions ->
             let
@@ -3132,9 +3127,12 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                         -- no need to examine existing NCDA activities.
                         Maybe.withDefault EverySet.empty form.ancVisitsDates
 
-                    lmpDate =
+                    pregnancyStartDate =
                         Maybe.map eddToLmpDate eddDate
-                            |> Maybe.withDefault (eddToLmpDate birthDate)
+                            |> Maybe.withDefault
+                                -- If we don't have LMP date, we'll assume that
+                                -- pregnancy was complete (lasted 9 months).
+                                (eddToLmpDate birthDate)
 
                     historySection =
                         case form.ancVisitsViewMode of
@@ -3178,38 +3176,62 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                     ( derivedInputs, derivedTasks ) =
                                         if form.updateANCVisits == Just True then
                                             let
+                                                encountersMonthsFromANCData =
+                                                    EverySet.toList encountersDatesFromANCData
+                                                        |> List.map
+                                                            (\encounterDate ->
+                                                                Date.diff Date.Months pregnancyStartDate encounterDate + 1
+                                                            )
+
+                                                encountersMonthsFromForm =
+                                                    EverySet.toList encountersDatesFromForm
+                                                        |> List.map
+                                                            (\encounterDate ->
+                                                                Date.diff Date.Months pregnancyStartDate encounterDate + 1
+                                                            )
+
                                                 content =
                                                     List.range 1 9
                                                         |> List.map
-                                                            (\number ->
+                                                            (\monthNumber ->
                                                                 let
-                                                                    numberAsString =
-                                                                        String.fromInt number
+                                                                    monthNumberAsString =
+                                                                        String.fromInt monthNumber
                                                                 in
-                                                                div [ class <| "item " ++ "month-" ++ numberAsString ]
-                                                                    [ div [ class "month-number" ] [ text numberAsString ]
-                                                                    , viewRadioButton
+                                                                div [ class <| "item " ++ "month-" ++ monthNumberAsString ]
+                                                                    [ div [ class "month-number" ] [ text monthNumberAsString ]
+                                                                    , viewRadioButton monthNumber
                                                                     ]
                                                             )
 
-                                                viewRadioButton =
+                                                -- It is possile that child was born premature, so, in order to calculate pregnancy months
+                                                -- for encounter date, we need to take into account the dissference between EDD date and
+                                                -- actual birth date.
+                                                -- For example, if EDD date is Nov 01, but actual birth date is Sept 01, encounter
+                                                -- that took place on August 01, was at 6-th month of pregnancy.
+                                                viewRadioButton monthNumber =
                                                     let
                                                         isChecked =
-                                                            True
+                                                            List.member monthNumber encountersMonthsFromANCData
+                                                                || List.member monthNumber encountersMonthsFromForm
+
+                                                        disabled =
+                                                            List.member monthNumber encountersMonthsFromANCData
+
+                                                        dateForMonth =
+                                                            Date.add Date.Months (monthNumber - 1) pregnancyStartDate
                                                     in
                                                     div [ class "month-radio" ]
                                                         [ input
                                                             [ type_ "radio"
                                                             , checked isChecked
-                                                            , classList [ ( "checked", isChecked ) ]
-
-                                                            --  , onCheck (always (setMsg value))
+                                                            , classList
+                                                                [ ( "checked", isChecked )
+                                                                , ( "disabled", disabled )
+                                                                ]
                                                             ]
                                                             []
-                                                        , label
-                                                            [-- onClick <| setMsg value
-                                                            ]
-                                                            [ text "" ]
+                                                        , label [ onClick <| config.toggleANCVisitDateMsg dateForMonth ] [ text "" ]
                                                         ]
                                             in
                                             ( [ viewLabel language Translate.ANCIndicateVisitsMonthsPhrase
@@ -3450,6 +3472,7 @@ viewNCDA language currentDate childId child measurement data db =
             , setANCVisitUpdateDateMsg = SetANCVisitUpdateDate
             , saveANCVisitUpdateDateMsg = SaveANCVisitUpdateDate
             , deleteANCVisitUpdateDateMsg = DeleteANCVisitUpdateDate
+            , toggleANCVisitDateMsg = ToggleANCVisitDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setStepMsg = SetNCDAFormStep

@@ -392,6 +392,36 @@ updateChild msg model =
             , Nothing
             )
 
+        ToggleANCVisitDate date ->
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedANCVisitsDates =
+                    Maybe.map
+                        (\set ->
+                            if EverySet.member date set then
+                                EverySet.remove date set
+
+                            else
+                                EverySet.insert date set
+                        )
+                        form.ancVisitsDates
+                        |> Maybe.withDefault (EverySet.singleton date)
+                        |> Just
+
+                updatedForm =
+                    { form | ancVisitsDates = updatedANCVisitsDates }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
         SetNCDABoolInput formUpdateFunc value ->
             let
                 updatedForm =

@@ -378,6 +378,36 @@ update currentDate id db msg model =
             , []
             )
 
+        ToggleANCVisitDate date ->
+            let
+                _ =
+                    Debug.log "date" date
+
+                updatedANCVisitsDates =
+                    Maybe.map
+                        (\set ->
+                            if EverySet.member date set then
+                                EverySet.remove date set
+
+                            else
+                                EverySet.insert date set
+                        )
+                        ncdaForm.ancVisitsDates
+                        |> Maybe.withDefault (EverySet.singleton date)
+                        |> Just
+
+                updatedForm =
+                    { ncdaForm | ancVisitsDates = updatedANCVisitsDates }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetNCDABoolInput formUpdateFunc value ->
             let
                 updatedForm =

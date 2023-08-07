@@ -248,6 +248,7 @@ type MsgChild
     | SetANCVisitUpdateDate NominalDate
     | SaveANCVisitUpdateDate
     | DeleteANCVisitUpdateDate NominalDate
+    | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm MsgChild -> NCDAForm MsgChild) Bool
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
@@ -1233,6 +1234,7 @@ type alias NCDAContentConfig msg =
     , setANCVisitUpdateDateMsg : NominalDate -> msg
     , saveANCVisitUpdateDateMsg : msg
     , deleteANCVisitUpdateDateMsg : NominalDate -> msg
+    , toggleANCVisitDateMsg : NominalDate -> msg
 
     -- Other actions.
     , setBoolInputMsg : (Bool -> NCDAForm msg -> NCDAForm msg) -> Bool -> msg

@@ -73,6 +73,7 @@ type Msg
     | SetANCVisitUpdateDate NominalDate
     | SaveANCVisitUpdateDate
     | DeleteANCVisitUpdateDate NominalDate
+    | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
     | SetBirthWeight String
     | SetNCDAFormStep NCDAStep
