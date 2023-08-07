@@ -2993,7 +2993,7 @@ translationSet trans =
 
         ANCEncountersNotRecordedQuestion ->
             { english = "Were there any ANC encounters that are not recorded above"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Haba hari ipimishawa ry'inda ryakozwe bakaba batarabyanditse"
             }
 
         ANCNewborn ->
@@ -9381,12 +9381,12 @@ translationSet trans =
             case sign of
                 SupplementsDuringPregnancy ->
                     { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and refer the mother to the HC to receive the Iron/Folic Acid/MMS"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gira umubyeyi inama ku ngaruka mbi zaba ku mwana cyangwa umubyeyi igihe atafashe neza ibinini by'ubutare niba kibifata umwohereze ku kigo nderabuzima gufata ibinini"
                     }
 
                 ChildBehindOnVaccination ->
                     { english = "Provide the counseling to the mother to update the child's vaccination record with a Nurse through a Standard Pediatric Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gira inama umubyeyi yo kuzuza inkingo zitanditse muri sisiteme ya E-heza abifashijwe n'umuforomo banyuze mu Kujyana Umwana mu Isuzumiro"
                     }
 
                 Backend.Measurement.Model.OngeraMNP ->
@@ -9456,7 +9456,7 @@ translationSet trans =
 
                 MealsAtRecommendedTimes ->
                     { english = "Provide counseling on the consequences of not feeding the child at recommended times, as per the guidance"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gira umubyeyi inama ku ngaruko zo kutagaburira umwana inshuro zagenwe, umushishikarize kugaburira umwna inshuro zagenwe"
                     }
 
                 ChildReceivesFBF ->
@@ -9506,7 +9506,7 @@ translationSet trans =
 
                 ChildBehindOnVaccination ->
                     { english = "According to E-Heza the child is behind on vaccinations, is this correct"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urebeye muri sisiteme ya E-heza, umwana ntago afite inkingo zose zagenwe, ese ni byo"
                     }
 
                 Backend.Measurement.Model.OngeraMNP ->
@@ -9809,7 +9809,7 @@ translationSet trans =
 
         NCDANoANVCVisitsOnRecord ->
             { english = "There are no recorded ANC visits for the mother of this child"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nta makuru agaragara yo gupimisha inda ku mubyeyi w'uyu mwana"
             }
 
         NCDANumberOfANCVisitsQuestion ->
@@ -9821,13 +9821,13 @@ translationSet trans =
             Maybe.map
                 (\date ->
                     { english = "According to E-Heza, you have immunization appointment scheduled for " ++ formatDDMMYYYY date
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| "Urebeye muri sisiteme ya E-heza, ufite gahunda yo gukingiza ku itariki " ++ formatDDMMYYYY date
                     }
                 )
                 maybeDate
                 |> Maybe.withDefault
                     { english = "According to E-Heza, you have no immunization appointment scheduled"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urebeye muri Sisiteme ya E-heza, nta tariki ya gahunda y'ikingiza igaragara"
                     }
 
         NCDAStep step ->
