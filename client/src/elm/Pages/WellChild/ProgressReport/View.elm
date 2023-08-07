@@ -2515,7 +2515,7 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                     generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingVitaminA)
             in
             List.indexedMap
-                -- Vitamin A is not administered before age of 6 months.
+                -- Vitamin A should not be administered before age of 6 months.
                 (postProcessMedicineRawValue 6 administeredMonths)
                 rawValues
 
@@ -2528,7 +2528,7 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                     generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingDewormer)
             in
             List.indexedMap
-                -- Dewormer is not administered before age of 12 months.
+                -- Dewormer should not be administered before age of 12 months.
                 (postProcessMedicineRawValue 12 administeredMonths)
                 rawValues
 
@@ -2548,6 +2548,10 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                 -- This means that child did not reach this age yet.
                 value
 
+            else if value == NCDACellValueV then
+                -- Always show green V when we know that child took medicine.
+                value
+
             else if processingMonth < startingMonth then
                 -- Child is not eligible - too young.
                 NCDACellValueDash
@@ -2565,10 +2569,6 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                     administeredMonths
             then
                 NCDACellValueDash
-
-            else if List.member processingMonth administeredMonths then
-                -- Eligible, and was taking medicine.
-                NCDACellValueV
 
             else
                 -- Eligible, but was not taing medicine.
