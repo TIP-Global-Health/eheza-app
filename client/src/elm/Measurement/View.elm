@@ -2701,6 +2701,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             ""
                             Nothing
                       ]
+                        ++ counseling
                     , [ maybeToBoolTask form.mealsAtRecommendedTimes ]
                     )
 
