@@ -3093,31 +3093,12 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         [ OngeraMNP ]
 
                     else
-                        let
-                            ( vitaminASign, dewormerSign ) =
-                                ageInMonths currentDate person
-                                    |> Maybe.map
-                                        (\ageMonths ->
-                                            ( if ageMonths >= 6 then
-                                                [ ChildReceivesVitaminA ]
-
-                                              else
-                                                []
-                                            , if ageMonths >= 12 then
-                                                [ ChildReceivesDewormer ]
-
-                                              else
-                                                []
-                                            )
-                                        )
-                                    |> Maybe.withDefault ( [], [] )
-                        in
-                        ChildBehindOnVaccination
-                            :: vitaminASign
-                            ++ dewormerSign
-                            ++ [ OngeraMNP
-                               , ChildReceivesECD
-                               ]
+                        [ ChildBehindOnVaccination
+                        , ChildReceivesVitaminA
+                        , ChildReceivesDewormer
+                        , OngeraMNP
+                        , ChildReceivesECD
+                        ]
 
                 inputsAndTasks =
                     List.map inputsAndTasksForSign signs
