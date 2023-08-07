@@ -2295,7 +2295,7 @@ viewNCDAContent :
     -> Person
     -> NCDAContentConfig msg
     -> Maybe NCDASign
-    -> NCDAForm msg
+    -> NCDAForm
     -> ModelIndexedDb
     -> List (Html msg)
 viewNCDAContent language currentDate personId person config helperState form db =
@@ -2492,7 +2492,7 @@ ncdaFormInputsAndTasks :
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
-    -> NCDAForm msg
+    -> NCDAForm
     -> NCDAStep
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
@@ -3106,7 +3106,7 @@ ancVisitsInpustAndTasks :
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
-    -> NCDAForm msg
+    -> NCDAForm
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
 ancVisitsInpustAndTasks language currentDate personId person config form db =
@@ -3135,33 +3135,26 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                                 (eddToLmpDate birthDate)
 
                     historySection =
-                        case form.ancVisitsViewMode of
-                            ANCVisitsInitialMode ->
-                                let
-                                    -- datesFromForm =
-                                    --     EverySet.toList encountersDatesFromForm
-                                    --         |> List.map (\date -> ( date, True ))
-                                    entriesForView =
-                                        EverySet.toList encountersDatesFromANCData
-                                            |> List.sortWith Date.compare
-                                            |> List.indexedMap
-                                                (\index date -> viewHistoryEntry (String.fromInt <| index + 1) date)
+                        let
+                            -- datesFromForm =
+                            --     EverySet.toList encountersDatesFromForm
+                            --         |> List.map (\date -> ( date, True ))
+                            entriesForView =
+                                EverySet.toList encountersDatesFromANCData
+                                    |> List.sortWith Date.compare
+                                    |> List.indexedMap
+                                        (\index date -> viewHistoryEntry (String.fromInt <| index + 1) date)
 
-                                    visitsForView =
-                                        if List.isEmpty entriesForView then
-                                            [ viewCustomLabel language Translate.NCDANoANVCVisitsOnRecord "." "label-normal" ]
+                            visitsForView =
+                                if List.isEmpty entriesForView then
+                                    [ viewCustomLabel language Translate.NCDANoANVCVisitsOnRecord "." "label-normal" ]
 
-                                        else
-                                            entriesForView
-                                in
-                                [ div [ class "history" ]
-                                    visitsForView
-                                ]
-
-                            ANCVisitsUpdateMode ->
-                                [ div [ class "history" ]
-                                    []
-                                ]
+                                else
+                                    entriesForView
+                        in
+                        [ div [ class "history" ]
+                            visitsForView
+                        ]
 
                     viewHistoryEntry index date =
                         div [ class "history-entry" ]
@@ -3170,154 +3163,104 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                             ]
 
                     ( inputs, tasks ) =
-                        case form.ancVisitsViewMode of
-                            ANCVisitsInitialMode ->
-                                let
-                                    ( derivedInputs, derivedTasks ) =
-                                        if form.updateANCVisits == Just True then
-                                            let
-                                                encountersMonthsFromANCData =
-                                                    EverySet.toList encountersDatesFromANCData
-                                                        |> List.map
-                                                            (\encounterDate ->
-                                                                Date.diff Date.Months pregnancyStartDate encounterDate + 1
-                                                            )
+                        let
+                            ( derivedInputs, derivedTasks ) =
+                                if form.updateANCVisits == Just True then
+                                    let
+                                        encountersMonthsFromANCData =
+                                            EverySet.toList encountersDatesFromANCData
+                                                |> List.map
+                                                    (\encounterDate ->
+                                                        Date.diff Date.Months pregnancyStartDate encounterDate + 1
+                                                    )
 
-                                                encountersMonthsFromForm =
-                                                    EverySet.toList encountersDatesFromForm
-                                                        |> List.map
-                                                            (\encounterDate ->
-                                                                Date.diff Date.Months pregnancyStartDate encounterDate + 1
-                                                            )
+                                        encountersMonthsFromForm =
+                                            EverySet.toList encountersDatesFromForm
+                                                |> List.map
+                                                    (\encounterDate ->
+                                                        Date.diff Date.Months pregnancyStartDate encounterDate + 1
+                                                    )
 
-                                                content =
-                                                    List.range 1 9
-                                                        |> List.map
-                                                            (\monthNumber ->
-                                                                let
-                                                                    monthNumberAsString =
-                                                                        String.fromInt monthNumber
-                                                                in
-                                                                div [ class <| "item " ++ "month-" ++ monthNumberAsString ]
-                                                                    [ div [ class "month-number" ] [ text monthNumberAsString ]
-                                                                    , viewRadioButton monthNumber
-                                                                    ]
-                                                            )
-
-                                                -- It is possile that child was born premature, so, in order to calculate pregnancy months
-                                                -- for encounter date, we need to take into account the dissference between EDD date and
-                                                -- actual birth date.
-                                                -- For example, if EDD date is Nov 01, but actual birth date is Sept 01, encounter
-                                                -- that took place on August 01, was at 6-th month of pregnancy.
-                                                viewRadioButton monthNumber =
-                                                    let
-                                                        isChecked =
-                                                            List.member monthNumber encountersMonthsFromANCData
-                                                                || List.member monthNumber encountersMonthsFromForm
-
-                                                        disabled =
-                                                            List.member monthNumber encountersMonthsFromANCData
-
-                                                        dateForMonth =
-                                                            Date.add Date.Months (monthNumber - 1) pregnancyStartDate
-                                                    in
-                                                    div [ class "month-radio" ]
-                                                        [ input
-                                                            [ type_ "radio"
-                                                            , checked isChecked
-                                                            , classList
-                                                                [ ( "checked", isChecked )
-                                                                , ( "disabled", disabled )
-                                                                ]
+                                        content =
+                                            List.range 1 9
+                                                |> List.map
+                                                    (\monthNumber ->
+                                                        let
+                                                            monthNumberAsString =
+                                                                String.fromInt monthNumber
+                                                        in
+                                                        div [ class <| "item " ++ "month-" ++ monthNumberAsString ]
+                                                            [ div [ class "month-number" ] [ text monthNumberAsString ]
+                                                            , viewRadioButton monthNumber
                                                             ]
-                                                            []
-                                                        , label [ onClick <| config.toggleANCVisitDateMsg dateForMonth ] [ text "" ]
-                                                        ]
-                                            in
-                                            ( [ viewLabel language Translate.ANCIndicateVisitsMonthsPhrase
-                                              , div [ class "form-input anc-months" ]
-                                                    content
-                                              ]
-                                            , [ maybeToBoolTask form.ancVisitUpdateDate ]
-                                            )
+                                                    )
 
-                                        else
-                                            ( [], [] )
-
-                                    counseling =
-                                        if form.updateANCVisits == Just False then
+                                        viewRadioButton monthNumber =
                                             let
-                                                ancDataVisits =
-                                                    EverySet.size encountersDatesFromANCData
+                                                isChecked =
+                                                    List.member monthNumber encountersMonthsFromANCData
+                                                        || List.member monthNumber encountersMonthsFromForm
 
-                                                formVisists =
-                                                    EverySet.size encountersDatesFromForm
+                                                disabled =
+                                                    List.member monthNumber encountersMonthsFromANCData
+
+                                                dateForMonth =
+                                                    Date.add Date.Months (monthNumber - 1) pregnancyStartDate
+                                                        |> Date.add Date.Days 14
                                             in
-                                            if (ancDataVisits + formVisists) < 4 then
-                                                viewCustomLabel language Translate.NCDAANCVisitsCounseling "." "label counseling"
-
-                                            else
-                                                emptyNode
-
-                                        else
-                                            emptyNode
-                                in
-                                ( [ viewQuestionLabel language Translate.ANCEncountersNotRecordedQuestion
-                                  , viewBoolInput
-                                        language
-                                        form.updateANCVisits
-                                        config.setUpdateANCVisitsMsg
-                                        ""
-                                        Nothing
-                                  ]
-                                    ++ derivedInputs
-                                    ++ [ counseling ]
-                                , [ form.updateANCVisits ] ++ derivedTasks
-                                )
-
-                            ANCVisitsUpdateMode ->
-                                let
-                                    ancVisitUpdateDateForView =
-                                        Maybe.map formatDDMMYYYY form.ancVisitUpdateDate
-                                            |> Maybe.withDefault ""
-
-                                    dateFrom =
-                                        Date.add Date.Months -9 birthDate
-
-                                    dateSelectorConfig =
-                                        { select = config.setANCVisitUpdateDateMsg
-                                        , close = config.setANCVisitUpdateDateSelectorStateMsg Nothing
-                                        , dateFrom = dateFrom
-                                        , dateTo = birthDate
-                                        , dateDefault = Just dateFrom
-                                        }
-                                in
-                                ( [ viewLabel language Translate.SelectDate
-                                  , div
-                                        [ class "form-input date"
-                                        , onClick <| config.setANCVisitUpdateDateSelectorStateMsg (Just dateSelectorConfig)
-                                        ]
-                                        [ text ancVisitUpdateDateForView ]
-                                  , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.ancVisitUpdateDate
-                                  , div [ class "update actions" ]
-                                        [ div
-                                            [ class "ui primary button"
-                                            , onClick <| config.setANCVisitsViewModeMsg ANCVisitsInitialMode
-                                            ]
-                                            [ text <| translate language Translate.Cancel
-                                            ]
-                                        , div
-                                            [ classList
-                                                [ ( "ui primary button", True )
-                                                , ( "disabled", isNothing form.ancVisitUpdateDate )
+                                            div [ class "month-radio" ]
+                                                [ input
+                                                    [ type_ "radio"
+                                                    , checked isChecked
+                                                    , classList
+                                                        [ ( "checked", isChecked )
+                                                        , ( "disabled", disabled )
+                                                        ]
+                                                    ]
+                                                    []
+                                                , label [ onClick <| config.toggleANCVisitDateMsg dateForMonth ] [ text "" ]
                                                 ]
-                                            , onClick config.saveANCVisitUpdateDateMsg
-                                            ]
-                                            [ text <| translate language Translate.Save ]
-                                        ]
-                                  ]
-                                , [ maybeToBoolTask form.ancVisitUpdateDate ]
-                                )
+                                    in
+                                    ( [ viewLabel language Translate.ANCIndicateVisitsMonthsPhrase
+                                      , div [ class "form-input anc-months" ]
+                                            content
+                                      ]
+                                    , [ maybeToBoolTask form.ancVisitsDates ]
+                                    )
+
+                                else
+                                    ( [], [] )
+
+                            counseling =
+                                if isJust form.updateANCVisits then
+                                    let
+                                        ancDataVisits =
+                                            EverySet.size encountersDatesFromANCData
+
+                                        formVisists =
+                                            EverySet.size encountersDatesFromForm
+                                    in
+                                    if (ancDataVisits + formVisists) < 4 then
+                                        viewCustomLabel language Translate.NCDAANCVisitsCounseling "." "label counseling"
+
+                                    else
+                                        emptyNode
+
+                                else
+                                    emptyNode
+                        in
+                        ( [ viewQuestionLabel language Translate.ANCEncountersNotRecordedQuestion
+                          , viewBoolInput
+                                language
+                                form.updateANCVisits
+                                config.setUpdateANCVisitsMsg
+                                ""
+                                Nothing
+                          ]
+                            ++ derivedInputs
+                            ++ [ counseling ]
+                        , [ form.updateANCVisits ] ++ derivedTasks
+                        )
                 in
                 ( (viewLabel language Translate.AntenatalVisistsHistory :: historySection) ++ inputs, tasks )
             )
@@ -3445,7 +3388,7 @@ viewNCDA :
     -> PersonId
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
-    -> NCDAData MsgChild
+    -> NCDAData
     -> ModelIndexedDb
     -> Html MsgChild
 viewNCDA language currentDate childId child measurement data db =
@@ -3466,12 +3409,7 @@ viewNCDA language currentDate childId child measurement data db =
             , pregnancySummary = getNewbornExamPregnancySummary childId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate childId child db
-            , setANCVisitsViewModeMsg = SetANCVisitsViewMode
             , setUpdateANCVisitsMsg = SetUpdateANCVisits
-            , setANCVisitUpdateDateSelectorStateMsg = SetANCVisitUpdateDateSelectorState
-            , setANCVisitUpdateDateMsg = SetANCVisitUpdateDate
-            , saveANCVisitUpdateDateMsg = SaveANCVisitUpdateDate
-            , deleteANCVisitUpdateDateMsg = DeleteANCVisitUpdateDate
             , toggleANCVisitDateMsg = ToggleANCVisitDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight

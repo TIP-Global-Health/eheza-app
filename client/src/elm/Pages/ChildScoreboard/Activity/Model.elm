@@ -22,7 +22,7 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { ncdaData : NCDAData Msg
+    { ncdaData : NCDAData
     , immunisationData : ImmunisationData
     }
 
@@ -67,14 +67,9 @@ type Msg
     = NoOp
     | SetActivePage Page
       -- NCDA
-    | SetANCVisitsViewMode ANCVisitsViewMode
     | SetUpdateANCVisits Bool
-    | SetANCVisitUpdateDateSelectorState (Maybe (DateSelectorConfig Msg))
-    | SetANCVisitUpdateDate NominalDate
-    | SaveANCVisitUpdateDate
-    | DeleteANCVisitUpdateDate NominalDate
     | ToggleANCVisitDate NominalDate
-    | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
+    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)

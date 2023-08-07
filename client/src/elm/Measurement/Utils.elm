@@ -4490,7 +4490,7 @@ viewSelectInput language labelTransId formValue valueTransId valueToStringFunc v
     ]
 
 
-fromNCDAValue : Maybe NCDAValue -> NCDAForm msg
+fromNCDAValue : Maybe NCDAValue -> NCDAForm
 fromNCDAValue saved =
     { step = Nothing
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
@@ -4522,14 +4522,11 @@ fromNCDAValue saved =
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
     , updateANCVisits = Nothing
-    , ancVisitsViewMode = ANCVisitsInitialMode
     , ancVisitsDates = Maybe.map .ancVisitsDates saved
-    , ancVisitUpdateDate = Nothing
-    , dateSelectorPopupState = Nothing
     }
 
 
-ncdaFormWithDefault : NCDAForm msg -> Maybe NCDAValue -> NCDAForm msg
+ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
 ncdaFormWithDefault form saved =
     saved
         |> unwrap
@@ -4537,10 +4534,7 @@ ncdaFormWithDefault form saved =
             (\value ->
                 { step = form.step
                 , updateANCVisits = or form.updateANCVisits (Just False)
-                , ancVisitsViewMode = form.ancVisitsViewMode
                 , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
-                , ancVisitUpdateDate = form.ancVisitUpdateDate
-                , dateSelectorPopupState = form.dateSelectorPopupState
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
                 , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
                 , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
@@ -4573,13 +4567,13 @@ ncdaFormWithDefault form saved =
             )
 
 
-toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm msg -> Maybe NCDAValue
+toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
 toNCDAValueWithDefault saved form =
     ncdaFormWithDefault form saved
         |> toNCDAValue
 
 
-toNCDAValue : NCDAForm msg -> Maybe NCDAValue
+toNCDAValue : NCDAForm -> Maybe NCDAValue
 toNCDAValue form =
     let
         signs =

@@ -22,14 +22,9 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
-    | SetANCVisitsViewMode ANCVisitsViewMode
     | SetUpdateANCVisits Bool
-    | SetANCVisitUpdateDateSelectorState (Maybe (DateSelectorConfig Msg))
-    | SetANCVisitUpdateDate NominalDate
-    | SaveANCVisitUpdateDate
-    | DeleteANCVisitUpdateDate NominalDate
     | ToggleANCVisitDate NominalDate
-    | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
+    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
@@ -54,7 +49,7 @@ type alias Model =
     , nutritionData : NutritionData
     , photoData : PhotoData
     , weightData : WeightData
-    , ncdaData : NCDAData Msg
+    , ncdaData : NCDAData
     , nextStepsData : NextStepsData
     , warningPopupState : List NutritionAssessment
     }

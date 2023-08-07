@@ -685,7 +685,7 @@ viewNCDAContent :
     -> NominalDate
     -> NutritionEncounterId
     -> AssembledData
-    -> NCDAData Msg
+    -> NCDAData
     -> ModelIndexedDb
     -> List (Html Msg)
 viewNCDAContent language currentDate id assembled data db =
@@ -707,12 +707,7 @@ viewNCDAContent language currentDate id assembled data db =
             , pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
-            , setANCVisitsViewModeMsg = SetANCVisitsViewMode
             , setUpdateANCVisitsMsg = SetUpdateANCVisits
-            , setANCVisitUpdateDateSelectorStateMsg = SetANCVisitUpdateDateSelectorState
-            , setANCVisitUpdateDateMsg = SetANCVisitUpdateDate
-            , saveANCVisitUpdateDateMsg = SaveANCVisitUpdateDate
-            , deleteANCVisitUpdateDateMsg = DeleteANCVisitUpdateDate
             , toggleANCVisitDateMsg = ToggleANCVisitDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
