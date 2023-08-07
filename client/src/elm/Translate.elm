@@ -9471,13 +9471,13 @@ translationSet trans =
                     }
 
                 ChildReceivesVitaminA ->
-                    { english = "Provide counseling on the importance of Vitamin A advise them to go to the Health center to recieve it"
-                    , kinyarwanda = Nothing
+                    { english = "Provide counseling on the importance of Vitamin A and advise them not to miss it again"
+                    , kinyarwanda = Just "Gira inama umubyeyi ku kamaro ko gufata ikinini cya vitamini A unamugire inama yo kutongera gucikanwa"
                     }
 
                 ChildReceivesDewormer ->
-                    { english = "Provide counseling on the importance of deworming medication and advise them to go to the Health center to receive it"
-                    , kinyarwanda = Nothing
+                    { english = "Provide counseling on the importance of deworming medication and advise them not to miss it again"
+                    , kinyarwanda = Just "Gira inama umubyeyi ku kamaro ko gufata ikinini cy'inzoka unamugire inama yo kutongera gucikanwa"
                     }
 
                 ChildReceivesECD ->
@@ -9633,22 +9633,22 @@ translationSet trans =
 
                 ChildReceivesVitaminA ->
                     { english = "Did the child receive Vitamin A in the last six months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cya vitamini A"
                     }
 
                 ChildTakingVitaminA ->
                     { english = "Is the Vitamin A being consumed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Vitamini yayifashe neza"
                     }
 
                 ChildReceivesDewormer ->
                     { english = "Did the child receive deworming medication in the last six months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cy’inzoka"
                     }
 
                 ChildTakingDewormer ->
                     { english = "Is the deworming medication being consumed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikinini cy'inzoka yagifashe neza"
                     }
 
                 ChildReceivesECD ->
