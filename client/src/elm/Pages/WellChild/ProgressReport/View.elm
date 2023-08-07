@@ -2507,72 +2507,27 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
             generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
 
         vitaminAValues =
-            let
-                administeredMonths =
-                    administeredMonthsFromRaw rawValues
-
-                rawValues =
-                    generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingVitaminA)
-            in
-            List.indexedMap
-                -- Vitamin A should not be administered before age of 6 months.
-                (postProcessMedicineRawValue 6 administeredMonths)
-                rawValues
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingVitaminA)
+                |> List.indexedMap
+                    -- Vitamin A should not be administered before age of 6 months.
+                    (postProcessMedicineRawValue 6)
 
         dewormerValues =
-            let
-                administeredMonths =
-                    administeredMonthsFromRaw rawValues
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingDewormer)
+                |> List.indexedMap
+                    -- Dewormer should not be administered before age of 12 months.
+                    (postProcessMedicineRawValue 12)
 
-                rawValues =
-                    generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingDewormer)
-            in
-            List.indexedMap
-                -- Dewormer should not be administered before age of 12 months.
-                (postProcessMedicineRawValue 12 administeredMonths)
-                rawValues
-
-        administeredMonthsFromRaw =
-            List.indexedMap
-                (\index value ->
-                    if value == NCDACellValueV then
-                        Just index
-
-                    else
-                        Nothing
-                )
-                >> Maybe.Extra.values
-
-        postProcessMedicineRawValue startingMonth administeredMonths processingMonth value =
-            if value == NCDACellValueEmpty then
-                -- This means that child did not reach this age yet.
-                value
-
-            else if value == NCDACellValueV then
-                -- Always show green V when we know that child took medicine.
+        postProcessMedicineRawValue startingMonth processingMonth value =
+            if List.member value [ NCDACellValueV, NCDACellValueEmpty ] then
                 value
 
             else if processingMonth < startingMonth then
                 -- Child is not eligible - too young.
                 NCDACellValueDash
 
-            else if
-                List.any
-                    (\administeredMonth ->
-                        let
-                            monthsDiff =
-                                processingMonth - administeredMonth
-                        in
-                        -- Child was given medicine within past 6 months - not eligible.
-                        (monthsDiff > 0) && (monthsDiff < 6)
-                    )
-                    administeredMonths
-            then
-                NCDACellValueDash
-
             else
-                -- Eligible, but was not taing medicine.
-                NCDACellValueX
+                value
 
         -- When nurse conducts NCDA, questionnaire only asks if Ongera-MNP was
         -- distributed. There's no follow up question asking if it was actually
