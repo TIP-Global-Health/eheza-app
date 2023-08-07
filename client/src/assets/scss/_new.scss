@@ -851,15 +851,41 @@ div.page-activity {
 
     .ui.form.ncda .form-input.anc-months {
       display: flex;
+      justify-content: space-between;
+      margin-bottom: 45px;
+      width: 100%;
 
       .item {
         text-align: center;
-        width: 100%
+        width: 95%;
       }
 
-      .item.month-4,
-      .item.month-7 {
+      .trimester {
+        display: flex;
+        width: 100%;
+      }
+
+      .trimesters-separator {
+        display: flex;
+      }
+
+      .trimesters-separator .section {
+        height: 100%;
+        width: 10px;
+      }
+
+      .trimesters-separator .section.right {
         border-left: 1px solid black;
+      }
+
+      .trimesters-separator .section .top,
+      .trimesters-separator .section .bottom {
+        height: 32px;
+        width: 9px;
+      }
+
+      .trimesters-separator .section .top {
+        border-bottom: 1px solid black;
       }
 
       .item .month-number {
@@ -898,9 +924,14 @@ div.page-activity {
         border-radius: 7px;
         display: block;
         height: 14px;
-        margin-left: 29px;
-        margin-top: -24px;
+        margin-left: 27px;
+        margin-top: -25px;
         width: 14px;
+      }
+
+      .item input[type=radio]:checked.disabled + label:after {
+        // pointer-events: none;
+        opacity: 0.5;
       }
     }
 
@@ -911,6 +942,10 @@ div.page-activity {
       padding: 15px;
       margin-top: 10px;
       margin-bottom: 15px;
+    }
+
+    .ui.form.ncda .form-input.measurement.birth-weight {
+      margin-bottom: 30px;
     }
 
   }

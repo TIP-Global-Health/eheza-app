@@ -27,6 +27,7 @@ import Backend.NutritionEncounter.Utils
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
+import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
@@ -49,7 +50,7 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths, diffWeeks, formatDDM
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra exposing (greedyGroupsOf)
+import List.Extra
 import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils
@@ -1864,9 +1865,15 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
             Maybe.map
                 (\birthDate ->
                     let
-                        encountersDatesFromANCData =
+                        ( eddDate, encountersDatesFromANCData ) =
                             resolveChildANCPregnancyData childId db
-                                |> Tuple.second
+
+                        pregnancyStartDate =
+                            Maybe.map eddToLmpDate eddDate
+                                |> Maybe.withDefault
+                                    -- If we don't have LMP date, we'll assume that
+                                    -- pregnancy was complete (lasted 9 months).
+                                    (eddToLmpDate birthDate)
 
                         encountersDatesFromNCDAdata =
                             List.filterMap
@@ -1886,7 +1893,7 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
                                 |> EverySet.toList
 
                         cellValueForMonth =
-                            -- Per requirements, if there were at least 4 encounters, we
+                            -- Per requirements, if there were at least 4 encounters, we put
                             -- green V. If less, red X.
                             if List.length allEncountersDates < 4 then
                                 NCDACellValueX
@@ -1904,10 +1911,7 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
                                     if
                                         List.any
                                             (\encounterDate ->
-                                                -- Index here represents the month of pregnancy,
-                                                -- in reverse. Meaning that 0 stands for months 9,
-                                                -- 1 for month 8, and 8 for first month.
-                                                diffMonths encounterDate birthDate == index
+                                                diffMonths pregnancyStartDate encounterDate == index
                                             )
                                             allEncountersDates
                                     then
@@ -1916,9 +1920,6 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
                                     else
                                         cellValue
                                 )
-                            |> -- Reversing values, to have proper 1 - 9 pregnancy
-                               -- months order.
-                               List.reverse
                 )
                 child.birthDate
                 |> Maybe.withDefault (List.repeat 9 NCDACellValueEmpty)
