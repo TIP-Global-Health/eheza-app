@@ -4,7 +4,7 @@ import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
-import Backend.Scoreboard.Model exposing (ECDStatus(..), ScoreboardData, SelectedEntity(..))
+import Backend.Scoreboard.Model exposing (ScoreboardData, SelectedEntity(..))
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
