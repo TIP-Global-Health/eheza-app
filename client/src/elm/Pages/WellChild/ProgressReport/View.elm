@@ -1661,8 +1661,6 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
         nurseQuestionnairesByAgeInMonths
         chwQuestionnairesByAgeInMonthsWithDate
         reportData.maybeAssembled
-        reportData.wellChildEncounters
-        reportData.individualWellChildMeasurementsWithDates
     , viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQuestionnairesByAgeInMonths
     , viewTargetedInterventionsPane language
         currentDate
@@ -2410,10 +2408,8 @@ viewUniversalInterventionsPane :
     -> Maybe (Dict Int NCDAValue)
     -> Maybe (Dict Int ( NominalDate, NCDAValue ))
     -> Maybe AssembledData
-    -> List ( WellChildEncounterId, WellChildEncounter )
-    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> Html any
-viewUniversalInterventionsPane language currentDate child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate maybeAssembled wellChildEncounters individualWellChildMeasurementsWithDates =
+viewUniversalInterventionsPane language currentDate child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate maybeAssembled =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
