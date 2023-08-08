@@ -433,7 +433,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
   $content_types_to_load = hedley_ncda_get_triggering_measurement_types();
 
   $heights = $weights = $muacs = $ncdas = $nutritions = $send_to_hcs = [];
-  $medication_distributions = $mebendezoles = $vitamins_a = $immunisations = $ecds = [];
+  $medication_distributions = $immunisations = [];
   $birth_weight = NULL;
   $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
   if (!empty($measurements)) {
@@ -474,23 +474,8 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
         continue;
       }
 
-      if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE) {
-        $mebendezoles[] = $node;
-        continue;
-      }
-
-      if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE) {
-        $vitamins_a[] = $node;
-        continue;
-      }
-
       if (in_array($node->type, HEDLEY_ACTIVITY_IMMUNISATION_BUNDLES)) {
         $immunisations[] = $node;
-        continue;
-      }
-
-      if ($node->type == HEDLEY_ACTIVITY_WELL_CHILD_ECD_CONTENT_TYPE) {
-        $ecds[] = $node;
         continue;
       }
 
@@ -718,8 +703,20 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
           $data['ncda']['pane1']['row2'] = TRUE;
           break;
 
+        case 'child-taking-vitamin-a':
+          $data['ncda']['pane2']['row2'][] = $date_measured;
+          break;
+
+        case 'child-taking-dewormer':
+          $data['ncda']['pane2']['row3'][] = $date_measured;
+          break;
+
         case 'taking-ongera-mnp':
           $data['ncda']['pane2']['row4'][] = $date_measured;
+          break;
+
+        case 'child-receives-ecd':
+          $data['ncda']['pane2']['row5'][] = $date_measured;
           break;
 
         case 'breastfed-for-six-months':
@@ -891,44 +888,6 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     }
   }
 
-  foreach ($vitamins_a as $vitamin_a) {
-    $items = field_get_items('node', $vitamin_a, 'field_administration_note');
-    if (!$items) {
-      continue;
-    }
-
-    $date_measured = hedley_ncda_get_date_measured($vitamin_a);
-    if (!$date_measured) {
-      continue;
-    }
-
-    foreach ($items as $item) {
-      if ($item['value'] == 'administered-today') {
-        $data['ncda']['pane2']['row2'][] = $date_measured;
-        break;
-      }
-    }
-  }
-
-  foreach ($mebendezoles as $mebendezole) {
-    $items = field_get_items('node', $mebendezole, 'field_administration_note');
-    if (!$items) {
-      continue;
-    }
-
-    $date_measured = hedley_ncda_get_date_measured($mebendezole);
-    if (!$date_measured) {
-      continue;
-    }
-
-    foreach ($items as $item) {
-      if ($item['value'] == 'administered-today') {
-        $data['ncda']['pane2']['row3'][] = $date_measured;
-        break;
-      }
-    }
-  }
-
   foreach ($immunisations as $immunisation) {
     $items = field_get_items('node', $immunisation, 'field_administration_dates');
     if (!$items) {
@@ -968,52 +927,6 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
           break;
       }
     }
-  }
-
-  $ecd_entries = $ecd_encounters_ids = [];
-  foreach ($ecds as $ecd) {
-    $items = field_get_items('node', $ecd, 'field_ecd_signs');
-    if (!$items) {
-      continue;
-    }
-
-    $date_measured = hedley_ncda_get_date_measured($ecd);
-    $ecd_entries[$date_measured] = [
-      'signs' => [],
-    ];
-
-    // Record ECD signs measured on date.
-    foreach ($items as $item) {
-      $ecd_entries[$date_measured]['signs'][] = $item['value'];
-    }
-
-    // Store ECD encounter ID, to load its warnings.
-    $ecd_encounters_ids[] = $ecd->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-  }
-
-  if (!empty($ecd_encounters_ids)) {
-    $ecd_encounters = node_load_multiple($ecd_encounters_ids);
-    foreach ($ecd_encounters as $ecd_encounter) {
-      // Retrieve encounter date.
-      $encounter_date = hedley_ncda_get_date_filed_value($ecd_encounter, 'field_scheduled_date');
-      $items = field_get_items('node', $ecd_encounter, 'field_encounter_warnings');
-
-      foreach ($items as $item) {
-        // If there's a relevant ECD warning, add it to encounter entry.
-        if (!in_array($item['value'], ['warning-ecd-milestone-behind', 'warning-ecd-milestone-refer-to-specialist'])) {
-          continue;
-        }
-        // We know there can be only single ECD waring, so no need to
-        // take care into account multiple warnings case.
-        $ecd_entries[$encounter_date]['warning'] = $item['value'];
-      }
-    }
-  }
-
-  // Process ECD entries and format for passing to front-end.
-  foreach ($ecd_entries as $date => $entry) {
-    $entry['date'] = $date;
-    $data['ncda']['pane2']['row5'][] = $entry;
   }
 
   $encoded_data = json_encode($data);
