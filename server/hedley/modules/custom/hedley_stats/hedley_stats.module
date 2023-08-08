@@ -1178,10 +1178,18 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
       $mother_id = $participant_info['mother_id'];
 
       if (empty($child_id) || empty($mother_id)) {
+        // Missing mandatory data. Skipping participant.
         continue;
       }
 
       $child_info = $children_info[$child_id];
+      $birth_date = $child_info['birth_date'];
+      if (empty($birth_date)) {
+        // Child got no birthdate set. We can't process
+        // its data on client, so we skip it.
+        continue;
+      }
+
       $mother_info = $mothers_info[$mother_id];
       $participant_join_date = $participant_info['join_date'];
       $participant_graduate_date = $participant_info['graduate_date'];
@@ -1189,7 +1197,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
       $expected_person = [
         'name' => $child_info['name'],
         'gender' => $child_info['gender'],
-        'birth_date' => hedley_restful_timestamp_only_date($child_info['birth_date']),
+        'birth_date' => hedley_restful_timestamp_only_date($birth_date),
         'mother_name' => $mother_info['name'],
         'phone_number' => $mother_info['phone_number'],
         'expected_date' => NULL,
@@ -1582,8 +1590,13 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
     $people = [];
     foreach ($people_data as $id => $person) {
       $item = $people_info[$id];
-      $item['nutrition'] = $nutrition_per_person;
+      if (empty($item['birth_date'])) {
+        // Child got no birthdate set. We can't process
+        // its data on client, so we skip it.
+        continue;
+      }
 
+      $item['nutrition'] = $nutrition_per_person;
       foreach ($person as $type => $measurement) {
         $one_day = 24 * 60 * 60;
         foreach ($measurement as $date => $values) {
