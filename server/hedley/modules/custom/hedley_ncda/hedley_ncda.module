@@ -421,9 +421,14 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     return;
   }
 
-  $data = [
-    'birth_date' => date("Y-m-d", $birth_date),
-  ];
+  $data['birth_date'] = date("Y-m-d", $birth_date);
+  // For now, we assume that pregnancy lasted whole 9 months, which
+  // means that estimated delivery date matches the birthdate.
+  // At ANC part, we'll try to locate individual participant for the
+  // pregnancy, and resolve EDD date from there.
+  // We need this because child may have been born premature, and
+  // EDD will allow us to present data more accurately.
+  $data['edd_date'] = $data['birth_date'];
 
   $content_types_to_load = hedley_ncda_get_triggering_measurement_types();
 
@@ -650,6 +655,13 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
 
   $newborn_participant_id = hedley_general_ncda_newborn_participant($person_id);
   if ($newborn_participant_id) {
+    // Resolving EDD date from participant that represents pregnancy.
+    $newborn_participant = node_load($newborn_participant_id);
+    $edd_date = hedley_ncda_get_date_filed_value($newborn_participant, 'field_expected_date_concluded');
+    if (!empty($edd_date)) {
+      $data['edd_date'] = $edd_date;
+    }
+    // Resolving the dates of ANC visits that took place during the pregnancy.
     $encounters_ids = hedley_person_encounters_for_individual_participant($newborn_participant_id);
     if (!empty($encounters_ids)) {
       $encounters = node_load_multiple($encounters_ids);
@@ -678,11 +690,12 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
       break;
     }
   }
-  // ANC visits for person will be counted for person, only for
-  // positive value. Positive value is set in case there are at least
-  // 4 anc visits.
+  // ANC visits for person will be counted on scorecard, only for
+  // positive value (green V mark). Positive value is set in case
+  // there are at least 4 anc visits.
   // Therefore, if there are less than 4, we don't pass the data
-  // to front-end application.
+  // to front-end application, as visits are marked with red X and not
+  // green V marks.
   if (count($data['ncda']['pane1']['row1']) < 4) {
     $data['ncda']['pane1']['row1'] = [];
   }

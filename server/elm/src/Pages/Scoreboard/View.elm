@@ -424,7 +424,9 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                 (\record accum ->
                     let
                         ageInMonths =
-                            diffMonths record.birthDate currentDate
+                            -- Using EDD date to properly resolve the month of
+                            -- prgnancy (as child may have been borm premature).
+                            diffMonths record.eddDate currentDate
 
                         row1AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.ancNewborn.row1

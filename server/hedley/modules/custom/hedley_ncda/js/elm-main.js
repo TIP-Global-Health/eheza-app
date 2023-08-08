@@ -5772,9 +5772,9 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
 	function (entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F4(
-	function (birthDate, lowBirthWeight, nutrition, ncda) {
-		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
+var $author$project$Backend$Scoreboard$Model$PatientData = F5(
+	function (birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
+		return {birthDate: birthDate, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
@@ -7554,9 +7554,13 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 				$elm$core$Maybe$Nothing,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'birth_date',
+					'edd_date',
 					$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))));
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'birth_date',
+						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData))))));
 };
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
@@ -28270,7 +28274,7 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
 						},
 						record.ncda.ancNewborn.row1);
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.eddDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
