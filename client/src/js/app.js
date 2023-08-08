@@ -398,10 +398,10 @@ const getSyncSpeed = function() {
     return storageArr;
   }
 
-  // Idle time between sync is 5 min.
+  // Idle time between sync is 10 min.
   // Sync cicle last 50 milliseconds.
   // When offline, we check network state every 30 secons.
-  return {idle: (5 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
+  return {idle: (10 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
 }
 
 // Start up our Elm app.

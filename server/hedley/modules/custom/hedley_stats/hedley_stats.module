@@ -1390,7 +1390,7 @@ function hedley_stats_get_total_encounters_by_patients_at_clinic($health_center_
   hedley_general_join_field_to_query($query, 'node', 'field_person');
   // Only participants who actually attended the sessions.
   $query->condition('field_attended.field_attended_value', TRUE);
-  $result = $query->execute()->fetchAll();
+  $result = hedley_stats_run_node_query_in_batches($query);
 
   $total_by_patient_at_clinic = [];
   $clinic_types = hedley_stats_get_all_clinic_types();
@@ -1670,8 +1670,6 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
         }
       }
       $people[] = $item;
-      // Free up memory.
-      drupal_static_reset();
     }
 
     $result[$program_type] = $people;
@@ -1850,7 +1848,7 @@ function hedley_stats_get_nutrition_measurements_for_individual_encounters_group
  * @return array
  *   Query accumulated result.
  */
-function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 5000) {
+function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 10000) {
   $query->orderBy('node.nid');
 
   $result = [];
@@ -1876,6 +1874,8 @@ function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 500
     $result = array_merge($result, $batch_result);
     // Locate the latest node processed, for the next batch.
     $nid = end($batch_result)->nid;
+    // Free up memory.
+    drupal_static_reset();
   }
 
   return $result;
@@ -1901,6 +1901,17 @@ function hedley_stats_run_node_query_in_batches(SelectQuery $query, $batch = 500
 function hedley_stats_get_base_query($health_center_id, $node_type, $period = FALSE, $extend = FALSE) {
   $query = db_select('node', 'node');
   $query->fields('node', ['nid', 'type', 'created']);
+  $node_type_operator = is_array($node_type) ? 'IN' : '=';
+  $query
+    ->condition('type', $node_type, $node_type_operator)
+    ->condition('status', NODE_PUBLISHED);
+
+  // All nodes have the Health center info under `field_shards`.
+  $health_center_field = 'field_shards';
+  // Filter by health center.
+  hedley_general_join_field_to_query($query, 'node', $health_center_field);
+  $health_center_field_name = $health_center_field . '.' . $health_center_field . '_target_id';
+  $query->condition($health_center_field_name, $health_center_id);
 
   $encounter_types = hedley_general_get_individual_encounter_types();
   $participant_types = [
@@ -1928,14 +1939,6 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
     hedley_general_join_field_to_query($query, 'node', $date_field);
   }
 
-  // All nodes have the Health center info under `field_shards`.
-  $health_center_field = 'field_shards';
-  // Filter by health center.
-  hedley_general_join_field_to_query($query, 'node', $health_center_field);
-  $health_center_field_name = $health_center_field . '.' . $health_center_field . '_target_id';
-
-  $query->condition($health_center_field_name, $health_center_id);
-
   if ($period) {
     $date_field_name = $date_field . '.' . $date_field . '_value';
 
@@ -1945,11 +1948,6 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
       $date['end'],
     ], 'BETWEEN');
   }
-
-  $node_type_operator = is_array($node_type) ? 'IN' : '=';
-  $query
-    ->condition('type', $node_type, $node_type_operator)
-    ->condition('status', NODE_PUBLISHED);
 
   return $query;
 }
