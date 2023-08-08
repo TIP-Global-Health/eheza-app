@@ -46,6 +46,7 @@ decodePatientData : NominalDate -> Decoder PatientData
 decodePatientData currentDate =
     succeed PatientData
         |> required "birth_date" decodeYYYYMMDD
+        |> required "edd_date" decodeYYYYMMDD
         |> optional "low_birth_weight" (maybe bool) Nothing
         |> optional "nutrition" (decodeNutritionCriterionsData currentDate) emptyNutritionCriterionsData
         |> optional "ncda" (decodeNCDAData currentDate) emptyNCDAData
