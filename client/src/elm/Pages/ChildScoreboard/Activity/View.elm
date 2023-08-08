@@ -114,7 +114,7 @@ viewNCDAContent :
     -> NominalDate
     -> AssembledData
     -> ModelIndexedDb
-    -> NCDAData Msg
+    -> NCDAData
     -> List (Html Msg)
 viewNCDAContent language currentDate assembled db data =
     let
@@ -138,12 +138,8 @@ viewNCDAContent language currentDate assembled db data =
             , pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
-            , setANCVisitsViewModeMsg = SetANCVisitsViewMode
             , setUpdateANCVisitsMsg = SetUpdateANCVisits
-            , setANCVisitUpdateDateSelectorStateMsg = SetANCVisitUpdateDateSelectorState
-            , setANCVisitUpdateDateMsg = SetANCVisitUpdateDate
-            , saveANCVisitUpdateDateMsg = SaveANCVisitUpdateDate
-            , deleteANCVisitUpdateDateMsg = DeleteANCVisitUpdateDate
+            , toggleANCVisitDateMsg = ToggleANCVisitDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setStepMsg = SetNCDAFormStep

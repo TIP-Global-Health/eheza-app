@@ -4490,8 +4490,16 @@ viewSelectInput language labelTransId formValue valueTransId valueToStringFunc v
     ]
 
 
-fromNCDAValue : Maybe NCDAValue -> NCDAForm msg
+fromNCDAValue : Maybe NCDAValue -> NCDAForm
 fromNCDAValue saved =
+    let
+        ancVisitsDates =
+            Maybe.map .ancVisitsDates saved
+
+        updateANCVisits =
+            Maybe.map (EverySet.isEmpty >> not)
+                ancVisitsDates
+    in
     { step = Nothing
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
     , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
@@ -4521,26 +4529,24 @@ fromNCDAValue saved =
     , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
-    , updateANCVisits = Nothing
-    , ancVisitsViewMode = ANCVisitsInitialMode
-    , ancVisitsDates = Maybe.map .ancVisitsDates saved
-    , ancVisitUpdateDate = Nothing
-    , dateSelectorPopupState = Nothing
+    , updateANCVisits = updateANCVisits
+    , ancVisitsDates = ancVisitsDates
     }
 
 
-ncdaFormWithDefault : NCDAForm msg -> Maybe NCDAValue -> NCDAForm msg
+ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
 ncdaFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
+                let
+                    updateANCVisits =
+                        EverySet.isEmpty value.ancVisitsDates |> not
+                in
                 { step = form.step
-                , updateANCVisits = or form.updateANCVisits (Just False)
-                , ancVisitsViewMode = form.ancVisitsViewMode
+                , updateANCVisits = or form.updateANCVisits (Just updateANCVisits)
                 , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
-                , ancVisitUpdateDate = form.ancVisitUpdateDate
-                , dateSelectorPopupState = form.dateSelectorPopupState
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
                 , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
                 , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
@@ -4573,13 +4579,13 @@ ncdaFormWithDefault form saved =
             )
 
 
-toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm msg -> Maybe NCDAValue
+toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
 toNCDAValueWithDefault saved form =
     ncdaFormWithDefault form saved
         |> toNCDAValue
 
 
-toNCDAValue : NCDAForm msg -> Maybe NCDAValue
+toNCDAValue : NCDAForm -> Maybe NCDAValue
 toNCDAValue form =
     let
         signs =
@@ -4920,29 +4926,34 @@ isTestResultValid =
            Maybe.withDefault True
 
 
-resolveChildANCEncountersDates : PersonId -> ModelIndexedDb -> EverySet NominalDate
-resolveChildANCEncountersDates childId db =
+resolveChildANCPregnancyData : PersonId -> ModelIndexedDb -> ( Maybe NominalDate, EverySet NominalDate )
+resolveChildANCPregnancyData childId db =
     Dict.get childId db.pregnancyByNewborn
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.Extra.join
-        |> Maybe.andThen
-            (\( participantId, _ ) ->
-                Dict.get participantId db.prenatalEncountersByParticipant
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map
-                        (Dict.values
-                            >> List.filterMap
-                                (\encounter ->
-                                    if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
-                                        Just encounter.startDate
+        |> Maybe.map
+            (\( participantId, participant ) ->
+                let
+                    encountersDates =
+                        Dict.get participantId db.prenatalEncountersByParticipant
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map
+                                (Dict.values
+                                    >> List.filterMap
+                                        (\encounter ->
+                                            if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
+                                                Just encounter.startDate
 
-                                    else
-                                        Nothing
+                                            else
+                                                Nothing
+                                        )
+                                    >> EverySet.fromList
                                 )
-                            >> EverySet.fromList
-                        )
+                            |> Maybe.withDefault EverySet.empty
+                in
+                ( participant.eddDate, encountersDates )
             )
-        |> Maybe.withDefault EverySet.empty
+        |> Maybe.withDefault ( Nothing, EverySet.empty )
 
 
 childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool

@@ -259,37 +259,13 @@ updateChild msg model =
             , Nothing
             )
 
-        SetANCVisitsViewMode viewMode ->
-            let
-                form =
-                    model.ncdaData.form
-
-                updatedForm =
-                    { form | ancVisitsViewMode = viewMode }
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
-            , Cmd.none
-            , Nothing
-            )
-
         SetUpdateANCVisits value ->
             let
                 form =
                     model.ncdaData.form
 
                 updatedForm =
-                    if value == True then
-                        { form
-                            | ancVisitsViewMode = ANCVisitsUpdateMode
-                            , updateANCVisits = Nothing
-                        }
-
-                    else
-                        { form | updateANCVisits = Just False }
+                    { form | updateANCVisits = Just value, ancVisitsDates = Just EverySet.empty }
 
                 updatedData =
                     model.ncdaData
@@ -300,88 +276,32 @@ updateChild msg model =
             , Nothing
             )
 
-        SetANCVisitUpdateDateSelectorState state ->
+        ToggleANCVisitDate date ->
             let
                 form =
                     model.ncdaData.form
 
-                defaultSelection =
-                    Maybe.Extra.or form.ancVisitUpdateDate (Maybe.andThen .dateDefault state)
-
-                updatedForm =
-                    { form | dateSelectorPopupState = state, ancVisitUpdateDate = defaultSelection }
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
-            , Cmd.none
-            , Nothing
-            )
-
-        SetANCVisitUpdateDate date ->
-            let
-                form =
-                    model.ncdaData.form
-
-                updatedForm =
-                    { form | ancVisitUpdateDate = Just date }
-
-                updatedData =
-                    model.ncdaData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | ncdaData = updatedData }
-            , Cmd.none
-            , Nothing
-            )
-
-        SaveANCVisitUpdateDate ->
-            let
-                form =
-                    model.ncdaData.form
-
-                updatedModel =
+                updatedANCVisitsDates =
                     Maybe.map
-                        (\date ->
-                            let
-                                updatedForm =
-                                    { form
-                                        | ancVisitsDates = insertIntoSet date form.ancVisitsDates
-                                        , ancVisitsViewMode = ANCVisitsInitialMode
-                                        , ancVisitUpdateDate = Nothing
-                                    }
+                        (\set ->
+                            if EverySet.member date set then
+                                EverySet.remove date set
 
-                                updatedData =
-                                    model.ncdaData
-                                        |> (\data -> { data | form = updatedForm })
-                            in
-                            { model | ncdaData = updatedData }
-                        )
-                        form.ancVisitUpdateDate
-                        |> Maybe.withDefault model
-            in
-            ( updatedModel
-            , Cmd.none
-            , Nothing
-            )
-
-        DeleteANCVisitUpdateDate dateToDelete ->
-            let
-                form =
-                    model.ncdaData.form
-
-                updatedDates =
-                    Maybe.map
-                        (EverySet.toList
-                            >> List.filter ((/=) dateToDelete)
-                            >> EverySet.fromList
+                            else
+                                EverySet.insert date set
                         )
                         form.ancVisitsDates
+                        |> Maybe.withDefault (EverySet.singleton date)
+
+                updateANCVisits =
+                    if EverySet.isEmpty updatedANCVisitsDates then
+                        Just False
+
+                    else
+                        form.updateANCVisits
 
                 updatedForm =
-                    { form | ancVisitsDates = updatedDates }
+                    { form | ancVisitsDates = Just updatedANCVisitsDates, updateANCVisits = updateANCVisits }
 
                 updatedData =
                     model.ncdaData
