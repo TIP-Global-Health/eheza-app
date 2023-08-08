@@ -5788,17 +5788,7 @@ generateVaccinationProgressDictsForWellChild assembled db =
                         |> List.head
                         |> Maybe.map Tuple.first
             in
-            Maybe.map
-                (\participantId ->
-                    Backend.Measurement.Utils.generatePreviousMeasurements
-                        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
-                        .childScoreboardMeasurements
-                        Nothing
-                        participantId
-                        db
-                        |> getPreviousMeasurements
-                        |> generateVaccinationProgressForChildScoreboard
-                )
+            Maybe.map (generateVaccinationProgressDictByChildScoreboard db)
                 individualChildScoreboardParticipantId
                 |> Maybe.withDefault Dict.empty
 
@@ -5817,6 +5807,18 @@ generateVaccinationProgressDictsForWellChild assembled db =
         vaccinationProgress
         vaccinationProgressByChildScoreboard
     )
+
+
+generateVaccinationProgressDictByChildScoreboard : ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
+generateVaccinationProgressDictByChildScoreboard db participantId =
+    Backend.Measurement.Utils.generatePreviousMeasurements
+        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
+        .childScoreboardMeasurements
+        Nothing
+        participantId
+        db
+        |> getPreviousMeasurements
+        |> generateVaccinationProgressForChildScoreboard
 
 
 generateVaccinationProgressForWellChild : Person -> List WellChildMeasurements -> VaccinationProgressDict

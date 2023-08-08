@@ -58,6 +58,7 @@ import Measurement.Utils
         ( generateFutureVaccinationsData
         , generateGroupNutritionAssessmentEntries
         , generateIndividualNutritionAssessmentEntries
+        , generateVaccinationProgressDictByChildScoreboard
         , getPreviousMeasurements
         , resolveChildANCPregnancyData
         )
@@ -376,6 +377,15 @@ assembleProgresReportData childId db =
                 individualParticipants
                 |> List.head
                 |> Maybe.map Tuple.first
+
+        individualChildScoreboardParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
     in
     { maybeAssembled = maybeAssembled
     , expectedSessions = expectedSessions
@@ -414,6 +424,7 @@ assembleProgresReportData childId db =
             |> Maybe.withDefault []
     , individualChildScoreboardMeasurementsWithDates =
         generateIndividualChildScoreboardMeasurementsForChild childId db
+    , individualChildScoreboardParticipantId = individualChildScoreboardParticipantId
     }
 
 
@@ -1651,6 +1662,14 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
 
         chwQuestionnairesByAgeInMonthsWithDate =
             distributeByAgeInMonthsWithDate child chwNCDAQuestionnaires
+
+        vaccinationProgressDict =
+            Maybe.Extra.or
+                (Maybe.map .vaccinationProgress reportData.maybeAssembled)
+                (Maybe.map (generateVaccinationProgressDictByChildScoreboard db)
+                    reportData.individualChildScoreboardParticipantId
+                )
+                |> Maybe.withDefault Dict.empty
     in
     [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
     , viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires
@@ -1660,7 +1679,7 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
         db
         nurseQuestionnairesByAgeInMonths
         chwQuestionnairesByAgeInMonthsWithDate
-        reportData.maybeAssembled
+        vaccinationProgressDict
     , viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQuestionnairesByAgeInMonths
     , viewTargetedInterventionsPane language
         currentDate
@@ -2407,9 +2426,9 @@ viewUniversalInterventionsPane :
     -> ModelIndexedDb
     -> Maybe (Dict Int NCDAValue)
     -> Maybe (Dict Int ( NominalDate, NCDAValue ))
-    -> Maybe AssembledData
+    -> VaccinationProgressDict
     -> Html any
-viewUniversalInterventionsPane language currentDate child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate maybeAssembled =
+viewUniversalInterventionsPane language currentDate child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate vaccinationProgress =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
@@ -2420,69 +2439,52 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
         immunizationByAgeInMonths =
             Maybe.andThen
                 (\birthDate ->
-                    Maybe.map
-                        (\assembled ->
-                            List.repeat 25 ""
-                                |> List.indexedMap
-                                    (\index _ ->
-                                        let
-                                            referenceDate =
-                                                -- We use it to determine if child was
-                                                -- behind on any of vaccines at that month.
-                                                resolveLastDayForMonthX index birthDate
+                    List.repeat 25 ""
+                        |> List.indexedMap
+                            (\index _ ->
+                                let
+                                    referenceDate =
+                                        -- We use it to determine if child was
+                                        -- behind on any of vaccines at that month.
+                                        resolveLastDayForMonthX index birthDate
 
-                                            -- Filter out vaccinations that were performed
-                                            -- after the reference date.
-                                            vaccinationProgressOnReferrenceDate =
-                                                Dict.map
-                                                    (\vaccineType dosesDict ->
-                                                        Dict.filter
-                                                            (\dose administeredDate ->
-                                                                Date.compare administeredDate referenceDate == LT
-                                                            )
-                                                            dosesDict
+                                    -- Filter out vaccinations that were performed
+                                    -- after the reference date.
+                                    vaccinationProgressOnReferrenceDate =
+                                        Dict.map
+                                            (\vaccineType dosesDict ->
+                                                Dict.filter
+                                                    (\dose administeredDate ->
+                                                        Date.compare administeredDate referenceDate == LT
                                                     )
-                                                    assembled.vaccinationProgress
-
-                                            futureVaccinations =
-                                                generateFutureVaccinationsData currentDate child False vaccinationProgressOnReferrenceDate
-
-                                            closestDateForVaccination =
-                                                List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
-                                                    |> List.sortWith Date.compare
-                                                    |> List.head
-                                        in
-                                        Maybe.map
-                                            (\closestDate ->
-                                                if Date.compare closestDate referenceDate == GT then
-                                                    -- Closest date when vaccine is required is after
-                                                    -- current month, which means that at current month
-                                                    -- we're not behind on vaccination.
-                                                    ( referenceDate, NCDACellValueV )
-
-                                                else
-                                                    ( referenceDate, NCDACellValueX )
+                                                    dosesDict
                                             )
-                                            closestDateForVaccination
-                                            |> Maybe.withDefault
-                                                -- This indicates that there're no future vaccinations to be
-                                                -- done, and therefore, we're on track at current month.
-                                                ( referenceDate, NCDACellValueV )
+                                            vaccinationProgress
+
+                                    futureVaccinations =
+                                        generateFutureVaccinationsData currentDate child False vaccinationProgressOnReferrenceDate
+
+                                    closestDateForVaccination =
+                                        List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
+                                            |> List.sortWith Date.compare
+                                            |> List.head
+                                in
+                                Maybe.map
+                                    (\closestDate ->
+                                        if Date.compare closestDate referenceDate == GT then
+                                            -- Closest date when vaccine is required is after
+                                            -- current month, which means that at current month
+                                            -- we're not behind on vaccination.
+                                            ( referenceDate, NCDACellValueV )
+
+                                        else
+                                            ( referenceDate, NCDACellValueX )
                                     )
-                        )
-                        maybeAssembled
-                        |> Maybe.withDefault
-                            -- We get here if there were no SPV encounters performed,
-                            -- which means that no vaccinations were recorded.
-                            -- Therefore, we're for sure behind on vaccinations
-                            -- for any given month.
-                            (List.repeat 25 ""
-                                |> List.indexedMap
-                                    (\index _ ->
-                                        ( resolveLastDayForMonthX index birthDate
-                                        , NCDACellValueX
-                                        )
-                                    )
+                                    closestDateForVaccination
+                                    |> Maybe.withDefault
+                                        -- This indicates that there're no future vaccinations to be
+                                        -- done, and therefore, we're on track at current month.
+                                        ( referenceDate, NCDACellValueV )
                             )
                         |> distributeByAgeInMonths child
                 )
