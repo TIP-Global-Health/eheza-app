@@ -2739,6 +2739,91 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     , [ maybeToBoolTask form.childTakingFBF ]
                     )
 
+                ChildReceivesVitaminA ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childReceivesVitaminA = Just value, childTakingVitaminA = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childReceivesVitaminA == Just True then
+                                inputsAndTasksForSign ChildTakingVitaminA
+
+                            else
+                                ( [], [] )
+
+                        counseling =
+                            if form.childReceivesVitaminA == Just False then
+                                [ viewCounselingLabel ChildReceivesVitaminA ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ChildReceivesVitaminA form.childReceivesVitaminA updateFunc
+                        ++ counseling
+                        ++ derivedInputs
+                    , form.childReceivesVitaminA :: derivedTasks
+                    )
+
+                ChildTakingVitaminA ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childTakingVitaminA = Just value }
+                    in
+                    ( viewNCDAInput ChildTakingVitaminA form.childTakingVitaminA updateFunc
+                    , [ maybeToBoolTask form.childTakingVitaminA ]
+                    )
+
+                ChildReceivesDewormer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childReceivesDewormer = Just value, childTakingDewormer = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childReceivesDewormer == Just True then
+                                inputsAndTasksForSign ChildTakingDewormer
+
+                            else
+                                ( [], [] )
+
+                        counseling =
+                            if form.childReceivesDewormer == Just False then
+                                [ viewCounselingLabel ChildReceivesDewormer ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ChildReceivesDewormer form.childReceivesDewormer updateFunc
+                        ++ counseling
+                        ++ derivedInputs
+                    , form.childReceivesDewormer :: derivedTasks
+                    )
+
+                ChildTakingDewormer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childTakingDewormer = Just value }
+                    in
+                    ( viewNCDAInput ChildTakingDewormer form.childTakingDewormer updateFunc
+                    , [ maybeToBoolTask form.childTakingDewormer ]
+                    )
+
+                ChildReceivesECD ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childReceivesECD = Just value }
+
+                        counseling =
+                            if form.childReceivesECD == Just False then
+                                [ viewCounselingLabel ChildReceivesECD ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ChildReceivesECD form.childReceivesECD updateFunc
+                        ++ counseling
+                    , [ form.childReceivesECD ]
+                    )
+
                 BeneficiaryCashTransfer ->
                     let
                         updateFunc value form_ =
@@ -3010,7 +3095,10 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
 
                     else
                         [ ChildBehindOnVaccination
+                        , ChildReceivesVitaminA
+                        , ChildReceivesDewormer
                         , OngeraMNP
+                        , ChildReceivesECD
                         ]
 
                 inputsAndTasks =

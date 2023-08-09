@@ -9466,8 +9466,23 @@ translationSet trans =
                     }
 
                 ChildReceivesFBF ->
-                    { english = "Provides counseling on the importance of FBF and advise them to go to the Health center to recieve them"
+                    { english = "Provide counseling on the importance of FBF and advise them to go to the Health center to recieve them"
                     , kinyarwanda = Just "Gira inama umubyeyi cg undi umurera ibyiza byo gufata Shisha Kibondo unamugire inama yo kujya kuyifata ku kigo nderabuzima"
+                    }
+
+                ChildReceivesVitaminA ->
+                    { english = "Provide counseling on the importance of Vitamin A and advise them not to miss it again"
+                    , kinyarwanda = Just "Gira inama umubyeyi ku kamaro ko gufata ikinini cya vitamini A unamugire inama yo kutongera gucikanwa"
+                    }
+
+                ChildReceivesDewormer ->
+                    { english = "Provide counseling on the importance of deworming medication and advise them not to miss it again"
+                    , kinyarwanda = Just "Gira inama umubyeyi ku kamaro ko gufata ikinini cy'inzoka unamugire inama yo kutongera gucikanwa"
+                    }
+
+                ChildReceivesECD ->
+                    { english = "Provide counseling on the importance of brain stimulation activities for the development of the child"
+                    , kinyarwanda = Nothing
                     }
 
                 _ ->
@@ -9615,6 +9630,31 @@ translationSet trans =
 
                 ChildTakingFBF ->
                     translationSet FoodSupplementationConsumedQuestion
+
+                ChildReceivesVitaminA ->
+                    { english = "Did the child receive Vitamin A in the last six months"
+                    , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cya vitamini A"
+                    }
+
+                ChildTakingVitaminA ->
+                    { english = "Is the Vitamin A being consumed"
+                    , kinyarwanda = Just "Vitamini yayifashe neza"
+                    }
+
+                ChildReceivesDewormer ->
+                    { english = "Did the child receive deworming medication in the last six months"
+                    , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cy’inzoka"
+                    }
+
+                ChildTakingDewormer ->
+                    { english = "Is the deworming medication being consumed"
+                    , kinyarwanda = Just "Ikinini cy'inzoka yagifashe neza"
+                    }
+
+                ChildReceivesECD ->
+                    { english = "Do you sing lullabies, poems, and read books to your child, or play games with your child"
+                    , kinyarwanda = Nothing
+                    }
 
                 NoNCDASigns ->
                     { english = "None"

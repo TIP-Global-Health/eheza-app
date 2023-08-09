@@ -1661,8 +1661,6 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
         nurseQuestionnairesByAgeInMonths
         chwQuestionnairesByAgeInMonthsWithDate
         reportData.maybeAssembled
-        reportData.wellChildEncounters
-        reportData.individualWellChildMeasurementsWithDates
     , viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQuestionnairesByAgeInMonths
     , viewTargetedInterventionsPane language
         currentDate
@@ -2410,10 +2408,8 @@ viewUniversalInterventionsPane :
     -> Maybe (Dict Int NCDAValue)
     -> Maybe (Dict Int ( NominalDate, NCDAValue ))
     -> Maybe AssembledData
-    -> List ( WellChildEncounterId, WellChildEncounter )
-    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> Html any
-viewUniversalInterventionsPane language currentDate child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate maybeAssembled wellChildEncounters individualWellChildMeasurementsWithDates =
+viewUniversalInterventionsPane language currentDate child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate maybeAssembled =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
@@ -2503,107 +2499,31 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                 |> -- Substract one day
                    Date.add Date.Days -1
 
-        vitaminAByAgeInMonths =
-            Maybe.andThen Tuple.first medicineByAgeInMonths
-
-        dewormerByAgeInMonths =
-            Maybe.andThen Tuple.second medicineByAgeInMonths
-
-        medicineByAgeInMonths =
-            Maybe.map
-                (\assembled ->
-                    let
-                        generateMeasurementValues measurementFunc =
-                            List.filterMap
-                                (measurementFunc
-                                    >> Maybe.map
-                                        (\( _, measurement ) ->
-                                            ( measurement.dateMeasured, measurement.value )
-                                        )
-                                )
-                                allMeasurements
-
-                        allMeasurements =
-                            assembled.measurements
-                                :: List.map (Tuple.second >> Tuple.second)
-                                    assembled.previousMeasurementsWithDates
-                    in
-                    ( generateMeasurementValues .vitaminA
-                        |> distributeByAgeInMonths child
-                    , generateMeasurementValues .mebendezole
-                        |> distributeByAgeInMonths child
-                    )
-                )
-                maybeAssembled
-
         immunizationValues =
             generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
 
         vitaminAValues =
-            let
-                administeredMonths =
-                    List.indexedMap
-                        (\index value ->
-                            if value == NCDACellValueV then
-                                Just index
-
-                            else
-                                Nothing
-                        )
-                        rawValues
-                        |> Maybe.Extra.values
-
-                rawValues =
-                    generateValues currentDate child vitaminAByAgeInMonths ((==) AdministeredToday)
-            in
-            List.indexedMap
-                -- Vitamin A is not administered before age of 6 months.
-                (postProcessMedicineRawValue 6 administeredMonths)
-                rawValues
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingVitaminA)
+                |> List.indexedMap
+                    -- Vitamin A should not be administered before age of 6 months.
+                    (postProcessMedicineRawValue 6)
 
         dewormerValues =
-            let
-                administeredMonths =
-                    List.indexedMap
-                        (\index value ->
-                            if value == NCDACellValueV then
-                                Just index
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingDewormer)
+                |> List.indexedMap
+                    -- Dewormer should not be administered before age of 12 months.
+                    (postProcessMedicineRawValue 12)
 
-                            else
-                                Nothing
-                        )
-                        rawValues
-                        |> Maybe.Extra.values
-
-                rawValues =
-                    generateValues currentDate child dewormerByAgeInMonths ((==) AdministeredToday)
-            in
-            List.indexedMap
-                -- Dewormer is not administered before age of 12 months.
-                (postProcessMedicineRawValue 12 administeredMonths)
-                rawValues
-
-        postProcessMedicineRawValue startingMonth administeredMonths processingMonth value =
-            if value == NCDACellValueEmpty then
-                -- This means that child did not reach this age yet.
+        postProcessMedicineRawValue startingMonth processingMonth value =
+            if List.member value [ NCDACellValueV, NCDACellValueEmpty ] then
                 value
 
             else if processingMonth < startingMonth then
-                -- Medicine is not administered yet.
+                -- Child is not eligible - too young.
                 NCDACellValueDash
 
-            else if
-                List.any
-                    (\administeredMonth ->
-                        -- Child was given medicine within past 6 months
-                        processingMonth >= administeredMonth && processingMonth - administeredMonth < 6
-                    )
-                    administeredMonths
-            then
-                NCDACellValueV
-
             else
-                NCDACellValueX
+                value
 
         -- When nurse conducts NCDA, questionnaire only asks if Ongera-MNP was
         -- distributed. There's no follow up question asking if it was actually
@@ -2643,105 +2563,7 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
             generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member TakingOngeraMNP)
 
         ecdValues =
-            ageInMonths currentDate child
-                |> Maybe.map
-                    (\ageMonths ->
-                        let
-                            milestonesToCurrentDateWithStatus =
-                                generateECDMilestonesWithStatus currentDate
-                                    child
-                                    wellChildEncounters
-                                    individualWellChildMeasurementsWithDates
-                                    |> Dict.fromList
-
-                            milestoneWithStatusToCellValues ( milestone, status ) =
-                                let
-                                    cellValue =
-                                        case status of
-                                            StatusOnTrack ->
-                                                NCDACellValueV
-
-                                            NoECDStatus ->
-                                                NCDACellValueEmpty
-
-                                            _ ->
-                                                NCDACellValueX
-                                in
-                                case milestone of
-                                    -- Covers age of 2 and 3 months.
-                                    Milestone6Weeks ->
-                                        List.repeat 2 cellValue
-
-                                    -- Covers age of 4 and 5 months.
-                                    Milestone14Weeks ->
-                                        List.repeat 2 cellValue
-
-                                    -- Covers age of 6, 7 and 8 months.
-                                    Milestone6Months ->
-                                        List.repeat 3 cellValue
-
-                                    -- Covers age of 9, 10 and 11 months.
-                                    Milestone9Months ->
-                                        List.repeat 3 cellValue
-
-                                    -- Covers age of 12, 13 and 14 months.
-                                    Milestone12Months ->
-                                        List.repeat 3 cellValue
-
-                                    --    Covers age of 15, 16 and 17 months.
-                                    Milestone15Months ->
-                                        List.repeat 3 cellValue
-
-                                    --    Covers age of 18 to 23 months.
-                                    Milestone18Months ->
-                                        List.repeat 6 cellValue
-
-                                    --    Covers age of 24 and 25 months.
-                                    Milestone2Years ->
-                                        List.repeat 2 cellValue
-
-                                    -- Not in range.
-                                    Milestone3Years ->
-                                        []
-
-                                    -- Not in range.
-                                    Milestone4Years ->
-                                        []
-
-                            allMilestones =
-                                [ Milestone6Weeks
-                                , Milestone14Weeks
-                                , Milestone6Months
-                                , Milestone9Months
-                                , Milestone12Months
-                                , Milestone15Months
-                                , Milestone18Months
-                                , Milestone2Years
-                                ]
-                        in
-                        -- For first month, there's no ECD milestone.
-                        NCDACellValueDash
-                            :: (List.map
-                                    (\milestone ->
-                                        ( milestone
-                                        , Dict.get milestone milestonesToCurrentDateWithStatus
-                                            |> Maybe.withDefault NoECDStatus
-                                        )
-                                    )
-                                    allMilestones
-                                    |> List.map milestoneWithStatusToCellValues
-                                    |> List.concat
-                               )
-                            |> List.indexedMap
-                                (\month value ->
-                                    if ageMonths < month then
-                                        NCDACellValueEmpty
-
-                                    else
-                                        value
-                                )
-                    )
-                |> Maybe.withDefault emptyNCDAValuesForChild
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesECD)
     in
     div [ class "pane universal-interventions" ]
         [ viewPaneHeading language Translate.UniversalInterventions
