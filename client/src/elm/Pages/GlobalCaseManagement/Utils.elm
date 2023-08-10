@@ -33,8 +33,8 @@ nurseFilters =
     [ FilterContactsTrace, FilterPrenatalLabs, FilterNCDLabs ]
 
 
-generateNutritionFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
-generateNutritionFollowUps currentDate db followUps =
+generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
+generateNutritionFollowUps currentDate followUps =
     let
         nutritionIndividual =
             Dict.values followUps.nutritionIndividual

@@ -41,6 +41,13 @@ getVillageHealthCenterId villageId db =
 
 personLivesInVillage : Person -> ModelIndexedDb -> VillageId -> Bool
 personLivesInVillage person db villageId =
+    getVillageById db villageId
+        |> Maybe.map (isVillageResident person)
+        |> Maybe.withDefault False
+
+
+isVillageResident : Person -> Village -> Bool
+isVillageResident person village =
     let
         valuesMatch villageValue personValue =
             case personValue of
@@ -50,16 +57,11 @@ personLivesInVillage person db villageId =
                 Nothing ->
                     False
     in
-    getVillageById db villageId
-        |> Maybe.map
-            (\village ->
-                valuesMatch village.province person.province
-                    && valuesMatch village.district person.district
-                    && valuesMatch village.sector person.sector
-                    && valuesMatch village.cell person.cell
-                    && valuesMatch village.village person.village
-            )
-        |> Maybe.withDefault False
+    valuesMatch village.province person.province
+        && valuesMatch village.district person.district
+        && valuesMatch village.sector person.sector
+        && valuesMatch village.cell person.cell
+        && valuesMatch village.village person.village
 
 
 getVillageIdByGeoFields : ModelIndexedDb -> String -> String -> String -> String -> String -> Maybe VillageId

@@ -86,7 +86,7 @@ viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model 
         (\villageId ->
             let
                 nutritionFollowUps =
-                    generateNutritionFollowUps currentDate db followUps
+                    generateNutritionFollowUps currentDate followUps
                         |> filterVillageResidents villageId identity db
 
                 nutritionFollowUpsPane =
