@@ -3003,7 +3003,7 @@ translationSet trans =
             }
 
         ANCNewborn ->
-            { english = "ANC & Newborn"
+            { english = "Antenatal Care & Newborn"
             , kinyarwanda = Just "Kwita k’umugore utwite n’uruhinja"
             }
 
@@ -6561,8 +6561,8 @@ translationSet trans =
             }
 
         InfrastructureEnvironment ->
-            { english = "Infrastructure & Environment"
-            , kinyarwanda = Nothing
+            { english = "Infrastructure, Environment"
+            , kinyarwanda = Just "Ibikorwa remezo n’ibidukikije"
             }
 
         InfrastructureEnvironmentWash ->
@@ -9555,7 +9555,7 @@ translationSet trans =
 
                 BeneficiaryCashTransfer ->
                     { english = "Is the mother or the child beneficiary of cash transfer e.g. NSDS, VUP"
-                    , kinyarwanda = Just "Umubyeyi cg umwana ni abagenerwa bikorwa b'amfaranga y’inkunga (e.g. VUP, NSDS"
+                    , kinyarwanda = Just "Umubyeyi cg umwana ni abagenerwa bikorwa b'amafaranga y’inkunga (e.g. VUP, NSDS"
                     }
 
                 ReceivingCashTransfer ->
@@ -9570,7 +9570,7 @@ translationSet trans =
 
                 ChildWithAcuteMalnutrition ->
                     { english = "Please check MUAC. Does the child have acute malnutrition"
-                    , kinyarwanda = Just "Reba ikizigira. Umwana afite imirire mibi ihutiyeho"
+                    , kinyarwanda = Just "Pima ikizigira. Umwana afite imirire mibi ihutiyeho"
                     }
 
                 TreatedForAcuteMalnutrition ->
@@ -9879,7 +9879,7 @@ translationSet trans =
         NCDAStep step ->
             case step of
                 NCDAStepAntenatalCare ->
-                    translationSet AntenatalCare
+                    translationSet ANCNewborn
 
                 NCDAStepUniversalInterventions ->
                     translationSet UniversalInterventions
@@ -18122,7 +18122,7 @@ translationSet trans =
 
         TargetedInterventions ->
             { english = "Targeted Interventions"
-            , kinyarwanda = Just "Ingamba zari ziteganijwe"
+            , kinyarwanda = Just "Ibikorwa bifasha umwana mu buryo bwihariye"
             }
 
         TelephoneNumber ->
