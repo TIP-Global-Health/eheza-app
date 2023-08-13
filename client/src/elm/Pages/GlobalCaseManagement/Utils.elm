@@ -191,7 +191,7 @@ filterResolvedFollowUps currentDate resolutionDate =
             not <| Date.compare currentDate date == LT
         )
         resolutionDate
-        |> -- Do not filter follow up is resolution date is not set.
+        |> -- Do not filter follow up if resolution date is not set.
            Maybe.withDefault True
 
 
