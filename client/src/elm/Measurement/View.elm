@@ -2718,15 +2718,15 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 ( [], [] )
 
                         counseling =
-                            if form.childReceivesFBF == Just False then
+                            if form.childReceivesFBF == Just False || form.childTakingFBF == Just False then
                                 [ viewCounselingLabel ChildReceivesFBF ]
 
                             else
                                 []
                     in
                     ( viewNCDAInput ChildReceivesFBF form.childReceivesFBF updateFunc
-                        ++ counseling
                         ++ derivedInputs
+                        ++ counseling
                     , form.childReceivesFBF :: derivedTasks
                     )
 
