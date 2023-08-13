@@ -9663,7 +9663,7 @@ translationSet trans =
 
         NCDAUpdateVaccineRecordMessage ->
             { english = "Please update the childs vaccine record with information from the vaccine card at the end of this scorecard visit"
-            , kinyarwanda = Just "Uzuza inkingo zitanditse ukoresheje amakuru ari ku ifishi y'inkingo y'umwana nyuma yo kurangiza ibikorwa byo ku ifishi y'imikurire y'umwana "
+            , kinyarwanda = Just "Uzuza inkingo zitanditse ukoresheje amakuru ari ku ifishi y'inkingo y'umwana nyuma yo kurangiza ibikorwa byo ku ifishi y'imikurire y'umwana"
             }
 
         NCDActivityTitle activity ->
