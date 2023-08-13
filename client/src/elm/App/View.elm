@@ -388,8 +388,8 @@ viewUserPage page deviceName model configured =
                     GlobalCaseManagementPage ->
                         Pages.GlobalCaseManagement.View.view model.language
                             currentDate
-                            ( healthCenterId, model.villageId )
-                            isChw
+                            healthCenterId
+                            model.villageId
                             loggedInModel.globalCaseManagementPage
                             model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)

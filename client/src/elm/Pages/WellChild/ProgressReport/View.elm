@@ -2960,8 +2960,7 @@ viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasur
                 ++ Dict.keys groupWeightsByDate
                 ++ Dict.keys groupMuacsByDate
                 ++ Dict.keys groupNutritionsByDate
-                |> EverySet.fromList
-                |> EverySet.toList
+                |> Pages.Utils.unique
 
         groupHeightsByDate =
             Dict.values groupNutritionMeasurements.heights

@@ -1241,3 +1241,8 @@ customPopup language showWarning actionLabel ( topMessage, bottomMessage, action
                 [ text <| translate language actionLabel ]
             ]
         ]
+
+
+unique : List a -> List a
+unique =
+    EverySet.fromList >> EverySet.toList

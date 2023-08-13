@@ -15,7 +15,8 @@ import Backend.Measurement.Model
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Village.Utils exposing (personLivesInVillage)
+import Backend.Village.Model exposing (Village)
+import Backend.Village.Utils exposing (isVillageResident, personLivesInVillage)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
@@ -214,6 +215,18 @@ filterVillageResidents villageId keyToPersonIdFunc db dict =
         |> Dict.fromList
 
 
+fillPersonName : (k -> PersonId) -> ModelIndexedDb -> Dict k { v | personName : String } -> Dict k { v | personName : String }
+fillPersonName keyToPersonIdFunc db =
+    Dict.toList
+        >> List.filterMap
+            (\( k, v ) ->
+                Dict.get (keyToPersonIdFunc k) db.people
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map (\person -> ( k, { v | personName = person.name } ))
+            )
+        >> Dict.fromList
+
+
 generateAcuteIllnessEncounters : FollowUpMeasurements -> EverySet AcuteIllnessEncounterId
 generateAcuteIllnessEncounters followUps =
     generateEncountersIdsFromMeasurements .acuteIllness followUps
@@ -355,4 +368,18 @@ labsResultsTestData currentDate dateMeasured value =
     else
         ( EverySet.remove TestVitalsRecheck value.performedTests |> EverySet.toList
         , EverySet.remove TestVitalsRecheck value.completedTests |> EverySet.toList
+        )
+
+
+filterResidents : ModelIndexedDb -> Village -> List PersonId -> List PersonId
+filterResidents db village =
+    List.filter
+        (\personId ->
+            Dict.get personId db.people
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (\person ->
+                        isVillageResident person village
+                    )
+                |> Maybe.withDefault False
         )

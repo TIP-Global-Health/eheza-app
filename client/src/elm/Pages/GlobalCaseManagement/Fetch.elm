@@ -12,6 +12,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
+import Pages.Utils
 import RemoteData exposing (RemoteData(..))
 
 
@@ -47,6 +48,7 @@ fetchForVillage currentDate village db followUps =
 
         peopleForNutrition =
             Dict.keys nutritionFollowUps
+                |> Pages.Utils.unique
 
         peopleForAccuteIllness =
             Maybe.map
@@ -54,6 +56,7 @@ fetchForVillage currentDate village db followUps =
                     >> Dict.values
                     >> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
                     >> List.map .participantId
+                    >> Pages.Utils.unique
                 )
                 followUps
                 |> Maybe.withDefault []
@@ -64,6 +67,7 @@ fetchForVillage currentDate village db followUps =
                     >> Dict.values
                     >> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
                     >> List.map .participantId
+                    >> Pages.Utils.unique
                 )
                 followUps
                 |> Maybe.withDefault []
@@ -76,29 +80,16 @@ fetchForVillage currentDate village db followUps =
             peopleForNutrition
                 ++ peopleForAccuteIllness
                 ++ peopleForPrenatal
-                |> EverySet.fromList
-                |> EverySet.toList
+                |> Pages.Utils.unique
 
         residentsForNutrition =
-            filterResidents peopleForNutrition
+            filterResidents db village peopleForNutrition
 
         residentsForAccuteIllness =
-            filterResidents peopleForAccuteIllness
+            filterResidents db village peopleForAccuteIllness
 
         residentsForPrenatal =
-            filterResidents peopleForPrenatal
-
-        filterResidents =
-            List.filter
-                (\personId ->
-                    Dict.get personId db.people
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map
-                            (\person ->
-                                isVillageResident person village
-                            )
-                        |> Maybe.withDefault False
-                )
+            filterResidents db village peopleForPrenatal
 
         followUpsForResidents =
             Maybe.map
@@ -226,7 +217,6 @@ fetchForHealthCenter currentDate db followUps =
             traceReporters
                 ++ peopleForPrenatalLabsResults
                 ++ peopleForNCDLabsResults
-                |> EverySet.fromList
-                |> EverySet.toList
+                |> Pages.Utils.unique
     in
     [ FetchFollowUpParticipants people ]
