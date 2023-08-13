@@ -49,12 +49,22 @@ fetchForVillage currentDate village db followUps =
             Dict.keys nutritionFollowUps
 
         peopleForAccuteIllness =
-            Maybe.map (.acuteIllness >> Dict.values >> List.map .participantId)
+            Maybe.map
+                (.acuteIllness
+                    >> Dict.values
+                    >> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+                    >> List.map .participantId
+                )
                 followUps
                 |> Maybe.withDefault []
 
         peopleForPrenatal =
-            Maybe.map (.prenatal >> Dict.values >> List.map .participantId)
+            Maybe.map
+                (.prenatal
+                    >> Dict.values
+                    >> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+                    >> List.map .participantId
+                )
                 followUps
                 |> Maybe.withDefault []
 
