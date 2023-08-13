@@ -3,8 +3,10 @@ module Pages.GlobalCaseManagement.Fetch exposing (fetch)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.Measurement.Model exposing (FollowUpMeasurements)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
+import Backend.Village.Model exposing (Village)
 import Backend.Village.Utils exposing (getVillageById, isVillageResident)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -19,7 +21,26 @@ fetch currentDate healthCenterId villageId db =
         followUps =
             Dict.get healthCenterId db.followUpMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
+    in
+    [ FetchVillages
+    , FetchHealthCenters
+    , FetchFollowUpMeasurements healthCenterId
+    ]
+        ++ (Maybe.andThen
+                (getVillageById db
+                    >> Maybe.map
+                        (\village ->
+                            fetchForVillage currentDate village db followUps
+                        )
+                )
+                villageId
+                |> Maybe.withDefault (fetchForHealthCenter currentDate db followUps)
+           )
 
+
+fetchForVillage : NominalDate -> Village -> ModelIndexedDb -> Maybe FollowUpMeasurements -> List MsgIndexedDb
+fetchForVillage currentDate village db followUps =
+    let
         nutritionFollowUps =
             Maybe.map (generateNutritionFollowUps currentDate) followUps
                 |> Maybe.withDefault Dict.empty
@@ -27,65 +48,26 @@ fetch currentDate healthCenterId villageId db =
         peopleForNutrition =
             Dict.keys nutritionFollowUps
 
-        acuteIllnessFollowUps =
-            Maybe.map (generateAcuteIllnessFollowUps currentDate db) followUps
-                |> Maybe.withDefault Dict.empty
-
         peopleForAccuteIllness =
-            Dict.keys acuteIllnessFollowUps
-                |> List.map Tuple.second
-
-        prenatalFollowUps =
-            Maybe.map (generatePrenatalFollowUps currentDate db) followUps
-                |> Maybe.withDefault Dict.empty
+            Maybe.map (.acuteIllness >> Dict.values >> List.map .participantId)
+                followUps
+                |> Maybe.withDefault []
 
         peopleForPrenatal =
-            Dict.keys prenatalFollowUps
-                |> List.map Tuple.second
+            Maybe.map (.prenatal >> Dict.values >> List.map .participantId)
+                followUps
+                |> Maybe.withDefault []
 
-        people =
+        -- We need to fetch all people in follow ups, to determine if person
+        -- is resident of village or not.
+        -- Then, we'll fetch participants and encounters data only for
+        -- those that are residents.
+        peopleForFetch =
             peopleForNutrition
                 ++ peopleForAccuteIllness
                 ++ peopleForPrenatal
                 |> EverySet.fromList
                 |> EverySet.toList
-    in
-    [ FetchVillages
-    , FetchHealthCenters
-    , FetchFollowUpMeasurements healthCenterId
-    , FetchFollowUpParticipants people
-    ]
-        ++ (Maybe.andThen
-                (getVillageById db
-                    >> Maybe.map
-                        (\village ->
-                            fetchForVillage currentDate village db followUps peopleForNutrition peopleForAccuteIllness peopleForPrenatal
-                        )
-                )
-                villageId
-                |> Maybe.withDefault (fetchForHealthCenter currentDate db followUps peopleForNutrition peopleForAccuteIllness peopleForPrenatal)
-           )
-
-
-fetchForVillage currentDate village db followUps peopleForNutrition peopleForAccuteIllness peopleForPrenatal =
-    let
-        _ =
-            Debug.log "peopleForNutrition" (List.length peopleForNutrition)
-
-        _ =
-            Debug.log "residentsForNutrition" (List.length residentsForNutrition)
-
-        _ =
-            Debug.log "peopleForAccuteIllness" (List.length peopleForAccuteIllness)
-
-        _ =
-            Debug.log "residentsForAccuteIllness" (List.length residentsForAccuteIllness)
-
-        _ =
-            Debug.log "peopleForPrenatal" (List.length peopleForPrenatal)
-
-        _ =
-            Debug.log "residentsForPrenatal" (List.length residentsForPrenatal)
 
         residentsForNutrition =
             filterResidents peopleForNutrition
@@ -189,7 +171,8 @@ fetchForVillage currentDate village db followUps peopleForNutrition peopleForAcc
             EverySet.toList prenatalParticipants
                 |> List.map FetchPrenatalEncountersForParticipant
     in
-    fetchIndividualParticipantsMsgs
+    FetchFollowUpParticipants peopleForFetch
+        :: fetchIndividualParticipantsMsgs
         ++ fetchHomeVisitEncountersMsgs
         ++ fetchAcuteIllnessEncountersMsgs
         ++ fetchAcuteIllnessParticipantsMsgs
@@ -199,69 +182,9 @@ fetchForVillage currentDate village db followUps peopleForNutrition peopleForAcc
         ++ fetchPrenatalEncountersForParticipantMsgs
 
 
-fetchForHealthCenter currentDate db followUps peopleForNutrition peopleForAccuteIllness peopleForPrenatal =
+fetchForHealthCenter : NominalDate -> ModelIndexedDb -> Maybe FollowUpMeasurements -> List MsgIndexedDb
+fetchForHealthCenter currentDate db followUps =
     let
-        --
-        --  Nutrition follows ups calculations.
-        --
-        fetchIndividualParticipantsMsgs =
-            List.map FetchIndividualEncounterParticipantsForPerson peopleForNutrition
-
-        fetchHomeVisitEncountersMsgs =
-            peopleForNutrition
-                |> List.map
-                    (\personId ->
-                        resolveIndividualParticipantsForPerson personId HomeVisitEncounter db
-                            |> List.map FetchHomeVisitEncountersForParticipant
-                    )
-                |> List.concat
-
-        --
-        --  Acute illness follows ups calculations.
-        --
-        acuteIllnessEncounters =
-            followUps
-                |> Maybe.map generateAcuteIllnessEncounters
-                |> Maybe.withDefault EverySet.empty
-
-        acuteIllnessParticipants =
-            generateAcuteIllnessParticipants acuteIllnessEncounters db
-
-        fetchAcuteIllnessEncountersMsgs =
-            EverySet.toList acuteIllnessEncounters
-                |> List.map FetchAcuteIllnessEncounter
-
-        fetchAcuteIllnessParticipantsMsgs =
-            EverySet.toList acuteIllnessParticipants
-                |> List.map FetchIndividualEncounterParticipant
-
-        fetchAcuteIllnessEncountersForParticipantMsgs =
-            EverySet.toList acuteIllnessParticipants
-                |> List.map FetchAcuteIllnessEncountersForParticipant
-
-        --
-        --  Prenatal follows ups calculations.
-        --
-        prenatalEncounters =
-            followUps
-                |> Maybe.map generatePrenatalEncounters
-                |> Maybe.withDefault EverySet.empty
-
-        prenatalParticipants =
-            generatePrenatalParticipants prenatalEncounters db
-
-        fetchPrenatalEncountersMsgs =
-            EverySet.toList prenatalEncounters
-                |> List.map FetchPrenatalEncounter
-
-        fetchPrenatalParticipantsMsgs =
-            EverySet.toList prenatalParticipants
-                |> List.map FetchIndividualEncounterParticipant
-
-        fetchPrenatalEncountersForParticipantMsgs =
-            EverySet.toList prenatalParticipants
-                |> List.map FetchPrenatalEncountersForParticipant
-
         --
         --  Trace Contacts calculations.
         --
@@ -296,12 +219,4 @@ fetchForHealthCenter currentDate db followUps peopleForNutrition peopleForAccute
                 |> EverySet.fromList
                 |> EverySet.toList
     in
-    FetchFollowUpParticipants people
-        :: fetchIndividualParticipantsMsgs
-        ++ fetchHomeVisitEncountersMsgs
-        ++ fetchAcuteIllnessEncountersMsgs
-        ++ fetchAcuteIllnessParticipantsMsgs
-        ++ fetchAcuteIllnessEncountersForParticipantMsgs
-        ++ fetchPrenatalEncountersMsgs
-        ++ fetchPrenatalParticipantsMsgs
-        ++ fetchPrenatalEncountersForParticipantMsgs
+    [ FetchFollowUpParticipants people ]
