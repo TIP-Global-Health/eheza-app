@@ -2999,11 +2999,11 @@ translationSet trans =
 
         ANCIndicateVisitsMonthsPhrase ->
             { english = "Indicate the months of pregnancy in which a visit occured"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo amezi y'inda isuzuma ryakoreweho"
             }
 
         ANCNewborn ->
-            { english = "ANC & Newborn"
+            { english = "Antenatal Care & Newborn"
             , kinyarwanda = Just "Kwita k’umugore utwite n’uruhinja"
             }
 
@@ -3726,7 +3726,7 @@ translationSet trans =
 
                 ChildScoreboardVaccinationHistory ->
                     { english = "Vaccination History"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Amakuru ku Nkingo"
                     }
 
         ChildScorecard ->
@@ -6561,8 +6561,8 @@ translationSet trans =
             }
 
         InfrastructureEnvironment ->
-            { english = "Infrastructure & Environment"
-            , kinyarwanda = Nothing
+            { english = "Infrastructure, Environment"
+            , kinyarwanda = Just "Ibikorwa remezo n’ibidukikije"
             }
 
         InfrastructureEnvironmentWash ->
@@ -9365,7 +9365,7 @@ translationSet trans =
 
         NCDADiarrheaPopupMessage ->
             { english = "The child has diarrhea. Please continue to an Acute Illness encounter."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umwana afite impiswi. Komereza ku kuvura Uburwayi butunguranye"
             }
 
         NCDAMealFrequency6to9 ->
@@ -9482,7 +9482,7 @@ translationSet trans =
 
                 ChildReceivesECD ->
                     { english = "Provide counseling on the importance of brain stimulation activities for the development of the child"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gira umubyeyi inama ku kamaro ko gukangura ubwonko bw'umwana unamwereke uko bikorwa"
                     }
 
                 _ ->
@@ -9555,7 +9555,7 @@ translationSet trans =
 
                 BeneficiaryCashTransfer ->
                     { english = "Is the mother or the child beneficiary of cash transfer e.g. NSDS, VUP"
-                    , kinyarwanda = Just "Umubyeyi cg umwana ni abagenerwa bikorwa b'amfaranga y’inkunga (e.g. VUP, NSDS"
+                    , kinyarwanda = Just "Umubyeyi cg umwana ni abagenerwa bikorwa b'amafaranga y’inkunga (e.g. VUP, NSDS"
                     }
 
                 ReceivingCashTransfer ->
@@ -9570,7 +9570,7 @@ translationSet trans =
 
                 ChildWithAcuteMalnutrition ->
                     { english = "Please check MUAC. Does the child have acute malnutrition"
-                    , kinyarwanda = Just "Reba ikizigira. Umwana afite imirire mibi ihutiyeho"
+                    , kinyarwanda = Just "Pima ikizigira. Umwana afite imirire mibi ihutiyeho"
                     }
 
                 TreatedForAcuteMalnutrition ->
@@ -9653,7 +9653,7 @@ translationSet trans =
 
                 ChildReceivesECD ->
                     { english = "Do you sing lullabies, poems, and read books to your child, or play games with your child"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uririmbira umwana ibihozo, n'imivugo, ukamusomera ibitabo mukanakina"
                     }
 
                 NoNCDASigns ->
@@ -9663,7 +9663,7 @@ translationSet trans =
 
         NCDAUpdateVaccineRecordMessage ->
             { english = "Please update the childs vaccine record with information from the vaccine card at the end of this scorecard visit"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uzuza inkingo zitanditse ukoresheje amakuru ari ku ifishi y'inkingo y'umwana nyuma yo kurangiza ibikorwa byo ku ifishi y'imikurire y'umwana"
             }
 
         NCDActivityTitle activity ->
@@ -9879,7 +9879,7 @@ translationSet trans =
         NCDAStep step ->
             case step of
                 NCDAStepAntenatalCare ->
-                    translationSet AntenatalCare
+                    translationSet ANCNewborn
 
                 NCDAStepUniversalInterventions ->
                     translationSet UniversalInterventions
@@ -18122,7 +18122,7 @@ translationSet trans =
 
         TargetedInterventions ->
             { english = "Targeted Interventions"
-            , kinyarwanda = Just "Ingamba zari ziteganijwe"
+            , kinyarwanda = Just "Ibikorwa bifasha umwana mu buryo bwihariye"
             }
 
         TelephoneNumber ->
