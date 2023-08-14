@@ -10,8 +10,7 @@ import RemoteData exposing (RemoteData(..))
 
 getVillageClinicId : VillageId -> ModelIndexedDb -> Maybe ClinicId
 getVillageClinicId villageId db =
-    db.clinics
-        |> RemoteData.toMaybe
+    RemoteData.toMaybe db.clinics
         |> Maybe.map
             (Dict.toList
                 >> List.filterMap
@@ -28,8 +27,7 @@ getVillageClinicId villageId db =
 
 getVillageById : ModelIndexedDb -> VillageId -> Maybe Village
 getVillageById db villageId =
-    db.villages
-        |> RemoteData.toMaybe
+    RemoteData.toMaybe db.villages
         |> Maybe.andThen (Dict.get villageId)
 
 

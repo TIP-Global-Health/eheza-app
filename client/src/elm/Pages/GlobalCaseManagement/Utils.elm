@@ -16,7 +16,7 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Village.Model exposing (Village)
-import Backend.Village.Utils exposing (isVillageResident, personLivesInVillage)
+import Backend.Village.Utils exposing (isVillageResident)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)

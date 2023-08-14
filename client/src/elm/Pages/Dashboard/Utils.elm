@@ -122,9 +122,6 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     { stats = filteredStats
     , acuteIllnessData = generateFilteredAcuteIllnessData stats selectedVillageFilter
     , prenatalData = generateFilteredPrenatalData stats selectedVillageFilter
-    , caseManagementData =
-        Dict.get healthCenterId db.followUpMeasurements
-            |> Maybe.andThen RemoteData.toMaybe
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 
