@@ -197,25 +197,6 @@ filterResolvedFollowUps currentDate resolutionDate =
            Maybe.withDefault True
 
 
-filterVillageResidents : VillageId -> (k -> PersonId) -> ModelIndexedDb -> Dict k { v | personName : String } -> Dict k { v | personName : String }
-filterVillageResidents villageId keyToPersonIdFunc db dict =
-    Dict.toList dict
-        |> List.filterMap
-            (\( k, v ) ->
-                Dict.get (keyToPersonIdFunc k) db.people
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.andThen
-                        (\person ->
-                            if personLivesInVillage person db villageId then
-                                Just ( k, { v | personName = person.name } )
-
-                            else
-                                Nothing
-                        )
-            )
-        |> Dict.fromList
-
-
 fillPersonName : (k -> PersonId) -> ModelIndexedDb -> Dict k { v | personName : String } -> Dict k { v | personName : String }
 fillPersonName keyToPersonIdFunc db =
     Dict.toList

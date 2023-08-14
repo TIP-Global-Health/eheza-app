@@ -26,10 +26,10 @@ fetch currentDate healthCenterId villageId db =
                     (\followUps ->
                         Maybe.andThen
                             (getVillageById db
-                                >> Maybe.map (\village -> fetchForVillage currentDate village db followUps)
+                                >> Maybe.map (\village -> fetchForCHWAtVillage currentDate village db followUps)
                             )
                             villageId
-                            |> Maybe.withDefault (fetchForHealthCenter currentDate db followUps)
+                            |> Maybe.withDefault (fetchForNurseAtHealthCenter currentDate db followUps)
                     )
                 |> Maybe.withDefault []
     in
@@ -40,8 +40,8 @@ fetch currentDate healthCenterId villageId db =
         ++ fetchForAuthorityMsgs
 
 
-fetchForVillage : NominalDate -> Village -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
-fetchForVillage currentDate village db followUps =
+fetchForCHWAtVillage : NominalDate -> Village -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
+fetchForCHWAtVillage currentDate village db followUps =
     let
         ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal ) =
             resolveUniquePatientsFromFollowUps currentDate followUps
@@ -130,8 +130,8 @@ fetchForVillage currentDate village db followUps =
         ++ fetchPrenatalEncountersForParticipantMsgs
 
 
-fetchForHealthCenter : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
-fetchForHealthCenter currentDate db followUps =
+fetchForNurseAtHealthCenter : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
+fetchForNurseAtHealthCenter currentDate db followUps =
     let
         --
         --  Trace Contacts calculations.

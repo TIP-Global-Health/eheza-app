@@ -33,6 +33,7 @@ import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model
+import Backend.Village.Utils exposing (getVillageById)
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), isBetween, monthNumber, numberToMonth, year)
 import Debug exposing (toString)
@@ -207,10 +208,13 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
         limitDate =
             Date.ceiling Date.Month selectedDate
 
+        village =
+            Maybe.andThen (getVillageById db) model.selectedVillageFilter
+
         -- Case Management
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
             Maybe.map2 (getFollowUpsTotals language currentDate limitDate db)
-                model.selectedVillageFilter
+                village
                 assembled.caseManagementData
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
@@ -637,9 +641,12 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
         limitDate =
             Date.ceiling Date.Month selectedDate
 
+        village =
+            Maybe.andThen (getVillageById db) model.selectedVillageFilter
+
         ( managedCovid, managedMalaria, managedGI ) =
             Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db)
-                model.selectedVillageFilter
+                village
                 assembled.caseManagementData
                 |> Maybe.withDefault ( 0, 0, 0 )
 
