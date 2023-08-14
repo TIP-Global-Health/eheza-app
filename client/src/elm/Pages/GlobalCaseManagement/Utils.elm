@@ -206,6 +206,7 @@ fillPersonName keyToPersonIdFunc db =
                     |> Maybe.andThen RemoteData.toMaybe
                     |> Maybe.map (\person -> ( k, { v | personName = person.name } ))
             )
+        >> List.sortBy (Tuple.second >> .personName)
         >> Dict.fromList
 
 
