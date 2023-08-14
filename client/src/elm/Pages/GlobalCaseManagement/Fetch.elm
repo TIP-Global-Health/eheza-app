@@ -87,8 +87,9 @@ fetchForCHWAtVillage currentDate village db followUps =
             generateAcuteIllnessParticipants acuteIllnessEncounters db
 
         fetchAcuteIllnessEncountersMsgs =
-            EverySet.toList acuteIllnessEncounters
-                |> List.map FetchAcuteIllnessEncounter
+            [ EverySet.toList acuteIllnessEncounters
+                |> FetchAcuteIllnessEncounters
+            ]
 
         fetchAcuteIllnessParticipantsMsgs =
             EverySet.toList acuteIllnessParticipants
@@ -108,8 +109,9 @@ fetchForCHWAtVillage currentDate village db followUps =
             generatePrenatalParticipants prenatalEncounters db
 
         fetchPrenatalEncountersMsgs =
-            EverySet.toList prenatalEncounters
-                |> List.map FetchPrenatalEncounter
+            [ EverySet.toList prenatalEncounters
+                |> FetchPrenatalEncounters
+            ]
 
         fetchPrenatalParticipantsMsgs =
             EverySet.toList prenatalParticipants

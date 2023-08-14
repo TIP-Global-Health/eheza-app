@@ -270,6 +270,7 @@ type alias ComputedDashboard =
 type MsgIndexedDb
     = -- Messages which fetch various kinds of data.
       FetchAcuteIllnessEncounter AcuteIllnessEncounterId
+    | FetchAcuteIllnessEncounters (List AcuteIllnessEncounterId)
     | FetchAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId
     | FetchAcuteIllnessMeasurements AcuteIllnessEncounterId
     | FetchChildMeasurements PersonId
@@ -313,6 +314,7 @@ type MsgIndexedDb
     | FetchPeople (List PersonId)
     | FetchPerson PersonId
     | FetchPrenatalEncounter PrenatalEncounterId
+    | FetchPrenatalEncounters (List PrenatalEncounterId)
     | FetchPrenatalEncountersForParticipant IndividualEncounterParticipantId
     | FetchPrenatalMeasurements PrenatalEncounterId
     | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
@@ -328,6 +330,7 @@ type MsgIndexedDb
     | FetchTraceContact AcuteIllnessTraceContactId
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
+    | HandleFetchedAcuteIllnessEncounters (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     | HandleFetchedAcuteIllnessMeasurements AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
@@ -361,6 +364,7 @@ type MsgIndexedDb
     | HandleFetchedPerson PersonId (WebData Person)
     | HandleFetchPeople (WebData (Dict PersonId Person))
     | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)
+    | HandleFetchedPrenatalEncounters (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     | HandleFetchedPrenatalEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
     | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
