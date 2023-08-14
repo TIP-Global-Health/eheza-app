@@ -293,6 +293,8 @@ type MsgIndexedDb
     | FetchFollowUpMeasurements HealthCenterId
     | FetchFollowUpParticipants (List PersonId)
     | FetchHealthCenters
+    | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
+    | FetchIndividualEncounterParticipants (List IndividualEncounterParticipantId)
     | FetchIndividualEncounterParticipantsForPerson PersonId
     | FetchMotherMeasurements PersonId
     | FetchMothersMeasurements (List PersonId)
@@ -317,7 +319,6 @@ type MsgIndexedDb
     | FetchPrenatalEncounters (List PrenatalEncounterId)
     | FetchPrenatalEncountersForParticipant IndividualEncounterParticipantId
     | FetchPrenatalMeasurements PrenatalEncounterId
-    | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
     | FetchResilienceMessagesForNurse NurseId
     | FetchResilienceSurveysForNurse NurseId
@@ -343,6 +344,8 @@ type MsgIndexedDb
     | HandleFetchedFollowUpMeasurements HealthCenterId (WebData FollowUpMeasurements)
     | HandleFetchFollowUpParticipants (WebData (Dict PersonId Person))
     | HandleFetchedHealthCenters (WebData (Dict HealthCenterId HealthCenter))
+    | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
+    | HandleFetchedIndividualEncounterParticipants (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedMothersMeasurements (WebData (Dict PersonId MotherMeasurementList))
@@ -367,7 +370,6 @@ type MsgIndexedDb
     | HandleFetchedPrenatalEncounters (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     | HandleFetchedPrenatalEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
-    | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
     | HandleFetchedResilienceMessagesForNurse NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
     | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))

@@ -289,6 +289,13 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchIndividualEncounterParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.individualParticipants)) ids
+
         FetchIndividualEncounterParticipantsForPerson id ->
             Dict.get id model.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked

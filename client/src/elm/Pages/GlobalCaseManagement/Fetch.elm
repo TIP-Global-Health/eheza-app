@@ -86,14 +86,13 @@ fetchForCHWAtVillage currentDate village db followUps =
         acuteIllnessParticipants =
             generateAcuteIllnessParticipants acuteIllnessEncounters db
 
-        fetchAcuteIllnessEncountersMsgs =
-            [ EverySet.toList acuteIllnessEncounters
+        fetchAcuteIllnessEncountersMsg =
+            EverySet.toList acuteIllnessEncounters
                 |> FetchAcuteIllnessEncounters
-            ]
 
-        fetchAcuteIllnessParticipantsMsgs =
+        fetchAcuteIllnessParticipantsMsg =
             EverySet.toList acuteIllnessParticipants
-                |> List.map FetchIndividualEncounterParticipant
+                |> FetchIndividualEncounterParticipants
 
         fetchAcuteIllnessEncountersForParticipantMsgs =
             EverySet.toList acuteIllnessParticipants
@@ -108,27 +107,27 @@ fetchForCHWAtVillage currentDate village db followUps =
         prenatalParticipants =
             generatePrenatalParticipants prenatalEncounters db
 
-        fetchPrenatalEncountersMsgs =
-            [ EverySet.toList prenatalEncounters
+        fetchPrenatalEncountersMsg =
+            EverySet.toList prenatalEncounters
                 |> FetchPrenatalEncounters
-            ]
 
-        fetchPrenatalParticipantsMsgs =
+        fetchPrenatalParticipantsMsg =
             EverySet.toList prenatalParticipants
-                |> List.map FetchIndividualEncounterParticipant
+                |> FetchIndividualEncounterParticipants
 
         fetchPrenatalEncountersForParticipantMsgs =
             EverySet.toList prenatalParticipants
                 |> List.map FetchPrenatalEncountersForParticipant
     in
-    FetchFollowUpParticipants peopleForFetch
-        :: fetchIndividualParticipantsMsgs
+    [ FetchFollowUpParticipants peopleForFetch
+    , fetchAcuteIllnessEncountersMsg
+    , fetchPrenatalEncountersMsg
+    , fetchAcuteIllnessParticipantsMsg
+    , fetchPrenatalParticipantsMsg
+    ]
+        ++ fetchIndividualParticipantsMsgs
         ++ fetchHomeVisitEncountersMsgs
-        ++ fetchAcuteIllnessEncountersMsgs
-        ++ fetchAcuteIllnessParticipantsMsgs
         ++ fetchAcuteIllnessEncountersForParticipantMsgs
-        ++ fetchPrenatalEncountersMsgs
-        ++ fetchPrenatalParticipantsMsgs
         ++ fetchPrenatalEncountersForParticipantMsgs
 
 
