@@ -95,87 +95,9 @@ view language currentDate healthCenterId villageId model db =
 viewContentForChw : Language -> NominalDate -> Village -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
 viewContentForChw language currentDate village model db followUps =
     let
-        peopleForNutritionGroup =
-            uniquePatientsFromFollowUps .nutritionGroup
-
-        peopleForNutritionIndividual =
-            uniquePatientsFromFollowUps .nutritionIndividual
-
-        peopleForWellChild =
-            uniquePatientsFromFollowUps .wellChild
-
-        peopleForNutrition =
-            peopleForNutritionGroup
-                ++ peopleForNutritionIndividual
-                ++ peopleForWellChild
-                |> Pages.Utils.unique
-
-        peopleForAccuteIllness =
-            uniquePatientsFromFollowUps .acuteIllness
-
-        peopleForPrenatal =
-            uniquePatientsFromFollowUps .prenatal
-
-        uniquePatientsFromFollowUps mappingFunc =
-            mappingFunc followUps
-                |> Dict.values
-                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
-                |> List.map .participantId
-                |> Pages.Utils.unique
-
-        residentsForNutrition =
-            filterResidents db village peopleForNutrition
-
-        residentsForAccuteIllness =
-            filterResidents db village peopleForAccuteIllness
-
-        residentsForPrenatal =
-            filterResidents db village peopleForPrenatal
-
         followUpsForResidents =
-            let
-                nutritionGroup =
-                    Dict.filter
-                        (\_ followUp ->
-                            List.member followUp.participantId residentsForNutrition
-                        )
-                        followUps.nutritionGroup
-
-                nutritionIndividual =
-                    Dict.filter
-                        (\_ followUp ->
-                            List.member followUp.participantId residentsForNutrition
-                        )
-                        followUps.nutritionIndividual
-
-                wellChild =
-                    Dict.filter
-                        (\_ followUp ->
-                            List.member followUp.participantId residentsForNutrition
-                        )
-                        followUps.wellChild
-
-                acuteIllness =
-                    Dict.filter
-                        (\_ followUp ->
-                            List.member followUp.participantId residentsForAccuteIllness
-                        )
-                        followUps.acuteIllness
-
-                prenatal =
-                    Dict.filter
-                        (\_ followUp ->
-                            List.member followUp.participantId residentsForPrenatal
-                        )
-                        followUps.prenatal
-            in
-            { followUps
-                | nutritionGroup = nutritionGroup
-                , nutritionIndividual = nutritionIndividual
-                , wellChild = wellChild
-                , acuteIllness = acuteIllness
-                , prenatal = prenatal
-            }
+            resolveUniquePatientsFromFollowUps currentDate followUps
+                |> generateFollowUpsForResidents currentDate village db followUps
 
         nutritionFollowUps =
             generateNutritionFollowUps currentDate followUpsForResidents

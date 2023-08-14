@@ -21,6 +21,7 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.GlobalCaseManagement.Model exposing (..)
+import Pages.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -369,6 +370,96 @@ labsResultsTestData currentDate dateMeasured value =
         ( EverySet.remove TestVitalsRecheck value.performedTests |> EverySet.toList
         , EverySet.remove TestVitalsRecheck value.completedTests |> EverySet.toList
         )
+
+
+generateFollowUpsForResidents :
+    NominalDate
+    -> Village
+    -> ModelIndexedDb
+    -> FollowUpMeasurements
+    -> ( List PersonId, List PersonId, List PersonId )
+    -> FollowUpMeasurements
+generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal ) =
+    let
+        residentsForNutrition =
+            filterResidents db village peopleForNutrition
+
+        residentsForAccuteIllness =
+            filterResidents db village peopleForAccuteIllness
+
+        residentsForPrenatal =
+            filterResidents db village peopleForPrenatal
+
+        nutritionGroup =
+            Dict.filter
+                (\_ followUp ->
+                    List.member followUp.participantId residentsForNutrition
+                )
+                followUps.nutritionGroup
+
+        nutritionIndividual =
+            Dict.filter
+                (\_ followUp ->
+                    List.member followUp.participantId residentsForNutrition
+                )
+                followUps.nutritionIndividual
+
+        wellChild =
+            Dict.filter
+                (\_ followUp ->
+                    List.member followUp.participantId residentsForNutrition
+                )
+                followUps.wellChild
+
+        acuteIllness =
+            Dict.filter
+                (\_ followUp ->
+                    List.member followUp.participantId residentsForAccuteIllness
+                )
+                followUps.acuteIllness
+
+        prenatal =
+            Dict.filter
+                (\_ followUp ->
+                    List.member followUp.participantId residentsForPrenatal
+                )
+                followUps.prenatal
+    in
+    { followUps
+        | nutritionGroup = nutritionGroup
+        , nutritionIndividual = nutritionIndividual
+        , wellChild = wellChild
+        , acuteIllness = acuteIllness
+        , prenatal = prenatal
+    }
+
+
+resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> ( List PersonId, List PersonId, List PersonId )
+resolveUniquePatientsFromFollowUps currentDate followUps =
+    let
+        peopleForNutritionGroup =
+            uniquePatientsFromFollowUps .nutritionGroup
+
+        peopleForNutritionIndividual =
+            uniquePatientsFromFollowUps .nutritionIndividual
+
+        peopleForWellChild =
+            uniquePatientsFromFollowUps .wellChild
+
+        uniquePatientsFromFollowUps mappingFunc =
+            mappingFunc followUps
+                |> Dict.values
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+                |> List.map .participantId
+                |> Pages.Utils.unique
+    in
+    ( peopleForNutritionGroup
+        ++ peopleForNutritionIndividual
+        ++ peopleForWellChild
+        |> Pages.Utils.unique
+    , uniquePatientsFromFollowUps .acuteIllness
+    , uniquePatientsFromFollowUps .prenatal
+    )
 
 
 filterResidents : ModelIndexedDb -> Village -> List PersonId -> List PersonId

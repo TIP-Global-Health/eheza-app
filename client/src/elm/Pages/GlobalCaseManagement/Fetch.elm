@@ -19,58 +19,32 @@ import RemoteData exposing (RemoteData(..))
 fetch : NominalDate -> HealthCenterId -> Maybe VillageId -> ModelIndexedDb -> List MsgIndexedDb
 fetch currentDate healthCenterId villageId db =
     let
-        followUps =
+        fetchForAuthorityMsgs =
             Dict.get healthCenterId db.followUpMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (\followUps ->
+                        Maybe.andThen
+                            (getVillageById db
+                                >> Maybe.map (\village -> fetchForVillage currentDate village db followUps)
+                            )
+                            villageId
+                            |> Maybe.withDefault (fetchForHealthCenter currentDate db followUps)
+                    )
+                |> Maybe.withDefault []
     in
     [ FetchVillages
     , FetchHealthCenters
     , FetchFollowUpMeasurements healthCenterId
     ]
-        ++ (Maybe.andThen
-                (getVillageById db
-                    >> Maybe.map
-                        (\village ->
-                            fetchForVillage currentDate village db followUps
-                        )
-                )
-                villageId
-                |> Maybe.withDefault (fetchForHealthCenter currentDate db followUps)
-           )
+        ++ fetchForAuthorityMsgs
 
 
-fetchForVillage : NominalDate -> Village -> ModelIndexedDb -> Maybe FollowUpMeasurements -> List MsgIndexedDb
+fetchForVillage : NominalDate -> Village -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
 fetchForVillage currentDate village db followUps =
     let
-        nutritionFollowUps =
-            Maybe.map (generateNutritionFollowUps currentDate) followUps
-                |> Maybe.withDefault Dict.empty
-
-        peopleForNutrition =
-            Dict.keys nutritionFollowUps
-                |> Pages.Utils.unique
-
-        peopleForAccuteIllness =
-            Maybe.map
-                (.acuteIllness
-                    >> Dict.values
-                    >> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
-                    >> List.map .participantId
-                    >> Pages.Utils.unique
-                )
-                followUps
-                |> Maybe.withDefault []
-
-        peopleForPrenatal =
-            Maybe.map
-                (.prenatal
-                    >> Dict.values
-                    >> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
-                    >> List.map .participantId
-                    >> Pages.Utils.unique
-                )
-                followUps
-                |> Maybe.withDefault []
+        ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal ) =
+            resolveUniquePatientsFromFollowUps currentDate followUps
 
         -- We need to fetch all people in follow ups, to determine if person
         -- is resident of village or not.
@@ -85,33 +59,8 @@ fetchForVillage currentDate village db followUps =
         residentsForNutrition =
             filterResidents db village peopleForNutrition
 
-        residentsForAccuteIllness =
-            filterResidents db village peopleForAccuteIllness
-
-        residentsForPrenatal =
-            filterResidents db village peopleForPrenatal
-
         followUpsForResidents =
-            Maybe.map
-                (\followUps_ ->
-                    let
-                        acuteIllnessFollowUps =
-                            Dict.filter
-                                (\_ followUp ->
-                                    List.member followUp.participantId residentsForAccuteIllness
-                                )
-                                followUps_.acuteIllness
-
-                        prenatalFollowUps =
-                            Dict.filter
-                                (\_ followUp ->
-                                    List.member followUp.participantId residentsForPrenatal
-                                )
-                                followUps_.prenatal
-                    in
-                    { followUps_ | acuteIllness = acuteIllnessFollowUps, prenatal = prenatalFollowUps }
-                )
-                followUps
+            generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal )
 
         --
         --  Nutrition follows ups calculations.
@@ -132,8 +81,7 @@ fetchForVillage currentDate village db followUps =
         --  Acute illness follows ups calculations.
         --
         acuteIllnessEncounters =
-            Maybe.map generateAcuteIllnessEncounters followUpsForResidents
-                |> Maybe.withDefault EverySet.empty
+            generateAcuteIllnessEncounters followUpsForResidents
 
         acuteIllnessParticipants =
             generateAcuteIllnessParticipants acuteIllnessEncounters db
@@ -154,8 +102,7 @@ fetchForVillage currentDate village db followUps =
         --  Prenatal follows ups calculations.
         --
         prenatalEncounters =
-            Maybe.map generatePrenatalEncounters followUpsForResidents
-                |> Maybe.withDefault EverySet.empty
+            generatePrenatalEncounters followUpsForResidents
 
         prenatalParticipants =
             generatePrenatalParticipants prenatalEncounters db
@@ -183,32 +130,29 @@ fetchForVillage currentDate village db followUps =
         ++ fetchPrenatalEncountersForParticipantMsgs
 
 
-fetchForHealthCenter : NominalDate -> ModelIndexedDb -> Maybe FollowUpMeasurements -> List MsgIndexedDb
+fetchForHealthCenter : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
 fetchForHealthCenter currentDate db followUps =
     let
         --
         --  Trace Contacts calculations.
         --
         traceReporters =
-            Maybe.map (.traceContacts >> Dict.values >> List.map .participantId)
-                followUps
-                |> Maybe.withDefault []
+            Dict.values followUps.traceContacts
+                |> List.map .participantId
 
         --
         --  Prenatal labs results calculations.
         --
         peopleForPrenatalLabsResults =
-            Maybe.map (.prenatalLabs >> Dict.values >> List.map .participantId)
-                followUps
-                |> Maybe.withDefault []
+            Dict.values followUps.prenatalLabs
+                |> List.map .participantId
 
         --
         --  NCD labs results calculations.
         --
         peopleForNCDLabsResults =
-            Maybe.map (.ncdLabs >> Dict.values >> List.map .participantId)
-                followUps
-                |> Maybe.withDefault []
+            Dict.values followUps.ncdLabs
+                |> List.map .participantId
 
         --
         -- People for all types of follow ups.
