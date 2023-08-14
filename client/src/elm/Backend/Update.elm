@@ -561,7 +561,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         FetchPrenatalEncountersForParticipant id ->
             ( { model | prenatalEncountersByParticipant = Dict.insert id Loading model.prenatalEncountersByParticipant }
-            , sw.select prenatalEncounterEndpoint (Just id)
+            , sw.select prenatalEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPrenatalEncountersForParticipant id)
             , []
             )
@@ -572,9 +572,52 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchPrenatalEncountersForParticipants ids ->
+            let
+                prenatalEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.prenatalEncountersByParticipant ids
+            in
+            ( { model | prenatalEncountersByParticipant = prenatalEncountersByParticipantUpdated }
+            , sw.select prenatalEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedPrenatalEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedPrenatalEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | prenatalEncountersByParticipant = Dict.union dictUpdated model.prenatalEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchNutritionEncountersForParticipant id ->
             ( { model | nutritionEncountersByParticipant = Dict.insert id Loading model.nutritionEncountersByParticipant }
-            , sw.select nutritionEncounterEndpoint (Just id)
+            , sw.select nutritionEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedNutritionEncountersForParticipant id)
             , []
             )
@@ -587,7 +630,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         FetchHomeVisitEncountersForParticipant id ->
             ( { model | homeVisitEncountersByParticipant = Dict.insert id Loading model.homeVisitEncountersByParticipant }
-            , sw.select homeVisitEncounterEndpoint (Just id)
+            , sw.select homeVisitEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHomeVisitEncountersForParticipant id)
             , []
             )
@@ -598,9 +641,52 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchHomeVisitEncountersForParticipants ids ->
+            let
+                homeVisitEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.homeVisitEncountersByParticipant ids
+            in
+            ( { model | homeVisitEncountersByParticipant = homeVisitEncountersByParticipantUpdated }
+            , sw.select homeVisitEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedHomeVisitEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedHomeVisitEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | homeVisitEncountersByParticipant = Dict.union dictUpdated model.homeVisitEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchWellChildEncountersForParticipant id ->
             ( { model | wellChildEncountersByParticipant = Dict.insert id Loading model.wellChildEncountersByParticipant }
-            , sw.select wellChildEncounterEndpoint (Just id)
+            , sw.select wellChildEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedWellChildEncountersForParticipant id)
             , []
             )
@@ -613,7 +699,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         FetchAcuteIllnessEncountersForParticipant id ->
             ( { model | acuteIllnessEncountersByParticipant = Dict.insert id Loading model.acuteIllnessEncountersByParticipant }
-            , sw.select acuteIllnessEncounterEndpoint (Just id)
+            , sw.select acuteIllnessEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedAcuteIllnessEncountersForParticipant id)
             , []
             )
@@ -624,9 +710,52 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchAcuteIllnessEncountersForParticipants ids ->
+            let
+                acuteIllnessEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.acuteIllnessEncountersByParticipant ids
+            in
+            ( { model | acuteIllnessEncountersByParticipant = acuteIllnessEncountersByParticipantUpdated }
+            , sw.select acuteIllnessEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedAcuteIllnessEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedAcuteIllnessEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | acuteIllnessEncountersByParticipant = Dict.union dictUpdated model.acuteIllnessEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchNCDEncountersForParticipant id ->
             ( { model | ncdEncountersByParticipant = Dict.insert id Loading model.ncdEncountersByParticipant }
-            , sw.select ncdEncounterEndpoint (Just id)
+            , sw.select ncdEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedNCDEncountersForParticipant id)
             , []
             )

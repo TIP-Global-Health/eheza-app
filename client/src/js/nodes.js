@@ -806,16 +806,18 @@
                   'well_child_encounter'
                 ];
                 if (encounterTypes.includes(type)) {
-                  var individualSessionId = params.get('individual_participant');
-                  if (individualSessionId) {
+                  var participantIds = params.get('individual_participants');
+                  if (participantIds) {
+                    var uuids = participantIds.split(',');
+                    var tuples = uuids.map((uuid) => [type, uuid]);
                     modifyQuery = modifyQuery.then(function () {
-                        criteria.individual_participant = individualSessionId;
-                        query = table.where(criteria).and(function (encounter) {
-                            // If encounter is marked as deleted, do not include it in results.
-                            return encounter.deleted === false;
-                        });
+                        // Encounters curently don't have option to be deleted,
+                        // so there's no need to check for that.
+                        query = table.where('[type+individual_participant]').anyOf(tuples);
 
-                        countQuery = query.clone();
+                        // Cloning doesn't seem to work for this one.
+                        // If done, it corrupts the results of original query.
+                        countQuery = table.where('[type+individual_participant]').anyOf(tuples);
 
                         return Promise.resolve();
                     });

@@ -53,8 +53,8 @@ fetchForAdult personId db =
                 |> Maybe.Extra.values
                 |> List.concat
 
-        fetchPrenatalEncountersMsgs =
-            List.map FetchPrenatalEncountersForParticipant prenatalParticipantsIds
+        fetchPrenatalEncountersMsg =
+            FetchPrenatalEncountersForParticipants prenatalParticipantsIds
 
         fetchPrenatalMeasurementsMsgs =
             List.map FetchPrenatalMeasurements prenatalEncountersIds
@@ -71,7 +71,7 @@ fetchForAdult personId db =
     in
     [ FetchIndividualEncounterParticipantsForPerson personId
     , FetchMotherMeasurements personId
+    , fetchPrenatalEncountersMsg
     ]
-        ++ fetchPrenatalEncountersMsgs
         ++ fetchPrenatalMeasurementsMsgs
         ++ fetchChildrenMsgs
