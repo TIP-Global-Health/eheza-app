@@ -36,19 +36,19 @@ nurseFilters =
 
 
 generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
-generateNutritionFollowUps currentDate followUps =
+generateNutritionFollowUps limitDate followUps =
     let
         nutritionIndividual =
             Dict.values followUps.nutritionIndividual
-                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
 
         nutritionGroup =
             Dict.values followUps.nutritionGroup
-                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
 
         wellChild =
             Dict.values followUps.wellChild
-                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
 
         generateFollowUpItems followUpsList accumDict =
             followUpsList
@@ -84,7 +84,7 @@ generateNutritionFollowUps currentDate followUps =
 
 
 generateAcuteIllnessFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
-generateAcuteIllnessFollowUps currentDate db followUps =
+generateAcuteIllnessFollowUps limitDate db followUps =
     let
         encountersData =
             generateAcuteIllnessEncounters followUps
@@ -98,7 +98,7 @@ generateAcuteIllnessFollowUps currentDate db followUps =
                 |> Dict.fromList
     in
     Dict.values followUps.acuteIllness
-        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
         |> List.foldl
             (\item accum ->
                 let
@@ -135,7 +135,7 @@ generateAcuteIllnessFollowUps currentDate db followUps =
 
 
 generatePrenatalFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) PrenatalFollowUpItem
-generatePrenatalFollowUps currentDate db followUps =
+generatePrenatalFollowUps limitDate db followUps =
     let
         encountersData =
             generatePrenatalEncounters followUps
@@ -149,7 +149,7 @@ generatePrenatalFollowUps currentDate db followUps =
                 |> Dict.fromList
     in
     Dict.values followUps.prenatal
-        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
         |> List.foldl
             (\item accum ->
                 let
@@ -186,11 +186,11 @@ generatePrenatalFollowUps currentDate db followUps =
 
 
 filterResolvedFollowUps : NominalDate -> Maybe NominalDate -> Bool
-filterResolvedFollowUps currentDate resolutionDate =
+filterResolvedFollowUps limitDate resolutionDate =
     Maybe.map
         (\date ->
-            -- Resolution date was today, or before that.
-            not <| Date.compare currentDate date == LT
+            -- Resolution date was on limit date, or before that.
+            not <| Date.compare limitDate date == LT
         )
         resolutionDate
         |> -- Do not filter follow up if resolution date is not set.
@@ -416,7 +416,7 @@ generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrit
 
 
 resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> ( List PersonId, List PersonId, List PersonId )
-resolveUniquePatientsFromFollowUps currentDate followUps =
+resolveUniquePatientsFromFollowUps limitDate followUps =
     let
         peopleForNutritionGroup =
             uniquePatientsFromFollowUps .nutritionGroup
@@ -430,7 +430,7 @@ resolveUniquePatientsFromFollowUps currentDate followUps =
         uniquePatientsFromFollowUps mappingFunc =
             mappingFunc followUps
                 |> Dict.values
-                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps currentDate)
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
                 |> List.map .participantId
                 |> Pages.Utils.unique
     in
