@@ -384,8 +384,7 @@ viewRiskFactorsPane language currentDate assembled =
                 )
                 allMeasurements
                 |> List.concat
-                |> EverySet.fromList
-                |> EverySet.toList
+                |> Pages.Utils.unique
     in
     div [ class "risk-factors" ]
         [ div [ class <| "pane-heading red" ]
@@ -488,8 +487,7 @@ viewMedicalDiagnosisPane language currentDate assembled =
                         >> Maybe.withDefault []
                     )
                 |> List.concat
-                |> EverySet.fromList
-                |> EverySet.toList
+                |> Pages.Utils.unique
 
         dignoses =
             List.map

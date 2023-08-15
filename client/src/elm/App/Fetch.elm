@@ -129,7 +129,7 @@ fetch model =
             UserPage GlobalCaseManagementPage ->
                 Maybe.map
                     (\( healthCenterId, loggedIn ) ->
-                        Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
+                        Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId model.villageId model.indexedDb
                             |> List.map MsgIndexedDb
                     )
                     (getLoggedInData model)

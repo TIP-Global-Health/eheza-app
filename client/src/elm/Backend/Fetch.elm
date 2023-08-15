@@ -163,10 +163,24 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPrenatalEncounters ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.prenatalEncounters)) ids
+
         FetchPrenatalEncountersForParticipant id ->
             Dict.get id model.prenatalEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchPrenatalEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.prenatalEncountersByParticipant)) ids
 
         FetchPrenatalMeasurements id ->
             Dict.get id model.prenatalMeasurements
@@ -193,10 +207,24 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchAcuteIllnessEncounters ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.acuteIllnessEncounters)) ids
+
         FetchAcuteIllnessEncountersForParticipant id ->
             Dict.get id model.acuteIllnessEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchAcuteIllnessEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.acuteIllnessEncountersByParticipant)) ids
 
         FetchAcuteIllnessMeasurements id ->
             Dict.get id model.acuteIllnessMeasurements
@@ -224,6 +252,13 @@ shouldFetch currentTime model msg =
             Dict.get id model.homeVisitEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchHomeVisitEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.homeVisitEncountersByParticipant)) ids
 
         FetchHomeVisitMeasurements id ->
             Dict.get id model.homeVisitMeasurements
@@ -275,10 +310,24 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchIndividualEncounterParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.individualParticipants)) ids
+
         FetchIndividualEncounterParticipantsForPerson id ->
             Dict.get id model.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchIndividualEncounterParticipantsForPeople ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.individualParticipantsByPerson)) ids
 
         FetchRelationshipsForPerson id ->
             Dict.get id model.relationshipsByPerson

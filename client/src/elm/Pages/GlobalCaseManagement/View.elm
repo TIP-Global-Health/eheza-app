@@ -1,4 +1,9 @@
-module Pages.GlobalCaseManagement.View exposing (generateAcuteIllnessFollowUpEntries, generateNutritionFollowUpEntries, generatePrenatalFollowUpEntries, view)
+module Pages.GlobalCaseManagement.View exposing
+    ( generateAcuteIllnessFollowUpEntries
+    , generateNutritionFollowUpEntries
+    , generatePrenatalFollowUpEntries
+    , view
+    )
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
@@ -22,6 +27,8 @@ import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
+import Backend.Village.Model exposing (Village)
+import Backend.Village.Utils exposing (getVillageById, isVillageResident)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -38,14 +45,16 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
+import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate ( healthCenterId, maybeVillageId ) isChw model db =
+view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate healthCenterId villageId syncManager db model =
     let
         header =
             div
@@ -64,11 +73,16 @@ view language currentDate ( healthCenterId, maybeVillageId ) isChw model db =
                 |> Maybe.withDefault NotAsked
 
         content =
-            if isChw then
-                viewWebData language (viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model db) identity followUps
-
-            else
-                viewWebData language (viewContentForNurse language currentDate healthCenterId model db) identity followUps
+            Maybe.andThen
+                (getVillageById db
+                    >> Maybe.map
+                        (\village ->
+                            viewWebData language (viewContentForChw language currentDate village model db) identity followUps
+                        )
+                )
+                villageId
+                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate model db) identity followUps)
+                |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div [ class "wrap wrap-alt-2 page-case-management" ]
         [ header
@@ -80,56 +94,55 @@ view language currentDate ( healthCenterId, maybeVillageId ) isChw model db =
         ]
 
 
-viewContentForChw : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForChw language currentDate ( healthCenterId, maybeVillageId ) model db followUps =
-    Maybe.map
-        (\villageId ->
-            let
-                nutritionFollowUps =
-                    generateNutritionFollowUps currentDate db followUps
-                        |> filterVillageResidents villageId identity db
+viewContentForChw : Language -> NominalDate -> Village -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForChw language currentDate village model db followUps =
+    let
+        followUpsForResidents =
+            resolveUniquePatientsFromFollowUps currentDate followUps
+                |> generateFollowUpsForResidents currentDate village db followUps
 
-                nutritionFollowUpsPane =
-                    viewNutritionPane language currentDate nutritionFollowUps db model
+        nutritionFollowUps =
+            generateNutritionFollowUps currentDate followUpsForResidents
+                |> fillPersonName identity db
 
-                acuteIllnessFollowUps =
-                    generateAcuteIllnessFollowUps currentDate db followUps
-                        |> filterVillageResidents villageId Tuple.second db
+        nutritionFollowUpsPane =
+            viewNutritionPane language currentDate nutritionFollowUps db model
 
-                acuteIllnessFollowUpsPane =
-                    viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
+        acuteIllnessFollowUps =
+            generateAcuteIllnessFollowUps currentDate db followUpsForResidents
+                |> fillPersonName Tuple.second db
 
-                prenatalFollowUps =
-                    generatePrenatalFollowUps currentDate db followUps
-                        |> filterVillageResidents villageId Tuple.second db
+        acuteIllnessFollowUpsPane =
+            viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
 
-                prenatalFollowUpsPane =
-                    viewPrenatalPane language currentDate prenatalFollowUps db model
+        prenatalFollowUps =
+            generatePrenatalFollowUps currentDate db followUpsForResidents
+                |> fillPersonName Tuple.second db
 
-                panes =
-                    [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
-                    , ( FilterAntenatal, prenatalFollowUpsPane )
-                    , ( FilterNutrition, nutritionFollowUpsPane )
-                    ]
-                        |> List.filterMap
-                            (\( type_, pane ) ->
-                                if isNothing model.filter || model.filter == Just type_ then
-                                    Just pane
+        prenatalFollowUpsPane =
+            viewPrenatalPane language currentDate prenatalFollowUps db model
 
-                                else
-                                    Nothing
-                            )
-            in
-            div [ class "ui unstackable items" ] <|
-                viewFilters language chwFilters model
-                    :: panes
-        )
-        maybeVillageId
-        |> Maybe.withDefault (Pages.PageNotFound.View.viewPage language (SetActivePage PinCodePage) (UserPage GlobalCaseManagementPage))
+        panes =
+            [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
+            , ( FilterAntenatal, prenatalFollowUpsPane )
+            , ( FilterNutrition, nutritionFollowUpsPane )
+            ]
+                |> List.filterMap
+                    (\( type_, pane ) ->
+                        if isNothing model.filter || model.filter == Just type_ then
+                            Just pane
+
+                        else
+                            Nothing
+                    )
+    in
+    div [ class "ui unstackable items" ] <|
+        viewFilters language chwFilters model
+            :: panes
 
 
-viewContentForNurse : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForNurse language currentDate healthCenterId model db followUps =
+viewContentForNurse : Language -> NominalDate -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForNurse language currentDate model db followUps =
     let
         contactsTracingPane =
             viewContactsTracingPane language currentDate followUps.traceContacts db model

@@ -374,66 +374,74 @@ pregnancyTestEndpoint =
         |> withValueEncoder (object << encodePregnancyTest)
 
 
-prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe IndividualEncounterParticipantId)
+prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (List IndividualEncounterParticipantId)
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
         |> withValueEncoder (object << encodePrenatalEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId NutritionEncounter NutritionEncounter (Maybe IndividualEncounterParticipantId)
+nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId NutritionEncounter NutritionEncounter (List IndividualEncounterParticipantId)
 nutritionEncounterEndpoint =
     swEndpoint "nodes/nutrition_encounter" decodeNutritionEncounter
         |> withValueEncoder (object << encodeNutritionEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-acuteIllnessEncounterEndpoint : ReadWriteEndPoint Error AcuteIllnessEncounterId AcuteIllnessEncounter AcuteIllnessEncounter (Maybe IndividualEncounterParticipantId)
+acuteIllnessEncounterEndpoint : ReadWriteEndPoint Error AcuteIllnessEncounterId AcuteIllnessEncounter AcuteIllnessEncounter (List IndividualEncounterParticipantId)
 acuteIllnessEncounterEndpoint =
     swEndpoint "nodes/acute_illness_encounter" decodeAcuteIllnessEncounter
         |> withValueEncoder (object << encodeAcuteIllnessEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVisitEncounter HomeVisitEncounter (Maybe IndividualEncounterParticipantId)
+homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVisitEncounter HomeVisitEncounter (List IndividualEncounterParticipantId)
 homeVisitEncounterEndpoint =
     swEndpoint "nodes/home_visit_encounter" decodeHomeVisitEncounter
         |> withValueEncoder (object << encodeHomeVisitEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-wellChildEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (Maybe IndividualEncounterParticipantId)
+wellChildEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (List IndividualEncounterParticipantId)
 wellChildEncounterEndpoint =
     swEndpoint "nodes/well_child_encounter" decodeWellChildEncounter
         |> withValueEncoder (object << encodeWellChildEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-encodeIndividualEncounterParams : Maybe IndividualEncounterParticipantId -> List ( String, String )
-encodeIndividualEncounterParams params =
-    case params of
-        Just id ->
-            [ ( "individual_participant", fromEntityUuid id ) ]
+encodeIndividualEncounterParams : List IndividualEncounterParticipantId -> List ( String, String )
+encodeIndividualEncounterParams ids =
+    if List.isEmpty ids then
+        []
 
-        Nothing ->
-            []
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "individual_participants", value ) ]
 
 
-individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (Maybe PersonId)
+individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (List PersonId)
 individualEncounterParticipantEndpoint =
     swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
         |> withValueEncoder (object << encodeIndividualEncounterParticipant)
         |> withParamsEncoder encodeIndividualEncounterParticipantParams
 
 
-encodeIndividualEncounterParticipantParams : Maybe PersonId -> List ( String, String )
-encodeIndividualEncounterParticipantParams params =
-    case params of
-        Just id ->
-            [ ( "person", fromEntityUuid id ) ]
+encodeIndividualEncounterParticipantParams : List PersonId -> List ( String, String )
+encodeIndividualEncounterParticipantParams ids =
+    if List.isEmpty ids then
+        []
 
-        Nothing ->
-            []
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "people", value ) ]
 
 
 breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam ()
@@ -1060,7 +1068,7 @@ prenatalSpecialityCareEndpoint =
         |> withValueEncoder (object << encodePrenatalSpecialityCare)
 
 
-ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (Maybe IndividualEncounterParticipantId)
+ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (List IndividualEncounterParticipantId)
 ncdEncounterEndpoint =
     swEndpoint "nodes/ncd_encounter" decodeNCDEncounter
         |> withValueEncoder (object << encodeNCDEncounter)
