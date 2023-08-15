@@ -210,6 +210,8 @@ viewHealthCenters language app =
                                     )
                                     app.syncManager.syncInfoAuthorities
                                     |> Maybe.withDefault []
+                                    |> List.sortBy Tuple.first
+                                    |> List.map Tuple.second
 
                             viewSyncedAuthority authorityInfo =
                                 div [ class "health-center-info" ]
@@ -225,6 +227,8 @@ viewHealthCenters language app =
                             healthCentersToSyncForView =
                                 List.map viewAuthorityForSync
                                     healthCentersToSync
+                                    |> List.sortBy Tuple.first
+                                    |> List.map Tuple.second
 
                             viewAuthorityForSync healthCenterId =
                                 button
@@ -241,10 +245,12 @@ viewHealthCenters language app =
                                             |> Maybe.map .name
                                             |> Maybe.withDefault ""
                                 in
-                                div [ class "health-center" ]
+                                ( name
+                                , div [ class "health-center" ]
                                     [ h2 [] [ text name ]
                                     , html
                                     ]
+                                )
                         in
                         div [ class "health-centers" ] <|
                             syncedHealthCentersForView
