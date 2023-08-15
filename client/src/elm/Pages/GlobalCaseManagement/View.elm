@@ -45,15 +45,16 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
-import Pages.Utils
+import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate healthCenterId villageId model db =
+view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate healthCenterId villageId syncManager db model =
     let
         header =
             div
@@ -81,6 +82,7 @@ view language currentDate healthCenterId villageId model db =
                 )
                 villageId
                 |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate model db) identity followUps)
+                |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div [ class "wrap wrap-alt-2 page-case-management" ]
         [ header
