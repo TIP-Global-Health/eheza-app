@@ -18,9 +18,10 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing, unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Model exposing (..)
-import Pages.Utils
+import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -36,8 +37,19 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Maybe VillageId -> Bool -> Initiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate maybeVillageId isChw initiator relation model db =
+view :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> Maybe VillageId
+    -> Bool
+    -> Initiator
+    -> Maybe PersonId
+    -> SyncManager.Model.Model
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate healthCenterId maybeVillageId isChw initiator relation syncManager db model =
     let
         title =
             case relation of
@@ -50,16 +62,19 @@ view language currentDate maybeVillageId isChw initiator relation model db =
 
                 Nothing ->
                     translate language Translate.People
+
+        content =
+            div
+                [ class "search-wrapper" ]
+                [ div [ class "ui full segment" ]
+                    [ viewSearchForm language currentDate maybeVillageId isChw initiator relation model db ]
+                ]
+                |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div
         [ class "page-people" ]
         [ viewHeader initiator relation title
-        , div
-            [ class "search-wrapper" ]
-            [ div
-                [ class "ui full segment" ]
-                [ viewSearchForm language currentDate maybeVillageId isChw initiator relation model db ]
-            ]
+        , content
         ]
 
 
