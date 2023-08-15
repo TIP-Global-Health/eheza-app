@@ -390,8 +390,9 @@ viewUserPage page deviceName model configured =
                             currentDate
                             healthCenterId
                             model.villageId
-                            loggedInModel.globalCaseManagementPage
+                            model.syncManager
                             model.indexedDb
+                            loggedInModel.globalCaseManagementPage
                             |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
                             |> flexPageWrapper model
 
