@@ -1592,7 +1592,6 @@ type TranslationId
     | SelectedHCDownloading
     | SelectedHCNotSynced
     | SelectedHCSyncing
-    | SelectedHCUploading
     | Send
     | SendViaWhatsApp
     | SendViaWhatsAppComponentsSelectionHeader Components.SendViaWhatsAppDialog.Model.ReportType
@@ -17240,11 +17239,6 @@ translationSet trans =
 
         SelectedHCSyncing ->
             { english = "Data is syncing"
-            , kinyarwanda = Nothing
-            }
-
-        SelectedHCUploading ->
-            { english = "Uploading data for selected Health Center. Please wait until completed."
             , kinyarwanda = Nothing
             }
 

@@ -11,11 +11,11 @@ import RemoteData exposing (RemoteData(..))
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
-        fetchEncountersMsgs =
+        fetchEncountersMsg =
             resolveIndividualParticipantsForPerson id AcuteIllnessEncounter db
-                |> List.map FetchAcuteIllnessEncountersForParticipant
+                |> FetchAcuteIllnessEncountersForParticipants
     in
     [ FetchPerson id
     , FetchIndividualEncounterParticipantsForPerson id
+    , fetchEncountersMsg
     ]
-        ++ fetchEncountersMsgs

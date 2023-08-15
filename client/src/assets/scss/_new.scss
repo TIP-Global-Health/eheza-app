@@ -661,12 +661,24 @@ div.page-person-create {
 }
 
 div.page-people {
-  margin: 0 auto;
-  padding: 0 35px 35px 35px;
-  height: 100%;
-  overflow-y: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  margin: 0 auto;
+  overflow-y: hidden;
+  padding: 0 35px 35px 35px;
+  width: 100%;
+
+  div.ui.message.warning {
+    font-size: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+  }
+
+  div.ui.message.warning .header {
+    font-size: 35px;
+  }
 
   div.search-wrapper {
     flex: 1 1 auto;
@@ -972,7 +984,7 @@ div.page-activity {
   }
 }
 
-//Device Status Page
+// Device Status Page
 .device-status {
   button {
     margin-bottom: 20px;
@@ -4314,6 +4326,17 @@ div.page-report.child-scoreboard {
 }
 
 div.page-case-management {
+
+  div.ui.message.warning {
+    font-size: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+  }
+
+  div.ui.message.warning .header {
+    font-size: 35px;
+  }
 
   .pane {
     background: $color-primary;
