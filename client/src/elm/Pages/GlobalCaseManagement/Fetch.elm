@@ -65,17 +65,14 @@ fetchForCHWAtVillage currentDate village db followUps =
         --
         --  Nutrition follows ups calculations.
         --
-        fetchIndividualParticipantsMsgs =
-            List.map FetchIndividualEncounterParticipantsForPerson residentsForNutrition
+        fetchIndividualParticipantsMsg =
+            FetchIndividualEncounterParticipantsForPeople residentsForNutrition
 
-        fetchHomeVisitEncountersMsgs =
-            List.map
-                (\personId ->
-                    resolveIndividualParticipantsForPerson personId HomeVisitEncounter db
-                        |> List.map FetchHomeVisitEncountersForParticipant
-                )
+        fetchHomeVisitEncountersMsg =
+            List.map (\personId -> resolveIndividualParticipantsForPerson personId HomeVisitEncounter db)
                 residentsForNutrition
                 |> List.concat
+                |> FetchHomeVisitEncountersForParticipants
 
         --
         --  Acute illness follows ups calculations.
@@ -86,17 +83,17 @@ fetchForCHWAtVillage currentDate village db followUps =
         acuteIllnessParticipants =
             generateAcuteIllnessParticipants acuteIllnessEncounters db
 
-        fetchAcuteIllnessEncountersMsgs =
+        fetchAcuteIllnessEncountersMsg =
             EverySet.toList acuteIllnessEncounters
-                |> List.map FetchAcuteIllnessEncounter
+                |> FetchAcuteIllnessEncounters
 
-        fetchAcuteIllnessParticipantsMsgs =
+        fetchAcuteIllnessParticipantsMsg =
             EverySet.toList acuteIllnessParticipants
-                |> List.map FetchIndividualEncounterParticipant
+                |> FetchIndividualEncounterParticipants
 
-        fetchAcuteIllnessEncountersForParticipantMsgs =
+        fetchAcuteIllnessEncountersForParticipantMsg =
             EverySet.toList acuteIllnessParticipants
-                |> List.map FetchAcuteIllnessEncountersForParticipant
+                |> FetchAcuteIllnessEncountersForParticipants
 
         --
         --  Prenatal follows ups calculations.
@@ -107,27 +104,28 @@ fetchForCHWAtVillage currentDate village db followUps =
         prenatalParticipants =
             generatePrenatalParticipants prenatalEncounters db
 
-        fetchPrenatalEncountersMsgs =
+        fetchPrenatalEncountersMsg =
             EverySet.toList prenatalEncounters
-                |> List.map FetchPrenatalEncounter
+                |> FetchPrenatalEncounters
 
-        fetchPrenatalParticipantsMsgs =
+        fetchPrenatalParticipantsMsg =
             EverySet.toList prenatalParticipants
-                |> List.map FetchIndividualEncounterParticipant
+                |> FetchIndividualEncounterParticipants
 
-        fetchPrenatalEncountersForParticipantMsgs =
+        fetchPrenatalEncountersForParticipantMsg =
             EverySet.toList prenatalParticipants
-                |> List.map FetchPrenatalEncountersForParticipant
+                |> FetchPrenatalEncountersForParticipants
     in
-    FetchFollowUpParticipants peopleForFetch
-        :: fetchIndividualParticipantsMsgs
-        ++ fetchHomeVisitEncountersMsgs
-        ++ fetchAcuteIllnessEncountersMsgs
-        ++ fetchAcuteIllnessParticipantsMsgs
-        ++ fetchAcuteIllnessEncountersForParticipantMsgs
-        ++ fetchPrenatalEncountersMsgs
-        ++ fetchPrenatalParticipantsMsgs
-        ++ fetchPrenatalEncountersForParticipantMsgs
+    [ FetchFollowUpParticipants peopleForFetch
+    , fetchAcuteIllnessEncountersMsg
+    , fetchPrenatalEncountersMsg
+    , fetchAcuteIllnessParticipantsMsg
+    , fetchPrenatalParticipantsMsg
+    , fetchHomeVisitEncountersMsg
+    , fetchAcuteIllnessEncountersForParticipantMsg
+    , fetchPrenatalEncountersForParticipantMsg
+    , fetchIndividualParticipantsMsg
+    ]
 
 
 fetchForNurseAtHealthCenter : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
