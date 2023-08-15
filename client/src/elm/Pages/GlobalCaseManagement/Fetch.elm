@@ -65,8 +65,8 @@ fetchForCHWAtVillage currentDate village db followUps =
         --
         --  Nutrition follows ups calculations.
         --
-        fetchIndividualParticipantsMsgs =
-            List.map FetchIndividualEncounterParticipantsForPerson residentsForNutrition
+        fetchIndividualParticipantsMsg =
+            FetchIndividualEncounterParticipantsForPeople residentsForNutrition
 
         fetchHomeVisitEncountersMsg =
             List.map (\personId -> resolveIndividualParticipantsForPerson personId HomeVisitEncounter db)
@@ -124,8 +124,8 @@ fetchForCHWAtVillage currentDate village db followUps =
     , fetchHomeVisitEncountersMsg
     , fetchAcuteIllnessEncountersForParticipantMsg
     , fetchPrenatalEncountersForParticipantMsg
+    , fetchIndividualParticipantsMsg
     ]
-        ++ fetchIndividualParticipantsMsgs
 
 
 fetchForNurseAtHealthCenter : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb

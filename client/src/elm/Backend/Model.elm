@@ -297,6 +297,7 @@ type MsgIndexedDb
     | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchIndividualEncounterParticipants (List IndividualEncounterParticipantId)
     | FetchIndividualEncounterParticipantsForPerson PersonId
+    | FetchIndividualEncounterParticipantsForPeople (List PersonId)
     | FetchMotherMeasurements PersonId
     | FetchMothersMeasurements (List PersonId)
     | FetchNutritionEncounter NutritionEncounterId
@@ -351,6 +352,7 @@ type MsgIndexedDb
     | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedIndividualEncounterParticipants (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
+    | HandleFetchedIndividualEncounterParticipantsForPeople (WebData (Dict PersonId (Dict IndividualEncounterParticipantId IndividualEncounterParticipant)))
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedMothersMeasurements (WebData (Dict PersonId MotherMeasurementList))
     | HandleFetchedNutritionEncounter NutritionEncounterId (WebData NutritionEncounter)

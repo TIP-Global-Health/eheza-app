@@ -797,6 +797,25 @@
                     }
                 }
 
+                if (type === 'individual_participant') {
+                  var people = params.get('people');
+                  if (people) {
+                    var uuids = people.split(',');
+                    var tuples = uuids.map((uuid) => [type, uuid]);
+                    modifyQuery = modifyQuery.then(function () {
+                        // Encounters curently don't have option to be deleted,
+                        // so there's no need to check for that.
+                        query = table.where('[type+person]').anyOf(tuples);
+
+                        // Cloning doesn't seem to work for this one.
+                        // If done, it corrupts the results of original query.
+                        countQuery = table.where('[type+person]').anyOf(tuples);
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
                 var encounterTypes = [
                   'acute_illness_encounter',
                   'home_visit_encounter',

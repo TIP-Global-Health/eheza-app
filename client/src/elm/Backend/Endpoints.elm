@@ -423,21 +423,25 @@ encodeIndividualEncounterParams ids =
         [ ( "individual_participants", value ) ]
 
 
-individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (Maybe PersonId)
+individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (List PersonId)
 individualEncounterParticipantEndpoint =
     swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
         |> withValueEncoder (object << encodeIndividualEncounterParticipant)
         |> withParamsEncoder encodeIndividualEncounterParticipantParams
 
 
-encodeIndividualEncounterParticipantParams : Maybe PersonId -> List ( String, String )
-encodeIndividualEncounterParticipantParams params =
-    case params of
-        Just id ->
-            [ ( "person", fromEntityUuid id ) ]
+encodeIndividualEncounterParticipantParams : List PersonId -> List ( String, String )
+encodeIndividualEncounterParticipantParams ids =
+    if List.isEmpty ids then
+        []
 
-        Nothing ->
-            []
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "people", value ) ]
 
 
 breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam ()
