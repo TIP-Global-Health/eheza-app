@@ -8,7 +8,7 @@ import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
 import EverySet
-import Gizra.Html exposing (showMaybe)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.TimePosix exposing (viewTimePosix)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -189,19 +189,68 @@ viewHealthCenters language app =
     getLoggedInData app
         |> Maybe.map
             (\( _, loggedInModel ) ->
-                let
-                    allowedHealthCenters =
-                        Tuple.second loggedInModel.nurse
-                            |> .healthCenters
-                in
-                app.indexedDb.healthCenters
-                    |> RemoteData.map
-                        (Dict.toList
-                            >> List.filter (\( healthCenterId, _ ) -> EverySet.member healthCenterId allowedHealthCenters)
-                            >> List.sortBy (Tuple.second >> .name)
-                            >> List.map (viewHealthCenter language app.syncManager.syncInfoAuthorities)
-                            >> div [ class "health-centers" ]
-                        )
+                RemoteData.map
+                    (\healthCentersDict ->
+                        let
+                            syncedHealthCenters =
+                                Maybe.map (Zipper.toList >> List.map (.uuid >> toEntityUuid))
+                                    app.syncManager.syncInfoAuthorities
+                                    |> Maybe.withDefault []
+
+                            healthCentersToSync =
+                                Tuple.second loggedInModel.nurse
+                                    |> .healthCenters
+                                    |> EverySet.toList
+                                    |> List.filter (\healthCenterId -> not <| List.member healthCenterId syncedHealthCenters)
+
+                            syncedHealthCentersForView =
+                                Maybe.map
+                                    (Zipper.toList
+                                        >> List.map viewSyncedAuthority
+                                    )
+                                    app.syncManager.syncInfoAuthorities
+                                    |> Maybe.withDefault []
+
+                            viewSyncedAuthority authorityInfo =
+                                div [ class "health-center-info" ]
+                                    [ viewSyncInfo language authorityInfo
+                                    , button
+                                        [ class "ui button"
+                                        , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityRemove (toEntityUuid authorityInfo.uuid)
+                                        ]
+                                        [ text <| translate language Translate.StopSyncing ]
+                                    ]
+                                    |> viewHealthCenter (toEntityUuid authorityInfo.uuid)
+
+                            healthCentersToSyncForView =
+                                List.map viewAuthorityForSync
+                                    healthCentersToSync
+
+                            viewAuthorityForSync healthCenterId =
+                                button
+                                    [ class "ui button"
+                                    , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityAdd healthCenterId
+                                    ]
+                                    [ text <| translate language Translate.StartSyncing ]
+                                    |> viewHealthCenter healthCenterId
+
+                            viewHealthCenter healthCenterId html =
+                                let
+                                    name =
+                                        Dict.get healthCenterId healthCentersDict
+                                            |> Maybe.map .name
+                                            |> Maybe.withDefault ""
+                                in
+                                div [ class "health-center" ]
+                                    [ h2 [] [ text name ]
+                                    , html
+                                    ]
+                        in
+                        div [ class "health-centers" ] <|
+                            syncedHealthCentersForView
+                                ++ healthCentersToSyncForView
+                    )
+                    app.indexedDb.healthCenters
                     |> RemoteData.withDefault spinner
             )
         |> Maybe.withDefault
@@ -211,42 +260,6 @@ viewHealthCenters language app =
                 ]
                 [ text <| translate language <| Translate.LoginPhrase Translate.LoginToSyncHealthCenters ]
             )
-
-
-viewHealthCenter : Language -> SyncInfoAuthorityZipper -> ( HealthCenterId, HealthCenter ) -> Html Msg
-viewHealthCenter language zipper ( healthCenterId, healthCenter ) =
-    let
-        viewNotSyncedHealthCenter uuid =
-            button
-                [ class "ui button"
-                , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityAdd uuid
-                ]
-                [ text <| translate language Translate.StartSyncing ]
-
-        viewSyncedAuthority authorityInfo =
-            div [ class "health-center-info" ]
-                [ viewSyncInfo language authorityInfo
-                , button
-                    [ class "ui button"
-                    , onClick <| MsgSyncManager <| SyncManager.Model.RevisionIdAuthorityRemove (toEntityUuid authorityInfo.uuid)
-                    ]
-                    [ text <| translate language Translate.StopSyncing ]
-                ]
-
-        content =
-            zipper
-                |> Maybe.map
-                    (Zipper.toList
-                        >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId)
-                        >> Maybe.map viewSyncedAuthority
-                        >> Maybe.withDefault (viewNotSyncedHealthCenter healthCenterId)
-                    )
-                |> Maybe.withDefault (viewNotSyncedHealthCenter healthCenterId)
-    in
-    div [ class "health-center" ]
-        [ h2 [] [ text <| healthCenter.name ]
-        , content
-        ]
 
 
 viewPairingForm : Language -> WebData Device -> Model -> Html Msg
