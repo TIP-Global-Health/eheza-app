@@ -803,13 +803,16 @@
                     var uuids = people.split(',');
                     var tuples = uuids.map((uuid) => [type, uuid]);
                     modifyQuery = modifyQuery.then(function () {
-                        // Encounters curently don't have option to be deleted,
-                        // so there's no need to check for that.
-                        query = table.where('[type+person]').anyOf(tuples);
+                        query = table.where('[type+person]').anyOf(tuples).and(function (participant) {
+                            // If participant is marked as deleted, do not include it in results.
+                            return participant.deleted === false;
+                        });
 
                         // Cloning doesn't seem to work for this one.
                         // If done, it corrupts the results of original query.
-                        countQuery = table.where('[type+person]').anyOf(tuples);
+                        countQuery = table.where('[type+person]').anyOf(tuples).and(function (participant) {
+                            return participant.deleted === false;
+                        });;
 
                         return Promise.resolve();
                     });
@@ -864,6 +867,7 @@
                                 query = table.where('[type+clinic]').anyOf(clinics);
 
                                 // Cloning doesn't seem to work for this one.
+                                // If done, it corrupts the results of original query.
                                 countQuery = table.where('[type+clinic]').anyOf(clinics);
 
                                 return Promise.resolve();
