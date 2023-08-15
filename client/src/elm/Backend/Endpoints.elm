@@ -1269,7 +1269,7 @@ stockUpdateEndpoint =
         |> withValueEncoder (object << encodeStockUpdate)
 
 
-childScoreboardEncounterEndpoint : ReadWriteEndPoint Error ChildScoreboardEncounterId ChildScoreboardEncounter ChildScoreboardEncounter (Maybe IndividualEncounterParticipantId)
+childScoreboardEncounterEndpoint : ReadWriteEndPoint Error ChildScoreboardEncounterId ChildScoreboardEncounter ChildScoreboardEncounter (List IndividualEncounterParticipantId)
 childScoreboardEncounterEndpoint =
     swEndpoint "nodes/child_scoreboard_encounter" decodeChildScoreboardEncounter
         |> withValueEncoder (object << encodeChildScoreboardEncounter)

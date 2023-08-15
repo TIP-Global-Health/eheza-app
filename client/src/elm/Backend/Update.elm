@@ -820,7 +820,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         FetchChildScoreboardEncountersForParticipant id ->
             ( { model | childScoreboardEncountersByParticipant = Dict.insert id Loading model.childScoreboardEncountersByParticipant }
-            , sw.select childScoreboardEncounterEndpoint (Just id)
+            , sw.select childScoreboardEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedChildScoreboardEncountersForParticipant id)
             , []
             )
