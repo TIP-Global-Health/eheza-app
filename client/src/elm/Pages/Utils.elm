@@ -2,7 +2,7 @@ module Pages.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
-import Backend.Entities exposing (PersonId)
+import Backend.Entities exposing (HealthCenterId, PersonId)
 import Backend.Measurement.Model
     exposing
         ( AdministrationNote(..)
@@ -24,8 +24,12 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra
+import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model
 import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
@@ -1246,3 +1250,38 @@ customPopup language showWarning actionLabel ( topMessage, bottomMessage, action
 unique : List a -> List a
 unique =
     EverySet.fromList >> EverySet.toList
+
+
+viewBySyncStatus : Language -> HealthCenterId -> SyncManager.Model.SyncInfoAuthorityZipper -> Html msg -> Html msg
+viewBySyncStatus language healthCenterId syncInfoAuthorities contentForView =
+    let
+        selectedHealthCenterSyncInfo =
+            syncInfoAuthorities
+                |> Maybe.andThen
+                    (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid healthCenterId))
+
+        showWarningMessage header message =
+            div [ class "ui message warning" ]
+                [ div [ class "header" ] [ text <| translate language header ]
+                , text <| translate language message
+                ]
+    in
+    selectedHealthCenterSyncInfo
+        |> Maybe.map
+            (\syncInfo ->
+                case syncInfo.status of
+                    SyncManager.Model.NotAvailable ->
+                        showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync
+
+                    SyncManager.Model.Downloading ->
+                        if syncInfo.remainingToDownload > 1500 then
+                            showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
+
+                        else
+                            contentForView
+
+                    _ ->
+                        contentForView
+            )
+        |> Maybe.withDefault
+            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
