@@ -1331,6 +1331,36 @@ function reportSignaturePadResult(url) {
   }
 }
 
+
+// Rollbar.
+
+var _rollbarConfig = {
+    accessToken: 'fe1215af07d8431db9e3ba9ee01d81f0',
+    captureUncaught: true,
+    captureUnhandledRejections: true,
+    payload: {
+        environment: 'testenv',
+        // context: 'rollbar/test'
+        client: {
+          javascript: {
+            code_version: '1.0',
+            // source_map_enabled: true,
+            // guess_uncaught_frames: true
+          }
+        },
+        person: {
+          id: 456, // required
+          username: "foo",
+          email: "foo@example.com"
+        }
+    }
+};
+rollbar.init(_rollbarConfig);
+
+// Record a generic message and send it to Rollbar.
+rollbar.log('Hello world!');
+
+
 /**
  * Wait for id to appear before invoking related functions.
  */
