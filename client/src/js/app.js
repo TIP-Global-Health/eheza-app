@@ -352,7 +352,7 @@ const getSyncInfoGeneral = function() {
   }
 
   // No sync info saved yet.
-  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbar_token: ''};
+  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbar_token: '' };
 };
 
 /**

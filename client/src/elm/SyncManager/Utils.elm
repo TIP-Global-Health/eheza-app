@@ -1667,6 +1667,7 @@ syncInfoGeneralForPort info =
         info.remainingToDownload
         info.deviceName
         (syncInfoStatusToString info.status)
+        info.rollbarToken
 
 
 syncInfoAuthorityForPort : SyncInfoAuthority -> SyncInfoAuthorityForPort
@@ -1690,6 +1691,7 @@ syncInfoGeneralFromPort info =
         info.remainingToDownload
         info.deviceName
         (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
+        info.rollbarToken
 
 
 syncInfoAuthorityFromPort : SyncInfoAuthorityForPort -> SyncInfoAuthority
