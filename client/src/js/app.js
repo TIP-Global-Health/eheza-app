@@ -348,13 +348,11 @@ const getSyncInfoGeneral = function() {
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
     storageArr.remainingToUpload = parseInt(storageArr.remainingToUpload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
-    storageArr.deviceName = storageArr.deviceName;
-    storageArr.status = storageArr.status;
     return storageArr;
   }
 
   // No sync info saved yet.
-  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available'};
+  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbar_token: ''};
 };
 
 /**
