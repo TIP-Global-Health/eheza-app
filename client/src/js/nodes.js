@@ -797,6 +797,28 @@
                     }
                 }
 
+                if (type === 'individual_participant') {
+                  var people = params.get('people');
+                  if (people) {
+                    var uuids = people.split(',');
+                    var tuples = uuids.map((uuid) => [type, uuid]);
+                    modifyQuery = modifyQuery.then(function () {
+                        query = table.where('[type+person]').anyOf(tuples).and(function (participant) {
+                            // If participant is marked as deleted, do not include it in results.
+                            return participant.deleted === false;
+                        });
+
+                        // Cloning doesn't seem to work for this one.
+                        // If done, it corrupts the results of original query.
+                        countQuery = table.where('[type+person]').anyOf(tuples).and(function (participant) {
+                            return participant.deleted === false;
+                        });;
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
                 var encounterTypes = [
                   'acute_illness_encounter',
                   'home_visit_encounter',
@@ -806,16 +828,18 @@
                   'well_child_encounter'
                 ];
                 if (encounterTypes.includes(type)) {
-                  var individualSessionId = params.get('individual_participant');
-                  if (individualSessionId) {
+                  var participantIds = params.get('individual_participants');
+                  if (participantIds) {
+                    var uuids = participantIds.split(',');
+                    var tuples = uuids.map((uuid) => [type, uuid]);
                     modifyQuery = modifyQuery.then(function () {
-                        criteria.individual_participant = individualSessionId;
-                        query = table.where(criteria).and(function (encounter) {
-                            // If encounter is marked as deleted, do not include it in results.
-                            return encounter.deleted === false;
-                        });
+                        // Encounters curently don't have option to be deleted,
+                        // so there's no need to check for that.
+                        query = table.where('[type+individual_participant]').anyOf(tuples);
 
-                        countQuery = query.clone();
+                        // Cloning doesn't seem to work for this one.
+                        // If done, it corrupts the results of original query.
+                        countQuery = table.where('[type+individual_participant]').anyOf(tuples);
 
                         return Promise.resolve();
                     });
@@ -843,6 +867,7 @@
                                 query = table.where('[type+clinic]').anyOf(clinics);
 
                                 // Cloning doesn't seem to work for this one.
+                                // If done, it corrupts the results of original query.
                                 countQuery = table.where('[type+clinic]').anyOf(clinics);
 
                                 return Promise.resolve();

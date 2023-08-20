@@ -388,10 +388,11 @@ viewUserPage page deviceName model configured =
                     GlobalCaseManagementPage ->
                         Pages.GlobalCaseManagement.View.view model.language
                             currentDate
-                            ( healthCenterId, model.villageId )
-                            isChw
-                            loggedInModel.globalCaseManagementPage
+                            healthCenterId
+                            model.villageId
+                            model.syncManager
                             model.indexedDb
+                            loggedInModel.globalCaseManagementPage
                             |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
                             |> flexPageWrapper model
 
@@ -421,7 +422,16 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     PersonsPage relation initiator ->
-                        Pages.People.View.view model.language currentDate model.villageId isChw initiator relation loggedInModel.personsPage model.indexedDb
+                        Pages.People.View.view model.language
+                            currentDate
+                            healthCenterId
+                            model.villageId
+                            isChw
+                            initiator
+                            relation
+                            model.syncManager
+                            model.indexedDb
+                            loggedInModel.personsPage
                             |> Html.map (MsgLoggedIn << MsgPagePersons)
                             |> flexPageWrapper model
 

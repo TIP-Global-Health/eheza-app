@@ -33,6 +33,7 @@ import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model
+import Backend.Village.Utils exposing (getVillageById)
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), isBetween, monthNumber, numberToMonth, year)
 import Debug exposing (toString)
@@ -137,7 +138,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                     ChwPage chwDashboardPage ->
                                         case chwDashboardPage of
                                             AcuteIllnessPage acuteIllnessPage ->
-                                                ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, "acute-illness" )
+                                                ( viewAcuteIllnessPage language currentDate healthCenterId acuteIllnessPage assembled db model, "acute-illness" )
 
                                             NutritionPage ->
                                                 ( viewNutritionPage language currentDate True nurse assembled.nutritionPageData db model, "nutrition" )
@@ -207,11 +208,18 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
         limitDate =
             Date.ceiling Date.Month selectedDate
 
+        village =
+            Maybe.andThen (getVillageById db) model.selectedVillageFilter
+
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
         -- Case Management
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
             Maybe.map2 (getFollowUpsTotals language currentDate limitDate db)
-                model.selectedVillageFilter
-                assembled.caseManagementData
+                village
+                followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
     [ viewChwMenu language
@@ -625,8 +633,16 @@ viewChwMenuButton language targetPage activePage =
         [ translateText language label ]
 
 
-viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewAcuteIllnessPage language currentDate activePage assembled db model =
+viewAcuteIllnessPage :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> AcuteIllnessDashboardPage
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewAcuteIllnessPage language currentDate healthCenterId activePage assembled db model =
     let
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
@@ -637,10 +653,17 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
         limitDate =
             Date.ceiling Date.Month selectedDate
 
+        village =
+            Maybe.andThen (getVillageById db) model.selectedVillageFilter
+
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
         ( managedCovid, managedMalaria, managedGI ) =
             Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db)
-                model.selectedVillageFilter
-                assembled.caseManagementData
+                village
+                followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
 
         pageContent =

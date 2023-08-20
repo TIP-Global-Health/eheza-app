@@ -28,7 +28,6 @@ type alias AssembledData =
     { stats : DashboardStats
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
-    , caseManagementData : Maybe FollowUpMeasurements
     , nutritionPageData : NutritionPageData
     }
 
