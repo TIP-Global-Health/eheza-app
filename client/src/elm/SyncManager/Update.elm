@@ -9,7 +9,7 @@ import Debouncer.Basic as Debouncer exposing (provideInput)
 import Device.Encoder
 import Device.Model exposing (Device)
 import Editable
-import Error.Utils exposing (decodeError, maybeHttpError, noError)
+import Error.Utils exposing (decoderError, maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeValue)
@@ -1915,7 +1915,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                     SubModelReturn
                         model
                         Cmd.none
-                        (decodeError "Backend.SyncManager.Update" location error)
+                        (decoderError "Backend.SyncManager.Update" location error)
                         []
 
         SavedAtIndexDbHandle val ->
@@ -1956,7 +1956,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                     SubModelReturn
                         model
                         Cmd.none
-                        (decodeError "Backend.SyncManager.Update" "SavedAtIndexDbHandle" error)
+                        (decoderError "Backend.SyncManager.Update" "SavedAtIndexDbHandle" error)
                         []
 
         ResetSettings ->

@@ -352,7 +352,7 @@ const getSyncInfoGeneral = function() {
   }
 
   // No sync info saved yet.
-  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbar_token: '' };
+  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '' };
 };
 
 /**
@@ -1236,7 +1236,7 @@ elmApp.ports.clearSignaturePad.subscribe(function() {
   signaturePad.clear();
 });
 
-elmApp.ports.storeSignature.subscribe(function(data) {
+elmApp.ports.storeSignature.subscribe(function() {
   if (signaturePad === undefined) {
     return;
   }
@@ -1332,31 +1332,31 @@ function reportSignaturePadResult(url) {
 
 // Rollbar.
 
-var _rollbarConfig = {
-    accessToken: 'fe1215af07d8431db9e3ba9ee01d81f0',
-    captureUncaught: true,
-    captureUnhandledRejections: true,
-    payload: {
-        environment: 'testenv',
-        // context: 'rollbar/test'
-        client: {
-          javascript: {
-            code_version: '1.0',
-            // source_map_enabled: true,
-            // guess_uncaught_frames: true
-          }
-        },
-        person: {
-          id: 456, // required
-          username: "foo",
-          email: "foo@example.com"
-        }
-    }
-};
-rollbar.init(_rollbarConfig);
+elmApp.ports.logRollbar.subscribe(function(data) {
 
-// Record a generic message and send it to Rollbar.
-rollbar.log('Hello world!');
+  var _rollbarConfig = {
+      accessToken: data.token,
+      captureUncaught: false,
+      captureUnhandledRejections: false,
+      payload: {
+          environment: 'all',
+          // context: 'rollbar/test'
+          client: {
+            javascript: {
+              code_version: '1.0',
+              // source_map_enabled: true,
+              // guess_uncaught_frames: true
+            }
+          },
+          person: {
+            id: data.device,
+          }
+      }
+  };
+  rollbar.init(_rollbarConfig);
+  rollbar.log(data.message);
+
+});
 
 
 /**

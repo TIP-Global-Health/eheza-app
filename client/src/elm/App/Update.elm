@@ -1043,7 +1043,7 @@ update msg model =
         MsgSyncManager subMsg ->
             model.configuration
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
+                |> Maybe.andThen (.device >> RemoteData.toMaybe)
                 |> Maybe.map
                     (\device ->
                         updateSubModel

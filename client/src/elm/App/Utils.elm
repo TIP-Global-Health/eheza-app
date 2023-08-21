@@ -1,8 +1,10 @@
 module App.Utils exposing (..)
 
 import App.Model exposing (..)
+import App.Ports exposing (logRollbar)
 import Backend.Entities exposing (HealthCenterId)
-import Error.Model exposing (Error)
+import Error.Model exposing (Error, ErrorType(..))
+import Json.Decode
 import Maybe.Extra exposing (unwrap)
 import RemoteData
 import Task
@@ -21,20 +23,49 @@ getLoggedInData model =
 {-| If there was an error, add it to the top of the list,
 and send to console.
 -}
-handleErrors : Maybe Error -> Model -> Model
+handleErrors : Maybe Error -> Model -> ( Model, Cmd Msg )
 handleErrors maybeError model =
-    let
-        errors =
-            unwrap model.errors
-                (\error ->
+    Maybe.map
+        (\error ->
+            let
+                errors =
                     error
                         :: model.errors
                         -- Make sure list doesn't grow too much.
                         |> List.take 50
-                )
-                maybeError
-    in
-    { model | errors = errors }
+
+                rollbarCmd =
+                    if String.isEmpty model.syncManager.syncInfoGeneral.rollbarToken then
+                        Cmd.none
+
+                    else
+                        let
+                            generateRollbarCmd message =
+                                logRollbar
+                                    { device = model.syncManager.syncInfoGeneral.deviceName
+                                    , token = model.syncManager.syncInfoGeneral.rollbarToken
+                                    , message = message
+                                    }
+                        in
+                        case error.error of
+                            Http _ ->
+                                -- Do not report about netwrork related errors,
+                                -- as we are likely to see them on backend.
+                                Cmd.none
+
+                            Decoder err ->
+                                Json.Decode.errorToString err
+                                    |> generateRollbarCmd
+
+                            Plain string ->
+                                generateRollbarCmd string
+            in
+            ( { model | errors = errors }
+            , rollbarCmd
+            )
+        )
+        maybeError
+        |> Maybe.withDefault ( model, Cmd.none )
 
 
 {-| Helper function to call a Page, and wire Error handling into it.
@@ -65,13 +96,14 @@ updateSubModel subMsg subModel updateFunc modelUpdateFunc msg model =
                         )
                     |> Cmd.batch
 
-        modelUpdatedWithError =
+        ( modelUpdatedWithError, rollbarCmd ) =
             handleErrors return.error model
     in
     ( modelUpdateFunc return.model modelUpdatedWithError
     , Cmd.batch
         [ Cmd.map msg return.cmd
         , appCmds
+        , rollbarCmd
         ]
     )
 

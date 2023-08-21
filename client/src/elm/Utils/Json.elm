@@ -32,11 +32,6 @@ decodeEmptyArrayAsEmptyDict =
             )
 
 
-decodeError : Decoder String
-decodeError =
-    field "title" string
-
-
 decodeNullAsEmptyArray : Decoder (List a)
 decodeNullAsEmptyArray =
     (nullable <| list value)
