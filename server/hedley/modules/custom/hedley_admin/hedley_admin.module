@@ -22,7 +22,84 @@ function hedley_admin_menu() {
     'access arguments' => ['hedley reporting admin'],
   ];
 
+  $items['admin/reports/devices-sync'] = array(
+    'title' => 'Devices sync state',
+    'description' => 'Presents devices that are suspected to have sync issue',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hedley_admin_devices_sync_table'),
+    'access callback' => 'hedley_admin_access',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
+}
+
+/**
+ * Allows access to superuser and administrators.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
+function hedley_admin_access() {
+  global $user;
+
+  if (user_is_anonymous()) {
+    return FALSE;
+  }
+
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+
+  return in_array('administrator', $user->roles);
+}
+
+function hedley_admin_devices_sync_table($form, &$form_state) {
+  $header = array(
+    'name' => t('Device Name'),
+    'to_upload' => t('Changes to Upload'),
+    'last_sync' => t('Last Sync Time'),
+  );
+
+  $query = "SELECT u.name, ttu.field_total_to_upload_value,
+     sp.field_sync_phase_value, FROM_UNIXTIME(u.access) as last_sync  FROM node n
+    inner join users u
+      ON u.uid=n.uid
+    left join field_data_field_total_to_upload ttu
+      ON u.uid=ttu.entity_id
+    left join field_data_field_sync_phase sp
+      ON u.uid=sp.entity_id
+    where n.type = 'sync_incident'
+      and sp.field_sync_phase_value = 'sync-start'
+      and ttu.field_total_to_upload_value > 10
+      and FROM_UNIXTIME(u.access) > DATE_ADD(now(), INTERVAL -2 MONTH)
+    group by (u.name)
+    order by ttu.field_total_to_upload_value desc;";
+
+  $result = db_query($query);
+
+  $rows = array();
+  foreach ($result as $row) {
+    $words = explode(' ', $row->name);
+    if (end($words) == 'Robot') {
+      array_splice($words, -1);
+    }
+
+    $rows[] = array(
+      'name' => implode(' ', $words),
+      'to_upload' => $row->field_total_to_upload_value,
+      'last_sync' => $row->last_sync,
+    );
+  }
+
+  $form['table'] = array(
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+    '#empty' => t('No data available'),
+  );
+
+  return $form;
 }
 
 /**
