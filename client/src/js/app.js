@@ -1336,8 +1336,8 @@ elmApp.ports.logRollbar.subscribe(function(data) {
 
   var _rollbarConfig = {
       accessToken: data.token,
-      captureUncaught: false,
-      captureUnhandledRejections: false,
+      captureUncaught: true,
+      captureUnhandledRejections: true,
       payload: {
           environment: 'all',
           // context: 'rollbar/test'

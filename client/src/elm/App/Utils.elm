@@ -49,7 +49,7 @@ handleErrors maybeError model =
                         in
                         case error.error of
                             Http _ ->
-                                -- Do not report about netwrork related errors,
+                                -- Do not report about network related errors,
                                 -- as we are likely to see them on backend.
                                 Cmd.none
 
