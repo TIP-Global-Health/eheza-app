@@ -22,86 +22,16 @@ function hedley_admin_menu() {
     'access arguments' => ['hedley reporting admin'],
   ];
 
-  $items['admin/reports/devices-sync'] = array(
-    'title' => 'Devices with suspected sync issue:',
-    'description' => 'Presents devices that are suspected to have sync issue',
+  $items['admin/reports/devices-sync-state'] = array(
+    'title' => 'Devices with suspected synchronization issue',
+    'description' => 'Presents devices that are suspected to have synchronization issue',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('hedley_admin_devices_sync_table'),
-    'access callback' => 'hedley_admin_access',
+    'page arguments' => array('hedley_admin_devices_sync_state_table'),
+    'access callback' => 'hedley_admin_administrators_access',
     'type' => MENU_NORMAL_ITEM,
   );
 
   return $items;
-}
-
-/**
- * Allows access to superuser and administrators.
- *
- * @return bool
- *   TRUE if the user has access, FALSE otherwise.
- */
-function hedley_admin_access() {
-  global $user;
-
-  if (user_is_anonymous()) {
-    return FALSE;
-  }
-
-  if ($user->uid == 1) {
-    return TRUE;
-  }
-
-  return in_array('administrator', $user->roles);
-}
-
-function hedley_admin_devices_sync_table($form, &$form_state) {
-  $header = array(
-    'index' => t('#'),
-    'name' => t('Device Name'),
-    'to_upload' => t('Changes to Upload'),
-    'last_sync' => t('Last Sync Time'),
-  );
-
-  $query = "SELECT u.name, ttu.field_total_to_upload_value,
-     FROM_UNIXTIME(u.access) as last_sync  FROM node n
-    inner join users u
-      ON u.uid=n.uid
-    left join field_data_field_total_to_upload ttu
-      ON u.uid=ttu.entity_id
-    left join field_data_field_sync_phase sp
-      ON u.uid=sp.entity_id
-    where n.type = 'sync_incident'
-      and sp.field_sync_phase_value = 'sync-start'
-      and ttu.field_total_to_upload_value > 10
-      and FROM_UNIXTIME(u.access) > DATE_ADD(now(), INTERVAL -2 MONTH)
-    group by (u.name)
-    order by last_sync desc;";
-
-  $result = db_query($query);
-
-  $rows = [];
-  foreach ($result as $key=>$row) {
-    $words = explode(' ', $row->name);
-    if (end($words) == 'Robot') {
-      array_splice($words, -1);
-    }
-
-    $rows[] = [
-      'index' => $key + 1,
-      'name' => implode(' ', $words),
-      'to_upload' => $row->field_total_to_upload_value,
-      'last_sync' => $row->last_sync,
-    ];
-  }
-
-  $form['table'] = [
-    '#theme' => 'table',
-    '#header' => $header,
-    '#rows' => $rows,
-    '#empty' => t('No data available'),
-  ];
-
-  return $form;
 }
 
 /**
@@ -386,4 +316,96 @@ function hedley_admin_health_center_access($account = FALSE) {
     watchdog('hedley_admin', $e->getMessage());
     return FALSE;
   }
+}
+
+/**
+ * Implements hook_form() for the admin devices synchronization state table.
+ *
+ * This function generates a table displaying device synchronization
+ * information.
+ */
+function hedley_admin_devices_sync_state_table(array $form, array &$form_state) {
+  // Table header definitions.
+  $header = array(
+    'index' => t('#'),
+    'name' => t('Device Name'),
+    'to_upload' => [
+      'data' => t('Changes to Upload'),
+      'class' => 'align-center',
+    ],
+    'last_sync' => [
+      'data' => t('Last Sync Contact'),
+      'class' => 'align-center',
+    ],
+  );
+
+  // SQL query to retrieve synchronization data.
+  $query = db_select('node', 'n');
+  $query->join('users', 'u', 'u.uid = n.uid');
+  $query->join('field_data_field_total_to_upload', 'ttu', 'ttu.entity_id = u.uid');
+  $query->join('field_data_field_sync_phase', 'sp', 'sp.entity_id = u.uid');
+  $query->addField('u', 'name');
+  $query->addField('ttu', 'field_total_to_upload_value');
+  $query->addExpression('FROM_UNIXTIME(u.access)', 'last_sync');
+  $query->condition('n.type', 'sync_incident');
+  $query->condition('sp.field_sync_phase_value', 'sync-start');
+  $query->condition('ttu.field_total_to_upload_value', 10, '>');
+  $query->condition('u.access', strtotime('-2 months'), '>');
+  $query->groupBy('u.name');
+  $query->orderBy('last_sync', 'DESC');
+
+  $result = $query->execute();
+
+  $rows = [];
+  foreach ($result as $key => $row) {
+    $words = explode(' ', $row->name);
+    if (end($words) == 'Robot') {
+      array_splice($words, -1);
+    }
+
+    $rows[] = [
+      'index' => $key + 1,
+      'name' => implode(' ', $words),
+      'to_upload' => [
+        'data' => $row->field_total_to_upload_value,
+        'class' => 'align-center',
+      ],
+      'last_sync' => array(
+        'data' => $row->last_sync,
+        'class' => 'align-center',
+      ),
+    ];
+  }
+
+  $form['table'] = [
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+    '#empty' => t('No data available'),
+  ];
+
+  // Add CSS style for center alignment.
+  drupal_add_css('.align-center { text-align: center; }', array('type' => 'inline'));
+
+  return $form;
+}
+
+/**
+ * Allows access to superuser and administrators.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
+function hedley_admin_administrators_access() {
+  global $user;
+
+  if (user_is_anonymous()) {
+    return FALSE;
+  }
+
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+
+  return in_array('administrator', $user->roles);
 }
