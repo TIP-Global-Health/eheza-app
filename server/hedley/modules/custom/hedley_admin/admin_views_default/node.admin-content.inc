@@ -315,7 +315,7 @@ $handler->display->display_options['filters']['field_uuid_value']['expose']['lab
 $handler->display->display_options['filters']['field_uuid_value']['expose']['operator'] = 'field_uuid_value_op';
 $handler->display->display_options['filters']['field_uuid_value']['expose']['identifier'] = 'field_uuid_value';
 $handler->display->display_options['filters']['field_uuid_value']['expose']['remember_roles'] = array(
- 2 => '2',
+  2 => '2',
 );
 
 /* Display: System */
