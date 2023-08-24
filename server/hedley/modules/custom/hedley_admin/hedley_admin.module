@@ -319,10 +319,10 @@ function hedley_admin_health_center_access($account = FALSE) {
 }
 
 /**
- * Implements hook_form() for the admin devices synchronization state table.
+ * Implements hook_form() for the suspected devices state table.
  *
- * This function generates a table displaying device synchronization
- * information.
+ * This function generates a table displaying information
+ * for devices that are suspected to have a synchronization problem.
  */
 function hedley_admin_devices_sync_state_table(array $form, array &$form_state) {
   // Table header definitions.
