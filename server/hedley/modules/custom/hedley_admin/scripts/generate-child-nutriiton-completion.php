@@ -180,6 +180,17 @@ function get_health_center($health_center_id = NULL) {
   }
 }
 
+function build_table () {
+  
+}
+
+
+
+
+
+
+
+
 select * from field_data_field_nutrition_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_nutrition_encounter_target_id=ip.entity_id
@@ -187,3 +198,30 @@ LEFT JOIN field_data_field_person person ON person.entity_id=ip.field_individual
 LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
 LEFT JOIN field_data_field_district district ON person.field_person_target_id=district.entity_id
 LEFT JOIN field_data_field_encounter_type t ON person.entity_id=t.entity_id
+
+
+//HEIGHT
+select DISTINCT e.field_nutrition_encounter_target_id as "Encounter ID" from field_data_field_nutrition_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_nutrition_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_encounter_type t ON pr.entity_id=t.entity_id
+LEFT JOIN field_data_field_height he ON he.entity_id=n.nid
+WHERE he.field_height_value IS NOT NUll
+
+//MUAC
+select DISTINCT e.field_nutrition_encounter_target_id as "Encounter ID", mu.field_muac_value from field_data_field_nutrition_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_nutrition_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_encounter_type t ON pr.entity_id=t.entity_id
+LEFT JOIN field_data_field_muac mu ON mu.entity_id=n.nid
+WHERE mu.field_muac_value IS NOT NUll
+
+//
