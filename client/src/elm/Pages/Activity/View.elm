@@ -211,7 +211,7 @@ view config language currentDate zscores isChw selectedActivity ( sessionId, ses
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
                     [ text <| translate language activityTitle ]
-                , a
+                , span
                     [ class "link-back"
                     , onClick <| GoBackToActivitiesPage sessionId
                     ]

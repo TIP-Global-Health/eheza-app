@@ -87,91 +87,62 @@ function hedley_patient_recalculate_shards_for_person($nid) {
 /**
  * Recalculate and potentially update shard assignments for person content.
  *
- * @param int $nid
+ * Cycle through the sharded entities for the person and update
+ * those that do not match, so that they will get sent to the right devices.
+ *
+ * @param int $person_id
  *   The node ID of a person to recalculate for.
  *
  * @throws \EntityMetadataWrapperException
  */
-function hedley_patient_recalculate_shards_for_person_content($nid) {
-  $wrapper = entity_metadata_wrapper('node', $nid);
-  $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
+function hedley_patient_recalculate_shards_for_person_content($person_id) {
+  $wrapper = entity_metadata_wrapper('node', $person_id);
+  $person_shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 
-  // Now, we need to cycle through the sharded entities for the person and
-  // update those that do not match, so that they will get sent to the right
-  // devices.
   // On first step, we fetch all content that is associated with person
-  // by person, adult and related_to fields.
+  // using person, adult and related_to fields.
   // These are group and individual measurements, relationships,
-  // PMTCT and individual participants.
-  $query = db_select('node', 'n');
-  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
-  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
-  $query->leftJoin('field_data_field_related_to', 'rt', 'rt.entity_id = n.nid');
-  $query->leftJoin('field_data_field_shards', 's', 's.entity_id = n.nid');
+  // and group and individual participants.
+  $association_fields = [
+    'field_person',
+    'field_adult',
+    'field_related_to',
+  ];
+  $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
-  // Limit to the person we're interested in.
-  $person_or = db_or();
-  $person_or->condition('p.field_person_target_id', $nid);
-  $person_or->condition('a.field_adult_target_id', $nid);
-  $person_or->condition('rt.field_related_to_target_id', $nid);
-  $query->condition($person_or);
-
-  // Limit to sharded measurements.
-  $sharded = array_keys(HEDLEY_RESTFUL_SHARDED);
-  $query->condition('n.type', $sharded);
-  $query->fields('n', ['nid', 'type']);
-  $query->addField('s', 'field_shards_target_id');
-
-  $result = $query->execute();
-
-  $content = [];
-  $individual_participants = [];
-  // Group the resulting shards by the nid of the sharded node.
-  foreach ($result as $record) {
-    if (empty($content[$record->nid])) {
-      $content[$record->nid] = [];
-    }
-
-    if (!empty($record->field_shards_target_id)) {
-      $content[$record->nid][] = $record->field_shards_target_id;
-    }
-
-    if ($record->type == 'individual_participant') {
-      $individual_participants[] = $record->nid;
+  $ids = $individual_participants = [];
+  foreach ($entries as $entry) {
+    $ids[] = $entry->entity_id;
+    if ($entry->bundle == 'individual_participant') {
+      $individual_participants[] = $entry->entity_id;
     }
   }
+
   // On second step, we fetch all content that is associated with person
   // by individual_participant field.
   // These are individual encounters - antenatal, nutrition, ...
   if (!empty($individual_participants)) {
     $query = db_select('node', 'n');
     $query->join('field_data_field_individual_participant', 'ip', 'ip.entity_id = n.nid');
-    $query->leftJoin('field_data_field_shards', 's', 's.entity_id = n.nid');
 
     // Limit to individual participants we're interested in.
     $query->condition('ip.field_individual_participant_target_id', $individual_participants);
-    $query->condition('n.type', $sharded);
     $query->addField('n', 'nid');
-    $query->addField('s', 'field_shards_target_id');
 
-    $result = $query->execute();
-
-    foreach ($result as $record) {
-      if (empty($content[$record->nid])) {
-        $content[$record->nid] = [];
-      }
-
-      if (!empty($record->field_shards_target_id)) {
-        $content[$record->nid][] = $record->field_shards_target_id;
-      }
-    }
+    $ids = array_merge($ids, $query->execute()->fetchCol());
   }
 
-  // For each sharded content, check whether we need to update it.
-  foreach ($content as $key => $value) {
-    if (!hedley_patient_arrays_equal($shards, $value)) {
-      $wrapper = entity_metadata_wrapper('node', $key);
-      $wrapper->field_shards->set($shards);
+  if (empty($ids)) {
+    return;
+  }
+
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $node_shards = $wrapper->field_shards->value(['identifier' => TRUE]);
+
+    if (!hedley_patient_arrays_equal($person_shards, $node_shards)) {
+      $wrapper->field_shards->set($person_shards);
       $wrapper->save();
     }
   }
@@ -187,38 +158,23 @@ function hedley_patient_recalculate_shards_for_person_content($nid) {
  *   An array of shard ID's.
  */
 function hedley_patient_shards_for_person_by_pmtct_participants($nid) {
-  // For now, we just look at their pmtct_participant records.  If they have
-  // one, we send their measurements to the associated health center.
-  //
-  // We do this as a db_select because we need an `OR`, and we can
-  // do it all at once with several joins, which is pleasant.
-  $query = db_select('node', 'n');
+  $shard_by_health_center = hedley_general_shard_by_health_center($nid);
+  $shards = !empty($shard_by_health_center) ? [$shard_by_health_center] : [];
 
-  $query->condition('n.type', 'pmtct_participant');
-
-  $query->join('field_data_field_adult', 'adult', 'adult.entity_id = n.nid');
-  $query->join('field_data_field_person', 'child', 'child.entity_id = n.nid');
-
-  $adult_or_child = db_or();
-  $adult_or_child->condition('adult.field_adult_target_id', $nid);
-  $adult_or_child->condition('child.field_person_target_id', $nid);
-
-  $query->condition($adult_or_child);
-
-  $query->join('field_data_field_clinic', 'clinic', 'clinic.entity_id = n.nid');
-  $query->join('field_data_field_health_center', 'hc', 'hc.entity_id = clinic.field_clinic_target_id');
-
-  $query->addField('hc', 'field_health_center_target_id');
-  $query->distinct();
-
-  $shards = $query->execute()->fetchCol();
-
-  $shard = hedley_general_shard_by_health_center($nid);
-  if ($shard && !in_array($shard, $shards)) {
-    $shards[] = $shard;
+  $pmtct_participants_ids = hedley_person_pmtct_participants_for_person($nid);
+  if (!empty($pmtct_participants_ids)) {
+    $pmtct_participants = node_load_multiple($pmtct_participants_ids);
+    foreach ($pmtct_participants as $pmtct_participant) {
+      $wrapper = entity_metadata_wrapper('node', $pmtct_participant);
+      $clinic_id = $wrapper->field_clinic->getIdentifier();
+      $shard = hedley_general_shard_by_health_center($clinic_id);
+      if (!empty($shard)) {
+        $shards[] = $shard;
+      }
+    }
   }
 
-  return $shards;
+  return array_unique($shards);
 }
 
 /**

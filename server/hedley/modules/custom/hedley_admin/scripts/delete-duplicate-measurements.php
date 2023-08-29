@@ -2,14 +2,16 @@
 
 /**
  * @file
- * Deletes duplicate measurements from session.
+ * Deletes duplicate measurements of same type associated with an encounter.
+ *
+ * Covers group sessions and all types of individual encounters.
  *
  * Before execution:
  *   drush vset hedley_super_user_mode 1
  *
  * Execution:
- *   drush scr profiles/hedley/modules/custom/hedley_admin/scripts/
- *             delete-duplicate-measurements.php --session=[session ID].
+ *   drush scr
+ *     profiles/hedley/modules/custom/hedley_admin/scripts/delete-duplicate-measurements.php
  *
  * After execution:
  *   drush vset hedley_super_user_mode 0
@@ -20,121 +22,74 @@ if (!drupal_is_cli()) {
   return;
 }
 
-// Get the last node id.
-$nid = drush_get_option('nid', 0);
-
-// Get the number of nodes to be processed.
-$batch = drush_get_option('batch', 50);
-
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 250);
 
-$types = [
-  'height' => 'field_height' ,
-  'weight' => 'field_weight',
-  'photo' => 'field_photo',
-  'attendance' => 'family_attended',
-  'family_planning' => 'family_planning',
-  'muac' => 'family_muac',
-  'nutrition' => 'family_nutrition',
-];
+$fields = field_info_fields();
+$encounter_types = hedley_general_get_encounter_types();
 
-$session = drush_get_option('session', FALSE);
-if (!$session) {
-  drush_print('Please specify --session option');
-  exit;
-}
+$total_deleted = 0;
 
-drush_print("Loading duplicate measurements for session $session. This may take several minutes...");
-
-$base_query = new EntityFieldQuery();
-$base_query
-  ->entityCondition('entity_type', 'node')
-  ->propertyCondition('type', array_keys($types), 'IN')
-  ->propertyOrderBy('nid', 'ASC')
-  ->fieldCondition('field_session', 'target_id', $session);
-
-if ($nid) {
-  $base_query->propertyCondition('nid', $nid, '>');
-}
-
-$summary = [];
-$people = [];
-$dates = [];
-
-while (TRUE) {
-  // Free up memory.
-  drupal_static_reset();
-
-  $query = clone $base_query;
-  if ($nid) {
-    $query->propertyCondition('nid', $nid, '>');
-  }
-
-  $result = $query
-    ->range(0, $batch)
-    ->execute();
-
-  if (empty($result['node'])) {
-    // No more items left.
-    break;
-  }
-
-  $ids = array_keys($result['node']);
-  $nodes = node_load_multiple($ids);
-
-  foreach ($nodes as $node) {
-    $wrapper = entity_metadata_wrapper('node', $node);
-
-    $session = $wrapper->field_session->getIdentifier();
-    $person = $wrapper->field_person->getIdentifier();
-    $people[] = $person;
-    $date = date('Y-m-d', $wrapper->field_date_measured->value());
-    $dates[] = $date;
-    $type = $node->type;
-
-    if (empty($summary[$person])) {
-      $summary[$person] = [];
+foreach ($encounter_types as $encounter_type) {
+  drush_print("Deleting duplicates for $encounter_type encounter...");
+  $deleted_for_encounter = 0;
+  $bundles = $fields["field_$encounter_type"]['bundles']['node'];
+  foreach ($bundles as $bundle) {
+    $query = db_select("field_data_field_$encounter_type", 'et');
+    $query->addField('et', "field_{$encounter_type}_target_id");
+    if ($encounter_type == 'session') {
+      $query->leftJoin('field_data_field_person', 'fp', 'fp.entity_id = et.entity_id');
+      $query->addField('fp', 'field_person_target_id');
     }
-
-    if (empty($summary[$person][$date])) {
-      $summary[$person][$date] = [];
+    $query->condition('et.bundle', $bundle);
+    $query->addExpression("COUNT(et.field_{$encounter_type}_target_id)", 'total');
+    $query->groupBy("et.field_{$encounter_type}_target_id");
+    if ($encounter_type == 'session') {
+      $query->groupBy("fp.field_person_target_id");
     }
+    $query->havingCondition('total', 1, '>');
+    $query->range(0, 2000);
+    $duplicates_data = $query->execute()->fetchAll();
 
-    if (empty($summary[$person][$date][$type])) {
-      $summary[$person][$date][$type] = [];
-    }
-
-    $summary[$person][$date][$type][] = $node->nid;
-  }
-
-  $nid = end($ids);
-
-  if (round(memory_get_usage() / 1048576) >= $memory_limit) {
-    drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
-    return;
-  }
-}
-
-$count = 0;
-foreach (array_unique($people) as $person) {
-  foreach (array_unique($dates) as $date) {
-    foreach (array_keys($types) as $type) {
-      if (!empty($summary[$person][$date][$type])) {
-        $total = count($summary[$person][$date][$type]);
-        if ($total < 2) {
+    foreach ($duplicates_data as $data) {
+      $encounter = $data->{"field_{$encounter_type}_target_id"};
+      $query = db_select("field_data_field_$encounter_type", 'et');
+      $query->leftJoin('node', 'n', 'n.nid = et.entity_id');
+      $query->addField('et', 'entity_id');
+      if ($encounter_type == 'session') {
+        $person_id = $data->field_person_target_id;
+        if (!$person_id) {
+          // Can not resolve duplicates due to failure to retrieve person ID.
           continue;
         }
-
-        $last = array_pop($summary[$person][$date][$type]);
-        drush_print("Person $person, on $date, $type: Total - $total, last NID - $last");
-        $new_total = count($summary[$person][$date][$type]);
-        node_delete_multiple($summary[$person][$date][$type]);
-        drush_print("$new_total duplicates deleted");
-        $count += $new_total;
+        $query->leftJoin('field_data_field_person', 'fp', 'fp.entity_id = et.entity_id');
+        $query->addField('fp', 'field_person_target_id');
+        $query->condition('fp.field_person_target_id', $person_id);
       }
+      $query->condition('et.bundle', $bundle);
+      $query->condition("et.field_{$encounter_type}_target_id", $encounter);
+      $query->orderBy('n.vid', 'DESC');
+      $result = $query->execute()->fetchAllAssoc('entity_id');
+
+      $duplicates = array_keys($result);
+      // There are several nodes that are duplicates of each other. We want to
+      // delete all but one. So, we use array_shift() to pull first node from
+      // the array, and all others remain at $duplicates array,
+      // which is deleted.
+      array_shift($duplicates);
+      $total_for_deletion = count($duplicates);
+      $deleted_for_encounter += $total_for_deletion;
+      node_delete_multiple($duplicates);
+    }
+
+    if (round(memory_get_usage() / 1048576) >= $memory_limit) {
+      drush_print(dt('Stopped before out of memory.'));
+      return;
     }
   }
+  drush_print("Total of $deleted_for_encounter duplicate measurements deleted for $encounter_type encounter.");
+  $total_deleted += $deleted_for_encounter;
 }
 
-drush_print("Done! Total of $count duplicate measurements deleted.");
+drush_print('------------------------------------------------------------');
+drush_print("Done! Total of $total_deleted duplicate measurements deleted.");

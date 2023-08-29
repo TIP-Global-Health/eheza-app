@@ -9,8 +9,9 @@ import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
-import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Measurement.Model exposing (ImageUrl(..))
 import Backend.Model exposing (Revision(..))
+import Backend.NCDEncounter.Encoder
 import Backend.Nurse.Encoder
 import Backend.NutritionEncounter.Encoder
 import Backend.ParticipantConsent.Encoder
@@ -18,7 +19,10 @@ import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.PrenatalEncounter.Encoder
 import Backend.Relationship.Encoder
+import Backend.ResilienceMessage.Encoder
+import Backend.ResilienceSurvey.Encoder
 import Backend.Session.Encoder
+import Backend.StockUpdate.Encoder
 import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
@@ -71,15 +75,51 @@ determineSyncStatus activePage model =
                 -- Cases are ordered by the cycle order.
                 case syncStatus of
                     SyncIdle ->
-                        ( SyncUploadPhotoAuthority 0 RemoteData.NotAsked, syncInfoAuthorities )
+                        ( SyncUploadPhoto 0 RemoteData.NotAsked, syncInfoAuthorities )
 
-                    SyncUploadPhotoAuthority errorsCount webData ->
+                    SyncUploadPhoto errorsCount webData ->
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
                                     Just data ->
                                         -- We still have data. Reset errors counter to 0, since last upload was succesfull.
-                                        ( SyncUploadPhotoAuthority 0 webData, syncInfoAuthorities )
+                                        ( SyncUploadPhoto 0 webData, syncInfoAuthorities )
+
+                                    Nothing ->
+                                        -- No more photos to upload. Move on to uploading screenshots.
+                                        ( SyncUploadScreenshot 0 RemoteData.NotAsked, syncInfoAuthorities )
+
+                            RemoteData.Failure error ->
+                                let
+                                    handleNonNetworkError reason =
+                                        if errorsCount > fileUploadFailureThreshold then
+                                            -- Threshold exceeded - report an incident and stop current sync cycle.
+                                            ( SyncReportIncident (FileUploadIncident reason), syncInfoAuthorities )
+
+                                        else
+                                            -- Threshold not exceeded - increase counter and try uploading again.
+                                            ( SyncUploadPhoto (errorsCount + 1) webData, syncInfoAuthorities )
+                                in
+                                case error of
+                                    NetworkError _ ->
+                                        noChange
+
+                                    BadJson reason ->
+                                        handleNonNetworkError reason
+
+                                    UploadError reason ->
+                                        handleNonNetworkError reason
+
+                            _ ->
+                                noChange
+
+                    SyncUploadScreenshot errorsCount webData ->
+                        case webData of
+                            RemoteData.Success maybeData ->
+                                case maybeData of
+                                    Just data ->
+                                        -- We still have data. Reset errors counter to 0, since last upload was succesfull.
+                                        ( SyncUploadScreenshot 0 webData, syncInfoAuthorities )
 
                                     Nothing ->
                                         -- No more photos to upload.
@@ -94,7 +134,7 @@ determineSyncStatus activePage model =
 
                                         else
                                             -- Threshold not exceeded - increase counter and try uploading again.
-                                            ( SyncUploadPhotoAuthority (errorsCount + 1) webData, syncInfoAuthorities )
+                                            ( SyncUploadScreenshot (errorsCount + 1) webData, syncInfoAuthorities )
                                 in
                                 case error of
                                     NetworkError _ ->
@@ -113,6 +153,15 @@ determineSyncStatus activePage model =
                         ( SyncIdle, syncInfoAuthorities )
 
                     SyncUploadGeneral record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncUploadWhatsApp emptyUploadRec, syncInfoAuthorities )
+
+                        else
+                            noChange
+
+                    SyncUploadWhatsApp record ->
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
@@ -355,6 +404,12 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
         BackendGeneralVillage identifier ->
             getIdentifier identifier "village"
 
+        BackendGeneralResilienceMessage identifier ->
+            getIdentifier identifier "resilience_message"
+
+        BackendGeneralResilienceSurvey identifier ->
+            getIdentifier identifier "resilience_survey"
+
 
 {-| Get info about an "Authority" entity. `revision` would be the Drupal revision
 in case of download, or the `localId` in case of upload.
@@ -450,6 +505,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityGroupHealthEducation identifier ->
             getIdentifier identifier "group_health_education"
 
+        BackendAuthorityGroupNCDA identifier ->
+            getIdentifier identifier "group_ncda"
+
         BackendAuthorityGroupSendToHC identifier ->
             getIdentifier identifier "group_send_to_hc"
 
@@ -495,6 +553,75 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityMuac identifier ->
             getIdentifier identifier "muac"
 
+        BackendAuthorityNCDCoMorbidities identifier ->
+            getIdentifier identifier "ncd_co_morbidities"
+
+        BackendAuthorityNCDCoreExam identifier ->
+            getIdentifier identifier "ncd_core_exam"
+
+        BackendAuthorityNCDCreatinineTest identifier ->
+            getIdentifier identifier "ncd_creatinine_test"
+
+        BackendAuthorityNCDDangerSigns identifier ->
+            getIdentifier identifier "ncd_danger_signs"
+
+        BackendAuthorityNCDEncounter identifier ->
+            getIdentifier identifier "ncd_encounter"
+
+        BackendAuthorityNCDFamilyHistory identifier ->
+            getIdentifier identifier "ncd_family_history"
+
+        BackendAuthorityNCDFamilyPlanning identifier ->
+            getIdentifier identifier "ncd_family_planning"
+
+        BackendAuthorityNCDHbA1cTest identifier ->
+            getIdentifier identifier "ncd_hba1c_test"
+
+        BackendAuthorityNCDHealthEducation identifier ->
+            getIdentifier identifier "ncd_health_education"
+
+        BackendAuthorityNCDHIVTest identifier ->
+            getIdentifier identifier "ncd_hiv_test"
+
+        BackendAuthorityNCDLabsResults identifier ->
+            getIdentifier identifier "ncd_labs_results"
+
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            getIdentifier identifier "ncd_lipid_panel_test"
+
+        BackendAuthorityNCDLiverFunctionTest identifier ->
+            getIdentifier identifier "ncd_liver_function_test"
+
+        BackendAuthorityNCDMedicationDistribution identifier ->
+            getIdentifier identifier "ncd_medication_distribution"
+
+        BackendAuthorityNCDMedicationHistory identifier ->
+            getIdentifier identifier "ncd_medication_history"
+
+        BackendAuthorityNCDOutsideCare identifier ->
+            getIdentifier identifier "ncd_outside_care"
+
+        BackendAuthorityNCDPregnancyTest identifier ->
+            getIdentifier identifier "ncd_pregnancy_test"
+
+        BackendAuthorityNCDRandomBloodSugarTest identifier ->
+            getIdentifier identifier "ncd_random_blood_sugar_test"
+
+        BackendAuthorityNCDReferral identifier ->
+            getIdentifier identifier "ncd_referral"
+
+        BackendAuthorityNCDSocialHistory identifier ->
+            getIdentifier identifier "ncd_social_history"
+
+        BackendAuthorityNCDSymptomReview identifier ->
+            getIdentifier identifier "ncd_symptom_review"
+
+        BackendAuthorityNCDUrineDipstickTest identifier ->
+            getIdentifier identifier "ncd_urine_dipstick_test"
+
+        BackendAuthorityNCDVitals identifier ->
+            getIdentifier identifier "ncd_vitals"
+
         BackendAuthorityNutrition identifier ->
             getIdentifier identifier "nutrition"
 
@@ -527,6 +654,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityNutritionMuac identifier ->
             getIdentifier identifier "nutrition_muac"
+
+        BackendAuthorityNutritionNCDA identifier ->
+            getIdentifier identifier "nutrition_ncda"
 
         BackendAuthorityNutritionNutrition identifier ->
             getIdentifier identifier "nutrition_nutrition"
@@ -561,34 +691,91 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPmtctParticipant identifier ->
             getIdentifier identifier "pmtct_participant"
 
-        BackendAuthorityPregnancyTesting identifier ->
+        BackendAuthorityPregnancyTest identifier ->
             getIdentifier identifier "pregnancy_testing"
 
-        BackendAuthorityPrenatalPhoto identifier ->
-            getIdentifier identifier "prenatal_photo"
+        BackendAuthorityPrenatalBloodGpRsTest identifier ->
+            getIdentifier identifier "prenatal_blood_gprs_test"
 
-        BackendAuthorityPrenatalFamilyPlanning identifier ->
-            getIdentifier identifier "prenatal_family_planning"
-
-        BackendAuthorityPrenatalHealthEducation identifier ->
-            getIdentifier identifier "prenatal_health_education"
-
-        BackendAuthorityPrenatalFollowUp identifier ->
-            getIdentifier identifier "prenatal_follow_up"
-
-        BackendAuthorityPrenatalSendToHC identifier ->
-            getIdentifier identifier "prenatal_send_to_hc"
-
-        BackendAuthorityPrenatalNutrition identifier ->
-            getIdentifier identifier "prenatal_nutrition"
+        BackendAuthorityPrenatalBreastfeeding identifier ->
+            getIdentifier identifier "prenatal_breastfeeding"
 
         BackendAuthorityPrenatalEncounter identifier ->
             getIdentifier identifier "prenatal_encounter"
 
+        BackendAuthorityPrenatalFamilyPlanning identifier ->
+            getIdentifier identifier "prenatal_family_planning"
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            getIdentifier identifier "prenatal_follow_up"
+
+        BackendAuthorityPrenatalGUExam identifier ->
+            getIdentifier identifier "prenatal_gu_exam"
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            getIdentifier identifier "prenatal_health_education"
+
+        BackendAuthorityPrenatalHemoglobinTest identifier ->
+            getIdentifier identifier "prenatal_hemoglobin_test"
+
+        BackendAuthorityPrenatalHepatitisBTest identifier ->
+            getIdentifier identifier "prenatal_hepatitis_b_test"
+
+        BackendAuthorityPrenatalHIVTest identifier ->
+            getIdentifier identifier "prenatal_hiv_test"
+
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            getIdentifier identifier "prenatal_hiv_pcr_test"
+
+        BackendAuthorityPrenatalLabsResults identifier ->
+            getIdentifier identifier "prenatal_labs_results"
+
+        BackendAuthorityPrenatalMalariaTest identifier ->
+            getIdentifier identifier "prenatal_malaria_test"
+
+        BackendAuthorityPrenatalMedicationDistribution identifier ->
+            getIdentifier identifier "prenatal_medication_distribution"
+
+        BackendAuthorityPrenatalMentalHealth identifier ->
+            getIdentifier identifier "prenatal_mental_health"
+
+        BackendAuthorityPrenatalNutrition identifier ->
+            getIdentifier identifier "prenatal_nutrition"
+
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            getIdentifier identifier "prenatal_outside_care"
+
+        BackendAuthorityPrenatalPartnerHIVTest identifier ->
+            getIdentifier identifier "prenatal_partner_hiv_test"
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            getIdentifier identifier "prenatal_photo"
+
+        BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
+            getIdentifier identifier "prenatal_random_blood_sugar_test"
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            getIdentifier identifier "prenatal_send_to_hc"
+
+        BackendAuthorityPrenatalSpecialityCare identifier ->
+            getIdentifier identifier "prenatal_speciality_care"
+
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            getIdentifier identifier "prenatal_symptom_review"
+
+        BackendAuthorityPrenatalSyphilisTest identifier ->
+            getIdentifier identifier "prenatal_syphilis_test"
+
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            getIdentifier identifier "prenatal_tetanus_immunisation"
+
+        BackendAuthorityPrenatalUrineDipstickTest identifier ->
+            getIdentifier identifier "prenatal_urine_dipstick_test"
+
         BackendAuthorityRelationship identifier ->
             getIdentifier identifier "relationship"
 
-        BackendAuthorityResource identifier ->
+        BackendAuthorityMalariaPrevention identifier ->
             getIdentifier identifier "resource"
 
         BackendAuthoritySendToHC identifier ->
@@ -599,6 +786,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthoritySocialHistory identifier ->
             getIdentifier identifier "social_history"
+
+        BackendAuthorityStockUpdate identifier ->
+            getIdentifier identifier "stock_update"
 
         BackendAuthoritySymptomsGeneral identifier ->
             getIdentifier identifier "symptoms_general"
@@ -669,6 +859,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildMuac identifier ->
             getIdentifier identifier "well_child_muac"
 
+        BackendAuthorityWellChildNCDA identifier ->
+            getIdentifier identifier "well_child_ncda"
+
         BackendAuthorityWellChildNextVisit identifier ->
             getIdentifier identifier "well_child_next_visit"
 
@@ -708,12 +901,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
 {-| Return a photo from a "Authority" entity.
 -}
-getPhotoFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
-getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
+getImageFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
+getImageFromBackendAuthorityEntity backendAuthorityEntity =
     let
-        getPhotoFromMeasurement identifier =
+        getImageFromMeasurement identifier =
             let
-                (PhotoUrl url) =
+                (ImageUrl url) =
                     identifier.entity.value
             in
             Just url
@@ -723,13 +916,20 @@ getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
             identifier.entity.avatarUrl
 
         BackendAuthorityPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
 
         BackendAuthorityNutritionPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
 
         BackendAuthorityPrenatalPhoto identifier ->
-            getPhotoFromMeasurement identifier
+            getImageFromMeasurement identifier
+
+        BackendAuthorityStockUpdate identifier ->
+            let
+                (ImageUrl url) =
+                    identifier.entity.signature
+            in
+            Just url
 
         _ ->
             Nothing
@@ -893,6 +1093,12 @@ encodeBackendGeneralEntity backendGeneralEntity =
         BackendGeneralVillage identifier ->
             encode Backend.Village.Encoder.encodeVillage identifier
 
+        BackendGeneralResilienceMessage identifier ->
+            encode Backend.ResilienceMessage.Encoder.encodeResilienceMessage identifier
+
+        BackendGeneralResilienceSurvey identifier ->
+            encode Backend.ResilienceSurvey.Encoder.encodeResilienceSurvey identifier
+
 
 encodeBackendAuthorityEntity : BackendAuthorityEntity -> Value
 encodeBackendAuthorityEntity entity =
@@ -978,6 +1184,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityGroupHealthEducation identifier ->
             encode Backend.Measurement.Encoder.encodeGroupHealthEducation identifier
 
+        BackendAuthorityGroupNCDA identifier ->
+            encode Backend.Measurement.Encoder.encodeGroupNCDA identifier
+
         BackendAuthorityGroupSendToHC identifier ->
             encode Backend.Measurement.Encoder.encodeGroupSendToHC identifier
 
@@ -1023,6 +1232,75 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityMuac identifier ->
             encode Backend.Measurement.Encoder.encodeMuac identifier
 
+        BackendAuthorityNCDCoMorbidities identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDCoMorbidities identifier
+
+        BackendAuthorityNCDCoreExam identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDCoreExam identifier
+
+        BackendAuthorityNCDCreatinineTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDCreatinineTest identifier
+
+        BackendAuthorityNCDDangerSigns identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDDangerSigns identifier
+
+        BackendAuthorityNCDEncounter identifier ->
+            encode Backend.NCDEncounter.Encoder.encodeNCDEncounter identifier
+
+        BackendAuthorityNCDFamilyHistory identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDFamilyHistory identifier
+
+        BackendAuthorityNCDFamilyPlanning identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDFamilyPlanning identifier
+
+        BackendAuthorityNCDHbA1cTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDHbA1cTest identifier
+
+        BackendAuthorityNCDHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDHealthEducation identifier
+
+        BackendAuthorityNCDHIVTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDHIVTest identifier
+
+        BackendAuthorityNCDLabsResults identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDLabsResults identifier
+
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDLipidPanelTest identifier
+
+        BackendAuthorityNCDLiverFunctionTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDLiverFunctionTest identifier
+
+        BackendAuthorityNCDMedicationDistribution identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDMedicationDistribution identifier
+
+        BackendAuthorityNCDMedicationHistory identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDMedicationHistory identifier
+
+        BackendAuthorityNCDOutsideCare identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDOutsideCare identifier
+
+        BackendAuthorityNCDPregnancyTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDPregnancyTest identifier
+
+        BackendAuthorityNCDRandomBloodSugarTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDRandomBloodSugarTest identifier
+
+        BackendAuthorityNCDReferral identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDReferral identifier
+
+        BackendAuthorityNCDSocialHistory identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDSocialHistory identifier
+
+        BackendAuthorityNCDSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDSymptomReview identifier
+
+        BackendAuthorityNCDUrineDipstickTest identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDUrineDipstickTest identifier
+
+        BackendAuthorityNCDVitals identifier ->
+            encode Backend.Measurement.Encoder.encodeNCDVitals identifier
+
         BackendAuthorityNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeNutrition identifier
 
@@ -1055,6 +1333,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityNutritionMuac identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionMuac identifier
+
+        BackendAuthorityNutritionNCDA identifier ->
+            encode Backend.Measurement.Encoder.encodeNutritionNCDA identifier
 
         BackendAuthorityNutritionNutrition identifier ->
             encode Backend.Measurement.Encoder.encodeNutritionNutrition identifier
@@ -1089,35 +1370,92 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPmtctParticipant identifier ->
             encode Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier
 
-        BackendAuthorityPregnancyTesting identifier ->
-            encode Backend.Measurement.Encoder.encodePregnancyTesting identifier
+        BackendAuthorityPregnancyTest identifier ->
+            encode Backend.Measurement.Encoder.encodePregnancyTest identifier
 
-        BackendAuthorityPrenatalPhoto identifier ->
-            encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
+        BackendAuthorityPrenatalBloodGpRsTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalBloodGpRsTest identifier
 
-        BackendAuthorityPrenatalFamilyPlanning identifier ->
-            encode Backend.Measurement.Encoder.encodePrenatalFamilyPlanning identifier
-
-        BackendAuthorityPrenatalHealthEducation identifier ->
-            encode Backend.Measurement.Encoder.encodePrenatalHealthEducation identifier
-
-        BackendAuthorityPrenatalFollowUp identifier ->
-            encode Backend.Measurement.Encoder.encodePrenatalFollowUp identifier
-
-        BackendAuthorityPrenatalSendToHC identifier ->
-            encode Backend.Measurement.Encoder.encodePrenatalSendToHC identifier
-
-        BackendAuthorityPrenatalNutrition identifier ->
-            encode Backend.Measurement.Encoder.encodePrenatalNutrition identifier
+        BackendAuthorityPrenatalBreastfeeding identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalBreastfeeding identifier
 
         BackendAuthorityPrenatalEncounter identifier ->
             encode Backend.PrenatalEncounter.Encoder.encodePrenatalEncounter identifier
 
+        BackendAuthorityPrenatalFamilyPlanning identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalFamilyPlanning identifier
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalFollowUp identifier
+
+        BackendAuthorityPrenatalGUExam identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalGUExam identifier
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHealthEducation identifier
+
+        BackendAuthorityPrenatalHemoglobinTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHemoglobinTest identifier
+
+        BackendAuthorityPrenatalHepatitisBTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHepatitisBTest identifier
+
+        BackendAuthorityPrenatalHIVTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHIVTest identifier
+
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalHIVPCRTest identifier
+
+        BackendAuthorityPrenatalLabsResults identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalLabsResults identifier
+
+        BackendAuthorityPrenatalMalariaTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalMalariaTest identifier
+
+        BackendAuthorityPrenatalMedicationDistribution identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalMedicationDistribution identifier
+
+        BackendAuthorityPrenatalMentalHealth identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalMentalHealth identifier
+
+        BackendAuthorityPrenatalNutrition identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalNutrition identifier
+
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalOutsideCare identifier
+
+        BackendAuthorityPrenatalPartnerHIVTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalPartnerHIVTest identifier
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalPhoto identifier
+
+        BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalRandomBloodSugarTest identifier
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSendToHC identifier
+
+        BackendAuthorityPrenatalSpecialityCare identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSpecialityCare identifier
+
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSymptomReview identifier
+
+        BackendAuthorityPrenatalSyphilisTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalSyphilisTest identifier
+
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalTetanusImmunisation identifier
+
+        BackendAuthorityPrenatalUrineDipstickTest identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalUrineDipstickTest identifier
+
         BackendAuthorityRelationship identifier ->
             encode Backend.Relationship.Encoder.encodeRelationship identifier
 
-        BackendAuthorityResource identifier ->
-            encode Backend.Measurement.Encoder.encodeResource identifier
+        BackendAuthorityMalariaPrevention identifier ->
+            encode Backend.Measurement.Encoder.encodeMalariaPrevention identifier
 
         BackendAuthoritySession identifier ->
             encode Backend.Session.Encoder.encodeSession identifier
@@ -1127,6 +1465,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthoritySocialHistory identifier ->
             encode Backend.Measurement.Encoder.encodeSocialHistory identifier
+
+        BackendAuthorityStockUpdate identifier ->
+            encode Backend.StockUpdate.Encoder.encodeStockUpdate identifier
 
         BackendAuthoritySymptomsGeneral identifier ->
             encode Backend.Measurement.Encoder.encodeSymptomsGeneral identifier
@@ -1196,6 +1537,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityWellChildMuac identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildMuac identifier
+
+        BackendAuthorityWellChildNCDA identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildNCDA identifier
 
         BackendAuthorityWellChildNextVisit identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildNextVisit identifier
@@ -1384,6 +1728,12 @@ backendGeneralEntityToRevision backendGeneralEntity =
         BackendGeneralVillage identifier ->
             VillageRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendGeneralResilienceMessage identifier ->
+            ResilienceMessageRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendGeneralResilienceSurvey identifier ->
+            ResilienceSurveyRevision (toEntityUuid identifier.uuid) identifier.entity
+
 
 backendAuthorityEntityToRevision : BackendAuthorityEntity -> Revision
 backendAuthorityEntityToRevision backendAuthorityEntity =
@@ -1469,6 +1819,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityGroupHealthEducation identifier ->
             GroupHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityGroupNCDA identifier ->
+            GroupNCDARevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityGroupSendToHC identifier ->
             GroupSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1514,6 +1867,75 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityMuac identifier ->
             MuacRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityNCDCoMorbidities identifier ->
+            NCDCoMorbiditiesRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDCoreExam identifier ->
+            NCDCoreExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDCreatinineTest identifier ->
+            NCDCreatinineTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDDangerSigns identifier ->
+            NCDDangerSignsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDEncounter identifier ->
+            NCDEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDFamilyHistory identifier ->
+            NCDFamilyHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDFamilyPlanning identifier ->
+            NCDFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDHbA1cTest identifier ->
+            NCDHbA1cTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDHealthEducation identifier ->
+            NCDHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDHIVTest identifier ->
+            NCDHIVTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDLabsResults identifier ->
+            NCDLabsResultsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDLipidPanelTest identifier ->
+            NCDLipidPanelTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDLiverFunctionTest identifier ->
+            NCDLiverFunctionTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDMedicationDistribution identifier ->
+            NCDMedicationDistributionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDMedicationHistory identifier ->
+            NCDMedicationHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDOutsideCare identifier ->
+            NCDOutsideCareRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDPregnancyTest identifier ->
+            NCDPregnancyTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDRandomBloodSugarTest identifier ->
+            NCDRandomBloodSugarTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDReferral identifier ->
+            NCDReferralRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDSocialHistory identifier ->
+            NCDSocialHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDSymptomReview identifier ->
+            NCDSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDUrineDipstickTest identifier ->
+            NCDUrineDipstickTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNCDVitals identifier ->
+            NCDVitalsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityNutrition identifier ->
             ChildNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -1546,6 +1968,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityNutritionMuac identifier ->
             NutritionMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityNutritionNCDA identifier ->
+            NutritionNCDARevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityNutritionNutrition identifier ->
             NutritionNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1580,35 +2005,92 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityPmtctParticipant identifier ->
             PmtctParticipantRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityPregnancyTesting identifier ->
-            PregnancyTestingRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityPregnancyTest identifier ->
+            PregnancyTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityPrenatalPhoto identifier ->
-            PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityPrenatalBloodGpRsTest identifier ->
+            PrenatalBloodGpRsTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityPrenatalFamilyPlanning identifier ->
-            PrenatalFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityPrenatalHealthEducation identifier ->
-            PrenatalHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityPrenatalFollowUp identifier ->
-            PrenatalFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityPrenatalSendToHC identifier ->
-            PrenatalSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
-
-        BackendAuthorityPrenatalNutrition identifier ->
-            PrenatalNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityPrenatalBreastfeeding identifier ->
+            PrenatalBreastfeedingRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalEncounter identifier ->
             PrenatalEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityPrenatalFamilyPlanning identifier ->
+            PrenatalFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalFollowUp identifier ->
+            PrenatalFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalGUExam identifier ->
+            PrenatalGUExamRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalHealthEducation identifier ->
+            PrenatalHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalHemoglobinTest identifier ->
+            PrenatalHemoglobinTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalHepatitisBTest identifier ->
+            PrenatalHepatitisBTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalHIVTest identifier ->
+            PrenatalHIVTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalHIVPCRTest identifier ->
+            PrenatalHIVPCRTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalLabsResults identifier ->
+            PrenatalLabsResultsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalMalariaTest identifier ->
+            PrenatalMalariaTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalMedicationDistribution identifier ->
+            PrenatalMedicationDistributionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalMentalHealth identifier ->
+            PrenatalMentalHealthRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalNutrition identifier ->
+            PrenatalNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalOutsideCare identifier ->
+            PrenatalOutsideCareRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalPartnerHIVTest identifier ->
+            PrenatalPartnerHIVTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            PrenatalPhotoRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
+            PrenatalRandomBloodSugarTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalSendToHC identifier ->
+            PrenatalSendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalSpecialityCare identifier ->
+            PrenatalSpecialityCareRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalSymptomReview identifier ->
+            PrenatalSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalSyphilisTest identifier ->
+            PrenatalSyphilisTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalTetanusImmunisation identifier ->
+            PrenatalTetanusImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalUrineDipstickTest identifier ->
+            PrenatalUrineDipstickTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityRelationship identifier ->
             RelationshipRevision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityResource identifier ->
-            ResourceRevision (toEntityUuid identifier.uuid) identifier.entity
+        BackendAuthorityMalariaPrevention identifier ->
+            MalariaPreventionRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthoritySendToHC identifier ->
             SendToHCRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1618,6 +2100,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthoritySocialHistory identifier ->
             SocialHistoryRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityStockUpdate identifier ->
+            StockUpdateRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthoritySymptomsGeneral identifier ->
             SymptomsGeneralRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1687,6 +2172,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildMuac identifier ->
             WellChildMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildNCDA identifier ->
+            WellChildNCDARevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildNextVisit identifier ->
             WellChildNextVisitRevision (toEntityUuid identifier.uuid) identifier.entity

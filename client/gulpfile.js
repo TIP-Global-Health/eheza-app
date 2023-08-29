@@ -174,7 +174,7 @@ gulp.task("copy:fonts", function() {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
+gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:signature_pad", "copy:images", "copy:favicon",
   "copy:fonts"
 ], function() {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
@@ -186,7 +186,6 @@ gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
 
 // Copy bower.
 gulp.task("copy:bower", function() {
-  // There are unused Dexie files that causes trouble for uglify later
   return gulp.src([
       "bower_components/**/*",
       "!bower_components/**/*.es.js",
@@ -194,6 +193,26 @@ gulp.task("copy:bower", function() {
     ]).pipe(gulp.dest("serve/bower_components"))
     .pipe($.size({
       title: "Bower"
+    }))
+});
+
+// Copy html2canvas.
+gulp.task("copy:html2canvas", function() {
+  return gulp.src([
+      "node_modules/html2canvas/dist/*",
+    ]).pipe(gulp.dest("serve/node_modules/html2canvas/dist"))
+    .pipe($.size({
+      title: "html2canvas"
+    }))
+});
+
+// Copy signature_pad.
+gulp.task("copy:signature_pad", function() {
+  return gulp.src([
+      "node_modules/signature_pad/dist/*",
+    ]).pipe(gulp.dest("serve/node_modules/signature_pad/dist"))
+    .pipe($.size({
+      title: "signature_pad"
     }))
 });
 
@@ -328,14 +347,14 @@ gulp.task("serve:emulator", ["build", "ssl-cert"], function() {
   });
 });
 
-// Makes an SSL certificate for ihangane.dev for the Android emulator. Just
+// Makes an SSL certificate for eheza-app.dev for the Android emulator. Just
 // run this once, and then do what is necessary to trust it.
 gulp.task("ssl-cert", function(cb) {
   fs.access("ssl/ssl.crt", fs.constants.F_OK, (err) => {
     if (err) {
       // Doesn't exist, so create cert.
       const cmdGen =
-        "openssl req -batch -config ssl/ihangane.dev.conf -new -sha256 -newkey rsa:2048 -nodes -x509 -days 1024 -keyout ssl/ssl.key -out ssl/ssl.pem";
+        "openssl req -batch -config ssl/eheza-app.dev.conf -new -sha256 -newkey rsa:2048 -nodes -x509 -days 1024 -keyout ssl/ssl.key -out ssl/ssl.pem";
       exec(cmdGen, {}, function(err, stdout, stderr) {
         console.log(stdout);
         console.log(stderr);
@@ -394,7 +413,9 @@ var precacheLocalDev = [
   'bower_components/dropzone/dist/min/dropzone.min.js',
   'bower_components/dexie/dist/dexie.min.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.css'
+  'bower_components/semantic/dist/semantic.min.css',
+  'node_modules/html2canvas/dist/html2canvas.min.js',
+  'node_modules/signature_pad/dist/signature_pad.umd.min.js'
 ];
 
 // There may be a better way to do this, but for the moment we have some
@@ -407,7 +428,9 @@ var precacheProd = [
   'bower_components/dropzone/dist/min/dropzone.min.*.js',
   'bower_components/dexie/dist/dexie.min.*.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.*.css'
+  'bower_components/semantic/dist/semantic.min.*.css',
+  'node_modules/html2canvas/dist/html2canvas.min.*.js',
+  'node_modules/signature_pad/dist/signature_pad.umd.min.js'
 ];
 
 // For offline use while developing
@@ -416,7 +439,7 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
 
   return workboxBuild.generateSW({
     swDest: 'serve/service-worker.js',
-    cacheId: 'ihangane',
+    cacheId: 'eheza-app',
     globDirectory: 'serve',
     globPatterns: precacheLocalDev,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
@@ -441,7 +464,7 @@ gulp.task('pwa:prod', function() {
 
   return workboxBuild.generateSW({
     swDest: 'dist/service-worker.js',
-    cacheId: 'ihangane',
+    cacheId: 'eheza-app',
     globDirectory: 'dist',
     globPatterns: precacheProd,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,

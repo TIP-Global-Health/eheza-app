@@ -2,6 +2,8 @@ module Backend.AcuteIllnessEncounter.Utils exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
+import Backend.NCDEncounter.Utils
+import Backend.PatientRecord.Utils
 import Maybe.Extra
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
@@ -107,8 +109,8 @@ acuteIllnessDiagnosisFromString diagnosis =
             Nothing
 
 
-progressReportInitiatorToUrlFragmemt : AcuteIllnessProgressReportInitiator -> String
-progressReportInitiatorToUrlFragmemt initiator =
+progressReportInitiatorToUrlFragment : AcuteIllnessProgressReportInitiator -> String
+progressReportInitiatorToUrlFragment initiator =
     case initiator of
         InitiatorEncounterPage ->
             "encounter-page"
@@ -122,27 +124,33 @@ progressReportInitiatorToUrlFragmemt initiator =
         InitiatorGroupNutritionProgressReport sessionId personId ->
             "progress-report-" ++ fromEntityUuid sessionId ++ "+++" ++ fromEntityUuid personId
 
+        InitiatorPatientRecord patientRecordInitiator personId ->
+            "patient-record-" ++ fromEntityUuid personId ++ "+++" ++ Backend.PatientRecord.Utils.progressReportInitiatorToUrlFragment patientRecordInitiator
 
-progressReportInitiatorFromUrlFragmemt : String -> Maybe AcuteIllnessProgressReportInitiator
-progressReportInitiatorFromUrlFragmemt s =
+        InitiatorNCDProgressReport ncdProgressReportInitiator ->
+            "ncd-progress-report-" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragment ncdProgressReportInitiator
+
+
+progressReportInitiatorFromUrlFragment : String -> Maybe AcuteIllnessProgressReportInitiator
+progressReportInitiatorFromUrlFragment s =
     case s of
         "encounter-page" ->
             Just InitiatorEncounterPage
 
         _ ->
-            if String.startsWith "well-child-progress-report" s then
+            if String.startsWith "well-child-progress-report-" s then
                 String.dropLeft (String.length "well-child-progress-report-") s
                     |> toEntityUuid
                     |> InitiatorWellChildProgressReport
                     |> Just
 
-            else if String.startsWith "nutrition-progress-report" s then
+            else if String.startsWith "nutrition-progress-report-" s then
                 String.dropLeft (String.length "nutrition-progress-report-") s
                     |> toEntityUuid
                     |> InitiatorIndividualNutritionProgressReport
                     |> Just
 
-            else if String.startsWith "progress-report" s then
+            else if String.startsWith "progress-report-" s then
                 let
                     ids =
                         String.dropLeft (String.length "progress-report-") s
@@ -163,6 +171,32 @@ progressReportInitiatorFromUrlFragmemt s =
                         (List.head ids)
                         (List.head (List.drop 1 ids))
                         |> Maybe.Extra.join
+
+            else if String.startsWith "patient-record-" s then
+                let
+                    fragments =
+                        String.dropLeft (String.length "patient-record-") s
+                            |> String.split "+++"
+                in
+                if List.length fragments /= 2 then
+                    Nothing
+
+                else
+                    Maybe.map2
+                        (\personId patientRecordInitiator ->
+                            Just <| InitiatorPatientRecord patientRecordInitiator (toEntityUuid personId)
+                        )
+                        (List.head fragments)
+                        (List.drop 1 fragments
+                            |> List.head
+                            |> Maybe.andThen Backend.PatientRecord.Utils.progressReportInitiatorFromUrlFragment
+                        )
+                        |> Maybe.Extra.join
+
+            else if String.startsWith "ncd-progress-report-" s then
+                String.dropLeft (String.length "ncd-progress-report-") s
+                    |> Backend.NCDEncounter.Utils.progressReportInitiatorFromUrlFragment
+                    |> Maybe.map InitiatorNCDProgressReport
 
             else
                 Nothing

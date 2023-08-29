@@ -1,13 +1,17 @@
 port module App.Ports exposing
     ( bindDropZone
+    , bindSignaturePad
     , cacheHealthCenter
     , cachePinCode
     , cacheVillage
+    , clearSignaturePad
+    , makeProgressReportScreenshot
     , memoryQuota
     , persistentStorage
     , scrollToElement
     , setLanguage
     , storageQuota
+    , storeSignature
     )
 
 import App.Model exposing (MemoryQuota, StorageQuota)
@@ -52,4 +56,16 @@ port cacheVillage : String -> Cmd msg
 port bindDropZone : () -> Cmd msg
 
 
+port bindSignaturePad : () -> Cmd msg
+
+
+port clearSignaturePad : () -> Cmd msg
+
+
+port storeSignature : () -> Cmd msg
+
+
 port scrollToElement : String -> Cmd msg
+
+
+port makeProgressReportScreenshot : { reportType : String, personId : String, phoneNumber : String } -> Cmd msg

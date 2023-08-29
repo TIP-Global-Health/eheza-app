@@ -55,9 +55,9 @@ wrapError language sessionId errorHtml =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.GroupEncounterLoading ]
-            , a
+            , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Nothing
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -164,9 +164,9 @@ viewClosedSession language sessionId session db =
                     |> Maybe.map (.name >> text)
                     |> showMaybe
                 ]
-            , a
+            , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.clinicId
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -194,9 +194,9 @@ viewUnauthorizedSession language sessionId session db =
                     |> Maybe.map (.name >> text)
                     |> showMaybe
                 ]
-            , a
+            , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.clinicId
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []

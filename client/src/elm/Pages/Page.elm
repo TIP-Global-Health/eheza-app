@@ -1,4 +1,12 @@
-module Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), SessionPage(..), UserPage(..))
+module Pages.Page exposing
+    ( AcuteIllnessDashboardPage(..)
+    , ChwDashboardPage(..)
+    , DashboardPage(..)
+    , NurseDashboardPage(..)
+    , Page(..)
+    , SessionPage(..)
+    , UserPage(..)
+    )
 
 {-| A module that defines a type which controls what the user wishes
 to be shown at the moment.
@@ -45,11 +53,15 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
+import Backend.Measurement.Model exposing (LaboratoryTest)
+import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator)
-import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator, RecordPreganancyInitiator)
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..), PrenatalRecurrentActivity(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 
 
@@ -125,11 +137,11 @@ the login page instead.
 -}
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
-    | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
-    | ClinicalProgressReportPage ClinicalProgressReportInitiator PrenatalEncounterId
+    | ClinicsPage -- shows a list of clinics, allows you to choose one
+    | ClinicalProgressReportPage PrenatalProgressReportInitiator PrenatalEncounterId
     | DashboardPage DashboardPage -- Dashboard with visual summary of the data
     | GlobalCaseManagementPage -- page where info about needed follow ups is displayed.
-    | DemographicsReportPage PrenatalEncounterId
+    | DemographicsReportPage PrenatalProgressReportInitiator PersonId
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
       -- Shows a particular person.
@@ -148,31 +160,44 @@ type UserPage
       -- Initiator indicates what was the origin of request,
       -- so that it would be clear where to proceed after action is completed / canceled.
     | PersonsPage (Maybe PersonId) Initiator
-    | PrenatalParticipantPage PersonId
+    | PrenatalParticipantPage IndividualParticipantInitiator PersonId
     | IndividualEncounterParticipantsPage IndividualEncounterType
       -- Create or edit a relationship between adult and child.
       -- Initiator will help to determine which actions are allowed.
     | RelationshipPage PersonId PersonId Initiator
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
+    | PrenatalRecurrentEncounterPage PrenatalEncounterId -- prenatal recurrent activities index
+    | PrenatalRecurrentActivityPage PrenatalEncounterId PrenatalRecurrentActivity -- record prenatal recurrent activity
+    | PrenatalLabsHistoryPage PrenatalEncounterId PrenatalEncounterId LaboratoryTest
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
-    | NutritionParticipantPage PersonId
+    | NutritionParticipantPage IndividualParticipantInitiator PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity.
     | NutritionProgressReportPage NutritionEncounterId
-    | AcuteIllnessParticipantPage PersonId
+    | AcuteIllnessParticipantPage IndividualParticipantInitiator PersonId
     | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- acute illness activities index.
     | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity.
     | AcuteIllnessProgressReportPage AcuteIllnessProgressReportInitiator AcuteIllnessEncounterId -- acute illness progress report.
     | AcuteIllnessOutcomePage IndividualEncounterParticipantId -- this is where acute illness outcome is recorded.
     | HomeVisitEncounterPage HomeVisitEncounterId -- home visit activities index.
     | HomeVisitActivityPage HomeVisitEncounterId HomeVisitActivity -- record home visit activity.
-    | WellChildParticipantPage PersonId
+    | WellChildParticipantPage IndividualParticipantInitiator PersonId
     | WellChildEncounterPage WellChildEncounterId -- well child activities index.
     | WellChildActivityPage WellChildEncounterId WellChildActivity -- record well child activity.
     | WellChildProgressReportPage WellChildEncounterId -- well child progress report.
+    | NCDParticipantPage IndividualParticipantInitiator PersonId
+    | NCDEncounterPage NCDEncounterId -- NCD activities index.
+    | NCDActivityPage NCDEncounterId NCDActivity -- record NCD activity.
+    | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index
+    | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity
+    | NCDProgressReportPage NCDProgressReportInitiator
     | TraceContactPage AcuteIllnessTraceContactId
+    | PatientRecordPage PatientRecordInitiator PersonId
+    | MessagingCenterPage
+    | WellbeingPage
+    | StockManagementPage
 
 
 {-| We group together the pages that can only be viewed in the Dashboard

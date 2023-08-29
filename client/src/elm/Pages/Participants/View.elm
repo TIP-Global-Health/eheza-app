@@ -125,20 +125,17 @@ view language nurse ( sessionId, session ) model =
                 Nothing
 
         goBackPage =
-            backFromSessionPage nurse session.offlineSession
-
-        endSessionAction =
             if isCommunityHealthWorker nurse then
-                SetRedirectPage goBackPage
+                UserPage ClinicalPage
 
             else
-                ShowEndSessionDialog True
+                UserPage ClinicsPage
 
         endSessionButton =
             div [ class "actions" ]
                 [ button
-                    [ class "ui fluid primary button"
-                    , onClick endSessionAction
+                    [ class "ui fluid button green"
+                    , onClick <| SetRedirectPage <| UserPage ClinicalPage
                     ]
                     [ text <| translate language Trans.EndGroupEncounter ]
                 ]
@@ -149,7 +146,7 @@ view language nurse ( sessionId, session ) model =
                 [ h1
                     [ class "ui header" ]
                     [ text <| translate language Trans.Participants ]
-                , a
+                , span
                     [ class "link-back"
                     , onClick <| SetRedirectPage goBackPage
                     ]

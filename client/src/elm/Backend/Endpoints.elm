@@ -23,7 +23,11 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
+import Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Decoder exposing (decodeNurse)
+import Backend.Nurse.Encoder exposing (encodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 import Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter)
@@ -43,9 +47,17 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
+import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
+import Backend.ResilienceMessage.Encoder exposing (encodeResilienceMessage)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
+import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
+import Backend.ResilienceSurvey.Encoder exposing (encodeResilienceSurvey)
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
+import Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
@@ -238,9 +250,10 @@ participantFormEndpoint =
         |> withValueEncoder (object << encodeParticipantForm)
 
 
-nurseEndpoint : ReadOnlyEndPoint Error NurseId Nurse NurseParams
+nurseEndpoint : ReadWriteEndPoint Error NurseId Nurse Nurse NurseParams
 nurseEndpoint =
     swEndpoint "nodes/nurse" decodeNurse
+        |> withValueEncoder (object << encodeNurse)
         |> withParamsEncoder encodeNurseParams
 
 
@@ -294,6 +307,11 @@ homeVisitMeasurementsEndpoint =
 wellChildMeasurementsEndpoint : ReadOnlyEndPoint Error WellChildEncounterId WellChildMeasurements ()
 wellChildMeasurementsEndpoint =
     swEndpoint "nodes/well-child-measurements" decodeWellChildMeasurements
+
+
+stockManagementMeasurementsEndpoint : ReadOnlyEndPoint Error HealthCenterId StockManagementMeasurements ()
+stockManagementMeasurementsEndpoint =
+    swEndpoint "nodes/stock-management-measurements" decodeStockManagementMeasurements
 
 
 {-| Type-safe params ... how nice!
@@ -350,72 +368,80 @@ pmtctParticipantEndpoint =
         |> withParamsEncoder encodePmtctParticipantParams
 
 
-pregnancyTestingEndpoint : ReadWriteEndPoint Error PregnancyTestId PregnancyTest PregnancyTest ()
-pregnancyTestingEndpoint =
-    swEndpoint "nodes/pregnancy_testing" decodePregnancyTesting
-        |> withValueEncoder (object << encodePregnancyTesting)
+pregnancyTestEndpoint : ReadWriteEndPoint Error PregnancyTestId PregnancyTest PregnancyTest ()
+pregnancyTestEndpoint =
+    swEndpoint "nodes/pregnancy_testing" decodePregnancyTest
+        |> withValueEncoder (object << encodePregnancyTest)
 
 
-prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe IndividualEncounterParticipantId)
+prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (List IndividualEncounterParticipantId)
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
         |> withValueEncoder (object << encodePrenatalEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId NutritionEncounter NutritionEncounter (Maybe IndividualEncounterParticipantId)
+nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId NutritionEncounter NutritionEncounter (List IndividualEncounterParticipantId)
 nutritionEncounterEndpoint =
     swEndpoint "nodes/nutrition_encounter" decodeNutritionEncounter
         |> withValueEncoder (object << encodeNutritionEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-acuteIllnessEncounterEndpoint : ReadWriteEndPoint Error AcuteIllnessEncounterId AcuteIllnessEncounter AcuteIllnessEncounter (Maybe IndividualEncounterParticipantId)
+acuteIllnessEncounterEndpoint : ReadWriteEndPoint Error AcuteIllnessEncounterId AcuteIllnessEncounter AcuteIllnessEncounter (List IndividualEncounterParticipantId)
 acuteIllnessEncounterEndpoint =
     swEndpoint "nodes/acute_illness_encounter" decodeAcuteIllnessEncounter
         |> withValueEncoder (object << encodeAcuteIllnessEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVisitEncounter HomeVisitEncounter (Maybe IndividualEncounterParticipantId)
+homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVisitEncounter HomeVisitEncounter (List IndividualEncounterParticipantId)
 homeVisitEncounterEndpoint =
     swEndpoint "nodes/home_visit_encounter" decodeHomeVisitEncounter
         |> withValueEncoder (object << encodeHomeVisitEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-wellChildEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (Maybe IndividualEncounterParticipantId)
+wellChildEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (List IndividualEncounterParticipantId)
 wellChildEncounterEndpoint =
     swEndpoint "nodes/well_child_encounter" decodeWellChildEncounter
         |> withValueEncoder (object << encodeWellChildEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-encodeIndividualEncounterParams : Maybe IndividualEncounterParticipantId -> List ( String, String )
-encodeIndividualEncounterParams params =
-    case params of
-        Just id ->
-            [ ( "individual_participant", fromEntityUuid id ) ]
+encodeIndividualEncounterParams : List IndividualEncounterParticipantId -> List ( String, String )
+encodeIndividualEncounterParams ids =
+    if List.isEmpty ids then
+        []
 
-        Nothing ->
-            []
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "individual_participants", value ) ]
 
 
-individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (Maybe PersonId)
+individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (List PersonId)
 individualEncounterParticipantEndpoint =
     swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
         |> withValueEncoder (object << encodeIndividualEncounterParticipant)
         |> withParamsEncoder encodeIndividualEncounterParticipantParams
 
 
-encodeIndividualEncounterParticipantParams : Maybe PersonId -> List ( String, String )
-encodeIndividualEncounterParticipantParams params =
-    case params of
-        Just id ->
-            [ ( "person", fromEntityUuid id ) ]
+encodeIndividualEncounterParticipantParams : List PersonId -> List ( String, String )
+encodeIndividualEncounterParticipantParams ids =
+    if List.isEmpty ids then
+        []
 
-        Nothing ->
-            []
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "people", value ) ]
 
 
 breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam ()
@@ -490,10 +516,10 @@ prenatalNutritionEndpoint =
         |> withValueEncoder (object << encodePrenatalNutrition)
 
 
-resourceEndpoint : ReadWriteEndPoint Error ResourceId Resource Resource ()
-resourceEndpoint =
-    swEndpoint "nodes/resource" decodeResource
-        |> withValueEncoder (object << encodeResource)
+malariaPreventionEndpoint : ReadWriteEndPoint Error MalariaPreventionId MalariaPrevention MalariaPrevention ()
+malariaPreventionEndpoint =
+    swEndpoint "nodes/resource" decodeMalariaPrevention
+        |> withValueEncoder (object << encodeMalariaPrevention)
 
 
 socialHistoryEndpoint : ReadWriteEndPoint Error SocialHistoryId SocialHistory SocialHistory ()
@@ -748,7 +774,7 @@ prenatalFollowUpEndpoint =
         |> withValueEncoder (object << encodePrenatalFollowUp)
 
 
-prenatalSendToHcEndpoint : ReadWriteEndPoint Error PrenatalSendToHcId PrenatalSendToHC PrenatalSendToHC ()
+prenatalSendToHcEndpoint : ReadWriteEndPoint Error PrenatalSendToHCId PrenatalSendToHC PrenatalSendToHC ()
 prenatalSendToHcEndpoint =
     swEndpoint "nodes/prenatal_send_to_hc" decodePrenatalSendToHc
         |> withValueEncoder (object << encodePrenatalSendToHC)
@@ -932,3 +958,309 @@ acuteIllnessTraceContactEndpoint : ReadWriteEndPoint Error AcuteIllnessTraceCont
 acuteIllnessTraceContactEndpoint =
     swEndpoint "nodes/acute_illness_trace_contact" decodeAcuteIllnessTraceContact
         |> withValueEncoder (object << encodeAcuteIllnessTraceContact)
+
+
+prenatalBloodGpRsTestEndpoint : ReadWriteEndPoint Error PrenatalBloodGpRsTestId PrenatalBloodGpRsTest PrenatalBloodGpRsTest ()
+prenatalBloodGpRsTestEndpoint =
+    swEndpoint "nodes/prenatal_blood_gprs_test" decodePrenatalBloodGpRsTest
+        |> withValueEncoder (object << encodePrenatalBloodGpRsTest)
+
+
+prenatalHemoglobinTestEndpoint : ReadWriteEndPoint Error PrenatalHemoglobinTestId PrenatalHemoglobinTest PrenatalHemoglobinTest ()
+prenatalHemoglobinTestEndpoint =
+    swEndpoint "nodes/prenatal_hemoglobin_test" decodePrenatalHemoglobinTest
+        |> withValueEncoder (object << encodePrenatalHemoglobinTest)
+
+
+prenatalHepatitisBTestEndpoint : ReadWriteEndPoint Error PrenatalHepatitisBTestId PrenatalHepatitisBTest PrenatalHepatitisBTest ()
+prenatalHepatitisBTestEndpoint =
+    swEndpoint "nodes/prenatal_hepatitis_b_test" decodePrenatalHepatitisBTest
+        |> withValueEncoder (object << encodePrenatalHepatitisBTest)
+
+
+prenatalHIVTestEndpoint : ReadWriteEndPoint Error PrenatalHIVTestId PrenatalHIVTest PrenatalHIVTest ()
+prenatalHIVTestEndpoint =
+    swEndpoint "nodes/prenatal_hiv_test" decodePrenatalHIVTest
+        |> withValueEncoder (object << encodePrenatalHIVTest)
+
+
+prenatalMalariaTestEndpoint : ReadWriteEndPoint Error PrenatalMalariaTestId PrenatalMalariaTest PrenatalMalariaTest ()
+prenatalMalariaTestEndpoint =
+    swEndpoint "nodes/prenatal_malaria_test" decodePrenatalMalariaTest
+        |> withValueEncoder (object << encodePrenatalMalariaTest)
+
+
+prenatalRandomBloodSugarTestEndpoint : ReadWriteEndPoint Error PrenatalRandomBloodSugarTestId PrenatalRandomBloodSugarTest PrenatalRandomBloodSugarTest ()
+prenatalRandomBloodSugarTestEndpoint =
+    swEndpoint "nodes/prenatal_random_blood_sugar_test" decodePrenatalRandomBloodSugarTest
+        |> withValueEncoder (object << encodePrenatalRandomBloodSugarTest)
+
+
+prenatalSyphilisTestEndpoint : ReadWriteEndPoint Error PrenatalSyphilisTestId PrenatalSyphilisTest PrenatalSyphilisTest ()
+prenatalSyphilisTestEndpoint =
+    swEndpoint "nodes/prenatal_syphilis_test" decodePrenatalSyphilisTest
+        |> withValueEncoder (object << encodePrenatalSyphilisTest)
+
+
+prenatalUrineDipstickTestEndpoint : ReadWriteEndPoint Error PrenatalUrineDipstickTestId PrenatalUrineDipstickTest PrenatalUrineDipstickTest ()
+prenatalUrineDipstickTestEndpoint =
+    swEndpoint "nodes/prenatal_urine_dipstick_test" decodePrenatalUrineDipstickTest
+        |> withValueEncoder (object << encodePrenatalUrineDipstickTest)
+
+
+prenatalLabsResultsEndpoint : ReadWriteEndPoint Error PrenatalLabsResultsId PrenatalLabsResults PrenatalLabsResults ()
+prenatalLabsResultsEndpoint =
+    swEndpoint "nodes/prenatal_labs_results" decodePrenatalLabsResults
+        |> withValueEncoder (object << encodePrenatalLabsResults)
+
+
+prenatalMedicationDistributionEndpoint : ReadWriteEndPoint Error PrenatalMedicationDistributionId PrenatalMedicationDistribution PrenatalMedicationDistribution ()
+prenatalMedicationDistributionEndpoint =
+    swEndpoint "nodes/prenatal_medication_distribution" decodePrenatalMedicationDistribution
+        |> withValueEncoder (object << encodePrenatalMedicationDistribution)
+
+
+prenatalSymptomReviewEndpoint : ReadWriteEndPoint Error PrenatalSymptomReviewId PrenatalSymptomReview PrenatalSymptomReview ()
+prenatalSymptomReviewEndpoint =
+    swEndpoint "nodes/prenatal_symptom_review" decodePrenatalSymptomReview
+        |> withValueEncoder (object << encodePrenatalSymptomReview)
+
+
+prenatalOutsideCareEndpoint : ReadWriteEndPoint Error PrenatalOutsideCareId PrenatalOutsideCare PrenatalOutsideCare ()
+prenatalOutsideCareEndpoint =
+    swEndpoint "nodes/prenatal_outside_care" decodePrenatalOutsideCare
+        |> withValueEncoder (object << encodePrenatalOutsideCare)
+
+
+prenatalHIVPCRTestEndpoint : ReadWriteEndPoint Error PrenatalHIVPCRTestId PrenatalHIVPCRTest PrenatalHIVPCRTest ()
+prenatalHIVPCRTestEndpoint =
+    swEndpoint "nodes/prenatal_hiv_pcr_test" decodePrenatalHIVPCRTest
+        |> withValueEncoder (object << encodePrenatalHIVPCRTest)
+
+
+prenatalMentalHealthEndpoint : ReadWriteEndPoint Error PrenatalMentalHealthId PrenatalMentalHealth PrenatalMentalHealth ()
+prenatalMentalHealthEndpoint =
+    swEndpoint "nodes/prenatal_mental_health" decodePrenatalMentalHealth
+        |> withValueEncoder (object << encodePrenatalMentalHealth)
+
+
+prenatalTetanusImmunisationEndpoint : ReadWriteEndPoint Error PrenatalTetanusImmunisationId PrenatalTetanusImmunisation PrenatalTetanusImmunisation ()
+prenatalTetanusImmunisationEndpoint =
+    swEndpoint "nodes/prenatal_tetanus_immunisation" decodePrenatalTetanusImmunisation
+        |> withValueEncoder (object << encodePrenatalTetanusImmunisation)
+
+
+prenatalBreastfeedingEndpoint : ReadWriteEndPoint Error PrenatalBreastfeedingId PrenatalBreastfeeding PrenatalBreastfeeding ()
+prenatalBreastfeedingEndpoint =
+    swEndpoint "nodes/prenatal_breastfeeding" decodePrenatalBreastfeeding
+        |> withValueEncoder (object << encodePrenatalBreastfeeding)
+
+
+prenatalGUExamEndpoint : ReadWriteEndPoint Error PrenatalGUExamId PrenatalGUExam PrenatalGUExam ()
+prenatalGUExamEndpoint =
+    swEndpoint "nodes/prenatal_gu_exam" decodePrenatalGUExam
+        |> withValueEncoder (object << encodePrenatalGUExam)
+
+
+prenatalSpecialityCareEndpoint : ReadWriteEndPoint Error PrenatalSpecialityCareId PrenatalSpecialityCare PrenatalSpecialityCare ()
+prenatalSpecialityCareEndpoint =
+    swEndpoint "nodes/prenatal_speciality_care" decodePrenatalSpecialityCare
+        |> withValueEncoder (object << encodePrenatalSpecialityCare)
+
+
+ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (List IndividualEncounterParticipantId)
+ncdEncounterEndpoint =
+    swEndpoint "nodes/ncd_encounter" decodeNCDEncounter
+        |> withValueEncoder (object << encodeNCDEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+ncdMeasurementsEndpoint : ReadOnlyEndPoint Error NCDEncounterId NCDMeasurements ()
+ncdMeasurementsEndpoint =
+    swEndpoint "nodes/ncd-measurements" decodeNCDMeasurements
+
+
+ncdCoMorbiditiesEndpoint : ReadWriteEndPoint Error NCDCoMorbiditiesId NCDCoMorbidities NCDCoMorbidities ()
+ncdCoMorbiditiesEndpoint =
+    swEndpoint "nodes/ncd_co_morbidities" decodeNCDCoMorbidities
+        |> withValueEncoder (object << encodeNCDCoMorbidities)
+
+
+ncdCoreExamEndpoint : ReadWriteEndPoint Error NCDCoreExamId NCDCoreExam NCDCoreExam ()
+ncdCoreExamEndpoint =
+    swEndpoint "nodes/ncd_core_exam" decodeNCDCoreExam
+        |> withValueEncoder (object << encodeNCDCoreExam)
+
+
+ncdCreatinineTestEndpoint : ReadWriteEndPoint Error NCDCreatinineTestId NCDCreatinineTest NCDCreatinineTest ()
+ncdCreatinineTestEndpoint =
+    swEndpoint "nodes/ncd_creatinine_test" decodeNCDCreatinineTest
+        |> withValueEncoder (object << encodeNCDCreatinineTest)
+
+
+ncdDangerSignsEndpoint : ReadWriteEndPoint Error NCDDangerSignsId NCDDangerSigns NCDDangerSigns ()
+ncdDangerSignsEndpoint =
+    swEndpoint "nodes/ncd_danger_signs" decodeNCDDangerSigns
+        |> withValueEncoder (object << encodeNCDDangerSigns)
+
+
+ncdFamilyHistoryEndpoint : ReadWriteEndPoint Error NCDFamilyHistoryId NCDFamilyHistory NCDFamilyHistory ()
+ncdFamilyHistoryEndpoint =
+    swEndpoint "nodes/ncd_family_history" decodeNCDFamilyHistory
+        |> withValueEncoder (object << encodeNCDFamilyHistory)
+
+
+ncdFamilyPlanningEndpoint : ReadWriteEndPoint Error NCDFamilyPlanningId NCDFamilyPlanning NCDFamilyPlanning ()
+ncdFamilyPlanningEndpoint =
+    swEndpoint "nodes/ncd_family_planning" decodeNCDFamilyPlanning
+        |> withValueEncoder (object << encodeNCDFamilyPlanning)
+
+
+ncdHealthEducationEndpoint : ReadWriteEndPoint Error NCDHealthEducationId NCDHealthEducation NCDHealthEducation ()
+ncdHealthEducationEndpoint =
+    swEndpoint "nodes/ncd_health_education" decodeNCDHealthEducation
+        |> withValueEncoder (object << encodeNCDHealthEducation)
+
+
+ncdHIVTestEndpoint : ReadWriteEndPoint Error NCDHIVTestId NCDHIVTest NCDHIVTest ()
+ncdHIVTestEndpoint =
+    swEndpoint "nodes/ncd_hiv_test" decodeNCDHIVTest
+        |> withValueEncoder (object << encodeNCDHIVTest)
+
+
+ncdLabsResultsEndpoint : ReadWriteEndPoint Error NCDLabsResultsId NCDLabsResults NCDLabsResults ()
+ncdLabsResultsEndpoint =
+    swEndpoint "nodes/ncd_labs_results" decodeNCDLabsResults
+        |> withValueEncoder (object << encodeNCDLabsResults)
+
+
+ncdLiverFunctionTestEndpoint : ReadWriteEndPoint Error NCDLiverFunctionTestId NCDLiverFunctionTest NCDLiverFunctionTest ()
+ncdLiverFunctionTestEndpoint =
+    swEndpoint "nodes/ncd_liver_function_test" decodeNCDLiverFunctionTest
+        |> withValueEncoder (object << encodeNCDLiverFunctionTest)
+
+
+ncdMedicationDistributionEndpoint : ReadWriteEndPoint Error NCDMedicationDistributionId NCDMedicationDistribution NCDMedicationDistribution ()
+ncdMedicationDistributionEndpoint =
+    swEndpoint "nodes/ncd_medication_distribution" decodeNCDMedicationDistribution
+        |> withValueEncoder (object << encodeNCDMedicationDistribution)
+
+
+ncdMedicationHistoryEndpoint : ReadWriteEndPoint Error NCDMedicationHistoryId NCDMedicationHistory NCDMedicationHistory ()
+ncdMedicationHistoryEndpoint =
+    swEndpoint "nodes/ncd_medication_history" decodeNCDMedicationHistory
+        |> withValueEncoder (object << encodeNCDMedicationHistory)
+
+
+ncdOutsideCareEndpoint : ReadWriteEndPoint Error NCDOutsideCareId NCDOutsideCare NCDOutsideCare ()
+ncdOutsideCareEndpoint =
+    swEndpoint "nodes/ncd_outside_care" decodeNCDOutsideCare
+        |> withValueEncoder (object << encodeNCDOutsideCare)
+
+
+ncdPregnancyTestEndpoint : ReadWriteEndPoint Error NCDPregnancyTestId NCDPregnancyTest NCDPregnancyTest ()
+ncdPregnancyTestEndpoint =
+    swEndpoint "nodes/ncd_pregnancy_test" decodeNCDPregnancyTest
+        |> withValueEncoder (object << encodeNCDPregnancyTest)
+
+
+ncdRandomBloodSugarTestEndpoint : ReadWriteEndPoint Error NCDRandomBloodSugarTestId NCDRandomBloodSugarTest NCDRandomBloodSugarTest ()
+ncdRandomBloodSugarTestEndpoint =
+    swEndpoint "nodes/ncd_random_blood_sugar_test" decodeNCDRandomBloodSugarTest
+        |> withValueEncoder (object << encodeNCDRandomBloodSugarTest)
+
+
+ncdReferralEndpoint : ReadWriteEndPoint Error NCDReferralId NCDReferral NCDReferral ()
+ncdReferralEndpoint =
+    swEndpoint "nodes/ncd_referral" decodeNCDReferral
+        |> withValueEncoder (object << encodeNCDReferral)
+
+
+ncdSocialHistoryEndpoint : ReadWriteEndPoint Error NCDSocialHistoryId NCDSocialHistory NCDSocialHistory ()
+ncdSocialHistoryEndpoint =
+    swEndpoint "nodes/ncd_social_history" decodeNCDSocialHistory
+        |> withValueEncoder (object << encodeNCDSocialHistory)
+
+
+ncdSymptomReviewEndpoint : ReadWriteEndPoint Error NCDSymptomReviewId NCDSymptomReview NCDSymptomReview ()
+ncdSymptomReviewEndpoint =
+    swEndpoint "nodes/ncd_symptom_review" decodeNCDSymptomReview
+        |> withValueEncoder (object << encodeNCDSymptomReview)
+
+
+ncdUrineDipstickTestEndpoint : ReadWriteEndPoint Error NCDUrineDipstickTestId NCDUrineDipstickTest NCDUrineDipstickTest ()
+ncdUrineDipstickTestEndpoint =
+    swEndpoint "nodes/ncd_urine_dipstick_test" decodeNCDUrineDipstickTest
+        |> withValueEncoder (object << encodeNCDUrineDipstickTest)
+
+
+ncdVitalsEndpoint : ReadWriteEndPoint Error NCDVitalsId NCDVitals NCDVitals ()
+ncdVitalsEndpoint =
+    swEndpoint "nodes/ncd_vitals" decodeNCDVitals
+        |> withValueEncoder (object << encodeNCDVitals)
+
+
+groupNCDAEndpoint : ReadWriteEndPoint Error GroupNCDAId GroupNCDA GroupNCDA ()
+groupNCDAEndpoint =
+    swEndpoint "nodes/group_ncda" decodeGroupNCDA
+        |> withValueEncoder (object << encodeGroupNCDA)
+
+
+nutritionNCDAEndpoint : ReadWriteEndPoint Error NutritionNCDAId NutritionNCDA NutritionNCDA ()
+nutritionNCDAEndpoint =
+    swEndpoint "nodes/nutrition_ncda" decodeNutritionNCDA
+        |> withValueEncoder (object << encodeNutritionNCDA)
+
+
+wellChildNCDAEndpoint : ReadWriteEndPoint Error WellChildNCDAId WellChildNCDA WellChildNCDA ()
+wellChildNCDAEndpoint =
+    swEndpoint "nodes/well_child_ncda" decodeWellChildNCDA
+        |> withValueEncoder (object << encodeWellChildNCDA)
+
+
+ncdLipidPanelTestEndpoint : ReadWriteEndPoint Error NCDLipidPanelTestId NCDLipidPanelTest NCDLipidPanelTest ()
+ncdLipidPanelTestEndpoint =
+    swEndpoint "nodes/ncd_lipid_panel_test" decodeNCDLipidPanelTest
+        |> withValueEncoder (object << encodeNCDLipidPanelTest)
+
+
+ncdHbA1cTestEndpoint : ReadWriteEndPoint Error NCDHbA1cTestId NCDHbA1cTest NCDHbA1cTest ()
+ncdHbA1cTestEndpoint =
+    swEndpoint "nodes/ncd_hba1c_test" decodeNCDHbA1cTest
+        |> withValueEncoder (object << encodeNCDHbA1cTest)
+
+
+resilienceSurveyEndpoint : ReadWriteEndPoint Error ResilienceSurveyId ResilienceSurvey ResilienceSurvey (Maybe NurseId)
+resilienceSurveyEndpoint =
+    swEndpoint "nodes/resilience_survey" decodeResilienceSurvey
+        |> withValueEncoder (object << encodeResilienceSurvey)
+        |> withParamsEncoder encodeByNurseParam
+
+
+resilienceMessageEndpoint : ReadWriteEndPoint Error ResilienceMessageId ResilienceMessage ResilienceMessage (Maybe NurseId)
+resilienceMessageEndpoint =
+    swEndpoint "nodes/resilience_message" decodeResilienceMessage
+        |> withValueEncoder (object << encodeResilienceMessage)
+        |> withParamsEncoder encodeByNurseParam
+
+
+encodeByNurseParam : Maybe NurseId -> List ( String, String )
+encodeByNurseParam params =
+    case params of
+        Just id ->
+            [ ( "nurse", fromEntityUuid id ) ]
+
+        Nothing ->
+            []
+
+
+prenatalPartnerHIVTestEndpoint : ReadWriteEndPoint Error PrenatalPartnerHIVTestId PrenatalPartnerHIVTest PrenatalPartnerHIVTest ()
+prenatalPartnerHIVTestEndpoint =
+    swEndpoint "nodes/prenatal_partner_hiv_test" decodePrenatalPartnerHIVTest
+        |> withValueEncoder (object << encodePrenatalPartnerHIVTest)
+
+
+stockUpdateEndpoint : ReadWriteEndPoint Error StockUpdateId StockUpdate StockUpdate ()
+stockUpdateEndpoint =
+    swEndpoint "nodes/stock_update" decodeStockUpdate
+        |> withValueEncoder (object << encodeStockUpdate)

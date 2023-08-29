@@ -19,7 +19,7 @@ tasks:
       ddev gulp elm || (sleep 1 && ddev gulp elm)
       nohup ddev gulp serve:dev &
       export DDEV_NONINTERACTIVE=false
-      gp await-port 8888 && gp preview $(gp url 8888)
+      gp await-port 8080 && gp preview $(gp url 8080)
       gp await-port 3000 && gp preview $(gp url 3000)
 # VScode xdebug extension
 vscode:
@@ -54,7 +54,7 @@ ports:
     onOpen: ignore
     visibility: private
   # Drupal
-  - port: 8888
+  - port: 8080
     onOpen: ignore
     visibility: public
   # Elm

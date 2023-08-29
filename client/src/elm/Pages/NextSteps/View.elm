@@ -30,11 +30,10 @@ import Measurement.View
         )
 import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
-import Pages.NutritionActivity.Model exposing (NextStepsData)
-import Pages.NutritionActivity.View exposing (warningPopup)
+import Pages.Nutrition.Activity.Model exposing (NextStepsData)
+import Pages.Nutrition.Activity.View exposing (warningPopup)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.Utils exposing (isTaskCompleted, tasksBarId)
+import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewPersonDetails)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
@@ -195,7 +194,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                     |> viewSendToHealthCenterForm language
                                         currentDate
                                         SetReferToHealthCenter
-                                        SetReasonForNotSendingToHC
+                                        SetReasonForNonReferral
                                         SetHandReferralForm
                                         Nothing
 

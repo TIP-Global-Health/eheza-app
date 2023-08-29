@@ -1,17 +1,8 @@
-// These are from the SVG conversion for the Z-score charts.  I'm gradually
-// converting the `st...` to more meaningful names.
-svg.z-score {
-
-  .z-score-frame {
-    fill: #231F20;
-  }
+svg.z-score,
+svg.chart {
 
   .z-score-semibold {
     font-family: 'Nunito-SemiBold';
-  }
-
-  .z-score-font-sm {
-    font-size: 9.5px;
   }
 
   .z-score-gray {
@@ -19,16 +10,28 @@ svg.z-score {
   }
 
   .z-score-white {
-    fill: #FFFFFF;
+    fill: $color-white;
   }
 
   .chart-outer-frame {
-    fill: #fffff0;
+    fill: $color-ivory;
   }
 
   .chart-label {
     font-size: 20px;
     text-transform: uppercase;
+  }
+
+  .chart-helper {
+    font-size: 24px;
+  }
+
+  .chart-helper.red {
+    fill: $color-marker-red;
+  }
+
+  .chart-helper.green {
+    fill: $color-marker-green;
   }
 
   .red-area {
@@ -97,11 +100,27 @@ svg.z-score {
     font-size: 12px;
   }
 
+  polyline.data,
   polyline.child-data {
     fill: none;
-    stroke: black;
+    stroke: $color-black;
     stroke-width: 2px;
     marker: url(#dot-marker);
+  }
+
+  polyline.data.red {
+    stroke: $color-marker-red;
+    marker: url(#dot-marker-red);
+  }
+
+  polyline.data.green {
+    stroke: $color-marker-green;
+    marker: url(#dot-marker-green);
+  }
+
+  polyline.data.black {
+    stroke: $color-black;
+    marker: url(#dot-marker-black);
   }
 
   .st18 {
@@ -164,12 +183,6 @@ svg.z-score {
 
   .st24 {
     fill: #E24301;
-  }
-
-  .dot-marker {
-    .circle {
-      fill: black;
-    }
   }
 }
 

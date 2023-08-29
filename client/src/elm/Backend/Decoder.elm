@@ -9,6 +9,7 @@ import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Model exposing (..)
+import Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
@@ -16,7 +17,10 @@ import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
+import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
+import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
+import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
 import Json.Decode exposing (..)
@@ -118,6 +122,9 @@ decodeRevision =
                     "group_health_education" ->
                         decodeWithUuid GroupHealthEducationRevision decodeGroupHealthEducation
 
+                    "group_ncda" ->
+                        decodeWithUuid GroupNCDARevision decodeGroupNCDA
+
                     "group_send_to_hc" ->
                         decodeWithUuid GroupSendToHCRevision decodeGroupSendToHC
 
@@ -166,6 +173,75 @@ decodeRevision =
                     "muac" ->
                         decodeWithUuid MuacRevision decodeMuac
 
+                    "ncd_co_morbidities" ->
+                        decodeWithUuid NCDCoMorbiditiesRevision decodeNCDCoMorbidities
+
+                    "ncd_core_exam" ->
+                        decodeWithUuid NCDCoreExamRevision decodeNCDCoreExam
+
+                    "ncd_creatinine_test" ->
+                        decodeWithUuid NCDCreatinineTestRevision decodeNCDCreatinineTest
+
+                    "ncd_danger_signs" ->
+                        decodeWithUuid NCDDangerSignsRevision decodeNCDDangerSigns
+
+                    "ncd_encounter" ->
+                        decodeWithUuid NCDEncounterRevision decodeNCDEncounter
+
+                    "ncd_family_history" ->
+                        decodeWithUuid NCDFamilyHistoryRevision decodeNCDFamilyHistory
+
+                    "ncd_family_planning" ->
+                        decodeWithUuid NCDFamilyPlanningRevision decodeNCDFamilyPlanning
+
+                    "ncd_hba1c_test" ->
+                        decodeWithUuid NCDHbA1cTestRevision decodeNCDHbA1cTest
+
+                    "ncd_health_education" ->
+                        decodeWithUuid NCDHealthEducationRevision decodeNCDHealthEducation
+
+                    "ncd_hiv_test" ->
+                        decodeWithUuid NCDHIVTestRevision decodeNCDHIVTest
+
+                    "ncd_labs_results" ->
+                        decodeWithUuid NCDLabsResultsRevision decodeNCDLabsResults
+
+                    "ncd_lipid_panel_test" ->
+                        decodeWithUuid NCDLipidPanelTestRevision decodeNCDLipidPanelTest
+
+                    "ncd_liver_function_test" ->
+                        decodeWithUuid NCDLiverFunctionTestRevision decodeNCDLiverFunctionTest
+
+                    "ncd_medication_distribution" ->
+                        decodeWithUuid NCDMedicationDistributionRevision decodeNCDMedicationDistribution
+
+                    "ncd_medication_history" ->
+                        decodeWithUuid NCDMedicationHistoryRevision decodeNCDMedicationHistory
+
+                    "ncd_outside_care" ->
+                        decodeWithUuid NCDOutsideCareRevision decodeNCDOutsideCare
+
+                    "ncd_pregnancy_test" ->
+                        decodeWithUuid NCDPregnancyTestRevision decodeNCDPregnancyTest
+
+                    "ncd_random_blood_sugar_test" ->
+                        decodeWithUuid NCDRandomBloodSugarTestRevision decodeNCDRandomBloodSugarTest
+
+                    "ncd_referral" ->
+                        decodeWithUuid NCDReferralRevision decodeNCDReferral
+
+                    "ncd_social_history" ->
+                        decodeWithUuid NCDSocialHistoryRevision decodeNCDSocialHistory
+
+                    "ncd_symptom_review" ->
+                        decodeWithUuid NCDSymptomReviewRevision decodeNCDSymptomReview
+
+                    "ncd_urine_dipstick_test" ->
+                        decodeWithUuid NCDUrineDipstickTestRevision decodeNCDUrineDipstickTest
+
+                    "ncd_vitals" ->
+                        decodeWithUuid NCDVitalsRevision decodeNCDVitals
+
                     "nurse" ->
                         decodeWithUuid NurseRevision decodeNurse
 
@@ -202,6 +278,9 @@ decodeRevision =
                     "nutrition_muac" ->
                         decodeWithUuid NutritionMuacRevision decodeNutritionMuac
 
+                    "nutrition_ncda" ->
+                        decodeWithUuid NutritionNCDARevision decodeNutritionNCDA
+
                     "nutrition_nutrition" ->
                         decodeWithUuid NutritionNutritionRevision decodeNutritionNutrition
 
@@ -236,10 +315,16 @@ decodeRevision =
                         decodeWithUuid PhotoRevision decodePhoto
 
                     "pregnancy_testing" ->
-                        decodeWithUuid PregnancyTestingRevision decodePregnancyTesting
+                        decodeWithUuid PregnancyTestRevision decodePregnancyTest
 
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
+
+                    "prenatal_blood_gprs_test" ->
+                        decodeWithUuid PrenatalBloodGpRsTestRevision decodePrenatalBloodGpRsTest
+
+                    "prenatal_breastfeeding" ->
+                        decodeWithUuid PrenatalBreastfeedingRevision decodePrenatalBreastfeeding
 
                     "prenatal_encounter" ->
                         decodeWithUuid PrenatalEncounterRevision decodePrenatalEncounter
@@ -247,26 +332,83 @@ decodeRevision =
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
 
+                    "prenatal_follow_up" ->
+                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+
+                    "prenatal_gu_exam" ->
+                        decodeWithUuid PrenatalGUExamRevision decodePrenatalGUExam
+
                     "prenatal_health_education" ->
                         decodeWithUuid PrenatalHealthEducationRevision decodePrenatalHealthEducation
 
-                    "prenatal_follow_up" ->
-                        decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
+                    "prenatal_hemoglobin_test" ->
+                        decodeWithUuid PrenatalHemoglobinTestRevision decodePrenatalHemoglobinTest
+
+                    "prenatal_hepatitis_b_test" ->
+                        decodeWithUuid PrenatalHepatitisBTestRevision decodePrenatalHepatitisBTest
+
+                    "prenatal_hiv_test" ->
+                        decodeWithUuid PrenatalHIVTestRevision decodePrenatalHIVTest
+
+                    "prenatal_hiv_pcr_test" ->
+                        decodeWithUuid PrenatalHIVPCRTestRevision decodePrenatalHIVPCRTest
+
+                    "prenatal_labs_results" ->
+                        decodeWithUuid PrenatalLabsResultsRevision decodePrenatalLabsResults
+
+                    "prenatal_malaria_test" ->
+                        decodeWithUuid PrenatalMalariaTestRevision decodePrenatalMalariaTest
+
+                    "prenatal_mental_health" ->
+                        decodeWithUuid PrenatalMentalHealthRevision decodePrenatalMentalHealth
+
+                    "prenatal_medication_distribution" ->
+                        decodeWithUuid PrenatalMedicationDistributionRevision decodePrenatalMedicationDistribution
 
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
 
+                    "prenatal_outside_care" ->
+                        decodeWithUuid PrenatalOutsideCareRevision decodePrenatalOutsideCare
+
+                    "prenatal_partner_hiv_test" ->
+                        decodeWithUuid PrenatalPartnerHIVTestRevision decodePrenatalPartnerHIVTest
+
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
+
+                    "prenatal_random_blood_sugar_test" ->
+                        decodeWithUuid PrenatalRandomBloodSugarTestRevision decodePrenatalRandomBloodSugarTest
 
                     "prenatal_send_to_hc" ->
                         decodeWithUuid PrenatalSendToHCRevision decodePrenatalSendToHc
 
+                    "prenatal_speciality_care" ->
+                        decodeWithUuid PrenatalSpecialityCareRevision decodePrenatalSpecialityCare
+
+                    "prenatal_symptom_review" ->
+                        decodeWithUuid PrenatalSymptomReviewRevision decodePrenatalSymptomReview
+
+                    "prenatal_syphilis_test" ->
+                        decodeWithUuid PrenatalSyphilisTestRevision decodePrenatalSyphilisTest
+
+                    "prenatal_tetanus_immunisation" ->
+                        decodeWithUuid PrenatalTetanusImmunisationRevision decodePrenatalTetanusImmunisation
+
+                    "prenatal_urine_dipstick_test" ->
+                        decodeWithUuid PrenatalUrineDipstickTestRevision decodePrenatalUrineDipstickTest
+
                     "relationship" ->
                         decodeWithUuid RelationshipRevision decodeRelationship
 
+                    "resilience_message" ->
+                        decodeWithUuid ResilienceMessageRevision decodeResilienceMessage
+
+                    "resilience_survey" ->
+                        decodeWithUuid ResilienceSurveyRevision decodeResilienceSurvey
+
                     "resource" ->
-                        decodeWithUuid ResourceRevision decodeResource
+                        decodeWithUuid MalariaPreventionRevision decodeMalariaPrevention
 
                     "send_to_hc" ->
                         decodeWithUuid SendToHCRevision decodeSendToHC
@@ -279,6 +421,9 @@ decodeRevision =
 
                     "statistics" ->
                         decodeWithUuid DashboardStatsRevision decodeDashboardStatsRaw
+
+                    "stock_update" ->
+                        decodeWithUuid StockUpdateRevision decodeStockUpdate
 
                     "symptoms_general" ->
                         decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral
@@ -351,6 +496,9 @@ decodeRevision =
 
                     "well_child_muac" ->
                         decodeWithUuid WellChildMuacRevision decodeWellChildMuac
+
+                    "well_child_ncda" ->
+                        decodeWithUuid WellChildNCDARevision decodeWellChildNCDA
 
                     "well_child_next_visit" ->
                         decodeWithUuid WellChildNextVisitRevision decodeWellChildNextVisit

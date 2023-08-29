@@ -2,6 +2,7 @@ module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType)
 import Date exposing (Date)
@@ -36,6 +37,11 @@ type IndividualParticipantExtraData
     | NoIndividualParticipantExtraData
 
 
+type IndividualParticipantInitiator
+    = InitiatorParticipantsPage
+    | InitiatorPatientRecord PatientRecordInitiator PersonId
+
+
 type alias Model =
     { closePrenatalSession : WebData ()
     , closeAcuteIllnessSession : WebData ()
@@ -68,9 +74,11 @@ type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
     | HomeVisitEncounter
-    | InmmunizationEncounter
     | NutritionEncounter
     | WellChildEncounter
+    | NCDEncounter
+      -- @todo : can be removed?
+    | InmmunizationEncounter
 
 
 type DeliveryLocation

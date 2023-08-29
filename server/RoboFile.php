@@ -14,7 +14,7 @@ class RoboFile extends Tasks {
    * You need to fill this information for Robo to know what's the name of your
    * site.
    */
-  const PANTHEON_NAME = 'ihangane';
+  const PANTHEON_NAME = 'eheza-app';
 
   /**
    * Deploy to Pantheon.
@@ -75,6 +75,8 @@ class RoboFile extends Tasks {
       'pantheon.yml',
       'pantheon.upstream.yml',
       'client',
+      'scalability-test',
+      'infrastructure_setup',
     ];
 
     $rsyncExcludeString = '--exclude=' . implode(' --exclude=', $rsyncExclude);
@@ -433,6 +435,11 @@ class RoboFile extends Tasks {
 
   /**
    * Generates the nutrition report.
+   *
+   * @param string $date
+   *   The date to generate the report for.
+   * @param string $district
+   *   The district to generate the report for.
    */
   public function reportNutrition($region = NULL) {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --region=$region");

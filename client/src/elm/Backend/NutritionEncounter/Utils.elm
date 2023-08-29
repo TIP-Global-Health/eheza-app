@@ -6,8 +6,9 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
-        ( headCircumferenceValueFunc
-        , heightValueFunc
+        ( getHeightValue
+        , getMeasurementValueFunc
+        , headCircumferenceValueFunc
         , muacIndication
         , muacValueFunc
         , nutritionSignToString
@@ -239,7 +240,10 @@ getNutritionEncountersForParticipant db participantId =
         |> Maybe.withDefault []
 
 
-generateIndividualWellChildMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+generateIndividualWellChildMeasurementsForChild :
+    PersonId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
 generateIndividualWellChildMeasurementsForChild childId db =
     resolveIndividualParticipantForPerson childId Backend.IndividualEncounterParticipant.Model.WellChildEncounter db
         |> Maybe.map
@@ -257,6 +261,21 @@ generateIndividualWellChildMeasurementsForChild childId db =
                 >> List.sortWith sortTuplesByDateDesc
             )
         |> Maybe.withDefault []
+
+
+getNewbornExamPregnancySummary :
+    PersonId
+    -> ModelIndexedDb
+    -> Maybe PregnancySummaryValue
+getNewbornExamPregnancySummary childId db =
+    generateIndividualWellChildMeasurementsForChild childId db
+        |> List.filterMap
+            (Tuple.second
+                >> Tuple.second
+                >> .pregnancySummary
+                >> getMeasurementValueFunc
+            )
+        |> List.head
 
 
 getWellChildEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( WellChildEncounterId, WellChildEncounter )
@@ -277,7 +296,7 @@ resolvePreviousMeasurementsSetForChild childId db =
             generateIndividualNutritionMeasurementsForChild childId db
 
         nutritionHeights =
-            resolveIndividualNutritionValues individualNutritionMeasurements .height heightValueFunc
+            resolveIndividualNutritionValues individualNutritionMeasurements .height getHeightValue
 
         nutritionMuacs =
             resolveIndividualNutritionValues individualNutritionMeasurements .muac muacValueFunc
@@ -289,7 +308,7 @@ resolvePreviousMeasurementsSetForChild childId db =
             generateIndividualWellChildMeasurementsForChild childId db
 
         wellChildHeights =
-            resolveIndividualWellChildValues individualWellChildMeasurements .height heightValueFunc
+            resolveIndividualWellChildValues individualWellChildMeasurements .height getHeightValue
 
         wellChildMuacs =
             resolveIndividualWellChildValues individualWellChildMeasurements .muac muacValueFunc
@@ -302,15 +321,14 @@ resolvePreviousMeasurementsSetForChild childId db =
 
         groupMeasurements =
             Dict.get childId db.childMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
 
         groupHeights =
             groupMeasurements
                 |> Maybe.map
                     (.heights
                         >> Dict.values
-                        >> List.map (\measurement -> ( measurement.dateMeasured, heightValueFunc measurement.value ))
+                        >> List.map (\measurement -> ( measurement.dateMeasured, getHeightValue measurement.value ))
                     )
                 |> Maybe.withDefault []
 
@@ -337,6 +355,50 @@ resolvePreviousMeasurementsSetForChild childId db =
     , weights = nutritionWeights ++ wellChildWeights ++ groupWeights |> List.sortWith sortTuplesByDateDesc
     , headCircumferences = wellChildHeadCircumferences
     }
+
+
+resolvePreviousNCDAValuesForChild :
+    NominalDate
+    -> PersonId
+    -> ModelIndexedDb
+    -> List ( NominalDate, NCDAValue )
+resolvePreviousNCDAValuesForChild currentDate childId db =
+    resolveNCDAValuesForChild childId db
+        |> List.filter (\( date, _ ) -> Date.compare date currentDate == LT)
+
+
+resolveNCDAValuesForChild :
+    PersonId
+    -> ModelIndexedDb
+    -> List ( NominalDate, NCDAValue )
+resolveNCDAValuesForChild childId db =
+    let
+        individualNutritionMeasurements =
+            generateIndividualNutritionMeasurementsForChild childId db
+
+        nutritionNCDAs =
+            resolveIndividualNutritionValues individualNutritionMeasurements .ncda identity
+
+        individualWellChildMeasurements =
+            generateIndividualWellChildMeasurementsForChild childId db
+
+        wellChildNCDAs =
+            resolveIndividualWellChildValues individualWellChildMeasurements .ncda identity
+
+        groupMeasurements =
+            Dict.get childId db.childMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
+        groupNCDAs =
+            groupMeasurements
+                |> Maybe.map
+                    (.ncda
+                        >> Dict.values
+                        >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
+                    )
+                |> Maybe.withDefault []
+    in
+    nutritionNCDAs ++ wellChildNCDAs ++ groupNCDAs
 
 
 resolvePreviousValuesSetForChild :
@@ -523,6 +585,11 @@ sortEncounterTuples =
 sortEncounterTuplesDesc : ( id, { e | startDate : NominalDate } ) -> ( id, { e | startDate : NominalDate } ) -> Order
 sortEncounterTuplesDesc =
     sortByDateDesc (Tuple.second >> .startDate)
+
+
+sortByStartDateDesc : { e | startDate : NominalDate } -> { e | startDate : NominalDate } -> Order
+sortByStartDateDesc =
+    sortByDateDesc .startDate
 
 
 sortDatesDesc : NominalDate -> NominalDate -> Order

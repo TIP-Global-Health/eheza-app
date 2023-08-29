@@ -3,6 +3,8 @@ module Backend.AcuteIllnessEncounter.Model exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -95,6 +97,7 @@ emptyModel =
 
 type AcuteIllnessEncounterType
     = AcuteIllnessEncounterNurse
+    | AcuteIllnessEncounterNurseSubsequent
     | AcuteIllnessEncounterCHW
 
 
@@ -121,6 +124,8 @@ type AcuteIllnessProgressReportInitiator
     | InitiatorIndividualNutritionProgressReport NutritionEncounterId
     | InitiatorWellChildProgressReport WellChildEncounterId
     | InitiatorGroupNutritionProgressReport SessionId PersonId
+    | InitiatorPatientRecord PatientRecordInitiator PersonId
+    | InitiatorNCDProgressReport NCDProgressReportInitiator
 
 
 type Msg
@@ -167,7 +172,7 @@ type Msg
     | HandleSavedNutrition (WebData ())
     | SaveHealthEducation PersonId (Maybe HealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
-    | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) (EverySet FollowUpOption)
+    | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) AcuteIllnessFollowUpValue
     | HandleSavedFollowUp (WebData ())
     | SaveCoreExam PersonId (Maybe AcuteIllnessCoreExamId) AcuteIllnessCoreExamValue
     | HandleSavedCoreExam (WebData ())
