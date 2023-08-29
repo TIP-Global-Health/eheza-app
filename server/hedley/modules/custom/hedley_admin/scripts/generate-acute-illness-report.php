@@ -12,6 +12,9 @@ require_once __DIR__ . '/report_common.inc';
 
 $start_date = drush_get_option('start_date', FALSE);
 $end_date = drush_get_option('end_date', FALSE);
+$region = drush_get_option('region', FALSE);
+$region_clause = ($region) ? "AND field_district_value LIKE '%$region%'" : "";
+$region_name = ($region) ? $region : 'All Districts';
 
 if (!$start_date) {
   drush_print('Please specify --start_date option');
@@ -23,7 +26,7 @@ if (!$end_date) {
   exit;
 }
 
-drush_print("# Acute Illness report - $start_date  - $end_date");
+drush_print("# Acute Illness report - $region_name - $start_date - $end_date");
 
 // Get all of the encounters and the related participations.
 $result = db_query("
@@ -33,10 +36,15 @@ SELECT
     field_data_field_individual_participant ip
   LEFT JOIN
     field_data_field_scheduled_date sd ON ip.entity_id = sd.entity_id
+  LEFT JOIN 
+    field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+  LEFT JOIN 
+    field_data_field_district district ON person.field_person_target_id=district.entity_id
   WHERE
     ip.bundle = 'acute_illness_encounter'
      AND field_scheduled_date_value >= :start_date
      AND field_scheduled_date_value <= :end_date
+     {$region_clause}
   ", [':start_date' => $start_date, 'end_date' => $end_date])->fetchAll(PDO::FETCH_ASSOC);
 
 // Check each paticipation to see that we have the first encounter.
@@ -51,8 +59,9 @@ foreach ($result as $item) {
   }
 }
 
-$$first_encounters = array_unique($first_encounters);
+$first_encounters = array_unique($first_encounters);
 
+$diagnoses = [];
 // Now get the diagnosis for each first encounter.
 foreach ($first_encounters as $first_encounter) {
 
@@ -86,18 +95,41 @@ $data[] = [
 $table = new HedleyAdminTextTable(['Initial Diagnosis', 'Count']);
 drush_print($table->render($data));
 
-drush_print("# ANC Acute Illness report - $start_date  - $end_date");
-$result = db_query("
-  SELECT 
-    field_prenatal_diagnoses_value
-  FROM 
-    field_data_field_prenatal_diagnoses pd
-  LEFT JOIN node on pd.entity_id = node.nid 
-  WHERE 
-    FROM_UNIXTIME(node.created) > '$start_date'
-    AND FROM_UNIXTIME(node.created) < '$end_date'")->fetchCol();
 
-$diagnosis_count = array_count_values($result);
+// ANC Diagnoses.
+drush_print("# ANC Diagnoses report - $region_name - $start_date - $end_date");
+
+// Get all of the encounters and the related participations.
+$result = db_query("
+SELECT 
+    ip.entity_id as encounter, ip.field_individual_participant_target_id as participant
+  FROM 
+    field_data_field_individual_participant ip
+  LEFT JOIN
+    field_data_field_scheduled_date sd ON ip.entity_id = sd.entity_id
+  LEFT JOIN 
+    field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
+  LEFT JOIN 
+    field_data_field_district district ON person.field_person_target_id=district.entity_id
+  WHERE
+    ip.bundle = 'prenatal_encounter'
+     AND field_scheduled_date_value >= :start_date
+     AND field_scheduled_date_value <= :end_date
+     {$region_clause}
+  ", [':start_date' => $start_date, 'end_date' => $end_date])->fetchAll(PDO::FETCH_ASSOC);
+
+
+$diagnoses = [];
+foreach ($result as $item) {
+  $query = 'SELECT field_prenatal_diagnoses_value FROM field_data_field_prenatal_diagnoses di WHERE entity_id = ' . $item['encounter'];
+  $diagnosis = db_query($query)->fetchField();
+  if ($diagnosis) {
+    $diagnoses[] = $diagnosis;
+  }
+}
+
+// Return an array of the diagnoses and their counts.
+$diagnosis_count = array_count_values($diagnoses);
 
 $data = [];
 foreach ($diagnosis_count as $label => $value) {
@@ -116,5 +148,5 @@ $data[] = [
   count($diagnoses),
 ];
 
-$table = new HedleyAdminTextTable(['Initial Diagnosis', 'Count']);
+$table = new HedleyAdminTextTable(['ANC Diagnosis', 'Count']);
 drush_print($table->render($data));

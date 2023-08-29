@@ -407,8 +407,8 @@ class RoboFile extends Tasks {
   /**
    * Generates the acute illness report.
    */
-  public function reportAcuteIllness($start_date = NULL, $end_date = NULL) {
-    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-report.php --start_date=$start_date --end_date=$end_date");
+  public function reportAcuteIllness($start_date = NULL, $end_date = NULL, $region = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-report.php --start_date=$start_date --end_date=$end_date --region=$region");
   }
 
   /**
