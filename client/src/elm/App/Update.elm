@@ -1212,7 +1212,7 @@ update msg model =
             , cmd
             )
 
-        TriggerRollbar errorType ->
+        TriggerRollbar source errorType ->
             let
                 cmd =
                     if String.isEmpty model.syncManager.syncInfoGeneral.rollbarToken then
@@ -1222,7 +1222,14 @@ update msg model =
                         let
                             generateRollbarCmd message =
                                 logRollbar
-                                    { device = model.syncManager.syncInfoGeneral.deviceName
+                                    { source =
+                                        case source of
+                                            SyncProcess ->
+                                                "sync"
+
+                                            IndexedDB ->
+                                                "db"
+                                    , device = model.syncManager.syncInfoGeneral.deviceName
                                     , token = model.syncManager.syncInfoGeneral.rollbarToken
                                     , message = message
                                     , md5 = MD5.hex message

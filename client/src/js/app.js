@@ -1340,44 +1340,53 @@ elmApp.ports.logRollbar.subscribe(function(data) {
 
   (async () => {
 
-    let result = await dbSync
-        .syncErrorsHash
-        .where('hash')
-        .equals(data.md5)
-        .limit(1)
-        .toArray();
+      switch (data.source) {
+        case 'sync':
+            let result = await dbSync
+                .syncErrorsHash
+                .where('hash')
+                .equals(data.md5)
+                .limit(1)
+                .toArray();
 
-    if (result[0]) {
-      // Hash exists, indicating that this message was sent alredy.
-      return;
-    }
-
-    // Generate rollbar config.
-    var _rollbarConfig = {
-        accessToken: data.token,
-        captureUncaught: true,
-        captureUnhandledRejections: true,
-        payload: {
-            environment: 'all',
-            // context: 'rollbar/test'
-            client: {
-              javascript: {
-                code_version: '1.0',
-                // source_map_enabled: true,
-                // guess_uncaught_frames: true
-              }
-            },
-            person: {
-              id: data.device,
+            if (result[0]) {
+              // Hash exists, indicating that this message was sent alredy.
+              return;
             }
-        }
-    };
-    // Init rollbar.
-    rollbar.init(_rollbarConfig);
-    // Send rollbar message.
-    rollbar.log(data.message);
 
-    await dbSync.syncErrorsHash.add({ hash: data.md5 });
+            // Generate rollbar config.
+            var _rollbarConfig = {
+                accessToken: data.token,
+                captureUncaught: true,
+                captureUnhandledRejections: true,
+                payload: {
+                    environment: 'all',
+                    // context: 'rollbar/test'
+                    client: {
+                      javascript: {
+                        code_version: '1.0',
+                        // source_map_enabled: true,
+                        // guess_uncaught_frames: true
+                      }
+                    },
+                    person: {
+                      id: data.device,
+                    }
+                }
+            };
+            // Init rollbar.
+            rollbar.init(_rollbarConfig);
+            // Send rollbar message.
+            rollbar.log(data.message);
+
+            await dbSync.syncErrorsHash.add({ hash: data.md5 });
+            break;
+
+        case 'db':
+            console.log('here');
+            break;
+      }
+
   })();
 
 });

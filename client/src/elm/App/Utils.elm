@@ -73,7 +73,7 @@ updateSubModel subMsg subModel updateFunc modelUpdateFunc msg model =
                     |> Cmd.batch
 
         appMsgs =
-            Maybe.map (.error >> TriggerRollbar >> List.singleton)
+            Maybe.map (.error >> TriggerRollbar SyncProcess >> List.singleton)
                 return.error
                 |> Maybe.withDefault []
     in

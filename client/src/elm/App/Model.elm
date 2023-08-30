@@ -1,4 +1,18 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, SubModelReturn, Version, emptyLoggedInModel, emptyModel)
+module App.Model exposing
+    ( ConfiguredModel
+    , Flags
+    , LoggedInModel
+    , MemoryQuota
+    , Model
+    , Msg(..)
+    , MsgLoggedIn(..)
+    , RollbarErrorSource(..)
+    , StorageQuota
+    , SubModelReturn
+    , Version
+    , emptyLoggedInModel
+    , emptyModel
+    )
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
@@ -366,7 +380,7 @@ type Msg
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
-    | TriggerRollbar ErrorType
+    | TriggerRollbar RollbarErrorSource ErrorType
 
 
 {-| Messages we can only handle if we're logged in.
@@ -443,3 +457,8 @@ type alias SubModelReturn subModel subMsg =
     , error : Maybe Error
     , appMsgs : List Msg
     }
+
+
+type RollbarErrorSource
+    = SyncProcess
+    | IndexedDB
