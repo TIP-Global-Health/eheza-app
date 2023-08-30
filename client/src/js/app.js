@@ -276,6 +276,10 @@ dbSync.version(20).stores({
     nodes: '&uuid,type,vid,status,[type+pin_code],[type+nurse]'
 });
 
+dbSync.version(21).stores({
+  syncErrorsHash: '++localId,hash',
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -334,7 +338,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 20;
+const dbVersion = 21;
 
 /**
  * Return saved info for General sync.
