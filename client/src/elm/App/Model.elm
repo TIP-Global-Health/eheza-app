@@ -15,7 +15,7 @@ import Browser
 import Browser.Navigation as Nav
 import Config.Model
 import Device.Model exposing (Device)
-import Error.Model exposing (Error)
+import Error.Model exposing (Error, ErrorType)
 import Http
 import Json.Encode exposing (Value)
 import List.Zipper as Zipper
@@ -366,6 +366,7 @@ type Msg
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
+    | TriggerRollbar ErrorType
 
 
 {-| Messages we can only handle if we're logged in.

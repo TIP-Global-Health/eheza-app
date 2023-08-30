@@ -5,9 +5,8 @@ import App.Ports exposing (logRollbar)
 import Backend.Entities exposing (HealthCenterId)
 import Error.Model exposing (Error, ErrorType(..))
 import Json.Decode
-import MD5
 import Maybe.Extra exposing (unwrap)
-import RemoteData
+import RemoteData exposing (RemoteData(..), WebData)
 import Task
 import Utils.WebData
 
@@ -25,7 +24,7 @@ getLoggedInData model =
 {-| If there was an error, add it to the top of the list,
 and send to console.
 -}
-handleErrors : Maybe Error -> Model -> ( Model, Cmd Msg )
+handleErrors : Maybe Error -> Model -> Model
 handleErrors maybeError model =
     Maybe.map
         (\error ->
@@ -35,39 +34,11 @@ handleErrors maybeError model =
                         :: model.errors
                         -- Make sure list doesn't grow too much.
                         |> List.take 50
-
-                rollbarCmd =
-                    if String.isEmpty model.syncManager.syncInfoGeneral.rollbarToken then
-                        Cmd.none
-
-                    else
-                        let
-                            generateRollbarCmd message =
-                                logRollbar
-                                    { device = model.syncManager.syncInfoGeneral.deviceName
-                                    , token = model.syncManager.syncInfoGeneral.rollbarToken
-                                    , message = message
-                                    , md5 = MD5.hex message
-                                    }
-                        in
-                        case error.error of
-                            Http err ->
-                                Utils.WebData.viewErrorForRollbar err
-                                    |> generateRollbarCmd
-
-                            Decoder err ->
-                                Json.Decode.errorToString err
-                                    |> generateRollbarCmd
-
-                            Plain string ->
-                                generateRollbarCmd string
             in
-            ( { model | errors = errors }
-            , rollbarCmd
-            )
+            { model | errors = errors }
         )
         maybeError
-        |> Maybe.withDefault ( model, Cmd.none )
+        |> Maybe.withDefault model
 
 
 {-| Helper function to call a Page, and wire Error handling into it.
@@ -79,11 +50,14 @@ updateSubModel :
     -> (subModel -> Model -> Model)
     -> (subMsg -> Msg)
     -> Model
-    -> ( Model, Cmd Msg )
+    -> ( Model, Cmd Msg, List Msg )
 updateSubModel subMsg subModel updateFunc modelUpdateFunc msg model =
     let
         return =
             updateFunc subMsg subModel
+
+        modelUpdatedWithError =
+            handleErrors return.error model
 
         appCmds =
             if List.isEmpty return.appMsgs then
@@ -98,15 +72,17 @@ updateSubModel subMsg subModel updateFunc modelUpdateFunc msg model =
                         )
                     |> Cmd.batch
 
-        ( modelUpdatedWithError, rollbarCmd ) =
-            handleErrors return.error model
+        appMsgs =
+            Maybe.map (.error >> TriggerRollbar >> List.singleton)
+                return.error
+                |> Maybe.withDefault []
     in
     ( modelUpdateFunc return.model modelUpdatedWithError
     , Cmd.batch
         [ Cmd.map msg return.cmd
         , appCmds
-        , rollbarCmd
         ]
+    , appMsgs
     )
 
 
@@ -139,3 +115,13 @@ sequenceSubModelReturn updater msgs startingPoint =
 focusOnCalendarMsg : Msg
 focusOnCalendarMsg =
     App.Model.ScrollToElement "dropdown--content-container"
+
+
+triggerRollbarOnFailure : WebData () -> List Msg
+triggerRollbarOnFailure data =
+    case data of
+        Failure err ->
+            [ TriggerRollbar (Http err) ]
+
+        _ ->
+            []

@@ -2665,8 +2665,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             let
                 encounter =
                     Dict.get encounterId model.prenatalEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.prenatalEncounterRequests
@@ -2684,27 +2683,31 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             let
                 encounter =
                     Dict.get encounterId model.nutritionEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.nutritionEncounterRequests
                         |> Maybe.withDefault Backend.NutritionEncounter.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.NutritionEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.NutritionEncounter.Update.update currentDate
+                        nurseId
+                        healthCenterId
+                        encounterId
+                        encounter
+                        subMsg
+                        requests
             in
             ( { model | nutritionEncounterRequests = Dict.insert encounterId subModel model.nutritionEncounterRequests }
             , Cmd.map (MsgNutritionEncounter encounterId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgAcuteIllnessEncounter encounterId subMsg ->
             let
                 encounter =
                     Dict.get encounterId model.acuteIllnessEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.acuteIllnessEncounterRequests
