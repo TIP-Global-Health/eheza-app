@@ -121,7 +121,11 @@ triggerRollbarOnFailure : WebData () -> List Msg
 triggerRollbarOnFailure data =
     case data of
         Failure err ->
-            [ TriggerRollbar (Http err) ]
+            let
+                _ =
+                    Debug.log "err" err
+            in
+            [ TriggerRollbar IndexedDB (Http err) ]
 
         _ ->
             []
