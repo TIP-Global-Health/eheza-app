@@ -8,6 +8,7 @@ import Json.Decode
 import Maybe.Extra exposing (unwrap)
 import RemoteData
 import Task
+import Utils.WebData
 
 
 {-| Returns the logged in model and selected health center, if we're logged in.
@@ -48,10 +49,9 @@ handleErrors maybeError model =
                                     }
                         in
                         case error.error of
-                            Http _ ->
-                                -- Do not report about network related errors,
-                                -- as we are likely to see them on backend.
-                                Cmd.none
+                            Http err ->
+                                Utils.WebData.viewErrorForRollbar err
+                                    |> generateRollbarCmd
 
                             Decoder err ->
                                 Json.Decode.errorToString err
