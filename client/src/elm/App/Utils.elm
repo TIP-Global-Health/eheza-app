@@ -5,6 +5,7 @@ import App.Ports exposing (logRollbar)
 import Backend.Entities exposing (HealthCenterId)
 import Error.Model exposing (Error, ErrorType(..))
 import Json.Decode
+import MD5
 import Maybe.Extra exposing (unwrap)
 import RemoteData
 import Task
@@ -46,6 +47,7 @@ handleErrors maybeError model =
                                     { device = model.syncManager.syncInfoGeneral.deviceName
                                     , token = model.syncManager.syncInfoGeneral.rollbarToken
                                     , message = message
+                                    , md5 = MD5.hex message
                                     }
                         in
                         case error.error of

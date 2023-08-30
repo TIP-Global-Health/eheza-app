@@ -1338,27 +1338,47 @@ function reportSignaturePadResult(url) {
 
 elmApp.ports.logRollbar.subscribe(function(data) {
 
-  var _rollbarConfig = {
-      accessToken: data.token,
-      captureUncaught: true,
-      captureUnhandledRejections: true,
-      payload: {
-          environment: 'all',
-          // context: 'rollbar/test'
-          client: {
-            javascript: {
-              code_version: '1.0',
-              // source_map_enabled: true,
-              // guess_uncaught_frames: true
+  (async () => {
+
+    let result = await dbSync
+        .syncErrorsHash
+        .where('hash')
+        .equals(data.md5)
+        .limit(1)
+        .toArray();
+
+    if (result[0]) {
+      // Hash exists, indicating that this message was sent alredy.
+      return;
+    }
+
+    // Generate rollbar config.
+    var _rollbarConfig = {
+        accessToken: data.token,
+        captureUncaught: true,
+        captureUnhandledRejections: true,
+        payload: {
+            environment: 'all',
+            // context: 'rollbar/test'
+            client: {
+              javascript: {
+                code_version: '1.0',
+                // source_map_enabled: true,
+                // guess_uncaught_frames: true
+              }
+            },
+            person: {
+              id: data.device,
             }
-          },
-          person: {
-            id: data.device,
-          }
-      }
-  };
-  rollbar.init(_rollbarConfig);
-  rollbar.log(data.message);
+        }
+    };
+    // Init rollbar.
+    rollbar.init(_rollbarConfig);
+    // Send rollbar message.
+    rollbar.log(data.message);
+
+    await dbSync.syncErrorsHash.add({ hash: data.md5 });
+  })();
 
 });
 
