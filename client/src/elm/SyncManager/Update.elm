@@ -1,7 +1,7 @@
 port module SyncManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
-import App.Ports exposing (bindDropZone)
+import App.Ports exposing (bindDropZone, initRollbar)
 import App.Utils exposing (sequenceSubModelReturn)
 import AssocList as Dict exposing (Dict)
 import Backend.Model
@@ -711,7 +711,7 @@ update currentDate currentTime activePage dbVersion device msg model =
 
         BackendGeneralFetchHandle webData ->
             let
-                ( saveFetchedDataCmd, modelUpdated ) =
+                ( cmd, modelUpdated ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             let
@@ -719,8 +719,22 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     data.entities
                                         |> List.foldl (\entity accum -> SyncManager.Utils.getDataToSendGeneral entity accum) []
                                         |> List.reverse
+
+                                saveFetchedDataCmd =
+                                    sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "", timestamp = requestTimestamp }
+
+                                -- On last iteration of Download general (batch size during download is 500),
+                                -- we also init Rollbar. The logic - Rollbar token is passed at General Download,
+                                -- and it may have changed. So, we need to init Rollbar with new token.
+                                -- Init also sends all unsent items from dbErrors table.
+                                initRollbarCmd =
+                                    if List.length data.entities < 500 then
+                                        initRollbar { device = data.deviceName, token = data.rollbarToken }
+
+                                    else
+                                        Cmd.none
                             in
-                            ( sendSyncedDataToIndexDb { table = "General", data = dataToSend, shard = "", timestamp = requestTimestamp }
+                            ( Cmd.batch [ saveFetchedDataCmd, initRollbarCmd ]
                             , { model | downloadGeneralResponse = webData }
                             )
 
@@ -732,7 +746,7 @@ update currentDate currentTime activePage dbVersion device msg model =
             in
             SubModelReturn
                 modelUpdated
-                saveFetchedDataCmd
+                cmd
                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
                 []
 

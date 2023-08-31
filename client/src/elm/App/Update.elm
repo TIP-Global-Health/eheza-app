@@ -1223,19 +1223,15 @@ update msg model =
                             generateRollbarCmd message =
                                 case source of
                                     SyncProcess ->
-                                        logRollbar
+                                        logByRollbar
                                             { source = "sync"
-                                            , device = model.syncManager.syncInfoGeneral.deviceName
-                                            , token = model.syncManager.syncInfoGeneral.rollbarToken
                                             , message = message
                                             , md5 = MD5.hex message
                                             }
 
                                     IndexedDB ->
-                                        logRollbar
+                                        logByRollbar
                                             { source = "db"
-                                            , device = ""
-                                            , token = ""
                                             , message = message
                                             , md5 = ""
                                             }

@@ -1337,7 +1337,64 @@ function reportSignaturePadResult(url) {
 
 // Rollbar.
 
-elmApp.ports.logRollbar.subscribe(function(data) {
+elmApp.ports.initRollbar.subscribe(function(data) {
+  // Generate rollbar config.
+  var _rollbarConfig = {
+      accessToken: data.token,
+      captureUncaught: true,
+      captureUnhandledRejections: true,
+      payload: {
+          environment: 'all',
+          // context: 'rollbar/test'
+          client: {
+            javascript: {
+              code_version: '1.0',
+              // source_map_enabled: true,
+              // guess_uncaught_frames: true
+            }
+          },
+          person: {
+            id: data.device,
+          }
+      }
+  };
+
+  // Init rollbar.
+  rollbar.init(_rollbarConfig);
+
+  // Send unsynced items from dbErrors table.
+  (async () => {
+
+      let result = await dbSync
+          .dbErrors
+          .where('isSynced')
+          // IndexDB doesn't index Boolean, so we use an Int to indicate "false".
+          .equals(0)
+          .toArray();
+
+      if (!result[0]) {
+          // No items to sync.
+          return;
+      }
+
+      // Send all items.
+      let localIds = [];
+      result.forEach(function(row) {
+          rollbar.log(row.error);
+          localIds.push(row.localId);
+      })
+
+      // Mark that sent items were synced.
+      await dbSync
+          .dbErrors
+          .where('localId')
+          .anyOf(localIds)
+          .modify({'isSynced': 1});
+  })();
+
+});
+
+elmApp.ports.logByRollbar.subscribe(function(data) {
 
   (async () => {
 
@@ -1355,28 +1412,6 @@ elmApp.ports.logRollbar.subscribe(function(data) {
               return;
             }
 
-            // Generate rollbar config.
-            var _rollbarConfig = {
-                accessToken: data.token,
-                captureUncaught: true,
-                captureUnhandledRejections: true,
-                payload: {
-                    environment: 'all',
-                    // context: 'rollbar/test'
-                    client: {
-                      javascript: {
-                        code_version: '1.0',
-                        // source_map_enabled: true,
-                        // guess_uncaught_frames: true
-                      }
-                    },
-                    person: {
-                      id: data.device,
-                    }
-                }
-            };
-            // Init rollbar.
-            rollbar.init(_rollbarConfig);
             // Send rollbar message.
             rollbar.log(data.message);
 
