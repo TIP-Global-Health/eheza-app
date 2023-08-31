@@ -1,7 +1,6 @@
 module App.Utils exposing (..)
 
 import App.Model exposing (..)
-import App.Ports exposing (logRollbar)
 import Backend.Entities exposing (HealthCenterId)
 import Error.Model exposing (Error, ErrorType(..))
 import Json.Decode

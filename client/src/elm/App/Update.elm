@@ -1221,19 +1221,24 @@ update msg model =
                     else
                         let
                             generateRollbarCmd message =
-                                logRollbar
-                                    { source =
-                                        case source of
-                                            SyncProcess ->
-                                                "sync"
+                                case source of
+                                    SyncProcess ->
+                                        logRollbar
+                                            { source = "sync"
+                                            , device = model.syncManager.syncInfoGeneral.deviceName
+                                            , token = model.syncManager.syncInfoGeneral.rollbarToken
+                                            , message = message
+                                            , md5 = MD5.hex message
+                                            }
 
-                                            IndexedDB ->
-                                                "db"
-                                    , device = model.syncManager.syncInfoGeneral.deviceName
-                                    , token = model.syncManager.syncInfoGeneral.rollbarToken
-                                    , message = message
-                                    , md5 = MD5.hex message
-                                    }
+                                    IndexedDB ->
+                                        logRollbar
+                                            { source = "db"
+                                            , device = ""
+                                            , token = ""
+                                            , message = message
+                                            , md5 = ""
+                                            }
                         in
                         case errorType of
                             Http err ->

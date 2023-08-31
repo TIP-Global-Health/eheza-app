@@ -277,7 +277,8 @@ dbSync.version(20).stores({
 });
 
 dbSync.version(21).stores({
-  syncErrorsHash: '++localId,hash',
+  syncErrorsHash: '++localId, hash',
+  dbErrors: '++localId, error, isSynced'
 });
 
 /**
@@ -1383,7 +1384,7 @@ elmApp.ports.logRollbar.subscribe(function(data) {
             break;
 
         case 'db':
-            console.log('here');
+            await dbSync.dbErrors.add({ error: data.message, isSynced: 0 });
             break;
       }
 
