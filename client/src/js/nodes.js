@@ -279,11 +279,11 @@
                                             return changeTable.add(change).catch(function (err) {
                                                 // If there was a failure, we try again, assuming it
                                                 // may have been a glitch. If operation fails again,
-                                                // we leave it with no ftther handling.
+                                                // we log error with Rollbar.
                                                 return changeTable.add(change).catch(function (err) {
                                                     var reject = new Response(body, {
                                                         status: 400,
-                                                        statusText: 'Failed PATCH at changes table'
+                                                        statusText: 'Failure: PATCH at changes table'
                                                     });
 
                                                     return Promise.resolve(reject);
@@ -292,15 +292,14 @@
                                                 });
                                             }).then(function (localId) {
                                                 // @todo: remove this
-                                                var reject = new Response(body, {
-                                                    status: 400,
-                                                    statusText: 'Failed PATCH at changes table'
-                                                });
+                                                // var reject = new Response(body, {
+                                                //     status: 400,
+                                                //     statusText: 'Failed PATCH at changes table'
+                                                // });
+                                                //
+                                                // return Promise.resolve(reject);
 
-                                                return Promise.resolve(reject);
-
-
-                                                // return Promise.resolve(response);
+                                                return Promise.resolve(response);
                                             });
                                         });
                                     }
@@ -377,8 +376,15 @@
                                           return changeTable.add(change).catch(function (err) {
                                               // If there was a failure, we try again, assuming it
                                               // may have been a glitch. If operation fails again,
-                                              // we leave it with no ftther handling.
-                                              return changeTable.add(change).then(function (localId) {
+                                              // we log error with Rollbar.
+                                              return changeTable.add(change).catch(function (err) {
+                                                  var reject = new Response(body, {
+                                                      status: 400,
+                                                      statusText: 'Failure: POST at changes table'
+                                                  });
+
+                                                  return Promise.resolve(reject);
+                                              }).then(function (localId) {
                                                   return Promise.resolve(response);
                                               });
                                           }).then(function (localId) {
