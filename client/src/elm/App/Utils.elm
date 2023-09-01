@@ -116,14 +116,10 @@ focusOnCalendarMsg =
     App.Model.ScrollToElement "dropdown--content-container"
 
 
-triggerRollbarOnFailure : WebData () -> List Msg
+triggerRollbarOnFailure : WebData any -> List Msg
 triggerRollbarOnFailure data =
     case data of
         Failure err ->
-            let
-                _ =
-                    Debug.log "err" err
-            in
             [ TriggerRollbar IndexedDB (Http err) ]
 
         _ ->

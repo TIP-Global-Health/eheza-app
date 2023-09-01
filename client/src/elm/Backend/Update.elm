@@ -3553,12 +3553,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     Dict.get updateNurseId model.stockUpdateRequests
                         |> Maybe.withDefault Backend.StockUpdate.Model.emptyModel
 
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, appMsgs ) =
                     Backend.StockUpdate.Update.update currentDate subMsg requests
             in
             ( { model | stockUpdateRequests = Dict.insert updateNurseId subModel model.stockUpdateRequests }
             , Cmd.map (MsgStockUpdate updateNurseId) subCmd
-            , []
+            , appMsgs
             )
 
 
