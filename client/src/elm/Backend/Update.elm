@@ -2671,12 +2671,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     Dict.get encounterId model.prenatalEncounterRequests
                         |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.PrenatalEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
             in
             ( { model | prenatalEncounterRequests = Dict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgNutritionEncounter encounterId subMsg ->
@@ -2725,8 +2725,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             let
                 encounter =
                     Dict.get encounterId model.homeVisitEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.homeVisitEncounterRequests
@@ -2744,8 +2743,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             let
                 encounter =
                     Dict.get encounterId model.wellChildEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.wellChildEncounterRequests
@@ -2763,8 +2761,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             let
                 encounter =
                     Dict.get encounterId model.ncdEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.ncdEncounterRequests
@@ -2782,8 +2779,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             let
                 traceContact =
                     Dict.get traceContactId model.traceContacts
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get traceContactId model.traceContactRequests
@@ -2801,8 +2797,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             let
                 participant =
                     Dict.get participantId model.individualParticipants
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get participantId model.individualSessionRequests
