@@ -2785,12 +2785,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     Dict.get traceContactId model.traceContactRequests
                         |> Maybe.withDefault Backend.TraceContact.Model.emptyModel
 
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, appMsgs ) =
                     Backend.TraceContact.Update.update traceContactId traceContact subMsg requests
             in
             ( { model | traceContactRequests = Dict.insert traceContactId subModel model.traceContactRequests }
             , Cmd.map (MsgTraceContact traceContactId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgIndividualSession participantId subMsg ->
