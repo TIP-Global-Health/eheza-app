@@ -2749,12 +2749,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     Dict.get encounterId model.wellChildEncounterRequests
                         |> Maybe.withDefault Backend.WellChildEncounter.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.WellChildEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.WellChildEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
             in
             ( { model | wellChildEncounterRequests = Dict.insert encounterId subModel model.wellChildEncounterRequests }
             , Cmd.map (MsgWellChildEncounter encounterId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgNCDEncounter encounterId subMsg ->
