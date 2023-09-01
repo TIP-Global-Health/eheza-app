@@ -3525,12 +3525,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     Dict.get surveyNurseId model.resilienceSurveyRequests
                         |> Maybe.withDefault Backend.ResilienceSurvey.Model.emptyModel
 
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, appMsgs ) =
                     Backend.ResilienceSurvey.Update.update currentDate subMsg requests
             in
             ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
             , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgResilienceMessage messageNurseId subMsg ->
