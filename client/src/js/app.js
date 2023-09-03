@@ -277,7 +277,7 @@ dbSync.version(20).stores({
 });
 
 dbSync.version(21).stores({
-  syncErrorsHash: '++localId, hash',
+  errorsHash: '++localId, hash',
   dbErrors: '++localId, error, isSynced'
 });
 
@@ -1399,9 +1399,10 @@ elmApp.ports.logByRollbar.subscribe(function(data) {
   (async () => {
 
       switch (data.source) {
+        case 'sw':
         case 'sync':
             let result = await dbSync
-                .syncErrorsHash
+                .errorsHash
                 .where('hash')
                 .equals(data.md5)
                 .limit(1)
@@ -1415,7 +1416,7 @@ elmApp.ports.logByRollbar.subscribe(function(data) {
             // Send rollbar message.
             rollbar.log(data.message);
 
-            await dbSync.syncErrorsHash.add({ hash: data.md5 });
+            await dbSync.errorsHash.add({ hash: data.md5 });
             break;
 
         case 'db':

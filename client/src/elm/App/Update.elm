@@ -1235,6 +1235,13 @@ update msg model =
                                             , message = message
                                             , md5 = ""
                                             }
+
+                                    ServiceWorker ->
+                                        logByRollbar
+                                            { source = "sw"
+                                            , message = message
+                                            , md5 = ""
+                                            }
                         in
                         case errorType of
                             Http err ->
