@@ -1717,10 +1717,10 @@ siteToString : Site -> String
 siteToString site =
     case site of
         SiteRwanda ->
-            "Rwanda"
+            "rwanda"
 
         SiteBurundi ->
-            "Burundi"
+            "burundi"
 
         SiteUnknown ->
             ""
@@ -1728,11 +1728,11 @@ siteToString site =
 
 siteFromString : String -> Site
 siteFromString str =
-    case str of
-        "Rwanda" ->
+    case String.toLower str of
+        "rwanda" ->
             SiteRwanda
 
-        "Burundi" ->
+        "burundi" ->
             SiteBurundi
 
         _ ->
