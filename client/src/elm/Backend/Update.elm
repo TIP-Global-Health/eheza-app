@@ -2823,14 +2823,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     Dict.get sessionId model.sessionRequests
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
-                ( subModel, subCmd, fetchMsgs ) =
-                    Backend.Session.Update.update nurseId sessionId session currentDate model subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.Session.Update.update currentDate nurseId sessionId session model subMsg requests
             in
             ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
-            , fetchMsgs
-                |> List.filter (Backend.Fetch.shouldFetch currentTime model)
-                |> List.map App.Model.MsgIndexedDb
+            , appMsgs
             )
 
         PostPmtctParticipant initiator data ->
