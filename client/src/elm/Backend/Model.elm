@@ -145,19 +145,6 @@ type alias ModelIndexedDb =
     -- `expectedParticipants`, but for registration etc. this is useful.
     , participantsByPerson : Dict PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
 
-    -- Track requests to mutate data
-    , postPerson : WebData PersonId
-    , postPmtctParticipant : Dict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
-    , postRelationship : Dict PersonId (WebData MyRelationship)
-    , postSession : WebData SessionId
-    , postIndividualSession : Dict PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
-    , postPrenatalEncounter : Dict IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
-    , postNutritionEncounter : Dict IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
-    , postAcuteIllnessEncounter : Dict IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
-    , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
-    , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
-    , postNCDEncounter : Dict IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
-
     -- Dashboard Statistics.
     , computedDashboards : Dict HealthCenterId ComputedDashboard
     , computedDashboardLastFetched : Time.Posix
@@ -168,6 +155,19 @@ type alias ModelIndexedDb =
 
     -- Stock Management.
     , stockUpdates : WebData (Dict StockUpdateId StockUpdate)
+
+    -- Track requests to mutate data.
+    , postPerson : WebData PersonId
+    , postRelationship : Dict PersonId (WebData MyRelationship)
+    , postPmtctParticipant : Dict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
+    , postSession : WebData SessionId
+    , postIndividualEncounterParticipant : Dict PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    , postPrenatalEncounter : Dict IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
+    , postNutritionEncounter : Dict IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
+    , postAcuteIllnessEncounter : Dict IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
+    , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
+    , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
+    , postNCDEncounter : Dict IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
     }
 
 
@@ -207,17 +207,6 @@ emptyModelIndexedDb =
     , people = Dict.empty
     , traceContacts = Dict.empty
     , personSearches = Dict.empty
-    , postPerson = NotAsked
-    , postPmtctParticipant = Dict.empty
-    , postIndividualSession = Dict.empty
-    , postPrenatalEncounter = Dict.empty
-    , postNutritionEncounter = Dict.empty
-    , postHomeVisitEncounter = Dict.empty
-    , postWellChildEncounter = Dict.empty
-    , postAcuteIllnessEncounter = Dict.empty
-    , postNCDEncounter = Dict.empty
-    , postRelationship = Dict.empty
-    , postSession = NotAsked
     , prenatalEncounterRequests = Dict.empty
     , nutritionEncounterRequests = Dict.empty
     , acuteIllnessEncounterRequests = Dict.empty
@@ -242,6 +231,17 @@ emptyModelIndexedDb =
     , resilienceSurveysByNurse = Dict.empty
     , resilienceMessagesByNurse = Dict.empty
     , stockUpdates = NotAsked
+    , postPerson = NotAsked
+    , postRelationship = Dict.empty
+    , postPmtctParticipant = Dict.empty
+    , postSession = NotAsked
+    , postIndividualEncounterParticipant = Dict.empty
+    , postPrenatalEncounter = Dict.empty
+    , postNutritionEncounter = Dict.empty
+    , postHomeVisitEncounter = Dict.empty
+    , postWellChildEncounter = Dict.empty
+    , postAcuteIllnessEncounter = Dict.empty
+    , postNCDEncounter = Dict.empty
     }
 
 
@@ -392,7 +392,7 @@ type MsgIndexedDb
     | PostRelationship PersonId MyRelationship (Maybe ClinicId) Initiator
     | PostPmtctParticipant Initiator PmtctParticipant
     | PostSession Session
-    | PostIndividualSession IndividualParticipantExtraData IndividualEncounterParticipant
+    | PostIndividualEncounterParticipant IndividualParticipantExtraData IndividualEncounterParticipant
     | PostPrenatalEncounter PrenatalEncounterPostCreateDestination PrenatalEncounter
     | PostNutritionEncounter NutritionEncounter
     | PostAcuteIllnessEncounter AcuteIllnessEncounter
@@ -405,7 +405,7 @@ type MsgIndexedDb
     | HandlePostedRelationship PersonId Initiator (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId Initiator (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession (WebData SessionId)
-    | HandlePostedIndividualSession PersonId IndividualEncounterType IndividualParticipantExtraData (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    | HandlePostedIndividualEncounterParticipant PersonId IndividualEncounterType IndividualParticipantExtraData (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
     | HandlePostedPrenatalEncounter IndividualEncounterParticipantId PrenatalEncounterPostCreateDestination (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     | HandlePostedNutritionEncounter IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
     | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))

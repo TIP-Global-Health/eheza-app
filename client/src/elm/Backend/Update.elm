@@ -3,6 +3,7 @@ module Backend.Update exposing (updateIndexedDb)
 import Activity.Model exposing (Activity(..), ChildActivity(..), SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import App.Model
+import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
@@ -1365,6 +1366,32 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchVillages ->
+            ( { model | villages = Loading }
+            , sw.select villageEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedVillages)
+            , []
+            )
+
+        HandleFetchedVillages data ->
+            ( { model | villages = data }
+            , Cmd.none
+            , []
+            )
+
+        FetchTraceContact id ->
+            ( { model | traceContacts = Dict.insert id Loading model.traceContacts }
+            , sw.get acuteIllnessTraceContactEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTraceContact id)
+            , []
+            )
+
+        HandleFetchedTraceContact id data ->
+            ( { model | traceContacts = Dict.insert id data model.traceContacts }
+            , Cmd.none
+            , []
+            )
+
         HandleRevisions revisions ->
             let
                 downloadingContent =
@@ -2661,6 +2688,21 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , []
                     )
 
+        ResetFailedToFetchAuthorities ->
+            let
+                failureToNotAsked webData =
+                    case webData of
+                        Failure _ ->
+                            NotAsked
+
+                        _ ->
+                            webData
+            in
+            ( { model | healthCenters = failureToNotAsked model.healthCenters, villages = failureToNotAsked model.villages }
+            , Cmd.none
+            , []
+            )
+
         MsgPrenatalEncounter encounterId subMsg ->
             let
                 encounter =
@@ -2831,6 +2873,62 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , appMsgs
             )
 
+        MsgNurse updatedNurseId subMsg ->
+            let
+                requests =
+                    Dict.get updatedNurseId model.nurseRequests
+                        |> Maybe.withDefault Backend.Nurse.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.Nurse.Update.update currentDate subMsg requests
+            in
+            ( { model | nurseRequests = Dict.insert updatedNurseId subModel model.nurseRequests }
+            , Cmd.map (MsgNurse updatedNurseId) subCmd
+            , appMsgs
+            )
+
+        MsgResilienceSurvey surveyNurseId subMsg ->
+            let
+                requests =
+                    Dict.get surveyNurseId model.resilienceSurveyRequests
+                        |> Maybe.withDefault Backend.ResilienceSurvey.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.ResilienceSurvey.Update.update currentDate subMsg requests
+            in
+            ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
+            , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
+            , appMsgs
+            )
+
+        MsgResilienceMessage messageNurseId subMsg ->
+            let
+                requests =
+                    Dict.get messageNurseId model.resilienceMessageRequests
+                        |> Maybe.withDefault Backend.ResilienceMessage.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.ResilienceMessage.Update.update currentDate subMsg requests
+            in
+            ( { model | resilienceMessageRequests = Dict.insert messageNurseId subModel model.resilienceMessageRequests }
+            , Cmd.map (MsgResilienceMessage messageNurseId) subCmd
+            , appMsgs
+            )
+
+        MsgStockUpdate updateNurseId subMsg ->
+            let
+                requests =
+                    Dict.get updateNurseId model.stockUpdateRequests
+                        |> Maybe.withDefault Backend.StockUpdate.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.StockUpdate.Update.update currentDate subMsg requests
+            in
+            ( { model | stockUpdateRequests = Dict.insert updateNurseId subModel model.stockUpdateRequests }
+            , Cmd.map (MsgStockUpdate updateNurseId) subCmd
+            , appMsgs
+            )
+
         PostPmtctParticipant initiator data ->
             ( { model | postPmtctParticipant = Dict.insert data.child Loading model.postPmtctParticipant }
             , sw.post pmtctParticipantEndpoint data
@@ -2840,6 +2938,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandlePostedPmtctParticipant id initiator data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 appMsgs =
                     case initiator of
                         -- When in session context, automaticaly create
@@ -2864,7 +2965,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | postPmtctParticipant = Dict.insert id data model.postPmtctParticipant }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostRelationship personId myRelationship addGroup initiator ->
@@ -2999,6 +3100,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandlePostedRelationship personId initiator data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 appMsgs =
                     data
                         |> RemoteData.map
@@ -3032,7 +3136,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | postRelationship = Dict.insert personId data model.postRelationship }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostPerson relation initiator person ->
@@ -3044,6 +3148,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandlePostedPerson relation initiator data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 ( appMsgs, extraMsgs ) =
                     -- If we succeed, we reset the form, and go to the page
                     -- showing the new person.
@@ -3177,7 +3284,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | postPerson = data }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
                 |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
 
@@ -3190,6 +3297,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandlePatchedPerson origin personId data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 appMsgs =
                     case origin of
                         InitiatorEditForm ->
@@ -3213,7 +3323,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | postPerson = Success personId }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostSession session ->
@@ -3225,7 +3335,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandlePostedSession data ->
             let
-                msgs =
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
                     RemoteData.map
                         (\sessionId ->
                             SessionPage sessionId AttendancePage
@@ -3238,31 +3351,21 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | postSession = data }
             , Cmd.none
-            , msgs
+            , rollbarOnFailure ++ appMsgs
             )
 
-        FetchVillages ->
-            ( { model | villages = Loading }
-            , sw.select villageEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedVillages)
-            , []
-            )
-
-        HandleFetchedVillages data ->
-            ( { model | villages = data }
-            , Cmd.none
-            , []
-            )
-
-        PostIndividualSession extraData session ->
-            ( { model | postIndividualSession = Dict.insert session.person Loading model.postIndividualSession }
+        PostIndividualEncounterParticipant extraData session ->
+            ( { model | postIndividualEncounterParticipant = Dict.insert session.person Loading model.postIndividualEncounterParticipant }
             , sw.post individualEncounterParticipantEndpoint session
-                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession session.person session.encounterType extraData)
+                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualEncounterParticipant session.person session.encounterType extraData)
             , []
             )
 
-        HandlePostedIndividualSession personId encounterType extraData data ->
+        HandlePostedIndividualEncounterParticipant personId encounterType extraData data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 -- We automatically create new encounter for newly created  session.
                 appMsgs =
                     RemoteData.map
@@ -3325,9 +3428,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         data
                         |> RemoteData.withDefault []
             in
-            ( { model | postIndividualSession = Dict.insert personId data model.postIndividualSession }
+            ( { model | postIndividualEncounterParticipant = Dict.insert personId data model.postIndividualEncounterParticipant }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostPrenatalEncounter postCreateDestination prenatalEncounter ->
@@ -3338,36 +3441,43 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedPrenatalEncounter participantId postCreateDestination data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( prenatalEncounterId, _ ) ->
+                            let
+                                destinationPage =
+                                    case postCreateDestination of
+                                        DestinationEncounterPage ->
+                                            UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
+
+                                        DestinationEncounterPageWithWarningPopup ->
+                                            UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
+
+                                        DestinationClinicalProgressReportPage ->
+                                            UserPage <| ClinicalProgressReportPage (InitiatorNewEncounter prenatalEncounterId) prenatalEncounterId
+
+                                setWarningDialogStateMsg =
+                                    if postCreateDestination == DestinationEncounterPageWithWarningPopup then
+                                        [ Pages.Prenatal.Encounter.Model.SetChwWarningVisible True
+                                            |> App.Model.MsgPagePrenatalEncounter prenatalEncounterId
+                                            |> App.Model.MsgLoggedIn
+                                        ]
+
+                                    else
+                                        []
+                            in
+                            App.Model.SetActivePage destinationPage :: setWarningDialogStateMsg
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postPrenatalEncounter = Dict.insert participantId data model.postPrenatalEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( prenatalEncounterId, _ ) ->
-                    let
-                        destinationPage =
-                            case postCreateDestination of
-                                DestinationEncounterPage ->
-                                    UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
-
-                                DestinationEncounterPageWithWarningPopup ->
-                                    UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
-
-                                DestinationClinicalProgressReportPage ->
-                                    UserPage <| ClinicalProgressReportPage (InitiatorNewEncounter prenatalEncounterId) prenatalEncounterId
-
-                        setWarningDialogStateMsg =
-                            if postCreateDestination == DestinationEncounterPageWithWarningPopup then
-                                [ Pages.Prenatal.Encounter.Model.SetChwWarningVisible True
-                                    |> App.Model.MsgPagePrenatalEncounter prenatalEncounterId
-                                    |> App.Model.MsgLoggedIn
-                                ]
-
-                            else
-                                []
-                    in
-                    App.Model.SetActivePage destinationPage :: setWarningDialogStateMsg
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostNutritionEncounter nutritionEncounter ->
@@ -3378,17 +3488,24 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedNutritionEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( nutritionEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.NutritionEncounterPage nutritionEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postNutritionEncounter = Dict.insert participantId data model.postNutritionEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( nutritionEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.NutritionEncounterPage nutritionEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostHomeVisitEncounter homeVisitEncounter ->
@@ -3399,17 +3516,24 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedHomeVisitEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( homeVisitEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.HomeVisitEncounterPage homeVisitEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postHomeVisitEncounter = Dict.insert participantId data model.postHomeVisitEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( homeVisitEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.HomeVisitEncounterPage homeVisitEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostWellChildEncounter wellChildEncounter ->
@@ -3420,17 +3544,24 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedWellChildEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( wellChildEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.WellChildEncounterPage wellChildEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postWellChildEncounter = Dict.insert participantId data model.postWellChildEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( wellChildEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.WellChildEncounterPage wellChildEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostAcuteIllnessEncounter acuteIllnessEncounter ->
@@ -3441,17 +3572,24 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedAcuteIllnessEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( acuteIllnessEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.AcuteIllnessEncounterPage acuteIllnessEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postAcuteIllnessEncounter = Dict.insert participantId data model.postAcuteIllnessEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( acuteIllnessEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.AcuteIllnessEncounterPage acuteIllnessEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostNCDEncounter ncdEncounter ->
@@ -3462,101 +3600,24 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedNCDEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( ncdEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.NCDEncounterPage ncdEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postNCDEncounter = Dict.insert participantId data model.postNCDEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( ncdEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.NCDEncounterPage ncdEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
-            )
-
-        ResetFailedToFetchAuthorities ->
-            let
-                failureToNotAsked webData =
-                    case webData of
-                        Failure _ ->
-                            NotAsked
-
-                        _ ->
-                            webData
-            in
-            ( { model | healthCenters = failureToNotAsked model.healthCenters, villages = failureToNotAsked model.villages }
-            , Cmd.none
-            , []
-            )
-
-        FetchTraceContact id ->
-            ( { model | traceContacts = Dict.insert id Loading model.traceContacts }
-            , sw.get acuteIllnessTraceContactEndpoint id
-                |> toCmd (RemoteData.fromResult >> HandleFetchedTraceContact id)
-            , []
-            )
-
-        HandleFetchedTraceContact id data ->
-            ( { model | traceContacts = Dict.insert id data model.traceContacts }
-            , Cmd.none
-            , []
-            )
-
-        MsgNurse updatedNurseId subMsg ->
-            let
-                requests =
-                    Dict.get updatedNurseId model.nurseRequests
-                        |> Maybe.withDefault Backend.Nurse.Model.emptyModel
-
-                ( subModel, subCmd, appMsgs ) =
-                    Backend.Nurse.Update.update currentDate subMsg requests
-            in
-            ( { model | nurseRequests = Dict.insert updatedNurseId subModel model.nurseRequests }
-            , Cmd.map (MsgNurse updatedNurseId) subCmd
-            , appMsgs
-            )
-
-        MsgResilienceSurvey surveyNurseId subMsg ->
-            let
-                requests =
-                    Dict.get surveyNurseId model.resilienceSurveyRequests
-                        |> Maybe.withDefault Backend.ResilienceSurvey.Model.emptyModel
-
-                ( subModel, subCmd, appMsgs ) =
-                    Backend.ResilienceSurvey.Update.update currentDate subMsg requests
-            in
-            ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
-            , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
-            , appMsgs
-            )
-
-        MsgResilienceMessage messageNurseId subMsg ->
-            let
-                requests =
-                    Dict.get messageNurseId model.resilienceMessageRequests
-                        |> Maybe.withDefault Backend.ResilienceMessage.Model.emptyModel
-
-                ( subModel, subCmd, appMsgs ) =
-                    Backend.ResilienceMessage.Update.update currentDate subMsg requests
-            in
-            ( { model | resilienceMessageRequests = Dict.insert messageNurseId subModel model.resilienceMessageRequests }
-            , Cmd.map (MsgResilienceMessage messageNurseId) subCmd
-            , appMsgs
-            )
-
-        MsgStockUpdate updateNurseId subMsg ->
-            let
-                requests =
-                    Dict.get updateNurseId model.stockUpdateRequests
-                        |> Maybe.withDefault Backend.StockUpdate.Model.emptyModel
-
-                ( subModel, subCmd, appMsgs ) =
-                    Backend.StockUpdate.Update.update currentDate subMsg requests
-            in
-            ( { model | stockUpdateRequests = Dict.insert updateNurseId subModel model.stockUpdateRequests }
-            , Cmd.map (MsgStockUpdate updateNurseId) subCmd
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
 
