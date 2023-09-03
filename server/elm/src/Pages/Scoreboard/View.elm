@@ -4,7 +4,7 @@ import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
-import Backend.Scoreboard.Model exposing (ECDStatus(..), ScoreboardData, SelectedEntity(..))
+import Backend.Scoreboard.Model exposing (ScoreboardData, SelectedEntity(..))
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
@@ -424,7 +424,9 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                 (\record accum ->
                     let
                         ageInMonths =
-                            diffMonths record.birthDate currentDate
+                            -- Using EDD date to properly resolve the month of
+                            -- prgnancy (as child may have been borm premature).
+                            diffMonths record.eddDate currentDate
 
                         row1AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.ancNewborn.row1
@@ -506,6 +508,9 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap chi
 
                         row4AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row4
+
+                        row5AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row5
                     in
                     List.indexedMap
                         (\index accumValue ->
@@ -565,49 +570,23 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap chi
                                                             -- done, and therefore, we're on track at referenced month.
                                                             (accumValue.row1 + 1)
 
-                                            -- Vitamin A is given with interval of at least 6 months.
-                                            -- So, once dose is given, we need to do +1 for that month, and
-                                            -- next 5.
-                                            -- Another condition to look for is the age of child, which should be
-                                            -- between 0 and 24 months.
                                             row2 =
-                                                if
-                                                    List.any
-                                                        (\ageInMonthsOnAdministrationDate ->
-                                                            let
-                                                                numberOfMonthsSinceAdministration =
-                                                                    ageInMonthsOnAdministrationDate - gapInMonths
-                                                            in
-                                                            (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0)
-                                                        )
-                                                        row2AsAgeInMonths
-                                                        && (ageInMonthsForIndexCell >= 0)
-                                                        && (ageInMonthsForIndexCell < 24)
-                                                then
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row2AsAgeInMonths then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
-                                            -- Mebendezoleis given with interval of at least 6 months.
-                                            -- So, once dose is given, we need to do +1 for that month, and
-                                            -- next 5.
-                                            -- Another condition to look for is the age of child, which should be
-                                            -- between 0 and 24 months.
                                             row3 =
-                                                if
-                                                    List.any
-                                                        (\ageInMonthsOnAdministrationDate ->
-                                                            let
-                                                                numberOfMonthsSinceAdministration =
-                                                                    ageInMonthsOnAdministrationDate - gapInMonths
-                                                            in
-                                                            (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0)
-                                                        )
-                                                        row3AsAgeInMonths
-                                                        && (ageInMonthsForIndexCell >= 0)
-                                                        && (ageInMonthsForIndexCell < 34)
-                                                then
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row3AsAgeInMonths then
                                                     accumValue.row3 + 1
 
                                                 else
@@ -625,20 +604,15 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap chi
                                                     accumValue.row4
 
                                             row5 =
-                                                if (ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24) then
-                                                    accumValue.row5
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row5AsAgeInMonths then
+                                                    accumValue.row5 + 1
 
                                                 else
-                                                    let
-                                                        status =
-                                                            List.Extra.getAt ageInMonthsForIndexCell record.ncda.universalIntervention.row5.ecdMilestonesStatusByMonth
-                                                                |> Maybe.withDefault NoECDStatus
-                                                    in
-                                                    if status == StatusOnTrack then
-                                                        accumValue.row5 + 1
-
-                                                    else
-                                                        accumValue.row5
+                                                    accumValue.row5
                                         in
                                         { row1 = row1
                                         , row2 = row2

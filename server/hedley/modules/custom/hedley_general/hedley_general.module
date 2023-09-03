@@ -206,6 +206,34 @@ function hedley_general_get_person_measurements($person_id, array $measurement_t
 }
 
 /**
+ * Resolves all content associated with person using association fields.
+ *
+ * For example, 'field_person' associates all measurements taken for person.
+ *
+ * @param int $person_id
+ *   Node ID of the person.
+ * @param array $fields
+ *   List of association fields.
+ *
+ * @return array
+ *   List of pairs (node ID + bundle) of content associated with person.
+ */
+function hedley_general_get_person_content_associated_by_fields($person_id, array $fields) {
+  $content = [];
+
+  foreach ($fields as $field) {
+    $query = db_select("field_data_$field", 't');
+    $query->addField('t', 'entity_id');
+    $query->addField('t', 'bundle');
+    $query->condition("${field}_target_id", $person_id);
+
+    $content = array_merge($content, $query->execute()->fetchAll());
+  }
+
+  return $content;
+}
+
+/**
  * Returns list of content types that are considered as measurements.
  *
  * We return both group and individual encounters measurements.

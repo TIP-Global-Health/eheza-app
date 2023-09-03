@@ -661,12 +661,24 @@ div.page-person-create {
 }
 
 div.page-people {
-  margin: 0 auto;
-  padding: 0 35px 35px 35px;
-  height: 100%;
-  overflow-y: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  margin: 0 auto;
+  overflow-y: hidden;
+  padding: 0 35px 35px 35px;
+  width: 100%;
+
+  div.ui.message.warning {
+    font-size: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+  }
+
+  div.ui.message.warning .header {
+    font-size: 35px;
+  }
 
   div.search-wrapper {
     flex: 1 1 auto;
@@ -849,6 +861,92 @@ div.page-activity {
       }
     }
 
+    .ui.form.ncda .form-input.anc-months {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 45px;
+      width: 100%;
+
+      .item {
+        text-align: center;
+        width: 95%;
+      }
+
+      .trimester {
+        display: flex;
+        width: 100%;
+      }
+
+      .trimesters-separator {
+        display: flex;
+      }
+
+      .trimesters-separator .section {
+        height: 100%;
+        width: 10px;
+      }
+
+      .trimesters-separator .section.right {
+        border-left: 1px solid black;
+      }
+
+      .trimesters-separator .section .top,
+      .trimesters-separator .section .bottom {
+        height: 32px;
+        width: 9px;
+      }
+
+      .trimesters-separator .section .top {
+        border-bottom: 1px solid black;
+      }
+
+      .item .month-number {
+        border-bottom: 1px solid black;
+        margin-bottom: 15px;
+      }
+
+      .item .month-radio {
+        margin-top: 15px;
+      }
+
+      .item label {
+        margin-left: 10px;
+      }
+
+      .item label:before {
+        content: " ";
+        display: inline-block;
+        position: relative;
+        top: 5px;
+        margin-right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 13px;
+        border: 2px solid $color-gray-border;
+        background-color: transparent;
+      }
+
+      .item input[type=radio] {
+        display: none;
+      }
+
+      .item input[type=radio]:checked + label:after {
+        content: " ";
+        background: $color-text;
+        border-radius: 7px;
+        display: block;
+        height: 14px;
+        margin-left: 27px;
+        margin-top: -25px;
+        width: 14px;
+      }
+
+      .item input[type=radio]:checked.disabled + label:after {
+        // pointer-events: none;
+        opacity: 0.5;
+      }
+    }
+
     .ui.form.ncda .label.counseling {
       background-color: $color-pink;
       border-radius: 5px;
@@ -856,6 +954,10 @@ div.page-activity {
       padding: 15px;
       margin-top: 10px;
       margin-bottom: 15px;
+    }
+
+    .ui.form.ncda .form-input.measurement.birth-weight {
+      margin-bottom: 30px;
     }
 
   }
@@ -882,7 +984,7 @@ div.page-activity {
   }
 }
 
-//Device Status Page
+// Device Status Page
 .device-status {
   button {
     margin-bottom: 20px;
@@ -4224,6 +4326,17 @@ div.page-report.child-scoreboard {
 }
 
 div.page-case-management {
+
+  div.ui.message.warning {
+    font-size: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+  }
+
+  div.ui.message.warning .header {
+    font-size: 35px;
+  }
 
   .pane {
     background: $color-primary;

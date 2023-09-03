@@ -98,13 +98,9 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
       -- NCDA
-    | SetANCVisitsViewMode ANCVisitsViewMode
     | SetUpdateANCVisits Bool
-    | SetANCVisitUpdateDateSelectorState (Maybe (DateSelectorConfig Msg))
-    | SetANCVisitUpdateDate NominalDate
-    | SaveANCVisitUpdateDate
-    | DeleteANCVisitUpdateDate NominalDate
-    | SetNCDABoolInput (Bool -> NCDAForm Msg -> NCDAForm Msg) Bool
+    | ToggleANCVisitDate NominalDate
+    | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
@@ -120,7 +116,7 @@ type alias Model =
     , medicationData : MedicationData
     , nextStepsData : NextStepsData
     , photoForm : PhotoForm
-    , ncdaData : NCDAData Msg
+    , ncdaData : NCDAData
     , warningPopupState : Maybe WarningPopupType
     }
 

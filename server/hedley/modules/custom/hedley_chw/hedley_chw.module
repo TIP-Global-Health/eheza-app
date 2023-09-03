@@ -287,7 +287,7 @@ function hedley_chw_participate_in_group($child_id, $adult_id, $group_id) {
  *
  * @throws \EntityMetadataWrapperException
  */
-function hedley_chw_get_village_residents($nid, $range = 2000) {
+function hedley_chw_get_village_residents($nid, $range = 5000) {
   $node = node_load($nid);
   $province = $node->field_province[LANGUAGE_NONE][0]['value'];
   $district = $node->field_district[LANGUAGE_NONE][0]['value'];

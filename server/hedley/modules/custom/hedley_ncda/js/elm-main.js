@@ -5490,7 +5490,6 @@ var $author$project$App$Update$resolveActivePage = function (page) {
 			return $author$project$App$Types$NotFound;
 	}
 };
-var $author$project$Backend$Scoreboard$Model$CalculateECD = {$: 'CalculateECD'};
 var $author$project$App$Model$MsgMenuPage = function (a) {
 	return {$: 'MsgMenuPage', a: a};
 };
@@ -5772,9 +5771,9 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
 	function (entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F4(
-	function (birthDate, lowBirthWeight, nutrition, ncda) {
-		return {birthDate: birthDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
+var $author$project$Backend$Scoreboard$Model$PatientData = F5(
+	function (birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
+		return {birthDate: birthDate, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
@@ -6962,186 +6961,6 @@ var $author$project$Backend$Scoreboard$Model$UniversalInterventionData = F5(
 	function (row1, row2, row3, row4, row5) {
 		return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 	});
-var $author$project$Backend$Scoreboard$Model$ECDEncounterData = F3(
-	function (date, warning, signs) {
-		return {date: date, signs: signs, warning: warning};
-	});
-var $author$project$Backend$Scoreboard$Model$NoECDMilstoneWarning = {$: 'NoECDMilstoneWarning'};
-var $author$project$Backend$Scoreboard$Model$NoECDSigns = {$: 'NoECDSigns'};
-var $author$project$Backend$Scoreboard$Model$BringHandsToMouth = {$: 'BringHandsToMouth'};
-var $author$project$Backend$Scoreboard$Model$CanHoldSmallObjects = {$: 'CanHoldSmallObjects'};
-var $author$project$Backend$Scoreboard$Model$CopyDuringPlay = {$: 'CopyDuringPlay'};
-var $author$project$Backend$Scoreboard$Model$CountToTen = {$: 'CountToTen'};
-var $author$project$Backend$Scoreboard$Model$DressThemselves = {$: 'DressThemselves'};
-var $author$project$Backend$Scoreboard$Model$FollowMothersEyes = {$: 'FollowMothersEyes'};
-var $author$project$Backend$Scoreboard$Model$FollowSimpleInstructions = {$: 'FollowSimpleInstructions'};
-var $author$project$Backend$Scoreboard$Model$FollowThreeStepInstructions = {$: 'FollowThreeStepInstructions'};
-var $author$project$Backend$Scoreboard$Model$HoldAndShakeToys = {$: 'HoldAndShakeToys'};
-var $author$project$Backend$Scoreboard$Model$HoldHeadWithoutSupport = {$: 'HoldHeadWithoutSupport'};
-var $author$project$Backend$Scoreboard$Model$InterestedInOtherChildren = {$: 'InterestedInOtherChildren'};
-var $author$project$Backend$Scoreboard$Model$KickBall = {$: 'KickBall'};
-var $author$project$Backend$Scoreboard$Model$KnowsColorsAndNumbers = {$: 'KnowsColorsAndNumbers'};
-var $author$project$Backend$Scoreboard$Model$LooksWhenPointedAt = {$: 'LooksWhenPointedAt'};
-var $author$project$Backend$Scoreboard$Model$MoveArmsAndLegs = {$: 'MoveArmsAndLegs'};
-var $author$project$Backend$Scoreboard$Model$PlayMakeBelieve = {$: 'PlayMakeBelieve'};
-var $author$project$Backend$Scoreboard$Model$PlayPretend = {$: 'PlayPretend'};
-var $author$project$Backend$Scoreboard$Model$PointAtNamedObjects = {$: 'PointAtNamedObjects'};
-var $author$project$Backend$Scoreboard$Model$PointToThingsOfInterest = {$: 'PointToThingsOfInterest'};
-var $author$project$Backend$Scoreboard$Model$RaiseHandsUp = {$: 'RaiseHandsUp'};
-var $author$project$Backend$Scoreboard$Model$ReachForToys = {$: 'ReachForToys'};
-var $author$project$Backend$Scoreboard$Model$ReactToSuddenSounds = {$: 'ReactToSuddenSounds'};
-var $author$project$Backend$Scoreboard$Model$RespondToSoundWithSound = {$: 'RespondToSoundWithSound'};
-var $author$project$Backend$Scoreboard$Model$RollSideways = {$: 'RollSideways'};
-var $author$project$Backend$Scoreboard$Model$RollTummyToBack = {$: 'RollTummyToBack'};
-var $author$project$Backend$Scoreboard$Model$SayMamaDada = {$: 'SayMamaDada'};
-var $author$project$Backend$Scoreboard$Model$ShareWithOtherChildren = {$: 'ShareWithOtherChildren'};
-var $author$project$Backend$Scoreboard$Model$SitWithoutSupport = {$: 'SitWithoutSupport'};
-var $author$project$Backend$Scoreboard$Model$Smile = {$: 'Smile'};
-var $author$project$Backend$Scoreboard$Model$SmileBack = {$: 'SmileBack'};
-var $author$project$Backend$Scoreboard$Model$StandOnOneFootFiveSeconds = {$: 'StandOnOneFootFiveSeconds'};
-var $author$project$Backend$Scoreboard$Model$StandOnTheirOwn = {$: 'StandOnTheirOwn'};
-var $author$project$Backend$Scoreboard$Model$TurnHeadWhenCalled = {$: 'TurnHeadWhenCalled'};
-var $author$project$Backend$Scoreboard$Model$UseConsonantSounds = {$: 'UseConsonantSounds'};
-var $author$project$Backend$Scoreboard$Model$UseLongPhrases = {$: 'UseLongPhrases'};
-var $author$project$Backend$Scoreboard$Model$UseMediumPhrases = {$: 'UseMediumPhrases'};
-var $author$project$Backend$Scoreboard$Model$UseShortPhrases = {$: 'UseShortPhrases'};
-var $author$project$Backend$Scoreboard$Model$UseSimpleGestures = {$: 'UseSimpleGestures'};
-var $author$project$Backend$Scoreboard$Model$UseSingleWords = {$: 'UseSingleWords'};
-var $author$project$Backend$Scoreboard$Model$WalkWithoutHelp = {$: 'WalkWithoutHelp'};
-var $author$project$Backend$Scoreboard$Model$WashHandsGoToToiled = {$: 'WashHandsGoToToiled'};
-var $author$project$Backend$Scoreboard$Decoder$decodeECDSign = A2(
-	$elm$json$Json$Decode$andThen,
-	function (sign) {
-		switch (sign) {
-			case 'follow-mothers-eyes':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$FollowMothersEyes);
-			case 'move-arms-and-legs':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$MoveArmsAndLegs);
-			case 'raise-hands-up':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RaiseHandsUp);
-			case 'smile':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$Smile);
-			case 'roll-sideways':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RollSideways);
-			case 'bring-hands-to-mouth':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$BringHandsToMouth);
-			case 'hold-head-without-support':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$HoldHeadWithoutSupport);
-			case 'hold-and-shake-toys':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$HoldAndShakeToys);
-			case 'react-to-sudden-sounds':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ReactToSuddenSounds);
-			case 'use-consonant-sounds':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseConsonantSounds);
-			case 'respond-to-sound-with-sound':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RespondToSoundWithSound);
-			case 'turn-head-when-called':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$TurnHeadWhenCalled);
-			case 'sit-without-support':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SitWithoutSupport);
-			case 'smile-back':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SmileBack);
-			case 'roll-tummy-to-back':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RollTummyToBack);
-			case 'reach-for-toys':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ReachForToys);
-			case 'use-simple-gestures':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseSimpleGestures);
-			case 'stand-on-their-own':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$StandOnTheirOwn);
-			case 'copy-during-play':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$CopyDuringPlay);
-			case 'say-mama-dada':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$SayMamaDada);
-			case 'can-hold-small-objects':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$CanHoldSmallObjects);
-			case 'looks-when-pointed-at':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$LooksWhenPointedAt);
-			case 'use-single-words':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseSingleWords);
-			case 'walk-without-help':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$WalkWithoutHelp);
-			case 'play-pretend':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PlayPretend);
-			case 'point-to-things-of-interest':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PointToThingsOfInterest);
-			case 'use-short-phrases':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseShortPhrases);
-			case 'interested-in-other-children':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$InterestedInOtherChildren);
-			case 'follow-simple-instructions':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$FollowSimpleInstructions);
-			case 'kick-ball':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$KickBall);
-			case 'point-at-named-objects':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PointAtNamedObjects);
-			case 'dress-themselves':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$DressThemselves);
-			case 'wash-hands-go-to-toiled':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$WashHandsGoToToiled);
-			case 'knows-colors-and-numbers':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$KnowsColorsAndNumbers);
-			case 'use-medium-phrases':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseMediumPhrases);
-			case 'play-make-believe':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PlayMakeBelieve);
-			case 'follow-three-step-instructions':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$FollowThreeStepInstructions);
-			case 'stand-on-one-foot-five-seconds':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$StandOnOneFootFiveSeconds);
-			case 'use-long-phrases':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UseLongPhrases);
-			case 'share-with-other-children':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ShareWithOtherChildren);
-			case 'count-to-ten':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$CountToTen);
-			case 'none':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NoECDSigns);
-			default:
-				return $elm$json$Json$Decode$fail(sign + ' is not a recognized ECDSign');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $author$project$Backend$Scoreboard$Model$WarningECDMilestoneBehind = {$: 'WarningECDMilestoneBehind'};
-var $author$project$Backend$Scoreboard$Model$WarningECDMilestoneReferToSpecialist = {$: 'WarningECDMilestoneReferToSpecialist'};
-var $author$project$Backend$Scoreboard$Decoder$decodeECDWarning = A2(
-	$elm$json$Json$Decode$andThen,
-	function (warning) {
-		switch (warning) {
-			case 'warning-ecd-milestone-behind':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$WarningECDMilestoneBehind);
-			case 'warning-ecd-milestone-refer-to-specialist':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$WarningECDMilestoneReferToSpecialist);
-			case 'no-ecd-milstone-warning':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$NoECDMilstoneWarning);
-			default:
-				return $elm$json$Json$Decode$fail(warning + ' is not a recognized ECDWarning');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
-var $author$project$Backend$Scoreboard$Decoder$decodeECDEncounterData = A4(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-	'signs',
-	$elm$json$Json$Decode$list($author$project$Backend$Scoreboard$Decoder$decodeECDSign),
-	_List_fromArray(
-		[$author$project$Backend$Scoreboard$Model$NoECDSigns]),
-	A4(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'warning',
-		$author$project$Backend$Scoreboard$Decoder$decodeECDWarning,
-		$author$project$Backend$Scoreboard$Model$NoECDMilstoneWarning,
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'date',
-			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ECDEncounterData))));
 var $author$project$Backend$Scoreboard$Model$RawVaccinationData = F7(
 	function (bcg, opv, dtp, pcv13, rotarix, ipv, mr) {
 		return {bcg: bcg, dtp: dtp, ipv: ipv, mr: mr, opv: opv, pcv13: pcv13, rotarix: rotarix};
@@ -7264,6 +7083,13 @@ var $author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationPr
 				generateVaccinationProgressForVaccine(data.mr))
 			]));
 };
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
 var $author$project$Backend$Scoreboard$Decoder$decodeVaccinationProgressDict = A2(
 	$elm$json$Json$Decode$map,
 	$author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationProgressDict,
@@ -7296,23 +7122,12 @@ var $author$project$Backend$Scoreboard$Decoder$decodeVaccinationProgressDict = A
 								'bcg',
 								$author$project$Backend$Scoreboard$Decoder$decodeUniqueDates,
 								$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RawVaccinationData)))))))));
-var $author$project$Backend$Scoreboard$Model$UniversalInterventionECDData = F2(
-	function (encountersData, ecdMilestonesStatusByMonth) {
-		return {ecdMilestonesStatusByMonth: ecdMilestonesStatusByMonth, encountersData: encountersData};
-	});
-var $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionECDData = A2($author$project$Backend$Scoreboard$Model$UniversalInterventionECDData, _List_Nil, _List_Nil);
-var $author$project$Backend$Scoreboard$Decoder$toInitialUniversalInterventionECDData = function (encountersData) {
-	return A2($author$project$Backend$Scoreboard$Model$UniversalInterventionECDData, encountersData, _List_Nil);
-};
 var $author$project$Backend$Scoreboard$Decoder$decodeUniversalInterventionData = function (currentDate) {
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 		'row5',
-		A2(
-			$elm$json$Json$Decode$map,
-			$author$project$Backend$Scoreboard$Decoder$toInitialUniversalInterventionECDData,
-			$elm$json$Json$Decode$list($author$project$Backend$Scoreboard$Decoder$decodeECDEncounterData)),
-		$author$project$Backend$Scoreboard$Model$emptyUniversalInterventionECDData,
+		$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+		_List_Nil,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 			'row4',
@@ -7339,7 +7154,7 @@ var $author$project$Backend$Scoreboard$Model$emptyANCNewbornData = A2($author$pr
 var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, false, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData = A6($author$project$Backend$Scoreboard$Model$TargetedInterventionsData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
-var $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData = A5($author$project$Backend$Scoreboard$Model$UniversalInterventionData, $pzp1997$assoc_list$AssocList$empty, _List_Nil, _List_Nil, _List_Nil, $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionECDData);
+var $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData = A5($author$project$Backend$Scoreboard$Model$UniversalInterventionData, $pzp1997$assoc_list$AssocList$empty, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Decoder$decodeNCDAData = function (currentDate) {
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -7554,9 +7369,13 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 				$elm$core$Maybe$Nothing,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'birth_date',
+					'edd_date',
 					$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))));
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'birth_date',
+						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData))))));
 };
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
@@ -7595,612 +7414,19 @@ var $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData = function (
 				$elm$json$Json$Decode$string,
 				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData))));
 };
-var $author$project$Backend$Scoreboard$Model$Milestone12Months = {$: 'Milestone12Months'};
-var $author$project$Backend$Scoreboard$Model$Milestone14Weeks = {$: 'Milestone14Weeks'};
-var $author$project$Backend$Scoreboard$Model$Milestone15Months = {$: 'Milestone15Months'};
-var $author$project$Backend$Scoreboard$Model$Milestone18Months = {$: 'Milestone18Months'};
-var $author$project$Backend$Scoreboard$Model$Milestone2Years = {$: 'Milestone2Years'};
-var $author$project$Backend$Scoreboard$Model$Milestone6Months = {$: 'Milestone6Months'};
-var $author$project$Backend$Scoreboard$Model$Milestone6Weeks = {$: 'Milestone6Weeks'};
-var $author$project$Backend$Scoreboard$Model$Milestone9Months = {$: 'Milestone9Months'};
-var $author$project$Backend$Scoreboard$Model$NoECDStatus = {$: 'NoECDStatus'};
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $author$project$Backend$Scoreboard$Model$StatusECDBehind = {$: 'StatusECDBehind'};
-var $author$project$Backend$Scoreboard$Model$StatusOffTrack = {$: 'StatusOffTrack'};
-var $author$project$Backend$Scoreboard$Model$StatusOnTrack = {$: 'StatusOnTrack'};
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			$elm$core$List$any,
-			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
-			list);
-	});
-var $justinmimbs$date$Date$Weeks = {$: 'Weeks'};
-var $elm$core$List$drop = F2(
-	function (n, list) {
-		drop:
-		while (true) {
-			if (n <= 0) {
-				return list;
-			} else {
-				if (!list.b) {
-					return list;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs;
-					n = $temp$n;
-					list = $temp$list;
-					continue drop;
-				}
-			}
-		}
-	});
-var $elm$core$List$takeReverse = F3(
-	function (n, list, kept) {
-		takeReverse:
-		while (true) {
-			if (n <= 0) {
-				return kept;
-			} else {
-				if (!list.b) {
-					return kept;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs,
-						$temp$kept = A2($elm$core$List$cons, x, kept);
-					n = $temp$n;
-					list = $temp$list;
-					kept = $temp$kept;
-					continue takeReverse;
-				}
-			}
-		}
-	});
-var $elm$core$List$takeTailRec = F2(
-	function (n, list) {
-		return $elm$core$List$reverse(
-			A3($elm$core$List$takeReverse, n, list, _List_Nil));
-	});
-var $elm$core$List$takeFast = F3(
-	function (ctr, n, list) {
-		if (n <= 0) {
-			return _List_Nil;
-		} else {
-			var _v0 = _Utils_Tuple2(n, list);
-			_v0$1:
-			while (true) {
-				_v0$5:
-				while (true) {
-					if (!_v0.b.b) {
-						return list;
-					} else {
-						if (_v0.b.b.b) {
-							switch (_v0.a) {
-								case 1:
-									break _v0$1;
-								case 2:
-									var _v2 = _v0.b;
-									var x = _v2.a;
-									var _v3 = _v2.b;
-									var y = _v3.a;
-									return _List_fromArray(
-										[x, y]);
-								case 3:
-									if (_v0.b.b.b.b) {
-										var _v4 = _v0.b;
-										var x = _v4.a;
-										var _v5 = _v4.b;
-										var y = _v5.a;
-										var _v6 = _v5.b;
-										var z = _v6.a;
-										return _List_fromArray(
-											[x, y, z]);
-									} else {
-										break _v0$5;
-									}
-								default:
-									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
-										var _v7 = _v0.b;
-										var x = _v7.a;
-										var _v8 = _v7.b;
-										var y = _v8.a;
-										var _v9 = _v8.b;
-										var z = _v9.a;
-										var _v10 = _v9.b;
-										var w = _v10.a;
-										var tl = _v10.b;
-										return (ctr > 1000) ? A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
-									} else {
-										break _v0$5;
-									}
-							}
-						} else {
-							if (_v0.a === 1) {
-								break _v0$1;
-							} else {
-								break _v0$5;
-							}
-						}
-					}
-				}
-				return list;
-			}
-			var _v1 = _v0.b;
-			var x = _v1.a;
-			return _List_fromArray(
-				[x]);
-		}
-	});
-var $elm$core$List$take = F2(
-	function (n, list) {
-		return A3($elm$core$List$takeFast, 0, n, list);
-	});
-var $elm_community$list_extra$List$Extra$splitAt = F2(
-	function (n, xs) {
-		return _Utils_Tuple2(
-			A2($elm$core$List$take, n, xs),
-			A2($elm$core$List$drop, n, xs));
-	});
-var $author$project$Backend$Scoreboard$Utils$ecdSignsFromGroupedSignsByAge = F3(
-	function (ageWeeks, ageMonths, groupedSigns) {
-		return (ageWeeks < 5) ? _List_Nil : ((ageWeeks < 13) ? $elm$core$List$concat(
-			A2($elm_community$list_extra$List$Extra$splitAt, 1, groupedSigns).a) : ((ageMonths < 6) ? $elm$core$List$concat(
-			A2($elm_community$list_extra$List$Extra$splitAt, 2, groupedSigns).a) : ((ageMonths < 15) ? $elm$core$List$concat(
-			A2($elm_community$list_extra$List$Extra$splitAt, 3, groupedSigns).a) : ((ageMonths < 18) ? $elm$core$List$concat(
-			A2($elm_community$list_extra$List$Extra$splitAt, 4, groupedSigns).a) : ((ageMonths < 24) ? $elm$core$List$concat(
-			A2($elm_community$list_extra$List$Extra$splitAt, 5, groupedSigns).a) : ((ageMonths < 36) ? $elm$core$List$concat(
-			A2($elm_community$list_extra$List$Extra$splitAt, 6, groupedSigns).a) : ((ageMonths < 48) ? $elm$core$List$concat(
-			A2($elm_community$list_extra$List$Extra$splitAt, 7, groupedSigns).a) : $elm$core$List$concat(groupedSigns))))))));
-	});
-var $author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMajors = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$RespondToSoundWithSound, $author$project$Backend$Scoreboard$Model$TurnHeadWhenCalled, $author$project$Backend$Scoreboard$Model$SitWithoutSupport, $author$project$Backend$Scoreboard$Model$SmileBack, $author$project$Backend$Scoreboard$Model$RollTummyToBack, $author$project$Backend$Scoreboard$Model$ReachForToys]);
-var $author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMinors = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$BringHandsToMouth, $author$project$Backend$Scoreboard$Model$HoldHeadWithoutSupport, $author$project$Backend$Scoreboard$Model$HoldAndShakeToys, $author$project$Backend$Scoreboard$Model$ReactToSuddenSounds, $author$project$Backend$Scoreboard$Model$UseConsonantSounds]);
-var $author$project$Backend$Scoreboard$Utils$ecdSignsFrom13Weeks = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$RaiseHandsUp, $author$project$Backend$Scoreboard$Model$Smile, $author$project$Backend$Scoreboard$Model$RollSideways]);
-var $author$project$Backend$Scoreboard$Utils$ecdSignsFrom15Months = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$UseSimpleGestures, $author$project$Backend$Scoreboard$Model$StandOnTheirOwn, $author$project$Backend$Scoreboard$Model$CopyDuringPlay, $author$project$Backend$Scoreboard$Model$SayMamaDada, $author$project$Backend$Scoreboard$Model$CanHoldSmallObjects]);
-var $author$project$Backend$Scoreboard$Utils$ecdSignsFrom18Months = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$LooksWhenPointedAt, $author$project$Backend$Scoreboard$Model$UseSingleWords, $author$project$Backend$Scoreboard$Model$WalkWithoutHelp, $author$project$Backend$Scoreboard$Model$PlayPretend, $author$project$Backend$Scoreboard$Model$PointToThingsOfInterest]);
-var $author$project$Backend$Scoreboard$Utils$ecdSignsFrom2Years = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$UseShortPhrases, $author$project$Backend$Scoreboard$Model$InterestedInOtherChildren, $author$project$Backend$Scoreboard$Model$FollowSimpleInstructions, $author$project$Backend$Scoreboard$Model$KickBall, $author$project$Backend$Scoreboard$Model$PointAtNamedObjects]);
-var $author$project$Backend$Scoreboard$Utils$ecdSignsFrom3Years = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$DressThemselves, $author$project$Backend$Scoreboard$Model$WashHandsGoToToiled, $author$project$Backend$Scoreboard$Model$KnowsColorsAndNumbers, $author$project$Backend$Scoreboard$Model$UseMediumPhrases, $author$project$Backend$Scoreboard$Model$PlayMakeBelieve]);
-var $author$project$Backend$Scoreboard$Utils$ecdSignsFrom4Years = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$FollowThreeStepInstructions, $author$project$Backend$Scoreboard$Model$StandOnOneFootFiveSeconds, $author$project$Backend$Scoreboard$Model$UseLongPhrases, $author$project$Backend$Scoreboard$Model$ShareWithOtherChildren, $author$project$Backend$Scoreboard$Model$CountToTen]);
-var $author$project$Backend$Scoreboard$Utils$ecdSignsFrom5Weeks = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$FollowMothersEyes, $author$project$Backend$Scoreboard$Model$MoveArmsAndLegs]);
-var $author$project$Backend$Scoreboard$Utils$groupedECDSigns = F2(
-	function (ageMonths, ageMonthsAtLastAssessment) {
-		var ecdSigns6To12MonthsByAge = (ageMonths > 12) ? _List_Nil : ((ageMonths >= 9) ? $author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMajors : _Utils_ap($author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMinors, $author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMajors));
-		var ecdSigns6To12Months = A2(
-			$elm$core$Maybe$withDefault,
-			_Utils_ap($author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMinors, $author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMajors),
-			A2(
-				$elm$core$Maybe$map,
-				function (ageMonthsLastAssessment) {
-					return (ageMonthsLastAssessment > 12) ? _List_Nil : ((ageMonthsLastAssessment >= 9) ? $author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMajors : ((ageMonthsLastAssessment >= 6) ? ecdSigns6To12MonthsByAge : _Utils_ap($author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMinors, $author$project$Backend$Scoreboard$Utils$ecdSigns6To12MonthsMajors)));
-				},
-				ageMonthsAtLastAssessment));
-		var _v0 = A2(
-			$elm$core$Maybe$withDefault,
-			_Utils_Tuple2($author$project$Backend$Scoreboard$Utils$ecdSignsFrom5Weeks, $author$project$Backend$Scoreboard$Utils$ecdSignsFrom13Weeks),
-			A2(
-				$elm$core$Maybe$map,
-				function (ageMonthsLastAssessment) {
-					return (ageMonthsLastAssessment >= 6) ? _Utils_Tuple2(_List_Nil, _List_Nil) : _Utils_Tuple2($author$project$Backend$Scoreboard$Utils$ecdSignsFrom5Weeks, $author$project$Backend$Scoreboard$Utils$ecdSignsFrom13Weeks);
-				},
-				ageMonthsAtLastAssessment));
-		var from5Weeks = _v0.a;
-		var from13Weeks = _v0.b;
-		return _List_fromArray(
-			[from5Weeks, from13Weeks, ecdSigns6To12Months, $author$project$Backend$Scoreboard$Utils$ecdSignsFrom15Months, $author$project$Backend$Scoreboard$Utils$ecdSignsFrom18Months, $author$project$Backend$Scoreboard$Utils$ecdSignsFrom2Years, $author$project$Backend$Scoreboard$Utils$ecdSignsFrom3Years, $author$project$Backend$Scoreboard$Utils$ecdSignsFrom4Years]);
-	});
-var $author$project$Backend$Scoreboard$Utils$expectedECDSignsOnMilestone = F3(
-	function (birthDate, milestoneDate, firstEncounterDateAfterMilestone) {
-		var ageWeeks = A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Weeks, birthDate, milestoneDate);
-		var ageMonths = A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, birthDate, milestoneDate);
-		var groupedSigns = A2(
-			$author$project$Backend$Scoreboard$Utils$groupedECDSigns,
-			ageMonths,
-			A2(
-				$elm$core$Maybe$map,
-				A2($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, birthDate),
-				firstEncounterDateAfterMilestone));
-		return A3($author$project$Backend$Scoreboard$Utils$ecdSignsFromGroupedSignsByAge, ageWeeks, ageMonths, groupedSigns);
-	});
-var $pzp1997$assoc_list$AssocList$member = F2(
-	function (targetKey, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $Gizra$elm_all_set$EverySet$member = F2(
-	function (k, _v0) {
-		var d = _v0.a;
-		return A2($pzp1997$assoc_list$AssocList$member, k, d);
-	});
-var $justinmimbs$date$Date$Years = {$: 'Years'};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $justinmimbs$date$Date$add = F3(
-	function (unit, n, _v0) {
-		var rd = _v0.a;
-		switch (unit.$) {
-			case 'Years':
-				return A3(
-					$justinmimbs$date$Date$add,
-					$justinmimbs$date$Date$Months,
-					12 * n,
-					$justinmimbs$date$Date$RD(rd));
-			case 'Months':
-				var date = $justinmimbs$date$Date$toCalendarDate(
-					$justinmimbs$date$Date$RD(rd));
-				var wholeMonths = ((12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1)) + n;
-				var m = $justinmimbs$date$Date$numberToMonth(
-					A2($elm$core$Basics$modBy, 12, wholeMonths) + 1);
-				var y = A2($justinmimbs$date$Date$floorDiv, wholeMonths, 12) + 1;
-				return $justinmimbs$date$Date$RD(
-					($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A2(
-						$elm$core$Basics$min,
-						date.day,
-						A2($justinmimbs$date$Date$daysInMonth, y, m)));
-			case 'Weeks':
-				return $justinmimbs$date$Date$RD(rd + (7 * n));
-			default:
-				return $justinmimbs$date$Date$RD(rd + n);
-		}
-	});
-var $author$project$Backend$Scoreboard$Utils$resolveDateForPediatricCareMilestone = F2(
-	function (birthDate, milestone) {
-		switch (milestone.$) {
-			case 'Milestone6Weeks':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate);
-			case 'Milestone14Weeks':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 14, birthDate);
-			case 'Milestone6Months':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 6, birthDate);
-			case 'Milestone9Months':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 9, birthDate);
-			case 'Milestone12Months':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 1, birthDate);
-			case 'Milestone15Months':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 15, birthDate);
-			case 'Milestone18Months':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 18, birthDate);
-			case 'Milestone2Years':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 2, birthDate);
-			case 'Milestone3Years':
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 3, birthDate);
-			default:
-				return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 4, birthDate);
-		}
-	});
-var $author$project$Backend$Scoreboard$Utils$genrateDefaultECDStatus = F3(
-	function (birthDate, milestone, encountersData) {
-		var milestoneDate = A2($author$project$Backend$Scoreboard$Utils$resolveDateForPediatricCareMilestone, birthDate, milestone);
-		var firstEncounterDateAfterMilestone = $elm$core$List$head(
-			A2(
-				$elm$core$List$sortWith,
-				$justinmimbs$date$Date$compare,
-				A2(
-					$elm$core$List$filterMap,
-					function (encounterData) {
-						return (!_Utils_eq(
-							A2($justinmimbs$date$Date$compare, milestoneDate, encounterData.date),
-							$elm$core$Basics$LT)) ? $elm$core$Maybe$Just(encounterData.date) : $elm$core$Maybe$Nothing;
-					},
-					encountersData)));
-		var expectedSigns = A3($author$project$Backend$Scoreboard$Utils$expectedECDSignsOnMilestone, birthDate, milestoneDate, firstEncounterDateAfterMilestone);
-		var completedSigns = $Gizra$elm_all_set$EverySet$fromList(
-			A2(
-				$elm$core$List$filter,
-				$elm$core$Basics$neq($author$project$Backend$Scoreboard$Model$NoECDSigns),
-				$elm$core$List$concat(
-					A2(
-						$elm$core$Maybe$withDefault,
-						A2(
-							$elm$core$List$map,
-							function ($) {
-								return $.signs;
-							},
-							encountersData),
-						A2(
-							$elm$core$Maybe$map,
-							function (firstEncounterAfterMilestoneDate) {
-								return A2(
-									$elm$core$List$filterMap,
-									function (encounterData) {
-										return _Utils_eq(
-											A2($justinmimbs$date$Date$compare, encounterData.date, firstEncounterAfterMilestoneDate),
-											$elm$core$Basics$GT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(encounterData.signs);
-									},
-									encountersData);
-							},
-							firstEncounterDateAfterMilestone)))));
-		return A2(
-			$elm$core$List$all,
-			function (sign) {
-				return A2($Gizra$elm_all_set$EverySet$member, sign, completedSigns);
-			},
-			expectedSigns) ? $author$project$Backend$Scoreboard$Model$StatusOnTrack : $author$project$Backend$Scoreboard$Model$StatusOffTrack;
-	});
-var $author$project$Backend$Scoreboard$Utils$pediatricCareMilestoneToComparable = function (milestone) {
-	switch (milestone.$) {
-		case 'Milestone6Weeks':
-			return 1;
-		case 'Milestone14Weeks':
-			return 2;
-		case 'Milestone6Months':
-			return 3;
-		case 'Milestone9Months':
-			return 4;
-		case 'Milestone12Months':
-			return 5;
-		case 'Milestone15Months':
-			return 6;
-		case 'Milestone18Months':
-			return 7;
-		case 'Milestone2Years':
-			return 8;
-		case 'Milestone3Years':
-			return 9;
-		default:
-			return 10;
-	}
-};
-var $author$project$Backend$Scoreboard$Model$Milestone3Years = {$: 'Milestone3Years'};
-var $author$project$Backend$Scoreboard$Model$Milestone4Years = {$: 'Milestone4Years'};
-var $author$project$Backend$Scoreboard$Utils$pediatricCareMilestones = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$Milestone6Weeks, $author$project$Backend$Scoreboard$Model$Milestone14Weeks, $author$project$Backend$Scoreboard$Model$Milestone6Months, $author$project$Backend$Scoreboard$Model$Milestone9Months, $author$project$Backend$Scoreboard$Model$Milestone12Months, $author$project$Backend$Scoreboard$Model$Milestone15Months, $author$project$Backend$Scoreboard$Model$Milestone18Months, $author$project$Backend$Scoreboard$Model$Milestone2Years, $author$project$Backend$Scoreboard$Model$Milestone3Years, $author$project$Backend$Scoreboard$Model$Milestone4Years]);
-var $author$project$Backend$Scoreboard$Utils$resolvePediatricCareMilestoneOnDate = F2(
-	function (dueDate, birthDate) {
-		var ageWeeks = A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Weeks, birthDate, dueDate);
-		var ageMonths = A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, birthDate, dueDate);
-		return (ageWeeks < 6) ? $elm$core$Maybe$Nothing : ((ageWeeks < 14) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone6Weeks) : ((ageMonths < 6) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone14Weeks) : ((ageMonths < 9) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone6Months) : ((ageMonths < 12) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone9Months) : ((ageMonths < 15) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone12Months) : ((ageMonths < 18) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone15Months) : ((ageMonths < 24) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone18Months) : ((ageMonths < 36) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone2Years) : ((ageMonths < 48) ? $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone3Years) : $elm$core$Maybe$Just($author$project$Backend$Scoreboard$Model$Milestone4Years))))))))));
-	});
-var $author$project$Backend$Scoreboard$Utils$generateECDMilestonesWithStatus = F3(
-	function (currentDate, birthDate, encountersData) {
-		var performedMilestonesWithStatus = $pzp1997$assoc_list$AssocList$fromList(
-			A2(
-				$elm$core$List$filterMap,
-				function (encounterData) {
-					var milestoneStatus = _Utils_eq(encounterData.warning, $author$project$Backend$Scoreboard$Model$WarningECDMilestoneReferToSpecialist) ? $author$project$Backend$Scoreboard$Model$StatusOffTrack : (_Utils_eq(encounterData.warning, $author$project$Backend$Scoreboard$Model$WarningECDMilestoneBehind) ? $author$project$Backend$Scoreboard$Model$StatusECDBehind : $author$project$Backend$Scoreboard$Model$StatusOnTrack);
-					return A2(
-						$elm$core$Maybe$map,
-						function (milestone) {
-							return _Utils_Tuple2(milestone, milestoneStatus);
-						},
-						A2($author$project$Backend$Scoreboard$Utils$resolvePediatricCareMilestoneOnDate, encounterData.date, birthDate));
-				},
-				encountersData));
-		var milestoneForCurrentDateAsComparable = A2(
-			$elm$core$Maybe$map,
-			$author$project$Backend$Scoreboard$Utils$pediatricCareMilestoneToComparable,
-			A2($author$project$Backend$Scoreboard$Utils$resolvePediatricCareMilestoneOnDate, currentDate, birthDate));
-		var milestonesToCurrentDate = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (currentMilestoneAsComparable) {
-					return A2(
-						$elm$core$List$filter,
-						function (milestone) {
-							return _Utils_cmp(
-								$author$project$Backend$Scoreboard$Utils$pediatricCareMilestoneToComparable(milestone),
-								currentMilestoneAsComparable) < 1;
-						},
-						$author$project$Backend$Scoreboard$Utils$pediatricCareMilestones);
-				},
-				milestoneForCurrentDateAsComparable));
-		return A2(
-			$elm$core$List$map,
-			function (milestone) {
-				var status = A2(
-					$elm$core$Maybe$withDefault,
-					A3($author$project$Backend$Scoreboard$Utils$genrateDefaultECDStatus, birthDate, milestone, encountersData),
-					A2($pzp1997$assoc_list$AssocList$get, milestone, performedMilestonesWithStatus));
-				return _Utils_Tuple2(milestone, status);
-			},
-			milestonesToCurrentDate);
-	});
-var $elm$core$List$repeatHelp = F3(
-	function (result, n, value) {
-		repeatHelp:
-		while (true) {
-			if (n <= 0) {
-				return result;
-			} else {
-				var $temp$result = A2($elm$core$List$cons, value, result),
-					$temp$n = n - 1,
-					$temp$value = value;
-				result = $temp$result;
-				n = $temp$n;
-				value = $temp$value;
-				continue repeatHelp;
-			}
-		}
-	});
-var $elm$core$List$repeat = F2(
-	function (n, value) {
-		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
-	});
-var $author$project$Backend$Scoreboard$Utils$generateECDMilestonesStatusByMonth = F3(
-	function (currentDate, birthDate, encountersData) {
-		var statusForMilestonePeriod = function (_v1) {
-			var milestone = _v1.a;
-			var status = _v1.b;
-			switch (milestone.$) {
-				case 'Milestone6Weeks':
-					return A2($elm$core$List$repeat, 2, status);
-				case 'Milestone14Weeks':
-					return A2($elm$core$List$repeat, 2, status);
-				case 'Milestone6Months':
-					return A2($elm$core$List$repeat, 3, status);
-				case 'Milestone9Months':
-					return A2($elm$core$List$repeat, 3, status);
-				case 'Milestone12Months':
-					return A2($elm$core$List$repeat, 3, status);
-				case 'Milestone15Months':
-					return A2($elm$core$List$repeat, 3, status);
-				case 'Milestone18Months':
-					return A2($elm$core$List$repeat, 6, status);
-				case 'Milestone2Years':
-					return A2($elm$core$List$repeat, 2, status);
-				case 'Milestone3Years':
-					return _List_Nil;
-				default:
-					return _List_Nil;
-			}
-		};
-		var milestonesToCurrentDateWithStatus = $pzp1997$assoc_list$AssocList$fromList(
-			A3($author$project$Backend$Scoreboard$Utils$generateECDMilestonesWithStatus, currentDate, birthDate, encountersData));
-		var allMilestones = _List_fromArray(
-			[$author$project$Backend$Scoreboard$Model$Milestone6Weeks, $author$project$Backend$Scoreboard$Model$Milestone14Weeks, $author$project$Backend$Scoreboard$Model$Milestone6Months, $author$project$Backend$Scoreboard$Model$Milestone9Months, $author$project$Backend$Scoreboard$Model$Milestone12Months, $author$project$Backend$Scoreboard$Model$Milestone15Months, $author$project$Backend$Scoreboard$Model$Milestone18Months, $author$project$Backend$Scoreboard$Model$Milestone2Years]);
-		return A2(
-			$elm$core$List$cons,
-			$author$project$Backend$Scoreboard$Model$NoECDStatus,
-			$elm$core$List$concat(
-				A2(
-					$elm$core$List$map,
-					statusForMilestonePeriod,
-					A2(
-						$elm$core$List$map,
-						function (milestone) {
-							return _Utils_Tuple2(
-								milestone,
-								A2(
-									$elm$core$Maybe$withDefault,
-									$author$project$Backend$Scoreboard$Model$NoECDStatus,
-									A2($pzp1997$assoc_list$AssocList$get, milestone, milestonesToCurrentDateWithStatus)));
-						},
-						allMilestones))));
-	});
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (ra.$ === 'Ok') {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
 var $author$project$Backend$Scoreboard$Update$update = F3(
 	function (currentDate, msg, model) {
-		if (msg.$ === 'SetData') {
-			var value = msg.a;
-			var modelUpdated = _Utils_update(
-				model,
-				{
-					scoreboardData: $elm$core$Maybe$Just(
-						A2(
-							$elm$json$Json$Decode$decodeValue,
-							$author$project$Backend$Scoreboard$Decoder$decodeScoreboardData(currentDate),
-							value))
-				});
-			return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
-		} else {
-			var dataWithECDMilestonesStatus = A2(
-				$elm$core$Maybe$map,
-				function (data) {
-					return A2(
-						$elm$core$Result$map,
-						function (scoreboardData) {
-							var updatedRecords = A2(
-								$elm$core$List$map,
-								function (record) {
-									var ecdMilestonesStatusByMonth = A3($author$project$Backend$Scoreboard$Utils$generateECDMilestonesStatusByMonth, currentDate, record.birthDate, record.ncda.universalIntervention.row5.encountersData);
-									var updatedUniversalInterventionData = function (universalInterventionData) {
-										return _Utils_update(
-											universalInterventionData,
-											{ecdMilestonesStatusByMonth: ecdMilestonesStatusByMonth});
-									}(record.ncda.universalIntervention.row5);
-									var updatedUniversalIntervention = function (universalIntervention) {
-										return _Utils_update(
-											universalIntervention,
-											{row5: updatedUniversalInterventionData});
-									}(record.ncda.universalIntervention);
-									var updatedNCDA = function (ncda) {
-										return _Utils_update(
-											ncda,
-											{universalIntervention: updatedUniversalIntervention});
-									}(record.ncda);
-									return _Utils_update(
-										record,
-										{ncda: updatedNCDA});
-								},
-								scoreboardData.records);
-							return _Utils_update(
-								scoreboardData,
-								{records: updatedRecords});
-						},
-						data);
-				},
-				model.scoreboardData);
-			var modelUpdated = _Utils_update(
-				model,
-				{scoreboardData: dataWithECDMilestonesStatus});
-			return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
-		}
+		var value = msg.a;
+		var modelUpdated = _Utils_update(
+			model,
+			{
+				scoreboardData: $elm$core$Maybe$Just(
+					A2(
+						$elm$json$Json$Decode$decodeValue,
+						$author$project$Backend$Scoreboard$Decoder$decodeScoreboardData(currentDate),
+						value))
+			});
+		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
 var $elm$core$Platform$Cmd$map = _Platform_map;
 var $author$project$Backend$Utils$updateSubModel = F4(
@@ -8349,13 +7575,11 @@ var $author$project$App$Update$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var date = msg.a;
-				return A2(
-					$author$project$App$Update$update,
-					$author$project$App$Model$MsgBackend(
-						$author$project$Backend$Model$MsgScoreboard($author$project$Backend$Scoreboard$Model$CalculateECD)),
+				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{currentTime: date}));
+						{currentTime: date}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$App$Update$init = function (flags) {
@@ -27883,12 +27107,54 @@ var $author$project$Pages$Scoreboard$View$generateMonthsGap = F2(
 					},
 					A2($elm$core$List$range, 1, 12))));
 	});
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
 var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
 var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
 var $author$project$Translate$NCDAANCNewbornItemLabel = function (a) {
 	return {$: 'NCDAANCNewbornItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$RegularCheckups = {$: 'RegularCheckups'};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -28270,7 +27536,7 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
 						},
 						record.ncda.ancNewborn.row1);
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
+					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.eddDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -29216,6 +28482,38 @@ var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) 
 var $author$project$Pages$Scoreboard$Model$OngeraMNP = {$: 'OngeraMNP'};
 var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention'};
 var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $justinmimbs$date$Date$add = F3(
+	function (unit, n, _v0) {
+		var rd = _v0.a;
+		switch (unit.$) {
+			case 'Years':
+				return A3(
+					$justinmimbs$date$Date$add,
+					$justinmimbs$date$Date$Months,
+					12 * n,
+					$justinmimbs$date$Date$RD(rd));
+			case 'Months':
+				var date = $justinmimbs$date$Date$toCalendarDate(
+					$justinmimbs$date$Date$RD(rd));
+				var wholeMonths = ((12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1)) + n;
+				var m = $justinmimbs$date$Date$numberToMonth(
+					A2($elm$core$Basics$modBy, 12, wholeMonths) + 1);
+				var y = A2($justinmimbs$date$Date$floorDiv, wholeMonths, 12) + 1;
+				return $justinmimbs$date$Date$RD(
+					($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A2(
+						$elm$core$Basics$min,
+						date.day,
+						A2($justinmimbs$date$Date$daysInMonth, y, m)));
+			case 'Weeks':
+				return $justinmimbs$date$Date$RD(rd + (7 * n));
+			default:
+				return $justinmimbs$date$Date$RD(rd + n);
+		}
+	});
 var $elm$time$Time$Fri = {$: 'Fri'};
 var $elm$time$Time$Mon = {$: 'Mon'};
 var $elm$time$Time$Sat = {$: 'Sat'};
@@ -29308,6 +28606,7 @@ var $justinmimbs$date$Date$floor = F2(
 	});
 var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = _List_fromArray(
 	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
+var $justinmimbs$date$Date$Weeks = {$: 'Weeks'};
 var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = function (vaccineType) {
 	switch (vaccineType.$) {
 		case 'VaccineBCG':
@@ -29502,11 +28801,6 @@ var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F2(
 			},
 			$author$project$Pages$Scoreboard$Utils$allVaccineTypes);
 	});
-var $elm_community$list_extra$List$Extra$getAt = F2(
-	function (idx, xs) {
-		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
-			A2($elm$core$List$drop, idx, xs));
-	});
 var $pzp1997$assoc_list$AssocList$map = F2(
 	function (alter, _v0) {
 		var alist = _v0.a;
@@ -29544,6 +28838,12 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F7(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
+					var row5AsAgeInMonths = A2(
+						$elm$core$List$map,
+						function (date) {
+							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
+						},
+						record.ncda.universalIntervention.row5);
 					var row4AsAgeInMonths = A2(
 						$elm$core$List$map,
 						function (date) {
@@ -29573,7 +28873,10 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
+											var row5 = A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
 											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
+											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
 											var ageInMonthsForIndexCell = ageInMonths - gapInMonths;
 											var row1 = function () {
 												if ((ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24)) {
@@ -29618,31 +28921,6 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F7(
 																	$elm$core$Basics$GT) ? (accumValue.row1 + 1) : accumValue.row1;
 															},
 															closestDateForVaccination));
-												}
-											}();
-											var row2 = (A2(
-												$elm$core$List$any,
-												function (ageInMonthsOnAdministrationDate) {
-													var numberOfMonthsSinceAdministration = ageInMonthsOnAdministrationDate - gapInMonths;
-													return (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0);
-												},
-												row2AsAgeInMonths) && ((ageInMonthsForIndexCell >= 0) && (ageInMonthsForIndexCell < 24))) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row3 = (A2(
-												$elm$core$List$any,
-												function (ageInMonthsOnAdministrationDate) {
-													var numberOfMonthsSinceAdministration = ageInMonthsOnAdministrationDate - gapInMonths;
-													return (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0);
-												},
-												row3AsAgeInMonths) && ((ageInMonthsForIndexCell >= 0) && (ageInMonthsForIndexCell < 34))) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row5 = function () {
-												if ((ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24)) {
-													return accumValue.row5;
-												} else {
-													var status = A2(
-														$elm$core$Maybe$withDefault,
-														$author$project$Backend$Scoreboard$Model$NoECDStatus,
-														A2($elm_community$list_extra$List$Extra$getAt, ageInMonthsForIndexCell, record.ncda.universalIntervention.row5.ecdMilestonesStatusByMonth));
-													return _Utils_eq(status, $author$project$Backend$Scoreboard$Model$StatusOnTrack) ? (accumValue.row5 + 1) : accumValue.row5;
 												}
 											}();
 											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};

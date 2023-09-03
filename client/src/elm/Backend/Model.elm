@@ -283,7 +283,9 @@ type alias ComputedDashboard =
 type MsgIndexedDb
     = -- Messages which fetch various kinds of data.
       FetchAcuteIllnessEncounter AcuteIllnessEncounterId
+    | FetchAcuteIllnessEncounters (List AcuteIllnessEncounterId)
     | FetchAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId
+    | FetchAcuteIllnessEncountersForParticipants (List IndividualEncounterParticipantId)
     | FetchAcuteIllnessMeasurements AcuteIllnessEncounterId
     | FetchChildMeasurements PersonId
     | FetchChildrenMeasurements (List PersonId)
@@ -308,7 +310,10 @@ type MsgIndexedDb
     | FetchFollowUpMeasurements HealthCenterId
     | FetchFollowUpParticipants (List PersonId)
     | FetchHealthCenters
+    | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
+    | FetchIndividualEncounterParticipants (List IndividualEncounterParticipantId)
     | FetchIndividualEncounterParticipantsForPerson PersonId
+    | FetchIndividualEncounterParticipantsForPeople (List PersonId)
     | FetchMotherMeasurements PersonId
     | FetchMothersMeasurements (List PersonId)
     | FetchNutritionEncounter NutritionEncounterId
@@ -316,6 +321,7 @@ type MsgIndexedDb
     | FetchNutritionMeasurements NutritionEncounterId
     | FetchHomeVisitEncounter HomeVisitEncounterId
     | FetchHomeVisitEncountersForParticipant IndividualEncounterParticipantId
+    | FetchHomeVisitEncountersForParticipants (List IndividualEncounterParticipantId)
     | FetchHomeVisitMeasurements HomeVisitEncounterId
     | FetchWellChildEncounter WellChildEncounterId
     | FetchWellChildEncountersForParticipant IndividualEncounterParticipantId
@@ -329,9 +335,10 @@ type MsgIndexedDb
     | FetchPeople (List PersonId)
     | FetchPerson PersonId
     | FetchPrenatalEncounter PrenatalEncounterId
+    | FetchPrenatalEncounters (List PrenatalEncounterId)
     | FetchPrenatalEncountersForParticipant IndividualEncounterParticipantId
+    | FetchPrenatalEncountersForParticipants (List IndividualEncounterParticipantId)
     | FetchPrenatalMeasurements PrenatalEncounterId
-    | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
     | FetchResilienceMessagesForNurse NurseId
     | FetchResilienceSurveysForNurse NurseId
@@ -345,7 +352,9 @@ type MsgIndexedDb
     | FetchPregnancyByNewborn PersonId
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
+    | HandleFetchedAcuteIllnessEncounters (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
+    | HandleFetchedAcuteIllnessEncountersForParticipants (WebData (Dict IndividualEncounterParticipantId (Dict AcuteIllnessEncounterId AcuteIllnessEncounter)))
     | HandleFetchedAcuteIllnessMeasurements AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStatsRaw))
@@ -360,7 +369,10 @@ type MsgIndexedDb
     | HandleFetchedFollowUpMeasurements HealthCenterId (WebData FollowUpMeasurements)
     | HandleFetchFollowUpParticipants (WebData (Dict PersonId Person))
     | HandleFetchedHealthCenters (WebData (Dict HealthCenterId HealthCenter))
+    | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
+    | HandleFetchedIndividualEncounterParticipants (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
+    | HandleFetchedIndividualEncounterParticipantsForPeople (WebData (Dict PersonId (Dict IndividualEncounterParticipantId IndividualEncounterParticipant)))
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedMothersMeasurements (WebData (Dict PersonId MotherMeasurementList))
     | HandleFetchedNutritionEncounter NutritionEncounterId (WebData NutritionEncounter)
@@ -368,6 +380,7 @@ type MsgIndexedDb
     | HandleFetchedNutritionMeasurements NutritionEncounterId (WebData NutritionMeasurements)
     | HandleFetchedHomeVisitEncounter HomeVisitEncounterId (WebData HomeVisitEncounter)
     | HandleFetchedHomeVisitEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
+    | HandleFetchedHomeVisitEncountersForParticipants (WebData (Dict IndividualEncounterParticipantId (Dict HomeVisitEncounterId HomeVisitEncounter)))
     | HandleFetchedHomeVisitMeasurements HomeVisitEncounterId (WebData HomeVisitMeasurements)
     | HandleFetchedWellChildEncounter WellChildEncounterId (WebData WellChildEncounter)
     | HandleFetchedWellChildEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
@@ -381,9 +394,10 @@ type MsgIndexedDb
     | HandleFetchedPerson PersonId (WebData Person)
     | HandleFetchPeople (WebData (Dict PersonId Person))
     | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)
+    | HandleFetchedPrenatalEncounters (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     | HandleFetchedPrenatalEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
+    | HandleFetchedPrenatalEncountersForParticipants (WebData (Dict IndividualEncounterParticipantId (Dict PrenatalEncounterId PrenatalEncounter)))
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
-    | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
     | HandleFetchedResilienceMessagesForNurse NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
     | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))

@@ -18,7 +18,6 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMM
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllness.Activity.Types exposing (NextStepsTask(..))

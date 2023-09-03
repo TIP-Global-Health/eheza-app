@@ -351,6 +351,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function handleChanges() {
     watchdog('debug', 'Processing sync upload request');
+    $stopper = time();
     $request = $this->getRequest();
     $this->validateDbVersion($request['db_version']);
     $handlersForTypes = $this->allEntities();
@@ -502,8 +503,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     $user = $account->name;
+    $stopper = time() - $stopper;
     $total = count($request['changes']);
-    watchdog('debug', "Sync upload by $user with $total changes was successful");
+    watchdog('debug', "[$stopper sec] Sync upload by $user with $total changes was successful");
 
     return [];
   }

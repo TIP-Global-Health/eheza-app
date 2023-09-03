@@ -4490,8 +4490,16 @@ viewSelectInput language labelTransId formValue valueTransId valueToStringFunc v
     ]
 
 
-fromNCDAValue : Maybe NCDAValue -> NCDAForm msg
+fromNCDAValue : Maybe NCDAValue -> NCDAForm
 fromNCDAValue saved =
+    let
+        ancVisitsDates =
+            Maybe.map .ancVisitsDates saved
+
+        updateANCVisits =
+            Maybe.map (EverySet.isEmpty >> not)
+                ancVisitsDates
+    in
     { step = Nothing
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
     , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
@@ -4508,6 +4516,11 @@ fromNCDAValue saved =
     , childGotDiarrhea = Maybe.map (.signs >> EverySet.member ChildGotDiarrhea) saved
     , childReceivesFBF = Maybe.map (.signs >> EverySet.member ChildReceivesFBF) saved
     , childTakingFBF = Maybe.map (.signs >> EverySet.member ChildTakingFBF) saved
+    , childReceivesVitaminA = Maybe.map (.signs >> EverySet.member ChildReceivesVitaminA) saved
+    , childTakingVitaminA = Maybe.map (.signs >> EverySet.member ChildTakingVitaminA) saved
+    , childReceivesDewormer = Maybe.map (.signs >> EverySet.member ChildReceivesDewormer) saved
+    , childTakingDewormer = Maybe.map (.signs >> EverySet.member ChildTakingDewormer) saved
+    , childReceivesECD = Maybe.map (.signs >> EverySet.member ChildReceivesECD) saved
     , childWithAcuteMalnutrition = Maybe.map (.signs >> EverySet.member ChildWithAcuteMalnutrition) saved
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
@@ -4521,26 +4534,24 @@ fromNCDAValue saved =
     , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
-    , updateANCVisits = Nothing
-    , ancVisitsViewMode = ANCVisitsInitialMode
-    , ancVisitsDates = Maybe.map .ancVisitsDates saved
-    , ancVisitUpdateDate = Nothing
-    , dateSelectorPopupState = Nothing
+    , updateANCVisits = updateANCVisits
+    , ancVisitsDates = ancVisitsDates
     }
 
 
-ncdaFormWithDefault : NCDAForm msg -> Maybe NCDAValue -> NCDAForm msg
+ncdaFormWithDefault : NCDAForm -> Maybe NCDAValue -> NCDAForm
 ncdaFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
+                let
+                    updateANCVisits =
+                        EverySet.isEmpty value.ancVisitsDates |> not
+                in
                 { step = form.step
-                , updateANCVisits = or form.updateANCVisits (Just False)
-                , ancVisitsViewMode = form.ancVisitsViewMode
+                , updateANCVisits = or form.updateANCVisits (Just updateANCVisits)
                 , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
-                , ancVisitUpdateDate = form.ancVisitUpdateDate
-                , dateSelectorPopupState = form.dateSelectorPopupState
                 , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
                 , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
                 , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
@@ -4556,6 +4567,11 @@ ncdaFormWithDefault form saved =
                 , childGotDiarrhea = or form.childGotDiarrhea (EverySet.member ChildGotDiarrhea value.signs |> Just)
                 , childReceivesFBF = or form.childReceivesFBF (EverySet.member ChildReceivesFBF value.signs |> Just)
                 , childTakingFBF = or form.childTakingFBF (EverySet.member ChildTakingFBF value.signs |> Just)
+                , childReceivesVitaminA = or form.childReceivesVitaminA (EverySet.member ChildReceivesVitaminA value.signs |> Just)
+                , childTakingVitaminA = or form.childTakingVitaminA (EverySet.member ChildTakingVitaminA value.signs |> Just)
+                , childReceivesDewormer = or form.childReceivesDewormer (EverySet.member ChildReceivesDewormer value.signs |> Just)
+                , childTakingDewormer = or form.childTakingDewormer (EverySet.member ChildTakingDewormer value.signs |> Just)
+                , childReceivesECD = or form.childReceivesECD (EverySet.member ChildReceivesECD value.signs |> Just)
                 , childWithAcuteMalnutrition = or form.childWithAcuteMalnutrition (EverySet.member ChildWithAcuteMalnutrition value.signs |> Just)
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
@@ -4573,13 +4589,13 @@ ncdaFormWithDefault form saved =
             )
 
 
-toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm msg -> Maybe NCDAValue
+toNCDAValueWithDefault : Maybe NCDAValue -> NCDAForm -> Maybe NCDAValue
 toNCDAValueWithDefault saved form =
     ncdaFormWithDefault form saved
         |> toNCDAValue
 
 
-toNCDAValue : NCDAForm msg -> Maybe NCDAValue
+toNCDAValue : NCDAForm -> Maybe NCDAValue
 toNCDAValue form =
     let
         signs =
@@ -4598,6 +4614,11 @@ toNCDAValue form =
             , ifNullableTrue ChildGotDiarrhea form.childGotDiarrhea
             , ifNullableTrue ChildReceivesFBF form.childReceivesFBF
             , ifNullableTrue ChildTakingFBF form.childTakingFBF
+            , ifNullableTrue ChildReceivesVitaminA form.childReceivesVitaminA
+            , ifNullableTrue ChildTakingVitaminA form.childTakingVitaminA
+            , ifNullableTrue ChildReceivesDewormer form.childReceivesDewormer
+            , ifNullableTrue ChildTakingDewormer form.childTakingDewormer
+            , ifNullableTrue ChildReceivesECD form.childReceivesECD
             , ifNullableTrue ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition
             , ifNullableTrue ChildWithDisability form.childWithDisability
             , ifNullableTrue OngeraMNP form.ongeraMNP
@@ -4920,29 +4941,34 @@ isTestResultValid =
            Maybe.withDefault True
 
 
-resolveChildANCEncountersDates : PersonId -> ModelIndexedDb -> EverySet NominalDate
-resolveChildANCEncountersDates childId db =
+resolveChildANCPregnancyData : PersonId -> ModelIndexedDb -> ( Maybe NominalDate, EverySet NominalDate )
+resolveChildANCPregnancyData childId db =
     Dict.get childId db.pregnancyByNewborn
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.Extra.join
-        |> Maybe.andThen
-            (\( participantId, _ ) ->
-                Dict.get participantId db.prenatalEncountersByParticipant
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map
-                        (Dict.values
-                            >> List.filterMap
-                                (\encounter ->
-                                    if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
-                                        Just encounter.startDate
+        |> Maybe.map
+            (\( participantId, participant ) ->
+                let
+                    encountersDates =
+                        Dict.get participantId db.prenatalEncountersByParticipant
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map
+                                (Dict.values
+                                    >> List.filterMap
+                                        (\encounter ->
+                                            if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
+                                                Just encounter.startDate
 
-                                    else
-                                        Nothing
+                                            else
+                                                Nothing
+                                        )
+                                    >> EverySet.fromList
                                 )
-                            >> EverySet.fromList
-                        )
+                            |> Maybe.withDefault EverySet.empty
+                in
+                ( participant.eddDate, encountersDates )
             )
-        |> Maybe.withDefault EverySet.empty
+        |> Maybe.withDefault ( Nothing, EverySet.empty )
 
 
 childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool
@@ -5762,17 +5788,7 @@ generateVaccinationProgressDictsForWellChild assembled db =
                         |> List.head
                         |> Maybe.map Tuple.first
             in
-            Maybe.map
-                (\participantId ->
-                    Backend.Measurement.Utils.generatePreviousMeasurements
-                        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
-                        .childScoreboardMeasurements
-                        Nothing
-                        participantId
-                        db
-                        |> getPreviousMeasurements
-                        |> generateVaccinationProgressForChildScoreboard
-                )
+            Maybe.map (generateVaccinationProgressDictByChildScoreboard db)
                 individualChildScoreboardParticipantId
                 |> Maybe.withDefault Dict.empty
 
@@ -5791,6 +5807,18 @@ generateVaccinationProgressDictsForWellChild assembled db =
         vaccinationProgress
         vaccinationProgressByChildScoreboard
     )
+
+
+generateVaccinationProgressDictByChildScoreboard : ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
+generateVaccinationProgressDictByChildScoreboard db participantId =
+    Backend.Measurement.Utils.generatePreviousMeasurements
+        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
+        .childScoreboardMeasurements
+        Nothing
+        participantId
+        db
+        |> getPreviousMeasurements
+        |> generateVaccinationProgressForChildScoreboard
 
 
 generateVaccinationProgressForWellChild : Person -> List WellChildMeasurements -> VaccinationProgressDict
