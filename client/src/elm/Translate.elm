@@ -11055,26 +11055,31 @@ translationSet trans =
                 ChildReceivesVitaminA ->
                     { english = "Did the child receive Vitamin A in the last six months"
                     , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cya vitamini A"
+                    , kirundi = Nothing
                     }
 
                 ChildTakingVitaminA ->
                     { english = "Is the Vitamin A being consumed"
                     , kinyarwanda = Just "Vitamini yayifashe neza"
+                    , kirundi = Nothing
                     }
 
                 ChildReceivesDewormer ->
                     { english = "Did the child receive deworming medication in the last six months"
                     , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cy’inzoka"
+                    , kirundi = Nothing
                     }
 
                 ChildTakingDewormer ->
                     { english = "Is the deworming medication being consumed"
                     , kinyarwanda = Just "Ikinini cy'inzoka yagifashe neza"
+                    , kirundi = Nothing
                     }
 
                 ChildReceivesECD ->
                     { english = "Do you sing lullabies, poems, and read books to your child, or play games with your child"
                     , kinyarwanda = Just "Uririmbira umwana ibihozo, n'imivugo, ukamusomera ibitabo mukanakina"
+                    , kirundi = Nothing
                     }
 
                 NoNCDASigns ->
