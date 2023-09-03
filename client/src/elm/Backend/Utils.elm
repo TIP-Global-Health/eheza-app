@@ -7,6 +7,7 @@ import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
         , ChildMeasurementList
+        , ChildScoreboardMeasurements
         , FollowUpMeasurements
         , HomeVisitMeasurements
         , MotherMeasurementList
@@ -136,6 +137,16 @@ mapNCDMeasurements id func model =
     case id of
         Just encounterId ->
             { model | ncdMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.ncdMeasurements }
+
+        Nothing ->
+            model
+
+
+mapChildScoreboardMeasurements : Maybe ChildScoreboardEncounterId -> (ChildScoreboardMeasurements -> ChildScoreboardMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapChildScoreboardMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | childScoreboardMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.childScoreboardMeasurements }
 
         Nothing ->
             model

@@ -7,8 +7,7 @@ import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrine
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (..)
-import Backend.NCDEncounter.Utils exposing (getNCDEncountersForParticipant)
-import Backend.NutritionEncounter.Utils exposing (sortByStartDateDesc)
+import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
 import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -35,6 +34,7 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
+import Utils.NominalDate exposing (sortByStartDateDesc)
 
 
 generateAssembledData : NCDEncounterId -> ModelIndexedDb -> WebData AssembledData

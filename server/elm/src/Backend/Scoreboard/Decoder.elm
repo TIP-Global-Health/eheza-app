@@ -46,6 +46,7 @@ decodePatientData : NominalDate -> Decoder PatientData
 decodePatientData currentDate =
     succeed PatientData
         |> required "birth_date" decodeYYYYMMDD
+        |> required "edd_date" decodeYYYYMMDD
         |> optional "low_birth_weight" (maybe bool) Nothing
         |> optional "nutrition" (decodeNutritionCriterionsData currentDate) emptyNutritionCriterionsData
         |> optional "ncda" (decodeNCDAData currentDate) emptyNCDAData
@@ -136,17 +137,17 @@ sainitzeCriterionBySeverities currentDate data =
 decodeNCDAData : NominalDate -> Decoder NCDAData
 decodeNCDAData currentDate =
     succeed NCDAData
-        |> optional "pane1" decodeANCNewbornData emptyANCNewbornData
+        |> optional "pane1" (decodeANCNewbornData currentDate) emptyANCNewbornData
         |> optional "pane2" (decodeUniversalInterventionData currentDate) emptyUniversalInterventionData
         |> optional "pane3" (decodeNutritionBehaviorData currentDate) emptyNutritionBehaviorData
         |> optional "pane4" (decodeTargetedInterventionsData currentDate) emptyTargetedInterventionsData
         |> optional "pane5" (decodeInfrastructureEnvironmentWashData currentDate) emptyInfrastructureEnvironmentWashData
 
 
-decodeANCNewbornData : Decoder ANCNewbornData
-decodeANCNewbornData =
+decodeANCNewbornData : NominalDate -> Decoder ANCNewbornData
+decodeANCNewbornData currentDate =
     succeed ANCNewbornData
-        |> optional "row1" bool False
+        |> optional "row1" (decodeMonthlyValues currentDate) []
         |> optional "row2" bool False
 
 
@@ -157,7 +158,7 @@ decodeUniversalInterventionData currentDate =
         |> optional "row2" (decodeMonthlyValues currentDate) []
         |> optional "row3" (decodeMonthlyValues currentDate) []
         |> optional "row4" (decodeMonthlyValues currentDate) []
-        |> optional "row5" (list decodeECDEncounterData |> map toInitialUniversalInterventionECDData) emptyUniversalInterventionECDData
+        |> optional "row5" (decodeMonthlyValues currentDate) []
 
 
 decodeVaccinationProgressDict : Decoder VaccinationProgressDict
@@ -171,180 +172,6 @@ decodeVaccinationProgressDict =
         |> required "ipv" decodeUniqueDates
         |> required "mr" decodeUniqueDates
         |> map rawVaccinationDataToVaccinationProgressDict
-
-
-toInitialUniversalInterventionECDData : List ECDEncounterData -> UniversalInterventionECDData
-toInitialUniversalInterventionECDData encountersData =
-    UniversalInterventionECDData encountersData []
-
-
-decodeECDEncounterData : Decoder ECDEncounterData
-decodeECDEncounterData =
-    succeed ECDEncounterData
-        |> required "date" decodeYYYYMMDD
-        |> optional "warning" decodeECDWarning NoECDMilstoneWarning
-        |> optional "signs" (list decodeECDSign) [ NoECDSigns ]
-
-
-decodeECDWarning : Decoder ECDWarning
-decodeECDWarning =
-    string
-        |> andThen
-            (\warning ->
-                case warning of
-                    "warning-ecd-milestone-behind" ->
-                        succeed WarningECDMilestoneBehind
-
-                    "warning-ecd-milestone-refer-to-specialist" ->
-                        succeed WarningECDMilestoneReferToSpecialist
-
-                    "no-ecd-milstone-warning" ->
-                        succeed NoECDMilstoneWarning
-
-                    _ ->
-                        fail <|
-                            warning
-                                ++ " is not a recognized ECDWarning"
-            )
-
-
-decodeECDSign : Decoder ECDSign
-decodeECDSign =
-    string
-        |> andThen
-            (\sign ->
-                case sign of
-                    "follow-mothers-eyes" ->
-                        succeed FollowMothersEyes
-
-                    "move-arms-and-legs" ->
-                        succeed MoveArmsAndLegs
-
-                    "raise-hands-up" ->
-                        succeed RaiseHandsUp
-
-                    "smile" ->
-                        succeed Smile
-
-                    "roll-sideways" ->
-                        succeed RollSideways
-
-                    "bring-hands-to-mouth" ->
-                        succeed BringHandsToMouth
-
-                    "hold-head-without-support" ->
-                        succeed HoldHeadWithoutSupport
-
-                    "hold-and-shake-toys" ->
-                        succeed HoldAndShakeToys
-
-                    "react-to-sudden-sounds" ->
-                        succeed ReactToSuddenSounds
-
-                    "use-consonant-sounds" ->
-                        succeed UseConsonantSounds
-
-                    "respond-to-sound-with-sound" ->
-                        succeed RespondToSoundWithSound
-
-                    "turn-head-when-called" ->
-                        succeed TurnHeadWhenCalled
-
-                    "sit-without-support" ->
-                        succeed SitWithoutSupport
-
-                    "smile-back" ->
-                        succeed SmileBack
-
-                    "roll-tummy-to-back" ->
-                        succeed RollTummyToBack
-
-                    "reach-for-toys" ->
-                        succeed ReachForToys
-
-                    "use-simple-gestures" ->
-                        succeed UseSimpleGestures
-
-                    "stand-on-their-own" ->
-                        succeed StandOnTheirOwn
-
-                    "copy-during-play" ->
-                        succeed CopyDuringPlay
-
-                    "say-mama-dada" ->
-                        succeed SayMamaDada
-
-                    "can-hold-small-objects" ->
-                        succeed CanHoldSmallObjects
-
-                    "looks-when-pointed-at" ->
-                        succeed LooksWhenPointedAt
-
-                    "use-single-words" ->
-                        succeed UseSingleWords
-
-                    "walk-without-help" ->
-                        succeed WalkWithoutHelp
-
-                    "play-pretend" ->
-                        succeed PlayPretend
-
-                    "point-to-things-of-interest" ->
-                        succeed PointToThingsOfInterest
-
-                    "use-short-phrases" ->
-                        succeed UseShortPhrases
-
-                    "interested-in-other-children" ->
-                        succeed InterestedInOtherChildren
-
-                    "follow-simple-instructions" ->
-                        succeed FollowSimpleInstructions
-
-                    "kick-ball" ->
-                        succeed KickBall
-
-                    "point-at-named-objects" ->
-                        succeed PointAtNamedObjects
-
-                    "dress-themselves" ->
-                        succeed DressThemselves
-
-                    "wash-hands-go-to-toiled" ->
-                        succeed WashHandsGoToToiled
-
-                    "knows-colors-and-numbers" ->
-                        succeed KnowsColorsAndNumbers
-
-                    "use-medium-phrases" ->
-                        succeed UseMediumPhrases
-
-                    "play-make-believe" ->
-                        succeed PlayMakeBelieve
-
-                    "follow-three-step-instructions" ->
-                        succeed FollowThreeStepInstructions
-
-                    "stand-on-one-foot-five-seconds" ->
-                        succeed StandOnOneFootFiveSeconds
-
-                    "use-long-phrases" ->
-                        succeed UseLongPhrases
-
-                    "share-with-other-children" ->
-                        succeed ShareWithOtherChildren
-
-                    "count-to-ten" ->
-                        succeed CountToTen
-
-                    "none" ->
-                        succeed NoECDSigns
-
-                    _ ->
-                        fail <|
-                            sign
-                                ++ " is not a recognized ECDSign"
-            )
 
 
 decodeUniqueDates : Decoder (EverySet NominalDate)
@@ -381,7 +208,7 @@ rawVaccinationDataToVaccinationProgressDict data =
 decodeNutritionBehaviorData : NominalDate -> Decoder NutritionBehaviorData
 decodeNutritionBehaviorData currentDate =
     succeed NutritionBehaviorData
-        |> optional "row1" (decodeMonthlyValues currentDate) []
+        |> optional "row1" bool False
         |> optional "row2" (decodeMonthlyValues currentDate) []
         |> optional "row3" (decodeMonthlyValues currentDate) []
         |> optional "row4" (decodeMonthlyValues currentDate) []

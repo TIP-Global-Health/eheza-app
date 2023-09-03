@@ -4,13 +4,13 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (StockCorrectionReason(..), StockManagementMeasurements, StockSupplier(..), StockUpdate, StockUpdateType(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortByDate)
 import Backend.StockUpdate.Model exposing (..)
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import RemoteData exposing (RemoteData(..))
+import Utils.NominalDate exposing (sortByDate)
 
 
 generateStockManagementData :

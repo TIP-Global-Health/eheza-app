@@ -8,6 +8,7 @@ module SyncManager.Decoder exposing
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Decoder
+import Backend.ChildScoreboardEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
@@ -479,6 +480,51 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeFbf
                             BackendAuthorityChildFbf
+
+                    "child_scoreboard_encounter" ->
+                        doDecode
+                            Backend.ChildScoreboardEncounter.Decoder.decodeChildScoreboardEncounter
+                            BackendAuthorityChildScoreboardEncounter
+
+                    "child_scoreboard_bcg_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardBCGImmunisation
+                            BackendAuthorityChildScoreboardBCGImmunisation
+
+                    "child_scoreboard_dtp_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardDTPImmunisation
+                            BackendAuthorityChildScoreboardDTPImmunisation
+
+                    "child_scoreboard_ipv_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardIPVImmunisation
+                            BackendAuthorityChildScoreboardIPVImmunisation
+
+                    "child_scoreboard_mr_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardMRImmunisation
+                            BackendAuthorityChildScoreboardMRImmunisation
+
+                    "child_scoreboard_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardNCDA
+                            BackendAuthorityChildScoreboardNCDA
+
+                    "child_scoreboard_opv_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardOPVImmunisation
+                            BackendAuthorityChildScoreboardOPVImmunisation
+
+                    "child_scoreboard_pcv13_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardPCV13Immunisation
+                            BackendAuthorityChildScoreboardPCV13Immunisation
+
+                    "child_scoreboard_rotarix_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardRotarixImmunisation
+                            BackendAuthorityChildScoreboardRotarixImmunisation
 
                     "clinic" ->
                         doDecode

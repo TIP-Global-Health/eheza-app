@@ -6,7 +6,6 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortByDate, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
@@ -48,7 +47,8 @@ import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportIni
 import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (spinner, thumbnailImage, viewModal)
+import Utils.Html exposing (spinner, thumbnailImage)
+import Utils.NominalDate exposing (sortByDate, sortTuplesByDateDesc)
 import ZScore.Model
 
 
@@ -577,14 +577,8 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
             ( familyPlanning.dateMeasured, familyPlanning.value )
 
         prenatalEncountersIds =
-            List.map
-                (\participantId ->
-                    Dict.get participantId db.prenatalEncountersByParticipant
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.keys
-                )
+            List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
                 prenatalParticipantsIds
-                |> Maybe.Extra.values
                 |> List.concat
     in
     div [ class "pane family-planning" ]

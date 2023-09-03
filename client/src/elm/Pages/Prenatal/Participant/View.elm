@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
+import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Backend.PrenatalEncounter.Model
     exposing
         ( PrenatalEncounter
@@ -29,6 +29,7 @@ import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -104,15 +105,9 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
             activePregnancyData
                 |> Maybe.map
                     (Tuple.first
-                        >> (\sessionId ->
-                                Dict.get sessionId db.prenatalEncountersByParticipant
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map
-                                        (Dict.toList
-                                            >> -- Sort DESC
-                                               List.sortWith sortEncounterTuplesDesc
-                                        )
-                                    |> RemoteData.withDefault []
+                        >> (getPrenatalEncountersForParticipant db
+                                >> -- Sort DESC
+                                   List.sortWith sortEncounterTuplesDesc
                            )
                     )
                 |> Maybe.withDefault []

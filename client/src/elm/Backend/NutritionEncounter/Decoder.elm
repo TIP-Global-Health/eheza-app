@@ -1,7 +1,6 @@
 module Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 
 import Backend.NutritionEncounter.Model exposing (..)
-import Backend.NutritionEncounter.Utils exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)

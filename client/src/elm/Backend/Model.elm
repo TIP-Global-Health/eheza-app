@@ -19,6 +19,7 @@ in the UI.
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Clinic.Model exposing (Clinic, ClinicType)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
@@ -89,6 +90,7 @@ type alias ModelIndexedDb =
     , homeVisitEncounterRequests : Dict HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Model
     , wellChildEncounterRequests : Dict WellChildEncounterId Backend.WellChildEncounter.Model.Model
     , ncdEncounterRequests : Dict NCDEncounterId Backend.NCDEncounter.Model.Model
+    , childScoreboardEncounterRequests : Dict ChildScoreboardEncounterId Backend.ChildScoreboardEncounter.Model.Model
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
     , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
@@ -117,6 +119,7 @@ type alias ModelIndexedDb =
     , homeVisitEncounters : Dict HomeVisitEncounterId (WebData HomeVisitEncounter)
     , wellChildEncounters : Dict WellChildEncounterId (WebData WellChildEncounter)
     , ncdEncounters : Dict NCDEncounterId (WebData NCDEncounter)
+    , childScoreboardEncounters : Dict ChildScoreboardEncounterId (WebData ChildScoreboardEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
 
@@ -128,6 +131,7 @@ type alias ModelIndexedDb =
     , homeVisitEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict HomeVisitEncounterId HomeVisitEncounter))
     , wellChildEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
     , ncdEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))
+    , childScoreboardEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict ChildScoreboardEncounterId ChildScoreboardEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
     , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
@@ -135,8 +139,10 @@ type alias ModelIndexedDb =
     , homeVisitMeasurements : Dict HomeVisitEncounterId (WebData HomeVisitMeasurements)
     , wellChildMeasurements : Dict WellChildEncounterId (WebData WellChildMeasurements)
     , ncdMeasurements : Dict NCDEncounterId (WebData NCDMeasurements)
+    , childScoreboardMeasurements : Dict ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
     , stockManagementMeasurements : Dict HealthCenterId (WebData StockManagementMeasurements)
     , stockManagementData : Dict HealthCenterId (WebData StockManagementData)
+    , pregnancyByNewborn : Dict PersonId (WebData (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )))
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -157,6 +163,7 @@ type alias ModelIndexedDb =
     , postHomeVisitEncounter : Dict IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
     , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
     , postNCDEncounter : Dict IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
+    , postChildScoreboardEncounter : Dict IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
 
     -- Dashboard Statistics.
     , computedDashboards : Dict HealthCenterId ComputedDashboard
@@ -200,8 +207,12 @@ emptyModelIndexedDb =
     , ncdEncounters = Dict.empty
     , ncdEncountersByParticipant = Dict.empty
     , ncdMeasurements = Dict.empty
+    , childScoreboardMeasurements = Dict.empty
     , stockManagementMeasurements = Dict.empty
     , stockManagementData = Dict.empty
+    , pregnancyByNewborn = Dict.empty
+    , childScoreboardEncounters = Dict.empty
+    , childScoreboardEncountersByParticipant = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
@@ -216,6 +227,7 @@ emptyModelIndexedDb =
     , postWellChildEncounter = Dict.empty
     , postAcuteIllnessEncounter = Dict.empty
     , postNCDEncounter = Dict.empty
+    , postChildScoreboardEncounter = Dict.empty
     , postRelationship = Dict.empty
     , postSession = NotAsked
     , prenatalEncounterRequests = Dict.empty
@@ -224,6 +236,7 @@ emptyModelIndexedDb =
     , homeVisitEncounterRequests = Dict.empty
     , wellChildEncounterRequests = Dict.empty
     , ncdEncounterRequests = Dict.empty
+    , childScoreboardEncounterRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualSessionRequests = Dict.empty
     , nurseRequests = Dict.empty
@@ -276,6 +289,9 @@ type MsgIndexedDb
     | FetchAcuteIllnessMeasurements AcuteIllnessEncounterId
     | FetchChildMeasurements PersonId
     | FetchChildrenMeasurements (List PersonId)
+    | FetchChildScoreboardEncounter ChildScoreboardEncounterId
+    | FetchChildScoreboardEncountersForParticipant IndividualEncounterParticipantId
+    | FetchChildScoreboardMeasurements ChildScoreboardEncounterId
     | FetchClinics
     | FetchComputedDashboard HealthCenterId
       -- Request to generate assembled daya needed to display Dashboards
@@ -333,6 +349,7 @@ type MsgIndexedDb
     | MarkForRecalculationStockManagementData HealthCenterId
     | FetchVillages
     | FetchTraceContact AcuteIllnessTraceContactId
+    | FetchPregnancyByNewborn PersonId
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     | HandleFetchedAcuteIllnessEncounters (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
@@ -342,6 +359,9 @@ type MsgIndexedDb
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStatsRaw))
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
+    | HandleFetchedChildScoreboardEncounter ChildScoreboardEncounterId (WebData ChildScoreboardEncounter)
+    | HandleFetchedChildScoreboardEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict ChildScoreboardEncounterId ChildScoreboardEncounter))
+    | HandleFetchedChildScoreboardMeasurements ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
@@ -386,6 +406,7 @@ type MsgIndexedDb
     | HandleFetchedStockManagementMeasurements HealthCenterId (WebData StockManagementMeasurements)
     | HandleFetchedVillages (WebData (Dict VillageId Village))
     | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
+    | HandleFetchedPregnancyByNewborn PersonId (WebData (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )))
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PatchPersonInitator PersonId Person
@@ -399,6 +420,7 @@ type MsgIndexedDb
     | PostHomeVisitEncounter HomeVisitEncounter
     | PostWellChildEncounter WellChildEncounter
     | PostNCDEncounter NCDEncounter
+    | PostChildScoreboardEncounter ChildScoreboardEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PatchPersonInitator PersonId (WebData Person)
@@ -412,6 +434,7 @@ type MsgIndexedDb
     | HandlePostedHomeVisitEncounter IndividualEncounterParticipantId (WebData ( HomeVisitEncounterId, HomeVisitEncounter ))
     | HandlePostedWellChildEncounter IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
     | HandlePostedNCDEncounter IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
+    | HandlePostedChildScoreboardEncounter IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,
@@ -426,6 +449,7 @@ type MsgIndexedDb
     | MsgHomeVisitEncounter HomeVisitEncounterId Backend.HomeVisitEncounter.Model.Msg
     | MsgWellChildEncounter WellChildEncounterId Backend.WellChildEncounter.Model.Msg
     | MsgNCDEncounter NCDEncounterId Backend.NCDEncounter.Model.Msg
+    | MsgChildScoreboardEncounter ChildScoreboardEncounterId Backend.ChildScoreboardEncounter.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | MsgNurse NurseId Backend.Nurse.Model.Msg
@@ -456,6 +480,15 @@ type Revision
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
+    | ChildScoreboardEncounterRevision ChildScoreboardEncounterId ChildScoreboardEncounter
+    | ChildScoreboardBCGImmunisationRevision ChildScoreboardBCGImmunisationId ChildScoreboardBCGImmunisation
+    | ChildScoreboardDTPImmunisationRevision ChildScoreboardDTPImmunisationId ChildScoreboardDTPImmunisation
+    | ChildScoreboardIPVImmunisationRevision ChildScoreboardIPVImmunisationId ChildScoreboardIPVImmunisation
+    | ChildScoreboardMRImmunisationRevision ChildScoreboardMRImmunisationId ChildScoreboardMRImmunisation
+    | ChildScoreboardNCDARevision ChildScoreboardNCDAId ChildScoreboardNCDA
+    | ChildScoreboardOPVImmunisationRevision ChildScoreboardOPVImmunisationId ChildScoreboardOPVImmunisation
+    | ChildScoreboardPCV13ImmunisationRevision ChildScoreboardPCV13ImmunisationId ChildScoreboardPCV13Immunisation
+    | ChildScoreboardRotarixImmunisationRevision ChildScoreboardRotarixImmunisationId ChildScoreboardRotarixImmunisation
     | ClinicRevision ClinicId Clinic
     | ContributingFactorsRevision ContributingFactorsId ContributingFactors
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam

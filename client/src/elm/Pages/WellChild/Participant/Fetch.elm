@@ -11,11 +11,6 @@ import RemoteData exposing (RemoteData(..))
 
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
-    let
-        individualParticipants =
-            Dict.get id db.individualParticipantsByPerson
-                |> Maybe.withDefault NotAsked
-    in
     [ FetchPerson id
     , FetchIndividualEncounterParticipantsForPerson id
     ]

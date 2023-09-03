@@ -22,6 +22,7 @@ type SelectedEntity
 
 type alias PatientData =
     { birthDate : NominalDate
+    , eddDate : NominalDate
     , lowBirthWeight : Maybe Bool
     , nutrition : NutritionCriterionsData
     , ncda : NCDAData
@@ -80,14 +81,14 @@ emptyNCDAData =
 
 
 type alias ANCNewbornData =
-    { row1 : Bool
+    { row1 : List NominalDate
     , row2 : Bool
     }
 
 
 emptyANCNewbornData : ANCNewbornData
 emptyANCNewbornData =
-    ANCNewbornData False False
+    ANCNewbornData [] False
 
 
 type alias UniversalInterventionData =
@@ -95,13 +96,13 @@ type alias UniversalInterventionData =
     , row2 : List NominalDate
     , row3 : List NominalDate
     , row4 : List NominalDate
-    , row5 : UniversalInterventionECDData
+    , row5 : List NominalDate
     }
 
 
 emptyUniversalInterventionData : UniversalInterventionData
 emptyUniversalInterventionData =
-    UniversalInterventionData Dict.empty [] [] [] emptyUniversalInterventionECDData
+    UniversalInterventionData Dict.empty [] [] [] []
 
 
 type alias VaccinationProgressDict =
@@ -137,106 +138,8 @@ type VaccineDose
     | VaccineDoseFifth
 
 
-type alias ECDEncounterData =
-    { date : NominalDate
-    , warning : ECDWarning
-    , signs : List ECDSign
-    }
-
-
-type ECDWarning
-    = WarningECDMilestoneBehind
-    | WarningECDMilestoneReferToSpecialist
-    | NoECDMilstoneWarning
-
-
-type ECDSign
-    = -- From 5 weeks.
-      FollowMothersEyes
-    | MoveArmsAndLegs
-      -- From 13 weeks.
-    | RaiseHandsUp
-    | Smile
-    | RollSideways
-      -- From 6 months (minors).
-    | BringHandsToMouth
-    | HoldHeadWithoutSupport
-    | HoldAndShakeToys
-    | ReactToSuddenSounds
-    | UseConsonantSounds
-      -- From 6 months (majors).
-    | RespondToSoundWithSound
-    | TurnHeadWhenCalled
-    | SitWithoutSupport
-    | SmileBack
-    | RollTummyToBack
-    | ReachForToys
-      -- From 15 months.
-    | UseSimpleGestures
-    | StandOnTheirOwn
-    | CopyDuringPlay
-    | SayMamaDada
-    | CanHoldSmallObjects
-      -- From 18 months.
-    | LooksWhenPointedAt
-    | UseSingleWords
-    | WalkWithoutHelp
-    | PlayPretend
-    | PointToThingsOfInterest
-      -- From 2 years.
-    | UseShortPhrases
-    | InterestedInOtherChildren
-    | FollowSimpleInstructions
-    | KickBall
-    | PointAtNamedObjects
-      -- From 3 years.
-    | DressThemselves
-    | WashHandsGoToToiled
-    | KnowsColorsAndNumbers
-    | UseMediumPhrases
-    | PlayMakeBelieve
-      -- From 4 years.
-    | FollowThreeStepInstructions
-    | StandOnOneFootFiveSeconds
-    | UseLongPhrases
-    | ShareWithOtherChildren
-    | CountToTen
-    | NoECDSigns
-
-
-type alias UniversalInterventionECDData =
-    { encountersData : List ECDEncounterData
-    , ecdMilestonesStatusByMonth : List ECDStatus
-    }
-
-
-emptyUniversalInterventionECDData : UniversalInterventionECDData
-emptyUniversalInterventionECDData =
-    UniversalInterventionECDData [] []
-
-
-type PediatricCareMilestone
-    = Milestone6Weeks
-    | Milestone14Weeks
-    | Milestone6Months
-    | Milestone9Months
-    | Milestone12Months
-    | Milestone15Months
-    | Milestone18Months
-    | Milestone2Years
-    | Milestone3Years
-    | Milestone4Years
-
-
-type ECDStatus
-    = StatusOnTrack
-    | StatusECDBehind
-    | StatusOffTrack
-    | NoECDStatus
-
-
 type alias NutritionBehaviorData =
-    { row1 : List NominalDate
+    { row1 : Bool
     , row2 : List NominalDate
     , row3 : List NominalDate
     , row4 : List NominalDate
@@ -245,7 +148,7 @@ type alias NutritionBehaviorData =
 
 emptyNutritionBehaviorData : NutritionBehaviorData
 emptyNutritionBehaviorData =
-    NutritionBehaviorData [] [] [] []
+    NutritionBehaviorData False [] [] []
 
 
 type alias TargetedInterventionsData =
@@ -279,4 +182,3 @@ emptyInfrastructureEnvironmentWashData =
 
 type Msg
     = SetData Value
-    | CalculateECD

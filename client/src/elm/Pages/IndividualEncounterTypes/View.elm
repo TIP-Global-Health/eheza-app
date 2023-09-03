@@ -60,6 +60,7 @@ viewContent language currentDate healthCenterId isChw model =
                 , encounterButton AntenatalEncounter
                 , encounterButton NutritionEncounter
                 , encounterButton WellChildEncounter
+                , encounterButton ChildScoreboardEncounter
                 ]
 
             else

@@ -15,15 +15,13 @@ fetch id db =
     let
         participantId =
             Dict.get id db.wellChildEncounters
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .participant
 
         maybePersonId =
-            participantId
-                |> Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+            Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
+                participantId
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .person
     in
     Maybe.Extra.values

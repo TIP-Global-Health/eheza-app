@@ -60,10 +60,20 @@ isPersonAFertileWoman currentDate person =
             |> Maybe.withDefault False
 
 
+isChildUnderAgeOf2 : NominalDate -> Person -> Bool
+isChildUnderAgeOf2 =
+    isChildUnderAgeOf 2
+
+
 isChildUnderAgeOf5 : NominalDate -> Person -> Bool
-isChildUnderAgeOf5 currentDate person =
+isChildUnderAgeOf5 =
+    isChildUnderAgeOf 5
+
+
+isChildUnderAgeOf : Int -> NominalDate -> Person -> Bool
+isChildUnderAgeOf years currentDate person =
     ageInYears currentDate person
-        |> Maybe.map (\age -> age < 5)
+        |> Maybe.map (\age -> age < years)
         |> Maybe.withDefault False
 
 
@@ -168,6 +178,9 @@ initiatorFromUrlFragment s =
 
         "ncd" ->
             IndividualEncounterOrigin NCDEncounter |> Just
+
+        "child-scoreboard" ->
+            IndividualEncounterOrigin ChildScoreboardEncounter |> Just
 
         _ ->
             if String.startsWith "session-" s then

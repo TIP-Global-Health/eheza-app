@@ -3,6 +3,8 @@ module Backend.Measurement.Decoder exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Person.Decoder exposing (decodeGender)
@@ -53,6 +55,11 @@ decodeWellChildMeasurement =
 decodeNCDMeasurement : Decoder value -> Decoder (Measurement NCDEncounterId value)
 decodeNCDMeasurement =
     decodeMeasurement "ncd_encounter"
+
+
+decodeChildScoreboardMeasurement : Decoder value -> Decoder (Measurement ChildScoreboardEncounterId value)
+decodeChildScoreboardMeasurement =
+    decodeMeasurement "child_scoreboard_encounter"
 
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
@@ -267,6 +274,19 @@ decodeNCDMeasurements =
         |> optional "ncd_symptom_review" (decodeHead decodeNCDSymptomReview) Nothing
         |> optional "ncd_urine_dipstick_test" (decodeHead decodeNCDUrineDipstickTest) Nothing
         |> optional "ncd_vitals" (decodeHead decodeNCDVitals) Nothing
+
+
+decodeChildScoreboardMeasurements : Decoder ChildScoreboardMeasurements
+decodeChildScoreboardMeasurements =
+    succeed ChildScoreboardMeasurements
+        |> optional "child_scoreboard_ncda" (decodeHead decodeChildScoreboardNCDA) Nothing
+        |> optional "child_scoreboard_bcg_iz" (decodeHead decodeChildScoreboardBCGImmunisation) Nothing
+        |> optional "child_scoreboard_dtp_iz" (decodeHead decodeChildScoreboardDTPImmunisation) Nothing
+        |> optional "child_scoreboard_ipv_iz" (decodeHead decodeChildScoreboardIPVImmunisation) Nothing
+        |> optional "child_scoreboard_mr_iz" (decodeHead decodeChildScoreboardMRImmunisation) Nothing
+        |> optional "child_scoreboard_opv_iz" (decodeHead decodeChildScoreboardOPVImmunisation) Nothing
+        |> optional "child_scoreboard_pcv13_iz" (decodeHead decodeChildScoreboardPCV13Immunisation) Nothing
+        |> optional "child_scoreboard_rotarix_iz" (decodeHead decodeChildScoreboardRotarixImmunisation) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -5131,6 +5151,7 @@ decodeNCDAValue =
     succeed NCDAValue
         |> required "ncda_signs" (decodeEverySet decodeNCDASign)
         |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> required "anc_visits_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
 
 
 decodeNCDASign : Decoder NCDASign
@@ -5157,6 +5178,11 @@ decodeNutritionNCDA =
 decodeWellChildNCDA : Decoder WellChildNCDA
 decodeWellChildNCDA =
     decodeWellChildMeasurement decodeNCDAValue
+
+
+decodeChildScoreboardNCDA : Decoder ChildScoreboardNCDA
+decodeChildScoreboardNCDA =
+    decodeChildScoreboardMeasurement decodeNCDAValue
 
 
 decodeNCDLipidPanelTest : Decoder NCDLipidPanelTest
@@ -5198,3 +5224,49 @@ decodeHbA1cTestValue =
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "hba1c_result" (nullable decodeFloat) Nothing
+
+
+decodePregnancyByNewborn : Decoder (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+decodePregnancyByNewborn =
+    oneOf
+        [ at [ "individual_participant" ] (decodeHead decodeIndividualEncounterParticipant)
+
+        -- Seems there're no individual participants for the pregnancy, so
+        -- we can determine that pregnancy was not tracked on E-Heza.
+        , succeed Nothing
+        ]
+
+
+decodeChildScoreboardBCGImmunisation : Decoder ChildScoreboardBCGImmunisation
+decodeChildScoreboardBCGImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardDTPImmunisation : Decoder ChildScoreboardDTPImmunisation
+decodeChildScoreboardDTPImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardIPVImmunisation : Decoder ChildScoreboardIPVImmunisation
+decodeChildScoreboardIPVImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardMRImmunisation : Decoder ChildScoreboardMRImmunisation
+decodeChildScoreboardMRImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardOPVImmunisation : Decoder ChildScoreboardOPVImmunisation
+decodeChildScoreboardOPVImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardPCV13Immunisation : Decoder ChildScoreboardPCV13Immunisation
+decodeChildScoreboardPCV13Immunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardRotarixImmunisation : Decoder ChildScoreboardRotarixImmunisation
+decodeChildScoreboardRotarixImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue

@@ -21,7 +21,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
+import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant)
 import Backend.Person.Model
 import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -50,6 +50,7 @@ import RemoteData exposing (RemoteData(..))
 import SyncManager.Model
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, viewModal)
+import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -358,14 +359,9 @@ generateNutritionFollowUpEntryData language limitDate db personId item =
         lastHomeVisitEncounter =
             resolveIndividualParticipantForPerson personId HomeVisitEncounter db
                 |> Maybe.map
-                    (\participantId ->
-                        Dict.get participantId db.homeVisitEncountersByParticipant
-                            |> Maybe.andThen RemoteData.toMaybe
-                            |> Maybe.map
-                                (Dict.values
-                                    >> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
-                                )
-                            |> Maybe.withDefault []
+                    (getHomeVisitEncountersForParticipant db
+                        >> List.map Tuple.second
+                        >> List.filter (\encounter -> Date.compare encounter.startDate limitDate == LT)
                     )
                 |> Maybe.withDefault []
                 -- Sort DESC

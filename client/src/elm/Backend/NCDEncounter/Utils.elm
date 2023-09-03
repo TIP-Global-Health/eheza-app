@@ -18,14 +18,6 @@ import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Translate exposing (Language)
 
 
-getNCDEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NCDEncounterId, NCDEncounter )
-getNCDEncountersForParticipant db participantId =
-    Dict.get participantId db.ncdEncountersByParticipant
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.withDefault []
-
-
 progressReportInitiatorFromUrlFragment : String -> Maybe NCDProgressReportInitiator
 progressReportInitiatorFromUrlFragment s =
     if String.startsWith "encounter-page-" s then

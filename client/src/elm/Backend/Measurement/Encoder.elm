@@ -1109,6 +1109,11 @@ encodeNCDMeasurement =
     encodeMeasurement "ncd_encounter"
 
 
+encodeChildScoreboardMeasurement : (value -> List ( String, Value )) -> ChildScoreboardMeasurement value -> List ( String, Value )
+encodeChildScoreboardMeasurement =
+    encodeMeasurement "child_scoreboard_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
@@ -4774,6 +4779,11 @@ encodeWellChildNCDA =
     encodeWellChildMeasurement (encodeNCDAValueWithType "well_child_ncda")
 
 
+encodeChildScoreboardNCDA : ChildScoreboardNCDA -> List ( String, Value )
+encodeChildScoreboardNCDA =
+    encodeChildScoreboardMeasurement (encodeNCDAValueWithType "child_scoreboard_ncda")
+
+
 encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
 encodeNCDAValueWithType type_ value =
     let
@@ -4783,6 +4793,7 @@ encodeNCDAValueWithType type_ value =
                 |> Maybe.withDefault []
     in
     [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
+    , ( "anc_visits_dates", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.ancVisitsDates )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
@@ -4866,3 +4877,38 @@ encodeHbA1cTestValue value =
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_hba1c_test" )
            ]
+
+
+encodeChildScoreboardBCGImmunisation : ChildScoreboardBCGImmunisation -> List ( String, Value )
+encodeChildScoreboardBCGImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_bcg_iz")
+
+
+encodeChildScoreboardDTPImmunisation : ChildScoreboardDTPImmunisation -> List ( String, Value )
+encodeChildScoreboardDTPImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_dtp_iz")
+
+
+encodeChildScoreboardIPVImmunisation : ChildScoreboardIPVImmunisation -> List ( String, Value )
+encodeChildScoreboardIPVImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_ipv_iz")
+
+
+encodeChildScoreboardMRImmunisation : ChildScoreboardMRImmunisation -> List ( String, Value )
+encodeChildScoreboardMRImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_mr_iz")
+
+
+encodeChildScoreboardOPVImmunisation : ChildScoreboardOPVImmunisation -> List ( String, Value )
+encodeChildScoreboardOPVImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_opv_iz")
+
+
+encodeChildScoreboardPCV13Immunisation : ChildScoreboardPCV13Immunisation -> List ( String, Value )
+encodeChildScoreboardPCV13Immunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_pcv13_iz")
+
+
+encodeChildScoreboardRotarixImmunisation : ChildScoreboardRotarixImmunisation -> List ( String, Value )
+encodeChildScoreboardRotarixImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_rotarix_iz")

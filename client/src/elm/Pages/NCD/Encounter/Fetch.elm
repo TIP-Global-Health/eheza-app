@@ -3,6 +3,7 @@ module Pages.NCD.Encounter.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
@@ -12,25 +13,16 @@ fetch id db =
     let
         participantId =
             Dict.get id db.ncdEncounters
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .participant
 
         personId =
             Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants) participantId
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .person
 
         encountersIds =
-            Maybe.map
-                (\participantId_ ->
-                    Dict.get participantId_ db.ncdEncountersByParticipant
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.map Dict.keys
-                        |> RemoteData.withDefault []
-                )
-                participantId
+            Maybe.map (getNCDEncountersForParticipant db >> List.map Tuple.first) participantId
                 |> Maybe.withDefault []
 
         -- We fetch measurements of all encounters.

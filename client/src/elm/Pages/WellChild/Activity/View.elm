@@ -10,7 +10,8 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
-        , resolvePreviousNCDAValuesForChild
+        , resolveNCDANeverFilled
+        , resolveNCDANotFilledAfterAgeOfSixMonths
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
@@ -28,7 +29,17 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (InvokationModule(..), NCDAData, PhotoForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Model
+    exposing
+        ( ImmunisationTask(..)
+        , InvokationModule(..)
+        , NCDAData
+        , PhotoForm
+        , VaccinationFormViewMode(..)
+        , VaccinationProgressDict
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
@@ -67,7 +78,7 @@ import Pages.Utils
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
-import Pages.WellChild.Encounter.Model exposing (AssembledData, VaccinationProgressDict)
+import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -211,12 +222,7 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewPhotoContent language currentDate assembled model.photoForm
 
         WellChildNCDA ->
-            let
-                newbornExamPregnancySummary =
-                    getNewbornExamPregnancySummary assembled.participant.person db
-            in
-            resolvePreviousNCDAValuesForChild currentDate assembled.participant.person db
-                |> viewNCDAContent language currentDate assembled model.ncdaData newbornExamPregnancySummary
+            viewNCDAContent language currentDate assembled model.ncdaData db
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -1237,7 +1243,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
     ]
 
 
-immunisationTasksCompletedFromTotal : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationData -> Pages.WellChild.Activity.Types.ImmunisationTask -> ( Int, Int )
+immunisationTasksCompletedFromTotal : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationData -> Measurement.Model.ImmunisationTask -> ( Int, Int )
 immunisationTasksCompletedFromTotal language currentDate isChw assembled data task =
     Maybe.map
         (\vaccineType ->
@@ -1409,10 +1415,11 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                         initialVaccinationDateByBirthDate birthDate
                             initialOpvAdministered
                             ( vaccineType, VaccineDoseFirst )
+                    , suggestDoseToday = True
                     }
 
                 initialOpvAdministeredByForm =
-                    wasInitialOpvAdministeredByVaccinationForm birthDate form
+                    wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
 
                 initialOpvAdministeredByProgress =
                     wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
@@ -2353,7 +2360,7 @@ resolveNextVisitDates : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -
 resolveNextVisitDates currentDate isChw assembled db form =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-            generateNextVisitDates currentDate isChw assembled db
+            generateNextVisitDates currentDate assembled db
     in
     ( Maybe.Extra.or form.immunisationDate nextDateForImmunisationVisit
     , Maybe.Extra.or form.pediatricVisitDate nextDateForPediatricVisit
@@ -2413,27 +2420,38 @@ viewNCDAContent :
     -> NominalDate
     -> AssembledData
     -> NCDAData
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> ModelIndexedDb
     -> List (Html Msg)
-viewNCDAContent language currentDate assembled data newbornExamPregnancySummary previousNCDAValues =
+viewNCDAContent language currentDate assembled data db =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
                 |> ncdaFormWithDefault data.form
 
-        saveMsg =
-            SaveNCDA assembled.participant.person assembled.measurements.ncda
+        personId =
+            assembled.participant.person
+
+        config =
+            { atHealthCenter = True
+            , showTasksTray = True
+            , behindOnVaccinations = Nothing
+            , pregnancySummary = getNewbornExamPregnancySummary personId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
+            , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
+            , setUpdateANCVisitsMsg = SetUpdateANCVisits
+            , toggleANCVisitDateMsg = ToggleANCVisitDate
+            , setBoolInputMsg = SetNCDABoolInput
+            , setBirthWeightMsg = SetBirthWeight
+            , setStepMsg = SetNCDAFormStep
+            , setHelperStateMsg = SetNCDAHelperState
+            , saveMsg = SaveNCDA personId assembled.measurements.ncda
+            }
     in
     Measurement.View.viewNCDAContent language
         currentDate
+        personId
         assembled.person
-        SetNCDABoolInput
-        SetBirthWeight
-        SetNCDAFormStep
-        saveMsg
-        SetNCDAHelperState
+        config
         data.helperState
         form
-        newbornExamPregnancySummary
-        previousNCDAValues
+        db

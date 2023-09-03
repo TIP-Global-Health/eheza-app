@@ -22,7 +22,8 @@ import Backend.NutritionEncounter.Utils
         ( calculateZScoreWeightForAge
         , getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
-        , resolvePreviousNCDAValuesForChild
+        , resolveNCDANeverFilled
+        , resolveNCDANotFilledAfterAgeOfSixMonths
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
@@ -192,7 +193,17 @@ translateNutritionAssement language assessment =
             text <| translate language <| Translate.NutritionAssessment assessment
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> NutritionEncounterId
+    -> NutritionActivity
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
 viewActivity language currentDate zscores id activity isChw assembled db model =
     let
         previousValuesSet =
@@ -215,12 +226,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewWeightContent language currentDate zscores assembled model.weightData previousValuesSet.weight
 
         NCDA ->
-            let
-                newbornExamPregnancySummary =
-                    getNewbornExamPregnancySummary assembled.participant.person db
-            in
-            resolvePreviousNCDAValuesForChild currentDate assembled.participant.person db
-                |> viewNCDAContent language currentDate id assembled db model.ncdaData newbornExamPregnancySummary
+            viewNCDAContent language currentDate id assembled model.ncdaData db
 
         NextSteps ->
             viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
@@ -679,32 +685,45 @@ viewNCDAContent :
     -> NominalDate
     -> NutritionEncounterId
     -> AssembledData
-    -> ModelIndexedDb
     -> NCDAData
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> ModelIndexedDb
     -> List (Html Msg)
-viewNCDAContent language currentDate id assembled db data newbornExamPregnancySummary previousNCDAValues =
+viewNCDAContent language currentDate id assembled data db =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
                 |> ncdaFormWithDefault data.form
 
+        personId =
+            assembled.participant.person
+
         saveMsg =
-            SaveNCDA assembled.participant.person assembled.measurements.ncda
+            SaveNCDA personId assembled.measurements.ncda
+
+        config =
+            { atHealthCenter = True
+            , showTasksTray = True
+            , behindOnVaccinations = Nothing
+            , pregnancySummary = getNewbornExamPregnancySummary personId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
+            , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
+            , setUpdateANCVisitsMsg = SetUpdateANCVisits
+            , toggleANCVisitDateMsg = ToggleANCVisitDate
+            , setBoolInputMsg = SetNCDABoolInput
+            , setBirthWeightMsg = SetBirthWeight
+            , setStepMsg = SetNCDAFormStep
+            , setHelperStateMsg = SetNCDAHelperState
+            , saveMsg = SaveNCDA personId assembled.measurements.ncda
+            }
     in
     Measurement.View.viewNCDAContent language
         currentDate
+        personId
         assembled.person
-        SetNCDABoolInput
-        SetBirthWeight
-        SetNCDAFormStep
-        saveMsg
-        SetNCDAHelperState
+        config
         data.helperState
         form
-        newbornExamPregnancySummary
-        previousNCDAValues
+        db
 
 
 viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)

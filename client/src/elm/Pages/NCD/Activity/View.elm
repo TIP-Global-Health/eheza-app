@@ -77,7 +77,6 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 

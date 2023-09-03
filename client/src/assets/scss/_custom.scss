@@ -2836,6 +2836,76 @@ input::placeholder {
   }
 }
 
+.icon-ncda-antenatal {
+  .active &:after {
+    background-image: url(#{$img-path}icon-antenatal-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-antenatal-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-antenatal-gray.svg);
+  }
+}
+
+.icon-ncda-universal-intervention {
+  .active &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-gray.svg);
+  }
+}
+
+.icon-ncda-nutrition-behavior {
+  .active &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-gray.svg);
+  }
+}
+
+.icon-ncda-targeted-intervention {
+  .active &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-gray.svg);
+  }
+}
+
+.icon-ncda-infrastructure-environment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-infrastructure-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-infrastructure-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-infrastructure-gray.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
