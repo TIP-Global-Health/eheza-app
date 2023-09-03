@@ -3149,13 +3149,13 @@ translationSet trans =
 
         AgeYearsWithSingleMonth years month ->
             { english = String.fromInt years ++ " years " ++ String.fromInt month ++ " month"
-            , kinyarwanda = Just <| " Imyaka " ++ String.fromInt years ++ " Ukwezi " ++ String.fromInt month
+            , kinyarwanda = Just <| "Imyaka " ++ String.fromInt years ++ " Ukwezi " ++ String.fromInt month
             , kirundi = Nothing
             }
 
         AgeYearsAndMonths years months ->
             { english = String.fromInt years ++ " years " ++ String.fromInt months ++ " months"
-            , kinyarwanda = Just <| " Imyaka " ++ String.fromInt years ++ " Amezi " ++ String.fromInt months
+            , kinyarwanda = Just <| "Imyaka " ++ String.fromInt years ++ " Amezi " ++ String.fromInt months
             , kirundi = Nothing
             }
 
@@ -3212,6 +3212,12 @@ translationSet trans =
         ANCEncountersNotRecordedQuestion ->
             { english = "Were there any ANC encounters that are not recorded above"
             , kinyarwanda = Just "Haba hari ipimishawa ry'inda ryakozwe bakaba batarabyanditse"
+            , kirundi = Nothing
+            }
+
+        ANCIndicateVisitsMonthsPhrase ->
+            { english = "Indicate the months of pregnancy in which a visit occured"
+            , kinyarwanda = Just "Hitamo amezi y'inda isuzuma ryakoreweho"
             , kirundi = Nothing
             }
 
