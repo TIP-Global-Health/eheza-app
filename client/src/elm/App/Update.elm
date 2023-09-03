@@ -236,6 +236,9 @@ update msg model =
             loggedInData
                 |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
                 |> Maybe.withDefault False
+
+        site =
+            model.syncManager.syncInfoGeneral.site
     in
     case msg of
         MsgIndexedDb subMsg ->
@@ -290,7 +293,14 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb data.createPersonPage
+                                    Pages.Person.Update.update currentDate
+                                        site
+                                        model.healthCenterId
+                                        model.villageId
+                                        isChw
+                                        subMsg
+                                        model.indexedDb
+                                        data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
@@ -321,8 +331,14 @@ update msg model =
                             let
                                 ( subModel, subCmd, appMsgs ) =
                                     Dict.get id data.editPersonPages
-                                        |> Maybe.withDefault Pages.Person.Model.emptyEditModel
-                                        |> Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb
+                                        |> Maybe.withDefault (Pages.Person.Model.emptyEditModel site)
+                                        |> Pages.Person.Update.update currentDate
+                                            site
+                                            model.healthCenterId
+                                            model.villageId
+                                            isChw
+                                            subMsg
+                                            model.indexedDb
                             in
                             ( { data | editPersonPages = Dict.insert id subModel data.editPersonPages }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson id) subCmd
@@ -581,7 +597,12 @@ update msg model =
                                     data.acuteIllnessActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.AcuteIllness.Activity.Model.emptyModel
-                                        |> Pages.AcuteIllness.Activity.Update.update currentDate model.healthCenterId id model.indexedDb subMsg
+                                        |> Pages.AcuteIllness.Activity.Update.update currentDate
+                                            site
+                                            model.healthCenterId
+                                            id
+                                            model.indexedDb
+                                            subMsg
                             in
                             ( { data | acuteIllnessActivityPages = Dict.insert ( id, activity ) subModel data.acuteIllnessActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity) subCmd
@@ -1125,7 +1146,7 @@ update msg model =
         SetLoggedIn nurse ->
             updateConfigured
                 (\configured ->
-                    ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
+                    ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel site model.villageId) nurse }
                     , Cmd.none
                     , [ Pages.PinCode.Model.SetNextNotification model.currentTime
                             |> MsgPagePinCode

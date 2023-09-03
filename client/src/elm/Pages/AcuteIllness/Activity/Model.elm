@@ -15,6 +15,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.Page exposing (Page)
+import SyncManager.Model exposing (Site)
 
 
 type Msg
@@ -483,9 +484,9 @@ type alias RegisterContactData =
     Backend.Person.Form.ContactForm
 
 
-emptyRegisterContactData : RegisterContactData
-emptyRegisterContactData =
-    Backend.Person.Form.emptyContactForm
+emptyRegisterContactData : Site -> RegisterContactData
+emptyRegisterContactData site =
+    Backend.Person.Form.emptyContactForm site
 
 
 

@@ -364,6 +364,7 @@ viewUserPage page deviceName site model configured =
                     CreatePersonPage relation initiator ->
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
+                            site
                             model.villageId
                             isChw
                             (CreatePerson relation)
@@ -430,10 +431,11 @@ viewUserPage page deviceName site model configured =
                         let
                             page_ =
                                 Dict.get id loggedInModel.editPersonPages
-                                    |> Maybe.withDefault Pages.Person.Model.emptyEditModel
+                                    |> Maybe.withDefault (Pages.Person.Model.emptyEditModel site)
                         in
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
+                            site
                             model.villageId
                             isChw
                             (EditPerson id)
@@ -656,7 +658,14 @@ viewUserPage page deviceName site model configured =
                                 Dict.get ( id, activity ) loggedInModel.acuteIllnessActivityPages
                                     |> Maybe.withDefault Pages.AcuteIllness.Activity.Model.emptyModel
                         in
-                        Pages.AcuteIllness.Activity.View.view model.language currentDate id isChw activity model.indexedDb page_
+                        Pages.AcuteIllness.Activity.View.view model.language
+                            currentDate
+                            site
+                            id
+                            isChw
+                            activity
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
                             |> flexPageWrapper model
 

@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm, validatePerson)
+import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm)
 import Backend.Person.Model
     exposing
         ( ExpectedAge(..)
@@ -58,9 +58,10 @@ import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
+import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoLocationDictToOptions, getGeoInfo)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -461,8 +462,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate maybeVillageId isChw operation initiator model db =
+viewCreateEditForm : Language -> NominalDate -> Site -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate site maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -491,7 +492,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             currentDate
 
         personForm =
-            applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
+            applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
@@ -1037,6 +1038,9 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
 
         village =
             Form.getFieldAsString Backend.Person.Form.village personForm
+
+        geoInfo =
+            getGeoInfo site
 
         viewProvince =
             let
