@@ -348,7 +348,7 @@ update language currentDate id db msg model =
                                   -- not set - that is when we're 3 month past EDD date.
                                   lmpToEDDDate lastMenstrualPeriodValue.date
                                     |> Backend.IndividualEncounterParticipant.Model.SetEddDate
-                                    |> Backend.Model.MsgIndividualSession prenatalParticipantId
+                                    |> Backend.Model.MsgIndividualEncounterParticipant prenatalParticipantId
                                     |> App.Model.MsgIndexedDb
                                 , PrenatalEncounterPage id |> UserPage |> App.Model.SetActivePage
                                 ]

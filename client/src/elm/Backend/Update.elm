@@ -2793,22 +2793,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , appMsgs
             )
 
-        MsgIndividualSession participantId subMsg ->
+        MsgIndividualEncounterParticipant participantId subMsg ->
             let
                 participant =
                     Dict.get participantId model.individualParticipants
                         |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
-                    Dict.get participantId model.individualSessionRequests
+                    Dict.get participantId model.individualEncounterParticipantRequests
                         |> Maybe.withDefault Backend.IndividualEncounterParticipant.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.IndividualEncounterParticipant.Update.update participantId participant currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.IndividualEncounterParticipant.Update.update currentDate participantId participant subMsg requests
             in
-            ( { model | individualSessionRequests = Dict.insert participantId subModel model.individualSessionRequests }
-            , Cmd.map (MsgIndividualSession participantId) subCmd
-            , []
+            ( { model | individualEncounterParticipantRequests = Dict.insert participantId subModel model.individualEncounterParticipantRequests }
+            , Cmd.map (MsgIndividualEncounterParticipant participantId) subCmd
+            , appMsgs
             )
 
         MsgSession sessionId subMsg ->
@@ -3136,7 +3136,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                     |> Maybe.map
                                                         (\encounter ->
                                                             [ Backend.IndividualEncounterParticipant.Model.SetNewborn personId
-                                                                |> MsgIndividualSession encounter.participant
+                                                                |> MsgIndividualEncounterParticipant encounter.participant
                                                             ]
                                                         )
                                                     |> Maybe.withDefault []
