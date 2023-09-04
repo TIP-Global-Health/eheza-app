@@ -2993,7 +2993,7 @@ translationSet trans =
 
         ANCEncountersNotRecordedQuestion ->
             { english = "Were there any ANC encounters that are not recorded above"
-            , kinyarwanda = Just "Haba hari ipimishawa ry'inda ryakozwe bakaba batarabyanditse"
+            , kinyarwanda = Just "Haba hari ipimwa ry'inda ryakozwe bakaba batarabyanditse"
             }
 
         ANCIndicateVisitsMonthsPhrase ->
@@ -9374,19 +9374,19 @@ translationSet trans =
 
         NCDAMealFrequency9to12 ->
             { english = "A child between 9 to 12 months: Feed him/her complementary foods 3-4 times a day."
-            , kinyarwanda = Just "Umwana w'amezi 9 kugeza ku 12, mugaburire ifashabere nibura inshuro 3 kugera kuri 4 ku munsi"
+            , kinyarwanda = Just "Umwana w'amezi 9 kugeza ku 12, mugaburire ifashabere nibura inshuro 3 kugera kuri 4 ku munsi."
             }
 
         NCDAMealFrequency12to24 ->
             { english = "A child between 12 to 24 months: Feed him/her complementary foods at least 5 times a day."
-            , kinyarwanda = Just "Umwana w'amezi 12 kugeza ku 24, mugaburire ifashabere nibura inshuro 5 ku munsi"
+            , kinyarwanda = Just "Umwana w'amezi 12 kugeza ku 24, mugaburire ifashabere nibura inshuro 5 ku munsi."
             }
 
         NCDASignCounseling sign ->
             case sign of
                 SupplementsDuringPregnancy ->
                     { english = "Provide the counseling to the mother on the consequences that may occur to the mother and the baby and refer the mother to the HC to receive the Iron/Folic Acid/MMS"
-                    , kinyarwanda = Just "Gira umubyeyi inama ku ngaruka mbi zaba ku mwana cyangwa umubyeyi igihe atafashe neza ibinini by'ubutare niba kibifata umwohereze ku kigo nderabuzima gufata ibinini"
+                    , kinyarwanda = Just "Gira umubyeyi inama ku ngaruka mbi zaba ku mwana cyangwa umubyeyi igihe atafashe neza ibinini by'ubutare niba akibifata umwohereze ku kigo nderabuzima gufata ibinini"
                     }
 
                 ChildBehindOnVaccination ->
@@ -9431,17 +9431,17 @@ translationSet trans =
 
                 ReceivingSupport ->
                     { english = "Provide counseling to the mother to take the child to the Health center so that they can get the support needed"
-                    , kinyarwanda = Just "Gira inama umubyeyi yo kujyana umwana ku kigo nderabuzima bagaha umwana ubufasha bukwiriye"
+                    , kinyarwanda = Just "Gira inama umubyeyi yo kujyana umwana ku kigo nderabuzima bamuhe ubufasha bukwiriye"
                     }
 
                 Backend.Measurement.Model.HasCleanWater ->
                     { english = "Provide counseling on how to prepare clean water like boiling it and using water purifier"
-                    , kinyarwanda = Just "Bagire inama y'uburyo bwo basukura amazi nko kuyateka no gukoresha Sur’eau"
+                    , kinyarwanda = Just "Bagire inama y'uburyo bwo gusukura amazi nko kuyateka no gukoresha Sur’eau"
                     }
 
                 Backend.Measurement.Model.HasHandwashingFacility ->
                     { english = "Provide counseling on the importance of handwashing facility, and tell them to buy it  and use it. If they don't have means advocate for them"
-                    , kinyarwanda = Just "Bagire inama y'akamaro ka kandira ukarabe, abayifite bayikoreshe. Abadafite ubushobozi bakorerwe ubuvugizi"
+                    , kinyarwanda = Just "Bagire inama y'akamaro ka kandagirukarabe, abayifite bayikoreshe. Abadafite ubushobozi bakorerwe ubuvugizi."
                     }
 
                 Backend.Measurement.Model.HasToilets ->
@@ -9521,12 +9521,12 @@ translationSet trans =
 
                 TakenSupplementsPerGuidance ->
                     { english = "Has she taken it as per guidance (CHW observed)"
-                    , kinyarwanda = Just "Yabifashe nkuko byagenwe (Umujyanamawubuzima abisuzume)"
+                    , kinyarwanda = Just "Yabifashe nkuko byagenwe (Umujyanama w'ubuzima abisuzume)"
                     }
 
                 ChildBehindOnVaccination ->
                     { english = "According to E-Heza the child is behind on vaccinations, is this correct"
-                    , kinyarwanda = Just "Urebeye muri sisiteme ya E-heza, umwana ntago afite inkingo zose zagenwe, ese ni byo"
+                    , kinyarwanda = Just "Urebeye muri sisiteme ya E-heza, umwana ntabwo afite inkingo zose zagenwe, ese ni byo"
                     }
 
                 Backend.Measurement.Model.OngeraMNP ->
@@ -9569,7 +9569,7 @@ translationSet trans =
 
                 ChildWithAcuteMalnutrition ->
                     { english = "Please check MUAC. Does the child have acute malnutrition"
-                    , kinyarwanda = Just "Pima ikizigira. Umwana afite imirire mibi ihutiyeho"
+                    , kinyarwanda = Just "Pima ikizigira cy'akaboko. Umwana afite imirire mibi ihutiyeho"
                     }
 
                 TreatedForAcuteMalnutrition ->
@@ -9614,7 +9614,7 @@ translationSet trans =
 
                 InsecticideTreatedBednets ->
                     { english = "Is the mother using the insecticide-treated bednets"
-                    , kinyarwanda = Just "Umubyei akoresha inzitiramubu iteye umuti"
+                    , kinyarwanda = Just "Umubyeyi akoresha inzitiramubu iteye umuti"
                     }
 
                 MealsAtRecommendedTimes ->
