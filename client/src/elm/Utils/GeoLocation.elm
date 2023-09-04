@@ -157,7 +157,7 @@ resolveGeoSructureLabelLevel2 site =
             Translate.District
 
         SiteBurundi ->
-            Translate.Province
+            Translate.Commune
 
         SiteUnknown ->
             Translate.EmptyString
@@ -170,7 +170,7 @@ resolveGeoSructureLabelLevel3 site =
             Translate.Sector
 
         SiteBurundi ->
-            Translate.Commune
+            Translate.Zone
 
         SiteUnknown ->
             Translate.EmptyString
