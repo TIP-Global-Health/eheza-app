@@ -169,7 +169,7 @@ emptyModel =
 
 type Msg
     = CloseWellChildEncounter
-    | HandleWellChildEncounterEdited (WebData ())
+    | HandleUpdatedWellChildEncounter (WebData ())
     | SetWellChildEncounterNote EncounterNote
     | SetWellChildEncounterWarning EncounterWarning
     | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue

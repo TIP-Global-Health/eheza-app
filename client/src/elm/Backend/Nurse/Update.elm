@@ -1,5 +1,7 @@
 module Backend.Nurse.Update exposing (update)
 
+import App.Model
+import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
@@ -12,7 +14,7 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (encodeEntityUuid, toCmd, withoutDecoder)
 
 
-update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
+update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg model =
     case msg of
         UpdateNurse nurseId nurse ->
@@ -21,13 +23,15 @@ update currentDate msg model =
         HandleUpdatedNurse data ->
             ( { model | updateNurse = data }
             , Cmd.none
+            , triggerRollbarOnFailure data
             )
 
 
-updateNurse : NominalDate -> NurseId -> Nurse -> Model -> ( Model, Cmd Msg )
+updateNurse : NominalDate -> NurseId -> Nurse -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 updateNurse currentDate nurseId nurse model =
     ( { model | updateNurse = Loading }
     , sw.patchFull nurseEndpoint nurseId nurse
         |> withoutDecoder
         |> toCmd (RemoteData.fromResult >> HandleUpdatedNurse)
+    , []
     )

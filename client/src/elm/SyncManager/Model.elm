@@ -243,6 +243,7 @@ type alias SyncInfoGeneral =
     , remainingToDownload : Int
     , deviceName : String
     , status : SyncInfoStatus
+    , rollbarToken : String
     }
 
 
@@ -253,6 +254,7 @@ type alias SyncInfoGeneralForPort =
     , remainingToDownload : Int
     , deviceName : String
     , status : String
+    , rollbarToken : String
     }
 
 
@@ -384,6 +386,7 @@ type alias DownloadSyncResponse a =
     { entities : List a
     , revisionCount : Int
     , deviceName : String
+    , rollbarToken : String
     }
 
 

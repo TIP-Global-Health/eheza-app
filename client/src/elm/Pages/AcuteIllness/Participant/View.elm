@@ -308,7 +308,7 @@ startIllnessActionMsg currentDate selectedHealthCenter personId isChw =
                 AcuteIllnessEncounterNurse
     in
     emptyIndividualEncounterParticipant currentDate personId Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter selectedHealthCenter
-        |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.AcuteIllnessData encounterType)
+        |> Backend.Model.PostIndividualEncounterParticipant (Backend.IndividualEncounterParticipant.Model.AcuteIllnessData encounterType)
         |> MsgBackend
 
 

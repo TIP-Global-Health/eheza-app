@@ -276,6 +276,11 @@ dbSync.version(20).stores({
     nodes: '&uuid,type,vid,status,[type+pin_code],[type+nurse]'
 });
 
+dbSync.version(21).stores({
+  errorsHash: '++localId, hash',
+  dbErrors: '++localId, error, isSynced'
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -334,7 +339,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 20;
+const dbVersion = 21;
 
 /**
  * Return saved info for General sync.
@@ -348,13 +353,11 @@ const getSyncInfoGeneral = function() {
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
     storageArr.remainingToUpload = parseInt(storageArr.remainingToUpload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
-    storageArr.deviceName = storageArr.deviceName;
-    storageArr.status = storageArr.status;
     return storageArr;
   }
 
   // No sync info saved yet.
-  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available'};
+  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '' };
 };
 
 /**
@@ -1238,7 +1241,7 @@ elmApp.ports.clearSignaturePad.subscribe(function() {
   signaturePad.clear();
 });
 
-elmApp.ports.storeSignature.subscribe(function(data) {
+elmApp.ports.storeSignature.subscribe(function() {
   if (signaturePad === undefined) {
     return;
   }
@@ -1330,6 +1333,98 @@ function reportSignaturePadResult(url) {
     element.dispatchEvent(event);
   }
 }
+
+
+// Rollbar.
+
+elmApp.ports.initRollbar.subscribe(function(data) {
+  // Generate rollbar config.
+  var _rollbarConfig = {
+      accessToken: data.token,
+      captureUncaught: true,
+      captureUnhandledRejections: true,
+      payload: {
+          environment: 'all',
+          client: {
+            javascript: {
+              code_version: '1.0',
+            }
+          },
+          person: {
+            id: data.device,
+          }
+      }
+  };
+
+  // Init rollbar.
+  rollbar.init(_rollbarConfig);
+
+  // Send unsynced items from dbErrors table.
+  (async () => {
+
+      let result = await dbSync
+          .dbErrors
+          .where('isSynced')
+          // IndexDB doesn't index Boolean, so we use an Int to indicate "false".
+          .equals(0)
+          .toArray();
+
+      if (!result[0]) {
+          // No items to sync.
+          return;
+      }
+
+      // Send all items.
+      let localIds = [];
+      result.forEach(function(row) {
+          rollbar.log(row.error);
+          localIds.push(row.localId);
+      })
+
+      // Mark that sent items were synced.
+      await dbSync
+          .dbErrors
+          .where('localId')
+          .anyOf(localIds)
+          .modify({'isSynced': 1});
+  })();
+
+});
+
+elmApp.ports.logByRollbar.subscribe(function(data) {
+
+  (async () => {
+
+      switch (data.source) {
+        case 'sw':
+        case 'sync':
+            let result = await dbSync
+                .errorsHash
+                .where('hash')
+                .equals(data.md5)
+                .limit(1)
+                .toArray();
+
+            if (result[0]) {
+              // Hash exists, indicating that this message was sent alredy.
+              return;
+            }
+
+            // Send rollbar message.
+            rollbar.log(data.message);
+
+            await dbSync.errorsHash.add({ hash: data.md5 });
+            break;
+
+        case 'db':
+            await dbSync.dbErrors.add({ error: data.message, isSynced: 0 });
+            break;
+      }
+
+  })();
+
+});
+
 
 /**
  * Wait for id to appear before invoking related functions.

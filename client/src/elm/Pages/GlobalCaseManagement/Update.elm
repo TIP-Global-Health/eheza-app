@@ -97,7 +97,7 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
         -- If not, create it.
         |> Maybe.withDefault
             [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> App.Model.MsgIndexedDb
             ]
 
