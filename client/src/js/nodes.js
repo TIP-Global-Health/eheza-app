@@ -291,14 +291,6 @@
                                                     return Promise.resolve(response);
                                                 });
                                             }).then(function (localId) {
-                                                // @todo: remove this
-                                                // var reject = new Response(body, {
-                                                //     status: 400,
-                                                //     statusText: 'Failed PATCH at changes table'
-                                                // });
-                                                //
-                                                // return Promise.resolve(reject);
-
                                                 return Promise.resolve(response);
                                             });
                                         });

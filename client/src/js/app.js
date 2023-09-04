@@ -1345,12 +1345,9 @@ elmApp.ports.initRollbar.subscribe(function(data) {
       captureUnhandledRejections: true,
       payload: {
           environment: 'all',
-          // context: 'rollbar/test'
           client: {
             javascript: {
               code_version: '1.0',
-              // source_map_enabled: true,
-              // guess_uncaught_frames: true
             }
           },
           person: {
