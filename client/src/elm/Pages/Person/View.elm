@@ -61,7 +61,7 @@ import Set
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoLocationDictToOptions, getGeoInfo)
+import Utils.GeoLocation exposing (..)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -1052,7 +1052,7 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                     isFormFieldSet district
             in
             viewSelectInput language
-                Translate.Province
+                (resolveGeoSructureLabelLevel1 site)
                 options
                 Backend.Person.Form.province
                 "ten"
@@ -1078,7 +1078,7 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                     isFormFieldSet sector
             in
             viewSelectInput language
-                Translate.District
+                (resolveGeoSructureLabelLevel2 site)
                 options
                 Backend.Person.Form.district
                 "ten"
@@ -1104,7 +1104,7 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                     isFormFieldSet cell
             in
             viewSelectInput language
-                Translate.Sector
+                (resolveGeoSructureLabelLevel3 site)
                 options
                 Backend.Person.Form.sector
                 "ten"
@@ -1130,7 +1130,7 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                     isFormFieldSet village
             in
             viewSelectInput language
-                Translate.Cell
+                (resolveGeoSructureLabelLevel4 site)
                 options
                 Backend.Person.Form.cell
                 "ten"
@@ -1169,7 +1169,7 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                            )
             in
             viewSelectInput language
-                Translate.Village
+                (resolveGeoSructureLabelLevel5 site)
                 options
                 Backend.Person.Form.village
                 "ten"

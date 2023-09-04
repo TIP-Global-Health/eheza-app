@@ -514,7 +514,10 @@ type TranslationId
     | ClinicalProgressReport
     | CloseAcuteIllnessLabel
     | CloseAndContinue
+    | Colline
+    | CollineSub
     | ColorAlertIndication ColorAlertIndication
+    | Commune
     | Completed
     | CompleteFacilityReferralForm ReferralFacility
     | Contacted114
@@ -1820,6 +1823,7 @@ type TranslationId
     | Yes
     | YouAreNotAnAdmin
     | YourGroupEncounterHasBeenSaved
+    | Zone
     | ZScoreHeadCircumferenceForAge
     | ZScoreHeightForAge
     | ZScoreMuacForAge
@@ -4231,6 +4235,18 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        Colline ->
+            { english = "Colline"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        CollineSub ->
+            { english = "Sub-Colline"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         ColorAlertIndication indication ->
             case indication of
                 ColorAlertRed ->
@@ -4250,6 +4266,12 @@ translationSet trans =
                     , kinyarwanda = Just "Icyatsi"
                     , kirundi = Nothing
                     }
+
+        Commune ->
+            { english = "Commune"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         Completed ->
             { english = "Completed"
@@ -22649,6 +22671,12 @@ translationSet trans =
 
         YourGroupEncounterHasBeenSaved ->
             { english = "Your Group Encounter has been saved."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Zone ->
+            { english = "Zone"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

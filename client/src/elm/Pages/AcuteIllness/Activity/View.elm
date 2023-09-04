@@ -84,7 +84,7 @@ import Set
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoLocationDictToOptions, getGeoInfo)
+import Utils.GeoLocation exposing (..)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -3473,7 +3473,7 @@ viewCreateContactForm language currentDate site db data =
                     isFormFieldSet district
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Province
+                (resolveGeoSructureLabelLevel1 site)
                 options
                 Backend.Person.Form.province
                 "ten"
@@ -3499,7 +3499,7 @@ viewCreateContactForm language currentDate site db data =
                     isFormFieldSet sector
             in
             Pages.Person.View.viewSelectInput language
-                Translate.District
+                (resolveGeoSructureLabelLevel2 site)
                 options
                 Backend.Person.Form.district
                 "ten"
@@ -3525,7 +3525,7 @@ viewCreateContactForm language currentDate site db data =
                     isFormFieldSet cell
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Sector
+                (resolveGeoSructureLabelLevel3 site)
                 options
                 Backend.Person.Form.sector
                 "ten"
@@ -3551,7 +3551,7 @@ viewCreateContactForm language currentDate site db data =
                     isFormFieldSet village
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Cell
+                (resolveGeoSructureLabelLevel4 site)
                 options
                 Backend.Person.Form.cell
                 "ten"
@@ -3574,7 +3574,7 @@ viewCreateContactForm language currentDate site db data =
                            )
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Village
+                (resolveGeoSructureLabelLevel5 site)
                 options
                 Backend.Person.Form.village
                 "ten"

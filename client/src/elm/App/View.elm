@@ -424,7 +424,12 @@ viewUserPage page deviceName site model configured =
                             |> flexPageWrapper model
 
                     DemographicsReportPage initiator prenatalEncounterId ->
-                        Pages.Prenatal.DemographicsReport.View.view model.language currentDate prenatalEncounterId initiator model.indexedDb
+                        Pages.Prenatal.DemographicsReport.View.view model.language
+                            currentDate
+                            site
+                            prenatalEncounterId
+                            initiator
+                            model.indexedDb
                             |> flexPageWrapper model
 
                     EditPersonPage id ->

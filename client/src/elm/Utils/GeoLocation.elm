@@ -1,16 +1,9 @@
-module Utils.GeoLocation exposing
-    ( GeoInfo
-    , ReverseGeoInfo
-    , filterGeoLocationDictByParent
-    , geoLocationDictToOptions
-    , getGeoInfo
-    , getGeoLocation
-    , getReverseGeoInfo
-    )
+module Utils.GeoLocation exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Restful.Endpoint exposing (EntityId, fromEntityId, toEntityId)
 import SyncManager.Model exposing (Site(..))
+import Translate exposing (TranslationId)
 
 
 {-| This is here to have a partially type-safe key for the Dict.
@@ -150,6 +143,63 @@ getGeoSectors site =
 
         _ ->
             Dict.empty
+
+
+resolveGeoSructureLabelLevel1 : Site -> TranslationId
+resolveGeoSructureLabelLevel1 site =
+    Translate.Province
+
+
+resolveGeoSructureLabelLevel2 : Site -> TranslationId
+resolveGeoSructureLabelLevel2 site =
+    case site of
+        SiteRwanda ->
+            Translate.District
+
+        SiteBurundi ->
+            Translate.Province
+
+        SiteUnknown ->
+            Translate.EmptyString
+
+
+resolveGeoSructureLabelLevel3 : Site -> TranslationId
+resolveGeoSructureLabelLevel3 site =
+    case site of
+        SiteRwanda ->
+            Translate.Sector
+
+        SiteBurundi ->
+            Translate.Commune
+
+        SiteUnknown ->
+            Translate.EmptyString
+
+
+resolveGeoSructureLabelLevel4 : Site -> TranslationId
+resolveGeoSructureLabelLevel4 site =
+    case site of
+        SiteRwanda ->
+            Translate.Cell
+
+        SiteBurundi ->
+            Translate.Colline
+
+        SiteUnknown ->
+            Translate.EmptyString
+
+
+resolveGeoSructureLabelLevel5 : Site -> TranslationId
+resolveGeoSructureLabelLevel5 site =
+    case site of
+        SiteRwanda ->
+            Translate.Village
+
+        SiteBurundi ->
+            Translate.CollineSub
+
+        SiteUnknown ->
+            Translate.EmptyString
 
 
 getGeoSectorsForRwanda : Dict GeoLocationId GeoLocation
