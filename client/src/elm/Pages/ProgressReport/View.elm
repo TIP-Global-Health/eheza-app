@@ -8,7 +8,6 @@ import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
-import SyncManager.Model exposing (Site(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -17,6 +16,7 @@ import Pages.ProgressReport.Model exposing (..)
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model

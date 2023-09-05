@@ -14,7 +14,6 @@ import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
-import SyncManager.Model exposing (Site(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -47,6 +46,7 @@ import Pages.Utils
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewPaneHeading, viewProgressReport)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage)
 import Utils.NominalDate exposing (sortByDate, sortTuplesByDateDesc)

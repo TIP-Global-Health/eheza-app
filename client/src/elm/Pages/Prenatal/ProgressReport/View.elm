@@ -52,7 +52,6 @@ import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
-import SyncManager.Model exposing (Site(..))
 import Date exposing (Interval(..), Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
@@ -105,6 +104,7 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.NominalDate exposing (sortByDateDesc, sortTuplesByDateDesc)
