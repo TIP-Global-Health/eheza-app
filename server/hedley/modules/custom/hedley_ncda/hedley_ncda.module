@@ -162,7 +162,8 @@ function hedley_ncda_aggregated_access() {
  *   The HTML markup for the Elm application.
  */
 function hedley_ncda_aggregated_callback_menu() {
-  return hedley_ncda_build_elm_app('menu', []);
+  $site = variable_get('hedley_general_site_name', '');
+  return hedley_ncda_build_elm_app('menu', ['site' => $site]);
 }
 
 /**

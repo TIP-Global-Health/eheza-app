@@ -19,7 +19,6 @@ import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
-import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 
 
 view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg

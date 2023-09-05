@@ -3,6 +3,8 @@ module Pages.Menu.View exposing (view)
 import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (fromEntityId, toEntityId)
+import Backend.Menu.Model exposing (MenuData)
+import Backend.Model exposing (ModelBackend)
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate)
@@ -13,12 +15,28 @@ import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Menu.Model exposing (..)
 import Pages.Utils exposing (emptySelectOption, viewActionButton, viewLabel)
 import Translate exposing (TranslationId, translate)
-import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
+import Utils.GeoLocation exposing (..)
 
 
-view : Language -> Model -> Html Msg
-view language model =
+view : Language -> ModelBackend -> Model -> Html Msg
+view language modelBackend model =
+    case modelBackend.menuData of
+        Just (Ok data) ->
+            viewMenu language data model
+
+        Just (Err err) ->
+            text <| Debug.toString err
+
+        Nothing ->
+            emptyNode
+
+
+viewMenu : Language -> MenuData -> Model -> Html Msg
+viewMenu language data model =
     let
+        geoInfo =
+            getGeoInfo data.site
+
         provinceInput =
             let
                 options =
@@ -35,7 +53,7 @@ view language model =
                         }
                     )
                 )
-                Translate.Province
+                (resolveGeoSructureLabelLevel1 data.site)
                 (isJust model.district)
 
         districtInput =
@@ -56,7 +74,7 @@ view language model =
                                 }
                             )
                         )
-                        Translate.District
+                        (resolveGeoSructureLabelLevel2 data.site)
                         (isJust model.sector)
                 )
                 model.province
@@ -80,7 +98,7 @@ view language model =
                                 }
                             )
                         )
-                        Translate.Sector
+                        (resolveGeoSructureLabelLevel3 data.site)
                         (isJust model.cell)
                 )
                 model.district
@@ -104,7 +122,7 @@ view language model =
                                 }
                             )
                         )
-                        Translate.Cell
+                        (resolveGeoSructureLabelLevel4 data.site)
                         (isJust model.village)
                 )
                 model.sector
@@ -128,7 +146,7 @@ view language model =
                                 }
                             )
                         )
-                        Translate.Village
+                        (resolveGeoSructureLabelLevel5 data.site)
                         False
                 )
                 model.cell

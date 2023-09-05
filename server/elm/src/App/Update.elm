@@ -8,6 +8,7 @@ import App.Fetch exposing (fetch)
 import App.Model exposing (..)
 import App.Types exposing (Language(..), Page(..))
 import App.Utils exposing (updateSubModel)
+import Backend.Menu.Model
 import Backend.Model
 import Backend.Scoreboard.Model
 import Backend.Update
@@ -33,7 +34,13 @@ init flags =
         modelWithAppData =
             case model.activePage of
                 Menu ->
-                    model
+                    update
+                        (Backend.Menu.Model.SetData flags.appData
+                            |> Backend.Model.MsgMenu
+                            |> MsgBackend
+                        )
+                        model
+                        |> Tuple.first
 
                 Scoreboard ->
                     update
