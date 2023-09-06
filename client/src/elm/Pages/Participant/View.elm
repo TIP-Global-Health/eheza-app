@@ -26,6 +26,7 @@ import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
@@ -250,6 +251,7 @@ viewMother :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> Bool
     -> PersonId
     -> ( SessionId, EditableSession )
@@ -257,13 +259,13 @@ viewMother :
     -> ModelIndexedDb
     -> Model MotherActivity
     -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewMother language currentDate zscores isChw motherId ( sessionId, session ) pages db model =
+viewMother language currentDate zscores site isChw motherId ( sessionId, session ) pages db model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessionId, session ) pages db model
+            viewFoundMother language currentDate zscores site isChw ( motherId, mother ) ( sessionId, session ) pages db model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -280,6 +282,7 @@ viewFoundMother :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> Bool
     -> ( PersonId, Person )
     -> ( SessionId, EditableSession )
@@ -287,10 +290,26 @@ viewFoundMother :
     -> ModelIndexedDb
     -> Model MotherActivity
     -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessionId, session ) pages db model =
+viewFoundMother language currentDate zscores site isChw ( motherId, mother ) ( sessionId, session ) pages db model =
     let
         break =
             br [] []
+
+        ubudeheForView =
+            if site == SiteRwanda then
+                [ showMaybe <|
+                    Maybe.map
+                        (\ubudehe ->
+                            p [ class "ubudehe-wrapper" ]
+                                [ label [] [ text <| translate language Translate.UbudeheLabel ++ ": " ]
+                                , span [] [ text <| translate language <| Translate.UbudeheNumber ubudehe ]
+                                ]
+                        )
+                        mother.ubudehe
+                ]
+
+            else
+                []
 
         childrenList =
             getChildren motherId session.offlineSession
@@ -364,8 +383,7 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                         [ div
                             [ class "ui image" ]
                             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-                        , div
-                            [ class "content" ]
+                        , div [ class "content" ] <|
                             [ h2
                                 [ class "ui header" ]
                                 [ text mother.name ]
@@ -378,18 +396,11 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                                             ]
                                     )
                                     mother.educationLevel
-                            , showMaybe <|
-                                Maybe.map
-                                    (\ubudehe ->
-                                        p [ class "ubudehe-wrapper" ]
-                                            [ label [] [ text <| translate language Translate.UbudeheLabel ++ ": " ]
-                                            , span [] [ text <| translate language <| Translate.UbudeheNumber ubudehe ]
-                                            ]
-                                    )
-                                    mother.ubudehe
-                            , p [] childrenList
-                            , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
                             ]
+                                ++ ubudeheForView
+                                ++ [ p [] childrenList
+                                   , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
+                                   ]
                         ]
                     ]
                     |> keyed "mother"
