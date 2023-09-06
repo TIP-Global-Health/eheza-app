@@ -828,7 +828,13 @@ viewUserPage page deviceName site model configured =
                                 Dict.get encounterId loggedInModel.childScoreboardReportPages
                                     |> Maybe.withDefault Pages.ChildScoreboard.Report.Model.emptyModel
                         in
-                        Pages.ChildScoreboard.Report.View.view model.language currentDate model.zscores encounterId model.indexedDb page_
+                        Pages.ChildScoreboard.Report.View.view model.language
+                            currentDate
+                            model.zscores
+                            site
+                            encounterId
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardReport encounterId)
                             |> flexPageWrapper model
 

@@ -104,7 +104,7 @@ import Pages.WellChild.ProgressReport.Model exposing (..)
 import Pages.WellChild.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
@@ -246,7 +246,7 @@ viewProgressReport language currentDate zscores site isChw initiator mandatoryNu
                         ( childId, child )
 
                 TabNCDAScoreboard ->
-                    viewNCDAScorecard language currentDate zscores ( childId, child ) db
+                    viewNCDAScorecard language currentDate zscores site ( childId, child ) db
 
         actions =
             if isNothing selectedComponents then
@@ -1623,10 +1623,11 @@ viewNCDAScorecard :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> ( PersonId, Person )
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAScorecard language currentDate zscores ( childId, child ) db =
+viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
     let
         reportData =
             assembleProgresReportData childId db
@@ -1677,7 +1678,7 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
                 )
                 |> Maybe.withDefault Dict.empty
     in
-    [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
+    [ viewChildIdentificationPane language currentDate site allNCDAQuestionnaires db ( childId, child )
     , viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires
     , viewUniversalInterventionsPane language
         currentDate
@@ -1712,11 +1713,12 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
 viewChildIdentificationPane :
     Language
     -> NominalDate
+    -> Site
     -> List ( NominalDate, NCDAValue )
     -> ModelIndexedDb
     -> ( PersonId, Person )
     -> Html any
-viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child ) =
+viewChildIdentificationPane language currentDate site allNCDAQuestionnaires db ( childId, child ) =
     let
         parentsIds =
             Dict.get childId db.relationshipsByPerson
@@ -1847,8 +1849,18 @@ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( chil
             viewEntry Translate.GenderLabel (translate language <| Translate.Gender child.gender)
 
         ubudeheEntry =
-            Maybe.map (Translate.UbudeheNumber >> translate language >> viewEntry Translate.UbudeheLabel) child.ubudehe
-                |> Maybe.withDefault emptyNode
+            if site == SiteRwanda then
+                Maybe.map
+                    (Translate.UbudeheNumber
+                        >> translate language
+                        >> viewEntry Translate.UbudeheLabel
+                        >> List.singleton
+                    )
+                    child.ubudehe
+                    |> Maybe.withDefault []
+
+            else
+                []
 
         viewEntry labelTransId content =
             p []
@@ -1866,7 +1878,7 @@ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( chil
                 ]
                     ++ bornUnderweighEntry
                     ++ birthDefectEntry
-                    ++ [ ubudeheEntry ]
+                    ++ ubudeheEntry
             , div [ class "column" ] <|
                 motherInfoEntry
                     ++ fatherInfoEntry
