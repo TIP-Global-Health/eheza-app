@@ -585,7 +585,7 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
   }
 
   // Ubudehe.
-  if (!in_array(strtolower($ubudehe), ['1', '2', '3', '4'])) {
+  if (!in_array(strtolower($ubudehe), ['1', '2', '3', '4', '0'])) {
     $errors[] = "Ubudehe: Invalid value - $ubudehe";
   }
 

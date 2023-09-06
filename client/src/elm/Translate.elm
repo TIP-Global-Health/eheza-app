@@ -21583,6 +21583,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                NoUbudehe ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         UndeterminedDiagnoses ->
             { english = "Undetermined Diagnoses"
             , kinyarwanda = Just "Uburwayi ntibusobanutse"

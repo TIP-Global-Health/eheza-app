@@ -662,6 +662,7 @@ function hedley_person_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        0 => 0,
         1 => 1,
         2 => 2,
         3 => 3,
