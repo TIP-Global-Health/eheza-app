@@ -71,10 +71,11 @@ class RoboFile extends Tasks {
       '.idea',
       '.pantheon',
       'sites/default',
-      'sites/all/vendor',
       'pantheon.yml',
       'pantheon.upstream.yml',
       'client',
+      'scalability-test',
+      'infrastructure_setup',
     ];
 
     $rsyncExcludeString = '--exclude=' . implode(' --exclude=', $rsyncExclude);
@@ -387,8 +388,11 @@ class RoboFile extends Tasks {
   /**
    * Generates the demographics report.
    */
-  public function reportDemographics() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php');
+  public function reportDemographics($limit_date = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php --limit_date=$limit_date");
   }
 
   /**
@@ -401,22 +405,41 @@ class RoboFile extends Tasks {
   /**
    * Generates the ANC report.
    */
-  public function reportAnc() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-report.php');
+  public function reportAnc($limit_date = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-report.php --limit_date=$limit_date");
   }
 
   /**
    * Generates the pregnancy report.
    */
-  public function reportPregnancy() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-closed-pregnancies-report.php');
+  public function reportPregnancy($limit_date = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-closed-pregnancies-report.php --limit_date=$limit_date");
   }
 
   /**
    * Generates the nutrition report.
+   *
+   * @param string $date
+   *   The date to generate the report for.
+   * @param string $district
+   *   The district to generate the report for.
    */
-  public function reportNutrition() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php');
+  public function reportNutrition($date = NULL, $district = NULL) {
+    $command = 'cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php';
+    if (!empty($district)) {
+      $command .= ' --district=' . escapeshellarg($district);
+    }
+    if (!empty($date)) {
+      $command .= ' --date=' . escapeshellarg($date);
+    }
+
+    $this->_exec($command);
   }
 
 }

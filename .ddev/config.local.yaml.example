@@ -1,3 +1,5 @@
+web_environment:
+  # - EHEZA_INFRA_REPO_REMOTE=git@github.com:organization/project.git
 hooks:
   post-import-db:
     # Sanitize email addresses
@@ -20,6 +22,9 @@ hooks:
     - exec: drush fra -y
     - exec: drush uli
   post-start:
+    - exec-host: ddev nvm install 10.3.0
+    - exec-host: ddev nvm alias default 10.3.0
+    - exec-host: ddev client-install
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
     # If DDEV creates server/www/, it is owned by root for some reasons,
     # so we have a placeholder .gitignore there, that ignores everything, but
@@ -29,6 +34,7 @@ hooks:
     - exec: drush site-install -y hedley install_configure_form.update_status_module='array(FALSE,FALSE)' --locale=en --account-name="admin" --account-pass="admin" --account-mail="admin@example.com" --db-url=mysql://db:db@db/db --uri="https://eheza-app.ddev.site:4443"
     - exec: drush en devel views_ui field_ui -y
     - exec: drush fra -y
+    - exec: composer update --lock -d sites/default/files/composer
     - exec: composer install -d sites/default/files/composer
     # Run migration
     - exec: drush en -y hedley_migrate

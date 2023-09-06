@@ -29,6 +29,8 @@ type CaseManagementFilter
     | FilterAntenatal
     | FilterNutrition
     | FilterContactsTrace
+    | FilterPrenatalLabs
+    | FilterNCDLabs
 
 
 type FollowUpDueOption
@@ -122,12 +124,35 @@ type alias FollowUpPrenatalData =
     }
 
 
-type alias ContactsTracingEntry =
+type alias ContactsTracingEntryData =
     { itemId : AcuteIllnessTraceContactId
     , personName : String
     , phoneNumber : String
     , reporterName : String
     , lastFollowUpDate : Maybe NominalDate
+    }
+
+
+type alias PrenatalLabsEntryData =
+    { personId : PersonId
+    , personName : String
+    , encounterId : PrenatalEncounterId
+    , state : LabsEntryState
+    , label : String
+    }
+
+
+type LabsEntryState
+    = LabsEntryPending
+    | LabsEntryClosingSoon
+
+
+type alias NCDLabsEntryData =
+    { personId : PersonId
+    , personName : String
+    , encounterId : NCDEncounterId
+    , state : LabsEntryState
+    , label : String
     }
 
 

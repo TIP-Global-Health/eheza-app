@@ -14,8 +14,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
-import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
-import Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
@@ -27,10 +27,10 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
+        , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
         )
-import Pages.WellChildEncounter.View exposing (thumbnailDimensions, viewPersonDetails)
 import RemoteData exposing (RemoteData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage, viewModal)
@@ -53,7 +53,7 @@ view language currentDate id db model =
                 traceContact
 
         personDetails =
-            Maybe.map (viewPersonDetails language currentDate)
+            Maybe.map (viewPersonDetailsExtended language currentDate)
                 tracePerson
                 |> Maybe.withDefault (viewContactDetails language currentDate traceContact)
 
@@ -118,6 +118,13 @@ viewContactDetails language currentDate traceContact =
         )
         traceContact
         |> Maybe.withDefault []
+
+
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 140
+    , height = 140
+    }
 
 
 viewTraceContactStep : Language -> NominalDate -> Model -> ContactTraceItem -> List (Html Msg)

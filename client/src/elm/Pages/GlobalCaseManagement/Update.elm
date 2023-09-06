@@ -11,7 +11,7 @@ import Backend.PrenatalEncounter.Model exposing (emptyPrenatalEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
-import Pages.PrenatalEncounter.Utils exposing (generatePostCreateDestination)
+import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -97,7 +97,7 @@ startFollowUpEncounterHomeVisit currentDate selectedHealthCenter db data =
         -- If not, create it.
         |> Maybe.withDefault
             [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
-                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> App.Model.MsgIndexedDb
             ]
 

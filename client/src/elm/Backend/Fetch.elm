@@ -163,10 +163,24 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPrenatalEncounters ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.prenatalEncounters)) ids
+
         FetchPrenatalEncountersForParticipant id ->
             Dict.get id model.prenatalEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchPrenatalEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.prenatalEncountersByParticipant)) ids
 
         FetchPrenatalMeasurements id ->
             Dict.get id model.prenatalMeasurements
@@ -193,10 +207,24 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchAcuteIllnessEncounters ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.acuteIllnessEncounters)) ids
+
         FetchAcuteIllnessEncountersForParticipant id ->
             Dict.get id model.acuteIllnessEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchAcuteIllnessEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.acuteIllnessEncountersByParticipant)) ids
 
         FetchAcuteIllnessMeasurements id ->
             Dict.get id model.acuteIllnessMeasurements
@@ -225,6 +253,13 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchHomeVisitEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.homeVisitEncountersByParticipant)) ids
+
         FetchHomeVisitMeasurements id ->
             Dict.get id model.homeVisitMeasurements
                 |> Maybe.withDefault NotAsked
@@ -245,15 +280,54 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchNCDEncounter id ->
+            Dict.get id model.ncdEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchNCDEncountersForParticipant id ->
+            Dict.get id model.ncdEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchNCDMeasurements id ->
+            Dict.get id model.ncdMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchStockManagementMeasurements id ->
+            Dict.get id model.stockManagementMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchStockManagementData id ->
+            Dict.get id model.stockManagementData
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchIndividualEncounterParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.individualParticipants)) ids
+
         FetchIndividualEncounterParticipantsForPerson id ->
             Dict.get id model.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchIndividualEncounterParticipantsForPeople ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.individualParticipantsByPerson)) ids
 
         FetchRelationshipsForPerson id ->
             Dict.get id model.relationshipsByPerson
@@ -272,6 +346,16 @@ shouldFetch currentTime model msg =
 
         FetchTraceContact id ->
             Dict.get id model.traceContacts
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchResilienceSurveysForNurse id ->
+            Dict.get id model.resilienceSurveysByNurse
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchResilienceMessagesForNurse id ->
+            Dict.get id model.resilienceMessagesByNurse
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -378,6 +462,21 @@ forget msg model =
         FetchWellChildMeasurements id ->
             { model | wellChildMeasurements = Dict.remove id model.wellChildMeasurements }
 
+        FetchNCDEncounter id ->
+            { model | ncdEncounters = Dict.remove id model.ncdEncounters }
+
+        FetchNCDEncountersForParticipant id ->
+            { model | ncdEncountersByParticipant = Dict.remove id model.ncdEncountersByParticipant }
+
+        FetchNCDMeasurements id ->
+            { model | ncdMeasurements = Dict.remove id model.ncdMeasurements }
+
+        FetchStockManagementMeasurements id ->
+            { model | stockManagementMeasurements = Dict.remove id model.stockManagementMeasurements }
+
+        FetchStockManagementData id ->
+            { model | stockManagementData = Dict.remove id model.stockManagementData }
+
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }
 
@@ -389,6 +488,12 @@ forget msg model =
 
         FetchSessionsByClinic clinicId ->
             { model | sessionsByClinic = Dict.remove clinicId model.sessionsByClinic }
+
+        FetchResilienceSurveysForNurse id ->
+            { model | resilienceSurveysByNurse = Dict.remove id model.resilienceSurveysByNurse }
+
+        FetchResilienceMessagesForNurse id ->
+            { model | resilienceMessagesByNurse = Dict.remove id model.resilienceMessagesByNurse }
 
         -- For other messages, we do nothing.
         _ ->

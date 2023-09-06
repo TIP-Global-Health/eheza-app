@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -68,6 +68,16 @@ formatDDMMYYYY =
 formatYYYYMMDD : NominalDate -> String
 formatYYYYMMDD date =
     Date.format "yyyy-MM-dd" date
+
+
+{-| Convert nominal date to a formatted string..
+
+    formatMMDDYYYY (date 2017 5 22) --> "22/05/17"
+
+-}
+formatDDMMYY : NominalDate -> String
+formatDDMMYY date =
+    Date.format "dd/MM/yy" date
 
 
 {-| Converts an `elm-lang/core` `Date` to a `NominalDate`.

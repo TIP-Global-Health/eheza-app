@@ -98,7 +98,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
   public function allEntities() {
     return array_merge(
       $this->entitiesForAllDevices(),
-      $this->entitiesForHealthCenters()
+      $this->entitiesForHealthCenters(),
+      HEDLEY_RESTFUL_FOR_UPLOAD
     );
   }
 
@@ -173,10 +174,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $return = [
       'base_revision' => $base,
-      // We temporary leave last_timestamp, until all
-      // clients update the APP, and do not expect to decode it.
-      'last_timestamp' => time(),
       'revision_count' => $count,
+      'rollbar_token' => variable_get('hedley_general_rollbar_token', ''),
     ];
 
     if (!empty($request['access_token'])) {
@@ -288,9 +287,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     return [
       'base_revision' => $base,
-      // We temporary leave last_timestamp, until all
-      // clients update the APP, and do not expect to decode it.
-      'last_timestamp' => time(),
       'revision_count' => $count,
       'batch' => $output,
     ];
@@ -318,24 +314,28 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $cached_hash = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
     if (empty($cached_hash)) {
-      // There's no cached data for health center - trigger statistics
-      // calculation by adding an AQ item.
-      hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_id, [
-        'health_center_nid' => $health_center_id,
-      ]);
+      // There's no cached data for health center - schedule statistics
+      // calculation.
+      hedley_stats_schedule_statistics_calculation_for_health_center($health_center_id);
+
       return $return;
     }
 
     $request = $this->getRequest();
     if (!isset($request['stats_cache_hash']) || $cached_hash !== $request['stats_cache_hash']) {
-      // Statistics hash does not match that of the server, which indicates
-      // that we need to send updated statistics to client.
-      // Note: we just want to pull existing data, without updating cache.
-      $return['batch'][] = hedley_stats_calculate_stats_for_health_center($health_center_id, $cached_hash);
+      // Health center statistics hash does not match that of the server, which
+      // indicates that we need to send updated statistics to client.
+      // So, we return what we have stored in cache, with updated hash
+      // for health center statistics.
+      $stats = hedley_stats_pull_stats_for_health_center($health_center_id, $cached_hash);
+
+      // If statistics were successfully pulled, we return them.
+      // Otherwise, returning an empty result.
+      if (!empty($stats)) {
+        $return['batch'][] = $stats;
+      }
     }
 
-    // If we got this far, we know that statistics on client are
-    // up to date - return empty response.
     return $return;
   }
 
@@ -351,6 +351,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function handleChanges() {
     watchdog('debug', 'Processing sync upload request');
+    $stopper = time();
     $request = $this->getRequest();
     $this->validateDbVersion($request['db_version']);
     $handlersForTypes = $this->allEntities();
@@ -382,6 +383,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'pediatric_visit_date',
           'contact_date',
           'last_follow_up_date',
+          'execution_date',
+          'resilience_start_date',
+          'expiration_date',
         ];
 
         $multiDateFields = [
@@ -407,23 +411,24 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
               $data[$key][] = strtotime($date);
             }
           }
-          elseif ($key == 'nutrition_signs' && empty($data[$key])) {
-            // Temporary workaround to resolve sync issue on production.
-            // To be removed once fix is deployed, and devices update APP.
-            $data[$key] = ['none'];
+          elseif (in_array($key, ['label', 'first_name', 'second_name'])) {
+            // Verify there are only plain characters at patient name.
+            $data[$key] = trim(preg_replace('/[^a-zA-Z0-9_ -]/s', '', $value));
           }
           else {
             $data[$key] = $value;
           }
         }
 
-        // Some properties cannot be set. For `type`, that's fine. For
-        // `status`, we'll need to figure out how to unpublish things through
-        // this route.
+        // Some properties cannot be set.
+        // Therefore, we filter them out for request to succeed.
         $ignored = [
           'type',
           'status',
           'shard',
+          // Node label produces notice when set through Restful, so
+          // instead of passing it, it's generated by backend logic.
+          'label',
           // When creating a session, we provide clinic_type, so it is
           // recorded on client. We don't actually need to pass this through,
           // so, we filter it out here.
@@ -433,11 +438,17 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           // Also, most content types do not have 'field_deleted, and
           // passing 'deleted' indicator will cause error.
           'deleted',
+          // Field health_centers and villages are sent when editing a nurse.
+          // They fail the request, because sent as UUIDs. We could try to
+          // convert them to node IDs, but since they can not be edited on
+          // client, we simply ignore them.
+          'health_centers',
+          'villages',
         ];
 
-        // Do not ignore 'health center' field for person,
-        // as this is what actually associates person with health center.
-        if ($item['type'] != 'person') {
+        // Do not ignore 'health center' field for person and stock_update,
+        // as this is what associates the node with health center.
+        if (!in_array($item['type'], ['person', 'stock_update'])) {
           $ignored[] = 'health_center';
         }
 
@@ -452,10 +463,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             break;
 
           case 'POST':
-            $nid = hedley_restful_resolve_nid_for_uuid($item['uuid']);
+            $nid = FALSE;
             // Check if node with provided UUID already exists.
             // If it does, we don't do anything, as this is duplicate request.
             // Otherwise, we can proceed with content creation.
+            if (!empty($item['uuid'])) {
+              $nid = hedley_restful_resolve_nid_for_uuid($item['uuid']);
+            }
             if ($nid === FALSE) {
               $sub_handler->post('', $data);
             }
@@ -482,14 +496,16 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       watchdog('debug', $m2, [], WATCHDOG_ERROR);
 
       $details = $m1 . PHP_EOL . PHP_EOL . $m2;
-      hedley_restful_report_sync_incident('content-upload', $item['uuid'], $account->uid, $details);
+      $uuid = !empty($item['uuid']) ? $item['uuid'] : 'no-uuid';
+      hedley_restful_report_sync_incident('content-upload', $uuid, $account->uid, $details);
 
       throw $e;
     }
 
     $user = $account->name;
+    $stopper = time() - $stopper;
     $total = count($request['changes']);
-    watchdog('debug', "Sync upload by $user with $total changes was successful");
+    watchdog('debug', "[$stopper sec] Sync upload by $user with $total changes was successful");
 
     return [];
   }

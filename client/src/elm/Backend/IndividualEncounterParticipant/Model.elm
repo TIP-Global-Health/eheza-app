@@ -2,6 +2,7 @@ module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType)
 import Date exposing (Date)
@@ -36,31 +37,27 @@ type IndividualParticipantExtraData
     | NoIndividualParticipantExtraData
 
 
+type IndividualParticipantInitiator
+    = InitiatorParticipantsPage
+    | InitiatorPatientRecord PatientRecordInitiator PersonId
+
+
 type alias Model =
-    { closePrenatalSession : WebData ()
-    , closeAcuteIllnessSession : WebData ()
-    , setEddDate : WebData ()
-    , setNewborn : WebData ()
+    { updateIndividualEncounterParticipant : WebData ()
     }
 
 
 type Msg
     = ClosePrenatalSession Date PregnancyOutcome DeliveryLocation
-    | HandleClosedPrenatalSession (WebData ())
     | CloseAcuteIllnessSession AcuteIllnessOutcome
-    | HandleClosedAcuteIllnessSession (WebData ())
     | SetEddDate NominalDate
-    | HandleSetEddDate (WebData ())
     | SetNewborn PersonId
-    | HandleSetNewborn (WebData ())
+    | HandleUpdatedIndividualEncounterParticipant (WebData ())
 
 
 emptyModel : Model
 emptyModel =
-    { closePrenatalSession = NotAsked
-    , closeAcuteIllnessSession = NotAsked
-    , setEddDate = NotAsked
-    , setNewborn = NotAsked
+    { updateIndividualEncounterParticipant = NotAsked
     }
 
 
@@ -68,9 +65,11 @@ type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
     | HomeVisitEncounter
-    | InmmunizationEncounter
     | NutritionEncounter
     | WellChildEncounter
+    | NCDEncounter
+      -- @todo : can be removed?
+    | InmmunizationEncounter
 
 
 type DeliveryLocation

@@ -33,7 +33,7 @@ import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Pages.AcuteIllnessEncounter.Utils exposing (compareAcuteIllnessEncounterDataDesc)
+import Pages.Report.Utils exposing (compareAcuteIllnessEncountersDesc)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
 import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
@@ -309,7 +309,7 @@ decodeAcuteIllnessDataItem =
             (\item ->
                 let
                     orderedEncounters =
-                        List.sortWith compareAcuteIllnessEncounterDataDesc item.encounters
+                        List.sortWith compareAcuteIllnessEncountersDesc item.encounters
 
                     resolvedDiagnosis =
                         List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) orderedEncounters

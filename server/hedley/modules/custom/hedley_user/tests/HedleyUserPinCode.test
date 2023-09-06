@@ -65,7 +65,7 @@ class HedleyUserPinCode extends HedleyWebTestBase {
       $this->fail('Failed to throw exception for duplicate PIN code');
     }
     catch (Exception $e) {
-      $this->assertEqual($e->getMessage(), 'The provided PIN code was not unique.');
+      $this->assertEqual($e->getMessage(), 'The provided PIN code is not unique.');
     }
   }
 

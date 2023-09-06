@@ -1,4 +1,4 @@
-module Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isAuthorithedNurse, isCommunityHealthWorker)
+module Backend.Nurse.Utils exposing (..)
 
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
@@ -34,3 +34,44 @@ isAuthorithedNurse clinic nurse =
 
     else
         assignedToHealthCenter clinic.healthCenterId nurse
+
+
+resilienceRoleFromString : String -> Maybe ResilienceRole
+resilienceRoleFromString role =
+    case role of
+        "nurse" ->
+            Just ResilienceRoleNurse
+
+        "chw" ->
+            Just ResilienceRoleCHW
+
+        "line-manager" ->
+            Just ResilienceRoleLineManager
+
+        "supervisor" ->
+            Just ResilienceRoleSupervisor
+
+        "director" ->
+            Just ResilienceRoleDirector
+
+        _ ->
+            Nothing
+
+
+resilienceRoleToString : ResilienceRole -> String
+resilienceRoleToString role =
+    case role of
+        ResilienceRoleNurse ->
+            "nurse"
+
+        ResilienceRoleCHW ->
+            "chw"
+
+        ResilienceRoleLineManager ->
+            "line-manager"
+
+        ResilienceRoleSupervisor ->
+            "supervisor"
+
+        ResilienceRoleDirector ->
+            "director"

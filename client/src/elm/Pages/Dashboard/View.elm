@@ -1,4 +1,4 @@
-module Pages.Dashboard.View exposing (view)
+module Pages.Dashboard.View exposing (chwCard, view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
@@ -33,6 +33,7 @@ import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model
+import Backend.Village.Utils exposing (getVillageById)
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), isBetween, monthNumber, numberToMonth, year)
 import Debug exposing (toString)
@@ -50,7 +51,13 @@ import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
 import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
-import Pages.Utils exposing (calculatePercentage)
+import Pages.Utils
+    exposing
+        ( calculatePercentage
+        , resolveSelectedDateForMonthSelector
+        , viewCustomSelectListInput
+        , viewMonthSelector
+        )
 import Path
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -58,7 +65,6 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import Time exposing (millisToPosix)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
@@ -132,7 +138,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                                     ChwPage chwDashboardPage ->
                                         case chwDashboardPage of
                                             AcuteIllnessPage acuteIllnessPage ->
-                                                ( viewAcuteIllnessPage language currentDate acuteIllnessPage assembled db model, "acute-illness" )
+                                                ( viewAcuteIllnessPage language currentDate healthCenterId acuteIllnessPage assembled db model, "acute-illness" )
 
                                             NutritionPage ->
                                                 ( viewNutritionPage language currentDate True nurse assembled.nutritionPageData db model, "nutrition" )
@@ -183,7 +189,7 @@ viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> 
 viewChwMainPage language currentDate healthCenterId assembled db model =
     let
         selectedDate =
-            getSelectedDate currentDate model
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         -- ANC
         encountersForSelectedMonth =
@@ -202,11 +208,18 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
         limitDate =
             Date.ceiling Date.Month selectedDate
 
+        village =
+            Maybe.andThen (getVillageById db) model.selectedVillageFilter
+
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
         -- Case Management
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
             Maybe.map2 (getFollowUpsTotals language currentDate limitDate db)
-                model.selectedVillageFilter
-                assembled.caseManagementData
+                village
+                followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
     [ viewChwMenu language
@@ -620,11 +633,19 @@ viewChwMenuButton language targetPage activePage =
         [ translateText language label ]
 
 
-viewAcuteIllnessPage : Language -> NominalDate -> AcuteIllnessDashboardPage -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewAcuteIllnessPage language currentDate activePage assembled db model =
+viewAcuteIllnessPage :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> AcuteIllnessDashboardPage
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewAcuteIllnessPage language currentDate healthCenterId activePage assembled db model =
     let
         selectedDate =
-            getSelectedDate currentDate model
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         encountersForSelectedMonth =
             getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
@@ -632,10 +653,17 @@ viewAcuteIllnessPage language currentDate activePage assembled db model =
         limitDate =
             Date.ceiling Date.Month selectedDate
 
+        village =
+            Maybe.andThen (getVillageById db) model.selectedVillageFilter
+
+        followUps =
+            Dict.get healthCenterId db.followUpMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+
         ( managedCovid, managedMalaria, managedGI ) =
             Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db)
-                model.selectedVillageFilter
-                assembled.caseManagementData
+                village
+                followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
 
         pageContent =
@@ -861,7 +889,7 @@ viewAntenatalPage : Language -> NominalDate -> AssembledData -> ModelIndexedDb -
 viewAntenatalPage language currentDate assembled db model =
     let
         selectedDate =
-            getSelectedDate currentDate model
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         newlyIdentifiedPreganancies =
             countNewlyIdentifiedPregananciesForSelectedMonth selectedDate assembled.prenatalData
@@ -899,10 +927,20 @@ viewAntenatalPage language currentDate assembled db model =
     ]
 
 
-chwCard : Language -> TranslationId -> String -> Html Msg
+chwCard : Language -> TranslationId -> String -> Html any
 chwCard language titleTransId value =
     div [ class "column" ]
         [ viewChwCard language titleTransId value ]
+
+
+viewChwCard : Language -> TranslationId -> String -> Html any
+viewChwCard language titleTransId value =
+    div [ class "ui segment dashboard-card chw" ]
+        [ div [ class "content" ]
+            [ div [ class "header" ] [ text <| translate language titleTransId ]
+            , div [ class "value this-year" ] [ text value ]
+            ]
+        ]
 
 
 viewGoodNutrition : Language -> List CaseNutritionTotal -> List CaseNutritionTotal -> Html Msg
@@ -1279,16 +1317,6 @@ viewCard language statsCard =
                             ]
                     )
                 |> showMaybe
-            ]
-        ]
-
-
-viewChwCard : Language -> TranslationId -> String -> Html Msg
-viewChwCard language titleTransId value =
-    div [ class "ui segment dashboard-card chw" ]
-        [ div [ class "content" ]
-            [ div [ class "header" ] [ text <| translate language titleTransId ]
-            , div [ class "value this-year" ] [ text value ]
             ]
         ]
 
@@ -1900,29 +1928,20 @@ viewFiltersModal language isChw nurse stats db model =
 
             else
                 let
-                    allOptions =
-                        [ FilterAllPrograms
-                        , FilterProgramFbf
-                        , FilterProgramPmtct
-                        , FilterProgramSorwathe
-                        , FilterProgramAchi
-                        , FilterProgramCommunity
-                        ]
-
                     programTypeFilterInput =
-                        allOptions
-                            |> List.map
-                                (\programTypeFilter ->
-                                    option
-                                        [ value (filterProgramTypeToString programTypeFilter)
-                                        , selected (model.programTypeFilter == programTypeFilter)
-                                        ]
-                                        [ text <| translate language <| Translate.Dashboard <| Translate.FilterProgramType programTypeFilter ]
-                                )
-                            |> select
-                                [ onInput SetFilterProgramType
-                                , class "select-input"
-                                ]
+                        viewCustomSelectListInput (Just model.programTypeFilter)
+                            [ FilterAllPrograms
+                            , FilterProgramFbf
+                            , FilterProgramPmtct
+                            , FilterProgramSorwathe
+                            , FilterProgramAchi
+                            , FilterProgramCommunity
+                            ]
+                            filterProgramTypeToString
+                            SetFilterProgramType
+                            (Translate.FilterProgramType >> Translate.Dashboard >> translate language)
+                            "select-input"
+                            False
                 in
                 [ div [ class "helper" ] [ text <| translate language <| Translate.Dashboard Translate.ProgramType ]
                 , programTypeFilterInput
@@ -2111,33 +2130,4 @@ resolvePreviousMonth thisMonth =
 
 monthSelector : Language -> NominalDate -> Model -> Html Msg
 monthSelector language selectedDate model =
-    let
-        monthNumber =
-            Date.monthNumber selectedDate
-
-        month =
-            Date.numberToMonth monthNumber
-
-        year =
-            Date.year selectedDate
-    in
-    div [ class "month-selector" ]
-        [ span
-            [ classList
-                [ ( "icon-back", True )
-                , ( "hidden", model.monthGap == maxMonthGap )
-                ]
-            , onClick <| ChangeMonthGap 1
-            ]
-            []
-        , span [ class "label" ]
-            [ text <| translate language (Translate.ResolveMonth False month) ++ " " ++ String.fromInt year ]
-        , span
-            [ classList
-                [ ( "icon-back rotate-180", True )
-                , ( "hidden", model.monthGap == 0 )
-                ]
-            , onClick <| ChangeMonthGap -1
-            ]
-            []
-        ]
+    viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap

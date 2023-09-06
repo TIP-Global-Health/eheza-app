@@ -1,19 +1,12 @@
 module DateSelector.SelectorPopup exposing (..)
 
 import Date exposing (Date)
+import DateSelector.Model exposing (..)
 import DateSelector.Selector
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Translate exposing (Language, translate)
-
-
-type alias DateSelectorConfig msg =
-    { select : Date -> msg
-    , close : msg
-    , dateFrom : Date
-    , dateTo : Date
-    }
 
 
 view : Language -> (Date -> msg) -> msg -> Date -> Date -> Maybe Date -> Html msg
@@ -24,7 +17,7 @@ view language toSelect toClose minimum maximum selected =
             [ class "ui button"
             , onClick toClose
             ]
-            [ text <| translate language Translate.Close ]
+            [ text <| translate language Translate.Save ]
         ]
 
 

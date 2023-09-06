@@ -21,6 +21,13 @@ $batch = drush_get_option('batch', 100);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
+// Get optional district option.
+$district = drush_get_option('district', NULL);
+
+// Get optional district option.
+$textual_date = drush_get_option('date', NULL);
+$day_of_reporting = strtotime($textual_date) ?? time();
+
 $impacted = array_flip(db_query("SELECT entity_id FROM {person_impacted}")->fetchCol());
 if (empty($impacted)) {
   drush_print('Execute ddev robo report:demographics first to generate data about impacted patients');
@@ -29,20 +36,29 @@ if (empty($impacted)) {
 
 $base_query = base_query_for_bundle('person');
 
-$six_years_ago = date('Ymd', strtotime('-6 years'));
+$six_years_ago = date('Ymd', strtotime('-6 years', $day_of_reporting));
 $base_query->fieldCondition('field_birth_date', 'value', $six_years_ago, '>');
-
+if (!empty($district)) {
+  $base_query->fieldCondition('field_district', 'value', $district);
+}
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
 $total = $count_query->count()->execute();
 
 if ($total == 0) {
   drush_print("There are no patients in DB.");
-  exit;
+  if (!empty($district)) {
+    drush_print("District: $district");
+  }
+  exit(1);
 }
 
-
-drush_print("$total children with age below 6 years located.");
+if (!empty($district)) {
+  drush_print("$total children with age below 6 years located in $district district.");
+}
+else {
+  drush_print("$total children with age below 6 years located.");
+}
 
 $processed = 0;
 
@@ -132,7 +148,15 @@ while ($processed < $total) {
 
 drush_print('Done!');
 
-drush_print("# Nutrition report  - " . date('D/m/Y'));
+
+$textual_date = date('d/m/Y', $day_of_reporting);
+
+if (!empty($district)) {
+  drush_print("# Nutrition report - " . $textual_date . " - District: $district");
+}
+else {
+  drush_print("# Nutrition report - " . $textual_date);
+}
 drush_print('');
 
 $skeleton = [

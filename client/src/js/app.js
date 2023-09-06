@@ -264,16 +264,34 @@ dbSync.version(17).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 });
 
+dbSync.version(18).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+});
+
+dbSync.version(19).stores({
+  whatsAppUploads: '++localId,screenshot,report_type,person,phone_number,fileId,syncStage',
+});
+
+dbSync.version(20).stores({
+    nodes: '&uuid,type,vid,status,[type+pin_code],[type+nurse]'
+});
+
+dbSync.version(21).stores({
+  errorsHash: '++localId, hash',
+  dbErrors: '++localId, error, isSynced'
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
  * When creating new DB version, update:
  *
- * 1. dbVersion constant bellow (app.js)
+ * 1. dbVersion constant below (app.js)
  * 2. dbVerno constant at sw.js
  * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
  */
 
+// This hook is activated as a result of new content that is being synced from backend.
 dbSync.shards.hook('creating', function (primKey, obj, trans) {
   if (obj.type === 'person') {
     if (typeof obj.label == 'string') {
@@ -282,6 +300,7 @@ dbSync.shards.hook('creating', function (primKey, obj, trans) {
   }
 });
 
+// This hook is activated as a result of updated content that is being synced from backend.
 dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
   if (obj.type === 'person') {
     if (mods.hasOwnProperty("label")) {
@@ -320,7 +339,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 17;
+const dbVersion = 21;
 
 /**
  * Return saved info for General sync.
@@ -334,13 +353,11 @@ const getSyncInfoGeneral = function() {
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
     storageArr.remainingToUpload = parseInt(storageArr.remainingToUpload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
-    storageArr.deviceName = storageArr.deviceName;
-    storageArr.status = storageArr.status;
     return storageArr;
   }
 
   // No sync info saved yet.
-  return {lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available'};
+  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '' };
 };
 
 /**
@@ -384,10 +401,10 @@ const getSyncSpeed = function() {
     return storageArr;
   }
 
-  // Idle time between sync is 5 min.
+  // Idle time between sync is 10 min.
   // Sync cicle last 50 milliseconds.
   // When offline, we check network state every 30 secons.
-  return {idle: (5 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
+  return {idle: (10 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
 }
 
 // Start up our Elm app.
@@ -455,6 +472,7 @@ elmApp.ports.setLanguage.subscribe(function(language) {
 elmApp.ports.scrollToElement.subscribe(function(elementId) {
   waitForElement(elementId, scrollToElement, null);
 });
+
 
 function scrollToElement(elementId) {
   var element = document.getElementById(elementId);
@@ -566,7 +584,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const data = info.data;
   switch (queryType) {
 
-    case 'IndexDbQueryUploadPhotoAuthority':
+    case 'IndexDbQueryUploadPhoto':
       (async () => {
 
         let result = await dbSync
@@ -671,6 +689,103 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
+    case 'IndexDbQueryUploadScreenshot':
+      (async () => {
+
+        let result = await dbSync
+            .whatsAppUploads
+            .where('syncStage')
+            // On stage 0, we upload the file to backend.
+            .equals(0)
+            // We upload screenshots one by one.
+            .limit(1)
+            .toArray();
+
+        if (!result[0]) {
+          // No screenshots to upload.
+          return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: null});
+        }
+
+        const screenshotsUploadCache = "screenshots-upload";
+        const cache = await caches.open(screenshotsUploadCache);
+
+        result.forEach(async function(row, index) {
+            const cachedResponse = await cache.match(row.screenshot);
+
+            if (cachedResponse) {
+              const blob = await cachedResponse.blob();
+              const formData = new FormData();
+              const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.png';
+
+              formData.set('file', blob, imageName);
+
+              const dataArr = JSON.parse(data);
+
+              const backendUrl = dataArr.backend_url;
+              const accessToken = dataArr.access_token;
+
+              const uploadUrl = [
+                backendUrl,
+                '/api/file-upload?access_token=',
+                accessToken,
+              ].join('');
+
+              try {
+                var response = await fetch(uploadUrl, {
+                  method: 'POST',
+                  body: formData,
+                  // This prevents attaching cookies to request, to prevent
+                  // sending authentication cookie, as our desired
+                  // authentication method is token.
+                  credentials: 'omit'
+                });
+              }
+              catch (e) {
+                  // Network error.
+                  return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'NetworkError', reason: e.toString()});
+              }
+
+              if (!response.ok) {
+                return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'UploadError', reason: row.screenshot});
+              }
+
+              // Response indicated success.
+              try {
+                var json = await response.json();
+              }
+              catch (e) {
+                // Bad JSON.
+                return sendIndexedDbFetchResult(queryType, {tag: 'Error', error: 'BadJson', reason: row.screenshot});
+              }
+
+              const changes = {
+                'fileId': parseInt(json.data[0].id),
+                'syncStage': 1,
+              }
+
+              await dbSync.whatsAppUploads.where('screenshot').equals(row.screenshot).modify(changes);
+            }
+            else {
+              // Screenshot is registered in IndexDB, but doesn't appear in the cache.
+              // For the sync not to get stuck, we set the data of default image instead.
+              const changes = {
+                'fileId': 5002,
+                'syncStage': 1,
+              }
+
+              // Update IndexDb to hold the fileId. As there could have been multiple
+              // operations on the same entity, we replace all the screenshot occurrences.
+              // For example, lets say a person's screenshot was changed, and later also
+              // their name. So on the two records there were created on the
+              // screenshotUploadChanges table, the same screenshot local URL will appear.
+              await dbSync.authorityPhotoUploadChanges.where('screenshot').equals(row.screenshot).modify(changes);
+            }
+
+            return sendIndexedDbFetchResult(queryType, {tag: 'Success', result: row});
+        });
+      })();
+      break;
+
     case 'IndexDbQueryUploadGeneral':
       (async () => {
 
@@ -683,8 +798,12 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .count();
 
         if (totalEntites == 0) {
-          // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+            // No entities for upload found.
+            let resultToSend = {
+              'entities': [],
+              'remaining': 0
+            };
+            return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -692,6 +811,42 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .where('isSynced')
             // Don't include items that were already synced.
             .notEqual(1)
+            .limit(batchSize)
+            .toArray();
+
+        const resultToSend = {
+          'entities': entitiesResult,
+          'remaining': totalEntites - entitiesResult.length
+        };
+
+        return sendIndexedDbFetchResult(queryType, resultToSend);
+      })();
+      break;
+
+
+    case 'IndexDbQueryUploadWhatsApp':
+      (async () => {
+        const batchSize = 50;
+
+        let totalEntites = await dbSync
+            .whatsAppUploads
+            .where('syncStage')
+            .equals(1)
+            .count();
+
+        if (totalEntites == 0) {
+          // No entities for upload found.
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
+        }
+
+        let entitiesResult = await dbSync
+            .whatsAppUploads
+            .where('syncStage')
+            .equals(1)
             .limit(batchSize)
             .toArray();
 
@@ -720,7 +875,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -873,6 +1032,10 @@ elmApp.ports.deleteEntitiesThatWereUploaded.subscribe(async function(info) {
       table = dbSync.nodeChanges;
       break;
 
+    case 'WhatsApp':
+      table = dbSync.whatsAppUploads;
+      break;
+
     case 'Authority':
       table = dbSync.shardChanges;
       break;
@@ -948,6 +1111,96 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   await cache.delete(row.data.photo);
 });
 
+
+elmApp.ports.makeProgressReportScreenshot.subscribe(function(data) {
+  waitForElement('report-content', makeProgressReportScreenshot, data);
+});
+
+
+function makeProgressReportScreenshot(elementId, data) {
+  var element = document.getElementById(elementId);
+
+  (async () => {
+    const screenshotsUploadCache = 'screenshots-upload';
+    const cache = await caches.open(screenshotsUploadCache);
+
+    let totalHeight = 0;
+    let children = element.childNodes;
+
+    for (let i = 0; i < children.length; i++) {
+      if (children[i].clientHeight == undefined) {
+        continue;
+      }
+
+      totalHeight += parseInt(children[i].clientHeight);
+    }
+
+    // Adding height to make sure we capture complete page.
+    // Without this, antenatal reports gets cut off at the top.
+    totalHeight += 500;
+
+    const canvas = await html2canvas(element, {
+        width: element.clientWidth,
+        windowHeight: totalHeight
+      });
+
+    canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      const imageName = 'whatsapp-upload-' + getRandom8Digits() + '.png';
+      formData.set('file', blob, imageName);
+
+      const url = "cache-upload/screenshots/" + Date.now();
+
+      try {
+        var response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // This prevents attaching cookies to request, to prevent
+          // sending authentication cookie, as our desired
+          // authentication method is token.
+          credentials: 'omit'
+        });
+
+        if (response.ok) {
+         var json = await response.json();
+         var today = new Date();
+
+         var entry = {
+             screenshot: json.url,
+             person: data.personId,
+             date_measured: today.toISOString().split('T')[0],
+             report_type: data.reportType,
+             phone_number: data.phoneNumber,
+             syncStage: 0,
+             fileId: null
+         };
+
+         await dbSync.whatsAppUploads.add(entry);
+
+         reportProgressReportScreenshotResult("success");
+        }
+        else {
+          reportProgressReportScreenshotResult("failure");
+        }
+      }
+      catch (e) {
+        reportProgressReportScreenshotResult("failure");
+      }
+    });
+   })();
+}
+
+function reportProgressReportScreenshotResult(result) {
+  var element = document.getElementById('execution-response');
+  if (element) {
+    var event = makeCustomEvent("screenshotcomplete", {
+      result: result
+    });
+
+    element.dispatchEvent(event);
+  }
+}
+
 function getRandom8Digits () {
   var timestamp = String(performance.timeOrigin + performance.now());
   timestamp = timestamp.replace('.', '');
@@ -967,6 +1220,211 @@ Dropzone.autoDiscover = false;
 elmApp.ports.bindDropZone.subscribe(function() {
   waitForElement('dropzone', attachDropzone, null);
 });
+
+
+// Signature Pad.
+
+// https://github.com/szimek/signature_pad
+var canvas = undefined;
+var signaturePad = undefined;
+
+var signaturePadSelector = 'signature-pad';
+
+elmApp.ports.bindSignaturePad.subscribe(function() {
+  waitForElement(signaturePadSelector, attachSignaturePad, null);
+});
+
+elmApp.ports.clearSignaturePad.subscribe(function() {
+  if (signaturePad === undefined) {
+    return;
+  }
+  signaturePad.clear();
+});
+
+elmApp.ports.storeSignature.subscribe(function() {
+  if (signaturePad === undefined) {
+    return;
+  }
+
+  if (signaturePad.isEmpty()) {
+    return;
+  }
+
+  storeSignatureFromPad();
+});
+
+function attachSignaturePad() {
+  const wrapper = document.getElementById("signature-pad");
+  canvas = wrapper.querySelector("canvas");
+  signaturePad = new SignaturePad(canvas, {
+    // It's Necessary to use an opaque color when saving image as JPEG;
+    // this option can be omitted if only saving as PNG or SVG
+    backgroundColor: 'rgb(255, 255, 255)'
+  });
+
+  // Adjust canvas coordinate space taking into account pixel ratio,
+  // to make it look crisp on mobile devices.
+  // This also causes canvas to be cleared.
+  function resizeCanvas() {
+    // When zoomed out to less than 100%, for some very strange reason,
+    // some browsers report devicePixelRatio as less than 1
+    // and only part of the canvas is cleared then.
+    const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+
+    // This part causes the canvas to be cleared
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext("2d").scale(ratio, ratio);
+    signaturePad.clear();
+  }
+
+  window.onresize = resizeCanvas;
+  resizeCanvas();
+}
+
+function storeSignatureFromPad() {
+  (async () => {
+    const uploadCache = 'photos-upload';
+    const cache = await caches.open(uploadCache);
+
+    signaturePad.canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      const imageName = 'signature-' + getRandom8Digits() + '.png';
+      formData.set('file', blob, imageName);
+
+      const url = "cache-upload/images/" + Date.now();
+
+      try {
+        var response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // This prevents attaching cookies to request, to prevent
+          // sending authentication cookie, as our desired
+          // authentication method is token.
+          credentials: 'omit'
+        });
+
+        if (response.ok) {
+         var json = await response.json();
+         reportSignaturePadResult(json.url);
+        }
+        else {
+          // If something goes wrong while storing signature in cache,
+          // currently we do nothing.
+          // This situation is very rare, and if it does happen, user
+          // will most likely repeat the action.
+        }
+      }
+      catch (e) {
+        // Something was wrong with storing signature in cache.
+        // Take no action (for now).
+      }
+    });
+   })();
+}
+
+function reportSignaturePadResult(url) {
+  var element = document.getElementById(signaturePadSelector);
+  if (element) {
+    var event = makeCustomEvent("signaturecomplete", {
+      url: url
+    });
+
+    element.dispatchEvent(event);
+  }
+}
+
+
+// Rollbar.
+
+elmApp.ports.initRollbar.subscribe(function(data) {
+  // Generate rollbar config.
+  var _rollbarConfig = {
+      accessToken: data.token,
+      captureUncaught: true,
+      captureUnhandledRejections: true,
+      payload: {
+          environment: 'all',
+          client: {
+            javascript: {
+              code_version: '1.0',
+            }
+          },
+          person: {
+            id: data.device,
+          }
+      }
+  };
+
+  // Init rollbar.
+  rollbar.init(_rollbarConfig);
+
+  // Send unsynced items from dbErrors table.
+  (async () => {
+
+      let result = await dbSync
+          .dbErrors
+          .where('isSynced')
+          // IndexDB doesn't index Boolean, so we use an Int to indicate "false".
+          .equals(0)
+          .toArray();
+
+      if (!result[0]) {
+          // No items to sync.
+          return;
+      }
+
+      // Send all items.
+      let localIds = [];
+      result.forEach(function(row) {
+          rollbar.log(row.error);
+          localIds.push(row.localId);
+      })
+
+      // Mark that sent items were synced.
+      await dbSync
+          .dbErrors
+          .where('localId')
+          .anyOf(localIds)
+          .modify({'isSynced': 1});
+  })();
+
+});
+
+elmApp.ports.logByRollbar.subscribe(function(data) {
+
+  (async () => {
+
+      switch (data.source) {
+        case 'sw':
+        case 'sync':
+            let result = await dbSync
+                .errorsHash
+                .where('hash')
+                .equals(data.md5)
+                .limit(1)
+                .toArray();
+
+            if (result[0]) {
+              // Hash exists, indicating that this message was sent alredy.
+              return;
+            }
+
+            // Send rollbar message.
+            rollbar.log(data.message);
+
+            await dbSync.errorsHash.add({ hash: data.md5 });
+            break;
+
+        case 'db':
+            await dbSync.dbErrors.add({ error: data.message, isSynced: 0 });
+            break;
+      }
+
+  })();
+
+});
+
 
 /**
  * Wait for id to appear before invoking related functions.

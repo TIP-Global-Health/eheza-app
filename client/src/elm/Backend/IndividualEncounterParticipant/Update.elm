@@ -1,5 +1,7 @@
 module Backend.IndividualEncounterParticipant.Update exposing (update)
 
+import App.Model
+import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (individualEncounterParticipantEndpoint)
 import Backend.Entities exposing (IndividualEncounterParticipantId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (..)
@@ -13,73 +15,73 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
 
 
-update : IndividualEncounterParticipantId -> Maybe IndividualEncounterParticipant -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
-update participantId maybeParticipant currentDate msg model =
+update :
+    NominalDate
+    -> IndividualEncounterParticipantId
+    -> Maybe IndividualEncounterParticipant
+    -> Msg
+    -> Model
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate participantId maybeParticipant msg model =
     case msg of
         ClosePrenatalSession concludedDate outcome deliveryLocation ->
-            maybeParticipant
-                |> unwrap ( model, Cmd.none )
-                    (\participant ->
-                        ( { model | closePrenatalSession = Loading }
-                        , { participant | endDate = Just currentDate, dateConcluded = Just concludedDate, outcome = Just (Pregnancy outcome), deliveryLocation = Just deliveryLocation }
-                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
-                        )
-                    )
-
-        HandleClosedPrenatalSession data ->
-            ( { model | closePrenatalSession = data }
-            , Cmd.none
-            )
+            updateIndividualEncounterParticipant currentDate
+                participantId
+                maybeParticipant
+                (\participant ->
+                    { participant
+                        | endDate = Just currentDate
+                        , dateConcluded = Just concludedDate
+                        , outcome = Just (Pregnancy outcome)
+                        , deliveryLocation = Just deliveryLocation
+                    }
+                )
+                model
 
         CloseAcuteIllnessSession outcome ->
-            maybeParticipant
-                |> unwrap ( model, Cmd.none )
-                    (\participant ->
-                        ( { model | closeAcuteIllnessSession = Loading }
-                        , { participant | endDate = Just currentDate, outcome = Just (AcuteIllness outcome) }
-                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
-                        )
-                    )
-
-        HandleClosedAcuteIllnessSession data ->
-            ( { model | closeAcuteIllnessSession = data }
-            , Cmd.none
-            )
+            updateIndividualEncounterParticipant currentDate
+                participantId
+                maybeParticipant
+                (\participant -> { participant | endDate = Just currentDate, outcome = Just (AcuteIllness outcome) })
+                model
 
         SetEddDate eddDate ->
-            maybeParticipant
-                |> unwrap ( model, Cmd.none )
-                    (\participant ->
-                        ( { model | setEddDate = Loading }
-                        , { participant | eddDate = Just eddDate }
-                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleSetEddDate)
-                        )
-                    )
-
-        HandleSetEddDate data ->
-            ( { model | setEddDate = data }
-            , Cmd.none
-            )
+            updateIndividualEncounterParticipant currentDate
+                participantId
+                maybeParticipant
+                (\participant -> { participant | eddDate = Just eddDate })
+                model
 
         SetNewborn personId ->
-            maybeParticipant
-                |> unwrap ( model, Cmd.none )
-                    (\participant ->
-                        ( { model | setNewborn = Loading }
-                        , { participant | newborn = Just personId }
-                            |> sw.patchFull individualEncounterParticipantEndpoint participantId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleSetNewborn)
-                        )
-                    )
+            updateIndividualEncounterParticipant currentDate
+                participantId
+                maybeParticipant
+                (\participant -> { participant | newborn = Just personId })
+                model
 
-        HandleSetNewborn data ->
-            ( { model | setNewborn = data }
+        HandleUpdatedIndividualEncounterParticipant data ->
+            ( { model | updateIndividualEncounterParticipant = data }
             , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+
+updateIndividualEncounterParticipant :
+    NominalDate
+    -> IndividualEncounterParticipantId
+    -> Maybe IndividualEncounterParticipant
+    -> (IndividualEncounterParticipant -> IndividualEncounterParticipant)
+    -> Model
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+updateIndividualEncounterParticipant currentDate individualEncounterParticipantId maybeIndividualEncounterParticipant updateFunc model =
+    maybeIndividualEncounterParticipant
+        |> unwrap ( model, Cmd.none, [] )
+            (\individualEncounterParticipant ->
+                ( { model | updateIndividualEncounterParticipant = Loading }
+                , updateFunc individualEncounterParticipant
+                    |> sw.patchFull individualEncounterParticipantEndpoint individualEncounterParticipantId
+                    |> withoutDecoder
+                    |> toCmd (RemoteData.fromResult >> HandleUpdatedIndividualEncounterParticipant)
+                , []
+                )
             )

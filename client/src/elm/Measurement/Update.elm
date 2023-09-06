@@ -7,10 +7,11 @@ import Backend.Measurement.Model
         ( ChildNutritionSign(..)
         , ContributingFactorsSign(..)
         , FamilyPlanningSign(..)
+        , ImageUrl(..)
         , LactationSign(..)
         , MeasurementData
         , MotherMeasurements
-        , PhotoUrl(..)
+        , WeightInGrm(..)
         )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
@@ -157,7 +158,7 @@ updateChild msg model =
             )
 
         DropZoneComplete result ->
-            ( { model | photo = Just (PhotoUrl result.url) }
+            ( { model | photo = Just (ImageUrl result.url) }
             , Cmd.none
             , Nothing
             )
@@ -188,7 +189,7 @@ updateChild msg model =
             , Nothing
             )
 
-        SetReasonForNotSendingToHC value ->
+        SetReasonForNonReferral value ->
             let
                 form =
                     model.sendToHCForm
@@ -253,6 +254,65 @@ updateChild msg model =
                     { form | option = Just option }
             in
             ( { model | followUpForm = updatedForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetNCDABoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.ncdaData.form
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetBirthWeight string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | birthWeight = String.toFloat string |> Maybe.map WeightInGrm
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetNCDAHelperState state ->
+            let
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | helperState = state })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetNCDAFormStep step ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | step = Just step })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
             , Cmd.none
             , Nothing
             )

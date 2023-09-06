@@ -4,16 +4,21 @@ import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
-import Backend.Person.Encoder
-    exposing
-        ( encodeEducationLevel
-        , encodeHivStatus
-        , encodeMaritalStatus
-        , encodeModeOfDelivery
-        , encodeUbudehe
-        )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (expectedAgeByPerson, genderToString, generateFullName, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Person.Utils
+    exposing
+        ( educationLevelToInt
+        , expectedAgeByPerson
+        , genderToString
+        , generateFullName
+        , hivStatusToString
+        , isAdult
+        , isPersonAnAdult
+        , maritalStatusToString
+        , modeOfDeliveryToString
+        , resolveExpectedAge
+        , ubudeheToInt
+        )
 import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
@@ -282,7 +287,7 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
     case operation of
         CreatePerson _ ->
             form
-                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> String.fromInt)
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (ubudeheToInt >> String.fromInt)
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
                 |> applyDefaultLocation sector defaultSectorId
@@ -300,12 +305,12 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
                 |> applyDefaultIsDateOfBirthEstimated
                 |> applyDefaultSelectInput hmisNumber defaultHmisNumber identity
                 |> applyDefaultGender
-                |> applyDefaultSelectInput hivStatus defaultHivStatus encodeHivStatus
-                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (encodeEducationLevel >> String.fromInt)
-                |> applyDefaultSelectInput maritalStatus defaultMaritalStatus encodeMaritalStatus
-                |> applyDefaultSelectInput modeOfDelivery defaultModeOfDelivery encodeModeOfDelivery
+                |> applyDefaultSelectInput hivStatus defaultHivStatus hivStatusToString
+                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (educationLevelToInt >> String.fromInt)
+                |> applyDefaultSelectInput maritalStatus defaultMaritalStatus maritalStatusToString
+                |> applyDefaultSelectInput modeOfDelivery defaultModeOfDelivery modeOfDeliveryToString
                 |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl String.fromInt
-                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> String.fromInt)
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (ubudeheToInt >> String.fromInt)
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
                 |> applyDefaultLocation sector defaultSectorId

@@ -10,7 +10,6 @@ type PrenatalActivity
     | Examination
     | FamilyPlanning
     | History
-    | PatientProvisions
     | PregnancyDating
     | PrenatalPhoto
     | Laboratory
@@ -18,6 +17,22 @@ type PrenatalActivity
     | BirthPlan
     | NextSteps
     | PregnancyOutcome
+    | MalariaPrevention
+    | Medication
+    | SymptomReview
+    | PrenatalTreatmentReview
+    | MaternalMentalHealth
+    | PrenatalImmunisation
+    | Breastfeeding
+    | SpecialityCare
+    | PostpartumTreatmentReview
+
+
+type PrenatalRecurrentActivity
+    = LabResults
+    | RecurrentNextSteps
+    | RecurrentExamination
+    | RecurrentMalariaPrevention
 
 
 type RiskFactor
@@ -40,8 +55,8 @@ type RiskFactor
 
 
 type HighRiskFactor
-    = ConvulsionsAndUnconsciousPreviousDelivery
-    | ConvulsionsPreviousDelivery
+    = HighRiskConvulsionsAndUnconsciousPreviousDelivery
+    | HighRiskConvulsionsPreviousDelivery
 
 
 type HighSeverityAlert
@@ -80,7 +95,7 @@ type MedicalDiagnosis
     | DiagnosisTuberculosis
     | DiagnosisAsthma
     | DiagnosisBowedLegs
-    | DiagnosisHIV
+    | DiagnosisKnownHIV
     | DiagnosisMentalHealthHistory
 
 
@@ -92,7 +107,9 @@ type PregnancyTrimester
 
 allHighRiskFactors : List HighRiskFactor
 allHighRiskFactors =
-    [ ConvulsionsPreviousDelivery, ConvulsionsAndUnconsciousPreviousDelivery ]
+    [ HighRiskConvulsionsPreviousDelivery
+    , HighRiskConvulsionsAndUnconsciousPreviousDelivery
+    ]
 
 
 allHighSeverityAlerts : List HighSeverityAlert
@@ -126,8 +143,8 @@ allRiskFactors =
     ]
 
 
-allObstetricalDiagnosis : List ObstetricalDiagnosis
-allObstetricalDiagnosis =
+allObstetricalDiagnoses : List ObstetricalDiagnosis
+allObstetricalDiagnoses =
     [ DiagnosisRhNegative
     , DiagnosisModerateUnderweight
     , DiagnosisSevereUnderweight
@@ -143,8 +160,8 @@ allObstetricalDiagnosis =
     ]
 
 
-allMedicalDiagnosis : List MedicalDiagnosis
-allMedicalDiagnosis =
+allMedicalDiagnoses : List MedicalDiagnosis
+allMedicalDiagnoses =
     [ DiagnosisUterineMyoma
     , DiagnosisDiabetes
     , DiagnosisCardiacDisease
@@ -153,7 +170,7 @@ allMedicalDiagnosis =
     , DiagnosisTuberculosis
     , DiagnosisAsthma
     , DiagnosisBowedLegs
-    , DiagnosisHIV
+    , DiagnosisKnownHIV
     , DiagnosisMentalHealthHistory
     ]
 

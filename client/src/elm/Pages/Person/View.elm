@@ -7,14 +7,6 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Encoder
-    exposing
-        ( encodeEducationLevel
-        , encodeHivStatus
-        , encodeMaritalStatus
-        , encodeModeOfDelivery
-        , encodeUbudehe
-        )
 import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm, validatePerson)
 import Backend.Person.Model
     exposing
@@ -29,7 +21,19 @@ import Backend.Person.Model
         , allModesOfDelivery
         , allUbudehes
         )
-import Backend.Person.Utils exposing (defaultIconForPerson, expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
+import Backend.Person.Utils
+    exposing
+        ( defaultIconForPerson
+        , educationLevelToInt
+        , expectedAgeByPerson
+        , graduatingAgeInMonth
+        , hivStatusToString
+        , isAdult
+        , isPersonAnAdult
+        , maritalStatusToString
+        , modeOfDeliveryToString
+        , ubudeheToInt
+        )
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
@@ -95,7 +99,7 @@ viewHeader language initiator name =
         [ h1
             [ class "ui header" ]
             [ text name ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| App.Model.SetActivePage goBackPage
             ]
@@ -606,6 +610,19 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , title = Translate.People
                             }
 
+                        NCDEncounter ->
+                            let
+                                expectedAge =
+                                    expectedAgeByForm currentDate personForm operation
+                            in
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage NCDEncounter)
+                            , expectedAge = expectedAge
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorTo = Date.add Years -12 today
+                            , title = Translate.People
+                            }
+
                         -- Note yet implemented. Providing 'default'
                         -- values, to satisfy compiler.
                         InmmunizationEncounter ->
@@ -695,7 +712,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 [ h1
                     [ class "ui header" ]
                     [ text <| translate language originBasedSettings.title ]
-                , a
+                , span
                     [ class "link-back"
                     , onClick <| SetActivePage originBasedSettings.goBackPage
                     ]
@@ -751,6 +768,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             , close = SetDateSelectorState Nothing
             , dateFrom = originBasedSettings.birthDateSelectorFrom
             , dateTo = originBasedSettings.birthDateSelectorTo
+            , dateDefault = Nothing
             }
 
         birthDateInput =
@@ -828,7 +846,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allEducationLevels
                 |> List.map
                     (\level ->
-                        ( String.fromInt (encodeEducationLevel level)
+                        ( String.fromInt (educationLevelToInt level)
                         , translate language (Translate.LevelOfEducation level)
                         )
                     )
@@ -838,7 +856,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allMaritalStatuses
                 |> List.map
                     (\status ->
-                        ( encodeMaritalStatus status
+                        ( maritalStatusToString status
                         , translate language <| Translate.MaritalStatus status
                         )
                     )
@@ -848,7 +866,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allModesOfDelivery
                 |> List.map
                     (\mode ->
-                        ( encodeModeOfDelivery mode
+                        ( modeOfDeliveryToString mode
                         , translate language <| Translate.ModeOfDelivery mode
                         )
                     )
@@ -858,7 +876,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allHivStatuses
                 |> List.map
                     (\status ->
-                        ( encodeHivStatus status
+                        ( hivStatusToString status
                         , translate language <| Translate.HIVStatus status
                         )
                     )
@@ -977,8 +995,8 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             allUbudehes
                 |> List.map
                     (\ubudehe ->
-                        ( String.fromInt (encodeUbudehe ubudehe)
-                        , String.fromInt (encodeUbudehe ubudehe)
+                        ( String.fromInt (ubudeheToInt ubudehe)
+                        , String.fromInt (ubudeheToInt ubudehe)
                         )
                     )
                 |> (::) emptyOption

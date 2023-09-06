@@ -2,13 +2,13 @@ module Pages.IndividualEncounterParticipants.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffYears)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -54,7 +54,7 @@ viewHeader title =
         [ h1
             [ class "ui header" ]
             [ text title ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
             ]
@@ -109,8 +109,19 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                             |> Maybe.map not
                             |> Maybe.withDefault False
 
-                _ ->
+                HomeVisitEncounter ->
+                    -- We do not have direct access to Home Visit encounter.
                     False
+
+                InmmunizationEncounter ->
+                    -- Not in use (possibly future development).
+                    False
+
+                NCDEncounter ->
+                    -- Patient is 12 years old or above.
+                    Maybe.map (\birthDate -> diffYears birthDate currentDate >= 12)
+                        person.birthDate
+                        |> Maybe.withDefault False
 
         -- For CHW nurse, we present people only from the village that was selected.
         chwCondition person =
@@ -202,19 +213,27 @@ viewParticipant language currentDate encounterType db id person =
         action =
             case encounterType of
                 AcuteIllnessEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage InitiatorParticipantsPage id ]
 
                 AntenatalEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage id ]
 
                 NutritionEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage id ]
 
                 WellChildEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage id ]
 
-                _ ->
+                HomeVisitEncounter ->
+                    -- We do not have direct access to Home Visit encounter.
                     []
+
+                InmmunizationEncounter ->
+                    -- Not in use (possibly future development).
+                    []
+
+                NCDEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| NCDParticipantPage InitiatorParticipantsPage id ]
 
         viewAction =
             div [ class "action" ]

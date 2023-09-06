@@ -294,6 +294,12 @@ viewGeneralEntity language backendGeneralEntity =
 
             BackendGeneralVillage identifier ->
                 text <| "Village " ++ identifier.entity.name
+
+            BackendGeneralResilienceMessage identifier ->
+                text <| "Resilience Message " ++ identifier.uuid
+
+            BackendGeneralResilienceSurvey identifier ->
+                text <| "Resilience Survey " ++ identifier.uuid
         ]
 
 
@@ -444,6 +450,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityGroupHealthEducation identifier ->
                 viewMeasurement identifier "Group Health Education"
 
+            BackendAuthorityGroupNCDA identifier ->
+                viewMeasurement identifier "Group NCDA"
+
             BackendAuthorityGroupSendToHC identifier ->
                 viewMeasurement identifier "Group Send to HC"
 
@@ -489,6 +498,75 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityMuac identifier ->
                 viewMeasurement identifier "Muac"
 
+            BackendAuthorityNCDCoMorbidities identifier ->
+                viewMeasurement identifier "NCDCoMorbidities"
+
+            BackendAuthorityNCDCoreExam identifier ->
+                viewMeasurement identifier "NCDCoreExam"
+
+            BackendAuthorityNCDCreatinineTest identifier ->
+                viewMeasurement identifier "NCDCreatinineTest"
+
+            BackendAuthorityNCDDangerSigns identifier ->
+                viewMeasurement identifier "NCDDangerSigns"
+
+            BackendAuthorityNCDEncounter identifier ->
+                text ("NCDEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityNCDFamilyHistory identifier ->
+                viewMeasurement identifier "NCDFamilyHistory"
+
+            BackendAuthorityNCDFamilyPlanning identifier ->
+                viewMeasurement identifier "NCDFamilyPlanning"
+
+            BackendAuthorityNCDHbA1cTest identifier ->
+                viewMeasurement identifier "NCDHbA1cTest"
+
+            BackendAuthorityNCDHealthEducation identifier ->
+                viewMeasurement identifier "NCDHealthEducation"
+
+            BackendAuthorityNCDHIVTest identifier ->
+                viewMeasurement identifier "NCDHIVTest"
+
+            BackendAuthorityNCDLabsResults identifier ->
+                viewMeasurement identifier "NCDLabsResults"
+
+            BackendAuthorityNCDLipidPanelTest identifier ->
+                viewMeasurement identifier "NCDLipidPanelTest"
+
+            BackendAuthorityNCDLiverFunctionTest identifier ->
+                viewMeasurement identifier "NCDLiverFunctionTest"
+
+            BackendAuthorityNCDMedicationDistribution identifier ->
+                viewMeasurement identifier "NCDMedicationDistribution"
+
+            BackendAuthorityNCDMedicationHistory identifier ->
+                viewMeasurement identifier "NCDMedicationHistory"
+
+            BackendAuthorityNCDOutsideCare identifier ->
+                viewMeasurement identifier "NCDOutsideCare"
+
+            BackendAuthorityNCDPregnancyTest identifier ->
+                viewMeasurement identifier "NCDPregnancyTest"
+
+            BackendAuthorityNCDRandomBloodSugarTest identifier ->
+                viewMeasurement identifier "NCDRandomBloodSugarTest"
+
+            BackendAuthorityNCDReferral identifier ->
+                viewMeasurement identifier "NCDReferral"
+
+            BackendAuthorityNCDSocialHistory identifier ->
+                viewMeasurement identifier "NCDSocialHistory"
+
+            BackendAuthorityNCDSymptomReview identifier ->
+                viewMeasurement identifier "NCDSymptomReview"
+
+            BackendAuthorityNCDUrineDipstickTest identifier ->
+                viewMeasurement identifier "NCDUrineDipstickTest"
+
+            BackendAuthorityNCDVitals identifier ->
+                viewMeasurement identifier "NCDVitals"
+
             BackendAuthorityNutrition identifier ->
                 viewMeasurement identifier "Nutrition"
 
@@ -521,6 +599,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityNutritionMuac identifier ->
                 viewMeasurement identifier "Nutrition Muac"
+
+            BackendAuthorityNutritionNCDA identifier ->
+                viewMeasurement identifier "Nutrition NCDA"
 
             BackendAuthorityNutritionNutrition identifier ->
                 viewMeasurement identifier "Nutrition Nutrition"
@@ -555,35 +636,92 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPmtctParticipant identifier ->
                 text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
 
-            BackendAuthorityPregnancyTesting identifier ->
+            BackendAuthorityPregnancyTest identifier ->
                 viewMeasurement identifier "Pregnancy Testing"
-
-            BackendAuthorityPrenatalPhoto identifier ->
-                viewMeasurement identifier "Prenatal Photo"
-
-            BackendAuthorityPrenatalFamilyPlanning identifier ->
-                viewMeasurement identifier "Prenatal Family Planning"
-
-            BackendAuthorityPrenatalHealthEducation identifier ->
-                viewMeasurement identifier "Prenatal Health Education"
-
-            BackendAuthorityPrenatalFollowUp identifier ->
-                viewMeasurement identifier "Prenatal Follow Up"
-
-            BackendAuthorityPrenatalSendToHC identifier ->
-                viewMeasurement identifier "Prenatal Send to HC"
-
-            BackendAuthorityPrenatalNutrition identifier ->
-                viewMeasurement identifier "Prenatal Nutrition"
 
             BackendAuthorityPrenatalEncounter identifier ->
                 text <| "Prenatal Encounter for person ID " ++ fromEntityUuid identifier.entity.participant
 
+            BackendAuthorityPrenatalBloodGpRsTest identifier ->
+                viewMeasurement identifier "Prenatal Blood GpRs Test"
+
+            BackendAuthorityPrenatalBreastfeeding identifier ->
+                viewMeasurement identifier "Prenatal Breastfeeding"
+
+            BackendAuthorityPrenatalFamilyPlanning identifier ->
+                viewMeasurement identifier "Prenatal Family Planning"
+
+            BackendAuthorityPrenatalFollowUp identifier ->
+                viewMeasurement identifier "Prenatal Follow Up"
+
+            BackendAuthorityPrenatalGUExam identifier ->
+                viewMeasurement identifier "Prenatal GU Exam"
+
+            BackendAuthorityPrenatalHealthEducation identifier ->
+                viewMeasurement identifier "Prenatal Health Education"
+
+            BackendAuthorityPrenatalHemoglobinTest identifier ->
+                viewMeasurement identifier "Prenatal Hemoglobin Test"
+
+            BackendAuthorityPrenatalHepatitisBTest identifier ->
+                viewMeasurement identifier "Prenatal Hepatitis B Test"
+
+            BackendAuthorityPrenatalHIVTest identifier ->
+                viewMeasurement identifier "Prenatal HIV Test"
+
+            BackendAuthorityPrenatalHIVPCRTest identifier ->
+                viewMeasurement identifier "Prenatal HIV PCR Test"
+
+            BackendAuthorityPrenatalLabsResults identifier ->
+                viewMeasurement identifier "Prenatal Labs Results"
+
+            BackendAuthorityPrenatalMalariaTest identifier ->
+                viewMeasurement identifier "Prenatal Malaria Test"
+
+            BackendAuthorityPrenatalMedicationDistribution identifier ->
+                viewMeasurement identifier "Prenatal Medication Distribution"
+
+            BackendAuthorityPrenatalMentalHealth identifier ->
+                viewMeasurement identifier "Prenatal Mental Health"
+
+            BackendAuthorityPrenatalNutrition identifier ->
+                viewMeasurement identifier "Prenatal Nutrition"
+
+            BackendAuthorityPrenatalOutsideCare identifier ->
+                viewMeasurement identifier "Prenatal Outside Care"
+
+            BackendAuthorityPrenatalPartnerHIVTest identifier ->
+                viewMeasurement identifier "Prenatal Partner HIV Test"
+
+            BackendAuthorityPrenatalPhoto identifier ->
+                viewMeasurement identifier "Prenatal Photo"
+
+            BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
+                viewMeasurement identifier "Prenatal Random Blood Sugar Test"
+
+            BackendAuthorityPrenatalSendToHC identifier ->
+                viewMeasurement identifier "Prenatal Send to HC"
+
+            BackendAuthorityPrenatalSpecialityCare identifier ->
+                viewMeasurement identifier "Prenatal Speciality Care"
+
+            BackendAuthorityPrenatalSymptomReview identifier ->
+                viewMeasurement identifier "Prenatal Symptom Review"
+
+            BackendAuthorityPrenatalSyphilisTest identifier ->
+                viewMeasurement identifier "Prenatal Syphilis Test"
+
+            BackendAuthorityPrenatalTetanusImmunisation identifier ->
+                viewMeasurement identifier "Prenatal Tetanus Immunisation"
+
+            BackendAuthorityPrenatalUrineDipstickTest identifier ->
+                viewMeasurement identifier "Prenatal Urine Dipstick Test"
+
             BackendAuthorityRelationship identifier ->
                 text <| "Relationship for person ID " ++ fromEntityUuid identifier.entity.person
 
-            BackendAuthorityResource identifier ->
-                viewMeasurement identifier "Resource"
+            BackendAuthorityMalariaPrevention identifier ->
+                viewMeasurement identifier "Malaria Prevention"
 
             BackendAuthoritySendToHC identifier ->
                 viewMeasurement identifier "Send to HC"
@@ -593,6 +731,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthoritySocialHistory identifier ->
                 viewMeasurement identifier "Social History"
+
+            BackendAuthorityStockUpdate identifier ->
+                text <| "Stock Update " ++ identifier.uuid
 
             BackendAuthoritySymptomsGeneral identifier ->
                 viewMeasurement identifier "Symptoms General"
@@ -662,6 +803,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWellChildMuac identifier ->
                 viewMeasurement identifier "Well Child Muac"
+
+            BackendAuthorityWellChildNCDA identifier ->
+                viewMeasurement identifier "Well Child NCDA"
 
             BackendAuthorityWellChildNextVisit identifier ->
                 viewMeasurement identifier "Well Child Next Visit"

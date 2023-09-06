@@ -129,6 +129,7 @@ type alias Model =
     , saveMebendezole : WebData ()
     , saveVitaminA : WebData ()
     , saveNextVisit : WebData ()
+    , saveNCDA : WebData ()
     }
 
 
@@ -162,12 +163,13 @@ emptyModel =
     , saveMebendezole = NotAsked
     , saveVitaminA = NotAsked
     , saveNextVisit = NotAsked
+    , saveNCDA = NotAsked
     }
 
 
 type Msg
     = CloseWellChildEncounter
-    | HandleWellChildEncounterEdited (WebData ())
+    | HandleUpdatedWellChildEncounter (WebData ())
     | SetWellChildEncounterNote EncounterNote
     | SetWellChildEncounterWarning EncounterWarning
     | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue
@@ -184,7 +186,7 @@ type Msg
     | HandleSavedMuac (WebData ())
     | SaveNutrition PersonId (Maybe WellChildNutritionId) NutritionValue
     | HandleSavedNutrition (WebData ())
-    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
+    | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
     | HandleSavedPhoto (WebData ())
     | SaveWeight PersonId (Maybe WellChildWeightId) WeightInKg
     | HandleSavedWeight (WebData ())
@@ -222,3 +224,5 @@ type Msg
     | HandleSavedVitaminA (WebData ())
     | SaveNextVisit PersonId (Maybe WellChildNextVisitId) NextVisitValue
     | HandleSavedNextVisit (WebData ())
+    | SaveNCDA PersonId (Maybe WellChildNCDAId) NCDAValue
+    | HandleSavedNCDA (WebData ())

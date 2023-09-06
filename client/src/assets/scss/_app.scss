@@ -67,6 +67,10 @@ a {
   }
 }
 
+.overlay.bright {
+  background-color: rgba(0,0,0,0.15);
+}
+
 // CSS for the modal itself, inside an overlay. We center
 // the modal vertically inside the viewport.
 .overlay > .modal {
@@ -109,7 +113,7 @@ a {
     background-size: 31px 40px;
   }
 
-  a {
+  .icon {
     display: block;
     width: 58px;
     height: 58px;
@@ -118,7 +122,7 @@ a {
     position: relative;
   }
 
-  li.active a:before {
+  li.active .icon:before {
     width: 72px;
     height: 72px;
     border: 6px solid $color-dark-blue;

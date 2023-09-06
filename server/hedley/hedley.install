@@ -50,6 +50,7 @@ function hedley_install() {
   hedley_update_7014();
   hedley_update_7015();
   hedley_update_7016();
+  hedley_update_7032();
 
   hedley_initial_sync_permissions();
 }
@@ -618,4 +619,46 @@ function hedley_update_7030() {
  */
 function hedley_update_7031() {
   module_enable(['hedley_well_child']);
+}
+
+/**
+ * Enable the Hedley Case Management module.
+ */
+function hedley_update_7032() {
+  module_enable(['hedley_case_management']);
+}
+
+/**
+ * Enable the Views Lite Pager module.
+ */
+function hedley_update_7033() {
+  module_enable(['views_litepager']);
+}
+
+/**
+ * Enable the Hedley NCD module.
+ */
+function hedley_update_7034() {
+  module_enable(['hedley_ncd']);
+}
+
+/**
+ *  Enable the Hedley WhatsApp module.
+ */
+function hedley_update_7035() {
+  module_enable(['hedley_whatsapp']);
+}
+
+/**
+ * Enable the Hedley Resilience module.
+ */
+function hedley_update_7036() {
+  module_enable(['hedley_resilience']);
+}
+
+/**
+ * Enable the Hedley Stock Management module.
+ */
+function hedley_update_7037() {
+  module_enable(['hedley_stock_management']);
 }

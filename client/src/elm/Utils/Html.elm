@@ -1,9 +1,12 @@
 module Utils.Html exposing
-    ( debugView
+    ( activityCard
+    , activityCardWithCounter
+    , debugView
     , divider
     , spinner
     , tabItem
     , thumbnailImage
+    , viewCustomModal
     , viewLoading
     , viewLogo
     , viewModal
@@ -11,11 +14,11 @@ module Utils.Html exposing
     )
 
 import Config.Model exposing (Model)
-import Gizra.Html exposing (showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Translate exposing (Language, translate)
+import Translate exposing (Language, TranslationId, translate)
 
 
 {-| Displays a debugging segment if debugging is enabled, otherwise renders
@@ -37,9 +40,7 @@ divider =
 
 spinner : Html any
 spinner =
-    div []
-        [ i [ class "icon loading spinner" ] []
-        ]
+    div [] [ i [ class "icon loading spinner" ] [] ]
 
 
 tabItem : String -> Bool -> String -> msg -> Html msg
@@ -50,6 +51,39 @@ tabItem title active taId action =
         , id <| taId ++ "-tab"
         ]
         [ text title ]
+
+
+activityCard : Language -> TranslationId -> String -> msg -> Html msg
+activityCard =
+    activityCardWithCounter 0
+
+
+activityCardWithCounter : Int -> Language -> TranslationId -> String -> msg -> Html msg
+activityCardWithCounter counter language label icon action =
+    let
+        counterNode =
+            if counter > 0 then
+                div [ class "counter" ] [ text <| String.fromInt counter ]
+
+            else
+                emptyNode
+    in
+    div [ class "card" ]
+        [ div
+            [ class "image"
+            , onClick action
+            ]
+            [ div [ class <| "icon-task icon-task-" ++ icon ]
+                [ counterNode ]
+            ]
+        , div [ class "content" ]
+            [ p []
+                [ translate language label
+                    |> String.toUpper
+                    |> text
+                ]
+            ]
+        ]
 
 
 thumbnailImage : String -> Maybe String -> String -> Int -> Int -> Html any
@@ -79,10 +113,8 @@ where we don't need to show any progress.
 -}
 viewLoading : Html any
 viewLoading =
-    div
-        [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui segment center aligned" ]
+    div [ class "wrap wrap-alt-2" ]
+        [ div [ class "ui segment center aligned" ]
             [ spinner ]
         ]
 
@@ -96,7 +128,18 @@ Or, if nothing, shows an emptyNode.
 -}
 viewModal : Maybe (Html msg) -> Html msg
 viewModal =
-    showMaybe << Maybe.map (\modal -> div [ class "overlay" ] [ modal ])
+    viewCustomModal []
+
+
+viewCustomModal : List String -> Maybe (Html msg) -> Html msg
+viewCustomModal extraClasses =
+    let
+        classes =
+            "overlay"
+                :: extraClasses
+                |> String.join " "
+    in
+    showMaybe << Maybe.map (\modal -> div [ class classes ] [ modal ])
 
 
 {-| Take some HTML and wrap it in some standard HTML to make a page that
@@ -106,10 +149,7 @@ error message or something where we don't have a full design.
 wrapPage : List (Html a) -> Html a
 wrapPage html =
     div [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui basic segment" ]
-            html
-        ]
+        [ div [ class "ui basic segment" ] html ]
 
 
 viewLogo : Language -> Html any
@@ -118,8 +158,7 @@ viewLogo language =
         appName =
             translate language Translate.AppName
     in
-    div
-        [ class "logo" ]
+    div [ class "logo" ]
         [ img
             [ alt appName
             , class "img-logo"
