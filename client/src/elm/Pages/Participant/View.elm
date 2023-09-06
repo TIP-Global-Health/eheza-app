@@ -414,22 +414,35 @@ viewActivityCards config language offlineSession personId activities selectedTab
         clinicType =
             offlineSession.session.clinicType
 
-        pendingActivitiesView =
-            if List.isEmpty activities.pending && not (isCaregiver offlineSession personId) then
-                [ span [] [ text <| translate language Translate.NoActivitiesPendingForThisParticipant ] ]
+        adultIsCaregiver =
+            isCaregiver personId offlineSession
 
-            else if List.isEmpty activities.pending && isCaregiver offlineSession personId then
-                [ span [] [ text <| translate language Translate.CaregiverMessage ] ]
+        pendingActivitiesView =
+            if List.isEmpty activities.pending then
+                let
+                    messageTransId =
+                        if adultIsCaregiver then
+                            Translate.CaregiverMessage
+
+                        else
+                            Translate.NoActivitiesPendingForThisParticipant
+                in
+                [ span [] [ text <| translate language messageTransId ] ]
 
             else
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.pending
 
         completedActivitiesView =
-            if List.isEmpty activities.completed && not (isCaregiver offlineSession personId) then
-                [ span [] [ text <| translate language Translate.NoActivitiesCompletedForThisParticipant ] ]
+            if List.isEmpty activities.completed then
+                let
+                    messageTransId =
+                        if adultIsCaregiver then
+                            Translate.CaregiverMessage
 
-            else if List.isEmpty activities.completed && isCaregiver offlineSession personId then
-                [ span [] [ text <| translate language Translate.CaregiverMessage ] ]
+                        else
+                            Translate.NoActivitiesCompletedForThisParticipant
+                in
+                [ span [] [ text <| translate language messageTransId ] ]
 
             else
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.completed
