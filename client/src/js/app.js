@@ -353,6 +353,9 @@ const getSyncInfoGeneral = function() {
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
     storageArr.remainingToUpload = parseInt(storageArr.remainingToUpload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
+    if (storageArr.rollbarToken === undefined) {
+      storageArr.rollbarToken = '';
+    }
     return storageArr;
   }
 
