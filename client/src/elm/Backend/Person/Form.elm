@@ -30,7 +30,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable, required)
 import Utils.GeoLocation exposing (GeoInfo, getGeoInfo, getGeoLocation)
@@ -141,8 +141,13 @@ applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPers
                 |> Maybe.map Tuple.first
 
         defaultUbudehe =
-            maybeRelatedPerson
-                |> Maybe.andThen .ubudehe
+            -- Ubudehe is Rwanda specific. For all other sites
+            -- we preset NoUbudehe, and the inoput is hidden on form.
+            if site == SiteRwanda then
+                Maybe.andThen .ubudehe maybeRelatedPerson
+
+            else
+                Just NoUbudehe
 
         defaultHealthCenter =
             if isChw then

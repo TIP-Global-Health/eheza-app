@@ -58,7 +58,7 @@ import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (..)
@@ -1001,6 +1001,14 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                                 ]
                    )
 
+        demographicSection =
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language Translate.ParticipantDemographicInformation ++ ":" ]
+            , demographicFields
+                |> fieldset [ class "registration-form" ]
+            ]
+
         ubudeheOptions =
             allUbudehes
                 |> List.map
@@ -1012,8 +1020,29 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                 |> (::) emptyOption
 
         familyInformationFields =
-            [ viewSelectInput language Translate.FamilyUbudehe ubudeheOptions Backend.Person.Form.ubudehe "ten" "select-input" True personForm
+            [ viewSelectInput language
+                Translate.FamilyUbudehe
+                ubudeheOptions
+                Backend.Person.Form.ubudehe
+                "ten"
+                "select-input"
+                True
+                personForm
             ]
+
+        -- Only field here is Ubudehe, and it's Rwanda specific.
+        familyInformationSection =
+            if site == SiteRwanda then
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.FamilyInformation ++ ":" ]
+                , familyInformationFields
+                    |> fieldset [ class "registration-form family-info" ]
+                    |> Html.map (MsgForm operation initiator)
+                ]
+
+            else
+                []
 
         geoLocationInputClass isDisabled =
             "select-input"
@@ -1268,18 +1297,8 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                 [ text <| translate language Translate.Save ]
 
         formContent =
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.ParticipantDemographicInformation ++ ":" ]
-            , demographicFields
-                |> fieldset [ class "registration-form" ]
-            , h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.FamilyInformation ++ ":" ]
-            , familyInformationFields
-                |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm operation initiator)
-            ]
+            demographicSection
+                ++ familyInformationSection
                 ++ addressSection
                 ++ contactInformationSection
                 ++ healthCenterSection
