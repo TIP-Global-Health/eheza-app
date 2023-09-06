@@ -11,20 +11,16 @@ import RemoteData exposing (RemoteData(..))
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
-        individualParticipants =
-            Dict.get id db.individualParticipantsByPerson
-                |> Maybe.withDefault NotAsked
-
-        fetchNutritionEncounters =
+        fetchNutritionEncountersMsgs =
             resolveIndividualParticipantsForPerson id NutritionEncounter db
                 |> List.map FetchNutritionEncountersForParticipant
 
-        fetchHomeVisitEncounters =
+        fetchHomeVisitEncounterMsg =
             resolveIndividualParticipantsForPerson id HomeVisitEncounter db
-                |> List.map FetchHomeVisitEncountersForParticipant
+                |> FetchHomeVisitEncountersForParticipants
     in
     [ FetchPerson id
     , FetchIndividualEncounterParticipantsForPerson id
+    , fetchHomeVisitEncounterMsg
     ]
-        ++ fetchNutritionEncounters
-        ++ fetchHomeVisitEncounters
+        ++ fetchNutritionEncountersMsgs

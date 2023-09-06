@@ -292,7 +292,11 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                         else
                             []
                        )
-                    ++ (if not isChw then
+                    ++ (if
+                            -- For now, Stock Management feature is not launched.
+                            False
+                                && not isChw
+                        then
                             [ MenuStockManagement ]
 
                         else

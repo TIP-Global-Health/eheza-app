@@ -51,6 +51,7 @@ choices about what to show the user, rather than the details).
 import Activity.Model exposing (Activity(..))
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
@@ -137,7 +138,7 @@ the login page instead.
 -}
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
-    | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
+    | ClinicsPage -- shows a list of clinics, allows you to choose one
     | ClinicalProgressReportPage PrenatalProgressReportInitiator PrenatalEncounterId
     | DashboardPage DashboardPage -- Dashboard with visual summary of the data
     | GlobalCaseManagementPage -- page where info about needed follow ups is displayed.
@@ -190,9 +191,13 @@ type UserPage
     | NCDParticipantPage IndividualParticipantInitiator PersonId
     | NCDEncounterPage NCDEncounterId -- NCD activities index.
     | NCDActivityPage NCDEncounterId NCDActivity -- record NCD activity.
-    | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index
-    | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity
+    | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index.
+    | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity.
     | NCDProgressReportPage NCDProgressReportInitiator
+    | ChildScoreboardParticipantPage PersonId
+    | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- Child Scoreboard activities index.
+    | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
+    | ChildScoreboardReportPage ChildScoreboardEncounterId -- Scorecard.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

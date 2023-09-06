@@ -3,6 +3,7 @@ module Backend.Measurement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (ageInMonths, isAdult)
 import Backend.Session.Model exposing (OfflineSession)
@@ -12,7 +13,9 @@ import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
+import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
@@ -3531,129 +3534,201 @@ unitOfMeasurementFromString value =
             Nothing
 
 
-ncdaSignToString : NCDASign -> String
-ncdaSignToString value =
-    case value of
-        NCDABornWithBirthDefect ->
-            "born-with-birth-defect"
-
-        NCDABreastfedForSixMonths ->
-            "breastfed-for-six-months"
-
-        NCDAAppropriateComplementaryFeeding ->
-            "appropriate-complementary-feeding"
-
-        NCDAOngeraMNP ->
-            "ongera-mnp"
-
-        NCDAFiveFoodGroups ->
-            "five-food-groups"
-
-        NCDAMealFrequency6to8Months ->
-            "meal-frequency-6to8m"
-
-        NCDAMealFrequency9to11Months ->
-            "meal-frequency-9to11m"
-
-        NCDAMealFrequency12MonthsOrMore ->
-            "meal-frequency-12+m"
-
-        NCDASupportChildWithDisability ->
-            "support-child-with-disability"
-
-        NCDAConditionalCashTransfer ->
-            "conditional-cash-transfer"
-
-        NCDAConditionalFoodItems ->
-            "conditional-food-items"
-
-        NCDAHasCleanWater ->
-            "has-clean-water"
-
-        NCDAHasHandwashingFacility ->
-            "has-handwashing-facility"
-
-        NCDAHasToilets ->
-            "has-toilets"
-
-        NCDAHasKitchenGarden ->
-            "has-kitchen-garden"
-
-        NCDARegularPrenatalVisits ->
-            "regular-prenatal-visits"
-
-        NCDAIronSupplementsDuringPregnancy ->
-            "iron-supplements-during-pregnancy"
-
-        NCDAInsecticideTreatedBednetsDuringPregnancy ->
-            "insecticide-treated-bednets-during-pregnancy"
-
-        NoNCDASigns ->
-            "none"
-
-
 ncdaSignFromString : String -> Maybe NCDASign
 ncdaSignFromString value =
     case value of
+        "appropriate-complementary-feeding" ->
+            Just AppropriateComplementaryFeeding
+
         "born-with-birth-defect" ->
-            Just NCDABornWithBirthDefect
+            Just BornWithBirthDefect
 
         "breastfed-for-six-months" ->
-            Just NCDABreastfedForSixMonths
-
-        "appropriate-complementary-feeding" ->
-            Just NCDAAppropriateComplementaryFeeding
-
-        "ongera-mnp" ->
-            Just NCDAOngeraMNP
-
-        "five-food-groups" ->
-            Just NCDAFiveFoodGroups
-
-        "meal-frequency-6to8m" ->
-            Just NCDAMealFrequency6to8Months
-
-        "meal-frequency-9to11m" ->
-            Just NCDAMealFrequency9to11Months
-
-        "meal-frequency-12+m" ->
-            Just NCDAMealFrequency12MonthsOrMore
-
-        "support-child-with-disability" ->
-            Just NCDASupportChildWithDisability
-
-        "conditional-cash-transfer" ->
-            Just NCDAConditionalCashTransfer
+            Just BreastfedForSixMonths
 
         "conditional-food-items" ->
-            Just NCDAConditionalFoodItems
+            Just ConditionalFoodItems
+
+        "five-food-groups" ->
+            Just FiveFoodGroups
 
         "has-clean-water" ->
-            Just NCDAHasCleanWater
+            Just HasCleanWater
 
         "has-handwashing-facility" ->
-            Just NCDAHasHandwashingFacility
+            Just HasHandwashingFacility
 
         "has-toilets" ->
-            Just NCDAHasToilets
+            Just HasToilets
 
         "has-kitchen-garden" ->
-            Just NCDAHasKitchenGarden
+            Just HasKitchenGarden
 
-        "regular-prenatal-visits" ->
-            Just NCDARegularPrenatalVisits
+        "beneficiary-cash-transfer" ->
+            Just BeneficiaryCashTransfer
 
-        "iron-supplements-during-pregnancy" ->
-            Just NCDAIronSupplementsDuringPregnancy
+        "child-got-diarrhea" ->
+            Just ChildGotDiarrhea
 
-        "insecticide-treated-bednets-during-pregnancy" ->
-            Just NCDAInsecticideTreatedBednetsDuringPregnancy
+        "child-receives-fbf" ->
+            Just ChildReceivesFBF
+
+        "child-taking-fbf" ->
+            Just ChildTakingFBF
+
+        "child-receives-vitamin-a" ->
+            Just ChildReceivesVitaminA
+
+        "child-taking-vitamin-a" ->
+            Just ChildTakingVitaminA
+
+        "child-receives-dewormer" ->
+            Just ChildReceivesDewormer
+
+        "child-taking-dewormer" ->
+            Just ChildTakingDewormer
+
+        "child-receives-ecd" ->
+            Just ChildReceivesECD
+
+        "child-with-acute-malnutrition" ->
+            Just ChildWithAcuteMalnutrition
+
+        "child-with-disability" ->
+            Just ChildWithDisability
+
+        "ongera-mnp" ->
+            Just OngeraMNP
+
+        "insecticide-treated-bednets" ->
+            Just InsecticideTreatedBednets
+
+        "meals-at-recommended-times" ->
+            Just MealsAtRecommendedTimes
+
+        "child-behind-on-vaccination" ->
+            Just ChildBehindOnVaccination
+
+        "receiving-cash-transfer" ->
+            Just ReceivingCashTransfer
+
+        "receiving-support" ->
+            Just ReceivingSupport
+
+        "supplements-during-pregnancy" ->
+            Just SupplementsDuringPregnancy
+
+        "taken-supplements-per-guidance" ->
+            Just TakenSupplementsPerGuidance
+
+        "taking-ongera-mnp" ->
+            Just TakingOngeraMNP
+
+        "treated-for-acute-malnutrition" ->
+            Just TreatedForAcuteMalnutrition
 
         "none" ->
             Just NoNCDASigns
 
         _ ->
             Nothing
+
+
+ncdaSignToString : NCDASign -> String
+ncdaSignToString value =
+    case value of
+        AppropriateComplementaryFeeding ->
+            "appropriate-complementary-feeding"
+
+        BornWithBirthDefect ->
+            "born-with-birth-defect"
+
+        BreastfedForSixMonths ->
+            "breastfed-for-six-months"
+
+        ConditionalFoodItems ->
+            "conditional-food-items"
+
+        FiveFoodGroups ->
+            "five-food-groups"
+
+        HasCleanWater ->
+            "has-clean-water"
+
+        HasHandwashingFacility ->
+            "has-handwashing-facility"
+
+        HasToilets ->
+            "has-toilets"
+
+        HasKitchenGarden ->
+            "has-kitchen-garden"
+
+        BeneficiaryCashTransfer ->
+            "beneficiary-cash-transfer"
+
+        ChildGotDiarrhea ->
+            "child-got-diarrhea"
+
+        ChildReceivesFBF ->
+            "child-receives-fbf"
+
+        ChildTakingFBF ->
+            "child-taking-fbf"
+
+        ChildReceivesVitaminA ->
+            "child-receives-vitamin-a"
+
+        ChildTakingVitaminA ->
+            "child-taking-vitamin-a"
+
+        ChildReceivesDewormer ->
+            "child-receives-dewormer"
+
+        ChildTakingDewormer ->
+            "child-taking-dewormer"
+
+        ChildReceivesECD ->
+            "child-receives-ecd"
+
+        ChildWithAcuteMalnutrition ->
+            "child-with-acute-malnutrition"
+
+        ChildWithDisability ->
+            "child-with-disability"
+
+        OngeraMNP ->
+            "ongera-mnp"
+
+        InsecticideTreatedBednets ->
+            "insecticide-treated-bednets"
+
+        MealsAtRecommendedTimes ->
+            "meals-at-recommended-times"
+
+        ChildBehindOnVaccination ->
+            "child-behind-on-vaccination"
+
+        ReceivingCashTransfer ->
+            "receiving-cash-transfer"
+
+        ReceivingSupport ->
+            "receiving-support"
+
+        SupplementsDuringPregnancy ->
+            "supplements-during-pregnancy"
+
+        TakenSupplementsPerGuidance ->
+            "taken-supplements-per-guidance"
+
+        TakingOngeraMNP ->
+            "taking-ongera-mnp"
+
+        TreatedForAcuteMalnutrition ->
+            "treated-for-acute-malnutrition"
+
+        NoNCDASigns ->
+            "none"
 
 
 expectNCDAActivity : NominalDate -> Person -> Bool
@@ -3732,3 +3807,30 @@ bloodSmearResultFromString value =
 
         _ ->
             Nothing
+
+
+generatePreviousMeasurements :
+    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
+    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
+    -> Maybe encounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( encounterId, measurements ) )
+generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantId db =
+    encountersByParticipantFunc db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if currentEncounterId == Just encounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId (measurementsByEncouterFunc db) of
+                        Just (Success data) ->
+                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                        _ ->
+                            Nothing
+            )
+        -- Most recent date to least recent date.
+        |> List.sortWith sortTuplesByDateDesc

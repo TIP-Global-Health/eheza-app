@@ -167,6 +167,100 @@
   }
 }
 
+@mixin ncda-vaccination {
+
+  .ui.form.vaccination .header.icon-label {
+    align-items: flex-start;
+    font-weight: 500;
+
+    .description,
+    .dosage {
+      margin-bottom: 30px;
+    }
+  }
+
+  .ui.form.vaccination .history,
+  .ui.form.ncda .history {
+    padding: 20px 0;
+
+    .label,
+    .label-normal {
+      font-weight: 500;
+      margin-left: 10px;
+    }
+  }
+
+  .ui.form.vaccination .form-input.date,
+  .ui.form.ncda .form-input.date {
+    border: 2px solid $color-light-gray;
+    color: $color-text;
+    height: 2em;
+    margin-bottom: 30px;
+    padding: 5px;
+    text-align: center;
+    width: 50%;
+  }
+
+  .ui.form.vaccination .history .history-entry,
+  .ui.form.ncda .history .history-entry {
+    align-items: flex-start;
+    display: flex;
+    font-weight: normal;
+    margin-left: 55px;
+
+    .dose {
+      background: $color-primary;
+      border-radius: 5px;
+      color: $color-white;
+      font-size: 17px;
+      padding: 0 10px;
+    }
+
+    .date {
+      margin-bottom: 20px;
+      margin-left: 30px;
+      width: 150px;
+    }
+
+    .update,
+    .delete {
+      border-radius: 3px;
+      color: $color-white;
+      font-size: 17px;
+      padding: 0 20px;
+      text-transform: uppercase;
+    }
+
+    .update {
+      background: $color-primary;
+    }
+
+    .delete {
+      background: $color-velvet;
+    }
+  }
+
+  .ui.form.vaccination .update.actions,
+  .ui.form.ncda .update.actions {
+    display: flex;
+    justify-content: space-evenly;
+    margin-bottom: 40px;
+
+    .button {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 32px;
+      padding: 15px;
+      width: 250px;
+    }
+  }
+
+  .ui.form.vaccination-overview .heading .date {
+    margin-bottom: 0;
+  }
+
+}
+
 // We design for a minimum width of 800px.
 html,
 body {
@@ -567,12 +661,24 @@ div.page-person-create {
 }
 
 div.page-people {
-  margin: 0 auto;
-  padding: 0 35px 35px 35px;
-  height: 100%;
-  overflow-y: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  margin: 0 auto;
+  overflow-y: hidden;
+  padding: 0 35px 35px 35px;
+  width: 100%;
+
+  div.ui.message.warning {
+    font-size: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+  }
+
+  div.ui.message.warning .header {
+    font-size: 35px;
+  }
 
   div.search-wrapper {
     flex: 1 1 auto;
@@ -754,6 +860,106 @@ div.page-activity {
         }
       }
     }
+
+    .ui.form.ncda .form-input.anc-months {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 45px;
+      width: 100%;
+
+      .item {
+        text-align: center;
+        width: 95%;
+      }
+
+      .trimester {
+        display: flex;
+        width: 100%;
+      }
+
+      .trimesters-separator {
+        display: flex;
+      }
+
+      .trimesters-separator .section {
+        height: 100%;
+        width: 10px;
+      }
+
+      .trimesters-separator .section.right {
+        border-left: 1px solid black;
+      }
+
+      .trimesters-separator .section .top,
+      .trimesters-separator .section .bottom {
+        height: 32px;
+        width: 9px;
+      }
+
+      .trimesters-separator .section .top {
+        border-bottom: 1px solid black;
+      }
+
+      .item .month-number {
+        border-bottom: 1px solid black;
+        margin-bottom: 15px;
+      }
+
+      .item .month-radio {
+        margin-top: 15px;
+      }
+
+      .item label {
+        margin-left: 10px;
+      }
+
+      .item label:before {
+        content: " ";
+        display: inline-block;
+        position: relative;
+        top: 5px;
+        margin-right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 13px;
+        border: 2px solid $color-gray-border;
+        background-color: transparent;
+      }
+
+      .item input[type=radio] {
+        display: none;
+      }
+
+      .item input[type=radio]:checked + label:after {
+        content: " ";
+        background: $color-text;
+        border-radius: 7px;
+        display: block;
+        height: 14px;
+        margin-left: 27px;
+        margin-top: -25px;
+        width: 14px;
+      }
+
+      .item input[type=radio]:checked.disabled + label:after {
+        // pointer-events: none;
+        opacity: 0.5;
+      }
+    }
+
+    .ui.form.ncda .label.counseling {
+      background-color: $color-pink;
+      border-radius: 5px;
+      font-style: italic;
+      padding: 15px;
+      margin-top: 10px;
+      margin-bottom: 15px;
+    }
+
+    .ui.form.ncda .form-input.measurement.birth-weight {
+      margin-bottom: 30px;
+    }
+
   }
 
   .ui.full.segment .actions.two button {
@@ -765,6 +971,10 @@ div.page-activity {
       border-left: 1px solid $color-white;
     }
   }
+
+  .form-content.ncda {
+    @include ncda-vaccination;
+  }
 }
 
 .sync-status {
@@ -774,7 +984,7 @@ div.page-activity {
   }
 }
 
-//Device Status Page
+// Device Status Page
 .device-status {
   button {
     margin-bottom: 20px;
@@ -1747,34 +1957,22 @@ div.page-activity.stock-management {
   }
 }
 
-// Acute Illness Activity page
 div.page-activity.nutrition {
 
   .ui.full.segment {
 
     .full.content {
       min-height: 210px;
-    }
 
-    .symptoms-form.gi .symptoms {
-      margin-bottom: 30px;
-    }
-
-    .ui.form {
-      min-height: 210px;
-    }
-
-    .ui.form.send-to-hc,
-    .ui.form.health-education {
-      h2 {
-        text-transform: uppercase;
-      }
-
-      @include next-steps;
+      @include ncda-vaccination;
     }
 
     .label {
       margin-bottom: 5px;
+    }
+
+    .ui.form {
+      min-height: 210px;
     }
 
     .form-input.yes-no {
@@ -1817,6 +2015,38 @@ div.page-activity.nutrition {
 
       &.derived {
         margin-left: 70px;
+      }
+    }
+
+    .symptoms-form.gi .symptoms {
+      margin-bottom: 30px;
+    }
+
+    .ui.form.send-to-hc,
+    .ui.form.health-education {
+      h2 {
+        text-transform: uppercase;
+      }
+
+      @include next-steps;
+    }
+  }
+}
+
+div.page-activity.child-scoreboard {
+
+  .ui.unstackable.items {
+
+    .ui.full.segment .full.content .ui.form.ncda {
+      min-height: 210px;
+
+      .label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .checkbox-select-input {
+        margin-bottom: 15px;
       }
     }
   }
@@ -2011,75 +2241,7 @@ div.page-activity.prenatal {
         margin-bottom: 20px;
       }
 
-      .ui.form.vaccination .header.icon-label {
-        align-items: flex-start;
-        font-weight: 500;
-
-        .description,
-        .dosage {
-          margin-bottom: 30px;
-        }
-      }
-
-      .ui.form.vaccination .history {
-        padding: 20px 0;
-
-        .label {
-          font-weight: 500;
-          margin-left: 10px;
-        }
-      }
-
-      .ui.form.vaccination .history .history-entry {
-        align-items: flex-start;
-        display: flex;
-        font-weight: normal;
-        margin-left: 55px;
-
-        .dose {
-          background: $color-primary;
-          border-radius: 5px;
-          color: $color-white;
-          font-size: 17px;
-          padding: 0 10px;
-        }
-
-        .date {
-          margin-bottom: 20px;
-          margin-left: 30px;
-          width: 150px;
-        }
-
-        .update,
-        .delete {
-          border-radius: 3px;
-          color: $color-white;
-          font-size: 17px;
-          padding: 0 20px;
-          text-transform: uppercase;
-        }
-
-        .update {
-          background: $color-primary;
-        }
-
-        .delete {
-          background: $color-velvet;
-        }
-      }
-
-      .ui.form.vaccination .update.actions {
-        display: flex;
-        justify-content: space-evenly;
-        margin-bottom: 40px;
-
-        .button {
-          font-size: 18px;
-          font-weight: 600;
-          padding: 15px;
-          width: 250px;
-        }
-      }
+      @include ncda-vaccination;
 
       .ui.form.labs-history {
 
@@ -2180,11 +2342,14 @@ div.page-activity.well-child {
   }
 }
 
-div.page-activity.well-child {
+div.page-activity.well-child,
+div.page-activity.child-scoreboard {
 
   .ui.full.segment {
 
     .full.content {
+
+      @include ncda-vaccination;
 
       .date {
         margin-bottom: 20px;
@@ -2244,79 +2409,6 @@ div.page-activity.well-child {
 
       .button.review-history {
         margin-bottom: 30px;
-      }
-
-      .ui.form.vaccination .header.icon-label {
-        align-items: flex-start;
-        font-weight: 500;
-
-        .description,
-        .dosage {
-          margin-bottom: 30px;
-        }
-      }
-
-      .ui.form.vaccination .history {
-        padding: 20px 0;
-
-        .label {
-          font-weight: 500;
-          margin-left: 10px;
-        }
-      }
-
-      .ui.form.vaccination .history .history-entry {
-        align-items: flex-start;
-        display: flex;
-        font-weight: normal;
-        margin-left: 55px;
-
-        .dose {
-          background: $color-primary;
-          border-radius: 5px;
-          color: $color-white;
-          font-size: 17px;
-          padding: 0 10px;
-        }
-
-        .date {
-          margin-left: 30px;
-          width: 150px;
-        }
-
-        .update,
-        .delete {
-          border-radius: 3px;
-          color: $color-white;
-          font-size: 17px;
-          padding: 0 20px;
-          text-transform: uppercase;
-        }
-
-        .update {
-          background: $color-primary;
-        }
-
-        .delete {
-          background: $color-velvet;
-        }
-      }
-
-      .ui.form.vaccination .update.actions {
-        display: flex;
-        justify-content: space-evenly;
-        margin-bottom: 40px;
-
-        .button {
-          font-size: 18px;
-          font-weight: 600;
-          padding: 15px;
-          width: 250px;
-        }
-      }
-
-      .ui.form.vaccination-overview .heading .date {
-        margin-bottom: 0;
       }
 
       .ui.form.pregnancy-summary {
@@ -3630,14 +3722,17 @@ div.page-report.acute-illness {
 }
 
 div.page-report.acute-illness,
-div.page-encounter.well-child,
 div.page-activity.trace-contact,
+div.page-encounter.well-child,
 div.page-activity.well-child,
 div.page-report.well-child,
 div.page-activity.patient-record,
 div.page-report.ncd,
 div.page-encounter.ncd,
-div.page-activity.ncd {
+div.page-activity.ncd,
+div.page-encounter.child-scoreboard,
+div.page-activity.child-scoreboard,
+div.page-report.child-scoreboard {
 
   .details {
     padding-left: 25px;
@@ -3665,6 +3760,7 @@ div.page-activity.ncd {
 div.page-activity.well-child,
 div.page-report.acute-illness,
 div.page-report.well-child,
+div.page-report.child-scoreboard,
 div.page-activity.patient-record {
 
   .heading {
@@ -3785,6 +3881,7 @@ div.page-report.well-child,
 div.page-report.clinical,
 div.page-report.demographics,
 div.page-activity.patient-record,
+div.page-report.child-scoreboard,
 div.page-report.ncd {
   background: unset;
 
@@ -4047,7 +4144,8 @@ div.page-report.ncd {
 
 div.page-case-management,
 div.page-activity.patient-record,
-div.page-report.well-child {
+div.page-report.well-child,
+div.page-report.child-scoreboard {
   padding: 0 30px 30px 30px;
 
   .ui.segment.tabs,
@@ -4228,6 +4326,17 @@ div.page-report.well-child {
 }
 
 div.page-case-management {
+
+  div.ui.message.warning {
+    font-size: 30px;
+    margin-top: auto;
+    margin-bottom: auto;
+    text-align: center;
+  }
+
+  div.ui.message.warning .header {
+    font-size: 35px;
+  }
 
   .pane {
     background: $color-primary;

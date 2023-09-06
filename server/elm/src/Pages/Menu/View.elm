@@ -2,16 +2,16 @@ module Pages.Menu.View exposing (view)
 
 import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (fromEntityId, toEntityId)
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Menu.Model exposing (..)
 import Pages.Utils exposing (emptySelectOption, viewActionButton, viewLabel)
-import Backend.Entities exposing (fromEntityId, toEntityId)
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 
@@ -137,56 +137,60 @@ view language model =
         actionButton =
             Maybe.map2
                 (\province district ->
-                    let
-                        provincePart =
-                            Dict.get province geoInfo.provinces
-                                |> Maybe.map .name
-                                |> Maybe.withDefault ""
+                    if model.selected then
+                        text <| translate language Translate.PleaseWaitMessage
 
-                        districtPart =
-                            Dict.get district geoInfo.districts
-                                |> Maybe.map .name
-                                |> Maybe.withDefault ""
+                    else
+                        let
+                            provincePart =
+                                Dict.get province geoInfo.provinces
+                                    |> Maybe.map .name
+                                    |> Maybe.withDefault ""
 
-                        sectorPart =
-                            Maybe.andThen
-                                (\id ->
-                                    Dict.get id geoInfo.sectors
-                                )
-                                model.sector
-                                |> Maybe.map (\geoLocation -> "/" ++ geoLocation.name)
-                                |> Maybe.withDefault ""
+                            districtPart =
+                                Dict.get district geoInfo.districts
+                                    |> Maybe.map .name
+                                    |> Maybe.withDefault ""
 
-                        cellPart =
-                            Maybe.andThen
-                                (\id ->
-                                    Dict.get id geoInfo.cells
-                                )
-                                model.cell
-                                |> Maybe.map (\geoLocation -> "/" ++ geoLocation.name)
-                                |> Maybe.withDefault ""
+                            sectorPart =
+                                Maybe.andThen
+                                    (\id ->
+                                        Dict.get id geoInfo.sectors
+                                    )
+                                    model.sector
+                                    |> Maybe.map (\geoLocation -> "/" ++ geoLocation.name)
+                                    |> Maybe.withDefault ""
 
-                        villagePart =
-                            Maybe.andThen
-                                (\id ->
-                                    Dict.get id geoInfo.villages
-                                )
-                                model.village
-                                |> Maybe.map (\geoLocation -> "/" ++ geoLocation.name)
-                                |> Maybe.withDefault ""
+                            cellPart =
+                                Maybe.andThen
+                                    (\id ->
+                                        Dict.get id geoInfo.cells
+                                    )
+                                    model.cell
+                                    |> Maybe.map (\geoLocation -> "/" ++ geoLocation.name)
+                                    |> Maybe.withDefault ""
 
-                        suffix =
-                            provincePart
-                                ++ "/"
-                                ++ districtPart
-                                ++ sectorPart
-                                ++ cellPart
-                                ++ villagePart
-                    in
-                    div [ class "actions" ]
-                        [ a [ href <| "/admin/reports/aggregated-ncda/" ++ suffix ]
-                            [ button [] [ text <| translate language Translate.GenerateReport ] ]
-                        ]
+                            villagePart =
+                                Maybe.andThen
+                                    (\id ->
+                                        Dict.get id geoInfo.villages
+                                    )
+                                    model.village
+                                    |> Maybe.map (\geoLocation -> "/" ++ geoLocation.name)
+                                    |> Maybe.withDefault ""
+
+                            suffix =
+                                provincePart
+                                    ++ "/"
+                                    ++ districtPart
+                                    ++ sectorPart
+                                    ++ cellPart
+                                    ++ villagePart
+                        in
+                        a [ href <| "/admin/reports/aggregated-ncda/" ++ suffix ]
+                            [ button [ onClick SelectionMade ]
+                                [ text <| translate language Translate.GenerateReport ]
+                            ]
                 )
                 model.province
                 model.district
@@ -201,7 +205,7 @@ view language model =
             , cellInput
             , villageInput
             ]
-        , actionButton
+        , div [ class "actions" ] [ actionButton ]
         ]
 
 

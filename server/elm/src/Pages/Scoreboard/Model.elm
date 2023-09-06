@@ -3,17 +3,25 @@ module Pages.Scoreboard.Model exposing (..)
 
 type alias Model =
     { yearSelectorGap : Int
+    , viewMode : ViewMode
     }
 
 
 emptyModel : Model
 emptyModel =
     { yearSelectorGap = 0
+    , viewMode = ModeValues
     }
+
+
+type ViewMode
+    = ModeValues
+    | ModePercentages
 
 
 type Msg
     = ChaneYearGap Int
+    | SetViewMode ViewMode
 
 
 type NCDADemographicsItem

@@ -4,7 +4,6 @@ import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 import Backend.Scoreboard.Model exposing (Msg(..))
-import Backend.Scoreboard.Utils exposing (generateECDMilestonesStatusByMonth)
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -19,53 +18,6 @@ update currentDate msg model =
             let
                 modelUpdated =
                     { model | scoreboardData = Just <| decodeValue (decodeScoreboardData currentDate) value }
-            in
-            BackendReturn
-                modelUpdated
-                Cmd.none
-                noError
-                []
-
-        CalculateECD ->
-            let
-                dataWithECDMilestonesStatus =
-                    Maybe.map
-                        (\data ->
-                            Result.map
-                                (\scoreboardData ->
-                                    let
-                                        updatedRecords =
-                                            List.map
-                                                (\record ->
-                                                    let
-                                                        -- Structure that holds monthly status of ECD milestones,
-                                                        -- when child is between 0 and 24 months old.
-                                                        ecdMilestonesStatusByMonth =
-                                                            generateECDMilestonesStatusByMonth currentDate record.birthDate record.ncda.universalIntervention.row5.encountersData
-
-                                                        updatedUniversalInterventionData =
-                                                            record.ncda.universalIntervention.row5
-                                                                |> (\universalInterventionData -> { universalInterventionData | ecdMilestonesStatusByMonth = ecdMilestonesStatusByMonth })
-
-                                                        updatedUniversalIntervention =
-                                                            record.ncda.universalIntervention
-                                                                |> (\universalIntervention -> { universalIntervention | row5 = updatedUniversalInterventionData })
-
-                                                        updatedNCDA =
-                                                            record.ncda |> (\ncda -> { ncda | universalIntervention = updatedUniversalIntervention })
-                                                    in
-                                                    { record | ncda = updatedNCDA }
-                                                )
-                                                scoreboardData.records
-                                    in
-                                    { scoreboardData | records = updatedRecords }
-                                )
-                                data
-                        )
-                        model.scoreboardData
-
-                modelUpdated =
-                    { model | scoreboardData = dataWithECDMilestonesStatus }
             in
             BackendReturn
                 modelUpdated

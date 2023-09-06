@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (acuteIllnessOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualParticipantInitiator(..), allAcuteIllnessOutcome)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -27,11 +28,9 @@ view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> Mo
 view language currentDate id isChw db model =
     let
         firstEncounterId =
-            Dict.get id db.acuteIllnessEncountersByParticipant
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map Dict.keys
-                |> RemoteData.withDefault []
+            getAcuteIllnessEncountersForParticipant db id
                 |> List.head
+                |> Maybe.map Tuple.first
 
         data =
             firstEncounterId

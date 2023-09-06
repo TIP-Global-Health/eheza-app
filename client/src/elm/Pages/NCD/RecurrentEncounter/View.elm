@@ -26,7 +26,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading)
 import Utils.WebData exposing (viewWebData)
 
 

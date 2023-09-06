@@ -4,12 +4,13 @@ import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
-import Backend.Scoreboard.Model exposing (ECDStatus(..), ScoreboardData, SelectedEntity(..))
+import Backend.Scoreboard.Model exposing (ScoreboardData, SelectedEntity(..))
 import Date
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Icons
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
@@ -46,23 +47,69 @@ viewScoreboardData language currentDate data model =
                         ]
                     ]
                 , viewYearSelector language currentDate model.yearSelectorGap ChaneYearGap
-                , div [ class "values-percents" ] []
+                , div [ class "values-percents" ]
+                    [ div
+                        [ classList
+                            [ ( "item", True )
+                            , ( "selected", model.viewMode == ModePercentages )
+                            ]
+                        , onClick <| SetViewMode ModePercentages
+                        ]
+                        [ text "%" ]
+                    , div
+                        [ classList
+                            [ ( "item", True )
+                            , ( "selected", model.viewMode == ModeValues )
+                            ]
+                        , onClick <| SetViewMode ModeValues
+                        ]
+                        [ text "#" ]
+                    ]
                 ]
 
         monthsGap =
             generateMonthsGap currentDate model.yearSelectorGap
+
+        childrenUnder2 =
+            List.foldl
+                (\record accum ->
+                    let
+                        ageInMonths =
+                            diffMonths record.birthDate currentDate
+                    in
+                    List.indexedMap
+                        (\index accumValue ->
+                            Dict.get index monthsGap
+                                |> Maybe.map
+                                    (\gapInMonths ->
+                                        let
+                                            gap =
+                                                ageInMonths - gapInMonths
+                                        in
+                                        if gap >= 0 && gap < 24 then
+                                            accumValue + 1
+
+                                        else
+                                            accumValue
+                                    )
+                                |> Maybe.withDefault accumValue
+                        )
+                        accum
+                )
+                (List.repeat 12 0)
+                data.records
     in
     div [ class "page-content" ]
         [ topBar
         , viewAggregatedChildScoreboardPane language data
-        , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap data
-        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap data
-        , viewStuntingPane language currentDate model.yearSelectorGap monthsGap data
-        , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap data
-        , viewUniversalInterventionPane language currentDate model.yearSelectorGap monthsGap data
-        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap data
-        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap data
-        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap data
+        , viewDemographicsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewStuntingPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewUniversalInterventionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         ]
 
 
@@ -79,8 +126,8 @@ viewAggregatedChildScoreboardPane language data =
         ]
 
 
-viewDemographicsPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
+viewDemographicsPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
@@ -88,7 +135,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
                     viewTableRow language currentDate yearSelectorGap (Translate.NCDADemographicsItemLabel item) itemValues
                 )
                 [ ChildrenUnder2, NewbornsThisMonth, LowBirthWeigh ]
-                values
+                [ List.map String.fromInt childrenUnder2, newbornsForView, lowBirthWeightForView ]
 
         valuesByRow =
             List.foldl
@@ -106,13 +153,6 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
                                             gap =
                                                 ageInMonths - gapInMonths
 
-                                            row1 =
-                                                if gap >= 0 && gap < 24 then
-                                                    accumValue.row1 + 1
-
-                                                else
-                                                    accumValue.row1
-
                                             row2 =
                                                 if gap == 0 then
                                                     accumValue.row2 + 1
@@ -127,8 +167,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
                                                 else
                                                     accumValue.row3
                                         in
-                                        { row1 = row1
-                                        , row2 = row2
+                                        { row2 = row2
                                         , row3 = row3
                                         }
                                     )
@@ -140,13 +179,29 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
                 data.records
 
         emptyValues =
-            List.repeat 12 { row1 = 0, row2 = 0, row3 = 0 }
+            List.repeat 12 { row2 = 0, row3 = 0 }
 
-        values =
-            [ List.map .row1 valuesByRow
-            , List.map .row2 valuesByRow
-            , List.map .row3 valuesByRow
-            ]
+        newborns =
+            List.map .row2 valuesByRow
+
+        newbornsForView =
+            case viewMode of
+                ModePercentages ->
+                    List.map2 viewPercentage newborns childrenUnder2
+
+                ModeValues ->
+                    List.map String.fromInt newborns
+
+        lowBirthWeight =
+            List.map .row3 valuesByRow
+
+        lowBirthWeightForView =
+            case viewMode of
+                ModePercentages ->
+                    List.map2 viewPercentage lowBirthWeight newborns
+
+                ModeValues ->
+                    List.map String.fromInt lowBirthWeight
     in
     div [ class "pane cyan" ]
         [ viewPaneHeading language Translate.Demographics
@@ -156,13 +211,14 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewAcuteMalnutritionPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap data =
+viewAcuteMalnutritionPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAAcuteMalnutritionItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAAcuteMalnutritionItemLabel item)
                 )
                 [ SevereAcuteMalnutrition, ModerateAcuteMalnutrition, GoodNutrition ]
                 values
@@ -270,13 +326,14 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewStuntingPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewStuntingPane language currentDate yearSelectorGap monthsGap data =
+viewStuntingPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAStuntingItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAStuntingItemLabel item)
                 )
                 [ SevereStunting, ModerateStunting, NoStunting ]
                 values
@@ -350,13 +407,14 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewANCNewbornPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
+viewANCNewbornPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAANCNewbornItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAANCNewbornItemLabel item)
                 )
                 [ RegularCheckups, IronDuringPregnancy ]
                 values
@@ -366,7 +424,12 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
                 (\record accum ->
                     let
                         ageInMonths =
-                            diffMonths record.birthDate currentDate
+                            -- Using EDD date to properly resolve the month of
+                            -- prgnancy (as child may have been borm premature).
+                            diffMonths record.eddDate currentDate
+
+                        row1AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.ancNewborn.row1
                     in
                     List.indexedMap
                         (\index accumValue ->
@@ -378,7 +441,7 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
                                                 gapInMonths - ageInMonths
 
                                             row1 =
-                                                if record.ncda.ancNewborn.row1 && gap > 0 && gap < 10 then
+                                                if List.member gapInMonths row1AsAgeInMonths then
                                                     accumValue.row1 + 1
 
                                                 else
@@ -418,13 +481,14 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewUniversalInterventionPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap data =
+viewUniversalInterventionPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAUniversalInterventionItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAUniversalInterventionItemLabel item)
                 )
                 [ Immunization, VitaminA, Deworming, OngeraMNP, ECDServices ]
                 values
@@ -444,6 +508,9 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
 
                         row4AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row4
+
+                        row5AsAgeInMonths =
+                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row5
                     in
                     List.indexedMap
                         (\index accumValue ->
@@ -503,56 +570,30 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
                                                             -- done, and therefore, we're on track at referenced month.
                                                             (accumValue.row1 + 1)
 
-                                            -- Vitamin A is given with interval of at least 6 months.
-                                            -- So, once dose is given, we need to do +1 for that month, and
-                                            -- next 5.
-                                            -- Another condition to look for is the age of child, which should be
-                                            -- between 0 and 24 months.
                                             row2 =
-                                                if
-                                                    List.any
-                                                        (\ageInMonthsOnAdministrationDate ->
-                                                            let
-                                                                numberOfMonthsSinceAdministration =
-                                                                    ageInMonthsOnAdministrationDate - gapInMonths
-                                                            in
-                                                            (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0)
-                                                        )
-                                                        row2AsAgeInMonths
-                                                        && (ageInMonthsForIndexCell >= 0)
-                                                        && (ageInMonthsForIndexCell < 24)
-                                                then
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row2AsAgeInMonths then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
-                                            -- Mebendezoleis given with interval of at least 6 months.
-                                            -- So, once dose is given, we need to do +1 for that month, and
-                                            -- next 5.
-                                            -- Another condition to look for is the age of child, which should be
-                                            -- between 0 and 24 months.
                                             row3 =
-                                                if
-                                                    List.any
-                                                        (\ageInMonthsOnAdministrationDate ->
-                                                            let
-                                                                numberOfMonthsSinceAdministration =
-                                                                    ageInMonthsOnAdministrationDate - gapInMonths
-                                                            in
-                                                            (numberOfMonthsSinceAdministration < 6) && (numberOfMonthsSinceAdministration >= 0)
-                                                        )
-                                                        row3AsAgeInMonths
-                                                        && (ageInMonthsForIndexCell >= 0)
-                                                        && (ageInMonthsForIndexCell < 34)
-                                                then
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row3AsAgeInMonths then
                                                     accumValue.row3 + 1
 
                                                 else
                                                     accumValue.row3
 
                                             row4 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -563,20 +604,15 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
                                                     accumValue.row4
 
                                             row5 =
-                                                if (ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24) then
-                                                    accumValue.row5
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
+                                                -- reaches age of 2 years.
+                                                -- NCDA data is also for childern that up until 2 years old, so
+                                                -- no need to check child age for given month.
+                                                if List.member gapInMonths row5AsAgeInMonths then
+                                                    accumValue.row5 + 1
 
                                                 else
-                                                    let
-                                                        status =
-                                                            List.Extra.getAt ageInMonthsForIndexCell record.ncda.universalIntervention.row5.ecdMilestonesStatusByMonth
-                                                                |> Maybe.withDefault NoECDStatus
-                                                    in
-                                                    if status == StatusOnTrack then
-                                                        accumValue.row5 + 1
-
-                                                    else
-                                                        accumValue.row5
+                                                    accumValue.row5
                                         in
                                         { row1 = row1
                                         , row2 = row2
@@ -622,13 +658,14 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap dat
         ]
 
 
-viewNutritionBehaviorPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
+viewNutritionBehaviorPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDANutritionBehaviorItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDANutritionBehaviorItemLabel item)
                 )
                 [ BreastfedSixMonths, AppropriateComplementaryFeeding, DiverseDiet, MealsADay ]
                 values
@@ -637,8 +674,8 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
             List.foldl
                 (\record accum ->
                     let
-                        row1AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row1
+                        ageInMonths =
+                            diffMonths record.birthDate currentDate
 
                         row2AsAgeInMonths =
                             List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row2
@@ -655,8 +692,11 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            gap =
+                                                ageInMonths - gapInMonths
+
                                             row1 =
-                                                if List.member gapInMonths row1AsAgeInMonths then
+                                                if gap >= 0 && gap < 6 && record.ncda.nutritionBehavior.row1 then
                                                     accumValue.row1 + 1
 
                                                 else
@@ -714,13 +754,14 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap data =
         ]
 
 
-viewTargetedInterventionsPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap data =
+viewTargetedInterventionsPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDATargetedInterventionsItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDATargetedInterventionsItemLabel item)
                 )
                 [ FBFGiven
                 , TreatmentForAcuteMalnutrition
@@ -795,7 +836,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap dat
                                                     accumValue.row3
 
                                             row4 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -806,7 +847,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap dat
                                                     accumValue.row4
 
                                             row5 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -817,7 +858,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap dat
                                                     accumValue.row5
 
                                             row6 =
-                                                -- Value is taken from NCDA questioner, that is given monthly, until child
+                                                -- Value is taken from NCDA questionnaire, that is given monthly, until child
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
@@ -862,13 +903,14 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap dat
         ]
 
 
-viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> Dict Int Int -> ScoreboardData -> Html any
-viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap monthsGap data =
+viewInfrastructureEnvironmentWashPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
                 (\item itemValues ->
-                    viewTableRow language currentDate yearSelectorGap (Translate.NCDAInfrastructureEnvironmentWashItemLabel item) itemValues
+                    valuesByViewMode viewMode childrenUnder2 itemValues
+                        |> viewTableRow language currentDate yearSelectorGap (Translate.NCDAInfrastructureEnvironmentWashItemLabel item)
                 )
                 [ HasToilets, HasCleanWater, HasHandwashingFacility, InsecticideTreatedBedNets, HasKitchenGarden ]
                 values
@@ -1006,7 +1048,7 @@ viewTableHeader language =
             :: monthCells
 
 
-viewTableRow : Language -> NominalDate -> Int -> TranslationId -> List Int -> Html any
+viewTableRow : Language -> NominalDate -> Int -> TranslationId -> List String -> Html any
 viewTableRow language currentDate yearSelectorGap itemTransId values =
     let
         activityCell =
@@ -1025,7 +1067,7 @@ viewTableRow language currentDate yearSelectorGap itemTransId values =
             :: valueCells
 
 
-formatValues : NominalDate -> Int -> List Int -> List String
+formatValues : NominalDate -> Int -> List String -> List String
 formatValues currentDate yearSelectorGap =
     let
         currentMonthNumber =
@@ -1035,11 +1077,11 @@ formatValues currentDate yearSelectorGap =
         (\index value ->
             if yearSelectorGap == 0 then
                 if index < currentMonthNumber then
-                    String.fromInt value
+                    value
 
                 else
                     ""
 
             else
-                String.fromInt value
+                value
         )

@@ -148,7 +148,13 @@ class RoboFile extends Tasks {
    * @throws \Robo\Exception\TaskException
    */
   public function deployPantheonSync(string $env = 'test', bool $doDeploy = TRUE) {
-    $pantheonName = self::PANTHEON_NAME;
+    if (getenv('PANTHEON_NAME')) {
+      $pantheonName = getenv('PANTHEON_NAME');
+    }
+    else {
+      $pantheonName = self::PANTHEON_NAME;
+    }
+
     $pantheonTerminusEnvironment = $pantheonName . '.' . $env;
 
     $task = $this->taskExecStack();
@@ -427,9 +433,22 @@ class RoboFile extends Tasks {
 
   /**
    * Generates the nutrition report.
+   *
+   * @param string $date
+   *   The date to generate the report for.
+   * @param string $district
+   *   The district to generate the report for.
    */
-  public function reportNutrition() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php');
+  public function reportNutrition($date = NULL, $district = NULL) {
+    $command = 'cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php';
+    if (!empty($district)) {
+      $command .= ' --district=' . escapeshellarg($district);
+    }
+    if (!empty($date)) {
+      $command .= ' --date=' . escapeshellarg($date);
+    }
+
+    $this->_exec($command);
   }
 
 }

@@ -1176,14 +1176,23 @@ function hedley_person_node_presave($node) {
     return;
   }
 
-  // We don't make the check for newly created nodes.
+  // We don't make the checks for newly created nodes, because
+  // node label is set ny autolabel setting on creation, and
+  // new person can't be created with 'deleted = TRUE'.
   if (empty($node->nid)) {
     return;
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
-  $deleted = $wrapper->field_deleted->value();
 
+  // Set node label.
+  $first_name = $wrapper->field_first_name->value();
+  $second_name = $wrapper->field_second_name->value();
+  $title = empty($first_name) ? $second_name : "$second_name $first_name";
+  $wrapper->title->set($title);
+
+  // If being deleted, verify person got no measurements.
+  $deleted = $wrapper->field_deleted->value();
   if (!isset($deleted) || $deleted === FALSE) {
     return;
   }
@@ -1314,27 +1323,27 @@ function hedley_person_process_deleted_update($node) {
 /**
  * Resolves all pmtct_participant nodes IDs for person.
  *
- * @param int $nid
+ * @param int $person_id
  *   Child node ID.
  *
  * @return array
  *   List of pmtct_participant nodes IDs.
  */
-function hedley_person_pmtct_participants_for_person($nid) {
-  $query = db_select('node', 'n');
-  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
-  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
+function hedley_person_pmtct_participants_for_person($person_id) {
+  $association_fields = [
+    'field_person',
+    'field_adult',
+  ];
+  $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
-  $query->condition('n.type', 'pmtct_participant');
+  $ids = [];
+  foreach ($entries as $entry) {
+    if ($entry->bundle == 'pmtct_participant') {
+      $ids[] = $entry->entity_id;
+    }
+  }
 
-  $person_or = db_or();
-  $person_or->condition('p.field_person_target_id', $nid);
-  $person_or->condition('a.field_adult_target_id', $nid);
-  $query->condition($person_or);
-
-  $query->addField('n', 'nid');
-
-  return $query->execute()->fetchCol();
+  return $ids;
 }
 
 /**
@@ -1391,32 +1400,32 @@ function hedley_person_encounters_for_individual_participant($nid) {
  *   - Individual Participants.
  *   - Relationships.
  *
- * @param int $nid
+ * @param int $person_id
  *   Child node ID.
  *
  * @return array
- *   List of nodes IDs to be marked as deleted..
+ *   List of nodes IDs to be marked as deleted.
  */
-function hedley_person_content_affected_by_deletion($nid) {
-  $query = db_select('node', 'n');
-  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
-  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
-  $query->leftJoin('field_data_field_related_to', 'rt', 'rt.entity_id = n.nid');
-
-  $person_or = db_or();
-  $person_or->condition('p.field_person_target_id', $nid);
-  $person_or->condition('a.field_adult_target_id', $nid);
-  $person_or->condition('rt.field_related_to_target_id', $nid);
-  $query->condition($person_or);
+function hedley_person_content_affected_by_deletion($person_id) {
+  $association_fields = [
+    'field_person',
+    'field_adult',
+    'field_related_to',
+  ];
+  $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
   $bundles = [
     'pmtct_participant',
     'relationship',
     'individual_participant',
   ];
-  $query->condition('n.type', $bundles, 'IN');
 
-  $query->addField('n', 'nid');
+  $ids = [];
+  foreach ($entries as $entry) {
+    if (in_array($entry->bundle, $bundles)) {
+      $ids[] = $entry->entity_id;
+    }
+  }
 
-  return $query->execute()->fetchCol();
+  return $ids;
 }

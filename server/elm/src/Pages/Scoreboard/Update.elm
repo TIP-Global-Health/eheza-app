@@ -15,3 +15,10 @@ update modelBackend msg model =
                 Cmd.none
                 noError
                 []
+
+        SetViewMode mode ->
+            PagesReturn
+                { model | viewMode = mode }
+                Cmd.none
+                noError
+                []

@@ -64,6 +64,10 @@ type alias NCDMeasurement value =
     Measurement NCDEncounterId value
 
 
+type alias ChildScoreboardMeasurement value =
+    Measurement ChildScoreboardEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -260,7 +264,7 @@ type FollowUpOption
     | ThreeDays
     | OneWeek
     | TwoWeeks
-    | OneMonths
+    | OneMonth
     | TwoMonths
     | ThreeMonths
 
@@ -272,28 +276,41 @@ type alias GroupNCDA =
 type alias NCDAValue =
     { signs : EverySet NCDASign
     , birthWeight : Maybe WeightInGrm
+    , ancVisitsDates : EverySet NominalDate
     }
 
 
 type NCDASign
-    = NCDABornWithBirthDefect
-    | NCDABreastfedForSixMonths
-    | NCDAAppropriateComplementaryFeeding
-    | NCDAOngeraMNP
-    | NCDAFiveFoodGroups
-    | NCDAMealFrequency6to8Months
-    | NCDAMealFrequency9to11Months
-    | NCDAMealFrequency12MonthsOrMore
-    | NCDASupportChildWithDisability
-    | NCDAConditionalCashTransfer
-    | NCDAConditionalFoodItems
-    | NCDAHasCleanWater
-    | NCDAHasHandwashingFacility
-    | NCDAHasToilets
-    | NCDAHasKitchenGarden
-    | NCDARegularPrenatalVisits
-    | NCDAIronSupplementsDuringPregnancy
-    | NCDAInsecticideTreatedBednetsDuringPregnancy
+    = AppropriateComplementaryFeeding
+    | BeneficiaryCashTransfer
+    | BornWithBirthDefect
+    | BreastfedForSixMonths
+    | ChildBehindOnVaccination
+    | ChildGotDiarrhea
+    | ChildReceivesFBF
+    | ChildTakingFBF
+    | ChildReceivesVitaminA
+    | ChildTakingVitaminA
+    | ChildReceivesDewormer
+    | ChildTakingDewormer
+    | ChildReceivesECD
+    | ChildWithAcuteMalnutrition
+    | ChildWithDisability
+    | ConditionalFoodItems
+    | FiveFoodGroups
+    | HasCleanWater
+    | HasHandwashingFacility
+    | HasKitchenGarden
+    | HasToilets
+    | InsecticideTreatedBednets
+    | MealsAtRecommendedTimes
+    | OngeraMNP
+    | ReceivingCashTransfer
+    | ReceivingSupport
+    | SupplementsDuringPregnancy
+    | TakenSupplementsPerGuidance
+    | TakingOngeraMNP
+    | TreatedForAcuteMalnutrition
     | NoNCDASigns
 
 
@@ -2733,6 +2750,42 @@ type alias HbA1cTestValue =
 
 
 
+-- Child Scorecard measurements.
+
+
+type alias ChildScoreboardNCDA =
+    ChildScoreboardMeasurement NCDAValue
+
+
+type alias ChildScoreboardBCGImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardDTPImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardIPVImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardMRImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardOPVImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardPCV13Immunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+type alias ChildScoreboardRotarixImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
+
 -- Stock Management:
 
 
@@ -3076,6 +3129,18 @@ type alias NCDMeasurements =
     , symptomReview : Maybe ( NCDSymptomReviewId, NCDSymptomReview )
     , urineDipstickTest : Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )
     , vitals : Maybe ( NCDVitalsId, NCDVitals )
+    }
+
+
+type alias ChildScoreboardMeasurements =
+    { ncda : Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA )
+    , bcgImmunisation : Maybe ( ChildScoreboardBCGImmunisationId, ChildScoreboardBCGImmunisation )
+    , dtpImmunisation : Maybe ( ChildScoreboardDTPImmunisationId, ChildScoreboardDTPImmunisation )
+    , ipvImmunisation : Maybe ( ChildScoreboardIPVImmunisationId, ChildScoreboardIPVImmunisation )
+    , mrImmunisation : Maybe ( ChildScoreboardMRImmunisationId, ChildScoreboardMRImmunisation )
+    , opvImmunisation : Maybe ( ChildScoreboardOPVImmunisationId, ChildScoreboardOPVImmunisation )
+    , pcv13Immunisation : Maybe ( ChildScoreboardPCV13ImmunisationId, ChildScoreboardPCV13Immunisation )
+    , rotarixImmunisation : Maybe ( ChildScoreboardRotarixImmunisationId, ChildScoreboardRotarixImmunisation )
     }
 
 

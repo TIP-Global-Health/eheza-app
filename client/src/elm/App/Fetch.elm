@@ -14,6 +14,10 @@ import Pages.AcuteIllness.Encounter.Fetch
 import Pages.AcuteIllness.Outcome.Fetch
 import Pages.AcuteIllness.Participant.Fetch
 import Pages.AcuteIllness.ProgressReport.Fetch
+import Pages.ChildScoreboard.Activity.Fetch
+import Pages.ChildScoreboard.Encounter.Fetch
+import Pages.ChildScoreboard.Participant.Fetch
+import Pages.ChildScoreboard.Report.Fetch
 import Pages.Clinical.Fetch
 import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
@@ -108,9 +112,14 @@ fetch model =
                 Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (ClinicsPage clinicId) ->
-                Pages.Clinics.Fetch.fetch clinicId
-                    |> List.map MsgIndexedDb
+            UserPage ClinicsPage ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( healthCenterId, loggedIn ) ->
+                            Pages.Clinics.Fetch.fetch healthCenterId model.indexedDb model.syncManager loggedIn.clinicsPage
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
             UserPage (DashboardPage subPage) ->
                 getLoggedInData model
@@ -124,7 +133,7 @@ fetch model =
             UserPage GlobalCaseManagementPage ->
                 Maybe.map
                     (\( healthCenterId, loggedIn ) ->
-                        Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId model.indexedDb
+                        Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId model.villageId model.indexedDb
                             |> List.map MsgIndexedDb
                     )
                     (getLoggedInData model)
@@ -200,6 +209,15 @@ fetch model =
                     |> Maybe.map
                         (\( _, loggedIn ) ->
                             Pages.NCD.Participant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
+            UserPage (ChildScoreboardParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            Pages.ChildScoreboard.Participant.Fetch.fetch personId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
@@ -307,6 +325,14 @@ fetch model =
                 Pages.NCD.RecurrentActivity.Fetch.fetch encounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
+            UserPage (ChildScoreboardEncounterPage id) ->
+                Pages.ChildScoreboard.Encounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (ChildScoreboardActivityPage encounterId _) ->
+                Pages.ChildScoreboard.Activity.Fetch.fetch encounterId model.indexedDb
+                    |> List.map MsgIndexedDb
+
             UserPage (NutritionProgressReportPage id) ->
                 Pages.Nutrition.ProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
@@ -330,6 +356,10 @@ fetch model =
                                 id
                 in
                 Pages.NCD.ProgressReport.Fetch.fetch encounterId model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (ChildScoreboardReportPage id) ->
+                Pages.ChildScoreboard.Report.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (AcuteIllnessOutcomePage id) ->

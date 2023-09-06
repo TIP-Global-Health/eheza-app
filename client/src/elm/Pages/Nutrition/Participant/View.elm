@@ -8,6 +8,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
+import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant, getNutritionEncountersForParticipant)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -129,27 +130,20 @@ viewNutritionAction language currentDate selectedHealthCenter id isChw db sessio
         -- (started and ended on the same day), as we do not want to allow creating new encounter
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
-            maybeSessionId
+            Maybe.map (getNutritionEncountersForParticipant db) maybeSessionId
                 |> Maybe.map
-                    (\sessionId ->
-                        Dict.get sessionId db.nutritionEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map
-                                (\dict ->
-                                    ( Dict.toList dict
-                                        |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
-                                        |> List.head
-                                        |> Maybe.map Tuple.first
-                                    , Dict.toList dict
-                                        |> List.filter
-                                            (\( _, encounter ) ->
-                                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                            )
-                                        |> List.isEmpty
-                                        |> not
-                                    )
-                                )
-                            |> RemoteData.withDefault ( Nothing, False )
+                    (\list ->
+                        ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
+                            |> List.head
+                            |> Maybe.map Tuple.first
+                        , List.filter
+                            (\( _, encounter ) ->
+                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                            )
+                            list
+                            |> List.isEmpty
+                            |> not
+                        )
                     )
                 |> Maybe.withDefault ( Nothing, False )
 
@@ -228,28 +222,23 @@ viewHomeVisitAction language currentDate selectedHealthCenter id isChw db sessio
         -- (started and ended on the same day), as we do not want to allow creating new encounter
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
-            maybeSessionId
-                |> Maybe.map
-                    (\sessionId ->
-                        Dict.get sessionId db.homeVisitEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map
-                                (\dict ->
-                                    ( Dict.toList dict
-                                        |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
-                                        |> List.head
-                                        |> Maybe.map Tuple.first
-                                    , Dict.toList dict
-                                        |> List.filter
-                                            (\( _, encounter ) ->
-                                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                            )
-                                        |> List.isEmpty
-                                        |> not
-                                    )
+            Maybe.map
+                (getHomeVisitEncountersForParticipant db
+                    >> (\list ->
+                            ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
+                                |> List.head
+                                |> Maybe.map Tuple.first
+                            , List.filter
+                                (\( _, encounter ) ->
+                                    encounter.startDate == currentDate && encounter.endDate == Just currentDate
                                 )
-                            |> RemoteData.withDefault ( Nothing, False )
-                    )
+                                list
+                                |> List.isEmpty
+                                |> not
+                            )
+                       )
+                )
+                maybeSessionId
                 |> Maybe.withDefault ( Nothing, False )
 
         action =

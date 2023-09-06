@@ -3,6 +3,9 @@ module Backend.Endpoints exposing (..)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardEncounter)
+import Backend.ChildScoreboardEncounter.Encoder exposing (encodeChildScoreboardEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
@@ -374,66 +377,74 @@ pregnancyTestEndpoint =
         |> withValueEncoder (object << encodePregnancyTest)
 
 
-prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe IndividualEncounterParticipantId)
+prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (List IndividualEncounterParticipantId)
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
         |> withValueEncoder (object << encodePrenatalEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId NutritionEncounter NutritionEncounter (Maybe IndividualEncounterParticipantId)
+nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId NutritionEncounter NutritionEncounter (List IndividualEncounterParticipantId)
 nutritionEncounterEndpoint =
     swEndpoint "nodes/nutrition_encounter" decodeNutritionEncounter
         |> withValueEncoder (object << encodeNutritionEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-acuteIllnessEncounterEndpoint : ReadWriteEndPoint Error AcuteIllnessEncounterId AcuteIllnessEncounter AcuteIllnessEncounter (Maybe IndividualEncounterParticipantId)
+acuteIllnessEncounterEndpoint : ReadWriteEndPoint Error AcuteIllnessEncounterId AcuteIllnessEncounter AcuteIllnessEncounter (List IndividualEncounterParticipantId)
 acuteIllnessEncounterEndpoint =
     swEndpoint "nodes/acute_illness_encounter" decodeAcuteIllnessEncounter
         |> withValueEncoder (object << encodeAcuteIllnessEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVisitEncounter HomeVisitEncounter (Maybe IndividualEncounterParticipantId)
+homeVisitEncounterEndpoint : ReadWriteEndPoint Error HomeVisitEncounterId HomeVisitEncounter HomeVisitEncounter (List IndividualEncounterParticipantId)
 homeVisitEncounterEndpoint =
     swEndpoint "nodes/home_visit_encounter" decodeHomeVisitEncounter
         |> withValueEncoder (object << encodeHomeVisitEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-wellChildEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (Maybe IndividualEncounterParticipantId)
+wellChildEncounterEndpoint : ReadWriteEndPoint Error WellChildEncounterId WellChildEncounter WellChildEncounter (List IndividualEncounterParticipantId)
 wellChildEncounterEndpoint =
     swEndpoint "nodes/well_child_encounter" decodeWellChildEncounter
         |> withValueEncoder (object << encodeWellChildEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
 
 
-encodeIndividualEncounterParams : Maybe IndividualEncounterParticipantId -> List ( String, String )
-encodeIndividualEncounterParams params =
-    case params of
-        Just id ->
-            [ ( "individual_participant", fromEntityUuid id ) ]
+encodeIndividualEncounterParams : List IndividualEncounterParticipantId -> List ( String, String )
+encodeIndividualEncounterParams ids =
+    if List.isEmpty ids then
+        []
 
-        Nothing ->
-            []
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "individual_participants", value ) ]
 
 
-individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (Maybe PersonId)
+individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (List PersonId)
 individualEncounterParticipantEndpoint =
     swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
         |> withValueEncoder (object << encodeIndividualEncounterParticipant)
         |> withParamsEncoder encodeIndividualEncounterParticipantParams
 
 
-encodeIndividualEncounterParticipantParams : Maybe PersonId -> List ( String, String )
-encodeIndividualEncounterParticipantParams params =
-    case params of
-        Just id ->
-            [ ( "person", fromEntityUuid id ) ]
+encodeIndividualEncounterParticipantParams : List PersonId -> List ( String, String )
+encodeIndividualEncounterParticipantParams ids =
+    if List.isEmpty ids then
+        []
 
-        Nothing ->
-            []
+    else
+        let
+            value =
+                List.map fromEntityUuid ids
+                    |> String.join ","
+        in
+        [ ( "people", value ) ]
 
 
 breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam ()
@@ -1060,7 +1071,7 @@ prenatalSpecialityCareEndpoint =
         |> withValueEncoder (object << encodePrenatalSpecialityCare)
 
 
-ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (Maybe IndividualEncounterParticipantId)
+ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (List IndividualEncounterParticipantId)
 ncdEncounterEndpoint =
     swEndpoint "nodes/ncd_encounter" decodeNCDEncounter
         |> withValueEncoder (object << encodeNCDEncounter)
@@ -1256,3 +1267,68 @@ stockUpdateEndpoint : ReadWriteEndPoint Error StockUpdateId StockUpdate StockUpd
 stockUpdateEndpoint =
     swEndpoint "nodes/stock_update" decodeStockUpdate
         |> withValueEncoder (object << encodeStockUpdate)
+
+
+childScoreboardEncounterEndpoint : ReadWriteEndPoint Error ChildScoreboardEncounterId ChildScoreboardEncounter ChildScoreboardEncounter (List IndividualEncounterParticipantId)
+childScoreboardEncounterEndpoint =
+    swEndpoint "nodes/child_scoreboard_encounter" decodeChildScoreboardEncounter
+        |> withValueEncoder (object << encodeChildScoreboardEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+childScoreboardMeasurementsEndpoint : ReadOnlyEndPoint Error ChildScoreboardEncounterId ChildScoreboardMeasurements ()
+childScoreboardMeasurementsEndpoint =
+    swEndpoint "nodes/child-scoreboard-measurements" decodeChildScoreboardMeasurements
+
+
+childScoreboardNCDAEndpoint : ReadWriteEndPoint Error ChildScoreboardNCDAId ChildScoreboardNCDA ChildScoreboardNCDA ()
+childScoreboardNCDAEndpoint =
+    swEndpoint "nodes/child_scoreboard_ncda" decodeChildScoreboardNCDA
+        |> withValueEncoder (object << encodeChildScoreboardNCDA)
+
+
+pregnancyByNewbornEndpoint : ReadOnlyEndPoint Error PersonId (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )) ()
+pregnancyByNewbornEndpoint =
+    swEndpoint "nodes/pregnancy-by-newborn" decodePregnancyByNewborn
+
+
+childScoreboardBCGImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardBCGImmunisationId ChildScoreboardBCGImmunisation ChildScoreboardBCGImmunisation ()
+childScoreboardBCGImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_bcg_iz" decodeChildScoreboardBCGImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardBCGImmunisation)
+
+
+childScoreboardDTPImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardDTPImmunisationId ChildScoreboardDTPImmunisation ChildScoreboardDTPImmunisation ()
+childScoreboardDTPImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_dtp_iz" decodeChildScoreboardDTPImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardDTPImmunisation)
+
+
+childScoreboardIPVImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardIPVImmunisationId ChildScoreboardIPVImmunisation ChildScoreboardIPVImmunisation ()
+childScoreboardIPVImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_ipv_iz" decodeChildScoreboardIPVImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardIPVImmunisation)
+
+
+childScoreboardMRImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardMRImmunisationId ChildScoreboardMRImmunisation ChildScoreboardMRImmunisation ()
+childScoreboardMRImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_mr_iz" decodeChildScoreboardMRImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardMRImmunisation)
+
+
+childScoreboardOPVImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardOPVImmunisationId ChildScoreboardOPVImmunisation ChildScoreboardOPVImmunisation ()
+childScoreboardOPVImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_opv_iz" decodeChildScoreboardOPVImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardOPVImmunisation)
+
+
+childScoreboardPCV13ImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardPCV13ImmunisationId ChildScoreboardPCV13Immunisation ChildScoreboardPCV13Immunisation ()
+childScoreboardPCV13ImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_pcv13_iz" decodeChildScoreboardPCV13Immunisation
+        |> withValueEncoder (object << encodeChildScoreboardPCV13Immunisation)
+
+
+childScoreboardRotarixImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardRotarixImmunisationId ChildScoreboardRotarixImmunisation ChildScoreboardRotarixImmunisation ()
+childScoreboardRotarixImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_rotarix_iz" decodeChildScoreboardRotarixImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardRotarixImmunisation)

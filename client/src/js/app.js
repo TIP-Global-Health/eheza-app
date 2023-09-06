@@ -276,6 +276,10 @@ dbSync.version(20).stores({
     nodes: '&uuid,type,vid,status,[type+pin_code],[type+nurse]'
 });
 
+dbSync.version(21).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],newborn',
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -286,6 +290,7 @@ dbSync.version(20).stores({
  * 3. HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION at hedley_restful.module
  */
 
+// This hook is activated as a result of new content that is being synced from backend.
 dbSync.shards.hook('creating', function (primKey, obj, trans) {
   if (obj.type === 'person') {
     if (typeof obj.label == 'string') {
@@ -294,6 +299,7 @@ dbSync.shards.hook('creating', function (primKey, obj, trans) {
   }
 });
 
+// This hook is activated as a result of updated content that is being synced from backend.
 dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
   if (obj.type === 'person') {
     if (mods.hasOwnProperty("label")) {
@@ -332,7 +338,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 20;
+const dbVersion = 21;
 
 /**
  * Return saved info for General sync.
@@ -396,10 +402,10 @@ const getSyncSpeed = function() {
     return storageArr;
   }
 
-  // Idle time between sync is 5 min.
+  // Idle time between sync is 10 min.
   // Sync cicle last 50 milliseconds.
   // When offline, we check network state every 30 secons.
-  return {idle: (5 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
+  return {idle: (10 * 60 * 1000), cycle: 50, offline: (30 * 1000)};
 }
 
 // Start up our Elm app.
@@ -793,8 +799,12 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .count();
 
         if (totalEntites == 0) {
-          // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+            // No entities for upload found.
+            let resultToSend = {
+              'entities': [],
+              'remaining': 0
+            };
+            return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -827,7 +837,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync
@@ -862,7 +876,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (totalEntites == 0) {
           // No entities for upload found.
-          return sendIndexedDbFetchResult(queryType, null);
+          let resultToSend = {
+            'entities': [],
+            'remaining': 0
+          };
+          return sendIndexedDbFetchResult(queryType, resultToSend);
         }
 
         let entitiesResult = await dbSync

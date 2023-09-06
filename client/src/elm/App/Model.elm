@@ -2,6 +2,7 @@ module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, M
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.Measurement.Model exposing (LaboratoryTest)
@@ -24,6 +25,9 @@ import Pages.AcuteIllness.Encounter.Model
 import Pages.AcuteIllness.Outcome.Model
 import Pages.AcuteIllness.Participant.Model
 import Pages.AcuteIllness.ProgressReport.Model
+import Pages.ChildScoreboard.Activity.Model
+import Pages.ChildScoreboard.Encounter.Model
+import Pages.ChildScoreboard.Report.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
@@ -284,6 +288,9 @@ type alias LoggedInModel =
     , ncdActivityPages : Dict ( NCDEncounterId, NCDActivity ) Pages.NCD.Activity.Model.Model
     , ncdRecurrentActivityPages : Dict ( NCDEncounterId, NCDRecurrentActivity ) Pages.NCD.RecurrentActivity.Model.Model
     , ncdProgressReportPages : Dict NCDEncounterId Pages.NCD.ProgressReport.Model.Model
+    , childScoreboardEncounterPages : Dict ChildScoreboardEncounterId Pages.ChildScoreboard.Encounter.Model.Model
+    , childScoreboardActivityPages : Dict ( ChildScoreboardEncounterId, ChildScoreboardActivity ) Pages.ChildScoreboard.Activity.Model.Model
+    , childScoreboardReportPages : Dict ChildScoreboardEncounterId Pages.ChildScoreboard.Report.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
     , patientRecordPages : Dict PersonId Pages.PatientRecord.Model.Model
@@ -329,6 +336,9 @@ emptyLoggedInModel villageId nurse =
     , ncdActivityPages = Dict.empty
     , ncdRecurrentActivityPages = Dict.empty
     , ncdProgressReportPages = Dict.empty
+    , childScoreboardEncounterPages = Dict.empty
+    , childScoreboardActivityPages = Dict.empty
+    , childScoreboardReportPages = Dict.empty
     , traceContactPages = Dict.empty
     , clinicalProgressReportPages = Dict.empty
     , patientRecordPages = Dict.empty
@@ -390,6 +400,7 @@ type MsgLoggedIn
     | MsgPageWellChildEncounter WellChildEncounterId Pages.WellChild.Encounter.Model.Msg
     | MsgPageNCDEncounter NCDEncounterId Pages.NCD.Encounter.Model.Msg
     | MsgPageNCDRecurrentEncounter NCDEncounterId Pages.NCD.RecurrentEncounter.Model.Msg
+    | MsgPageChildScoreboardEncounter ChildScoreboardEncounterId Pages.ChildScoreboard.Encounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId LaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg
@@ -399,11 +410,13 @@ type MsgLoggedIn
     | MsgPageWellChildActivity WellChildEncounterId WellChildActivity Pages.WellChild.Activity.Model.Msg
     | MsgPageNCDActivity NCDEncounterId NCDActivity Pages.NCD.Activity.Model.Msg
     | MsgPageNCDRecurrentActivity NCDEncounterId NCDRecurrentActivity Pages.NCD.RecurrentActivity.Model.Msg
+    | MsgPageChildScoreboardActivity ChildScoreboardEncounterId ChildScoreboardActivity Pages.ChildScoreboard.Activity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.Prenatal.Outcome.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllness.ProgressReport.Model.Msg
     | MsgPageNutritionProgressReport NutritionEncounterId Pages.Nutrition.ProgressReport.Model.Msg
     | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChild.ProgressReport.Model.Msg
     | MsgPageNCDProgressReport NCDEncounterId Pages.NCD.ProgressReport.Model.Msg
+    | MsgPageChildScoreboardReport ChildScoreboardEncounterId Pages.ChildScoreboard.Report.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllness.Outcome.Model.Msg
     | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
     | MsgPageClinicalProgressReport PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Msg
