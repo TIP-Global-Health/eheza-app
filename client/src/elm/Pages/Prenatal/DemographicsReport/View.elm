@@ -18,7 +18,7 @@ import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewItemHeading)
 import RemoteData exposing (RemoteData(..), WebData)
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.GeoLocation exposing (..)
 import Utils.Html exposing (thumbnailImage)
@@ -92,7 +92,7 @@ viewContent : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> P
 viewContent language currentDate site db personId person =
     div [ class "ui unstackable items" ]
         [ viewPatientInformationPane language currentDate person
-        , viewFamilyInformationPane language currentDate db personId person
+        , viewFamilyInformationPane language currentDate site db personId person
         , viewAddressInformationPane language currentDate site person
         , viewContactInformationPane language currentDate db person
         ]
@@ -150,13 +150,17 @@ viewPatientInformationPane language currentDate person =
         ]
 
 
-viewFamilyInformationPane : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewFamilyInformationPane language currentDate db personId person =
+viewFamilyInformationPane : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewFamilyInformationPane language currentDate site db personId person =
     let
-        ubudehe =
-            person.ubudehe
-                |> Maybe.map (Translate.UbudeheNumber >> translate language)
-                |> Maybe.withDefault ""
+        ubudeheItem =
+            if site == SiteRwanda then
+                Maybe.map (Translate.UbudeheNumber >> translate language) person.ubudehe
+                    |> Maybe.withDefault ""
+                    |> viewLineItem language Translate.FamilyUbudehe
+
+            else
+                emptyNode
 
         numberOfChildren =
             person.numberOfChildren
@@ -199,11 +203,11 @@ viewFamilyInformationPane language currentDate db personId person =
     in
     div [ class "family-information" ]
         [ viewItemHeading language Translate.FamilyInformation "blue"
-        , div [ class "pane-content" ]
-            [ viewLineItem language Translate.FamilyUbudehe ubudehe
-            , viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
-            , childrenView
-            ]
+        , div [ class "pane-content" ] <|
+            ubudeheItem
+                :: [ viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
+                   , childrenView
+                   ]
         ]
 
 
