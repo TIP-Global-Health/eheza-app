@@ -728,7 +728,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 -- and it may have changed. So, we need to init Rollbar with new token.
                                 -- Init also sends all unsent items from dbErrors table.
                                 initRollbarCmd =
-                                    if List.length data.entities < 500 then
+                                    if List.length data.entities < 500 && (not <| String.isEmpty data.rollbarToken) then
                                         initRollbar { device = data.deviceName, token = data.rollbarToken }
 
                                     else
