@@ -360,9 +360,9 @@ viewContent language currentDate isChw initiator model assembled =
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                         |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors)
                     , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnoses)
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses)
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
                     , viewPatientProgressPane language currentDate isChw assembled

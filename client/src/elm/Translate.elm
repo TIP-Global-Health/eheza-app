@@ -15592,13 +15592,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                ComponentAntenatalMedicalDiagnoses ->
-                    { english = "Medical Diagnoses"
+                ComponentAntenatalMedicalDiagnosis ->
+                    { english = "Medical Diagnosis"
                     , kinyarwanda = Nothing
                     }
 
-                ComponentAntenatalObstetricalDiagnoses ->
-                    { english = "Obstetrical Diagnoses"
+                ComponentAntenatalObstetricalDiagnosis ->
+                    { english = "Obstetrical Diagnosis"
                     , kinyarwanda = Nothing
                     }
 
