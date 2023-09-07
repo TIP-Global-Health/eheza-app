@@ -1,18 +1,4 @@
-port module App.Ports exposing
-    ( bindDropZone
-    , bindSignaturePad
-    , cacheHealthCenter
-    , cachePinCode
-    , cacheVillage
-    , clearSignaturePad
-    , makeProgressReportScreenshot
-    , memoryQuota
-    , persistentStorage
-    , scrollToElement
-    , setLanguage
-    , storageQuota
-    , storeSignature
-    )
+port module App.Ports exposing (..)
 
 import App.Model exposing (MemoryQuota, StorageQuota)
 
@@ -69,3 +55,9 @@ port scrollToElement : String -> Cmd msg
 
 
 port makeProgressReportScreenshot : { reportType : String, personId : String, phoneNumber : String } -> Cmd msg
+
+
+port initRollbar : { device : String, token : String } -> Cmd msg
+
+
+port logByRollbar : { source : String, message : String, md5 : String } -> Cmd msg

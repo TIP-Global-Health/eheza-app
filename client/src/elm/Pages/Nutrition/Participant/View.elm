@@ -164,7 +164,7 @@ viewNutritionAction language currentDate selectedHealthCenter id isChw db sessio
                         -- If nutrition session does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.NutritionEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]
@@ -258,7 +258,7 @@ viewHomeVisitAction language currentDate selectedHealthCenter id isChw db sessio
                         -- If home visit session does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]

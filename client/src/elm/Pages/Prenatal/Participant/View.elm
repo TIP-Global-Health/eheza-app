@@ -486,7 +486,7 @@ viewPrenatalActionsForChw language currentDate selectedHealthCenter id db active
 createNewSessionMsg : NominalDate -> HealthCenterId -> PersonId -> PrenatalEncounterType -> List (Attribute Msg)
 createNewSessionMsg currentDate selectedHealthCenter personId encounterType =
     emptyIndividualEncounterParticipant currentDate personId Backend.IndividualEncounterParticipant.Model.AntenatalEncounter selectedHealthCenter
-        |> Backend.Model.PostIndividualSession (Backend.IndividualEncounterParticipant.Model.AntenatalData encounterType)
+        |> Backend.Model.PostIndividualEncounterParticipant (Backend.IndividualEncounterParticipant.Model.AntenatalData encounterType)
         |> MsgBackend
         |> onClick
         |> List.singleton

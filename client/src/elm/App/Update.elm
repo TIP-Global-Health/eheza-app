@@ -23,11 +23,13 @@ import Config
 import Device.Decoder
 import Device.Encoder
 import Dict as LegacyDict
+import Error.Model exposing (ErrorType(..))
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode
 import Json.Encode
+import MD5
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Update
 import Pages.AcuteIllness.Encounter.Model
@@ -121,6 +123,7 @@ import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import Url
+import Utils.WebData
 import Version
 import ZScore.Model
 import ZScore.Update
@@ -1087,16 +1090,20 @@ update msg model =
         MsgSyncManager subMsg ->
             model.configuration
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
+                |> Maybe.andThen (.device >> RemoteData.toMaybe)
                 |> Maybe.map
                     (\device ->
-                        updateSubModel
-                            subMsg
-                            model.syncManager
-                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.activePage model.dbVersion device subMsg_ subModel)
-                            (\subModel model_ -> { model_ | syncManager = subModel })
-                            (\subCmds -> MsgSyncManager subCmds)
-                            model
+                        let
+                            ( updatedModel, cmd, appMsgs ) =
+                                updateSubModel
+                                    subMsg
+                                    model.syncManager
+                                    (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.activePage model.dbVersion device subMsg_ subModel)
+                                    (\subModel model_ -> { model_ | syncManager = subModel })
+                                    (\subCmds -> MsgSyncManager subCmds)
+                                    model
+                        in
+                        sequence update appMsgs ( updatedModel, cmd )
                     )
                 |> Maybe.withDefault noChange
 
@@ -1248,6 +1255,51 @@ update msg model =
             ( { model | url = url, activePage = activePage }
             , cmd
             )
+
+        TriggerRollbar source errorType ->
+            let
+                cmd =
+                    if String.isEmpty model.syncManager.syncInfoGeneral.rollbarToken then
+                        Cmd.none
+
+                    else
+                        let
+                            generateRollbarCmd message =
+                                case source of
+                                    SyncProcess ->
+                                        logByRollbar
+                                            { source = "sync"
+                                            , message = message
+                                            , md5 = MD5.hex message
+                                            }
+
+                                    IndexedDB ->
+                                        logByRollbar
+                                            { source = "db"
+                                            , message = message
+                                            , md5 = ""
+                                            }
+
+                                    ServiceWorker ->
+                                        logByRollbar
+                                            { source = "sw"
+                                            , message = message
+                                            , md5 = ""
+                                            }
+                        in
+                        case errorType of
+                            Http err ->
+                                Utils.WebData.viewErrorForRollbar err
+                                    |> generateRollbarCmd
+
+                            Decoder err ->
+                                Json.Decode.errorToString err
+                                    |> generateRollbarCmd
+
+                            Plain string ->
+                                generateRollbarCmd string
+            in
+            ( model, cmd )
 
 
 {-| Updates our `nurse` user if the uuid matches the logged-in user.
