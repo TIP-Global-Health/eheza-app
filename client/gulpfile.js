@@ -172,8 +172,8 @@ gulp.task("copy:fonts", function() {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:signature_pad", "copy:images", "copy:favicon",
-  "copy:fonts"
+gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:signature_pad",
+  "copy:rollbar", "copy:images", "copy:favicon", "copy:fonts"
 ], function() {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
@@ -211,6 +211,16 @@ gulp.task("copy:signature_pad", function() {
     ]).pipe(gulp.dest("serve/bower_components/signature_pad"))
     .pipe($.size({
       title: "SignaturePad"
+    }))
+});
+
+// Copy rollbar.
+gulp.task("copy:rollbar", function() {
+  return gulp.src([
+      "node_modules/rollbar/**/*"
+    ]).pipe(gulp.dest("serve/bower_components/rollbar"))
+    .pipe($.size({
+      title: "Rollbar"
     }))
 });
 
@@ -412,7 +422,8 @@ var precacheLocalDev = [
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
   'bower_components/semantic/dist/semantic.min.css',
   'bower_components/html2canvas/dist/html2canvas.min.js',
-  'bower_components/signature_pad/dist/signature_pad.umd.min.js'
+  'bower_components/signature_pad/dist/signature_pad.umd.min.js',
+  'bower_components/rollbar/dist/rollbar.umd.min.js'
 ];
 
 // For offline use while developing

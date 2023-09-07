@@ -1177,7 +1177,7 @@ function hedley_person_node_presave($node) {
   }
 
   // We don't make the checks for newly created nodes, because
-  // node label is set ny autolabel setting on creation, and
+  // node label is set by auto-label setting on creation, and
   // new person can't be created with 'deleted = TRUE'.
   if (empty($node->nid)) {
     return;

@@ -150,7 +150,7 @@ viewChildScoreboardAction language currentDate selectedHealthCenter id db sessio
                         -- If childScoreboard session does not exist, create it.
                         |> Maybe.withDefault
                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualSession Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
                             ]

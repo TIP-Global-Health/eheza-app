@@ -75,6 +75,9 @@ determineSyncStatus activePage model =
             ( syncStatusUpdated, syncInfoAuthoritiesUpdated ) =
                 -- Cases are ordered by the cycle order.
                 case syncStatus of
+                    SyncReportIncident _ ->
+                        ( SyncIdle, syncInfoAuthorities )
+
                     SyncIdle ->
                         ( SyncUploadPhoto 0 RemoteData.NotAsked, syncInfoAuthorities )
 
@@ -167,9 +170,6 @@ determineSyncStatus activePage model =
 
                             _ ->
                                 noChange
-
-                    SyncReportIncident _ ->
-                        ( SyncIdle, syncInfoAuthorities )
 
                     SyncUploadGeneral record ->
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
@@ -1740,6 +1740,7 @@ syncInfoGeneralForPort info =
         info.remainingToDownload
         info.deviceName
         (syncInfoStatusToString info.status)
+        info.rollbarToken
 
 
 syncInfoAuthorityForPort : SyncInfoAuthority -> SyncInfoAuthorityForPort
@@ -1763,6 +1764,7 @@ syncInfoGeneralFromPort info =
         info.remainingToDownload
         info.deviceName
         (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
+        info.rollbarToken
 
 
 syncInfoAuthorityFromPort : SyncInfoAuthorityForPort -> SyncInfoAuthority
