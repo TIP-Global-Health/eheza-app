@@ -131,13 +131,14 @@ viewBMIForEGA language points =
                 ]
                 [ text <| translate language Translate.BMI ]
             ]
-        , g []
+        , g [] <|
             [ drawPolygon topRedPoints "red-area"
             , drawPolygon yellowPoints "yellow-area"
             , drawPolygon greenPoints "green-area"
             , drawPolygon bottomRedPoints "red-area"
             , drawPolyline measurements "data"
             ]
+                ++ drawPoints "red" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)

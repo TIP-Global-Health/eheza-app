@@ -144,6 +144,20 @@ drawPolyshape shape points_ class_ =
            )
 
 
+drawPoints : String -> List ( Float, Float ) -> List (Svg any)
+drawPoints fill =
+    List.map
+        (\( x, y ) ->
+            circle
+                [ cx <| String.fromFloat x
+                , cy <| String.fromFloat y
+                , r "3"
+                , Svg.Attributes.style <| "fill:" ++ fill
+                ]
+                []
+        )
+
+
 withinRange : number -> number -> number -> Bool
 withinRange value min max =
     (value >= min)

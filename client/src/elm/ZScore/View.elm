@@ -63,6 +63,7 @@ import Float.Extra
 import Gizra.Html exposing (emptyNode)
 import Html exposing (Html)
 import Maybe.Extra
+import Pages.Report.Svg exposing (drawPoints)
 import RemoteData
 import Round
 import String exposing (fromInt)
@@ -576,6 +577,20 @@ headCircumferenceForAgeLabels gender ageRange =
 
 plotData : PlotConfig x y -> List { x : Float, y : Float } -> List String
 plotData config data =
+    plotPoints config data
+        |> plotDataPoints
+
+
+plotDataPoints : List ( Float, Float ) -> List String
+plotDataPoints =
+    List.map
+        (\( x, y ) ->
+            Round.round 1 x ++ "," ++ Round.round 1 y
+        )
+
+
+plotPoints : PlotConfig x y -> List { x : Float, y : Float } -> List ( Float, Float )
+plotPoints config =
     let
         scaleX =
             (config.output.maxX - config.output.minX)
@@ -596,11 +611,10 @@ plotData config data =
                 - ((y - config.input.minY) * scaleY)
                 |> clamp config.output.minY config.output.maxY
     in
-    data
-        |> List.map
-            (\{ x, y } ->
-                Round.round 1 (plotX x) ++ "," ++ Round.round 1 (plotY y)
-            )
+    List.map
+        (\{ x, y } ->
+            ( plotX x, plotY y )
+        )
 
 
 plotReferenceData : PlotConfig x y -> List ( x, ZScoreEntry y ) -> Svg any
@@ -758,10 +772,10 @@ plotReferenceData config zscoreList =
         |> g []
 
 
-plotChildData : PlotConfig x y -> List ( x, y ) -> Svg any
+plotChildData : PlotConfig x y -> List ( x, y ) -> List (Svg any)
 plotChildData config data =
     let
-        pointList =
+        dataPoints =
             data
                 |> List.map
                     (\( x, y ) ->
@@ -770,20 +784,24 @@ plotChildData config data =
                         }
                     )
                 |> List.sortBy .x
-                |> plotData config
+                |> plotPoints config
+
+        pointsList =
+            plotDataPoints dataPoints
                 |> String.join " "
                 |> points
     in
     polyline
         [ class "child-data"
-        , pointList
+        , pointsList
         ]
         []
+        :: drawPoints "red" dataPoints
 
 
 viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeBoys language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText heightForAgeConfig
@@ -793,13 +811,13 @@ viewHeightForAgeBoys language model data =
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig
-        , plotChildData heightForAgeConfig data
         ]
+            ++ plotChildData heightForAgeConfig data
 
 
 viewHeightForAgeBoys0To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeBoys0To5 language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText heightForAgeConfig0To5
@@ -809,13 +827,13 @@ viewHeightForAgeBoys0To5 language model data =
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig0To5
-        , plotChildData heightForAgeConfig0To5 data
         ]
+            ++ plotChildData heightForAgeConfig0To5 data
 
 
 viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeBoys5To19 language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Male RangeFiveToNineteenYears)
         , yAxisLinesAndText heightForAgeConfig5To19
@@ -825,13 +843,13 @@ viewHeightForAgeBoys5To19 language model data =
             |> RemoteData.map (.male >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
-        , plotChildData heightForAgeConfig5To19 data
         ]
+            ++ plotChildData heightForAgeConfig5To19 data
 
 
 viewHeightForAgeGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeGirls language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText heightForAgeConfig
@@ -841,13 +859,13 @@ viewHeightForAgeGirls language model data =
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig
-        , plotChildData heightForAgeConfig data
         ]
+            ++ plotChildData heightForAgeConfig data
 
 
 viewHeightForAgeGirls0To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeGirls0To5 language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText heightForAgeConfig0To5
@@ -857,13 +875,13 @@ viewHeightForAgeGirls0To5 language model data =
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig0To5
-        , plotChildData heightForAgeConfig0To5 data
         ]
+            ++ plotChildData heightForAgeConfig0To5 data
 
 
 viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeGirls5To19 language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (heightForAgeLabels Female RangeFiveToNineteenYears)
         , yAxisLinesAndText heightForAgeConfig5To19
@@ -873,13 +891,13 @@ viewHeightForAgeGirls5To19 language model data =
             |> RemoteData.map (.female >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
-        , plotChildData heightForAgeConfig5To19 data
         ]
+            ++ plotChildData heightForAgeConfig5To19 data
 
 
 viewWeightForAgeBoys : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText weightForAgeConfig
@@ -889,13 +907,13 @@ viewWeightForAgeBoys language model data =
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
-        , plotChildData weightForAgeConfig data
         ]
+            ++ plotChildData weightForAgeConfig data
 
 
 viewWeightForAgeBoys0To5 : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys0To5 language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText weightForAge0To5Config
@@ -905,13 +923,13 @@ viewWeightForAgeBoys0To5 language model data =
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAge0To5Config
-        , plotChildData weightForAge0To5Config data
         ]
+            ++ plotChildData weightForAge0To5Config data
 
 
 viewWeightForAgeBoys5To10 : Language -> Model -> List ( Months, Kilograms ) -> Html any
 viewWeightForAgeBoys5To10 language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Male RangeFiveToTenYears)
         , yAxisLinesAndText weightForAge5To10Config
@@ -921,13 +939,13 @@ viewWeightForAgeBoys5To10 language model data =
             |> RemoteData.map (.male >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAge5To10Config
-        , plotChildData weightForAge5To10Config data
         ]
+            ++ plotChildData weightForAge5To10Config data
 
 
 viewWeightForAgeGirls : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeGirls language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText weightForAgeConfig
@@ -937,13 +955,13 @@ viewWeightForAgeGirls language model data =
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
-        , plotChildData weightForAgeConfig data
         ]
+            ++ plotChildData weightForAgeConfig data
 
 
 viewWeightForAgeGirls0To5 : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeGirls0To5 language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText weightForAge0To5Config
@@ -953,13 +971,13 @@ viewWeightForAgeGirls0To5 language model data =
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAge0To5Config
-        , plotChildData weightForAge0To5Config data
         ]
+            ++ plotChildData weightForAge0To5Config data
 
 
 viewWeightForAgeGirls5To10 : Language -> Model -> List ( Months, Kilograms ) -> Html any
 viewWeightForAgeGirls5To10 language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForAgeLabels Female RangeFiveToTenYears)
         , yAxisLinesAndText weightForAge5To10Config
@@ -969,13 +987,13 @@ viewWeightForAgeGirls5To10 language model data =
             |> RemoteData.map (.female >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAge5To10Config
-        , plotChildData weightForAge5To10Config data
         ]
+            ++ plotChildData weightForAge5To10Config data
 
 
 viewWeightForHeightBoys : Language -> Model -> List ( Length, Kilograms ) -> Html any
 viewWeightForHeightBoys language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText weightForHeightConfig
@@ -985,13 +1003,13 @@ viewWeightForHeightBoys language model data =
             |> RemoteData.map (.male >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
-        , plotChildData weightForHeightConfig data
         ]
+            ++ plotChildData weightForHeightConfig data
 
 
 viewWeightForHeight0To5Boys : Language -> Model -> List ( Height, Kilograms ) -> Html any
 viewWeightForHeight0To5Boys language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText weightForHeight0To5Config
@@ -1001,13 +1019,13 @@ viewWeightForHeight0To5Boys language model data =
             |> RemoteData.map (.male >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeight0To5Config
-        , plotChildData weightForHeight0To5Config data
         ]
+            ++ plotChildData weightForHeight0To5Config data
 
 
 viewWeightForHeightGirls : Language -> Model -> List ( Length, Kilograms ) -> Html any
 viewWeightForHeightGirls language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText weightForHeightConfig
@@ -1017,13 +1035,13 @@ viewWeightForHeightGirls language model data =
             |> RemoteData.map (.female >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
-        , plotChildData weightForHeightConfig data
         ]
+            ++ plotChildData weightForHeightConfig data
 
 
 viewWeightForHeight0To5Girls : Language -> Model -> List ( Height, Kilograms ) -> Html any
 viewWeightForHeight0To5Girls language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (weightForHeightLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText weightForHeight0To5Config
@@ -1033,13 +1051,13 @@ viewWeightForHeight0To5Girls language model data =
             |> RemoteData.map (.female >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeight0To5Config
-        , plotChildData weightForHeight0To5Config data
         ]
+            ++ plotChildData weightForHeight0To5Config data
 
 
 viewHeadCircumferenceForAge0To13WeeksBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To13WeeksBoys language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Male RangeBirthToThirteenWeeks)
         , yAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
@@ -1049,13 +1067,13 @@ viewHeadCircumferenceForAge0To13WeeksBoys language model data =
             |> RemoteData.map (.male >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To13WeeksConfig
-        , plotChildData headCircumferenceForAge0To13WeeksConfig data
         ]
+            ++ plotChildData headCircumferenceForAge0To13WeeksConfig data
 
 
 viewHeadCircumferenceForAge0To2Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To2Boys language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText headCircumferenceForAge0To2Config
@@ -1065,13 +1083,13 @@ viewHeadCircumferenceForAge0To2Boys language model data =
             |> RemoteData.map (.male >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To2Config
-        , plotChildData headCircumferenceForAge0To2Config data
         ]
+            ++ plotChildData headCircumferenceForAge0To2Config data
 
 
 viewHeadCircumferenceForAge0To5Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To5Boys language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText headCircumferenceForAge0To5Config
@@ -1081,13 +1099,13 @@ viewHeadCircumferenceForAge0To5Boys language model data =
             |> RemoteData.map (.male >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To5Config
-        , plotChildData headCircumferenceForAge0To5Config data
         ]
+            ++ plotChildData headCircumferenceForAge0To5Config data
 
 
 viewHeadCircumferenceForAge0To13WeeksGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To13WeeksGirls language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Female RangeBirthToThirteenWeeks)
         , yAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
@@ -1097,13 +1115,13 @@ viewHeadCircumferenceForAge0To13WeeksGirls language model data =
             |> RemoteData.map (.female >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To13WeeksConfig
-        , plotChildData headCircumferenceForAge0To13WeeksConfig data
         ]
+            ++ plotChildData headCircumferenceForAge0To13WeeksConfig data
 
 
 viewHeadCircumferenceForAge0To2Girls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To2Girls language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText headCircumferenceForAge0To2Config
@@ -1113,13 +1131,13 @@ viewHeadCircumferenceForAge0To2Girls language model data =
             |> RemoteData.map (.female >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To2Config
-        , plotChildData headCircumferenceForAge0To2Config data
         ]
+            ++ plotChildData headCircumferenceForAge0To2Config data
 
 
 viewHeadCircumferenceForAge0To5Girls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To5Girls language model data =
-    svg chartFrameAttributes
+    svg chartFrameAttributes <|
         [ frame language "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText headCircumferenceForAge0To5Config
@@ -1129,8 +1147,8 @@ viewHeadCircumferenceForAge0To5Girls language model data =
             |> RemoteData.map (.female >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData headCircumferenceForAge0To5Config
-        , plotChildData headCircumferenceForAge0To5Config data
         ]
+            ++ plotChildData headCircumferenceForAge0To5Config data
 
 
 chartFrameAttributes : List (Attribute any)
