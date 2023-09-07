@@ -796,7 +796,7 @@ plotChildData config data =
         , pointsList
         ]
         []
-        :: drawPoints "red" dataPoints
+        :: drawPoints "#06B9FF" dataPoints
 
 
 viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any

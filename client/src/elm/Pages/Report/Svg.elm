@@ -151,7 +151,7 @@ drawPoints fill =
             circle
                 [ cx <| String.fromFloat x
                 , cy <| String.fromFloat y
-                , r "3"
+                , r "4"
                 , Svg.Attributes.style <| "fill:" ++ fill
                 ]
                 []
