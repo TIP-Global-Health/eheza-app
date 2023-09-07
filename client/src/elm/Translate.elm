@@ -784,7 +784,7 @@ type TranslationId
     | Ignore
     | IllnessSymptom IllnessSymptom
     | Immunisation
-    | ImmunisationHistory
+    | ImmunizationHistory
     | IncompleteCervixPreviousPregnancy
     | IndexPatient
     | IndividualEncounter
@@ -1228,7 +1228,7 @@ type TranslationId
     | PrenatalImmunisationTask Pages.Prenatal.Activity.Types.ImmunisationTask
     | PrenatalImmunisationDescription PrenatalVaccineType
     | PrenatalImmunisationHeader PrenatalVaccineType
-    | PrenatalImmunisationHistory PrenatalVaccineType
+    | PrenatalImmunizationHistory PrenatalVaccineType
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
@@ -1802,7 +1802,7 @@ type TranslationId
     | WellChildImmunisationDescription WellChildVaccineType
     | WellChildImmunisationDosage WellChildVaccineType
     | WellChildImmunisationHeader WellChildVaccineType
-    | WellChildImmunisationHistory WellChildVaccineType
+    | WellChildImmunizationHistory WellChildVaccineType
     | WellChildImmunisationTask Measurement.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
@@ -6316,7 +6316,7 @@ translationSet trans =
             , kinyarwanda = Just "Inkingo"
             }
 
-        ImmunisationHistory ->
+        ImmunizationHistory ->
             { english = "Immunization History"
             , kinyarwanda = Just "Amakuru ku nkingo yafashe"
             }
@@ -13579,7 +13579,7 @@ translationSet trans =
                     , kinyarwanda = Just "Agakwega"
                     }
 
-        PrenatalImmunisationHistory task ->
+        PrenatalImmunizationHistory task ->
             case task of
                 VaccineTetanus ->
                     { english = "Tetanus History"
@@ -15657,9 +15657,7 @@ translationSet trans =
                     }
 
                 ComponentWellChildImmunizationHistory ->
-                    { english = "Immunization Histor"
-                    , kinyarwanda = Nothing
-                    }
+                    translationSet ImmunizationHistory
 
                 ComponentWellChildECD ->
                     { english = "Early Childhood Development"
@@ -19061,7 +19059,7 @@ translationSet trans =
                     , kinyarwanda = Just "Urukingo rw'impiswi"
                     }
 
-        WellChildImmunisationHistory task ->
+        WellChildImmunizationHistory task ->
             case task of
                 VaccineBCG ->
                     { english = "BCG History"

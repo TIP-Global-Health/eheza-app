@@ -958,7 +958,7 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
 viewVaccinationHistoryPane : Language -> NominalDate -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
 viewVaccinationHistoryPane language currentDate child vaccinationProgress db =
     div [ class "pane vaccination-history" ] <|
-        [ viewPaneHeading language Translate.ImmunisationHistory
+        [ viewPaneHeading language Translate.ImmunizationHistory
         , div [ class "pane-content" ] <|
             viewVaccinationOverview language currentDate child vaccinationProgress db
         ]
