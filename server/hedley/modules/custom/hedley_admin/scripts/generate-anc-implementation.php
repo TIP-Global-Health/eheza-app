@@ -194,6 +194,7 @@ function build_table () {
 //pregnancy Dating
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -206,6 +207,7 @@ LEFT JOIN field_data_field_not_confident_reason ncr ON ncr.entity_id=n.nid
 //Obstetric History page 1
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -222,6 +224,7 @@ LEFT JOIN field_data_field_live_children lc ON lc.entity_id=n.nid
 //Obstetric History page 2
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -232,6 +235,7 @@ LEFT JOIN field_data_field_obstetric_history oh ON oh.entity_id=n.nid
 //Medical History NOTE!!!! multiple data points when 2 or more boxes checked
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -242,6 +246,7 @@ LEFT JOIN field_data_field_medical_history mh ON mh.entity_id=n.nid
 //PARTNER INFO 
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -252,6 +257,7 @@ LEFT JOIN field_data_field_social_history sh ON sh.entity_id=n.nid
 //VITALS (heart rate, Blood Pressure, resp rate, body temp)
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -263,9 +269,10 @@ LEFT JOIN field_data_field_heart_rate hr ON hr.entity_id=n.nid
 LEFT JOIN field_data_field_respiratory_rate rr ON rr.entity_id=n.nid
 LEFT JOIN field_data_field_body_temperature bt ON bt.entity_id=n.nid
 
-//nutrition assesment NOTE: neet ot manually calculate BMI as not linked with bmi table
+//nutrition assesment NOTE: neet to manually calculate BMI as not linked with bmi table
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -278,6 +285,7 @@ LEFT JOIN field_data_field_muac m ON m.entity_id=n.nid
 //core physical exam
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -296,6 +304,7 @@ LEFT JOIN field_data_field_legs leg ON leg.entity_id=n.nid
 //Obstetrical Exam
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -310,6 +319,7 @@ LEFT JOIN field_data_field_c_section_scar css ON css.entity_id=n.nid
 //Brest Exam
 SELECT DISTINCT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -322,6 +332,7 @@ LEFT JOIN field_data_field_breast b ON b.entity_id=n.nid
 //family planning
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -332,6 +343,7 @@ LEFT JOIN field_data_field_family_planning_signs fp ON fp.entity_id=n.nid
 //medicine (possible results include deworming-pill, folic-acid, iron-and-folic-acid-supplement, mebendezole, none, vitamin-a)
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -342,6 +354,7 @@ LEFT JOIN field_data_field_medication s ON s.entity_id=n.nid
 //danger signs
 SELECT DISTINCT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -352,6 +365,7 @@ LEFT JOIN field_data_field_danger_signs ds ON ds.entity_id=n.nid
 //symptom review
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -362,6 +376,7 @@ LEFT JOIN field_data_field_prenatal_symptoms ps ON ps.entity_id=n.nid
 //mental health signs
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
@@ -370,24 +385,60 @@ LEFT JOIN field_data_field_district district ON pr.field_person_target_id=distri
 LEFT JOIN field_data_field_mental_health_signs mhs ON mhs.entity_id=n.nid
 
 //LABROTORY
-//partner hiv testing? ONLY GOOD IF ACTUALLY TOOK TEST. CANT FIND ROUT FOR NO TEST
+//partner hiv testing? ONLY GOOD IF ACTUALLY TOOK TEST. 
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
 LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
 LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_partner_hiv_testing ht ON ht.entity_id=n.nid
+LEFT JOIN field_data_field_execution_date ed ON ed.entity_id=n.nid
+LEFT JOIN field_data_field_test_execution_note ten ON ten.entity_id=n.nid
+WHERE e.bundle="prenatal_partner_hiv_test"
 
 //labretory for All tests completed except malaria and partner hiv    -- also includes "vitals-recheck"
-SELECT DISTINCT mhs.field_completed_tests_value FROM field_data_field_prenatal_encounter e
+SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
 LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
 LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
 LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
 LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_completed_tests mhs ON mhs.entity_id=n.nid
+//LEFT JOIN field_data_field_completed_tests mhs ON mhs.entity_id=n.nid  -- dont think needed
+LEFT JOIN field_data_field_test_execution_note ten ON ten.entity_id=n.nid
+
+//Labretory Malaria tests
+SELECT * FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_test_execution_note ten ON ten.entity_id=n.nid
+WHERE e.bundle="prenatal_malaria_test"
+
+//immunizations  --  results can be different number of doses only
+SELECT * FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_execution_date ed ON ed.entity_id=n.nid
+LEFT JOIN field_data_field_administered_doses ad ON ad.entity_id=n.nid
+
+
+
+
+
+// POST PARTUM
 
 //
+
