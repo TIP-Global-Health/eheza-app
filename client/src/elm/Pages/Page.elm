@@ -48,21 +48,21 @@ choices about what to show the user, rather than the details).
 
 -}
 
-import Activity.Model exposing (Activity(..))
-import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Activity.Model exposing (Activity)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
-import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
+import Backend.NutritionActivity.Model exposing (NutritionActivity)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Initiator)
-import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..), PrenatalRecurrentActivity(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
-import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildActivity.Model exposing (WellChildActivity)
 
 
 {-| What does the user want to see?

@@ -1,10 +1,8 @@
-module Pages.GlobalCaseManagement.Model exposing (..)
+module Pages.GlobalCaseManagement.Model exposing (AcuteIllnessFollowUpEntry, AcuteIllnessFollowUpItem, CaseManagementFilter(..), ContactsTracingEntryData, FollowUpAcuteIllnessData, FollowUpDueOption(..), FollowUpEncounterDataType(..), FollowUpNutritionData, FollowUpPrenatalData, LabsEntryState(..), Model, Msg(..), NCDLabsEntryData, NutritionFollowUpEntry, NutritionFollowUpItem, PrenatalFollowUpEntry, PrenatalFollowUpItem, PrenatalLabsEntryData, emptyModel)
 
-import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssessment, PrenatalFollowUpValue)
+import Backend.Measurement.Model exposing (FollowUpOption, FollowUpValue, PrenatalFollowUpValue)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)

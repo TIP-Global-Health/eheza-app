@@ -1,9 +1,8 @@
-module Pages.NCD.Activity.Model exposing (..)
+module Pages.NCD.Activity.Model exposing (CoMorbiditiesForm, DangerSignsData, DangerSignsForm, ExaminationData, FamilyHistoryForm, FamilyPlanningData, HealthEducationForm, LaboratoryData, MedicalHistoryData, MedicationHistoryForm, Model, Msg(..), NextStepsData, OutsideCareData, SocialHistoryForm, SymptomReviewData, SymptomReviewForm, emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import DateSelector.Model exposing (DateSelectorConfig)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing

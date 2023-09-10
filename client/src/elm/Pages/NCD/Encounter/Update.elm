@@ -1,12 +1,10 @@
 module Pages.NCD.Encounter.Update exposing (update)
 
 import App.Model
-import App.Ports
 import Backend.Model
-import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NCDEncounter.Model
 import Pages.NCD.Encounter.Model exposing (..)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

@@ -2,9 +2,7 @@ module Pages.Prenatal.RecurrentEncounter.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (PrenatalEncounterId)
-import Backend.Model
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
-import Backend.PrenatalEncounter.Model
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.RecurrentActivity.Model

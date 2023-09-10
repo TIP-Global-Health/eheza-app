@@ -1,6 +1,5 @@
-module Pages.WellChild.Activity.Model exposing (..)
+module Pages.WellChild.Activity.Model exposing (DangerSignsData, HeadCircumferenceForm, ImmunisationData, MedicationAdministrationForm, MedicationData, Model, Msg(..), NextStepsData, NextVisitForm, NutritionAssessmentData, PregnancySummaryForm, SymptomsReviewForm, WarningPopupType(..), WellChildECDForm, WellChildVaccinationForm, emptyMedicationAdministrationForm, emptyModel, medicationTasks)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
@@ -10,7 +9,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 import Pages.WellChild.Activity.Types exposing (..)
-import Pages.WellChild.Encounter.Model exposing (VaccinationProgressDict)
 
 
 type Msg

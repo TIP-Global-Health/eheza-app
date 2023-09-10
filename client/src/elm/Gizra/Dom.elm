@@ -6,7 +6,7 @@ module Gizra.Dom exposing (Rectangle, currentTarget, target, findAncestor, check
 
 -}
 
-import Json.Decode exposing (Decoder, at, decodeValue, fail, field, float, lazy, map, map3, map4, oneOf, string, succeed)
+import Json.Decode exposing (Decoder, fail, field, float, lazy, map, map4, oneOf, string)
 
 
 {-| Applies the supplied decoder to the "target" field.

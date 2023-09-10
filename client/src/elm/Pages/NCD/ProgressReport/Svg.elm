@@ -1,4 +1,4 @@
-module Pages.NCD.ProgressReport.Svg exposing (..)
+module Pages.NCD.ProgressReport.Svg exposing (viewBloodGlucoseByTime, viewBloodPressureByTime, viewHbA1cByTime, viewMarkers)
 
 import Html exposing (Html)
 import Pages.Report.Model exposing (RandomBloodSugarResult(..))
@@ -6,7 +6,7 @@ import Pages.Report.Svg exposing (..)
 import Pages.Report.Utils exposing (getRandomBloodSugarResultValue)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
+import Translate exposing (Language, TranslationId, translate)
 
 
 {-| If you're calling any of the functions that generate charts,
@@ -133,9 +133,6 @@ viewBloodGlucoseByTime language results =
 
         horizontalStep =
             widthPx / toFloat (horizontalMax - horizontalMin)
-
-        points =
-            List.map getRandomBloodSugarResultValue results
 
         measurementsWithIndicators =
             measurementsWithInidactorsByTime verticalMin

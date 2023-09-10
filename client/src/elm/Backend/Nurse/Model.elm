@@ -1,8 +1,8 @@
-module Backend.Nurse.Model exposing (..)
+module Backend.Nurse.Model exposing (Model, Msg(..), Nurse, ResilienceRole(..), Role(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Gender)
-import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), Ubudehe(..))
+import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)

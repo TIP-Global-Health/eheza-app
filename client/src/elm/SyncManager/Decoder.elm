@@ -36,7 +36,6 @@ import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
-import Time
 
 
 decodeIndexDbQueryTypeResult : Decoder IndexDbQueryTypeResult

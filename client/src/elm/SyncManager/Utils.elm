@@ -1,4 +1,4 @@
-module SyncManager.Utils exposing (..)
+module SyncManager.Utils exposing (backendAuthorityEntityToRevision, backendGeneralEntityToRevision, determineDownloadPhotosStatus, determineSyncStatus, encodeBackendAuthorityEntity, encodeBackendGeneralEntity, getBackendAuthorityEntityIdentifier, getBackendGeneralEntityIdentifier, getDataToSendAuthority, getDataToSendGeneral, getDownloadPhotosSpeedForSubscriptions, getImageFromBackendAuthorityEntity, getSyncSpeedForSubscriptions, getSyncedHealthCenters, syncInfoAuthorityForPort, syncInfoAuthorityFromPort, syncInfoGeneralForPort, syncInfoGeneralFromPort, syncInfoStatusToString)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
@@ -84,7 +84,7 @@ determineSyncStatus activePage model =
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
-                                    Just data ->
+                                    Just _ ->
                                         -- We still have data. Reset errors counter to 0, since last upload was succesfull.
                                         ( SyncUploadPhoto 0 webData, syncInfoAuthorities )
 
@@ -120,7 +120,7 @@ determineSyncStatus activePage model =
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
-                                    Just data ->
+                                    Just _ ->
                                         -- We still have data. Reset errors counter to 0, since last upload was succesfull.
                                         ( SyncUploadScreenshot 0 webData, syncInfoAuthorities )
 
@@ -304,13 +304,14 @@ determineDownloadPhotosStatus model =
     in
     if syncCycleRotate then
         let
-            currentStatus =
-                model.downloadPhotosStatus
-
             statusUpdated =
                 case model.syncStatus of
                     SyncIdle ->
                         -- Cases are ordered by the cycle order.
+                        let
+                            currentStatus =
+                                model.downloadPhotosStatus
+                        in
                         case currentStatus of
                             DownloadPhotosIdle ->
                                 DownloadPhotosInProcess model.downloadPhotosMode
@@ -354,20 +355,6 @@ determineDownloadPhotosStatus model =
     else
         -- No change.
         model
-
-
-resetDownloadPhotosBatchCounter : Model -> DownloadPhotosStatus
-resetDownloadPhotosBatchCounter model =
-    case model.downloadPhotosMode of
-        DownloadPhotosBatch deferredPhoto ->
-            let
-                deferredPhotoUpdated =
-                    { deferredPhoto | batchCounter = deferredPhoto.batchSize }
-            in
-            DownloadPhotosInProcess (DownloadPhotosBatch deferredPhotoUpdated)
-
-        _ ->
-            DownloadPhotosInProcess model.downloadPhotosMode
 
 
 {-| Get info about an entity. `revision` would be the Drupal revision
@@ -964,19 +951,6 @@ getSyncSpeedForSubscriptions model =
 
             else
                 syncCycle
-
-        checkWebDataForPhotos webData =
-            case webData of
-                RemoteData.Failure error ->
-                    if Utils.WebData.isNetworkError error then
-                        -- It's a network error, so slow things down.
-                        checkWebData webData
-
-                    else
-                        syncCycle
-
-                _ ->
-                    syncCycle
     in
     case model.syncStatus of
         SyncIdle ->

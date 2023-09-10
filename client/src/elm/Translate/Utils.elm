@@ -1,4 +1,4 @@
-module Translate.Utils exposing (decodeLanguage, encodeLanguage, languageFromCode, languageFromString, languageToCode, selectLanguage)
+module Translate.Utils exposing (decodeLanguage, encodeLanguage, languageFromCode, languageToCode, selectLanguage)
 
 {-| Utilities related to the translation types.
 
@@ -24,19 +24,6 @@ selectLanguage lang set =
 
                 Nothing ->
                     set.english
-
-
-languageFromString : String -> Result String Language
-languageFromString str =
-    case str of
-        "English" ->
-            Ok English
-
-        "Kinyarwanda" ->
-            Ok Kinyarwanda
-
-        _ ->
-            Err "Not a language"
 
 
 languageFromCode : String -> Result String Language

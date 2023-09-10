@@ -1,18 +1,7 @@
-module Pages.NCD.Participant.Model exposing (..)
+module Pages.NCD.Participant.Model exposing (Msg(..))
 
-import Backend.Entities exposing (..)
-import Date exposing (Date)
 import Pages.Page exposing (Page)
-
-
-type alias Model =
-    {}
 
 
 type Msg
     = SetActivePage Page
-
-
-emptyModel : Model
-emptyModel =
-    {}

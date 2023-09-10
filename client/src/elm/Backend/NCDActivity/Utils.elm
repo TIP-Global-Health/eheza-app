@@ -1,4 +1,4 @@
-module Backend.NCDActivity.Utils exposing (..)
+module Backend.NCDActivity.Utils exposing (activityFromString, activityToString, getActivityIcon, getAllActivities, getRecurrentActivityIcon, recurrentActivityFromString, recurrentActivityToString)
 
 import Backend.NCDActivity.Model exposing (..)
 

@@ -1,4 +1,4 @@
-module Pages.Prenatal.Encounter.Utils exposing (..)
+module Pages.Prenatal.Encounter.Utils exposing (calculateBmi, diagnosisRequiresEmergencyReferal, emergencyReferalRequired, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generateMedicalDiagnosisAlertData, generateObstetricalDiagnosisAlertData, generatePara, generatePostCreateDestination, generateRecurringHighSeverityAlertData, getAllActivities, getFirstEncounterMeasurements, getLastEncounterMeasurementsWithDate, getLmpValue, getPrenatalEncountersForParticipant, getSubsequentEncounterType, resolveGlobalLmpValue, secondPhaseRequired)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -8,13 +8,11 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples, sortEncounterTuplesDesc)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
-import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter, lmpToEDDDate)
-import Date exposing (Unit(..))
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
+import EverySet
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
-import Pages.Prenatal.Activity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -391,7 +389,7 @@ getFirstEncounterMeasurements isChw assembled =
             else
                 assembled.measurements
 
-        encounterData :: others ->
+        encounterData :: _ ->
             encounterData.measurements
 
 
@@ -405,7 +403,7 @@ getLastEncounterMeasurementsWithDate currentDate isChw assembled =
             else
                 ( assembled.encounter.startDate, assembled.measurements )
 
-        encounterData :: others ->
+        encounterData :: _ ->
             ( encounterData.startDate, encounterData.measurements )
 
 
@@ -538,18 +536,6 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                         |> Maybe.andThen
                             (\measurement ->
                                 let
-                                    height =
-                                        Tuple.second measurement
-                                            |> .value
-                                            |> .height
-                                            |> getHeightValue
-
-                                    weight =
-                                        Tuple.second measurement
-                                            |> .value
-                                            |> .weight
-                                            |> weightValueFunc
-
                                     muac =
                                         Tuple.second measurement
                                             |> .value
@@ -560,6 +546,19 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                     Just (transAlert diagnosis)
 
                                 else
+                                    let
+                                        height =
+                                            Tuple.second measurement
+                                                |> .value
+                                                |> .height
+                                                |> getHeightValue
+
+                                        weight =
+                                            Tuple.second measurement
+                                                |> .value
+                                                |> .weight
+                                                |> weightValueFunc
+                                    in
                                     calculateBmi (Just height) (Just weight)
                                         |> Maybe.andThen
                                             (\bmi_ ->

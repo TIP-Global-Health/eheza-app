@@ -6,19 +6,15 @@ import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Fetch
-import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
-import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
-import Json.Encode exposing (object)
-import Json.Encode.Extra
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
+import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 
 update : NominalDate -> Maybe NurseId -> SessionId -> Maybe Session -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

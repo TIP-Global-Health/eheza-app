@@ -1,9 +1,9 @@
-module Backend.Dashboard.Model exposing (..)
+module Backend.Dashboard.Model exposing (AcuteIllnessDataItem, AcuteIllnessEncounterDataItem, AssembledData, CaseManagement, CaseManagementData, CaseManagementPast2Years, CaseNutrition, CaseNutritionTotal, ChildrenBeneficiariesData, ChildrenBeneficiariesStats, DashboardStats, DashboardStatsRaw, FamilyPlanningStats, Nutrition, NutritionPageData, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, PersonIdentifier, PrenatalDataItem, PrenatalEncounterDataItem, ProgramType(..), TotalBeneficiaries, TotalEncountersData, emptyNutritionValue, emptyTotalBeneficiaries)
 
 {-| The stats for the dashboard.
 -}
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
@@ -12,7 +12,6 @@ import Backend.Measurement.Model
         ( Call114Sign
         , DangerSign
         , FamilyPlanningSign
-        , FollowUpMeasurements
         , Gender
         , HCContactSign
         , HCRecommendation
@@ -41,13 +40,6 @@ type alias NutritionPageData =
     }
 
 
-{-| To void a cycle in dependency, we just define the zScore here.
-Added a comment in the main definition to point to this one.
--}
-type alias ZScore =
-    Float
-
-
 type alias DashboardStatsRaw =
     { caseManagement : CaseManagementData
     , childrenBeneficiaries : ChildrenBeneficiariesData
@@ -64,22 +56,6 @@ type alias DashboardStatsRaw =
 
     -- An md5 hash, using which we know if we have the most up to date data.
     , cacheHash : String
-    }
-
-
-emptyModel : DashboardStatsRaw
-emptyModel =
-    { caseManagement = CaseManagementData Dict.empty Dict.empty
-    , childrenBeneficiaries = Dict.empty
-    , completedPrograms = []
-    , familyPlanning = []
-    , missedSessions = []
-    , totalEncounters = TotalEncountersData Dict.empty Dict.empty
-    , acuteIllnessData = []
-    , prenatalData = []
-    , villagesWithResidents = Dict.empty
-    , timestamp = ""
-    , cacheHash = ""
     }
 
 

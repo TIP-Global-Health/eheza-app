@@ -3,11 +3,9 @@ module Pages.NCD.Activity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
-        , AdministrationNote(..)
         , FamilyPlanningSign(..)
         , HandsCPESign(..)
         , LegsCPESign(..)
@@ -32,7 +30,7 @@ import Date exposing (Unit(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (unwrap)
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
@@ -123,16 +121,6 @@ update currentDate id db msg model =
                         >> medicationDistributionFormWithDefault model.nextStepsData.medicationDistributionForm
                     )
                 |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
-
-        referralForm =
-            Dict.get id db.ncdMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (.referral
-                        >> getMeasurementValueFunc
-                        >> referralFormWithDefault model.nextStepsData.referralForm
-                    )
-                |> Maybe.withDefault model.nextStepsData.referralForm
 
         generateExaminationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveExaminationTask task ]) nextTask
@@ -2139,6 +2127,16 @@ update currentDate id db msg model =
 
         SetFacilityNonReferralReason currentValue facility reason ->
             let
+                referralForm =
+                    Dict.get id db.ncdMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.referral
+                                >> getMeasurementValueFunc
+                                >> referralFormWithDefault model.nextStepsData.referralForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.referralForm
+
                 updatedValue =
                     nonReferralReasonToSign facility reason
 

@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Activity.Utils exposing (..)
+module Pages.AcuteIllness.Activity.Utils exposing (activityCompleted, acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, call114FormWithDefault, contactsTracingFormWithDefault, coreExamFormWithDefault, covidTestingFormWithDefault, dangerSignsTasksCompletedFromTotal, expectActivity, expectLaboratoryTask, expectPhysicalExamTask, exposureFormWithDefault, exposureTasksCompletedFromTotal, feverRecorded, followUpFormWithDefault, hcContactFormWithDefault, healthCenterRecommendedToCome, isolationFormWithDefault, laboratoryTasks, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, mandatoryActivitiesCompletedSubsequentVisit, medicationDistributionFormWithDefault, muacRedOnSubsequentVisit, nextStepsTasksCompletedFromTotal, noImprovementOnSubsequentVisit, nutritionFormWithDefault, ongoingTreatmentReviewFormWithDefault, ongoingTreatmentTasksCompletedFromTotal, physicalExamTasksCompletedFromTotal, resolveAcuteIllnessDiagnosis, resolveAmoxicillinDosage, resolveCoartemDosage, resolveMedicationsNonAdministrationReasons, resolveNextStepFirstEncounter, resolveNextStepSubsequentEncounter, resolveNextStepsTasks, resolveORSDosage, resolvePreviousMaybeValue, resolvePreviousValue, resolveZincDosage, respiratoryRateAbnormalForAge, respiratoryRateElevated, reviewDangerSignsFormWithDefault, sendToHCOnSubsequentVisitByNutrition, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toAcuteFindingsValueWithDefault, toCall114ValueWithDefault, toContactsTracingValueWithDefault, toCoreExamValueWithDefault, toCovidTestingValueWithDefault, toExposureValueWithDefault, toFollowUpValueWithDefault, toHCContactValueWithDefault, toIsolationValueWithDefault, toMalariaTestingValueWithDefault, toMedicationDistributionValueWithDefault, toNutritionValueWithDefault, toOngoingTreatmentReviewValueWithDefault, toReviewDangerSignsValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValueWithDefault, toTreatmentReviewValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vomitingAtSymptoms)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
@@ -15,7 +15,6 @@ import Measurement.Utils
     exposing
         ( healthEducationFormWithDefault
         , muacFormWithDefault
-        , nutritionFormWithDefault
         , sendToHCFormWithDefault
         , vitalsFormWithDefault
         )
@@ -31,7 +30,6 @@ import Pages.Utils
         , maybeValueConsideringIsDirtyField
         , taskCompleted
         , valueConsideringIsDirtyField
-        , viewInstructionsLabel
         )
 import Translate exposing (TranslationId)
 
@@ -99,9 +97,6 @@ activityCompleted currentDate isChw assembled activity =
 
         measurements =
             assembled.measurements
-
-        diagnosis =
-            Maybe.map Tuple.second assembled.diagnosis
 
         activityExpected =
             expectActivity currentDate isChw assembled
@@ -352,10 +347,6 @@ physicalExamTasksCompletedFromTotal currentDate isChw person measurements data t
 
 laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> AILaboratoryTask -> ( Int, Int )
 laboratoryTasksCompletedFromTotal currentDate person measurements data task =
-    let
-        personAFertileWoman =
-            isPersonAFertileWoman currentDate person
-    in
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -615,7 +606,7 @@ nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements d
                                         else
                                             form.contactedSite
                                                 |> Maybe.map
-                                                    (\contactedSite ->
+                                                    (\_ ->
                                                         if isJust form.recommendationSite then
                                                             ( 4, 4 )
 
@@ -654,9 +645,6 @@ nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements d
 
                     else
                         let
-                            nonAdministrationSigns =
-                                form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
-
                             valueSet =
                                 getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
                                     |> isJust
@@ -997,13 +985,6 @@ toSymptomsGIValueWithDefault saved form =
     }
 
 
-fromAcuteFindingsValue : Maybe AcuteFindingsValue -> AcuteFindingsForm
-fromAcuteFindingsValue saved =
-    { signsGeneral = Maybe.map (.signsGeneral >> EverySet.toList) saved
-    , signsRespiratory = Maybe.map (.signsRespiratory >> EverySet.toList) saved
-    }
-
-
 acuteFindingsFormWithDefault : AcuteFindingsForm -> Maybe AcuteFindingsValue -> AcuteFindingsForm
 acuteFindingsFormWithDefault form saved =
     saved
@@ -1055,7 +1036,7 @@ malariaTestingFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value ->
+            (\_ ->
                 let
                     formWithDefault =
                         fromMalariaTestingValue saved
@@ -1084,12 +1065,6 @@ toMalariaTestingValue form =
     form.rapidTestResult
 
 
-fromTravelHistoryValue : Maybe (EverySet TravelHistorySign) -> TravelHistoryForm
-fromTravelHistoryValue saved =
-    { covid19Country = Maybe.map (EverySet.member COVID19Country) saved
-    }
-
-
 travelHistoryFormWithDefault : TravelHistoryForm -> Maybe (EverySet TravelHistorySign) -> TravelHistoryForm
 travelHistoryFormWithDefault form saved =
     saved
@@ -1114,12 +1089,6 @@ toTravelHistoryValue form =
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTravelHistorySigns)
 
 
-fromExposureValue : Maybe (EverySet ExposureSign) -> ExposureForm
-fromExposureValue saved =
-    { covid19Symptoms = Maybe.map (EverySet.member COVID19Symptoms) saved
-    }
-
-
 exposureFormWithDefault : ExposureForm -> Maybe (EverySet ExposureSign) -> ExposureForm
 exposureFormWithDefault form saved =
     saved
@@ -1142,15 +1111,6 @@ toExposureValue form =
     [ Maybe.map (ifTrue COVID19Symptoms) form.covid19Symptoms ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoExposureSigns)
-
-
-fromIsolationValue : Maybe IsolationValue -> IsolationForm
-fromIsolationValue saved =
-    { patientIsolated = Maybe.map (.signs >> EverySet.member PatientIsolated) saved
-    , signOnDoor = Maybe.map (.signs >> EverySet.member SignOnDoor) saved
-    , healthEducation = Maybe.map (.signs >> EverySet.member HealthEducation) saved
-    , reasonsForNotIsolating = Maybe.map (.reasonsForNotIsolating >> EverySet.toList) saved
-    }
 
 
 isolationFormWithDefault : IsolationForm -> Maybe IsolationValue -> IsolationForm
@@ -1207,15 +1167,6 @@ isolationValuePostProcess saved =
             )
 
 
-fromHCContactValue : Maybe HCContactValue -> HCContactForm
-fromHCContactValue saved =
-    { contactedHC = Maybe.map (.signs >> EverySet.member ContactedHealthCenter) saved
-    , recommendations = Maybe.andThen (.recommendations >> EverySet.toList >> List.head) saved
-    , responsePeriod = Maybe.andThen (.responsePeriod >> EverySet.toList >> List.head) saved
-    , ambulanceArrivalPeriod = Maybe.andThen (.ambulanceArrivalPeriod >> EverySet.toList >> List.head) saved
-    }
-
-
 hcContactFormWithDefault : HCContactForm -> Maybe HCContactValue -> HCContactForm
 hcContactFormWithDefault form saved =
     saved
@@ -1270,18 +1221,6 @@ hcContactValuePostProcess saved =
                         , ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable
                     }
             )
-
-
-fromCall114Value : Maybe Call114Value -> Call114Form
-fromCall114Value saved =
-    { called114 = Maybe.map (.signs >> EverySet.member Call114) saved
-    , recommendation114 = Maybe.andThen (.recommendations114 >> EverySet.toList >> List.head) saved
-    , recommendation114Dirty = False
-    , contactedSite = Maybe.map (.signs >> EverySet.member ContactSite) saved
-    , contactedSiteDirty = False
-    , recommendationSite = Maybe.andThen (.recommendationsSite >> EverySet.toList >> List.head) saved
-    , recommendationSiteDirty = False
-    }
 
 
 call114FormWithDefault : Call114Form -> Maybe Call114Value -> Call114Form
@@ -1347,17 +1286,6 @@ call114ValuePostProcess saved =
                     -- There was no attempt to contact 114.
                     recommendationSiteNotApplicable
             )
-
-
-fromTreatmentReviewValue : Maybe (EverySet TreatmentReviewSign) -> TreatmentReviewForm
-fromTreatmentReviewValue saved =
-    { feverPast6Hours = Maybe.map (EverySet.member FeverPast6Hours) saved
-    , feverPast6HoursHelped = Maybe.map (EverySet.member FeverPast6HoursHelped) saved
-    , malariaToday = Maybe.map (EverySet.member MalariaToday) saved
-    , malariaTodayHelped = Maybe.map (EverySet.member MalariaTodayHelped) saved
-    , malariaWithinPastMonth = Maybe.map (EverySet.member MalariaWithinPastMonth) saved
-    , malariaWithinPastMonthHelped = Maybe.map (EverySet.member MalariaWithinPastMonthHelped) saved
-    }
 
 
 treatmentReviewFormWithDefault : TreatmentReviewForm -> Maybe (EverySet TreatmentReviewSign) -> TreatmentReviewForm
@@ -1488,41 +1416,26 @@ resolveZincDosage currentDate person =
 resolveAmoxicillinDosage : NominalDate -> Person -> Maybe ( String, String, TranslationId )
 resolveAmoxicillinDosage currentDate person =
     ageInMonths currentDate person
-        |> Maybe.andThen
+        |> Maybe.map
             (\months ->
                 if months < 2 then
-                    Just ( "0.5", "125", Translate.SeeDosageScheduleByWeight )
+                    ( "0.5", "125", Translate.SeeDosageScheduleByWeight )
 
                 else if months < 5 then
-                    Just ( "1", "125", Translate.ByMouthTwiceADayForXDays 5 )
+                    ( "1", "125", Translate.ByMouthTwiceADayForXDays 5 )
 
                 else if months < 12 then
-                    Just ( "2", "125", Translate.ByMouthTwiceADayForXDays 5 )
+                    ( "2", "125", Translate.ByMouthTwiceADayForXDays 5 )
 
                 else if months < round (2.5 * 12) then
-                    Just ( "3", "125", Translate.ByMouthTwiceADayForXDays 5 )
+                    ( "3", "125", Translate.ByMouthTwiceADayForXDays 5 )
 
                 else if months < (15 * 12) then
-                    Just ( "4", "125", Translate.ByMouthTwiceADayForXDays 5 )
+                    ( "4", "125", Translate.ByMouthTwiceADayForXDays 5 )
 
                 else
-                    Just ( "1", "500", Translate.ByMouthThreeTimesADayForXDays 5 )
+                    ( "1", "500", Translate.ByMouthThreeTimesADayForXDays 5 )
             )
-
-
-fromOngoingTreatmentReviewValue : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
-fromOngoingTreatmentReviewValue saved =
-    { takenAsPrescribed = Maybe.map (.signs >> EverySet.member TakenAsPrescribed) saved
-    , missedDoses = Maybe.map (.signs >> EverySet.member MissedDoses) saved
-    , feelingBetter = Maybe.map (.signs >> EverySet.member FeelingBetter) saved
-    , sideEffects = Maybe.map (.signs >> EverySet.member SideEffects) saved
-    , reasonForNotTaking = Maybe.map .reasonForNotTaking saved
-    , reasonForNotTakingDirty = False
-    , totalMissedDoses = Maybe.map .missedDoses saved
-    , totalMissedDosesDirty = False
-    , adverseEvents = Maybe.map (.adverseEvents >> EverySet.toList) saved
-    , adverseEventsDirty = False
-    }
 
 
 ongoingTreatmentReviewFormWithDefault : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
@@ -1567,19 +1480,6 @@ toOngoingTreatmentReviewValue form =
         |> andMap (form.reasonForNotTaking |> Maybe.withDefault NoReasonForNotTakingSign |> Just)
         |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
         |> andMap (form.adverseEvents |> fromListWithDefaultValue NoAdverseEvent |> Just)
-
-
-fromReviewDangerSignsValue : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
-fromReviewDangerSignsValue saved =
-    { conditionImproving = Maybe.map (EverySet.member DangerSignConditionNotImproving >> not) saved
-    , symptoms =
-        Maybe.map
-            (EverySet.remove DangerSignConditionNotImproving
-                >> ifEverySetEmpty NoAcuteIllnessDangerSign
-                >> EverySet.toList
-            )
-            saved
-    }
 
 
 reviewDangerSignsFormWithDefault : ReviewDangerSignsForm -> Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
@@ -1682,11 +1582,6 @@ toFollowUpValue form =
         (Maybe.map (List.singleton >> EverySet.fromList) form.option)
 
 
-fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> AcuteIllnessNutritionForm
-fromNutritionValue saved =
-    { signs = Maybe.map EverySet.toList saved }
-
-
 nutritionFormWithDefault : AcuteIllnessNutritionForm -> Maybe (EverySet ChildNutritionSign) -> AcuteIllnessNutritionForm
 nutritionFormWithDefault form saved =
     saved
@@ -1706,13 +1601,6 @@ toNutritionValueWithDefault saved form =
 toNutritionValue : AcuteIllnessNutritionForm -> Maybe (EverySet ChildNutritionSign)
 toNutritionValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NormalChildNutrition) form.signs
-
-
-fromCoreExamValue : Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm
-fromCoreExamValue saved =
-    { heart = Maybe.andThen (.heart >> EverySet.toList >> List.head) saved
-    , lungs = Maybe.map (.lungs >> EverySet.toList) saved
-    }
 
 
 coreExamFormWithDefault : AcuteIllnessCoreExamForm -> Maybe AcuteIllnessCoreExamValue -> AcuteIllnessCoreExamForm
@@ -1780,7 +1668,7 @@ covidTestingFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value ->
+            (\_ ->
                 let
                     formWithDefault =
                         fromCovidTestingValue saved
@@ -2304,9 +2192,6 @@ mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data =
 mandatoryActivityCompletedSubsequentVisit : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
 mandatoryActivityCompletedSubsequentVisit currentDate isChw data activity =
     let
-        person =
-            data.person
-
         measurements =
             data.measurements
     in
@@ -2315,6 +2200,10 @@ mandatoryActivityCompletedSubsequentVisit currentDate isChw data activity =
             isJust measurements.dangerSigns
 
         AcuteIllnessPhysicalExam ->
+            let
+                person =
+                    data.person
+            in
             isJust measurements.vitals
                 && ((not <| expectPhysicalExamTask currentDate person isChw False PhysicalExamMuac) || isJust measurements.muac)
                 && ((not <| expectPhysicalExamTask currentDate person isChw False PhysicalExamNutrition) || isJust measurements.nutrition)
@@ -2333,43 +2222,14 @@ mandatoryActivityCompletedSubsequentVisit currentDate isChw data activity =
             False
 
 
-ageDependentUncomplicatedMalariaNextStep : NominalDate -> Person -> Maybe NextStepsTask
-ageDependentUncomplicatedMalariaNextStep currentDate person =
-    ageInMonths currentDate person
-        |> Maybe.andThen
-            (\ageMonths ->
-                if ageMonths < 6 then
-                    Just NextStepsSendToHC
-
-                else
-                    Just NextStepsMedicationDistribution
-            )
-
-
-ageDependentARINextStep : NominalDate -> Person -> Maybe NextStepsTask
-ageDependentARINextStep currentDate person =
-    ageInMonths currentDate person
-        |> Maybe.andThen
-            (\ageMonths ->
-                if ageMonths < 2 then
-                    Just NextStepsSendToHC
-
-                else if ageMonths < 60 then
-                    Just NextStepsMedicationDistribution
-
-                else
-                    Nothing
-            )
-
-
 resolveAcuteIllnessDiagnosis : NominalDate -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
 resolveAcuteIllnessDiagnosis currentDate isChw assembled =
-    let
-        covid19AcuteIllnessDiagnosis =
-            covid19DiagnosisPath currentDate assembled.person isChw assembled.measurements
-    in
     if assembled.initialEncounter then
         -- First we check for Covid19.
+        let
+            covid19AcuteIllnessDiagnosis =
+                covid19DiagnosisPath currentDate assembled.person isChw assembled.measurements
+        in
         if isJust covid19AcuteIllnessDiagnosis then
             covid19AcuteIllnessDiagnosis
 
@@ -2439,14 +2299,15 @@ covid19SuspectDiagnosed measurements =
         giSymptomsCount =
             countGISymptoms measurements []
 
-        totalSymptoms =
-            generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
-
         symptomsIndicateCovid =
             if giSymptomsCount > 0 then
                 respiratorySymptomsCount > 0
 
             else
+                let
+                    totalSymptoms =
+                        generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
+                in
                 totalSymptoms > 1
 
         totalSigns =
@@ -2813,16 +2674,6 @@ respiratoryRateRecessedByAge maybeAgeMonths rate =
         |> Maybe.withDefault False
 
 
-{-| We consider suspected case to be confirmed, if Covid RDT was performed and
-turned out positive, or was not taken for whatever reason.
-Only option to rule out Covid is for RDT result to be negative.
--}
-covidCaseConfirmed : AcuteIllnessMeasurements -> Bool
-covidCaseConfirmed measurements =
-    isJust measurements.covidTesting
-        && (covidRapidTestResult measurements /= Just RapidTestNegative)
-
-
 covidRapidTestResult : AcuteIllnessMeasurements -> Maybe RapidTestResult
 covidRapidTestResult measurements =
     measurements.covidTesting
@@ -2989,23 +2840,24 @@ gastrointestinalInfectionDangerSignsPresent fever measurements =
                 symptomsGIDict =
                     Tuple.second symptomsGI |> .value |> .signs
 
-                symptomsGISet =
-                    Tuple.second symptomsGI |> .value |> .derivedSigns
-
                 bloodyDiarrhea =
                     symptomAppearsAtSymptomsDict BloodyDiarrhea symptomsGIDict
 
                 nonBloodyDiarrhea =
                     symptomAppearsAtSymptomsDict NonBloodyDiarrhea symptomsGIDict
-
-                intractableVomiting =
-                    symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
-                        && EverySet.member IntractableVomiting symptomsGISet
             in
             if fever then
                 bloodyDiarrhea || nonBloodyDiarrhea
 
             else
+                let
+                    symptomsGISet =
+                        Tuple.second symptomsGI |> .value |> .derivedSigns
+
+                    intractableVomiting =
+                        symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
+                            && EverySet.member IntractableVomiting symptomsGISet
+                in
                 bloodyDiarrhea || (nonBloodyDiarrhea && intractableVomiting)
         )
         measurements.symptomsGI
@@ -3101,20 +2953,12 @@ acuteFindinsgRespiratoryDangerSignPresent measurements =
         |> Maybe.withDefault False
 
 
-fromContactsTracingValue : Maybe (List ContactTraceItem) -> ContactsTracingForm
-fromContactsTracingValue saved =
-    { state = ContactsTracingFormSummary
-    , contacts = generateContactsFromTraceItems saved
-    , finished = False
-    }
-
-
 contactsTracingFormWithDefault : ContactsTracingForm -> Maybe (List ContactTraceItem) -> ContactsTracingForm
 contactsTracingFormWithDefault form saved =
     saved
         |> unwrap
             form
-            (\value ->
+            (\_ ->
                 { state = form.state
                 , contacts = or form.contacts (generateContactsFromTraceItems saved)
                 , finished = form.finished

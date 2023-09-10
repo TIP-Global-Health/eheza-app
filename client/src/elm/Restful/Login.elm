@@ -1284,7 +1284,7 @@ hasAccessToken status =
         Anonymous _ ->
             False
 
-        Authenticated login ->
+        Authenticated _ ->
             True
 
 

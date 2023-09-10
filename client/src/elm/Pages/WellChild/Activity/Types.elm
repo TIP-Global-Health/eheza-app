@@ -1,6 +1,4 @@
-module Pages.WellChild.Activity.Types exposing (..)
-
-import Backend.Measurement.Model exposing (VaccineDose)
+module Pages.WellChild.Activity.Types exposing (DangerSignsTask(..), ImmunisationTask(..), MedicationTask(..), NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
 
 
 type VaccinationStatus

@@ -1,20 +1,13 @@
-module Pages.HomeVisit.Encounter.Utils exposing (..)
+module Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.HomeVisitActivity.Model exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
-import Backend.Person.Utils exposing (ageInMonths)
-import Date exposing (Unit(..))
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.HomeVisit.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, translate)
-import ZScore.Model
 
 
 generateAssembledData : HomeVisitEncounterId -> ModelIndexedDb -> WebData AssembledData

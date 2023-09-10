@@ -1,8 +1,7 @@
-module Backend.ResilienceSurvey.Model exposing (..)
+module Backend.ResilienceSurvey.Model exposing (Model, Msg(..), ResilienceSurvey, ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..), emptyModel)
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 

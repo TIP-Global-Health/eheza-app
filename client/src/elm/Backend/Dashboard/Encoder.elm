@@ -18,7 +18,7 @@ import Backend.Measurement.Encoder
         )
 import Backend.Person.Encoder exposing (encodeGender)
 import Dict as LegacyDict
-import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
+import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (fromEntityUuid)

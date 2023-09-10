@@ -1,7 +1,5 @@
-module Pages.NCD.RecurrentEncounter.Model exposing (..)
+module Pages.NCD.RecurrentEncounter.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
-import Backend.Entities exposing (..)
-import Backend.NCDEncounter.Model exposing (..)
 import Pages.Page exposing (Page)
 
 

@@ -1,7 +1,7 @@
-module Backend.ParticipantConsent.Decoder exposing (decodeBody, decodeParticipantForm, decodeTitle)
+module Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 
 import Backend.ParticipantConsent.Model exposing (..)
-import Html.Parser as HtmlParser exposing (Node)
+import Html.Parser as HtmlParser
 import Json.Decode exposing (..)
 import Translate.Model exposing (TranslationSet)
 

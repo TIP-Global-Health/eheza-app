@@ -25,10 +25,9 @@ time zone information.
 -}
 
 import Date
-import Gizra.String exposing (addLeadingZero)
-import Json.Decode exposing (Decoder, andThen, field, map2, string)
+import Json.Decode exposing (Decoder, andThen, string)
 import Json.Decode.Extra exposing (fromResult)
-import Json.Encode exposing (Value, object)
+import Json.Encode exposing (Value)
 import Time exposing (Month(..))
 
 

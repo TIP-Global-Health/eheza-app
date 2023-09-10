@@ -1,17 +1,17 @@
-module Pages.Wellbeing.View exposing (..)
+module Pages.Wellbeing.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTime)
+import Backend.Nurse.Model exposing (Nurse)
+import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick)
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Time exposing (posixToMillis)
-import Translate exposing (Language, TranslationId, translate, translateText)
+import Time
+import Translate exposing (Language, translate, translateText)
 
 
 view : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg

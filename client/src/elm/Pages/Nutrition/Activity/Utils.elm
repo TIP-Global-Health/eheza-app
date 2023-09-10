@@ -1,18 +1,9 @@
-module Pages.Nutrition.Activity.Utils exposing (..)
+module Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryActivities, expectActivity, generateNutritionAssessment, mandatoryActivitiesCompleted, nextStepsTasksCompletedFromTotal)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (NutritionEncounterId)
 import Backend.Measurement.Model
     exposing
-        ( ChildNutritionSign(..)
-        , ContributingFactorsSign(..)
-        , FollowUpOption(..)
-        , HeightInCm(..)
-        , MuacInCm(..)
-        , NutritionAssessment(..)
-        , NutritionMeasurement
+        ( NutritionAssessment
         , NutritionMeasurements
-        , WeightInKg(..)
         )
 import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -20,18 +11,14 @@ import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import List.Extra
-import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (taskCompleted)
-import RemoteData exposing (RemoteData(..))
-import ZScore.Model exposing (Kilograms(..))
-import ZScore.Utils exposing (zScoreWeightForAge)
+import ZScore.Model
 
 
 generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssessment

@@ -1,4 +1,4 @@
-module Backend.ResilienceMessage.Model exposing (..)
+module Backend.ResilienceMessage.Model exposing (Model, Msg(..), ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)

@@ -1,11 +1,11 @@
 module ZScore.Update exposing (update)
 
-import Http exposing (Error, expectJson)
+import Http exposing (expectJson)
 import HttpBuilder exposing (get, toTask, withExpect)
 import RemoteData exposing (RemoteData(..), WebData, isNotAsked)
 import Task
 import Update.Extra exposing (sequence)
-import Utils.AllDict as AllDict exposing (AllDict)
+import Utils.AllDict exposing (AllDict)
 import ZScore.Decoder exposing (..)
 import ZScore.Model exposing (..)
 

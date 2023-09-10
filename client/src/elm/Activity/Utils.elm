@@ -1,4 +1,4 @@
-module Activity.Utils exposing (..)
+module Activity.Utils exposing (decodeActivityFromString, encodeActivityAsString, generateNutritionAssessment, getActivityCountForMother, getActivityIcon, getAllChildActivities, getAllChildActivitiesExcludingNextSteps, getAllMotherActivities, getParticipantCountForActivity, isCaregiver, mandatoryActivitiesCompleted, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -15,21 +15,19 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, expectNCDAActivity, getMeasurementValueFunc, mapMeasurementData, weightValueFunc)
+import Backend.Measurement.Utils exposing (currentValues, expectNCDAActivity, getMeasurementValueFunc, mapMeasurementData, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
+import Backend.Session.Utils exposing (getChildMeasurementData2, getChildren, getMotherMeasurementData2)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
-import Maybe.Extra exposing (isJust, isNothing)
-import Measurement.Utils exposing (expectCounselingActivity, expectParticipantConsent)
-import RemoteData exposing (RemoteData(..))
+import Maybe.Extra exposing (isJust)
+import Measurement.Utils exposing (expectParticipantConsent)
 import ZScore.Model
-import ZScore.Utils exposing (zScoreWeightForAge)
 
 
 generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> PersonId -> ModelIndexedDb -> OfflineSession -> List NutritionAssessment
@@ -225,14 +223,6 @@ getActivityIcon activity =
                     "forms"
 
 
-getAllActivities : OfflineSession -> List Activity
-getAllActivities offlineSession =
-    List.concat
-        [ List.map ChildActivity (getAllChildActivities offlineSession)
-        , List.map MotherActivity (getAllMotherActivities offlineSession)
-        ]
-
-
 getAllChildActivitiesExcludingNextSteps : OfflineSession -> List Activity
 getAllChildActivitiesExcludingNextSteps offlineSession =
     List.concat
@@ -329,11 +319,7 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
                 |> Maybe.andThen .birthDate
                 |> Maybe.map
                     (\birthDate ->
-                        if diffMonths birthDate currentDate < 6 then
-                            False
-
-                        else
-                            True
+                        diffMonths birthDate currentDate >= 6
                     )
                 |> Maybe.withDefault False
 
@@ -737,14 +723,6 @@ motherIsCheckedIn motherId session =
             motherOrAnyChildHasAnyCompletedActivity motherId session
     in
     explicitlyCheckedIn || hasCompletedActivity
-
-
-childIsCheckedIn : PersonId -> OfflineSession -> Bool
-childIsCheckedIn childId session =
-    getMyMother childId session
-        |> Maybe.map Tuple.first
-        |> Maybe.map (\motherId -> motherIsCheckedIn motherId session)
-        |> Maybe.withDefault False
 
 
 {-| Does the mother herself have any completed activity?

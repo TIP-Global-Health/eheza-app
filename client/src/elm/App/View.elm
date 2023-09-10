@@ -8,7 +8,6 @@ import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
 import Config.View
-import Date
 import Error.View
 import EverySet
 import Gizra.Html exposing (emptyNode)
@@ -85,7 +84,6 @@ import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
 import Pages.Session.View
-import Pages.StockManagement.Model
 import Pages.StockManagement.View
 import Pages.TraceContact.Model
 import Pages.TraceContact.View
@@ -97,7 +95,7 @@ import Pages.WellChild.Participant.View
 import Pages.WellChild.ProgressReport.Model
 import Pages.WellChild.ProgressReport.View
 import Pages.Wellbeing.View
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
 import ServiceWorker.View
 import SyncManager.View
 import Translate exposing (translate)
@@ -292,19 +290,20 @@ viewUserPage page deviceName model configured =
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
-                currentDate =
-                    fromLocalDateTime model.currentTime
-
-                isChw =
-                    Tuple.second loggedInModel.nurse
-                        |> isCommunityHealthWorker
-
                 selectedAuthorizedHealthCenter =
                     Tuple.second loggedInModel.nurse
                         |> .healthCenters
                         |> EverySet.member healthCenterId
             in
             if selectedAuthorizedHealthCenter then
+                let
+                    currentDate =
+                        fromLocalDateTime model.currentTime
+
+                    isChw =
+                        Tuple.second loggedInModel.nurse
+                            |> isCommunityHealthWorker
+                in
                 case page of
                     MyAccountPage ->
                         Pages.MyAccount.View.view model.language loggedInModel.nurse

@@ -23,7 +23,6 @@ module Gizra.String exposing
 
 -}
 
-import Maybe.Extra exposing (isJust)
 import Regex
 import String exposing (dropLeft, endsWith, length, padLeft, startsWith)
 

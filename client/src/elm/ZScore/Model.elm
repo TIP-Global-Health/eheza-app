@@ -1,4 +1,8 @@
-module ZScore.Model exposing (..)
+module ZScore.Model exposing
+    ( Model, Msg(..), MaleAndFemale, ZScoreEntry, emptyModel
+    , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..), ZScore
+    , BmiForAgeTables, ByDaysAndMonths, ChartAgeRange(..), Days(..), HeadCircumferenceForAgeTables, LengthHeightForAgeTables, Months(..), WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
+    )
 
 {-| Models our ZScore tables.
 

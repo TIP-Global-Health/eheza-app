@@ -2,23 +2,16 @@ module Pages.NCD.RecurrentActivity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDRecurrentActivity(..))
-import Backend.NCDActivity.Utils exposing (getActivityIcon)
-import Backend.NCDEncounter.Model exposing (NCDEncounter)
-import Backend.Person.Model exposing (Person)
-import Date exposing (Unit(..))
-import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
+import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..))
+import Maybe.Extra
+import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils
     exposing
         ( creatinineResultFormAndTasks
@@ -33,7 +26,6 @@ import Measurement.Utils
         , urineDipstickResultFormAndTasks
         , urineDipstickResultFormWithDefault
         )
-import Measurement.View exposing (viewSendToHospitalForm)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
@@ -44,24 +36,11 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
-        , taskCompleted
         , tasksBarId
-        , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectCustomInput
-        , viewCheckBoxSelectInput
-        , viewConditionalAlert
-        , viewCustomLabel
-        , viewInstructionsLabel
-        , viewLabel
-        , viewMeasurementInput
         , viewPersonDetailsExtended
-        , viewQuestionLabel
         , viewSaveAction
         )
-import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -117,12 +96,6 @@ viewActivity language currentDate activity assembled db model =
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate assembled model =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -247,6 +220,9 @@ viewLabResultsContent language currentDate assembled model =
             Maybe.andThen
                 (\task ->
                     let
+                        personId =
+                            assembled.participant.person
+
                         saveMsg =
                             case task of
                                 TaskRandomBloodSugarTest ->
@@ -294,12 +270,6 @@ viewLabResultsContent language currentDate assembled model =
 viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
 viewNextStepsContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -408,6 +378,9 @@ viewNextStepsContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskMedicationDistribution ->

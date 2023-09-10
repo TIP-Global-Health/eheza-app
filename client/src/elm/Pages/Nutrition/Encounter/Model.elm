@@ -1,11 +1,11 @@
-module Pages.Nutrition.Encounter.Model exposing (..)
+module Pages.Nutrition.Encounter.Model exposing (AssembledData, Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (ChildNutritionSign, NutritionMeasurements, ObstetricHistoryValue)
+import Backend.Measurement.Model exposing (NutritionMeasurements)
 import Backend.NutritionEncounter.Model exposing (..)
 import Backend.Person.Model exposing (Person)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 

@@ -2,23 +2,16 @@ module Pages.Prenatal.RecurrentActivity.View exposing (view, viewLabsHistory)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
-import Backend.PrenatalActivity.Utils exposing (getActivityIcon)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Date exposing (Unit(..))
-import EverySet
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
+import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra
 import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils
     exposing
@@ -39,7 +32,7 @@ import Measurement.Utils
         , urineDipstickResultFormWithDefault
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (viewVitalsForm)
+import Measurement.View
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.View exposing (warningPopup)
 import Pages.Prenatal.Encounter.Utils exposing (..)
@@ -53,21 +46,9 @@ import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicatio
 import Pages.Utils
     exposing
         ( isTaskCompleted
-        , taskCompleted
         , tasksBarId
-        , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectCustomInput
-        , viewCheckBoxSelectInput
-        , viewConditionalAlert
-        , viewCustomLabel
-        , viewInstructionsLabel
-        , viewLabel
-        , viewMeasurementInput
-        , viewQuestionLabel
         , viewSaveAction
         )
-import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -120,12 +101,6 @@ viewLabsHistoryContent language currentDate lab db data assembled =
 viewLab : Language -> NominalDate -> LaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
 viewLab language currentDate lab assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -192,6 +167,9 @@ viewLab language currentDate lab assembled data =
 
         actions =
             let
+                personId =
+                    assembled.participant.person
+
                 saveMsg =
                     case lab of
                         TestSyphilis ->
@@ -298,12 +276,6 @@ viewActivity language currentDate activity assembled db model =
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate assembled model =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -440,6 +412,9 @@ viewLabResultsContent language currentDate assembled model =
             Maybe.andThen
                 (\task ->
                     let
+                        personId =
+                            assembled.participant.person
+
                         saveMsg =
                             case task of
                                 TaskHIVTest ->
@@ -505,12 +480,6 @@ viewLabResultsContent language currentDate assembled model =
 viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
 viewNextStepsContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -615,6 +584,9 @@ viewNextStepsContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     NextStepsSendToHC ->
@@ -653,15 +625,6 @@ viewNextStepsContent language currentDate assembled data =
 viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
 viewExaminationContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
-        measurements =
-            assembled.measurements
-
         tasks =
             [ ExaminationVitals ]
 
@@ -732,6 +695,13 @@ viewExaminationContent language currentDate assembled data =
                             saveAction =
                                 case task of
                                     ExaminationVitals ->
+                                        let
+                                            personId =
+                                                assembled.participant.person
+
+                                            measurements =
+                                                assembled.measurements
+                                        in
                                         SaveVitals personId measurements.vitals
                         in
                         div [ class "actions examination" ]

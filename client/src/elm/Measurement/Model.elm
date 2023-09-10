@@ -1,4 +1,4 @@
-module Measurement.Model exposing (..)
+module Measurement.Model exposing (BloodGpRsResultForm, ContentAndTasksForPerformedLaboratoryTestConfig, ContentAndTasksLaboratoryTestInitialConfig, ContributingFactorsForm, CorePhysicalExamForm, CorePhysicalExamFormConfig, CreatinineResultForm, DropZoneFile, FamilyPlanningForm, FbfForm, FloatInputConstraints, FollowUpForm, GroupOfFoods(..), HIVPCRResultForm, HIVTestForm, HbA1cTestForm, HealthEducationForm, HeightForm, HemoglobinResultForm, HepatitisBResultForm, InvokationModule(..), LaboratoryTask(..), LipidPanelResultForm, LiverFunctionResultForm, MalariaTestForm, ModelChild, ModelMother, MsgChild(..), MsgMother(..), MuacForm, NCDAData, NCDAForm, NCDAStep(..), NextStepsTask(..), NonRDTForm, NutritionForm, OutMsgChild(..), OutMsgMother(..), OutsideCareForm, OutsideCareStep(..), ParticipantFormProgress, ParticipantFormUI, PartnerHIVTestForm, PhotoForm, PregnancyTestForm, RandomBloodSugarForm, RandomBloodSugarResultForm, SendToHCForm, SyphilisResultForm, UrineDipstickForm, UrineDipstickResultForm, VaccinationForm, VaccinationFormDynamicContentAndTasksConfig, VaccinationFormViewMode(..), VitalsForm, VitalsFormConfig, VitalsFormMode(..), WeightForm, completedParticipantFormProgress, emptyBloodGpRsResultForm, emptyContributingFactorsForm, emptyCorePhysicalExamForm, emptyCreatinineResultForm, emptyFamilyPlanningForm, emptyFbfForm, emptyFollowUpForm, emptyHIVPCRResultForm, emptyHIVTestForm, emptyHbA1cTestForm, emptyHealthEducationForm, emptyHeightForm, emptyHemoglobinResultForm, emptyHepatitisBResultForm, emptyLipidPanelResultForm, emptyLiverFunctionResultForm, emptyMalariaTestForm, emptyModelChild, emptyModelMother, emptyMuacForm, emptyNCDAData, emptyNonRDTForm, emptyNutritionForm, emptyOutsideCareForm, emptyParticipantFormProgress, emptyPartnerHIVTestForm, emptyPhotoForm, emptyPregnancyTestForm, emptyRandomBloodSugarForm, emptyRandomBloodSugarResultForm, emptySendToHCForm, emptySyphilisResultForm, emptyUrineDipstickForm, emptyUrineDipstickResultForm, emptyVaccinationForm, emptyVitalsForm, emptyWeightForm)
 
 {-| These modules manage the UI for the various measurements relating to a
 participant.
@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
-import Date exposing (Unit(..))
+import Date exposing (Unit)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -210,10 +210,6 @@ type alias FloatInputConstraints =
     { minVal : Float
     , maxVal : Float
     }
-
-
-type alias FileId =
-    Int
 
 
 {-| Represents the "file" that DropZone gives us when

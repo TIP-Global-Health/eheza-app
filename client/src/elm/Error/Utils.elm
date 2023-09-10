@@ -1,9 +1,7 @@
 module Error.Utils exposing
     ( decoderError
-    , httpError
     , maybeHttpError
     , noError
-    , plainError
     )
 
 import Error.Model exposing (Error, ErrorType(..))
@@ -36,11 +34,6 @@ noError =
 httpError : String -> String -> Http.Error -> Maybe Error
 httpError module_ location error =
     Just <| Error module_ location (Http error)
-
-
-plainError : String -> String -> String -> Maybe Error
-plainError module_ location error =
-    Just <| Error module_ location (Plain error)
 
 
 decoderError : String -> String -> Json.Decode.Error -> Maybe Error

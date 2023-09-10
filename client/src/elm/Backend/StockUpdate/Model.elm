@@ -1,10 +1,8 @@
-module Backend.StockUpdate.Model exposing (..)
+module Backend.StockUpdate.Model exposing (DataForMonth, Model, MonthYear, Msg(..), StockManagementData, emptyModel)
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (Fbf, ImageUrl, StockUpdate)
-import Date exposing (Date)
-import Gizra.NominalDate exposing (NominalDate)
+import Backend.Measurement.Model exposing (Fbf, StockUpdate)
 import RemoteData exposing (RemoteData(..), WebData)
 
 

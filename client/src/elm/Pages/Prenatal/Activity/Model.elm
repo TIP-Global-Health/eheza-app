@@ -1,12 +1,11 @@
-module Pages.Prenatal.Activity.Model exposing (..)
+module Pages.Prenatal.Activity.Model exposing (AppointmentConfirmationForm, BirthPlanData, BirthPlanForm, BreastExamForm, BreastfeedingData, BreastfeedingForm, DangerSignsData, DangerSignsForm, ExaminationData, FamilyPlanningData, FollowUpForm, GUExamForm, HealthEducationData, HistoryData, ImmunisationData, LaboratoryData, LabsHistoryForm, MedicalHistoryForm, MedicationData, MedicationForm, MentalHealthData, MentalHealthForm, MentalHealthStep(..), Model, Msg(..), NewbornEnrolmentForm, NextStepsData, NutritionAssessmentForm, ObstetricFormFirstStep, ObstetricFormSecondStep, ObstetricalExamForm, PostpartumTreatmentReviewData, PregnancyDatingData, PregnancyDatingForm, PregnancyTestForm, PrenatalPhotoData, PrenatalVaccinationForm, SocialHistoryForm, SpecialityCareData, SpecialityCareForm, SymptomReviewData, SymptomReviewForm, TreatmentReviewData, emptyModel, emptyPregnancyDatingForm)
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
@@ -18,10 +17,9 @@ import Measurement.Model
         , MalariaTestForm
         , NonRDTForm
         , OutsideCareForm
-        , OutsideCareStep(..)
+        , OutsideCareStep
         , PartnerHIVTestForm
         , RandomBloodSugarForm
-        , SendToHCForm
         , UrineDipstickForm
         , VaccinationForm
         , VaccinationFormViewMode
@@ -34,7 +32,6 @@ import Measurement.Model
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarForm
-        , emptySendToHCForm
         , emptyUrineDipstickForm
         , emptyVaccinationForm
         , emptyVitalsForm

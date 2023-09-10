@@ -1,8 +1,6 @@
 module Pages.AcuteIllness.Outcome.Model exposing (Model, Msg(..), emptyModel)
 
-import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..))
-import Date exposing (Date)
+import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome)
 import Pages.Page exposing (Page)
 
 

@@ -1,4 +1,4 @@
-module Measurement.View exposing (..)
+module Measurement.View exposing (FloatFormConfig, birthWeightInputsAndTasks, renderDatePart, viewActionTakenLabel, viewChild, viewColorAlertIndication, viewContributingFactorsForm, viewCorePhysicalExamForm, viewFamilyPlanningForm, viewFamilyPlanningInput, viewFollowUpForm, viewHealthEducationForm, viewMeasurementFloatDiff, viewMother, viewMultipleTreatmentWithDosage, viewNCDAContent, viewReferToProgramForm, viewSendToHealthCenterForm, viewSendToHospitalForm, viewTreatmentOptionWithDosage, viewVitalsForm, zScoreForHeightOrLength)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -7,7 +7,6 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Activity.Utils exposing (generateNutritionAssessment)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
-import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
@@ -31,7 +30,6 @@ import Backend.NutritionEncounter.Utils
         )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
-import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
@@ -61,9 +59,8 @@ import Pages.Utils
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
-        , viewSaveAction
         )
-import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import Translate exposing (Language, TranslationId, translate)
@@ -266,9 +263,6 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- What is the most recent measurement we've saved, either locally or
         -- to the backend (we don't care at the moment which). If this is a new
         -- measurement we haven't saved yet, this will be Nothing.
-        savedMeasurement =
-            measurements.current
-
         -- For calculating ZScores, we need to know how old the child was at
         -- the time of the **measurement**. If we have an existing value that
         -- we're modifying, we can get that from the value. (In that case,
@@ -279,15 +273,21 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- TODO: We should probably surface this in the UI ... that is, display
         -- what day we think the measurement was made on, and allow the nurse
         -- to change that if necessary.
-        dateMeasured =
-            savedMeasurement
-                |> Maybe.map (Tuple.second >> config.dateMeasured)
-                |> Maybe.withDefault currentDate
-
         -- And, we'll need the child's age.
         maybeAgeInDays =
             Maybe.map
-                (\birthDate -> diffDays birthDate dateMeasured)
+                (\birthDate ->
+                    let
+                        savedMeasurement =
+                            measurements.current
+
+                        dateMeasured =
+                            savedMeasurement
+                                |> Maybe.map (Tuple.second >> config.dateMeasured)
+                                |> Maybe.withDefault currentDate
+                    in
+                    diffDays birthDate dateMeasured
+                )
                 child.birthDate
 
         renderedZScoreForAge =
@@ -624,18 +624,15 @@ viewNutritionSigns language currentDate zscores childId measurement offlineSessi
         activity =
             ChildActivity NutritionSigns
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        assesment =
-            generateNutritionAssessment currentDate zscores childId db offlineSession
-                |> nutritionAssessmentForBackend
-
         saveMsg =
             if EverySet.isEmpty value.signs then
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 Just <| SendOutMsgChild <| SaveNutrition existingId value
     in
     div [ class "ui full segment nutrition" ]
@@ -715,20 +712,21 @@ viewChildFbf language currentDate child clinicType measurement form =
         activity =
             ChildActivity ChildFbf
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        notice =
-            if isJust form.distributionNotice then
-                form.distributionNotice
-
-            else
-                Just DistributedFully
-
         saveMsg =
             form.distributedAmount
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+
+                            notice =
+                                if isJust form.distributionNotice then
+                                    form.distributionNotice
+
+                                else
+                                    Just DistributedFully
+                        in
                         { form | distributionNotice = notice }
                             |> fbfFormToValue
                             |> SaveChildFbf existingId
@@ -952,9 +950,6 @@ viewFollowUpForm language currentDate setFollowUpOptionMsg form =
 viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
 viewHealthEducation language currentDate measurement form_ =
     let
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saved =
             getMeasurementValueFunc measurement.current
 
@@ -995,6 +990,10 @@ viewHealthEducation language currentDate measurement form_ =
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 toHealthEducationValueWithDefault saved form_
                     |> Maybe.map (SaveHealthEducation existingId >> SendOutMsgChild)
     in
@@ -1070,8 +1069,8 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
     let
         message =
             div [] <|
-                [ text <| translate language actionTranslationId ]
-                    ++ renderDatePart language maybeDate
+                (text <| translate language actionTranslationId)
+                    :: renderDatePart language maybeDate
                     ++ [ text "." ]
     in
     div [ class "header icon-label" ] <|
@@ -1083,9 +1082,6 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
 viewSendToHC : Language -> NominalDate -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
 viewSendToHC language currentDate measurement form_ =
     let
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saved =
             getMeasurementValueFunc measurement.current
 
@@ -1128,6 +1124,10 @@ viewSendToHC language currentDate measurement form_ =
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 toSendToHCValueWithDefault saved form_
                     |> Maybe.map (SaveSendToHC existingId >> SendOutMsgChild)
     in
@@ -1322,16 +1322,6 @@ viewVitalsForm language currentDate config form =
             Maybe.map
                 (\birthDate -> Gizra.NominalDate.diffYears birthDate currentDate)
                 config.birthDate
-
-        bloodPressureSection =
-            viewBloodPressureSection
-                form.sysBloodPressure
-                form.diaBloodPressure
-                sysBloodPressureUpdateFunc
-                diaBloodPressureUpdateFunc
-                config.sysBloodPressurePreviousValue
-                config.diaBloodPressurePreviousValue
-                True
 
         viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue addSeparator =
             Maybe.map
@@ -1531,6 +1521,17 @@ viewVitalsForm language currentDate config form =
                         ++ bodyTemperatureSection
 
                 VitalsFormFull ->
+                    let
+                        bloodPressureSection =
+                            viewBloodPressureSection
+                                form.sysBloodPressure
+                                form.diaBloodPressure
+                                sysBloodPressureUpdateFunc
+                                diaBloodPressureUpdateFunc
+                                config.sysBloodPressurePreviousValue
+                                config.diaBloodPressurePreviousValue
+                                True
+                    in
                     bloodPressureSection
                         ++ heartRateSection
                         ++ respiratoryRateSection
@@ -1570,13 +1571,6 @@ renderDatePart language maybeDate =
     maybeDate
         |> Maybe.map (\date -> [ span [ class "date" ] [ text <| " (" ++ renderDate language date ++ ")" ] ])
         |> Maybe.withDefault []
-
-
-type alias MotherMeasurementData =
-    { previous : MotherMeasurements
-    , current : MotherMeasurements
-    , status : WebData ()
-    }
 
 
 viewMother : Language -> NominalDate -> Person -> MotherActivity -> ClinicType -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
@@ -1835,14 +1829,15 @@ viewFamilyPlanning language measurement signs =
         activity =
             MotherActivity FamilyPlanning
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 Just <| SendOutMsgMother <| SaveFamilyPlanningSigns existingId signs
     in
     div
@@ -1925,13 +1920,14 @@ viewLactation language measurement form =
         activity =
             MotherActivity Lactation
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saveMsg =
             form.breastfeeding
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+                        in
                         lactationFormToSigns form
                             |> SaveLactation existingId
                             |> SendOutMsgMother
@@ -1970,20 +1966,21 @@ viewMotherFbf language currentDate mother clinicType measurement form =
         activity =
             MotherActivity MotherFbf
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        notice =
-            if isJust form.distributionNotice then
-                form.distributionNotice
-
-            else
-                Just DistributedFully
-
         saveMsg =
             form.distributedAmount
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+
+                            notice =
+                                if isJust form.distributionNotice then
+                                    form.distributionNotice
+
+                                else
+                                    Just DistributedFully
+                        in
                         { form | distributionNotice = notice }
                             |> fbfFormToValue
                             |> SaveMotherFbf existingId
@@ -2604,7 +2601,7 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
                     else
                         ( [], [] )
             in
-            ( (List.map Tuple.first ancSignsInputsAndTasks |> List.concat)
+            ( List.concatMap Tuple.first ancSignsInputsAndTasks
                 ++ newbornExamSection
             , List.map Tuple.second ancSignsInputsAndTasks
                 ++ newbornExamTasks
@@ -2652,8 +2649,7 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
                 inputsAndTasks =
                     List.map inputAndTaskForSign signs
             in
-            ( List.map Tuple.first inputsAndTasks
-                |> List.concat
+            ( List.concatMap Tuple.first inputsAndTasks
             , List.map Tuple.second inputsAndTasks
             )
 
@@ -2668,8 +2664,7 @@ ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeigh
                         , NCDASupportChildWithDisability
                         ]
             in
-            ( List.map Tuple.first inputsAndTasks
-                |> List.concat
+            ( List.concatMap Tuple.first inputsAndTasks
             , List.map Tuple.second inputsAndTasks
             )
 

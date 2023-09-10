@@ -6,9 +6,9 @@ module Gizra.WebData exposing (sendWithHandler, whenNotAsked, resetError)
 
 -}
 
-import Http exposing (Error(..), Expect)
+import Http
 import HttpBuilder exposing (..)
-import Json.Decode exposing (Decoder, decodeString, succeed)
+import Json.Decode exposing (Decoder)
 import RemoteData exposing (RemoteData(..), WebData)
 
 

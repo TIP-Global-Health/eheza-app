@@ -1,28 +1,21 @@
-module Pages.HomeVisit.Activity.Utils exposing (..)
+module Pages.HomeVisit.Activity.Utils exposing (activityCompleted, expectActivity, nutritionCaringFormWithDefault, nutritionFeedingFormWithDefault, nutritionFoodSecurityFormWithDefault, nutritionHygieneFormWithDefault, toNutritionCaringValueWithDefault, toNutritionFeedingValueWithDefault, toNutritionFoodSecurityValueWithDefault, toNutritionHygieneValueWithDefault)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (HomeVisitEncounterId)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import List.Extra
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (..)
+import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Pages.HomeVisit.Activity.Model exposing (..)
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted)
-import RemoteData exposing (RemoteData(..))
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue)
 
 
 expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
 expectActivity currentDate child data db activity =
     -- For now, we show all activities without any conditions.
-    case activity of
-        _ ->
-            True
+    True
 
 
 activityCompleted : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
@@ -47,22 +40,6 @@ activityCompleted currentDate child data db activity =
         FoodSecurity ->
             (not <| expectActivity currentDate child data db FoodSecurity)
                 || isJust measurements.foodSecurity
-
-
-fromNutritionFeedingValue : Maybe NutritionFeedingValue -> NutritionFeedingForm
-fromNutritionFeedingValue saved =
-    { receiveSupplement = Maybe.map (.signs >> EverySet.member ReceiveSupplement) saved
-    , rationPresentAtHome = Maybe.map (.signs >> EverySet.member RationPresentAtHome) saved
-    , enoughTillNextSession = Maybe.map (.signs >> EverySet.member EnoughTillNextSession) saved
-    , supplementShared = Maybe.map (.signs >> EverySet.member SupplementShared) saved
-    , encouragedToEat = Maybe.map (.signs >> EverySet.member EncouragedToEat) saved
-    , refusingToEat = Maybe.map (.signs >> EverySet.member RefusingToEat) saved
-    , breastfeeding = Maybe.map (.signs >> EverySet.member FeedingSignBreastfeeding) saved
-    , cleanWaterAvailable = Maybe.map (.signs >> EverySet.member CleanWaterAvailable) saved
-    , eatenWithWater = Maybe.map (.signs >> EverySet.member EatenWithWater) saved
-    , supplementType = Maybe.map .supplementType saved
-    , sachetsPerDay = Maybe.map .sachetsPerDay saved
-    }
 
 
 nutritionFeedingFormWithDefault : NutritionFeedingForm -> Maybe NutritionFeedingValue -> NutritionFeedingForm
@@ -124,16 +101,6 @@ toNutritionFeedingValue form =
         |> andMap sachetsPerDay
 
 
-fromNutritionHygieneValue : Maybe NutritionHygieneValue -> NutritionHygieneForm
-fromNutritionHygieneValue saved =
-    { soapInTheHouse = Maybe.map (.signs >> EverySet.member SoapInTheHouse) saved
-    , washHandsBeforeFeeding = Maybe.map (.signs >> EverySet.member WashHandsBeforeFeeding) saved
-    , foodCovered = Maybe.map (.signs >> EverySet.member FoodCovered) saved
-    , mainWaterSource = Maybe.map .mainWaterSource saved
-    , waterPreparationOption = Maybe.map .waterPreparationOption saved
-    }
-
-
 nutritionHygieneFormWithDefault : NutritionHygieneForm -> Maybe NutritionHygieneValue -> NutritionHygieneForm
 nutritionHygieneFormWithDefault form saved =
     saved
@@ -171,13 +138,6 @@ toNutritionHygieneValue form =
         |> andMap form.waterPreparationOption
 
 
-fromNutritionFoodSecurityValue : Maybe NutritionFoodSecurityValue -> NutritionFoodSecurityForm
-fromNutritionFoodSecurityValue saved =
-    { householdGotFood = Maybe.map (.signs >> EverySet.member HouseholdGotFood) saved
-    , mainIncomeSource = Maybe.map .mainIncomeSource saved
-    }
-
-
 nutritionFoodSecurityFormWithDefault : NutritionFoodSecurityForm -> Maybe NutritionFoodSecurityValue -> NutritionFoodSecurityForm
 nutritionFoodSecurityFormWithDefault form saved =
     saved
@@ -207,14 +167,6 @@ toNutritionFoodSecurityValue form =
     in
     Maybe.map NutritionFoodSecurityValue signs
         |> andMap form.mainIncomeSource
-
-
-fromNutritionCaringValue : Maybe NutritionCaringValue -> NutritionCaringForm
-fromNutritionCaringValue saved =
-    { parentHealth = Maybe.map (.signs >> EverySet.member ParentsAliveHealthy) saved
-    , childClean = Maybe.map (.signs >> EverySet.member ChildClean) saved
-    , caringOption = Maybe.map .caringOption saved
-    }
 
 
 nutritionCaringFormWithDefault : NutritionCaringForm -> Maybe NutritionCaringValue -> NutritionCaringForm

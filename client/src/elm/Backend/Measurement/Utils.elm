@@ -1,17 +1,15 @@
-module Backend.Measurement.Utils exposing (..)
+module Backend.Measurement.Utils exposing (administrationNoteFromString, administrationNoteToString, avoidingGuidanceReasonFromString, avoidingGuidanceReasonToString, bilirubinValueFromString, bilirubinValueToString, bloodGroupFromString, bloodGroupToString, bloodSmearResultFromString, bloodSmearResultToString, breastfeedingSignFromString, breastfeedingSignToString, covidIsolationPeriod, currentValue, currentValues, diabetesBySugarCount, diabetesByUrineGlucose, expectNCDAActivity, foodGroupFromString, foodGroupToString, getCurrentReasonForNonReferral, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueFromString, glucoseValueToString, guExamSignFromString, guExamSignToString, haemoglobinValueFromString, haemoglobinValueToString, headCircumferenceIndication, headCircumferenceValueFunc, illnessSymptomFromString, illnessSymptomToString, ketoneValueFromString, ketoneValueToString, labExpirationPeriod, laboratoryTestFromString, laboratoryTestToString, leukocytesValueFromString, leukocytesValueToString, lmpDateNotConfidentReasonFromString, lmpDateNotConfidentReasonToString, mapChildMeasurementsAtOfflineSession, mapMeasurementData, medicalConditionFromString, medicalConditionToString, medicationCausingHypertensionFromString, medicationCausingHypertensionToString, medicationTreatingDiabetesFromString, medicationTreatingDiabetesToString, medicationTreatingHypertensionFromString, medicationTreatingHypertensionToString, muacIndication, muacValueFunc, ncdDangerSignFromString, ncdDangerSignToString, ncdFamilyHistorySignFromString, ncdFamilyHistorySignToString, ncdGroup1SymptomFromString, ncdGroup1SymptomToString, ncdGroup2SymptomFromString, ncdGroup2SymptomToString, ncdPainSymptomFromString, ncdPainSymptomToString, ncdSocialHistorySignFromString, ncdSocialHistorySignToString, ncdaSignFromString, ncdaSignToString, nitriteValueFromString, nitriteValueToString, nonReferralReasonToSign, nutritionAssessmentFromString, nutritionAssessmentToComparable, nutritionAssessmentToString, nutritionSignToString, outsideCareMedicationFromString, outsideCareMedicationToString, outsideCareSignFromString, outsideCareSignToString, phValueFromString, phValueToString, postpartumChildDangerSignFromString, postpartumChildDangerSignToString, postpartumHealingProblemFromString, postpartumHealingProblemToString, postpartumMotherDangerSignFromString, postpartumMotherDangerSignToString, predecessorFromString, predecessorToString, pregnancyTestResultFromString, pregnancyTestResultToString, prenatalFlankPainSignFromString, prenatalFlankPainSignToString, prenatalHIVSignFromString, prenatalHIVSignToString, prenatalMentalHealthQuestionFromString, prenatalMentalHealthQuestionOptionFromString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomFromString, prenatalSymptomQuestionFromString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueFromString, proteinValueToString, reasonForNonReferralFromString, reasonForNonReferralToString, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignFromString, recommendedTreatmentSignToString, referralToFacilityCompleted, rhesusFromString, rhesusToString, splitChildMeasurements, splitMotherMeasurements, symptomsGISignFromString, symptomsGISignToString, symptomsGeneralSignFromString, symptomsGeneralSignToString, symptomsRespiratorySignFromString, symptomsRespiratorySignToString, testResultFromString, testResultToString, unitOfMeasurementFromString, unitOfMeasurementToString, urobilinogenValueFromString, urobilinogenValueToString, vaccineDoseFromString, vaccineDoseToString, vaginalExamSignFromString, vaginalExamSignToString, weightValueFunc)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Person.Model exposing (Person, Ubudehe(..))
-import Backend.Person.Utils exposing (ageInMonths, isAdult)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (OfflineSession)
 import Date
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
 
 
@@ -45,15 +43,6 @@ stored in the backend, or an edited value.
 currentValue : MeasurementData (Maybe ( id, value )) -> Maybe value
 currentValue data =
     Maybe.map Tuple.second data.current
-
-
-{-| Like `currentValue`, but also supplies the ID if we have one
-(i.e. if we're editing a value saved on the backend).
--}
-currentValueWithId : MeasurementData (Maybe ( id, value )) -> Maybe ( Maybe id, value )
-currentValueWithId data =
-    currentValue data
-        |> Maybe.map (\value -> ( Maybe.map Tuple.first data.current, value ))
 
 
 {-| Like `currentValue`, but for cases where we have a list of values.

@@ -15,7 +15,6 @@ import Gizra.TimePosix exposing (decodeSecondsAsPosix)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
-import Time
 
 
 decodeNurse : Decoder Nurse

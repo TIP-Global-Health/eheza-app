@@ -1,4 +1,4 @@
-module Components.SendViaWhatsAppDialog.Utils exposing (..)
+module Components.SendViaWhatsAppDialog.Utils exposing (countryCodeFromString, countryCodeToString, reportTypeFromString, reportTypeToString, showComponent, trimLeadingZeros)
 
 import Components.SendViaWhatsAppDialog.Model exposing (..)
 import EverySet exposing (EverySet)

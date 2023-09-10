@@ -1,4 +1,4 @@
-module Pages.Report.Model exposing (..)
+module Pages.Report.Model exposing (DiagnosisMode(..), LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), LabsResultsDisplayConfig, LabsResultsValues, PaneEntryStatus(..), RandomBloodSugarResult(..), ReportTab(..), TestReport(..))
 
 import Backend.Measurement.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)

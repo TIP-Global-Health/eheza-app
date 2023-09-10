@@ -4,7 +4,7 @@ import Html exposing (Html)
 import Pages.Report.Svg exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
+import Translate exposing (Language, translate)
 
 
 {-| If you're calling any of the functions that generate charts,

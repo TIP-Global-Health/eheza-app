@@ -4,14 +4,11 @@ import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (..)
 import Backend.Nurse.Model exposing (..)
-import Backend.Utils exposing (saveMeasurementCmd, sw)
-import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
-import Json.Encode exposing (object)
-import Maybe.Extra exposing (unwrap)
+import Backend.Utils exposing (sw)
+import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (encodeEntityUuid, toCmd, withoutDecoder)
+import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 
 update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

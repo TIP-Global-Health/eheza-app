@@ -16,13 +16,11 @@ import Backend.Measurement.Model
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
-        , TestExecutionNote(..)
-        , TestVariant(..)
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Utils exposing (getAllActivities)
-import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator(..))
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator)
 import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model
@@ -34,7 +32,7 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.NCD.Activity.Utils exposing (expectLaboratoryTask)
@@ -56,14 +54,12 @@ import Pages.Report.Utils exposing (..)
 import Pages.Report.View exposing (..)
 import Pages.Utils
     exposing
-        ( viewEncounterActionButton
-        , viewEndEncounterButton
-        , viewEndEncounterDialog
+        ( viewEndEncounterDialog
         , viewEndEncounterMenuForProgressReport
         , viewPersonDetailsExtended
         )
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, TranslationId, translate, translateText)
+import RemoteData
+import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
@@ -106,7 +102,7 @@ viewHeader language initiator model =
             Maybe.map
                 (\mode ->
                     case mode of
-                        LabResultsCurrent currentMode ->
+                        LabResultsCurrent _ ->
                             Translate.LabResults
 
                         LabResultsHistory _ ->
@@ -151,7 +147,7 @@ viewHeader language initiator model =
                                 LabResultsCurrentLipidPanel ->
                                     backToCurrentMsg LabResultsCurrentMain
 
-                        LabResultsHistory historyMode ->
+                        LabResultsHistory _ ->
                             SetLabResultsMode model.labResultsHistoryOrigin
 
                 goBackActionByDiagnosisMode defaultAction =
@@ -168,14 +164,6 @@ viewHeader language initiator model =
 
                 Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage id ->
                     iconForView <| goBackAction (SetActivePage <| UserPage <| NCDRecurrentEncounterPage id)
-
-        goBackPage =
-            case initiator of
-                Backend.NCDEncounter.Types.InitiatorEncounterPage id ->
-                    NCDEncounterPage id
-
-                Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage id ->
-                    NCDRecurrentEncounterPage id
     in
     div
         [ class "ui basic segment head" ]
@@ -261,7 +249,7 @@ viewContent language currentDate initiator db model assembled =
 
                                 labsPane =
                                     Maybe.map
-                                        (\components ->
+                                        (\_ ->
                                             generateLabsResultsPaneData currentDate assembled
                                                 |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
                                                 |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDLabsResults)
@@ -273,7 +261,7 @@ viewContent language currentDate initiator db model assembled =
                                     case initiator of
                                         Backend.NCDEncounter.Types.InitiatorEncounterPage _ ->
                                             let
-                                                ( completedActivities, pendingActivities ) =
+                                                ( _, pendingActivities ) =
                                                     List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled) getAllActivities
                                                         |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
 
@@ -367,7 +355,7 @@ viewRiskFactorsPane language currentDate assembled =
                 |> List.singleton
 
         riskFactors =
-            List.map
+            List.concatMap
                 (\measurements ->
                     let
                         familyRisks =
@@ -383,7 +371,6 @@ viewRiskFactorsPane language currentDate assembled =
                     familyRisks ++ socialRisks
                 )
                 allMeasurements
-                |> List.concat
                 |> Pages.Utils.unique
     in
     div [ class "risk-factors" ]
@@ -466,7 +453,7 @@ viewMedicalDiagnosisPane language currentDate assembled =
 
         coMorbidities =
             List.map .measurements allEncountersData
-                |> List.map
+                |> List.concatMap
                     (.coMorbidities
                         >> getMeasurementValueFunc
                         >> Maybe.map
@@ -486,11 +473,10 @@ viewMedicalDiagnosisPane language currentDate assembled =
                             )
                         >> Maybe.withDefault []
                     )
-                |> List.concat
                 |> Pages.Utils.unique
 
         dignoses =
-            List.map
+            List.concatMap
                 (\data ->
                     let
                         diagnosesIncludingChronic =
@@ -505,7 +491,6 @@ viewMedicalDiagnosisPane language currentDate assembled =
                     List.map (viewTreatmentForDiagnosis language data.startDate data.measurements withRenalComplications withDiabetes) diagnosesIncludingChronic
                 )
                 allEncountersData
-                |> List.concat
     in
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
@@ -549,7 +534,7 @@ viewTreatmentForDiagnosis language date measurements withRenalComplications with
                                             treatment =
                                                 List.map (Translate.RecommendedTreatmentSignLabel >> translate language) recordedTreatmentSignsForHypertension
                                                     |> List.intersperse (translate language Translate.And)
-                                                    |> String.join ""
+                                                    |> String.join " "
                                         in
                                         (String.toLower <| translate language Translate.TreatedWith)
                                             ++ " "

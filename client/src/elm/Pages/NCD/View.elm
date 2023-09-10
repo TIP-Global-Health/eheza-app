@@ -1,71 +1,16 @@
-module Pages.NCD.View exposing (..)
+module Pages.NCD.View exposing (viewMedicationDistributionForm, viewReferralForm)
 
-import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.Model exposing (ModelIndexedDb)
-import EverySet
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, isNothing)
-import Measurement.Model
-    exposing
-        ( ContentAndTasksForPerformedLaboratoryTestConfig
-        , ContentAndTasksLaboratoryTestInitialConfig
-        , CorePhysicalExamForm
-        , InvokationModule(..)
-        , LaboratoryTask(..)
-        , OutsideCareStep(..)
-        , VitalsForm
-        , VitalsFormMode(..)
-        )
-import Measurement.Utils
-    exposing
-        ( corePhysicalExamFormWithDefault
-        , familyPlanningFormWithDefault
-        , hivTestFormWithDefault
-        , laboratoryTaskIconClass
-        , nonRDTFormWithDefault
-        , outsideCareFormInputsAndTasks
-        , outsideCareFormWithDefault
-        , pregnancyTestFormWithDefault
-        , randomBloodSugarFormWithDefault
-        , urineDipstickFormWithDefault
-        , viewHIVTestForm
-        , viewNonRDTForm
-        , viewPregnancyTestForm
-        , viewRandomBloodSugarForm
-        , viewUrineDipstickForm
-        , vitalsFormWithDefault
-        )
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.Utils
     exposing
-        ( medicationDistributionFormWithDefault
-        , referralFormWithDefault
-        , resolveMedicationDistributionInputsAndTasks
+        ( resolveMedicationDistributionInputsAndTasks
         , resolveReferralInputsAndTasks
         )
-import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils
-    exposing
-        ( isTaskCompleted
-        , saveButton
-        , taskCompleted
-        , tasksBarId
-        , viewBoolInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewLabel
-        , viewNumberInput
-        , viewPersonDetailsExtended
-        , viewQuestionLabel
-        , viewSaveAction
-        )
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language)
 
 
 viewMedicationDistributionForm :

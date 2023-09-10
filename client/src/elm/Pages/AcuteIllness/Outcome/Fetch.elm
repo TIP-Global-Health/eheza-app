@@ -32,9 +32,9 @@ fetch participantId db =
                 |> List.map FetchAcuteIllnessMeasurements
     in
     Maybe.Extra.values
-        [ Maybe.map FetchIndividualEncounterParticipant (Just participantId)
+        [ Just (FetchIndividualEncounterParticipant participantId)
         , Maybe.map FetchPerson personId
-        , Maybe.map FetchAcuteIllnessEncountersForParticipant (Just participantId)
+        , Just (FetchAcuteIllnessEncountersForParticipant participantId)
         , Maybe.map FetchAcuteIllnessEncounter firstEncounterId
         ]
         ++ fetchMeasurements

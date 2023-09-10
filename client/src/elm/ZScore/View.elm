@@ -1,14 +1,12 @@
 module ZScore.View exposing
-    ( Bounds
+    ( AreaColor
+    , Bounds
     , LabelConfig
     , PlotConfig
-    , frame
-    , heightForAgeConfig
-    , heightForAgeLabels
-    , labels
-    , plotChildData
-    , plotData
-    , plotReferenceData
+    , XAxisConfig
+    , XAxisTypes
+    , YAxisConfig
+    , YAxisSpaceType
     , viewHeadCircumferenceForAge0To13WeeksBoys
     , viewHeadCircumferenceForAge0To13WeeksGirls
     , viewHeadCircumferenceForAge0To2Boys
@@ -32,16 +30,6 @@ module ZScore.View exposing
     , viewWeightForHeight0To5Girls
     , viewWeightForHeightBoys
     , viewWeightForHeightGirls
-    , weightForAgeConfig
-    , weightForAgeLabels
-    , weightForHeightConfig
-    , weightForHeightLabels
-    , zScoreLabelsHeightForAgeBoys
-    , zScoreLabelsHeightForAgeGirls
-    , zScoreLabelsWeightForAgeBoys
-    , zScoreLabelsWeightForAgeGirls
-    , zScoreLabelsWeightForHeightBoys
-    , zScoreLabelsWeightForHeightGirls
     )
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
@@ -68,8 +56,8 @@ import Round
 import String exposing (fromInt)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
-import Utils.AllDict as AllDict exposing (AllDict)
+import Translate exposing (ChartPhrase, Language, TranslationId(..), translate)
+import Utils.AllDict as AllDict
 import ZScore.Model exposing (..)
 import ZScore.Utils exposing (valueForZScore)
 
@@ -175,7 +163,6 @@ type XAxisTypes
 
 type YAxisSpaceType
     = SpaceAround
-    | SpaceAbove
     | SpaceBelow
     | NoSpace
 
@@ -1450,11 +1437,7 @@ xAxisLinesAndText config =
                         -- We want the list to contain only the successive numbers of 5.
                         |> List.filter
                             (\length ->
-                                if remainderBy 5 length == 0 then
-                                    True
-
-                                else
-                                    False
+                                remainderBy 5 length == 0
                             )
                     , False
                     , False
@@ -1506,34 +1489,35 @@ xAxisLinesAndText config =
                             if breakdownLines then
                                 List.indexedMap
                                     (\ii unitBreakdown ->
-                                        let
-                                            innerIndex =
-                                                toFloat ii
-
-                                            innerMargin =
-                                                linesMargin + (spaceBetweenInnerLines * (innerIndex + 1))
-
-                                            innerTextPosition =
-                                                if unitBreakdown < 10 then
-                                                    (innerMargin - 2)
-                                                        |> Round.round 4
-
-                                                else
-                                                    (innerMargin - 5)
-                                                        |> Round.round 4
-
-                                            innerLinePosition =
-                                                Round.round 4 innerMargin
-
-                                            breakdownText_ =
-                                                if breakdownText then
-                                                    [ text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| fromInt unitBreakdown ]
-                                                    ]
-
-                                                else
-                                                    []
-                                        in
                                         if unit < config.xAxis.maxAgeUnit then
+                                            let
+                                                innerIndex =
+                                                    toFloat ii
+
+                                                innerMargin =
+                                                    linesMargin + (spaceBetweenInnerLines * (innerIndex + 1))
+
+                                                innerLinePosition =
+                                                    Round.round 4 innerMargin
+
+                                                breakdownText_ =
+                                                    if breakdownText then
+                                                        let
+                                                            innerTextPosition =
+                                                                if unitBreakdown < 10 then
+                                                                    (innerMargin - 2)
+                                                                        |> Round.round 4
+
+                                                                else
+                                                                    (innerMargin - 5)
+                                                                        |> Round.round 4
+                                                        in
+                                                        [ text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| fromInt unitBreakdown ]
+                                                        ]
+
+                                                    else
+                                                        []
+                                            in
                                             line [ class "unit-breakdown-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] :: breakdownText_
 
                                         else
@@ -1544,24 +1528,23 @@ xAxisLinesAndText config =
 
                             else if config.xAxis.innerLinesNumber > 0 then
                                 List.range 1 config.xAxis.innerLinesNumber
-                                    |> List.map
+                                    |> List.concatMap
                                         (\innerLine ->
-                                            let
-                                                innerIndex =
-                                                    toFloat innerLine
-
-                                                innerLinePosition =
-                                                    linesMargin
-                                                        + (spaceBetweenInnerLines * innerIndex)
-                                                        |> Round.round 4
-                                            in
                                             if unit < config.xAxis.maxLength then
+                                                let
+                                                    innerIndex =
+                                                        toFloat innerLine
+
+                                                    innerLinePosition =
+                                                        linesMargin
+                                                            + (spaceBetweenInnerLines * innerIndex)
+                                                            |> Round.round 4
+                                                in
                                                 [ line [ class "unit-breakdown-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] ]
 
                                             else
                                                 []
                                         )
-                                    |> List.concat
 
                             else
                                 []
@@ -1631,7 +1614,7 @@ yAxisLinesAndText config =
                         innerLines =
                             if lineText /= config.input.maxY then
                                 List.range 1 config.yAxis.innerLinesNumber
-                                    |> List.map
+                                    |> List.concatMap
                                         (\innerLine ->
                                             let
                                                 innerIndex =
@@ -1644,7 +1627,6 @@ yAxisLinesAndText config =
                                             in
                                             [ line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] [] ]
                                         )
-                                    |> List.concat
 
                             else
                                 []
@@ -1675,13 +1657,6 @@ yAxisLinesAndText config =
 
                                 SpaceBelow ->
                                     if lineText == config.input.minY then
-                                        ( emptyNode, emptyNode )
-
-                                    else
-                                        ( beginningText, endText )
-
-                                SpaceAbove ->
-                                    if lineText == config.input.maxY then
                                         ( emptyNode, emptyNode )
 
                                     else

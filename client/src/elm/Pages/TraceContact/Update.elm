@@ -296,11 +296,8 @@ update currentDate id msg model =
                             if EverySet.isEmpty symptomsSet then
                                 False
 
-                            else if EverySet.toList symptomsSet == [ noneSign ] then
-                                False
-
                             else
-                                True
+                                EverySet.toList symptomsSet /= [ noneSign ]
 
                         popupState =
                             if

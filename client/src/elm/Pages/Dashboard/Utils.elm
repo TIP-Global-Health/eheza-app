@@ -1,4 +1,4 @@
-module Pages.Dashboard.Utils exposing (..)
+module Pages.Dashboard.Utils exposing (applyGenderFilter, countAcuteIllnessAssesments, countAcuteIllnessCasesByPossibleDiagnosises, countAcuteIllnessCasesByTreatmentApproach, countAcuteIllnessDiagnosedCases, countComplicatedGISentToHC, countComplicatedMalariaSentToHC, countCurrentlyPregnantForSelectedMonth, countCurrentlyPregnantWithDangerSignsForSelectedMonth, countDeliveriesAtLocationForSelectedMonth, countDiagnosedWithCovidCallsTo114, countDiagnosedWithCovidManagedAtHome, countDiagnosedWithCovidSentToHC, countDiagnosedWithGI, countDiagnosedWithMalaria, countNewbornForSelectedMonth, countNewlyIdentifiedPregananciesForSelectedMonth, countPregnanciesDueWithin4MonthsForSelectedMonth, countResolvedGICasesForSelectedMonth, countResolvedMalariaCasesForSelectedMonth, countUncomplicatedGIManagedByChw, countUncomplicatedMalariaAndPregnantSentToHC, countUncomplicatedMalariaManagedByChw, filterProgramTypeFromString, filterProgramTypeToString, filterStatsByGender, filterStatsWithinPeriod, generateAssembledData, getAcuteIllnessEncountersForSelectedMonth, getAcuteIllnessFollowUpsBreakdownByDiagnosis, getFollowUpsTotals)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
@@ -10,12 +10,11 @@ import Backend.Dashboard.Model
         , CaseManagement
         , CaseNutrition
         , CaseNutritionTotal
-        , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
         , Nutrition
         , NutritionPageData
-        , NutritionStatus(..)
+        , NutritionStatus
         , NutritionValue
         , Periods
         , PersonIdentifier
@@ -34,18 +33,16 @@ import Backend.Measurement.Model
         , FollowUpMeasurements
         , HCContactSign(..)
         , HCRecommendation(..)
-        , IsolationSign(..)
         , Recommendation114(..)
         , SendToHCSign(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model
 import Backend.Village.Model exposing (Village)
-import Date exposing (Month, Unit(..), isBetween, monthNumber, numberToMonth, year)
-import EverySet exposing (EverySet)
+import Date exposing (Unit(..), isBetween)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isJust)
 import Pages.Dashboard.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils
     exposing
@@ -62,7 +59,6 @@ import Pages.GlobalCaseManagement.View
         , generateNutritionFollowUpEntries
         , generatePrenatalFollowUpEntries
         )
-import RemoteData
 import Translate exposing (Language)
 
 
@@ -301,10 +297,10 @@ mergeNutritionValues first second =
                     else
                         second
 
-                ( Just value1, Nothing ) ->
+                ( Just _, Nothing ) ->
                     first
 
-                ( Nothing, Just value2 ) ->
+                ( Nothing, Just _ ) ->
                     second
 
                 ( Nothing, Nothing ) ->
@@ -425,8 +421,7 @@ generateTotalEncountersFromPeriodsDict programTypeFilter dict =
 
 getAcuteIllnessEncountersForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem
 getAcuteIllnessEncountersForSelectedMonth selectedDate itemsList =
-    List.map .encounters itemsList
-        |> List.concat
+    List.concatMap .encounters itemsList
         |> List.filter (.startDate >> withinSelectedMonth selectedDate)
 
 
@@ -1032,44 +1027,41 @@ generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
             List.repeat 12 0
                 |> List.indexedMap (\index _ -> index + 1)
                 |> List.Extra.splitAt currentMonth
-
-        orderedList =
-            (lastYear ++ thisYear)
-                |> List.reverse
-                |> List.indexedMap
-                    (\index month ->
-                        let
-                            maxJoinDate =
-                                Date.add Months (-1 * index) currentDate
-                                    |> Date.ceiling Date.Month
-                                    |> Date.add Days -1
-
-                            minGraduationDate =
-                                Date.add Months (-1 * index) currentDate
-                                    |> Date.floor Date.Month
-
-                            totalBeneficiaries =
-                                stats.childrenBeneficiaries
-                                    |> List.filterMap
-                                        (\child ->
-                                            if
-                                                (Date.compare child.memberSince maxJoinDate == LT)
-                                                    && (Date.compare minGraduationDate child.graduationDate == LT)
-                                            then
-                                                Just child.identifier
-
-                                            else
-                                                Nothing
-                                        )
-                                    -- We want to get unique participants.
-                                    |> EverySet.fromList
-                                    |> EverySet.size
-                        in
-                        ( month, totalBeneficiaries )
-                    )
-                |> Dict.fromList
     in
-    orderedList
+    (lastYear ++ thisYear)
+        |> List.reverse
+        |> List.indexedMap
+            (\index month ->
+                let
+                    maxJoinDate =
+                        Date.add Months (-1 * index) currentDate
+                            |> Date.ceiling Date.Month
+                            |> Date.add Days -1
+
+                    minGraduationDate =
+                        Date.add Months (-1 * index) currentDate
+                            |> Date.floor Date.Month
+
+                    totalBeneficiaries =
+                        stats.childrenBeneficiaries
+                            |> List.filterMap
+                                (\child ->
+                                    if
+                                        (Date.compare child.memberSince maxJoinDate == LT)
+                                            && (Date.compare minGraduationDate child.graduationDate == LT)
+                                    then
+                                        Just child.identifier
+
+                                    else
+                                        Nothing
+                                )
+                            -- We want to get unique participants.
+                            |> EverySet.fromList
+                            |> EverySet.size
+                in
+                ( month, totalBeneficiaries )
+            )
+        |> Dict.fromList
 
 
 generateCaseNutritionTotals : CaseNutrition -> CaseNutritionTotal
@@ -1242,15 +1234,6 @@ filterStatsWithinPeriod currentDate period stats =
     filterStatsByPeriod isBetween currentDate period stats
 
 
-filterStatsOutsidePeriod : NominalDate -> FilterPeriod -> DashboardStats -> DashboardStats
-filterStatsOutsidePeriod currentDate period stats =
-    let
-        outside start end date =
-            isBetween start end date |> not
-    in
-    filterStatsByPeriod outside currentDate period stats
-
-
 {-| Filter stats to match the selected period.
 -}
 filterStatsByPeriod : (NominalDate -> NominalDate -> NominalDate -> Bool) -> NominalDate -> FilterPeriod -> DashboardStats -> DashboardStats
@@ -1359,17 +1342,6 @@ withinSelectedMonth selectedDate date =
     in
     (Date.monthNumber date == month)
         && (Date.year date == year)
-
-
-getSelectedDate : NominalDate -> Model -> NominalDate
-getSelectedDate currentDate model =
-    Date.add Date.Months (-1 * model.monthGap) currentDate
-
-
-childrenBeneficiariesByProgramType : ProgramType -> Dict ProgramType (List ChildrenBeneficiariesStats) -> List ChildrenBeneficiariesStats
-childrenBeneficiariesByProgramType programType childrenBeneficiaries =
-    Dict.get programType childrenBeneficiaries
-        |> Maybe.withDefault []
 
 
 filterByLimitDate : NominalDate -> Dict id { a | dateMeasured : NominalDate } -> Dict id { a | dateMeasured : NominalDate }

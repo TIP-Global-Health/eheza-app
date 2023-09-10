@@ -1,4 +1,4 @@
-module Backend.PrenatalActivity.Utils exposing (..)
+module Backend.PrenatalActivity.Utils exposing (activityFromString, activityToString, generateHighRiskAlertData, generateHighSeverityAlertData, generateRiskFactorAlertData, getActivityIcon, getEncounterTrimesterData, getRecurrentActivityIcon, recurrentActivityFromString, recurrentActivityToString)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -12,21 +12,16 @@ expected (and not completed).
 
 import Backend.Measurement.Model
     exposing
-        ( HeightInCm(..)
-        , LaboratoryTest(..)
-        , MuacInCm(..)
-        , PrenatalMeasurements
-        , PreviousDeliverySign(..)
-        , WeightInKg(..)
+        ( PrenatalMeasurements
         )
-import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.PrenatalActivity.Model exposing (..)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)
-import Pages.Prenatal.Encounter.Utils exposing (getLastEncounterMeasurements, getLastEncounterMeasurementsWithDate)
+import Pages.Prenatal.Encounter.Utils exposing (getLastEncounterMeasurementsWithDate)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
@@ -423,7 +418,7 @@ generateRiskFactorAlertData language currentDate measurements factor =
             trans (Translate.RiskFactorAlert alert)
     in
     case factor of
-        FactorNumberOfCSections dummy ->
+        FactorNumberOfCSections _ ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->

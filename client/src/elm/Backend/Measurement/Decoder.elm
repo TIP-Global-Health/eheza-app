@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (..)
+module Backend.Measurement.Decoder exposing (decodeAcuteFindings, decodeAcuteIllnessContactsTracing, decodeAcuteIllnessCoreExam, decodeAcuteIllnessDangerSigns, decodeAcuteIllnessFollowUp, decodeAcuteIllnessMeasurements, decodeAcuteIllnessMuac, decodeAcuteIllnessNutrition, decodeAcuteIllnessTraceContact, decodeAcuteIllnessVitals, decodeAppointmentConfirmation, decodeAttendance, decodeBirthPlan, decodeBreastExam, decodeCall114, decodeCall114Sign, decodeChildMeasurementList, decodeContributingFactors, decodeCorePhysicalExam, decodeCounselingSession, decodeCovidTesting, decodeDangerSign, decodeDangerSigns, decodeExposure, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFollowUp, decodeFollowUpMeasurements, decodeGroupHealthEducation, decodeGroupNCDA, decodeGroupSendToHC, decodeHCContact, decodeHCContactSign, decodeHCRecommendation, decodeHealthEducation, decodeHeight, decodeHomeVisitMeasurements, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLastMenstrualPeriod, decodeMalariaPrevention, decodeMalariaTesting, decodeMedicalHistory, decodeMedication, decodeMedicationDistribution, decodeMotherMeasurementList, decodeMuac, decodeNCDCoMorbidities, decodeNCDCoreExam, decodeNCDCreatinineTest, decodeNCDDangerSigns, decodeNCDFamilyHistory, decodeNCDFamilyPlanning, decodeNCDHIVTest, decodeNCDHbA1cTest, decodeNCDHealthEducation, decodeNCDLabsResults, decodeNCDLipidPanelTest, decodeNCDLiverFunctionTest, decodeNCDMeasurements, decodeNCDMedicationDistribution, decodeNCDMedicationHistory, decodeNCDOutsideCare, decodeNCDPregnancyTest, decodeNCDRandomBloodSugarTest, decodeNCDReferral, decodeNCDSocialHistory, decodeNCDSymptomReview, decodeNCDUrineDipstickTest, decodeNCDVitals, decodeNutrition, decodeNutritionCaring, decodeNutritionContributingFactors, decodeNutritionFeeding, decodeNutritionFollowUp, decodeNutritionFoodSecurity, decodeNutritionHealthEducation, decodeNutritionHeight, decodeNutritionHygiene, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNCDA, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionSendToHC, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodePhoto, decodePregnancyTest, decodePrenatalBloodGpRsTest, decodePrenatalBreastfeeding, decodePrenatalFamilyPlanning, decodePrenatalFollowUp, decodePrenatalGUExam, decodePrenatalHIVPCRTest, decodePrenatalHIVTest, decodePrenatalHealthEducation, decodePrenatalHemoglobinTest, decodePrenatalHepatitisBTest, decodePrenatalLabsResults, decodePrenatalMalariaTest, decodePrenatalMeasurements, decodePrenatalMedicationDistribution, decodePrenatalMentalHealth, decodePrenatalNutrition, decodePrenatalOutsideCare, decodePrenatalPartnerHIVTest, decodePrenatalPhoto, decodePrenatalRandomBloodSugarTest, decodePrenatalSendToHc, decodePrenatalSpecialityCare, decodePrenatalSymptomReview, decodePrenatalSyphilisTest, decodePrenatalTetanusImmunisation, decodePrenatalUrineDipstickTest, decodeRecommendation114, decodeSendToHC, decodeSendToHCSign, decodeSocialHistory, decodeStockManagementMeasurements, decodeSymptomsGI, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTravelHistory, decodeTreatmentOngoing, decodeTreatmentReview, decodeVitals, decodeWeight, decodeWellChildAlbendazole, decodeWellChildBCGImmunisation, decodeWellChildContributingFactors, decodeWellChildDTPImmunisation, decodeWellChildECD, decodeWellChildFollowUp, decodeWellChildHPVImmunisation, decodeWellChildHeadCircumference, decodeWellChildHealthEducation, decodeWellChildHeight, decodeWellChildIPVImmunisation, decodeWellChildMRImmunisation, decodeWellChildMeasurements, decodeWellChildMebendezole, decodeWellChildMuac, decodeWellChildNCDA, decodeWellChildNextVisit, decodeWellChildNutrition, decodeWellChildOPVImmunisation, decodeWellChildPCV13Immunisation, decodeWellChildPhoto, decodeWellChildPregnancySummary, decodeWellChildRotarixImmunisation, decodeWellChildSendToHC, decodeWellChildSymptomsReview, decodeWellChildVitals, decodeWellChildVitaminA, decodeWellChildWeight, malariaRapidTestResultFromString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -11,10 +11,10 @@ import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
+import Gizra.Json exposing (decodeFloat, decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
+import Json.Decode.Pipeline exposing (custom, optional, required)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
 import Utils.Json exposing (decodeEverySet, decodeWithFallback)
@@ -954,36 +954,6 @@ decodePrenatalMentalHealthQuestionTuple =
 
                     _ ->
                         failure
-            )
-
-
-decodePrenatalMentalHealthQuestion : Decoder PrenatalMentalHealthQuestion
-decodePrenatalMentalHealthQuestion =
-    string
-        |> andThen
-            (\s ->
-                prenatalMentalHealthQuestionFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault
-                        (fail <|
-                            s
-                                ++ " is not a recognized PrenatalMentalHealthQuestion"
-                        )
-            )
-
-
-decodePrenatalMentalHealthQuestionOption : Decoder PrenatalMentalHealthQuestionOption
-decodePrenatalMentalHealthQuestionOption =
-    string
-        |> andThen
-            (\s ->
-                prenatalMentalHealthQuestionOptionFromString s
-                    |> Maybe.map succeed
-                    |> Maybe.withDefault
-                        (fail <|
-                            s
-                                ++ " is not a recognized PrenatalMentalHealthQuestionOption"
-                        )
             )
 
 
@@ -3131,40 +3101,6 @@ decodeNonReferralSign =
                                         failure
                             )
                         |> Maybe.withDefault failure
-            )
-
-
-decodeReferralFacility : Decoder ReferralFacility
-decodeReferralFacility =
-    string
-        |> andThen
-            (\facility ->
-                case facility of
-                    "hc" ->
-                        succeed FacilityHealthCenter
-
-                    "hospital" ->
-                        succeed FacilityHospital
-
-                    "mhs" ->
-                        succeed FacilityMentalHealthSpecialist
-
-                    "arv" ->
-                        succeed FacilityARVProgram
-
-                    "ncd" ->
-                        succeed FacilityNCDProgram
-
-                    "anc" ->
-                        succeed FacilityANCServices
-
-                    "us" ->
-                        succeed FacilityUltrasound
-
-                    _ ->
-                        fail <|
-                            facility
-                                ++ " is not a recognized ReferralFacility"
             )
 
 

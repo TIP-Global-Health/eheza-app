@@ -1,8 +1,7 @@
-module Pages.WellChild.Activity.View exposing (view, viewAdministeredMedicationLabel, viewVaccinationOverview)
+module Pages.WellChild.Activity.View exposing (view, viewVaccinationOverview)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceIndication)
 import Backend.Model exposing (ModelIndexedDb)
@@ -14,9 +13,7 @@ import Backend.NutritionEncounter.Utils
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -25,23 +22,19 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
 import List.Extra
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (InvokationModule(..), NCDAData, PhotoForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( birthWeightInputsAndTasks
-        , renderDatePart
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
-        , viewMeasurementFloatDiff
         , viewReferToProgramForm
         , viewSendToHealthCenterForm
-        , zScoreForHeightOrLength
         )
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
@@ -51,7 +44,6 @@ import Pages.Utils
         ( isTaskCompleted
         , maybeToBoolTask
         , taskCompleted
-        , taskCompletedWithException
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -69,11 +61,10 @@ import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
-import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
+import ZScore.Model exposing (Centimetres(..))
 import ZScore.Utils exposing (diffDays, viewZScore, zScoreHeadCircumferenceForAge)
 
 
@@ -550,12 +541,6 @@ viewDangerSignsContent :
     -> List (Html Msg)
 viewDangerSignsContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -642,6 +627,9 @@ viewDangerSignsContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskSymptomsReview ->
@@ -733,12 +721,6 @@ viewNutritionAssessmenContent :
     -> List (Html Msg)
 viewNutritionAssessmenContent language currentDate zscores id isChw assembled db data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -821,6 +803,9 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
 
             else
                 let
+                    person =
+                        assembled.person
+
                     maybeAgeInDays =
                         Maybe.map
                             (\birthDate -> diffDays birthDate currentDate)
@@ -890,6 +875,9 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskHeight ->
@@ -941,20 +929,16 @@ viewHeadCircumferenceForm :
     -> List (Html Msg)
 viewHeadCircumferenceForm language currentDate person zscore previousValue form =
     let
-        maybeAgeInDays =
-            Maybe.map
-                (\birthDate -> diffDays birthDate currentDate)
-                person.birthDate
-
-        zScoreText =
-            Maybe.map viewZScore zscore
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
-
         inputSection =
             if measurementNotTakenChecked then
                 []
 
             else
+                let
+                    zScoreText =
+                        Maybe.map viewZScore zscore
+                            |> Maybe.withDefault (translate language Translate.NotAvailable)
+                in
                 [ div [ class "ui grid" ]
                     [ div [ class "eleven wide column" ]
                         [ viewMeasurementInput
@@ -1011,12 +995,6 @@ viewImmunisationContent :
     -> List (Html Msg)
 viewImmunisationContent language currentDate isChw assembled db data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -1175,6 +1153,9 @@ viewImmunisationContent language currentDate isChw assembled db data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskBCG ->
@@ -1414,14 +1395,15 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                 initialOpvAdministeredByForm =
                     wasInitialOpvAdministeredByVaccinationForm birthDate form
 
-                initialOpvAdministeredByProgress =
-                    wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
-
                 initialOpvAdministered =
                     if form.administeredDosesDirty then
                         initialOpvAdministeredByForm
 
                     else
+                        let
+                            initialOpvAdministeredByProgress =
+                                wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+                        in
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =
@@ -1885,7 +1867,7 @@ ecdFormInputsAndTasks language currentDate assembled ecdForm =
                 Nothing
             ]
     in
-    ( List.map Tuple.first persentedECDSignsData |> List.concat
+    ( List.concatMap Tuple.first persentedECDSignsData
     , List.map Tuple.second persentedECDSignsData
     )
 
@@ -1899,12 +1881,6 @@ viewMedicationContent :
     -> List (Html Msg)
 viewMedicationContent language currentDate isChw assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -2027,6 +2003,9 @@ viewMedicationContent language currentDate isChw assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskAlbendazole ->
@@ -2130,12 +2109,6 @@ viewNextStepsContent :
     -> List (Html Msg)
 viewNextStepsContent language currentDate zscores id isChw assembled db data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -2277,6 +2250,9 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskContributingFactors ->
@@ -2363,15 +2339,16 @@ resolveNextVisitDates currentDate isChw assembled db form =
 viewPhotoContent : Language -> NominalDate -> AssembledData -> PhotoForm -> List (Html Msg)
 viewPhotoContent language currentDate assembled form =
     let
-        photoId =
-            Maybe.map Tuple.first assembled.measurements.photo
-
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
         -- measurement, if we have that.
         ( displayPhoto, saveMsg, isDisabled ) =
             case form.url of
                 Just url ->
+                    let
+                        photoId =
+                            Maybe.map Tuple.first assembled.measurements.photo
+                    in
                     ( Just url
                     , [ onClick <| SavePhoto assembled.participant.person photoId url ]
                     , False
@@ -2395,12 +2372,11 @@ viewPhotoContent language currentDate assembled form =
             viewPhotoForm language currentDate displayPhoto DropZoneComplete
         , div [ class "actions" ]
             [ button
-                ([ classList
+                (classList
                     [ ( "ui fluid primary button", True )
                     , ( "disabled", isDisabled )
                     ]
-                 ]
-                    ++ saveMsg
+                    :: saveMsg
                 )
                 [ text <| translate language Translate.Save ]
             ]

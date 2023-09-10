@@ -1,21 +1,12 @@
-module Backend.NCDEncounter.Utils exposing (..)
+module Backend.NCDEncounter.Utils exposing (getNCDEncountersForParticipant, progressReportInitiatorFromUrlFragment, progressReportInitiatorToUrlFragment)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Backend.Person.Model exposing (Person)
-import Date
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isNothing)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import Translate exposing (Language)
 
 
 getNCDEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( NCDEncounterId, NCDEncounter )

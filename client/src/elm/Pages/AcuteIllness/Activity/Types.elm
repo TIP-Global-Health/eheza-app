@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Activity.Types exposing (..)
+module Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), DangerSignsTask(..), ExposureTask(..), NextStepsTask(..), OngoingTreatmentTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomReliefType(..), SymptomsTask(..))
 
 
 type SymptomReliefType

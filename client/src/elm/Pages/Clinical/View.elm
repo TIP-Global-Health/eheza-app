@@ -4,9 +4,8 @@ import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Model exposing (MsgIndexedDb(..))
 import Backend.Village.Utils exposing (getVillageClinicId)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -14,7 +13,6 @@ import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (SyncInfoStatus(..))
 import Translate exposing (Language, translate)
 
 

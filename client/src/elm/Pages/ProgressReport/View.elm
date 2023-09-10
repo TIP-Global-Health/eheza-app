@@ -1,17 +1,12 @@
 module Pages.ProgressReport.View exposing (view)
 
 import Activity.Utils exposing (mandatoryActivitiesCompleted)
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild)
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.View
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Pages.ProgressReport.Model exposing (..)
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)

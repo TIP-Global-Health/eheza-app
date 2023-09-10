@@ -1,8 +1,6 @@
 module Utils.Html exposing
     ( activityCard
     , activityCardWithCounter
-    , debugView
-    , divider
     , spinner
     , tabItem
     , thumbnailImage
@@ -10,32 +8,13 @@ module Utils.Html exposing
     , viewLoading
     , viewLogo
     , viewModal
-    , wrapPage
     )
 
-import Config.Model exposing (Model)
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Translate exposing (Language, TranslationId, translate)
-
-
-{-| Displays a debugging segment if debugging is enabled, otherwise renders
-nothing.
--}
-debugView : Model -> Html msg -> Html msg
-debugView config html =
-    showIf config.debug <|
-        div [ class "ui tertiary segment" ]
-            [ h5 [ class "ui right aligned header" ] [ text "Debug" ]
-            , html
-            ]
-
-
-divider : Html msg
-divider =
-    div [ class "ui divider" ] []
 
 
 spinner : Html any
@@ -140,16 +119,6 @@ viewCustomModal extraClasses =
                 |> String.join " "
     in
     showMaybe << Maybe.map (\modal -> div [ class classes ] [ modal ])
-
-
-{-| Take some HTML and wrap it in some standard HTML to make a page that
-works with our CSS. Meant for cases where we just want to show a quick
-error message or something where we don't have a full design.
--}
-wrapPage : List (Html a) -> Html a
-wrapPage html =
-    div [ class "wrap wrap-alt-2" ]
-        [ div [ class "ui basic segment" ] html ]
 
 
 viewLogo : Language -> Html any

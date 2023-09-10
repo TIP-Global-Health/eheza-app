@@ -1,20 +1,19 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity)
 import Activity.Utils exposing (getActivityIcon, isCaregiver, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
-import Backend.Person.Model exposing (Person, Ubudehe(..))
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Html.Attributes as Attr exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import LocalData
 import Maybe.Extra
@@ -108,16 +107,19 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                 |> Maybe.withDefault False
 
         age =
-            let
-                renderAgeFunc =
-                    if isAboveAgeOf2Years then
-                        renderAgeYearsMonths
-
-                    else
-                        renderAgeMonthsDays
-            in
             child.birthDate
-                |> Maybe.map (\birthDate -> renderAgeFunc language birthDate currentDate)
+                |> Maybe.map
+                    (\birthDate ->
+                        let
+                            renderAgeFunc =
+                                if isAboveAgeOf2Years then
+                                    renderAgeYearsMonths
+
+                                else
+                                    renderAgeMonthsDays
+                        in
+                        renderAgeFunc language birthDate currentDate
+                    )
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
                 |> Translate.ReportAge
                 |> translate language
@@ -131,9 +133,6 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
 
         break =
             br [] []
-
-        config =
-            childParticipant
 
         activities =
             summarizeChildParticipant currentDate zscores childId session.offlineSession isChw db
@@ -467,11 +466,12 @@ viewActivityCards config language offlineSession personId activities selectedTab
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted <| List.length activities.completed
 
-        progressTabTitle =
-            translate language <| Translate.ProgressReport
-
         extraTabs =
             if config.showProgressReportTab then
+                let
+                    progressTabTitle =
+                        translate language <| Translate.ProgressReport
+                in
                 [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
 
             else

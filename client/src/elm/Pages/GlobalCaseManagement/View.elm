@@ -16,40 +16,35 @@ import Backend.Measurement.Model
         , LaboratoryTest(..)
         , NCDLabsResults
         , NutritionAssessment(..)
-        , PrenatalAssesment(..)
         , PrenatalLabsResults
         )
-import Backend.Measurement.Utils exposing (labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
-import Backend.Person.Model
 import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.Village.Model exposing (Village)
-import Backend.Village.Utils exposing (getVillageById, isVillageResident)
-import Date exposing (Month, Unit(..), isBetween, numberToMonth)
+import Backend.Village.Utils exposing (getVillageById)
+import Date exposing (Unit(..))
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
-import List.Extra
+import Html.Events exposing (onClick)
 import Maybe exposing (Maybe)
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isNothing)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PageNotFound.View
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model
-import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (spinner, viewModal)
+import Translate exposing (Language, translate, translateText)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -222,7 +217,7 @@ viewStartFollowUpEncounterDialog language dataType =
 
         -- We should never get here, since Prenatal got
         -- it's own dialog.
-        FollowUpPrenatal data ->
+        FollowUpPrenatal _ ->
             emptyNode
 
         -- This is not a follow up encounter.
@@ -511,19 +506,19 @@ generateAcuteIllnessFollowUpEntryData language currentDate limitDate db ( partic
                 getAcuteIllnessEncountersForParticipant db participantId
                     |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
 
-            allEncounters =
-                List.map Tuple.second allEncountersWithIds
-
             lastEncounterWithId =
                 List.head allEncountersWithIds
         in
         lastEncounterWithId
             |> Maybe.andThen
-                (\( encounterId, encounter ) ->
+                (\( encounterId, _ ) ->
                     -- The follow up was issued at last encounter for the illness,
                     -- so we know we still need to follow up on that.
                     if item.encounterId == Just encounterId then
                         let
+                            allEncounters =
+                                List.map Tuple.second allEncountersWithIds
+
                             diagnosis =
                                 allEncounters
                                     |> List.filter
@@ -653,15 +648,15 @@ generatePrenatalFollowUpEntryData language currentDate limitDate db ( participan
                     -- Follow up belongs to last encounter, which indicates that
                     -- there was no other encounter that has resolved this follow up.
                     if item.encounterId == Just encounterId then
-                        let
-                            hasNurseEncounter =
-                                List.length allChwEncountersWithIds < List.length allEncountersWithIds
-                        in
                         if encounter.encounterType == ChwPostpartumEncounter then
                             -- We do not show follow ups taken at Postpartum encounter.
                             Nothing
 
                         else
+                            let
+                                hasNurseEncounter =
+                                    List.length allChwEncountersWithIds < List.length allEncountersWithIds
+                            in
                             PrenatalFollowUpEntry
                                 participantId
                                 personId
@@ -772,19 +767,20 @@ viewContactsTracingPane language currentDate itemsDict db model =
         entries =
             generateContactsTracingEntries language currentDate filteredItemsDict db
 
-        heading =
-            div [ class "trace-contact-entry heading" ]
-                [ div [ class "name" ] [ translateText language Translate.ContactName ]
-                , div [ class "last-contact" ] [ translateText language Translate.LastContacted ]
-                , div [ class "reporter" ] [ translateText language Translate.IndexPatient ]
-                , div [ class "phone-number" ] [ translateText language Translate.TelephoneNumber ]
-                ]
-
         content =
             if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
+                let
+                    heading =
+                        div [ class "trace-contact-entry heading" ]
+                            [ div [ class "name" ] [ translateText language Translate.ContactName ]
+                            , div [ class "last-contact" ] [ translateText language Translate.LastContacted ]
+                            , div [ class "reporter" ] [ translateText language Translate.IndexPatient ]
+                            , div [ class "phone-number" ] [ translateText language Translate.TelephoneNumber ]
+                            ]
+                in
                 heading
                     :: List.map (viewTraceContactEntry language currentDate db) entries
     in

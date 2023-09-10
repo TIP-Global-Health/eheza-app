@@ -3,7 +3,7 @@ module Pages.Nutrition.Encounter.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Fetch exposing (fetch)
+import Backend.NutritionEncounter.Fetch
 import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 

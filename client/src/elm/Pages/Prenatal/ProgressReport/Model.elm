@@ -1,13 +1,11 @@
-module Pages.Prenatal.ProgressReport.Model exposing (..)
+module Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..), Model, Msg(..), emptyModel, medicalDiagnoses, obstetricalDiagnoses)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Components.SendViaWhatsAppDialog.Model
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
-import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
+import Pages.Report.Model exposing (LabResultsMode)
 
 
 type alias Model =

@@ -2,7 +2,7 @@ module Pages.ProgressReport.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
-import Backend.NutritionEncounter.Fetch exposing (fetch)
+import Backend.NutritionEncounter.Fetch
 import Pages.AcuteIllness.Participant.Fetch
 
 

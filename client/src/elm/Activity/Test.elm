@@ -1,22 +1,8 @@
 module Activity.Test exposing (all)
 
-import Activity.Model exposing (..)
-import Activity.Utils exposing (..)
-import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (..)
-import Backend.Entities exposing (PersonId)
-import Backend.Measurement.Model exposing (..)
-import Backend.Person.Model exposing (Person)
-import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
-import EverySet
 import Expect
-import Fixtures exposing (..)
-import Gizra.NominalDate exposing (NominalDate)
-import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
-import Time.Date exposing (addDays, date)
 
 
 {-| These tests are disabled for now -- they relied on an exposed way of making
@@ -156,20 +142,6 @@ runTestCase testCase =
        , update = NotAsked
        }
 -}
-
-
-makeCounselingSession : NominalDate -> CounselingTiming -> CounselingSession
-makeCounselingSession when timing =
-    { participantId = childId
-    , encounterId = Nothing -- not needed
-    , dateMeasured = when
-    , value = ( timing, EverySet.empty )
-    , nurse = Nothing
-    , healthCenter = Nothing
-    }
-
-
-
 {-
    makeOfflineSession : TestCase -> OfflineSession
    makeOfflineSession test =
@@ -188,83 +160,3 @@ makeCounselingSession when timing =
        , previousMeasurements = emptyMeasurements -- not relevant
        }
 -}
-
-
-makeHistoricalMeasurements : TestCase -> HistoricalMeasurements
-makeHistoricalMeasurements test =
-    { mothers = Dict.empty
-    , children = Dict.fromList [ ( childId, makeChildMeasurementList test ) ]
-    }
-
-
-makeChildMeasurementList : TestCase -> ChildMeasurementList
-makeChildMeasurementList test =
-    let
-        counselingSessions =
-            List.map makeCounselingSessionWithId test.completed
-                |> Dict.fromList
-
-        makeCounselingSessionWithId ( daysOld, timing ) =
-            -- We need a locally unique ID, but it doesn't need to be real.
-            ( toEntityUuid (Debug.toString ( daysOld, timing ))
-            , makeCounselingSession (addDays (daysOld - test.daysOld) sessionDate) timing
-            )
-    in
-    { emptyChildMeasurementList | counselingSessions = counselingSessions }
-
-
-{-| We keep the date of the session constant, and vary the other things!
--}
-sessionDate : NominalDate
-sessionDate =
-    date 2018 8 1
-
-
-session : NominalDate -> Session
-session start =
-    { startDate = start
-    , endDate = Nothing
-    , clinicId = toEntityUuid "1" -- not relevant
-    , clinicType = Pmtct
-    }
-
-
-{-| We just need one child ...
--}
-childId : PersonId
-childId =
-    toEntityUuid "1"
-
-
-makeChildren : TestCase -> Dict PersonId Person
-makeChildren test =
-    Dict.fromList
-        [ ( childId, makeChild test )
-        ]
-
-
-makeChild : TestCase -> Person
-makeChild test =
-    { name = "Test Child"
-    , avatarUrl = Nothing
-    , birthDate = Just <| addDays -test.daysOld sessionDate
-    , gender = Male
-    , cell = Nothing
-    , district = Nothing
-    , firstName = ""
-    , hivStatus = Nothing
-    , modeOfDelivery = Nothing
-    , numberOfChildren = Nothing
-    , educationLevel = Nothing
-    , maritalStatus = Nothing
-    , isDateOfBirthEstimated = False
-    , nationalIdNumber = Nothing
-    , province = Nothing
-    , secondName = ""
-    , sector = Nothing
-    , telephoneNumber = Nothing
-    , ubudehe = Nothing
-    , village = Nothing
-    , healthCenterId = Nothing
-    , hmisNumber = Nothing
-    }

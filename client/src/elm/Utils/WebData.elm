@@ -1,22 +1,16 @@
 module Utils.WebData exposing
     ( isNetworkError
-    , resetError
-    , resetSuccess
-    , sendWithHandler
     , viewError
     , viewErrorForRollbar
     , viewWebData
-    , whenNotAsked
     )
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Http exposing (Error(..))
-import HttpBuilder exposing (..)
 import Json.Decode exposing (Decoder, field)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
-import Translate.Model
 import Utils.Html exposing (spinner)
 
 
@@ -42,7 +36,7 @@ decodeDrupalError =
 viewError : Language -> Http.Error -> Html any
 viewError language error =
     case error of
-        Http.BadUrl message ->
+        Http.BadUrl _ ->
             div [] [ text <| translate language <| Translate.HttpError error ]
 
         Http.BadPayload message _ ->
@@ -64,7 +58,7 @@ viewError language error =
                         Ok decoded ->
                             decoded.title
 
-                        Err err ->
+                        Err _ ->
                             response.body
             in
             div []
@@ -96,24 +90,10 @@ viewErrorForRollbar error =
                         Ok decoded ->
                             decoded.title
 
-                        Err err ->
+                        Err _ ->
                             response.body
             in
             "Http.BadStatus - message: " ++ response.status.message ++ ", body: " ++ decodedBody
-
-
-{-| Return `Just msg` if we're `NotAsked`, otherwise `Nothing`. Sort of the
-opposite of `map`. We use this in order to kick off some process if we're
-`NotAsked`, but not otherwise.
--}
-whenNotAsked : msg -> RemoteData e a -> Maybe msg
-whenNotAsked msg data =
-    case data of
-        NotAsked ->
-            Just msg
-
-        _ ->
-            Nothing
 
 
 {-| Given:
@@ -144,33 +124,6 @@ viewWebData language view wrapError data =
 
         Success a ->
             view a
-
-
-resetError : RemoteData e a -> RemoteData e a
-resetError data =
-    case data of
-        Failure _ ->
-            NotAsked
-
-        _ ->
-            data
-
-
-resetSuccess : RemoteData e a -> RemoteData e a
-resetSuccess data =
-    case data of
-        Success _ ->
-            NotAsked
-
-        _ ->
-            data
-
-
-sendWithHandler : Decoder a -> (Result Http.Error a -> msg) -> RequestBuilder a1 -> Cmd msg
-sendWithHandler decoder tagger builder =
-    builder
-        |> withExpect (Http.expectJson decoder)
-        |> send tagger
 
 
 isNetworkError : Http.Error -> Bool

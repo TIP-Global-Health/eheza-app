@@ -1,8 +1,8 @@
-module Backend.NutritionEncounter.Utils exposing (..)
+module Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge, generateNutritionAssessment, getNewbornExamPregnancySummary, getNutritionEncountersForParticipant, getWellChildEncountersForParticipant, nutritionAssessmentForBackend, resolveAllWeightMeasurementsForChild, resolvePreviousNCDAValuesForChild, resolvePreviousValuesSetForChild, sortByDate, sortByDateDesc, sortByStartDateDesc, sortDatesDesc, sortEncounterTuples, sortEncounterTuplesDesc, sortTuplesByDateDesc)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
@@ -15,7 +15,6 @@ import Backend.Measurement.Utils
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionActivity.Model exposing (..)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
@@ -25,10 +24,9 @@ import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra
 import Pages.Utils exposing (ifEverySetEmpty)
 import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (diffDays, zScoreWeightForAge)
 
@@ -83,6 +81,10 @@ generateNutritionAssessment currentDate zscores childId muacValue nutritionValue
                         (\age ->
                             if age < 6 then
                                 -- For children under 6 months, we list all danger signs.
+                                let
+                                    dangerSignsPresent =
+                                        not <| List.isEmpty dangerSigns
+                                in
                                 if dangerSignsPresent then
                                     [ AssesmentMalnutritionSigns dangerSigns ]
 
@@ -107,9 +109,6 @@ generateNutritionAssessment currentDate zscores childId muacValue nutritionValue
 
             else
                 [ AssesmentDangerSignsPresent ]
-
-        dangerSignsPresent =
-            not <| List.isEmpty dangerSigns
 
         dangerSigns =
             nutritionValue

@@ -1,4 +1,4 @@
-module Pages.Prenatal.Activity.Types exposing (..)
+module Pages.Prenatal.Activity.Types exposing (EarlyMastitisOrEngorgmentReliefMethod(..), ExaminationTask(..), HeartburnReliefMethod(..), HistoryTask(..), ImmunisationTask(..), LegCrampsReliefMethod(..), LmpRange(..), NextStepsTask(..), ObstetricHistoryStep(..), PatientProvisionsTask(..), SymptomReviewStep(..), TreatmentReviewTask(..), WarningPopupType(..))
 
 
 type ExaminationTask
@@ -34,8 +34,7 @@ type NextStepsTask
 
 
 type PatientProvisionsTask
-    = Medication
-    | Resources
+    = Resources
 
 
 type SymptomReviewStep

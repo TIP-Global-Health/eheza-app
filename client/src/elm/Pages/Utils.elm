@@ -1,4 +1,4 @@
-module Pages.Utils exposing (..)
+module Pages.Utils exposing (calculatePercentage, customPopup, customSaveButton, emptySelectOption, filterDependentNoResultsMessage, getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, ifNullableTrue, ifTrue, insertIntoSet, isTaskCompleted, matchFilter, matchMotherAndHerChildren, maybeToBoolTask, maybeValueConsideringIsDirtyField, nonAdministrationReasonToSign, normalizeFilter, resolveSelectedDateForMonthSelector, saveButton, setMultiSelectInputValue, taskAllCompleted, taskAnyCompleted, taskCompleted, taskCompletedWithException, tasksBarId, unique, valueConsideringIsDirtyField, viewBoolInput, viewBySyncStatus, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxValueInput, viewConditionalAlert, viewCustomBoolInput, viewCustomLabel, viewCustomSelectListInput, viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterButtonCustomColor, viewEndEncounterDialog, viewEndEncounterMenuForProgressReport, viewInstructionsLabel, viewLabel, viewMeasurementInput, viewMonthSelector, viewNameFilter, viewNumberInput, viewPersonDetails, viewPersonDetailsExtended, viewPhotoThumbFromImageUrl, viewPreviousMeasurement, viewQuestionLabel, viewRedAlertForBool, viewRedAlertForSelect, viewReportLink, viewSaveAction, viewSearchForm, viewSelectListInput, viewStartEncounterButton, viewTextInput, viewYellowAlertForSelect)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
@@ -8,11 +8,8 @@ import Backend.Measurement.Model
         ( AdministrationNote(..)
         , ImageUrl(..)
         , MedicationDistributionSign(..)
-        , MedicationDistributionValue
         , MedicationNonAdministrationSign(..)
         )
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
@@ -27,10 +24,8 @@ import Html.Events exposing (..)
 import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust, or, unwrap)
-import Pages.Page exposing (Page(..), UserPage(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model
-import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
@@ -77,18 +72,20 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                 )
 
             else
-                let
-                    renderAgeFunc =
-                        if isAboveAgeOf2Years then
-                            renderAgeYearsMonths
-
-                        else
-                            renderAgeMonthsDays
-                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> renderAgeFunc language birthDate currentDate)
+                        (\birthDate ->
+                            let
+                                renderAgeFunc =
+                                    if isAboveAgeOf2Years then
+                                        renderAgeYearsMonths
+
+                                    else
+                                        renderAgeMonthsDays
+                            in
+                            renderAgeFunc language birthDate currentDate
+                        )
                 )
     in
     [ div [ class "ui image" ]
@@ -144,18 +141,20 @@ viewPersonDetailsExtended language currentDate person =
                 )
 
             else
-                let
-                    renderAgeFunc =
-                        if isAboveAgeOf2Years then
-                            renderAgeYearsMonths
-
-                        else
-                            renderAgeMonthsDays
-                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate))
+                        (\birthDate ->
+                            let
+                                renderAgeFunc =
+                                    if isAboveAgeOf2Years then
+                                        renderAgeYearsMonths
+
+                                    else
+                                        renderAgeMonthsDays
+                            in
+                            viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate)
+                        )
                     |> Maybe.withDefault emptyNode
                 )
 
@@ -532,23 +531,6 @@ viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg tr
         viewOptionFunc option =
             label []
                 [ translateFunc option |> translate language |> text ]
-    in
-    viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
-
-
-viewCheckBoxSelectInputWithRecommendation : Language -> List a -> List a -> a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
-viewCheckBoxSelectInputWithRecommendation language leftOptions rightOptions recommendedOption currentValue setMsg translateFunc =
-    let
-        viewOptionFunc option =
-            if option == recommendedOption then
-                label [ class "recommendation" ]
-                    [ div [] [ translateFunc option |> translate language |> text ]
-                    , div [ class "marker" ] [ text <| "(" ++ translate language Translate.Recommended ++ ")" ]
-                    ]
-
-            else
-                label []
-                    [ translateFunc option |> translate language |> text ]
     in
     viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc
 
@@ -1125,11 +1107,6 @@ ifTrue value condition =
 
     else
         EverySet.empty
-
-
-ifFalse : a -> Bool -> EverySet a
-ifFalse value condition =
-    ifTrue value (not condition)
 
 
 ifNullableTrue : a -> Maybe Bool -> Maybe (EverySet a)

@@ -1,18 +1,16 @@
-module Pages.Report.Utils exposing (..)
+module Pages.Report.Utils exposing (altResultNormal, astResultNormal, bilirubinResultNormal, bloodSmearResultNormal, bunResultNormal, compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc, creatinineResultNormal, diagnosisEntryStatusToString, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant, getRandomBloodSugarResultValue, glucoseResultNormal, hba1cResultNormal, hdlCholesterolResultNormal, hemoglobinResultNormal, hepatitisBResultNormal, hivPCRResultNormal, hivResultNormal, ketoneResultNormal, ldlCholesterolResultNormal, leukocytesResultNormal, malariaResultNormal, nitriteResultNormal, partnerHIVResultNormal, phResultNormal, pregnancyResultNormal, proteinResultNormal, randomBloodSugarResultFromValue, randomBloodSugarResultNormal, rhesusResultsNormal, syphilisResultNormal, totalCholesterolResultNormal, triglyceridesResultNormal, urineHaemoglobinValueResultNormal, urobilinogenResultNormal)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Pages.Report.Model exposing (..)
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, TranslationId, translate, translateText)
+import RemoteData
 
 
 hivResultNormal : TestReport -> Bool

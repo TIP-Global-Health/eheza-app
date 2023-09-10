@@ -1,7 +1,5 @@
-module Pages.PatientRecord.Model exposing (..)
+module Pages.PatientRecord.Model exposing (Model, Msg(..), PatientRecordFilter(..), PatientType(..), ViewMode(..), emptyModel)
 
-import Backend.Entities exposing (..)
-import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model
 import Pages.Page exposing (Page)
 import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))

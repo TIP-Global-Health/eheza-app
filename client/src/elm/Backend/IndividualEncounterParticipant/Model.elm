@@ -1,4 +1,4 @@
-module Backend.IndividualEncounterParticipant.Model exposing (..)
+module Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), DeliveryLocation(..), IndividualEncounterParticipant, IndividualEncounterParticipantOutcome(..), IndividualEncounterType(..), IndividualParticipantExtraData(..), IndividualParticipantInitiator(..), Model, Msg(..), PregnancyOutcome(..), allAcuteIllnessOutcome, allPregnancyOutcome, emptyIndividualEncounterParticipant, emptyModel)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)

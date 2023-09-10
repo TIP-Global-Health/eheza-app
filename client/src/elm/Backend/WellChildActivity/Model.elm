@@ -1,4 +1,4 @@
-module Backend.WellChildActivity.Model exposing (..)
+module Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 
 
 type WellChildActivity

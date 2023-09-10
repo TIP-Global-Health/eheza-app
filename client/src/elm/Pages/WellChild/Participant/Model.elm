@@ -1,18 +1,7 @@
-module Pages.WellChild.Participant.Model exposing (Model, Msg(..), emptyModel)
+module Pages.WellChild.Participant.Model exposing (Msg(..))
 
-import Backend.Entities exposing (..)
-import Date exposing (Date)
 import Pages.Page exposing (Page)
-
-
-type alias Model =
-    {}
 
 
 type Msg
     = SetActivePage Page
-
-
-emptyModel : Model
-emptyModel =
-    {}

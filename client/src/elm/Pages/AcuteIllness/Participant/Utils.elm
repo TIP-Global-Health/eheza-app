@@ -1,6 +1,5 @@
 module Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 
-import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)

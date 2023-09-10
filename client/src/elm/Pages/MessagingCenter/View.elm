@@ -1,36 +1,32 @@
 module Pages.MessagingCenter.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
-import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortEncounterTuplesDesc)
-import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), Ubudehe(..), allUbudehes)
+import Backend.NutritionEncounter.Utils exposing (sortByDateDesc)
+import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Backend.ResilienceSurvey.Model
     exposing
-        ( ResilienceSurveyQuestion(..)
-        , ResilienceSurveyQuestionOption(..)
+        ( ResilienceSurveyQuestionOption(..)
         , ResilienceSurveyType(..)
         )
-import Backend.ResilienceSurvey.Utils exposing (resilienceSurveyQuestionOptionToString)
-import Date exposing (Month, Unit(..), isBetween, numberToMonth)
+import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
-import Maybe exposing (Maybe)
-import Maybe.Extra exposing (isJust, isNothing)
+import Html.Events exposing (onClick)
+import Maybe
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PageNotFound.View
 import Pages.Utils
     exposing
         ( taskCompleted
@@ -39,12 +35,11 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSelectListInput
         )
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 import Time exposing (posixToMillis)
-import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (spinner, viewModal)
+import Translate exposing (Language, translate, translateText)
+import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (renderDate)
-import Utils.WebData exposing (viewWebData)
 
 
 view : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
@@ -280,8 +275,7 @@ viewMonthlySurvey language currentDate nurseId form =
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
-                    List.concat <|
-                        List.map questionInput monthlySurveyQuestions
+                    List.concatMap questionInput monthlySurveyQuestions
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
@@ -429,9 +423,6 @@ viewTabs language model =
 viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
 viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
-        messageCategory =
-            span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
-
         ( extraClass, ( head, body ) ) =
             case message.category of
                 ResilienceCategoryIntroduction ->
@@ -492,6 +483,9 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
 
         title =
             let
+                messageCategory =
+                    span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
+
                 titleWrapperClass =
                     case model.activeTab of
                         TabUnread ->

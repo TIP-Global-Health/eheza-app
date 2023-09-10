@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Types exposing (..)
+module Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 
 
 type PrenatalDiagnosis

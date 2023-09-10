@@ -5,7 +5,6 @@ import App.Utils exposing (focusOnCalendarMsg)
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Decoder exposing (malariaRapidTestResultFromString)
 import Backend.Measurement.Model
     exposing
@@ -14,15 +13,8 @@ import Backend.Measurement.Model
         , AcuteIllnessDangerSign(..)
         , AdverseEvent(..)
         , ChildNutritionSign(..)
-        , HCRecommendation(..)
         , LungsCPESign(..)
-        , MedicationDistributionSign(..)
-        , MedicationNonAdministrationSign(..)
-        , RapidTestResult(..)
         , ReasonForNotIsolating(..)
-        , Recommendation114(..)
-        , RecommendationSite(..)
-        , ResponsePeriod(..)
         , SymptomsGISign(..)
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
@@ -33,18 +25,15 @@ import Backend.Person.Form
 import Backend.Person.Model
 import Backend.Village.Utils exposing (getVillageHealthCenterId, getVillageIdByGeoFields)
 import Debouncer.Basic as Debouncer exposing (provideInput)
-import EverySet exposing (EverySet)
+import EverySet
 import Form
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
-        ( muacFormWithDefault
-        , nutritionFormWithDefault
-        , toHealthEducationValueWithDefault
+        ( toHealthEducationValueWithDefault
         , toMuacValueWithDefault
-        , toNutritionValueWithDefault
         , toSendToHCValueWithDefault
         , toVitalsValueWithDefault
         )
@@ -52,9 +41,8 @@ import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (getCurrentReasonForMedicationNonAdministration, ifEverySetEmpty, nonAdministrationReasonToSign, setMultiSelectInputValue)
+import Pages.Utils exposing (nonAdministrationReasonToSign, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
-import Result exposing (Result)
 
 
 update : NominalDate -> Maybe HealthCenterId -> AcuteIllnessEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -91,12 +79,6 @@ update currentDate selectedHealthCenter id db msg model =
 
         treatmentReviewForm =
             resolveFormWithDefaults .treatmentOngoing ongoingTreatmentReviewFormWithDefault model.ongoingTreatmentData.treatmentReviewForm
-
-        reviewDangerSignsForm =
-            resolveFormWithDefaults .dangerSigns reviewDangerSignsFormWithDefault model.dangerSignsData.reviewDangerSignsForm
-
-        nutritionForm =
-            resolveFormWithDefaults .nutrition Pages.AcuteIllness.Activity.Utils.nutritionFormWithDefault model.physicalExamData.nutritionForm
 
         contactsTracingForm =
             resolveFormWithDefaults .contactsTracing Pages.AcuteIllness.Activity.Utils.contactsTracingFormWithDefault model.nextStepsData.contactsTracingForm
@@ -366,11 +348,11 @@ update currentDate selectedHealthCenter id db msg model =
 
         SetVitalsIntInput formUpdateFunc value ->
             let
-                form =
-                    model.physicalExamData.vitalsForm
-
                 updatedData =
                     let
+                        form =
+                            model.physicalExamData.vitalsForm
+
                         updatedForm =
                             formUpdateFunc (String.toInt value) form
                     in
@@ -384,11 +366,11 @@ update currentDate selectedHealthCenter id db msg model =
 
         SetVitalsFloatInput formUpdateFunc value ->
             let
-                form =
-                    model.physicalExamData.vitalsForm
-
                 updatedData =
                     let
+                        form =
+                            model.physicalExamData.vitalsForm
+
                         updatedForm =
                             formUpdateFunc (String.toFloat value) form
                     in
@@ -555,6 +537,9 @@ update currentDate selectedHealthCenter id db msg model =
 
         SetNutritionSign sign ->
             let
+                nutritionForm =
+                    resolveFormWithDefaults .nutrition Pages.AcuteIllness.Activity.Utils.nutritionFormWithDefault model.physicalExamData.nutritionForm
+
                 form =
                     nutritionForm
 
@@ -1657,6 +1642,9 @@ update currentDate selectedHealthCenter id db msg model =
 
         SetDangerSign sign ->
             let
+                reviewDangerSignsForm =
+                    resolveFormWithDefaults .dangerSigns reviewDangerSignsFormWithDefault model.dangerSignsData.reviewDangerSignsForm
+
                 form =
                     reviewDangerSignsForm
 
@@ -2085,12 +2073,13 @@ update currentDate selectedHealthCenter id db msg model =
                         updatedRegistrationData =
                             Form.update Backend.Person.Form.validateContact subMsg registrationData
 
-                        initiator =
-                            Backend.Person.Model.AcuteIllnessContactsTracingActivityOrigin id
-
                         appMsgs =
                             case subMsg of
                                 Form.Submit ->
+                                    let
+                                        initiator =
+                                            Backend.Person.Model.AcuteIllnessContactsTracingActivityOrigin id
+                                    in
                                     Form.getOutput registrationData
                                         |> Maybe.map
                                             (\person ->

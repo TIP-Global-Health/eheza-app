@@ -1,13 +1,13 @@
-module Pages.WellChild.Encounter.Model exposing (..)
+module Pages.WellChild.Encounter.Model exposing (AssembledData, ECDPopupType(..), Model, Msg(..), Tab(..), VaccinationProgressDict, WarningPopupType(..), emptyModel)
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (VaccineDose, WellChildMeasurements, WellChildVaccineType)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildEncounter.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 

@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (..)
+module Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, educationLevelFromInt, educationLevelToInt, expectedAgeByPerson, genderFromString, genderToString, generateFullName, getHealthCenterName, graduatingAgeInMonth, hivStatusToString, initiatorFromUrlFragment, initiatorToUrlFragment, isAdult, isChildUnderAgeOf5, isNewborn, isPersonAFertileWoman, isPersonAnAdult, maritalStatusFromString, maritalStatusToString, modeOfDeliveryToString, resolveExpectedAge, ubudeheFromInt, ubudeheToInt)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
@@ -7,7 +7,6 @@ import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounte
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (..)
-import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
 import RemoteData

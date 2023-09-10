@@ -1,19 +1,16 @@
 module Pages.Prenatal.ProgressReport.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
     exposing
         ( DangerSign(..)
         , EyesCPESign(..)
-        , HIVPCRResult(..)
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
         , OutsideCareMedication(..)
-        , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
         , PrenatalSymptomQuestion(..)
@@ -24,15 +21,11 @@ import Backend.Measurement.Model
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
-        , TestResult(..)
-        , TestVariant(..)
-        , ViralLoadStatus(..)
         )
-import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, labExpirationPeriod)
+import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortTuplesByDateDesc)
+import Backend.NutritionEncounter.Utils exposing (sortByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
-import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
@@ -47,13 +40,13 @@ import Backend.PrenatalActivity.Utils
         ( generateRiskFactorAlertData
         , getEncounterTrimesterData
         )
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Utils
 import Components.SendViaWhatsAppDialog.View
-import Date exposing (Interval(..), Unit(..))
+import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
@@ -62,7 +55,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils
     exposing
         ( outsideCareMedicationOptionsAnemia
@@ -83,9 +75,7 @@ import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
-        ( diagnosedMalaria
-        , hypertensionDiagnoses
-        , outsideCareDiagnoses
+        ( outsideCareDiagnoses
         , outsideCareDiagnosesWithPossibleMedication
         , recommendedTreatmentSignsForHypertension
         , recommendedTreatmentSignsForMalaria
@@ -98,14 +88,12 @@ import Pages.Report.Model exposing (..)
 import Pages.Report.View exposing (..)
 import Pages.Utils
     exposing
-        ( viewEndEncounterButton
-        , viewEndEncounterDialog
+        ( viewEndEncounterDialog
         , viewEndEncounterMenuForProgressReport
         , viewPhotoThumbFromImageUrl
         )
-import RemoteData exposing (RemoteData(..), WebData)
 import Round
-import Translate exposing (Language, TranslationId, translate, translateText)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.WebData exposing (viewWebData)
 
@@ -160,7 +148,7 @@ viewHeader language id initiator model =
             Maybe.map
                 (\mode ->
                     case mode of
-                        LabResultsCurrent currentMode ->
+                        LabResultsCurrent _ ->
                             Translate.LabResults
 
                         LabResultsHistory _ ->
@@ -203,7 +191,7 @@ viewHeader language id initiator model =
                                         LabResultsCurrentLipidPanel ->
                                             backToCurrentMsg LabResultsCurrentMain
 
-                                LabResultsHistory historyMode ->
+                                LabResultsHistory _ ->
                                     SetLabResultsMode model.labResultsHistoryOrigin
                         )
                         model.labResultsMode
@@ -268,7 +256,7 @@ viewContent language currentDate isChw initiator model assembled =
 
                         labsPane =
                             Maybe.map
-                                (\components ->
+                                (\_ ->
                                     generateLabsResultsPaneData currentDate assembled
                                         |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
                                         |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalLabsResults)
@@ -325,7 +313,7 @@ viewContent language currentDate isChw initiator model assembled =
 
                                 InitiatorRecurrentEncounterPage _ ->
                                     let
-                                        ( completedActivities, pendingActivities ) =
+                                        ( _, pendingActivities ) =
                                             Pages.Prenatal.RecurrentEncounter.Utils.allActivities
                                                 |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
@@ -501,15 +489,14 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                 |> List.sortWith (sortByDateDesc .startDate)
 
         dignoses =
-            List.map
+            List.concatMap
                 (\data ->
                     let
                         diagnosesIncludingChronic =
                             updateChronicHypertensionDiagnoses data.startDate data.diagnoses assembled medicalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
-                                |> List.concat
+                            List.concatMap (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
 
                         outsideCareDiagnosesEntries =
                             getMeasurementValueFunc data.measurements.outsideCare
@@ -518,8 +505,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                         Maybe.map
                                             (EverySet.toList
                                                 >> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
-                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language data.startDate value.medications)
-                                                >> List.concat
+                                                >> List.concatMap (viewTreatmentForOutsideCareDiagnosis language data.startDate value.medications)
                                             )
                                             value.diagnoses
                                     )
@@ -547,7 +533,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
 
                                             ncdEntries =
                                                 resolveNCDReferralDiagnoses assembled.nursePreviousEncountersData
-                                                    |> List.map
+                                                    |> List.concatMap
                                                         (\diagnosis ->
                                                             if not <| EverySet.member EnrolledToARVProgram value then
                                                                 viewProgramReferralEntry language data.startDate diagnosis FacilityNCDProgram
@@ -555,7 +541,6 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                                             else
                                                                 []
                                                         )
-                                                    |> List.concat
                                         in
                                         arvEntry ++ ncdEntries
                                     )
@@ -564,8 +549,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                         pastDiagnosesEntries =
                             EverySet.toList data.pastDiagnoses
                                 |> List.filter (\diagnosis -> List.member diagnosis medicalDiagnoses)
-                                |> List.map (viewTreatmentForPastDiagnosis language data.startDate)
-                                |> List.concat
+                                |> List.concatMap (viewTreatmentForPastDiagnosis language data.startDate)
                     in
                     knownAsPositiveEntries
                         ++ diagnosesEntries
@@ -574,7 +558,6 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                         ++ programReferralEntries
                 )
                 allNurseEncountersData
-                |> List.concat
                 |> ul []
 
         alerts =
@@ -663,15 +646,14 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 allNurseEncountersData
 
         dignoses =
-            List.map
+            List.concatMap
                 (\data ->
                     let
                         diagnosesIncludingChronic =
                             updateChronicHypertensionDiagnoses data.startDate data.diagnoses assembled obstetricalDiagnoses
 
                         diagnosesEntries =
-                            List.map (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
-                                |> List.concat
+                            List.concatMap (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
 
                         outsideCareDiagnosesEntries =
                             getMeasurementValueFunc data.measurements.outsideCare
@@ -680,8 +662,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                                         Maybe.map
                                             (EverySet.toList
                                                 >> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
-                                                >> List.map (viewTreatmentForOutsideCareDiagnosis language data.startDate value.medications)
-                                                >> List.concat
+                                                >> List.concatMap (viewTreatmentForOutsideCareDiagnosis language data.startDate value.medications)
                                             )
                                             value.diagnoses
                                     )
@@ -690,8 +671,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                         pastDiagnosesEntries =
                             EverySet.toList data.pastDiagnoses
                                 |> List.filter (\diagnosis -> List.member diagnosis obstetricalDiagnoses)
-                                |> List.map (viewTreatmentForPastDiagnosis language data.startDate)
-                                |> List.concat
+                                |> List.concatMap (viewTreatmentForPastDiagnosis language data.startDate)
 
                         healthEducationDiagnosesEntries =
                             getMeasurementValueFunc data.measurements.healthEducation
@@ -737,7 +717,6 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                         ++ healthEducationDiagnosesEntries
                 )
                 allNurseEncountersData
-                |> List.concat
 
         lmpDateNonConfidentEntry =
             let
@@ -896,9 +875,6 @@ viewPatientProgressPane language currentDate isChw assembled =
                     else
                         [ ( currentDate, assembled.measurements ) ]
                    )
-
-        allMeasurements =
-            List.map Tuple.second allNurseEncountersData
 
         encountersTrimestersData =
             allNurseEncountersData
@@ -1272,7 +1248,7 @@ tableEgaHeading : Language -> NominalDate -> Maybe NominalDate -> List ( Nominal
 tableEgaHeading language currentDate maybeLmpDate measurementsWithDates =
     measurementsWithDates
         |> List.map
-            (\( date, measurements ) ->
+            (\( date, _ ) ->
                 maybeLmpDate
                     |> Maybe.map
                         (\lmpDate ->
@@ -1309,7 +1285,7 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
     in
     allMeasurementsWithDates
         |> greedyGroupsOf 6
-        |> List.map
+        |> List.concatMap
             (\groupOfSix ->
                 let
                     egas =
@@ -1398,7 +1374,6 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
                 , bmis
                 ]
             )
-        |> List.concat
         |> tbody []
         |> List.singleton
         |> table [ class "ui collapsing celled table" ]
@@ -1413,7 +1388,7 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
     in
     allMeasurementsWithDates
         |> greedyGroupsOf 6
-        |> List.map
+        |> List.concatMap
             (\groupOfSix ->
                 let
                     egas =
@@ -1447,7 +1422,6 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
                 , heights
                 ]
             )
-        |> List.concat
         |> tbody []
         |> List.singleton
         |> table [ class "ui collapsing celled table" ]
@@ -1907,11 +1881,6 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
 
         treatmentMessageForMedication =
             translate language Translate.TreatedWith
-                |> customTreatmentMessageForMedication
-
-        treatmentMessageForMedicationLower =
-            translate language Translate.TreatedWith
-                |> String.toLower
                 |> customTreatmentMessageForMedication
 
         customTreatmentMessageForMedication treatmentLabel distributionSigns nonAdministrationReasons medication =
@@ -2394,6 +2363,11 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> Maybe.andThen
                     (\value ->
                         let
+                            treatmentMessageForMedicationLower =
+                                translate language Translate.TreatedWith
+                                    |> String.toLower
+                                    |> customTreatmentMessageForMedication
+
                             nonAdministrationReasons =
                                 Measurement.Utils.resolveMedicationsNonAdministrationReasons value
                         in

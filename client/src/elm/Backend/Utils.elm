@@ -1,4 +1,4 @@
-module Backend.Utils exposing (..)
+module Backend.Utils exposing (editMeasurementCmd, everySetsEqual, mapAcuteIllnessMeasurements, mapChildMeasurements, mapFollowUpMeasurements, mapHomeVisitMeasurements, mapMotherMeasurements, mapNCDMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, mapStockManagementMeasurements, mapWellChildMeasurements, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, saveMeasurementCmd, sw)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -18,9 +18,8 @@ import Backend.Measurement.Model
         )
 import Backend.Model exposing (..)
 import EverySet exposing (EverySet)
-import Json.Encode exposing (object)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (applyBackendUrl, toCmd, toEntityUuid, withoutDecoder)
+import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
 
 
 sw : Restful.Endpoint.CrudOperations w e k v c p

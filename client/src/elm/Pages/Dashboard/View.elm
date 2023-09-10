@@ -8,44 +8,34 @@ import Backend.Dashboard.Model
         , AcuteIllnessEncounterDataItem
         , AssembledData
         , CaseManagement
-        , CaseManagementData
-        , CaseNutrition
         , CaseNutritionTotal
-        , ChildrenBeneficiariesData
         , DashboardStats
         , Nutrition
         , NutritionPageData
         , NutritionValue
         , ParticipantStats
         , Periods
-        , PersonIdentifier
-        , PrenatalDataItem
-        , ProgramType(..)
         , TotalBeneficiaries
-        , TotalEncountersData
-        , emptyNutrition
         , emptyNutritionValue
-        , emptyTotalBeneficiaries
         )
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Person.Model
 import Backend.Village.Utils exposing (getVillageById)
 import Color exposing (Color)
-import Date exposing (Month, Unit(..), isBetween, monthNumber, numberToMonth, year)
+import Date exposing (Month, Unit(..), numberToMonth)
 import Debug exposing (toString)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, allMonths, formatYYYYMMDD, isDiffTruthy, yearYYNumber)
+import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isNothing)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
@@ -59,9 +49,9 @@ import Pages.Utils
         , viewMonthSelector
         )
 import Path
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
-import Scale exposing (BandConfig, BandScale, ContinuousScale)
+import Scale
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
@@ -69,7 +59,7 @@ import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
+import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Utils.Html exposing (spinner, viewModal)
 
 
@@ -147,8 +137,8 @@ view language page currentDate healthCenterId isChw nurse model db =
                                                 ( viewAntenatalPage language currentDate assembled db model, "prenatal" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
-                            [ viewFiltersPane language page db model ]
-                                ++ pageContent
+                            viewFiltersPane language page db model
+                                :: pageContent
                                 ++ [ viewCustomModal language isChw nurse assembled.stats db model
                                    , div [ class "timestamp" ]
                                         [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ assembled.stats.timestamp ++ " UTC" ]
@@ -309,14 +299,14 @@ mapMalnorishedByMonth mappedMonth caseManagement =
                                                 , resolveValueClass .muac
                                                 ]
                                         in
-                                        if List.any ((==) Backend.Dashboard.Model.Severe) values then
+                                        if List.member Backend.Dashboard.Model.Severe values then
                                             MalnorishedNutritionData caseNutrition.identifier
                                                 caseNutrition.birthDate
                                                 caseNutrition.gender
                                                 Backend.Dashboard.Model.Severe
                                                 |> Just
 
-                                        else if List.any ((==) Backend.Dashboard.Model.Moderate) values then
+                                        else if List.member Backend.Dashboard.Model.Moderate values then
                                             MalnorishedNutritionData caseNutrition.identifier
                                                 caseNutrition.birthDate
                                                 caseNutrition.gender
@@ -587,20 +577,6 @@ viewChwMenu language =
 
 viewAcuteIllnessMenu : Language -> AcuteIllnessDashboardPage -> Html Msg
 viewAcuteIllnessMenu language activePage =
-    let
-        viewMenu targetPage =
-            button
-                [ classList
-                    [ ( "active", activePage == targetPage )
-                    , ( "primary ui button", True )
-                    ]
-                , DashboardPage (ChwPage <| AcuteIllnessPage targetPage)
-                    |> UserPage
-                    |> SetActivePage
-                    |> onClick
-                ]
-                [ translateText language <| Translate.EncounterTypePageLabel <| AcuteIllnessPage targetPage ]
-    in
     div [ class "ui segment chw-filters" ]
         [ viewChwMenuButton language (AcuteIllnessPage OverviewPage) (Just <| AcuteIllnessPage activePage)
         , viewChwMenuButton language (AcuteIllnessPage Covid19Page) (Just <| AcuteIllnessPage activePage)
@@ -990,9 +966,6 @@ viewGoodNutrition language caseNutritionTotalsThisYear caseNutritionTotalsLastYe
         percentageLastYear =
             calculatePercentage goodThisYear goodLastYear
                 |> round
-
-        percentageDiff =
-            percentageThisYear - percentageLastYear
 
         statsCard =
             { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
@@ -1643,7 +1616,7 @@ viewMonthlyChart language currentDate chartType filterType data currentFilter =
                     else
                         y
             in
-            List.map (\( key, value ) -> choose value 0) chartData
+            List.map (\( _, value ) -> choose value 0) chartData
 
         maybeScaleMax =
             List.maximum yScaleMaxList
@@ -1775,7 +1748,7 @@ viewFamilyPlanningDonutChart language stats =
                 dict
                     |> Dict.toList
                     |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
-                    |> List.sortBy (\( name, val ) -> Debug.toString name)
+                    |> List.sortBy (\( name, _ ) -> Debug.toString name)
         in
         div [ class "content" ]
             [ viewPieChart familyPlanningSignsColors signs

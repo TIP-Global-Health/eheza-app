@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (..)
+module Backend.Measurement.Encoder exposing (encodeAcuteFindings, encodeAcuteIllnessContactsTracing, encodeAcuteIllnessCoreExam, encodeAcuteIllnessDangerSigns, encodeAcuteIllnessFollowUp, encodeAcuteIllnessMuac, encodeAcuteIllnessNutrition, encodeAcuteIllnessTraceContact, encodeAcuteIllnessVitals, encodeAppointmentConfirmation, encodeAttendance, encodeBirthPlan, encodeBreastExam, encodeCall114, encodeCall114Sign, encodeChildFbf, encodeContributingFactors, encodeCorePhysicalExam, encodeCounselingSession, encodeCovidTesting, encodeDangerSign, encodeDangerSigns, encodeExposure, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFollowUp, encodeGroupHealthEducation, encodeGroupNCDA, encodeGroupSendToHC, encodeHCContact, encodeHCContactSign, encodeHCRecommendation, encodeHealthEducation, encodeHeight, encodeIsolation, encodeIsolationSign, encodeLactation, encodeLastMenstrualPeriod, encodeMalariaPrevention, encodeMalariaTesting, encodeMedicalHistory, encodeMedication, encodeMedicationDistribution, encodeMotherFbf, encodeMuac, encodeNCDCoMorbidities, encodeNCDCoreExam, encodeNCDCreatinineTest, encodeNCDDangerSigns, encodeNCDFamilyHistory, encodeNCDFamilyPlanning, encodeNCDHIVTest, encodeNCDHbA1cTest, encodeNCDHealthEducation, encodeNCDLabsResults, encodeNCDLipidPanelTest, encodeNCDLiverFunctionTest, encodeNCDMedicationDistribution, encodeNCDMedicationHistory, encodeNCDOutsideCare, encodeNCDPregnancyTest, encodeNCDRandomBloodSugarTest, encodeNCDReferral, encodeNCDSocialHistory, encodeNCDSymptomReview, encodeNCDUrineDipstickTest, encodeNCDVitals, encodeNutrition, encodeNutritionCaring, encodeNutritionContributingFactors, encodeNutritionFeeding, encodeNutritionFollowUp, encodeNutritionFoodSecurity, encodeNutritionHealthEducation, encodeNutritionHeight, encodeNutritionHygiene, encodeNutritionMuac, encodeNutritionNCDA, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSendToHC, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistoryStep2, encodeObstetricalExam, encodeParticipantConsent, encodePhoto, encodePregnancyTest, encodePrenatalBloodGpRsTest, encodePrenatalBreastfeeding, encodePrenatalFamilyPlanning, encodePrenatalFollowUp, encodePrenatalGUExam, encodePrenatalHIVPCRTest, encodePrenatalHIVTest, encodePrenatalHealthEducation, encodePrenatalHemoglobinTest, encodePrenatalHepatitisBTest, encodePrenatalLabsResults, encodePrenatalMalariaTest, encodePrenatalMedicationDistribution, encodePrenatalMentalHealth, encodePrenatalNutrition, encodePrenatalOutsideCare, encodePrenatalPartnerHIVTest, encodePrenatalPhoto, encodePrenatalRandomBloodSugarTest, encodePrenatalSendToHC, encodePrenatalSpecialityCare, encodePrenatalSymptomReview, encodePrenatalSyphilisTest, encodePrenatalTetanusImmunisation, encodePrenatalUrineDipstickTest, encodeRecommendation114, encodeSendToHC, encodeSendToHCSign, encodeSocialHistory, encodeSymptomsGI, encodeSymptomsGeneral, encodeSymptomsRespiratory, encodeTravelHistory, encodeTreatmentOngoing, encodeTreatmentReview, encodeVitals, encodeWeight, encodeWellChildAlbendazole, encodeWellChildBCGImmunisation, encodeWellChildContributingFactors, encodeWellChildDTPImmunisation, encodeWellChildECD, encodeWellChildFollowUp, encodeWellChildHPVImmunisation, encodeWellChildHeadCircumference, encodeWellChildHealthEducation, encodeWellChildHeight, encodeWellChildIPVImmunisation, encodeWellChildMRImmunisation, encodeWellChildMebendezole, encodeWellChildMuac, encodeWellChildNCDA, encodeWellChildNextVisit, encodeWellChildNutrition, encodeWellChildOPVImmunisation, encodeWellChildPCV13Immunisation, encodeWellChildPhoto, encodeWellChildPregnancySummary, encodeWellChildRotarixImmunisation, encodeWellChildSendToHC, encodeWellChildSymptomsReview, encodeWellChildVitals, encodeWellChildVitaminA, encodeWellChildWeight, malariaRapidTestResultAsString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -11,9 +11,9 @@ import Backend.Person.Utils exposing (genderToString)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
-import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
+import Json.Encode exposing (Value, bool, float, int, list, string)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
+import Restful.Endpoint exposing (EntityUuid, encodeEntityUuid, fromEntityUuid)
 import Translate.Utils exposing (encodeLanguage)
 import Utils.Json exposing (encodeEverySet)
 
@@ -442,8 +442,8 @@ encodeHIVTestValue type_ value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
-        ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns ) ]
-        ++ [ ( "deleted", bool False )
+        ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns )
+           , ( "deleted", bool False )
            , ( "type", string type_ )
            ]
 
@@ -885,10 +885,9 @@ encodePrenatalMentalHealthValue value =
     in
     [ ( "mental_health_signs", list string signs )
     , ( "specialist_at_hc", bool value.specialistAtHC )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_mental_health" )
     ]
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_mental_health" )
-           ]
 
 
 encodePrenatalTetanusImmunisation : PrenatalTetanusImmunisation -> List ( String, Value )
@@ -2550,32 +2549,6 @@ encodeNonReferralSign sign =
 
             NoNonReferralSigns ->
                 "none"
-
-
-encodeReferralFacility : ReferralFacility -> Value
-encodeReferralFacility facility =
-    string <|
-        case facility of
-            FacilityHealthCenter ->
-                "hc"
-
-            FacilityHospital ->
-                "hospital"
-
-            FacilityMentalHealthSpecialist ->
-                "mhs"
-
-            FacilityARVProgram ->
-                "arv"
-
-            FacilityNCDProgram ->
-                "ncd"
-
-            FacilityANCServices ->
-                "anc"
-
-            FacilityUltrasound ->
-                "us"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )

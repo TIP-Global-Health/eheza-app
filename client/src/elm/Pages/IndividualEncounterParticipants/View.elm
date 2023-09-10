@@ -1,24 +1,21 @@
 module Pages.IndividualEncounterParticipants.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Model exposing (Initiator(..), Person)
+import Backend.Person.Utils exposing (defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffYears)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (unwrap)
 import Pages.IndividualEncounterParticipants.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -142,7 +139,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
                         (Dict.filter
-                            (\filteredPersonId filteredPerson ->
+                            (\_ filteredPerson ->
                                 -- Show only participants that belong to selected health center.
                                 -- Todo: check if this really required.
                                 (filteredPerson.healthCenterId == Just healthCenterId)

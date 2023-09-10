@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model exposing (..)
 import Components.SendViaWhatsAppDialog.Utils exposing (..)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -475,8 +475,8 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                 ]
                 [ text <| translate language Translate.Cancel ]
             , button
-                ([ classList [ ( "ui primary fluid button", True ), ( "disabled", not componentsSelected ) ] ]
-                    ++ continueButtonAction
+                (classList [ ( "ui primary fluid button", True ), ( "disabled", not componentsSelected ) ]
+                    :: continueButtonAction
                 )
                 [ text <| translate language Translate.Continue ]
             ]

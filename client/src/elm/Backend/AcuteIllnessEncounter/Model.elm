@@ -1,4 +1,4 @@
-module Backend.AcuteIllnessEncounter.Model exposing (..)
+module Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..), Model, Msg(..), emptyAcuteIllnessEncounter, emptyModel)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)

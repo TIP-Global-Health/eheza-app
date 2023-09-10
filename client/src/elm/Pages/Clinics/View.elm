@@ -6,27 +6,23 @@ available for data-entry.
 -}
 
 import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
+import Backend.Clinic.Model exposing (Clinic, allClinicTypes)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.NutritionEncounter.Utils exposing (sortByDate)
-import Backend.Session.Model exposing (Session)
-import Backend.Session.Utils exposing (isClosed)
-import Date exposing (Unit(..))
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust)
 import Pages.Clinics.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PageNotFound.View
 import Pages.Utils exposing (viewBySyncStatus)
-import RemoteData exposing (RemoteData(..), WebData, isLoading)
-import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import SyncManager.Model exposing (SyncInfoStatus(..))
+import RemoteData
+import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model
 import SyncManager.Utils exposing (getSyncedHealthCenters)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)

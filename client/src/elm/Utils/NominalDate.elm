@@ -1,16 +1,11 @@
-module Utils.NominalDate exposing (endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderAgeYearsMonths, renderDate, startField)
+module Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
 -}
 
 import Date
-import Form.Field exposing (Field)
-import Form.Init exposing (setGroup, setString)
-import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, diffCalendarYearsAndMonths)
-import Html exposing (Html)
-import Maybe.Extra
+import Gizra.NominalDate exposing (NominalDate, diffCalendarMonthsAndDays, diffCalendarYearsAndMonths)
 import Translate exposing (Language, translate)
 
 
@@ -52,46 +47,6 @@ renderAgeMonthsDays language birthDate now =
 
     else
         translate language <| Translate.Age months days
-
-
-renderAgeMonthsDaysParts : Language -> NominalDate -> NominalDate -> List (Maybe String)
-renderAgeMonthsDaysParts language birthDate now =
-    let
-        diff =
-            diffCalendarMonthsAndDays birthDate now
-
-        days =
-            diff.days
-
-        months =
-            diff.months
-
-        dayPart =
-            if days == 0 then
-                Nothing
-
-            else if days == 1 then
-                Just <|
-                    "1 "
-                        ++ translate language Translate.DayAbbrev
-
-            else
-                Just <|
-                    String.fromInt days
-                        ++ " "
-                        ++ translate language Translate.DaysAbbrev
-
-        monthPart =
-            if months == 0 then
-                Nothing
-
-            else
-                Just <|
-                    String.fromInt months
-                        ++ " "
-                        ++ translate language Translate.MonthAbbrev
-    in
-    [ monthPart, dayPart ]
 
 
 renderAgeYearsMonths : Language -> NominalDate -> NominalDate -> String
@@ -138,21 +93,6 @@ renderAgeYearsMonths language birthDate now =
                     translate language <| Translate.AgeYearsAndMonths years months
 
 
-renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
-renderAgeMonthsDaysAbbrev language birthDate now =
-    renderAgeMonthsDaysParts language birthDate now
-        |> Maybe.Extra.values
-        |> String.join " "
-
-
-renderAgeMonthsDaysHtml : Language -> NominalDate -> NominalDate -> List (Html any)
-renderAgeMonthsDaysHtml language birthDate now =
-    renderAgeMonthsDaysParts language birthDate now
-        |> Maybe.Extra.values
-        |> List.map Html.text
-        |> List.intersperse (Html.br [] [])
-
-
 renderDate : Language -> NominalDate -> String
 renderDate language date =
     let
@@ -175,17 +115,3 @@ renderDate language date =
         ++ month
         ++ " "
         ++ String.fromInt year
-
-
-{-| The name of the field we use for the start date.
--}
-startField : String
-startField =
-    "start"
-
-
-{-| The name of the field we use for the end date.
--}
-endField : String
-endField =
-    "end"

@@ -1,4 +1,4 @@
-module Pages.MessagingCenter.Model exposing (..)
+module Pages.MessagingCenter.Model exposing (KickOffForm, MessageOptionsDialogState(..), MessagingTab(..), Model, MonthlySurveyForm, Msg(..), emptyModel)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -8,8 +8,7 @@ import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model
     exposing
-        ( ResilienceSurvey
-        , ResilienceSurveyQuestion
+        ( ResilienceSurveyQuestion
         , ResilienceSurveyQuestionOption
         )
 import Date exposing (Date)
