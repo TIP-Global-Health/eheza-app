@@ -170,13 +170,13 @@ initiatorFromUrlFragment s =
 
         _ ->
             if String.startsWith "session-" s then
-                String.dropLeft (String.length "session-") s
+                String.dropLeft 8 s
                     |> toEntityUuid
                     |> GroupEncounterOrigin
                     |> Just
 
             else if String.startsWith "prenatal-next-steps-" s then
-                String.dropLeft (String.length "prenatal-next-steps-") s
+                String.dropLeft 20 s
                     |> toEntityUuid
                     |> PrenatalNextStepsActivityOrigin
                     |> Just

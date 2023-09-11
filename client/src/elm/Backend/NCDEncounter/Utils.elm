@@ -20,13 +20,13 @@ getNCDEncountersForParticipant db participantId =
 progressReportInitiatorFromUrlFragment : String -> Maybe NCDProgressReportInitiator
 progressReportInitiatorFromUrlFragment s =
     if String.startsWith "encounter-page-" s then
-        String.dropLeft (String.length "encounter-page-") s
+        String.dropLeft 15 s
             |> toEntityUuid
             |> InitiatorEncounterPage
             |> Just
 
     else if String.startsWith "recurrent-encounter-page-" s then
-        String.dropLeft (String.length "recurrent-encounter-page-") s
+        String.dropLeft 25 s
             |> toEntityUuid
             |> InitiatorRecurrentEncounterPage
             |> Just
