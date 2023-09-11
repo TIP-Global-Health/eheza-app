@@ -2,7 +2,7 @@ module Pages.PinCode.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, stockManagementEnabled)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
@@ -292,8 +292,8 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                             []
                        )
                     ++ (if
-                            -- For now, Stock Management feature is not launched.
-                            False
+                            -- @todo: remove when Stock Management is launched.
+                            stockManagementEnabled
                                 && not isChw
                         then
                             [ MenuStockManagement ]

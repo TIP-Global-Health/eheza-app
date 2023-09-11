@@ -1,4 +1,12 @@
-module Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), emptyModelIndexedDb)
+module Backend.Model exposing
+    ( ComputedDashboard
+    , ModelIndexedDb
+    , MsgIndexedDb(..)
+    , Revision(..)
+    , emptyModelIndexedDb
+    , ncdaEnabled
+    , stockManagementEnabled
+    )
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -605,3 +613,19 @@ type Revision
     | WellChildVitalsRevision WellChildVitalsId WellChildVitals
     | WellChildVitaminARevision WellChildVitaminAId WellChildVitaminA
     | WellChildWeightRevision WellChildWeightId WellChildWeight
+
+
+
+-- FEATURES ON/OFF
+
+
+ncdaEnabled : Bool
+ncdaEnabled =
+    -- For now, NCDA feature is not launched.
+    False
+
+
+stockManagementEnabled : Bool
+stockManagementEnabled =
+    -- For now, Stock Management feature is not launched.
+    False

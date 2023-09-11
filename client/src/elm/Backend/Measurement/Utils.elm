@@ -3,6 +3,7 @@ module Backend.Measurement.Utils exposing (administrationNoteFromString, adminis
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Model exposing (ncdaEnabled)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Session.Model exposing (OfflineSession)
@@ -3648,9 +3649,8 @@ ncdaSignFromString value =
 
 expectNCDAActivity : NominalDate -> Person -> Bool
 expectNCDAActivity currentDate person =
-    -- NCDA is not expected for now, since this feature
-    -- is not fully developed yet.
-    False
+    -- @todo: remove when NCDA is launched.
+    ncdaEnabled
         && -- Show for children that are younger than 2 years old.
            (ageInMonths currentDate person
                 |> Maybe.map (\ageMonths -> ageMonths < 24)
