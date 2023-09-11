@@ -35,16 +35,17 @@ import Simplify
 
 config : List Rule
 config =
+    List.map (Rule.ignoreErrorsForDirectories ignoredDirectories) rules
+        |> List.map (Rule.ignoreErrorsForFiles ignoredFiles)
+
+
+rules : List Rule
+rules =
     [ Docs.ReviewAtDocs.rule
     , NoConfusingPrefixOperator.rule
     , NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
-        |> Rule.ignoreErrorsForDirectories [ "tests/" ]
-    , NoExposingEverything.rule
-    , NoImportingEverything.rule []
     , NoMissingTypeAnnotation.rule
-
-    -- , NoMissingTypeAnnotationInLetIn.rule
     , NoMissingTypeExpose.rule
     , NoSimpleLetBody.rule
     , NoPrematureLetComputation.rule
@@ -56,4 +57,18 @@ config =
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
     , Simplify.rule Simplify.defaults
+    ]
+
+
+ignoredDirectories : List String
+ignoredDirectories =
+    [ "src/elm/Gizra"
+    , "src/elm/Restful"
+    , "src/elm/Utils"
+    ]
+
+
+ignoredFiles : List String
+ignoredFiles =
+    [ "src/elm/AssocList.eml"
     ]
