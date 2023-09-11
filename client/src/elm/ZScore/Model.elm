@@ -1,22 +1,26 @@
 module ZScore.Model exposing
-    ( Model, Msg(..), MaleAndFemale, ZScoreEntry, emptyModel
-    , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..), ZScore
-    , BmiForAgeTables, ByDaysAndMonths, ChartAgeRange(..), Days(..), HeadCircumferenceForAgeTables, LengthHeightForAgeTables, Months(..), WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
+    ( BMI(..)
+    , BmiForAgeTables
+    , ByDaysAndMonths
+    , Centimetres(..)
+    , ChartAgeRange(..)
+    , Days(..)
+    , HeadCircumferenceForAgeTables
+    , Height(..)
+    , Kilograms(..)
+    , Length(..)
+    , LengthHeightForAgeTables
+    , MaleAndFemale
+    , Model
+    , Months(..)
+    , Msg(..)
+    , WeightForAgeTables
+    , WeightForHeightTables
+    , WeightForLengthTables
+    , ZScore
+    , ZScoreEntry
+    , emptyModel
     )
-
-{-| Models our ZScore tables.
-
-
-## Model
-
-@docs Model, Msg, MaleAndFemale, ZScoreEntry, emptyModel
-
-
-## Units
-
-@docs Length, Height, Centimetres, Kilograms, BMI, ZScore
-
--}
 
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.AllDict exposing (AllDict)
