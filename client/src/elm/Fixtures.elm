@@ -2,9 +2,7 @@ module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, 
 
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Model exposing (EducationLevel(..), Person, Ubudehe(..))
-import EverySet
 import Time.Date exposing (date)
-import User.Model exposing (User)
 
 
 {-| } An example access token.
