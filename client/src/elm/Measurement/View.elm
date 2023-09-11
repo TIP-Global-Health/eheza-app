@@ -7,6 +7,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Activity.Utils exposing (generateNutritionAssessment)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
+import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
