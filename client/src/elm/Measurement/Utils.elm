@@ -2818,7 +2818,7 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                                     , bloodSmearResultDirty = True
                                 }
                     in
-                    { setBoolInputMsg = config.setMalariaTestFormBoolInputMsg boolInputUpdateFunc
+                    { setBoolInputMsg = config.setMalariaTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setMalariaTestExecutionNoteMsg
                     }
 
