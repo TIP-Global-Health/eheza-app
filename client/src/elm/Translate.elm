@@ -3835,6 +3835,7 @@ translationSet trans =
         CaregiverMessage ->
             { english = "This person is a caregiver. There are no activities to complete."
             , kinyarwanda = Just "Uyu ni umurezi w'umwana. Nta bikorwa usabwa kumukorera."
+            , kirundi = Nothing
             }
 
         CaregiverName ->
