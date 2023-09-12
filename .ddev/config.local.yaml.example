@@ -22,8 +22,8 @@ hooks:
     - exec: drush fra -y
     - exec: drush uli
   post-start:
-    - exec-host: ddev nvm install 10.3.0
-    - exec-host: ddev nvm alias default 10.3.0
+  - exec-host: ddev nvm install 10.16.0
+  - exec-host: ddev nvm alias default 10.16.0
     - exec-host: ddev client-install
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
     # If DDEV creates server/www/, it is owned by root for some reasons,
