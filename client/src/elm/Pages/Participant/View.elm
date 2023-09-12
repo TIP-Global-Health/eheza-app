@@ -1,14 +1,15 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..))
-import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
+import Activity.Utils exposing (getActivityIcon, isCaregiver, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.Session.Model exposing (EditableSession)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -241,7 +242,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     ]
                     |> keyed "child-info"
               ]
-            , viewActivityCards childParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
+            , viewActivityCards childParticipant language session.offlineSession childId activities model.selectedTab selectedActivity
             , content
             , popup
             ]
@@ -405,7 +406,7 @@ viewFoundMother language currentDate zscores site isChw ( motherId, mother ) ( s
                     ]
                     |> keyed "mother"
               ]
-            , viewActivityCards motherParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
+            , viewActivityCards motherParticipant language session.offlineSession motherId activities model.selectedTab selectedActivity
             , content
             ]
 
@@ -413,23 +414,46 @@ viewFoundMother language currentDate zscores site isChw ( motherId, mother ) ( s
 viewActivityCards :
     Participant id value activity msg NominalDate
     -> Language
+    -> OfflineSession
+    -> PersonId
     -> CompletedAndPending (List activity)
     -> Tab
-    -> ClinicType
     -> Maybe activity
     -> List ( String, Html (Msg activity any) )
-viewActivityCards config language activities selectedTab clinicType selectedActivity =
+viewActivityCards config language offlineSession personId activities selectedTab selectedActivity =
     let
+        clinicType =
+            offlineSession.session.clinicType
+
+        adultIsCaregiver =
+            isCaregiver personId offlineSession
+
         pendingActivitiesView =
             if List.isEmpty activities.pending then
-                [ span [] [ text <| translate language Translate.NoActivitiesPendingForThisParticipant ] ]
+                let
+                    messageTransId =
+                        if adultIsCaregiver then
+                            Translate.CaregiverMessage
+
+                        else
+                            Translate.NoActivitiesPendingForThisParticipant
+                in
+                [ span [] [ text <| translate language messageTransId ] ]
 
             else
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.pending
 
         completedActivitiesView =
             if List.isEmpty activities.completed then
-                [ span [] [ text <| translate language Translate.NoActivitiesCompletedForThisParticipant ] ]
+                let
+                    messageTransId =
+                        if adultIsCaregiver then
+                            Translate.CaregiverMessage
+
+                        else
+                            Translate.NoActivitiesCompletedForThisParticipant
+                in
+                [ span [] [ text <| translate language messageTransId ] ]
 
             else
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.completed

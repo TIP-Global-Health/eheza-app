@@ -763,3 +763,15 @@ childHasAnyCompletedActivity childId session =
     getChildMeasurementData2 childId session
         |> LocalData.map (hasAnyCompletedChildActivity session)
         |> LocalData.withDefault False
+
+
+{-| Adult is considered as a caregiver during session when all og the
+children they brought to session are caretaken.
+For example, a woman with 3 children, one her own and two others are
+caretaken is considered a mother (and shuold be given mother activities).
+-}
+isCaregiver : PersonId -> OfflineSession -> Bool
+isCaregiver personId offlineSession =
+    Dict.get personId offlineSession.participants.byMotherId
+        |> Maybe.map (List.all (.adultActivities >> (==) CaregiverActivities))
+        |> Maybe.withDefault False
