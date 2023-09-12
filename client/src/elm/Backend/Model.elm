@@ -1,4 +1,12 @@
-module Backend.Model exposing (ComputedDashboard, ModelIndexedDb, MsgIndexedDb(..), Revision(..), emptyModelIndexedDb)
+module Backend.Model exposing
+    ( ComputedDashboard
+    , ModelIndexedDb
+    , MsgIndexedDb(..)
+    , Revision(..)
+    , emptyModelIndexedDb
+    , ncdaEnabled
+    , stockManagementEnabled
+    )
 
 {-| The `Backend` hierarchy is for code that represents entities from the
 backend. It is reponsible for fetching them, saving them, etc.
@@ -19,13 +27,13 @@ in the UI.
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
-import Backend.Clinic.Model exposing (Clinic, ClinicType)
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantExtraData)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType, IndividualParticipantExtraData)
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Model exposing (Nurse)
@@ -37,7 +45,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEnco
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
-import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
+import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, Session)
 import Backend.StockUpdate.Model exposing (StockManagementData)
 import Backend.TraceContact.Model
 import Backend.Village.Model exposing (Village)
@@ -605,3 +613,19 @@ type Revision
     | WellChildVitalsRevision WellChildVitalsId WellChildVitals
     | WellChildVitaminARevision WellChildVitaminAId WellChildVitaminA
     | WellChildWeightRevision WellChildWeightId WellChildWeight
+
+
+
+-- FEATURES ON/OFF
+
+
+ncdaEnabled : Bool
+ncdaEnabled =
+    -- For now, NCDA feature is not launched.
+    False
+
+
+stockManagementEnabled : Bool
+stockManagementEnabled =
+    -- For now, Stock Management feature is not launched.
+    False

@@ -81,7 +81,6 @@ import SyncManager.Utils
 import Time
 import Translate.Model exposing (Language(..))
 import Url exposing (Url)
-import Uuid exposing (Uuid)
 import ZScore.Model
 
 
