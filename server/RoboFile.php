@@ -26,10 +26,15 @@ class RoboFile extends Tasks {
    */
   public function deployPantheon($branchName = 'master') {
     if (empty(self::PANTHEON_NAME)) {
-      throw new Exception('You need to fill the "PANTHEON_NAME" const in the Robo file. so it will know what is the name of your site.');
+      throw new Exception('You need to fill the "PANTHEON_NAME" const in the Robo file, so it will know what is the name of your site.');
     }
 
-    $pantheonDirectory = '.pantheon';
+    $site = getenv('EHEZA_SITE');
+    if (!$site) {
+      throw new Exception('Please specify EHEZA_SITE in your DDEV local config, so it will be possible to resolve pantheon directory.');
+    }
+
+    $pantheonDirectory = '.pantheon-' . $site;
 
     $result = $this
       ->taskExec('git status -s -uno')
