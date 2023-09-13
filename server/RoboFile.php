@@ -388,18 +388,28 @@ class RoboFile extends Tasks {
   /**
    * Generates the demographics report.
    */
-  public function reportDemographics($limit_date = NULL) {
+  public function reportDemographics($limit_date = NULL, $region = NULL) {
     if (empty($limit_date)) {
       $limit_date = date('Y-m-d');
     }
-    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php --limit_date=$limit_date");
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php --limit_date=$limit_date --region=$region");
+  }
+
+/**
+   * Generates the demographics report.
+   */
+  public function reportDemographicsHc($limit_date = NULL, $region = NULL) {
+    if (empty($limit_date)) {
+      $limit_date = date('Y-m-d');
+    }
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-hc-report.php --limit_date=$limit_date --region=$region");
   }
 
   /**
    * Generates the acute illness report.
    */
-  public function reportAcuteIllness() {
-    $this->_exec('cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-report.php');
+  public function reportAcuteIllness($start_date = NULL, $end_date = NULL, $region = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-report.php --start_date=$start_date --end_date=$end_date --region=$region");
   }
 
   /**
@@ -430,16 +440,8 @@ class RoboFile extends Tasks {
    * @param string $district
    *   The district to generate the report for.
    */
-  public function reportNutrition($date = NULL, $district = NULL) {
-    $command = 'cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php';
-    if (!empty($district)) {
-      $command .= ' --district=' . escapeshellarg($district);
-    }
-    if (!empty($date)) {
-      $command .= ' --date=' . escapeshellarg($date);
-    }
-
-    $this->_exec($command);
+  public function reportNutrition($region = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --region=$region");
   }
 
 }
