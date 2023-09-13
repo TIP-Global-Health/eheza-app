@@ -29054,8 +29054,8 @@ var $author$project$Icons$iconForward = function (attrs) {
 				_List_Nil)
 			]));
 };
-var $author$project$Pages$Utils$viewYearSelector = F4(
-	function (language, currentDate, gap, changeGapMsg) {
+var $author$project$Pages$Utils$viewYearSelector = F3(
+	function (currentDate, gap, changeGapMsg) {
 		var minYear = 2018;
 		var forwardClass = (!gap) ? _List_fromArray(
 			[
@@ -29136,7 +29136,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 										]))
 								]))
 						])),
-					A4($author$project$Pages$Utils$viewYearSelector, language, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
+					A3($author$project$Pages$Utils$viewYearSelector, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
