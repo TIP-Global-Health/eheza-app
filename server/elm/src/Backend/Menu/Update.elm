@@ -1,12 +1,11 @@
 module Backend.Menu.Update exposing (update)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Menu.Decoder exposing (decodeMenuData)
 import Backend.Menu.Model exposing (Msg(..))
 import Backend.Model exposing (ModelBackend)
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (decodeValue)
 
 
