@@ -110,6 +110,7 @@ import SyncManager.Model exposing (Site(..))
 import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
+import Translate.Utils exposing (languageToString)
 import Utils.Html exposing (viewLoading)
 import Version
 
@@ -187,9 +188,13 @@ viewLanguageSwitcherAndVersion model =
                         ]
                         [ i [ class "icon undo" ] [] ]
 
-        siteDependentLanguage =
+        languagesMenu =
             let
-                viewItem language label =
+                viewItem language =
+                    let
+                        label =
+                            languageToString language
+                    in
                     li
                         [ classList
                             [ ( "item", True )
@@ -198,35 +203,27 @@ viewLanguageSwitcherAndVersion model =
                         , onClick <| SetLanguage language
                         ]
                         [ text label
-                        , a [] [ span [ class "icon-kinyarwanda" ] [] ]
+                        , a [] [ span [ class <| "icon-" ++ String.toLower label ] [] ]
                         ]
+
+                languagesBySite =
+                    case model.syncManager.syncInfoGeneral.site of
+                        SiteRwanda ->
+                            [ English, Kinyarwanda ]
+
+                        SiteBurundi ->
+                            [ English, Kirundi ]
+
+                        SiteUnknown ->
+                            [ English ]
             in
-            case model.syncManager.syncInfoGeneral.site of
-                SiteRwanda ->
-                    viewItem Kinyarwanda "Kinyarwanda"
-
-                SiteBurundi ->
-                    viewItem Kirundi "Kirundi"
-
-                SiteUnknown ->
-                    emptyNode
+            languagesBySite
+                |> List.map viewItem
+                |> ul [ class "links-translate" ]
     in
     div
         [ class "ui language-switcher" ]
-        [ ul
-            [ class "links-translate" ]
-            [ li
-                [ classList
-                    [ ( "item english", True )
-                    , ( "active", model.language == English )
-                    ]
-                , onClick <| SetLanguage English
-                ]
-                [ text "English"
-                , a [] [ span [ class "icon-english" ] [] ]
-                ]
-            , siteDependentLanguage
-            ]
+        [ languagesMenu
         , devicePageShortcut
         , span
             [ class "version"

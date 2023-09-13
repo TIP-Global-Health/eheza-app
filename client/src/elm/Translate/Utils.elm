@@ -1,4 +1,12 @@
-module Translate.Utils exposing (decodeLanguage, encodeLanguage, languageFromCode, languageFromString, languageToCode, selectLanguage)
+module Translate.Utils exposing
+    ( decodeLanguage
+    , encodeLanguage
+    , languageFromCode
+    , languageFromString
+    , languageToCode
+    , languageToString
+    , selectLanguage
+    )
 
 {-| Utilities related to the translation types.
 
@@ -27,6 +35,19 @@ selectLanguage lang set =
 
         Kirundi ->
             optinal .kirundi
+
+
+languageToString : Language -> String
+languageToString language =
+    case language of
+        English ->
+            "English"
+
+        Kinyarwanda ->
+            "Kinyarwanda"
+
+        Kirundi ->
+            "Kirundi"
 
 
 languageFromString : String -> Result String Language

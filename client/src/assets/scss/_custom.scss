@@ -1699,7 +1699,8 @@ input::placeholder {
 }
 
 .icon-english,
-.icon-kinyarwanda {
+.icon-kinyarwanda,
+.icon-kirundi {
   width: 27px;
   height: 27px;
   display: block;
@@ -1712,6 +1713,11 @@ input::placeholder {
 
 .icon-kinyarwanda {
   background: url(#{$img-path}icon-kinyarwanda.png) no-repeat center;
+  background-size: 16px 11px;
+}
+
+.icon-kirundi {
+  background: url(#{$img-path}icon-kirundi.png) no-repeat center;
   background-size: 16px 11px;
 }
 
