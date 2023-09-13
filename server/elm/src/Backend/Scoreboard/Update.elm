@@ -1,14 +1,12 @@
 module Backend.Scoreboard.Update exposing (update)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 import Backend.Scoreboard.Model exposing (Msg(..))
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (decodeValue)
-import Result
 
 
 update : NominalDate -> Msg -> ModelBackend -> BackendReturn Msg

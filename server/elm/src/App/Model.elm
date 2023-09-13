@@ -27,7 +27,6 @@ type Msg
     = MsgBackend Backend.Model.Msg
     | MsgMenuPage Pages.Menu.Model.Msg
     | MsgScoreboardPage Pages.Scoreboard.Model.Msg
-    | SetActivePage Page
     | SetCurrentTime Time.Posix
 
 

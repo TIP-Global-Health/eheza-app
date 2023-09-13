@@ -1,21 +1,19 @@
 module Pages.Utils exposing (..)
 
 import App.Types exposing (Language)
-import AssocList as Dict exposing (Dict)
 import Date
-import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Icons
-import Maybe.Extra exposing (isJust, or, unwrap)
 import Svg.Attributes
 import Translate exposing (TranslationId, translate)
 
 
-viewYearSelector : Language -> NominalDate -> Int -> (Int -> msg) -> Html msg
-viewYearSelector language currentDate gap changeGapMsg =
+viewYearSelector : NominalDate -> Int -> (Int -> msg) -> Html msg
+viewYearSelector currentDate gap changeGapMsg =
     let
         currentYear =
             Date.year currentDate
