@@ -3,7 +3,7 @@ module Pages.IndividualEncounterTypes.View exposing (view)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Model exposing (ModelIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, ncdaEnabled)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -56,11 +56,20 @@ viewContent language currentDate healthCenterId isChw model =
 
         buttons =
             if isChw then
+                let
+                    childScoreboardButton =
+                        -- @todo: remove when NCDA is launched.
+                        if ncdaEnabled then
+                            encounterButton ChildScoreboardEncounter
+
+                        else
+                            emptyNode
+                in
                 [ encounterButton AcuteIllnessEncounter
                 , encounterButton AntenatalEncounter
                 , encounterButton NutritionEncounter
                 , encounterButton WellChildEncounter
-                , encounterButton ChildScoreboardEncounter
+                , childScoreboardButton
                 ]
 
             else
