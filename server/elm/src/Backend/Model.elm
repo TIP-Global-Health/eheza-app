@@ -8,7 +8,6 @@ things on the backend.
 import Backend.Menu.Model exposing (MenuData)
 import Backend.Scoreboard.Model exposing (ScoreboardData)
 import Json.Decode
-import Json.Encode exposing (Value)
 
 
 type alias ModelBackend =

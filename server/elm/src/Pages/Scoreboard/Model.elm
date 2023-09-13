@@ -77,10 +77,3 @@ type NCDAUniversalInterventionItem
     | Deworming
     | OngeraMNP
     | ECDServices
-
-
-type NCDAFillTheBlanksItem
-    = HeightToAge
-    | WeightToAge
-    | MuacValue
-    | EdemaPresent

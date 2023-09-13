@@ -6,17 +6,14 @@ module App.Update exposing
 
 import App.Fetch exposing (fetch)
 import App.Model exposing (..)
-import App.Types exposing (Language(..), Page(..))
+import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
 import Backend.Menu.Model
 import Backend.Model
 import Backend.Scoreboard.Model
 import Backend.Update
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Json.Decode exposing (Value, decodeValue)
-import Pages.Menu.Model
 import Pages.Menu.Update
-import Pages.Scoreboard.Model
 import Pages.Scoreboard.Update
 import Task
 import Time
@@ -106,18 +103,12 @@ update msg model =
                 model.scoreboardPage
                 (\subMsg_ subModel ->
                     Pages.Scoreboard.Update.update
-                        model.backend
                         subMsg_
                         subModel
                 )
                 (\subModel model_ -> { model_ | scoreboardPage = subModel })
                 (\subCmds -> MsgScoreboardPage subCmds)
                 model
-
-        SetActivePage activePage ->
-            ( { model | activePage = activePage }
-            , Cmd.none
-            )
 
         SetCurrentTime date ->
             ( { model | currentTime = date }

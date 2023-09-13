@@ -2,18 +2,14 @@ module Pages.Scoreboard.View exposing (view)
 
 import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
-import Backend.Scoreboard.Model exposing (ScoreboardData, SelectedEntity(..))
+import Backend.Scoreboard.Model exposing (ScoreboardData)
 import Date
-import Gizra.Html exposing (emptyNode, showIf)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Icons
-import List.Extra
-import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Scoreboard.Model exposing (..)
 import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (viewYearSelector)
@@ -45,7 +41,7 @@ viewScoreboardData language currentDate data model =
                             [ text <| translate language Translate.NewSelection ]
                         ]
                     ]
-                , viewYearSelector language currentDate model.yearSelectorGap ChaneYearGap
+                , viewYearSelector currentDate model.yearSelectorGap ChaneYearGap
                 , div [ class "values-percents" ]
                     [ div
                         [ classList
@@ -273,7 +269,7 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                                                     List.member gapInMonths stuntingSevereAsAgeInMonths
                                                         || List.member gapInMonths underweightSevereAsAgeInMonths
                                                         || List.member gapInMonths wastingSevereAsAgeInMonths
-                                                        || List.member gapInMonths muacModerateAsAgeInMonths
+                                                        || List.member gapInMonths muacSevereAsAgeInMonths
                                                 then
                                                     ( accumValue.row1 + 1, accumValue.row2, accumValue.row3 )
 
@@ -535,9 +531,9 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap chi
                                                         -- after the reference date.
                                                         vaccinationProgressOnReferrenceDate =
                                                             Dict.map
-                                                                (\vaccineType dosesDict ->
+                                                                (\_ dosesDict ->
                                                                     Dict.filter
-                                                                        (\dose administeredDate ->
+                                                                        (\_ administeredDate ->
                                                                             Date.compare administeredDate referenceDate == LT
                                                                         )
                                                                         dosesDict

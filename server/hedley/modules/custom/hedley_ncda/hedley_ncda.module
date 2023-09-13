@@ -13,6 +13,12 @@ define('HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA', 'hedley_ncda_calculate_ncda_data
  * Implements hook_menu().
  */
 function hedley_ncda_menu() {
+  // @todo: remove when NCDA is launched.
+  $aggregated_ncda_enabled = variable_get('hedley_aggregated_ncda_enabled', FALSE);
+  if (!$aggregated_ncda_enabled) {
+    return;
+  }
+
   $items['admin/reports/aggregated-ncda'] = array(
     'title' => 'Aggregated NCDA scoreboard',
     'description' => 'View Aggregated NCDA scoreboard',
@@ -59,6 +65,12 @@ function hedley_ncda_menu() {
  * Implements hook_node_insert().
  */
 function hedley_ncda_node_insert($node) {
+  // @todo: remove when NCDA is launched.
+  $aggregated_ncda_enabled = variable_get('hedley_aggregated_ncda_enabled', FALSE);
+  if (!$aggregated_ncda_enabled) {
+    return;
+  }
+
   if ($node->type == 'village') {
     hedley_ncda_trigger_recalculation_for_new_village($node);
     return;
@@ -71,6 +83,12 @@ function hedley_ncda_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_ncda_node_update($node) {
+  // @todo: remove when NCDA is launched.
+  $aggregated_ncda_enabled = variable_get('hedley_aggregated_ncda_enabled', FALSE);
+  if (!$aggregated_ncda_enabled) {
+    return;
+  }
+
   if ($node->type == 'person') {
     hedley_ncda_trigger_recalculation_by_edited_person($node);
     return;

@@ -12,6 +12,9 @@
 
 require_once __DIR__ . '/report_common.inc';
 
+// Get the region.
+$region = drush_get_option('region', FALSE);
+
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -38,9 +41,11 @@ $base_query = base_query_for_bundle('person');
 
 $six_years_ago = date('Ymd', strtotime('-6 years', $day_of_reporting));
 $base_query->fieldCondition('field_birth_date', 'value', $six_years_ago, '>');
-if (!empty($district)) {
-  $base_query->fieldCondition('field_district', 'value', $district);
+
+if ($region) {
+  $base_query->fieldCondition('field_district', 'value', $region, '=');
 }
+
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
 $total = $count_query->count()->execute();
@@ -53,12 +58,9 @@ if ($total == 0) {
   exit(1);
 }
 
-if (!empty($district)) {
-  drush_print("$total children with age below 6 years located in $district district.");
-}
-else {
-  drush_print("$total children with age below 6 years located.");
-}
+$region = ($region) ? $region : 'All Districts';
+
+drush_print("$total children below 6 years located in $region.");
 
 $processed = 0;
 
@@ -147,16 +149,7 @@ while ($processed < $total) {
 }
 
 drush_print('Done!');
-
-
-$textual_date = date('d/m/Y', $day_of_reporting);
-
-if (!empty($district)) {
-  drush_print("# Nutrition report - " . $textual_date . " - District: $district");
-}
-else {
-  drush_print("# Nutrition report - " . $textual_date);
-}
+drush_print("# Nutrition report - " . $region . " - " . date('D/m/Y'));
 drush_print('');
 
 $skeleton = [

@@ -1,11 +1,6 @@
 module Backend.Scoreboard.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Scoreboard.Model exposing (..)
-import Date exposing (Unit(..))
-import EverySet
-import Gizra.NominalDate exposing (NominalDate)
-import List.Extra
 
 
 vaccineDoseToComparable : VaccineDose -> Int

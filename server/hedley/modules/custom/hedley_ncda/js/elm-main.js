@@ -5745,8 +5745,8 @@ var $author$project$Pages$Menu$Update$update = F2(
 				_List_Nil);
 		}
 	});
-var $author$project$Pages$Scoreboard$Update$update = F3(
-	function (modelBackend, msg, model) {
+var $author$project$Pages$Scoreboard$Update$update = F2(
+	function (msg, model) {
 		if (msg.$ === 'ChaneYearGap') {
 			var step = msg.a;
 			return A4(
@@ -7613,7 +7613,7 @@ var $author$project$App$Update$update = F2(
 					model.scoreboardPage,
 					F2(
 						function (subMsg_, subModel) {
-							return A3($author$project$Pages$Scoreboard$Update$update, model.backend, subMsg_, subModel);
+							return A2($author$project$Pages$Scoreboard$Update$update, subMsg_, subModel);
 						}),
 					F2(
 						function (subModel, model_) {
@@ -7625,13 +7625,6 @@ var $author$project$App$Update$update = F2(
 						return $author$project$App$Model$MsgScoreboardPage(subCmds);
 					},
 					model);
-			case 'SetActivePage':
-				var activePage = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{activePage: activePage}),
-					$elm$core$Platform$Cmd$none);
 			default:
 				var date = msg.a;
 				return _Utils_Tuple2(
@@ -8067,34 +8060,6 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {
 							english: 'ECD services provided to child',
 							kinyarwanda: $elm$core$Maybe$Just('Umwana yahawe servise n\'ikigo mboneza mikurire'),
-							kirundi: $elm$core$Maybe$Nothing
-						};
-				}
-			case 'NCDAFillTheBlanksItemLabel':
-				var item = transId.a;
-				switch (item.$) {
-					case 'HeightToAge':
-						return {
-							english: 'Level of stuning using child length mat',
-							kinyarwanda: $elm$core$Maybe$Just('Ikigero cyo kugwingira hakoreshejwe agasambi'),
-							kirundi: $elm$core$Maybe$Nothing
-						};
-					case 'WeightToAge':
-						return {
-							english: 'Weight',
-							kinyarwanda: $elm$core$Maybe$Just('Ibiro'),
-							kirundi: $elm$core$Maybe$Nothing
-						};
-					case 'MuacValue':
-						return {
-							english: 'MUAC',
-							kinyarwanda: $elm$core$Maybe$Just('Ikizigira'),
-							kirundi: $elm$core$Maybe$Nothing
-						};
-					default:
-						return {
-							english: 'Edema',
-							kinyarwanda: $elm$core$Maybe$Just('Kubyimba'),
 							kirundi: $elm$core$Maybe$Nothing
 						};
 				}
@@ -28713,7 +28678,7 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var _v0 = (A2($elm$core$List$member, gapInMonths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+											var _v0 = (A2($elm$core$List$member, gapInMonths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacSevereAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
 											var row1 = _v0.a;
 											var row2 = _v0.b;
 											var row3 = _v0.c;
@@ -29891,11 +29856,11 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F7(
 													var vaccinationProgressOnReferrenceDate = A2(
 														$pzp1997$assoc_list$AssocList$map,
 														F2(
-															function (vaccineType, dosesDict) {
+															function (_v0, dosesDict) {
 																return A2(
 																	$pzp1997$assoc_list$AssocList$filter,
 																	F2(
-																		function (dose, administeredDate) {
+																		function (_v1, administeredDate) {
 																			return _Utils_eq(
 																				A2($justinmimbs$date$Date$compare, administeredDate, referenceDate),
 																				$elm$core$Basics$LT);
@@ -30090,8 +30055,8 @@ var $author$project$Icons$iconForward = function (attrs) {
 				_List_Nil)
 			]));
 };
-var $author$project$Pages$Utils$viewYearSelector = F4(
-	function (language, currentDate, gap, changeGapMsg) {
+var $author$project$Pages$Utils$viewYearSelector = F3(
+	function (currentDate, gap, changeGapMsg) {
 		var minYear = 2018;
 		var forwardClass = (!gap) ? _List_fromArray(
 			[
@@ -30172,7 +30137,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 										]))
 								]))
 						])),
-					A4($author$project$Pages$Utils$viewYearSelector, language, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
+					A3($author$project$Pages$Utils$viewYearSelector, currentDate, model.yearSelectorGap, $author$project$Pages$Scoreboard$Model$ChaneYearGap),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
