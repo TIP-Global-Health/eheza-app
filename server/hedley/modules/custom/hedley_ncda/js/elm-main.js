@@ -5739,8 +5739,8 @@ var $author$project$Pages$Menu$Update$update = F2(
 				_List_Nil);
 		}
 	});
-var $author$project$Pages$Scoreboard$Update$update = F3(
-	function (modelBackend, msg, model) {
+var $author$project$Pages$Scoreboard$Update$update = F2(
+	function (msg, model) {
 		if (msg.$ === 'ChaneYearGap') {
 			var step = msg.a;
 			return A4(
@@ -7554,7 +7554,7 @@ var $author$project$App$Update$update = F2(
 					model.scoreboardPage,
 					F2(
 						function (subMsg_, subModel) {
-							return A3($author$project$Pages$Scoreboard$Update$update, model.backend, subMsg_, subModel);
+							return A2($author$project$Pages$Scoreboard$Update$update, subMsg_, subModel);
 						}),
 					F2(
 						function (subModel, model_) {
@@ -7566,13 +7566,6 @@ var $author$project$App$Update$update = F2(
 						return $author$project$App$Model$MsgScoreboardPage(subCmds);
 					},
 					model);
-			case 'SetActivePage':
-				var activePage = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{activePage: activePage}),
-					$elm$core$Platform$Cmd$none);
 			default:
 				var date = msg.a;
 				return _Utils_Tuple2(

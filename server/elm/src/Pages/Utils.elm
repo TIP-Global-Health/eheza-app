@@ -12,8 +12,8 @@ import Svg.Attributes
 import Translate exposing (TranslationId, translate)
 
 
-viewYearSelector : Language -> NominalDate -> Int -> (Int -> msg) -> Html msg
-viewYearSelector language currentDate gap changeGapMsg =
+viewYearSelector : NominalDate -> Int -> (Int -> msg) -> Html msg
+viewYearSelector currentDate gap changeGapMsg =
     let
         currentYear =
             Date.year currentDate

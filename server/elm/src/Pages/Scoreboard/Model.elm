@@ -77,7 +77,3 @@ type NCDAUniversalInterventionItem
     | Deworming
     | OngeraMNP
     | ECDServices
-
-
-type NCDAFillTheBlanksItem
-    = WeightToAge

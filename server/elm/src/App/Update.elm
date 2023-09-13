@@ -96,18 +96,12 @@ update msg model =
                 model.scoreboardPage
                 (\subMsg_ subModel ->
                     Pages.Scoreboard.Update.update
-                        model.backend
                         subMsg_
                         subModel
                 )
                 (\subModel model_ -> { model_ | scoreboardPage = subModel })
                 (\subCmds -> MsgScoreboardPage subCmds)
                 model
-
-        SetActivePage activePage ->
-            ( { model | activePage = activePage }
-            , Cmd.none
-            )
 
         SetCurrentTime date ->
             ( { model | currentTime = date }

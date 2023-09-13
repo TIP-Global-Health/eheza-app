@@ -41,7 +41,7 @@ viewScoreboardData language currentDate data model =
                             [ text <| translate language Translate.NewSelection ]
                         ]
                     ]
-                , viewYearSelector language currentDate model.yearSelectorGap ChaneYearGap
+                , viewYearSelector currentDate model.yearSelectorGap ChaneYearGap
                 , div [ class "values-percents" ]
                     [ div
                         [ classList
