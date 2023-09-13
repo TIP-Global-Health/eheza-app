@@ -7954,30 +7954,6 @@ var $author$project$Translate$translationSet = function (transId) {
 							kinyarwanda: $elm$core$Maybe$Just('Umwana yahawe servise n\'ikigo mboneza mikurire')
 						};
 				}
-			case 'NCDAFillTheBlanksItemLabel':
-				var item = transId.a;
-				switch (item.$) {
-					case 'HeightToAge':
-						return {
-							english: 'Level of stuning using child length mat',
-							kinyarwanda: $elm$core$Maybe$Just('Ikigero cyo kugwingira hakoreshejwe agasambi')
-						};
-					case 'WeightToAge':
-						return {
-							english: 'Weight',
-							kinyarwanda: $elm$core$Maybe$Just('Ibiro')
-						};
-					case 'MuacValue':
-						return {
-							english: 'MUAC',
-							kinyarwanda: $elm$core$Maybe$Just('Ikizigira')
-						};
-					default:
-						return {
-							english: 'Edema',
-							kinyarwanda: $elm$core$Maybe$Just('Kubyimba')
-						};
-				}
 			case 'NewSelection':
 				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing};
 			case 'NutritionBehavior':
@@ -27708,7 +27684,7 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var _v0 = (A2($elm$core$List$member, gapInMonths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+											var _v0 = (A2($elm$core$List$member, gapInMonths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacSevereAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
 											var row1 = _v0.a;
 											var row2 = _v0.b;
 											var row3 = _v0.c;
@@ -28886,11 +28862,11 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F7(
 													var vaccinationProgressOnReferrenceDate = A2(
 														$pzp1997$assoc_list$AssocList$map,
 														F2(
-															function (vaccineType, dosesDict) {
+															function (_v0, dosesDict) {
 																return A2(
 																	$pzp1997$assoc_list$AssocList$filter,
 																	F2(
-																		function (dose, administeredDate) {
+																		function (_v1, administeredDate) {
 																			return _Utils_eq(
 																				A2($justinmimbs$date$Date$compare, administeredDate, referenceDate),
 																				$elm$core$Basics$LT);

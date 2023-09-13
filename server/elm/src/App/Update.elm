@@ -6,16 +6,13 @@ module App.Update exposing
 
 import App.Fetch exposing (fetch)
 import App.Model exposing (..)
-import App.Types exposing (Language(..), Page(..))
+import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
 import Backend.Model
 import Backend.Scoreboard.Model
 import Backend.Update
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Json.Decode exposing (Value, decodeValue)
-import Pages.Menu.Model
 import Pages.Menu.Update
-import Pages.Scoreboard.Model
 import Pages.Scoreboard.Update
 import Task
 import Time

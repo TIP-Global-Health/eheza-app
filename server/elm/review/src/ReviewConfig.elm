@@ -68,6 +68,7 @@ ignoredDirectories : List String
 ignoredDirectories =
     [ "src/Gizra"
     , "src/Utils"
+    , "src/Error"
     ]
 
 

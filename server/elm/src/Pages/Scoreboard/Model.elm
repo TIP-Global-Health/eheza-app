@@ -80,7 +80,4 @@ type NCDAUniversalInterventionItem
 
 
 type NCDAFillTheBlanksItem
-    = HeightToAge
-    | WeightToAge
-    | MuacValue
-    | EdemaPresent
+    = WeightToAge
