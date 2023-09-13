@@ -8,6 +8,7 @@
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-implementation.php.
  */
 
+ /*
 require_once __DIR__ . '/report_common.inc';
 $start_date = drush_get_option('start_date', FALSE);
 $end_date = drush_get_option('end_date', FALSE);
@@ -56,8 +57,12 @@ $text_table = new HedleyAdminTextTable([
   'Complete / All',
   'Percent Complete',
 ]);
+*/
 
-drush_print($text_table->render($encounters));
+$ids = first_and_subsequent_encounter();
+var_dump(examination($ids));
+
+//drush_print($text_table->render($encounters));
 
 /**
  * Gets the node ID of the health center.
@@ -180,79 +185,379 @@ function get_health_center($health_center_id = NULL) {
   }
 }
 
-function build_table () {
+function first_and_subsequent_encounter() {
+  $ids = db_query("SELECT DISTINCT ip.field_individual_participant_target_id, e.field_prenatal_encounter_target_id, sd.field_scheduled_date_value FROM field_data_field_prenatal_encounter e
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_scheduled_date sd ON sd.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    WHERE et.field_prenatal_encounter_type_value = 'nurse'")->fetchAll();
 
+  $ip_ids = [];
+
+  foreach ($ids as $id) {
+    if(array_key_exists($id->field_individual_participant_target_id, $ip_ids)) {
+      if($ip_ids[$id->field_individual_participant_target_id][1] > $id->field_scheduled_date_value) {
+        $ip_ids[$id->field_individual_participant_target_id][0] = $id->field_prenatal_encounter_target_id;
+        $ip_ids[$id->field_individual_participant_target_id][1] = $id->field_scheduled_date_value;
+      }
+      else {
+        //put in subsequent visits array
+      }
+    }
+    else {
+      $ip_ids[$id->field_individual_participant_target_id] = [$id->field_prenatal_encounter_target_id, $id->field_scheduled_date_value];
+    }
+  }
+  
+  $encounter_ids = [];
+
+  foreach ($ip_ids as $ip_id) {
+    $encounter_ids[$ip_id[0]] = 0;
+  }
+
+  return $encounter_ids;
+}
+
+function pregnancy_dating($ids) {
+  $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_last_menstrual_period lmp ON lmp.entity_id=n.nid
+    LEFT JOIN field_data_field_confident c ON c.entity_id=n.nid
+    LEFT JOIN field_data_field_not_confident_reason ncr ON ncr.entity_id=n.nid
+    WHERE c.field_confident_value = 1 
+    OR (c.field_confident_value = 0 AND ncr.field_not_confident_reason_value is not null)")->fetchAll(PDO::FETCH_COLUMN);
+
+  $count_true = 0;
+
+  foreach ($results as $result) {
+    array_key_exists($result, $ids) ? ++$count_true : '';
+  }
+  return $count_true;
+}
+
+function history($ids) {
+  
+  $counts = [
+    "medical" => 0,
+    "partner" => 0,
+    "history" => 0,
+  ];
+  $constraints = ["WHERE oh.field_obstetric_history_value is not null",
+    "WHERE cp.field_currently_pregnant_value is not null",
+  ]; 
+
+  $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_medical_history mh ON mh.entity_id=n.nid
+    WHERE mh.field_medical_history_value is not null")->fetchAll(PDO::FETCH_COLUMN);
+
+  foreach ($results as $result) {
+    if (array_key_exists($result, $ids)) {
+      $counts["medical"]++;
+      $ids[$result]+= 1;
+    }
+  }
+
+  $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_social_history sh ON sh.entity_id=n.nid
+    WHERE sh.field_social_history_value is not null")->fetchAll(PDO::FETCH_COLUMN);
+
+  foreach ($results as $result) {
+    if (array_key_exists($result, $ids)) {
+      $counts["partner"]++;
+      $ids[$result]+= 1;
+    }
+  }
+
+  foreach ($constraints as $constraint) {
+    $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+      LEFT JOIN node n on n.nid=e.entity_id
+      LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+      LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+      LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+      LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+      LEFT JOIN field_data_field_currently_pregnant cp ON cp.entity_id=n.nid
+      LEFT JOIN field_data_field_obstetric_history oh ON oh.entity_id=n.nid
+      {$constraint}")->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach ($results as $result) {
+      array_key_exists($result, $ids) ? $ids[$result]+=1 : '';
+    }
+
+}
+  foreach ($ids as $id) {
+    ($id == 4) ? $counts["history"]++ : '';
+  }
+
+  return $counts;
+}
+
+function family_panning($ids) {
+  $count = 0;
+
+  $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_family_planning_signs fp ON fp.entity_id=n.nid
+    WHERE fp.field_family_planning_signs_value is not null")->fetchAll(PDO::FETCH_COLUMN);
+
+  foreach ($results as $result) {
+    array_key_exists($result, $ids) ? $count++ : '';
+  }
+  
+  return $count;
+}
+
+function medicine($ids) {
+  $count = 0;
+
+  $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_medication s ON s.entity_id=n.nid
+    WHERE s.field_medication_value is not null")->fetchAll(PDO::FETCH_COLUMN);
+
+foreach ($results as $result) {
+  array_key_exists($result, $ids) ? $count++ : '';
+}
+
+return $count;
+}
+
+function danger_sings($ids) {
+  $count = 0;
+
+  $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_danger_signs ds ON ds.entity_id=n.nid
+    WHERE ds.field_danger_signs_value is not null")->fetchAll(PDO::FETCH_COLUMN);
+
+foreach ($results as $result) {
+  array_key_exists($result, $ids) ? $count++ : '';
+}
+
+return $count;
+}
+
+function symptom_review($ids) {
+  $count = 0;
+
+  $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_prenatal_symptoms ps ON ps.entity_id=n.nid
+    WHERE ps.field_prenatal_symptoms_value is not null")->fetchAll(PDO::FETCH_COLUMN);
+
+foreach ($results as $result) {
+  array_key_exists($result, $ids) ? $count++ : '';
+}
+
+return $count;
+}
+
+function mental_health($ids) {
+  $count = 0;
+
+  $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_mental_health_signs mhs ON mhs.entity_id=n.nid
+    WHERE mhs.field_mental_health_signs_value is not null")->fetchAll(PDO::FETCH_COLUMN);
+
+foreach ($results as $result) {
+  array_key_exists($result, $ids) ? $count++ : '';
+}
+
+return $count;
+}
+
+function labratory($ids) {
+  $counts = [0,0,0,0,0,0,0,0,0,0];
+
+  $constraints = [
+    "WHERE ten.bundle = 'prenatal_partner_hiv_test'",
+    "WHERE ten.bundle = 'prenatal_hiv_pcr_test' OR ten.bundle = 'prenatal_hiv_test'",
+    "WHERE ten.bundle = 'prenatal_syphilis_test'",
+    "WHERE ten.bundle = 'prenatal_hepatitis_b_test'",
+    "WHERE ten.bundle = 'prenatal_malaria_test'",
+    "WHERE ten.bundle = 'prenatal_blood_gprs_test'",
+    "WHERE ten.bundle = 'prenatal_urine_dipstick_test'",
+    "WHERE ten.bundle = 'prenatal_hemoglobin_test'",
+    "WHERE ten.bundle = 'prenatal_random_blood_sugar_test'",
+  ];
+
+  for($i = 0; $i < sizeof($constraints); $i++) {
+    $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+      LEFT JOIN node n on n.nid=e.entity_id
+      LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+      LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+      LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+      LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+      LEFT JOIN field_data_field_test_execution_note ten ON ten.entity_id=n.nid
+      {$constraints[$i]}")->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach ($results as $result) {
+     if (array_key_exists($result, $ids)) {
+        ++$ids[$result];
+        ++$counts[$i];
+      }
+    }
+  }
+  
+  $total = 0;
+  foreach ($ids as $id) {
+    ($id == sizeof($constraints)) ? ++$total : '';
+  }
+
+  $counts[sizeof($constraints)] = $total;
+
+  return $counts;
+}
+
+function malaria_prevention($ids) {
+  $count = 0;
+
+    $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+      LEFT JOIN node n on n.nid=e.entity_id
+      LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+      LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+      LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+      LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+      LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+      LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+      LEFT JOIN field_data_field_medication s ON s.entity_id=n.nid
+      WHERE e.bundle = 'resource'")->fetchAll(PDO::FETCH_COLUMN);
+
+  foreach ($results as $result) {
+    array_key_exists($result, $ids) ? $count++ : '';
+  }
+
+  return $count;
+}
+
+function examination($ids) {
+  $counts = [
+      "vitals" => 0,
+      "hr" => 0,
+      "resp" => 0,
+      "temp" => 0,
+      "bp" => 0,
+      "nutrition" => 0,
+      "weight" => 0,
+      "muac" => 0,
+      "core" => 0,
+      "obstetrical" => 0,
+      "brest" => 0,
+      "total" => 0,
+  ];
+
+  $constraints = [
+    "vitals" => "WHERE sys.field_sys_value is not null AND hr.field_heart_rate_value is not null",
+    "hr" => "WHERE hr.field_heart_rate_value < 60 OR hr.field_heart_rate_value > 100",
+    "resp" => "WHERE rr.field_respiratory_rate_value < 14 OR rr.field_respiratory_rate_value > 28",
+    "temp" => "WHERE bt.field_body_temperature_value < 35 OR bt.field_body_temperature_value > 37.5",
+    "bp" => "WHERE sys.field_sys_value < 100 OR  sys.field_sys_value > 140 OR 
+      dia.field_dia_value < 60 OR dia.field_dia_value > 90",
+    "nutrition" => "WHERE w.field_weight_value is not null",
+    "muac" => "WHERE m.field_muac_value < 11.5",
+    "core" => "WHERE a.field_abdomen_value is not null",
+    "obstetrical" => "WHERE fm.field_fetal_movement_value is not null",
+    "brest" => "WHERE b.field_breast_value is not null",
+  ];
+
+
+  foreach ($constraints as $key => $constraint) {
+    $results = db_query("SELECT DISTINCT e.field_prenatal_encounter_target_id FROM field_data_field_prenatal_encounter e
+    LEFT JOIN node n on n.nid=e.entity_id
+    LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+    LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+    LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+    LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+    LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+    LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+    LEFT JOIN field_data_field_dia dia ON dia.entity_id=n.nid
+    LEFT JOIN field_data_field_sys sys ON sys.entity_id=n.nid
+    LEFT JOIN field_data_field_heart_rate hr ON hr.entity_id=n.nid
+    LEFT JOIN field_data_field_respiratory_rate rr ON rr.entity_id=n.nid
+    LEFT JOIN field_data_field_body_temperature bt ON bt.entity_id=n.nid
+    LEFT JOIN field_data_field_height h ON h.entity_id=n.nid
+    LEFT JOIN field_data_field_weight w ON w.entity_id=n.nid
+    LEFT JOIN field_data_field_muac m ON m.entity_id=n.nid
+    LEFT JOIN field_data_field_abdomen a ON a.entity_id=n.nid
+    LEFT JOIN field_data_field_fetal_movement fm ON fm.entity_id=n.nid
+    LEFT JOIN field_data_field_breast b ON b.entity_id=n.nid
+    {$constraint}")->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach ($results as $result) {
+      array_key_exists($result, $ids) ? $counts[$key]++ : '';
+      ($key == 'vitals' || $key == "nutrition" || $key == "core" || $key == "obstetrical" || $key == "brest") ? ++$ids[$result] : '';
+    }
+  }
+
+  foreach($ids as $id) {
+    ($id == 5) ? $counts['total']++ : '';
+  }  
+  var_dump($ids);
+
+  return $counts;
 }
 
 
 
 
 
+/*
 
-///HC first antenatal encounter
 
-//pregnancy Dating
-SELECT * FROM field_data_field_prenatal_encounter e
-LEFT JOIN node n on n.nid=e.entity_id
-LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
-LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
-LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
-LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
-LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
-LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_last_menstrual_period lmp ON lmp.entity_id=n.nid
-LEFT JOIN field_data_field_confident c ON c.entity_id=n.nid
-LEFT JOIN field_data_field_not_confident_reason ncr ON ncr.entity_id=n.nid
-
-//Obstetric History page 1
-SELECT * FROM field_data_field_prenatal_encounter e
-LEFT JOIN node n on n.nid=e.entity_id
-LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
-LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
-LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
-LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
-LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
-LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_currently_pregnant cp ON cp.entity_id=n.nid
-LEFT JOIN field_revision_field_preterm_pregnancy ptp ON ptp.entity_id=n.nid
-LEFT JOIN field_data_field_term_pregnancy tp ON tp.entity_id=n.nid
-LEFT JOIN field_data_field_stillbirths_at_term sat ON sat.entity_id=n.nid
-LEFT JOIN field_data_field_stillbirths_preterm spt ON spt.entity_id=n.nid
-LEFT JOIN field_data_field_abortions ab ON ab.entity_id=n.nid
-LEFT JOIN field_data_field_live_children lc ON lc.entity_id=n.nid
-
-//Obstetric History page 2
-SELECT * FROM field_data_field_prenatal_encounter e
-LEFT JOIN node n on n.nid=e.entity_id
-LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
-LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
-LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
-LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
-LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
-LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_obstetric_history oh ON oh.entity_id=n.nid
-
-//Medical History NOTE!!!! multiple data points when 2 or more boxes checked
-SELECT * FROM field_data_field_prenatal_encounter e
-LEFT JOIN node n on n.nid=e.entity_id
-LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
-LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
-LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
-LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
-LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
-LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_medical_history mh ON mh.entity_id=n.nid
-
-//PARTNER INFO 
-SELECT * FROM field_data_field_prenatal_encounter e
-LEFT JOIN node n on n.nid=e.entity_id
-LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
-LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
-LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
-LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
-LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
-LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_social_history sh ON sh.entity_id=n.nid
 
 //VITALS (heart rate, Blood Pressure, resp rate, body temp)
 SELECT * FROM field_data_field_prenatal_encounter e
@@ -329,7 +634,17 @@ LEFT JOIN field_data_field_breast_self_exam bse ON bse.entity_id=n.nid
 LEFT JOIN field_data_field_breast b ON b.entity_id=n.nid
 
 
-//family planning
+
+// POST PARTUM
+
+//
+
+
+
+
+
+//IMPLEMENTED
+//mental health signs
 SELECT * FROM field_data_field_prenatal_encounter e
 LEFT JOIN node n on n.nid=e.entity_id
 LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
@@ -338,7 +653,7 @@ LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_partici
 LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
 LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
 LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_family_planning_signs fp ON fp.entity_id=n.nid
+LEFT JOIN field_data_field_mental_health_signs mhs ON mhs.entity_id=n.nid
 
 //medicine (possible results include deworming-pill, folic-acid, iron-and-folic-acid-supplement, mebendezole, none, vitamin-a)
 SELECT * FROM field_data_field_prenatal_encounter e
@@ -350,6 +665,80 @@ LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.enti
 LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
 LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
 LEFT JOIN field_data_field_medication s ON s.entity_id=n.nid
+
+//pregnancy Dating
+SELECT DISTINCT FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_last_menstrual_period lmp ON lmp.entity_id=n.nid
+LEFT JOIN field_data_field_confident c ON c.entity_id=n.nid
+LEFT JOIN field_data_field_not_confident_reason ncr ON ncr.entity_id=n.nid
+
+//Obstetric History page 1
+SELECT * FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_currently_pregnant cp ON cp.entity_id=n.nid
+LEFT JOIN field_revision_field_preterm_pregnancy ptp ON ptp.entity_id=n.nid
+LEFT JOIN field_data_field_term_pregnancy tp ON tp.entity_id=n.nid
+LEFT JOIN field_data_field_stillbirths_at_term sat ON sat.entity_id=n.nid
+LEFT JOIN field_data_field_stillbirths_preterm spt ON spt.entity_id=n.nid
+LEFT JOIN field_data_field_abortions ab ON ab.entity_id=n.nid
+LEFT JOIN field_data_field_live_children lc ON lc.entity_id=n.nid
+
+//Obstetric History page 2
+SELECT * FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_obstetric_history oh ON oh.entity_id=n.nid
+
+//Medical History NOTE!!!! multiple data points when 2 or more boxes checked
+SELECT * FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_medical_history mh ON mh.entity_id=n.nid
+
+//PARTNER INFO 
+SELECT * FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_social_history sh ON sh.entity_id=n.nid
+
+//family planning
+SELECT * FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_family_planning_signs fp ON fp.entity_id=n.nid
 
 //danger signs
 SELECT DISTINCT * FROM field_data_field_prenatal_encounter e
@@ -372,17 +761,6 @@ LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.enti
 LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
 LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
 LEFT JOIN field_data_field_prenatal_symptoms ps ON ps.entity_id=n.nid
-
-//mental health signs
-SELECT * FROM field_data_field_prenatal_encounter e
-LEFT JOIN node n on n.nid=e.entity_id
-LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
-LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
-LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
-LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
-LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
-LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
-LEFT JOIN field_data_field_mental_health_signs mhs ON mhs.entity_id=n.nid
 
 //LABROTORY
 //partner hiv testing? ONLY GOOD IF ACTUALLY TOOK TEST. 
@@ -434,11 +812,15 @@ LEFT JOIN field_data_field_district district ON pr.field_person_target_id=distri
 LEFT JOIN field_data_field_execution_date ed ON ed.entity_id=n.nid
 LEFT JOIN field_data_field_administered_doses ad ON ad.entity_id=n.nid
 
+///HC first antenatal encounter
+SELECT * FROM field_data_field_prenatal_encounter e
+LEFT JOIN node n on n.nid=e.entity_id
+LEFT JOIN field_data_field_prenatal_encounter_type et ON et.entity_id=e.field_prenatal_encounter_target_id
+LEFT JOIN field_data_field_individual_participant ip ON e.field_prenatal_encounter_target_id=ip.entity_id
+LEFT JOIN field_data_field_person pr ON pr.entity_id=ip.field_individual_participant_target_id
+LEFT JOIN field_data_field_health_center hc ON pr.field_person_target_id=hc.entity_id
+LEFT JOIN field_data_field_birth_date bd ON bd.entity_id=pr.field_person_target_id
+LEFT JOIN field_data_field_district district ON pr.field_person_target_id=district.entity_id
+LEFT JOIN field_data_field_mental_health_signs mhs ON mhs.entity_id=n.nid
 
-
-
-
-// POST PARTUM
-
-//
-
+*/
