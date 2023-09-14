@@ -1,7 +1,7 @@
 module User.Encoder exposing (encodeUser)
 
-import EverySet exposing (EverySet)
-import Json.Encode exposing (Value, int, list, object, string)
+import EverySet
+import Json.Encode exposing (Value, list, object, string)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import User.Model exposing (Role(..), User)
 

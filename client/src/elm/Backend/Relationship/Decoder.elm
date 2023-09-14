@@ -1,4 +1,4 @@
-module Backend.Relationship.Decoder exposing (decodeRelatedBy, decodeRelationship)
+module Backend.Relationship.Decoder exposing (decodeRelationship)
 
 import Backend.Relationship.Model exposing (..)
 import Json.Decode exposing (..)

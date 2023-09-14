@@ -1,6 +1,6 @@
 module Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 
-import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
+import Activity.Model exposing (ChildActivity, MotherActivity)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)

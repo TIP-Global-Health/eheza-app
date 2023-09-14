@@ -1,10 +1,8 @@
 module Pages.Prenatal.View exposing (..)
 
-import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,10 +14,7 @@ import Pages.Utils
         ( customPopup
         , taskCompleted
         , viewBoolInput
-        , viewCheckBoxSelectInputWithRecommendation
-        , viewCustomLabel
         , viewEncounterActionButton
-        , viewInstructionsLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, translate)

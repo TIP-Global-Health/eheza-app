@@ -6,7 +6,6 @@ import Backend.IndividualEncounterParticipant.Decoder exposing (pregnancyOutcome
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Page exposing (Page(..))
 import Pages.Prenatal.Outcome.Model exposing (..)
 
 

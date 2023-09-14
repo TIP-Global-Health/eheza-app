@@ -33,11 +33,6 @@ type NextStepsTask
     | NextStepsWait
 
 
-type PatientProvisionsTask
-    = Medication
-    | Resources
-
-
 type SymptomReviewStep
     = SymptomReviewStepSymptoms
     | SymptomReviewStepQuestions

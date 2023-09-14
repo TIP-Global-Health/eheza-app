@@ -8,38 +8,29 @@ import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
-        ( bloodGpRsResultFormWithDefault
-        , hemoglobinResultFormWithDefault
-        , hepatitisBResultFormWithDefault
-        , hivPCRResultFormWithDefault
-        , randomBloodSugarResultFormWithDefault
-        , syphilisResultFormWithDefault
+        ( syphilisResultFormWithDefault
         , toBloodGpRsResultsValueWithDefault
         , toHIVPCRResultsValueWithDefault
         , toHemoglobinResultsValueWithDefault
         , toHepatitisBResultsValueWithDefault
         , toRandomBloodSugarResultsValueWithDefault
-        , toSendToHCValueWithDefault
         , toSyphilisResultValueWithDefault
         , toUrineDipstickResultsValueWithDefault
         , toVitalsValueWithDefault
-        , urineDipstickResultFormWithDefault
         )
 import Pages.GlobalCaseManagement.Utils exposing (prenatalLabsResultsTestData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils exposing (nonAdministrationReasonToSign, setMultiSelectInputValue)
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, translate)
+import RemoteData
+import Translate exposing (Language)
 
 
 updateLabsHistory :
@@ -503,9 +494,6 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
 update : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update language currentDate id db msg model =
     let
-        noChange =
-            ( model, Cmd.none, [] )
-
         medicationDistributionForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -570,7 +558,7 @@ update language currentDate id db msg model =
     in
     case msg of
         NoOp ->
-            noChange
+            ( model, Cmd.none, [] )
 
         SetActivePage page ->
             ( model
@@ -600,9 +588,6 @@ update language currentDate id db msg model =
 
         SaveVitals personId saved ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
                 measurement =
                     getMeasurementValueFunc saved
 
@@ -611,6 +596,10 @@ update language currentDate id db msg model =
                         |> toVitalsValueWithDefault measurement
                         |> Maybe.map
                             (\value ->
+                                let
+                                    measurementId =
+                                        Maybe.map Tuple.first saved
+                                in
                                 [ Backend.PrenatalEncounter.Model.SaveVitals personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb

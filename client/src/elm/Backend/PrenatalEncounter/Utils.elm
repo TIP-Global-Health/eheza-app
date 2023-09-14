@@ -35,7 +35,7 @@ recordPreganancyInitiatorFromUrlFragment s =
 
         _ ->
             if String.startsWith "postpartum-encounter-" s then
-                String.dropLeft (String.length "postpartum-encounter-") s
+                String.dropLeft 21 s
                     |> toEntityUuid
                     |> InitiatorPostpartumEncounter
                     |> Just
@@ -63,25 +63,25 @@ progressReportInitiatorToUrlFragment initiator =
 progressReportInitiatorFromUrlFragment : String -> Maybe PrenatalProgressReportInitiator
 progressReportInitiatorFromUrlFragment s =
     if String.startsWith "encounter-page-" s then
-        String.dropLeft (String.length "encounter-page-") s
+        String.dropLeft 15 s
             |> toEntityUuid
             |> InitiatorEncounterPage
             |> Just
 
     else if String.startsWith "recurrent-encounter-page-" s then
-        String.dropLeft (String.length "recurrent-encounter-page-") s
+        String.dropLeft 25 s
             |> toEntityUuid
             |> InitiatorRecurrentEncounterPage
             |> Just
 
     else if String.startsWith "encounter-" s then
-        String.dropLeft (String.length "encounter-") s
+        String.dropLeft 10 s
             |> toEntityUuid
             |> InitiatorNewEncounter
             |> Just
 
     else if String.startsWith "patient-record-" s then
-        String.dropLeft (String.length "patient-record-") s
+        String.dropLeft 15 s
             |> toEntityUuid
             |> InitiatorPatientRecord
             |> Just

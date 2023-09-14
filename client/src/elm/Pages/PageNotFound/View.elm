@@ -1,8 +1,8 @@
 module Pages.PageNotFound.View exposing (view, viewPage)
 
 import App.Model exposing (Msg(..))
-import Html exposing (Html, a, button, div, h2, h4, text)
-import Html.Attributes exposing (class, href)
+import Html exposing (Html, button, div, h2, h4, text)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..))
 import Translate as Trans exposing (Language, translate)

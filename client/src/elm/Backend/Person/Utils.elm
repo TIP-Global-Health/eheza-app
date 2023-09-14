@@ -7,7 +7,6 @@ import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounte
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (..)
-import Date
 import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
 import RemoteData
@@ -184,13 +183,13 @@ initiatorFromUrlFragment s =
 
         _ ->
             if String.startsWith "session-" s then
-                String.dropLeft (String.length "session-") s
+                String.dropLeft 8 s
                     |> toEntityUuid
                     |> GroupEncounterOrigin
                     |> Just
 
             else if String.startsWith "prenatal-next-steps-" s then
-                String.dropLeft (String.length "prenatal-next-steps-") s
+                String.dropLeft 20 s
                     |> toEntityUuid
                     |> PrenatalNextStepsActivityOrigin
                     |> Just

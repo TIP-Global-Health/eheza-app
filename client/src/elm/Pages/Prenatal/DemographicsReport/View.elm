@@ -1,14 +1,13 @@
-module Pages.Prenatal.DemographicsReport.View exposing (view, viewHeader)
+module Pages.Prenatal.DemographicsReport.View exposing (view)
 
 import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, getHealthCenterName)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -17,7 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewItemHeading)
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.GeoLocation exposing (..)
@@ -204,10 +203,10 @@ viewFamilyInformationPane language currentDate site db personId person =
     div [ class "family-information" ]
         [ viewItemHeading language Translate.FamilyInformation "blue"
         , div [ class "pane-content" ] <|
-            ubudeheItem
-                :: [ viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
-                   , childrenView
-                   ]
+            [ ubudeheItem
+            , viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
+            , childrenView
+            ]
         ]
 
 

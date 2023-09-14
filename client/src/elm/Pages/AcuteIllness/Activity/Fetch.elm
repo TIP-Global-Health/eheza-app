@@ -1,6 +1,6 @@
 module Pages.AcuteIllness.Activity.Fetch exposing (fetch)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)

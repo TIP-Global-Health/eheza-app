@@ -2,12 +2,12 @@ module Backend.NCDEncounter.Decoder exposing (decodeNCDEncounter)
 
 import Backend.NCDEncounter.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (..)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
+import Json.Decode exposing (Decoder, andThen, fail, list, map, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
-import Utils.Json exposing (decodeEverySet, decodeWithFallback)
+import Utils.Json exposing (decodeWithFallback)
 
 
 decodeNCDEncounter : Decoder NCDEncounter

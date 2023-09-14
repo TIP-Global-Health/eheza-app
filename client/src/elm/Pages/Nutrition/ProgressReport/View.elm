@@ -2,35 +2,20 @@ module Pages.Nutrition.ProgressReport.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), NutritionHeight, NutritionWeight, WeightInKg(..))
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.View
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
 import Pages.Nutrition.Activity.Utils exposing (mandatoryActivitiesCompleted)
-import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Nutrition.Encounter.View exposing (allowEndingEcounter, partitionActivities)
 import Pages.Nutrition.ProgressReport.Model exposing (..)
-import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (Site(..))
-import Translate exposing (Language, TranslationId, translate)
-import Utils.NominalDate exposing (renderAgeMonthsDaysHtml, renderDate)
+import SyncManager.Model exposing (Site)
+import Translate exposing (Language)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
-import ZScore.Utils exposing (diffDays)
-import ZScore.View
+import ZScore.Model
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> Site -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg

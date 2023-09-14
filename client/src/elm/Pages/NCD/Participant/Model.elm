@@ -1,7 +1,5 @@
 module Pages.NCD.Participant.Model exposing (..)
 
-import Backend.Entities exposing (..)
-import Date exposing (Date)
 import Pages.Page exposing (Page)
 
 

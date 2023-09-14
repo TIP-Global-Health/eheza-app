@@ -1,20 +1,16 @@
 module Pages.AcuteIllness.Encounter.View exposing (allowEndingEcounter, partitionActivities, view, viewPersonDetailsWithAlert, warningPopup)
 
-import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
-import Backend.Measurement.Model exposing (AcuteIllnessMeasurements)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
 import Pages.AcuteIllness.Activity.Utils
     exposing
         ( activityCompleted
@@ -28,10 +24,8 @@ import Pages.AcuteIllness.Encounter.Model exposing (..)
 import Pages.AcuteIllness.Encounter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays)
+import Translate exposing (Language, translate)
+import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -95,17 +89,15 @@ warningPopup language currentDate isChw state setStateMsg assembled =
 viewWarningPopupFirstEncounter : Language -> Bool -> (Maybe AcuteIllnessDiagnosis -> msg) -> AcuteIllnessDiagnosis -> Html msg
 viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis =
     let
-        infoHeading =
-            [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
-
-        warningHeading =
-            [ img [ src "assets/images/exclamation-red.png" ] []
-            , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
-            ]
-
         ( heading, content ) =
             case diagnosis of
                 DiagnosisCovid19Suspect ->
+                    let
+                        warningHeading =
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+                            ]
+                    in
                     ( warningHeading
                     , if isChw then
                         [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
@@ -117,6 +109,10 @@ viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis =
                     )
 
                 _ ->
+                    let
+                        infoHeading =
+                            [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+                    in
                     ( infoHeading, [] )
     in
     div [ class "ui active modal diagnosis-popup" ]
@@ -304,9 +300,6 @@ alertsDialog language isOpen setAlertsDialogStateMsg =
 viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate id isChw assembled model =
     let
-        measurements =
-            assembled.measurements
-
         ( completedActivities, pendingActivities ) =
             partitionActivities currentDate isChw assembled
 

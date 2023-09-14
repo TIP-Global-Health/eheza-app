@@ -3,22 +3,18 @@ module Pages.Nutrition.Activity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), ImageUrl(..), WeightInGrm(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (ANCVisitsViewMode(..))
+import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (..)
 import Pages.Nutrition.Activity.Model exposing (..)
-import Pages.Nutrition.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue)
+import Pages.Utils exposing (setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
-import Result exposing (Result)
 
 
 update : NominalDate -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

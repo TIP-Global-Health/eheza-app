@@ -1,7 +1,7 @@
 module User.Decoder exposing (decodeUser)
 
 import EverySet
-import Json.Decode exposing (Decoder, andThen, fail, list, map, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, fail, list, map, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import User.Model exposing (..)

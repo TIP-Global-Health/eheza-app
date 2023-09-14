@@ -4,17 +4,12 @@ import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (..)
-import Backend.Measurement.Model exposing (HeightInCm(..))
-import Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter)
 import Backend.NutritionEncounter.Model exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
-import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
-import Json.Encode exposing (object)
-import Json.Encode.Extra
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
+import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 
 update :

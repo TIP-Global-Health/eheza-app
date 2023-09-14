@@ -7,7 +7,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Activity.Utils exposing (generateNutritionAssessment)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
-import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
+import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
@@ -26,18 +26,14 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
-        , getWellChildEncountersForParticipant
         , nutritionAssessmentForBackend
         , resolveNCDANeverFilled
         , resolveNCDANotFilledAfterAgeOfSixMonths
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
-import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Date
-import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -69,15 +65,14 @@ import Pages.Utils
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
-        , viewSaveAction
         )
-import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
+import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (renderDate, sortTuplesByDate)
+import Utils.NominalDate exposing (renderDate)
 import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
@@ -269,9 +264,6 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- What is the most recent measurement we've saved, either locally or
         -- to the backend (we don't care at the moment which). If this is a new
         -- measurement we haven't saved yet, this will be Nothing.
-        savedMeasurement =
-            measurements.current
-
         -- For calculating ZScores, we need to know how old the child was at
         -- the time of the **measurement**. If we have an existing value that
         -- we're modifying, we can get that from the value. (In that case,
@@ -282,15 +274,21 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- TODO: We should probably surface this in the UI ... that is, display
         -- what day we think the measurement was made on, and allow the nurse
         -- to change that if necessary.
-        dateMeasured =
-            savedMeasurement
-                |> Maybe.map (Tuple.second >> config.dateMeasured)
-                |> Maybe.withDefault currentDate
-
         -- And, we'll need the child's age.
         maybeAgeInDays =
             Maybe.map
-                (\birthDate -> diffDays birthDate dateMeasured)
+                (\birthDate ->
+                    let
+                        savedMeasurement =
+                            measurements.current
+
+                        dateMeasured =
+                            savedMeasurement
+                                |> Maybe.map (Tuple.second >> config.dateMeasured)
+                                |> Maybe.withDefault currentDate
+                    in
+                    diffDays birthDate dateMeasured
+                )
                 child.birthDate
 
         renderedZScoreForAge =
@@ -627,18 +625,15 @@ viewNutritionSigns language currentDate zscores childId measurement offlineSessi
         activity =
             ChildActivity NutritionSigns
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        assesment =
-            generateNutritionAssessment currentDate zscores childId db offlineSession
-                |> nutritionAssessmentForBackend
-
         saveMsg =
             if EverySet.isEmpty value.signs then
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 Just <| SendOutMsgChild <| SaveNutrition existingId value
     in
     div [ class "ui full segment nutrition" ]
@@ -718,20 +713,21 @@ viewChildFbf language currentDate child clinicType measurement form =
         activity =
             ChildActivity ChildFbf
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        notice =
-            if isJust form.distributionNotice then
-                form.distributionNotice
-
-            else
-                Just DistributedFully
-
         saveMsg =
             form.distributedAmount
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+
+                            notice =
+                                if isJust form.distributionNotice then
+                                    form.distributionNotice
+
+                                else
+                                    Just DistributedFully
+                        in
                         { form | distributionNotice = notice }
                             |> fbfFormToValue
                             |> SaveChildFbf existingId
@@ -955,9 +951,6 @@ viewFollowUpForm language currentDate setFollowUpOptionMsg form =
 viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
 viewHealthEducation language currentDate measurement form_ =
     let
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saved =
             getMeasurementValueFunc measurement.current
 
@@ -998,6 +991,10 @@ viewHealthEducation language currentDate measurement form_ =
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 toHealthEducationValueWithDefault saved form_
                     |> Maybe.map (SaveHealthEducation existingId >> SendOutMsgChild)
     in
@@ -1073,8 +1070,8 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
     let
         message =
             div [] <|
-                [ text <| translate language actionTranslationId ]
-                    ++ renderDatePart language maybeDate
+                (text <| translate language actionTranslationId)
+                    :: renderDatePart language maybeDate
                     ++ [ text "." ]
     in
     div [ class "header icon-label" ] <|
@@ -1086,9 +1083,6 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
 viewSendToHC : Language -> NominalDate -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
 viewSendToHC language currentDate measurement form_ =
     let
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saved =
             getMeasurementValueFunc measurement.current
 
@@ -1131,6 +1125,10 @@ viewSendToHC language currentDate measurement form_ =
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 toSendToHCValueWithDefault saved form_
                     |> Maybe.map (SaveSendToHC existingId >> SendOutMsgChild)
     in
@@ -1325,16 +1323,6 @@ viewVitalsForm language currentDate config form =
             Maybe.map
                 (\birthDate -> Gizra.NominalDate.diffYears birthDate currentDate)
                 config.birthDate
-
-        bloodPressureSection =
-            viewBloodPressureSection
-                form.sysBloodPressure
-                form.diaBloodPressure
-                sysBloodPressureUpdateFunc
-                diaBloodPressureUpdateFunc
-                config.sysBloodPressurePreviousValue
-                config.diaBloodPressurePreviousValue
-                True
 
         viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue addSeparator =
             Maybe.map
@@ -1534,6 +1522,17 @@ viewVitalsForm language currentDate config form =
                         ++ bodyTemperatureSection
 
                 VitalsFormFull ->
+                    let
+                        bloodPressureSection =
+                            viewBloodPressureSection
+                                form.sysBloodPressure
+                                form.diaBloodPressure
+                                sysBloodPressureUpdateFunc
+                                diaBloodPressureUpdateFunc
+                                config.sysBloodPressurePreviousValue
+                                config.diaBloodPressurePreviousValue
+                                True
+                    in
                     bloodPressureSection
                         ++ heartRateSection
                         ++ respiratoryRateSection
@@ -1838,14 +1837,15 @@ viewFamilyPlanning language measurement signs =
         activity =
             MotherActivity FamilyPlanning
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 Just <| SendOutMsgMother <| SaveFamilyPlanningSigns existingId signs
     in
     div
@@ -1928,13 +1928,14 @@ viewLactation language measurement form =
         activity =
             MotherActivity Lactation
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saveMsg =
             form.breastfeeding
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+                        in
                         lactationFormToSigns form
                             |> SaveLactation existingId
                             |> SendOutMsgMother
@@ -1973,20 +1974,21 @@ viewMotherFbf language currentDate mother clinicType measurement form =
         activity =
             MotherActivity MotherFbf
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        notice =
-            if isJust form.distributionNotice then
-                form.distributionNotice
-
-            else
-                Just DistributedFully
-
         saveMsg =
             form.distributedAmount
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+
+                            notice =
+                                if isJust form.distributionNotice then
+                                    form.distributionNotice
+
+                                else
+                                    Just DistributedFully
+                        in
                         { form | distributionNotice = notice }
                             |> fbfFormToValue
                             |> SaveMotherFbf existingId
@@ -2564,9 +2566,8 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             lastScheduledImmunizationVisitDate =
                                 resoloveLastScheduledImmunizationVisitDate personId db
                         in
-                        ( [ viewCustomLabel language (Translate.NCDANumberImmunizationAppointmentLabel lastScheduledImmunizationVisitDate) "." "label"
-                          ]
-                            ++ viewNCDAInput ChildBehindOnVaccination form.childBehindOnVaccination updateFunc
+                        ( viewCustomLabel language (Translate.NCDANumberImmunizationAppointmentLabel lastScheduledImmunizationVisitDate) "." "label"
+                            :: viewNCDAInput ChildBehindOnVaccination form.childBehindOnVaccination updateFunc
                             ++ counseling
                         , [ form.childBehindOnVaccination ]
                         )
@@ -3104,10 +3105,8 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                 inputsAndTasks =
                     List.map inputsAndTasksForSign signs
             in
-            ( List.map Tuple.first inputsAndTasks
-                |> List.concat
-            , List.map Tuple.second inputsAndTasks
-                |> List.concat
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
             )
 
         NCDAStepNutritionBehavior ->
@@ -3125,10 +3124,8 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                 inputsAndTasks =
                     List.map inputsAndTasksForSign signs
             in
-            ( List.map Tuple.first inputsAndTasks
-                |> List.concat
-            , List.map Tuple.second inputsAndTasks
-                |> List.concat
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
             )
 
         NCDAStepTargetedInterventions ->
@@ -3166,10 +3163,8 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                 inputsAndTasks =
                     List.map inputsAndTasksForSign signs
             in
-            ( List.map Tuple.first inputsAndTasks
-                |> List.concat
-            , List.map Tuple.second inputsAndTasks
-                |> List.concat
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
             )
 
         NCDAStepInfrastructureEnvironment ->
@@ -3183,10 +3178,8 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         , InsecticideTreatedBednets
                         ]
             in
-            ( List.map Tuple.first inputsAndTasks
-                |> List.concat
-            , List.map Tuple.second inputsAndTasks
-                |> List.concat
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
             )
 
 
@@ -3205,19 +3198,6 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
             let
                 ( eddDate, encountersDatesFromANCData ) =
                     resolveChildANCPregnancyData personId db
-
-                encountersDatesFromForm =
-                    -- Since ANC step of NCDA form is filled only once, we know
-                    -- that current activity is the first one filled, and there's
-                    -- no need to examine existing NCDA activities.
-                    Maybe.withDefault EverySet.empty form.ancVisitsDates
-
-                pregnancyStartDate =
-                    Maybe.map eddToLmpDate eddDate
-                        |> Maybe.withDefault
-                            -- If we don't have LMP date, we'll assume that
-                            -- pregnancy was complete (lasted 9 months).
-                            (eddToLmpDate birthDate)
 
                 historySection =
                     let
@@ -3245,9 +3225,22 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
 
                 ( inputs, tasks ) =
                     let
+                        encountersDatesFromForm =
+                            -- Since ANC step of NCDA form is filled only once, we know
+                            -- that current activity is the first one filled, and there's
+                            -- no need to examine existing NCDA activities.
+                            Maybe.withDefault EverySet.empty form.ancVisitsDates
+
                         ( derivedInputs, derivedTasks ) =
                             if form.updateANCVisits == Just True then
                                 let
+                                    pregnancyStartDate =
+                                        Maybe.map eddToLmpDate eddDate
+                                            |> Maybe.withDefault
+                                                -- If we don't have LMP date, we'll assume that
+                                                -- pregnancy was complete (lasted 9 months).
+                                                (eddToLmpDate birthDate)
+
                                     encountersMonthsFromANCData =
                                         EverySet.toList encountersDatesFromANCData
                                             |> List.map
@@ -3350,7 +3343,7 @@ ancVisitsInpustAndTasks language currentDate personId person config form db =
                       ]
                         ++ derivedInputs
                         ++ [ counseling ]
-                    , [ form.updateANCVisits ] ++ derivedTasks
+                    , form.updateANCVisits :: derivedTasks
                     )
             in
             ( [ viewLabel language Translate.AntenatalVisistsHistory

@@ -1,6 +1,5 @@
 module Pages.ProgressReport.Model exposing (..)
 
-import Backend.Entities exposing (..)
 import Components.SendViaWhatsAppDialog.Model
 import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)

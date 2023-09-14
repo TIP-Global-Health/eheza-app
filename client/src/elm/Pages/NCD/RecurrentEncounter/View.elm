@@ -1,40 +1,24 @@
 module Pages.NCD.RecurrentEncounter.View exposing (view)
 
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
-import Backend.Measurement.Model exposing (NCDMeasurements)
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDActivity.Utils exposing (getRecurrentActivityIcon)
-import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
-import Date exposing (Interval(..))
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
 import Pages.NCD.RecurrentEncounter.Model exposing (..)
 import Pages.NCD.RecurrentEncounter.Utils exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEncounterActionButton, viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading)
+import Pages.Utils exposing (viewEncounterActionButton, viewPersonDetailsExtended, viewReportLink)
+import Translate exposing (Language, translate)
+import Utils.Html exposing (activityCard, tabItem)
 import Utils.WebData exposing (viewWebData)
-
-
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 120
-    , height = 120
-    }
 
 
 view : Language -> NominalDate -> NCDEncounterId -> ModelIndexedDb -> Model -> Html Msg

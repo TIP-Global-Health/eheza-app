@@ -1,6 +1,6 @@
 module Pages.PatientRecord.Fetch exposing (fetch)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -10,9 +10,7 @@ import Backend.Person.Utils exposing (isPersonAnAdult)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra
-import Pages.AcuteIllness.Participant.Fetch
-import RemoteData exposing (RemoteData)
+import RemoteData
 
 
 fetch : NominalDate -> PersonId -> ModelIndexedDb -> List MsgIndexedDb
@@ -44,9 +42,8 @@ fetchForAdult personId db =
             resolveIndividualParticipantsForPerson personId AntenatalEncounter db
 
         prenatalEncountersIds =
-            List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
+            List.concatMap (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
                 prenatalParticipantsIds
-                |> List.concat
 
         fetchPrenatalEncountersMsg =
             FetchPrenatalEncountersForParticipants prenatalParticipantsIds

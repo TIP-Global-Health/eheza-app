@@ -3,24 +3,19 @@ module Pages.Device.View exposing (view)
 import App.Model
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
-import Backend.Entities exposing (..)
-import Backend.HealthCenter.Model exposing (HealthCenter)
-import Backend.Model exposing (ModelIndexedDb)
 import Device.Model exposing (..)
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.TimePosix exposing (viewTimePosix)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra
 import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import SyncManager.Model exposing (DownloadPhotosMode(..), DownloadPhotosStatus(..), SyncInfoAuthorityZipper, SyncInfoGeneral, SyncInfoStatus, SyncStatus(..))
+import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model exposing (DownloadPhotosMode(..), DownloadPhotosStatus(..), SyncInfoStatus, SyncStatus(..))
 import SyncManager.Utils exposing (syncInfoStatusToString)
 import Time
 import Translate exposing (Language, translate)

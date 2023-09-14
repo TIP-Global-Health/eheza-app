@@ -1,7 +1,6 @@
 module Pages.WellChild.Encounter.Update exposing (update)
 
 import App.Model
-import App.Ports
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))

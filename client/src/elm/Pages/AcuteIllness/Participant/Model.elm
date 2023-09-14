@@ -1,8 +1,6 @@
 module Pages.AcuteIllness.Participant.Model exposing (AcuteIllnessParticipantViewMode(..), Model, Msg(..), emptyModel)
 
-import Backend.Entities exposing (..)
 import Backend.Model
-import Date exposing (Date)
 import Pages.Page exposing (Page)
 
 

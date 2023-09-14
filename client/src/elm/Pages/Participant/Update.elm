@@ -1,12 +1,11 @@
 module Pages.Participant.Update exposing (updateChild, updateMother)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import Activity.Model exposing (ChildActivity(..), MotherActivity)
 import App.Ports exposing (bindDropZone)
 import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
-import Pages.Page exposing (Page)
-import Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..), emptyModel)
+import Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..))
 
 
 {-| This is a bit of a variation on the usual `update` function.

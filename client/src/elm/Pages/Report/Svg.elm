@@ -1,9 +1,7 @@
 module Pages.Report.Svg exposing (..)
 
-import Html exposing (Html)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
 
 
 svgMarker identification fill =

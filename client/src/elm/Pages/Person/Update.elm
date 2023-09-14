@@ -1,12 +1,11 @@
 module Pages.Person.Update exposing (update)
 
 import App.Model
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, birthDate, validatePerson)
-import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), PatchPersonInitator(..), Person)
+import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), PatchPersonInitator(..), Person)
 import Backend.Village.Utils exposing (getVillageById)
 import Date
 import Form
@@ -14,7 +13,7 @@ import Form.Field
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.Person.Model exposing (..)
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
 
@@ -36,10 +35,6 @@ update currentDate site selectedHealthCenter maybeVillageId isChw msg db model =
                         |> Maybe.andThen (\personId -> Dict.get personId db.people)
                         |> Maybe.andThen RemoteData.toMaybe
 
-                maybeVillage =
-                    maybeVillageId
-                        |> Maybe.andThen (getVillageById db)
-
                 newForm =
                     Form.update (validatePerson site related operation (Just currentDate)) subMsg model.form
 
@@ -47,6 +42,10 @@ update currentDate site selectedHealthCenter maybeVillageId isChw msg db model =
                     case subMsg of
                         Form.Submit ->
                             let
+                                maybeVillage =
+                                    maybeVillageId
+                                        |> Maybe.andThen (getVillageById db)
+
                                 formWithDefaults =
                                     applyDefaultValuesForPerson currentDate site maybeVillage isChw related operation model.form
                             in

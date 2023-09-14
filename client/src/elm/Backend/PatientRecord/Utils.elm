@@ -1,8 +1,6 @@
 module Backend.PatientRecord.Utils exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
-import Maybe.Extra
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
@@ -24,7 +22,7 @@ progressReportInitiatorFromUrlFragment s =
 
         _ ->
             if String.startsWith "patient-record-" s then
-                String.dropLeft (String.length "patient-record-") s
+                String.dropLeft 15 s
                     |> toEntityUuid
                     |> InitiatorPatientRecord
                     |> Just

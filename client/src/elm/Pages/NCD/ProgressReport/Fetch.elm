@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
 import Pages.AcuteIllness.Participant.Fetch
 import Pages.NCD.Encounter.Fetch
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : NCDEncounterId -> ModelIndexedDb -> List MsgIndexedDb

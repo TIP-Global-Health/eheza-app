@@ -4,7 +4,6 @@ import App.Model
 import AssocList as Dict
 import Backend.ChildScoreboardEncounter.Model
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (AdministrationNote(..), WeightInGrm(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -12,8 +11,8 @@ import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (ANCVisitsViewMode(..), VaccinationFormViewMode(..))
+import Maybe.Extra exposing (unwrap)
+import Measurement.Model exposing (VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
         ( ncdaFormWithDefault
@@ -26,7 +25,7 @@ import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, updateVaccinationFormByVaccineType)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 update : NominalDate -> ChildScoreboardEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -231,7 +230,7 @@ update currentDate id db msg model =
                         |> resolveVaccinationForm vaccineType
 
                 updatedForm =
-                    if value == True then
+                    if value then
                         { form
                             | viewMode = ViewModeVaccinationUpdate dose
                             , updatePreviousVaccines = Nothing

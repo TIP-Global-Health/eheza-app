@@ -3,18 +3,15 @@ module Pages.ChildScoreboard.Activity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import DateSelector.Model exposing (DateSelectorConfig)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
-        ( ANCVisitsViewMode(..)
-        , ImmunisationTask(..)
+        ( ImmunisationTask
         , NCDAData
         , NCDAForm
         , NCDAStep
         , VaccinationForm
         , VaccinationFormViewMode
-        , VaccinationProgressDict
         , emptyNCDAData
         , emptyVaccinationForm
         )

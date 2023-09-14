@@ -1,27 +1,24 @@
 module Pages.AcuteIllness.Participant.View exposing (view)
 
-import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, AcuteIllnessEncounterType(..), emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
-import Date
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust)
 import Pages.AcuteIllness.Encounter.Utils exposing (getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllness.Participant.Model exposing (..)
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc)
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.NominalDate exposing (sortEncounterTuples)
 import Utils.WebData exposing (viewWebData)
@@ -95,7 +92,7 @@ viewContent language currentDate selectedHealthCenter personId isChw db model se
             sessions
                 |> Dict.toList
                 |> List.filter
-                    (\( sessionId, session ) ->
+                    (\( _, session ) ->
                         (session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter)
                             && isAcuteIllnessActive currentDate session
                     )
@@ -266,9 +263,6 @@ viewManageParticipantsContent language currentDate selectedHealthCenter personId
                 createIllnessNavigateToEncounterAction
                 (Translate.IndividualEncounterFirstVisit Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter)
                 createIllnessNavigateToEncounterButtonDisabled
-
-        recordIllnessOutcomeButton =
-            viewButton language (SetViewMode RecordOutcome) Translate.RecordAcuteIllnessOutcome False
     in
     if List.isEmpty activeIllnesses then
         div []
@@ -277,6 +271,10 @@ viewManageParticipantsContent language currentDate selectedHealthCenter personId
             ]
 
     else
+        let
+            recordIllnessOutcomeButton =
+                viewButton language (SetViewMode RecordOutcome) Translate.RecordAcuteIllnessOutcome False
+        in
         div []
             [ viewLabel language "select-illness" Translate.SelectExistingAcuteIllness
             , div [ class "active-illnesses" ] activeIllnesses
@@ -415,25 +413,27 @@ viewActiveIllnessForManagement language currentDate selectedHealthCenter isChw s
                         |> MsgBackend
                     )
 
-        nurseEncounterPerformed =
-            List.filter
-                (Tuple.second
-                    >> .encounterType
-                    >> (==) AcuteIllnessEncounterNurse
-                )
-                encounters
-                |> List.isEmpty
-                |> not
-
         encounterType =
             if isChw then
                 AcuteIllnessEncounterCHW
 
-            else if nurseEncounterPerformed then
-                AcuteIllnessEncounterNurseSubsequent
-
             else
-                AcuteIllnessEncounterNurse
+                let
+                    nurseEncounterPerformed =
+                        List.filter
+                            (Tuple.second
+                                >> .encounterType
+                                >> (==) AcuteIllnessEncounterNurse
+                            )
+                            encounters
+                            |> List.isEmpty
+                            |> not
+                in
+                if nurseEncounterPerformed then
+                    AcuteIllnessEncounterNurseSubsequent
+
+                else
+                    AcuteIllnessEncounterNurse
 
         encounterLabelTransId =
             if List.length encounters == 1 && isJust mActiveEncounterId then

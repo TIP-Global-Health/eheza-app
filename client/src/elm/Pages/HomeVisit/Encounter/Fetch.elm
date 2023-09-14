@@ -2,13 +2,11 @@ module Pages.HomeVisit.Encounter.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Fetch
 import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant)
-import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Maybe.Extra
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : HomeVisitEncounterId -> ModelIndexedDb -> List MsgIndexedDb

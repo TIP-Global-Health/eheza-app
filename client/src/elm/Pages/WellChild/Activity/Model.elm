@@ -1,6 +1,5 @@
 module Pages.WellChild.Activity.Model exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)

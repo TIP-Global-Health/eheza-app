@@ -10,7 +10,7 @@ import Backend.Entities exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (WebData)
 import Translate.Model exposing (Language)
 
 

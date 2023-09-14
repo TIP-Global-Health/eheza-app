@@ -5,17 +5,14 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDActivity.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (..)
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
-import Backend.Person.Utils exposing (ageInMonths)
-import Date exposing (Unit(..))
+import Date
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
 import Pages.NCD.Model exposing (..)
 import Pages.Utils
@@ -539,6 +536,10 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
     let
         ( hypertensionInputs, hypertensionCompleted, hypertensionActive ) =
             if medicateForHypertension phase assembled then
+                let
+                    recommendedTreatmentSignsForHypertension =
+                        generateRecommendedTreatmentSignsForHypertension assembled
+                in
                 recommendedTreatmentForHypertensionInputAndTask language
                     currentDate
                     (setRecommendedTreatmentSignMultipleMsg recommendedTreatmentSignsForHypertension NoTreatmentForHypertension)
@@ -547,9 +548,6 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
 
             else
                 emptySection
-
-        recommendedTreatmentSignsForHypertension =
-            generateRecommendedTreatmentSignsForHypertension assembled
 
         ( diabetesInputs, diabetesCompleted, diabetesActive ) =
             if medicateForDiabetes phase assembled then
@@ -671,14 +669,14 @@ recommendedTreatmentForHypertensionInputAndTask language currentDate setRecommen
                 )
 
             else
-                let
-                    renalComplicationsPresent =
-                        diagnosed DiagnosisRenalComplications assembled
-                            || diagnosedPreviously DiagnosisRenalComplications assembled.previousEncountersData
-                in
                 resolveCurrentHypertensionCondition assembled
                     |> Maybe.map
                         (\diagnosis ->
+                            let
+                                renalComplicationsPresent =
+                                    diagnosed DiagnosisRenalComplications assembled
+                                        || diagnosedPreviously DiagnosisRenalComplications assembled.previousEncountersData
+                            in
                             ( Translate.HypertensionStageAndRenalComplicationsHeader renalComplicationsPresent diagnosis
                             , if diagnosis == DiagnosisHypertensionStage1 then
                                 Translate.InstructionsChooseOneMedication
@@ -911,7 +909,7 @@ resolveReferralInputsAndTasks language currentDate phase assembled setReferralBo
                                         Nothing
                                   ]
                                     ++ accompanySection
-                                , [ config.formField ] ++ accompanyTasks
+                                , config.formField :: accompanyTasks
                                 )
 
                             else
@@ -938,7 +936,7 @@ resolveReferralInputsAndTasks language currentDate phase assembled setReferralBo
                    ]
                 ++ derivedSection
                 ++ [ div [ class "separator" ] [] ]
-            , [ config.referralField ] ++ derivedTasks
+            , config.referralField :: derivedTasks
             )
         )
         maybeConfig

@@ -1,6 +1,6 @@
 module Pages.Session.Model exposing (Model, Msg(..), emptyModel)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity)
+import Activity.Model exposing (Activity, ChildActivity, MotherActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Session.Model
@@ -9,7 +9,7 @@ import Pages.Activities.Model
 import Pages.Activity.Model
 import Pages.Attendance.Model
 import Pages.NextSteps.Model
-import Pages.Page exposing (Page, SessionPage, UserPage(..))
+import Pages.Page exposing (Page, SessionPage)
 import Pages.Participant.Model
 import Pages.Participants.Model
 import Pages.ProgressReport.Model

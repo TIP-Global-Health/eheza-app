@@ -1,8 +1,6 @@
 module Pages.WellChild.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (WellChildEncounterId)
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -14,17 +12,14 @@ import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskAnyCompleted, taskCompleted, valueConsideringIsDirtyField)
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language)
-import ZScore.Model exposing (Kilograms(..))
-import ZScore.Utils exposing (zScoreWeightForAge)
+import ZScore.Model
 
 
 generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssessment
@@ -278,11 +273,8 @@ listNotEmptyWithException exception list =
     if List.isEmpty list then
         False
 
-    else if list == [ exception ] then
-        False
-
     else
-        True
+        list /= [ exception ]
 
 
 nutritionAssessmentTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
@@ -861,13 +853,12 @@ generateRemianingECDSigns currentDate assembled measurementsData =
 generateCompletedECDSigns : List WellChildMeasurements -> List ECDSign
 generateCompletedECDSigns measurementsData =
     measurementsData
-        |> List.map
+        |> List.concatMap
             (\measurements ->
                 measurements.ecd
                     |> Maybe.map (Tuple.second >> .value >> EverySet.toList)
                     |> Maybe.withDefault []
             )
-        |> List.concat
         |> List.filter ((/=) NoECDSigns)
         -- Eliminate duplicate occurances.
         |> Pages.Utils.unique
@@ -969,16 +960,6 @@ groupedECDSigns ageMonths ageMonthsAtLastAssessment =
                 ageMonthsAtLastAssessment
                 |> Maybe.withDefault ( ecdSignsFrom5Weeks, ecdSignsFrom13Weeks )
 
-        ecdSigns6To12MonthsByAge =
-            if ageMonths > 12 then
-                []
-
-            else if ageMonths >= 9 then
-                ecdSigns6To12MonthsMajors
-
-            else
-                ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
-
         ecdSigns6To12Months =
             Maybe.map
                 (\ageMonthsLastAssessment ->
@@ -989,7 +970,14 @@ groupedECDSigns ageMonths ageMonthsAtLastAssessment =
                         ecdSigns6To12MonthsMajors
 
                     else if ageMonthsLastAssessment >= 6 then
-                        ecdSigns6To12MonthsByAge
+                        if ageMonths > 12 then
+                            []
+
+                        else if ageMonths >= 9 then
+                            ecdSigns6To12MonthsMajors
+
+                        else
+                            ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
 
                     else
                         ecdSigns6To12MonthsMinors ++ ecdSigns6To12MonthsMajors
@@ -1548,12 +1536,6 @@ generateNextDateForECDVisit currentDate assembled db =
                     ageWeeks =
                         Date.diff Weeks birthDate currentDate
 
-                    ageMonths =
-                        Date.diff Months birthDate currentDate
-
-                    ageYears =
-                        Date.diff Years birthDate currentDate
-
                     noRemainingSigns =
                         List.isEmpty <| generateRemianingECDSignsAfterCurrentEncounter currentDate assembled
                 in
@@ -1579,26 +1561,36 @@ generateNextDateForECDVisit currentDate assembled db =
                     else
                         Just <| Date.add Weeks 14 birthDate
 
-                else if ageMonths < 6 then
-                    Just <| Date.add Months 6 birthDate
-
-                else if ageMonths < 15 then
-                    Just <| Date.add Months 15 birthDate
-
-                else if ageYears < 2 then
-                    Just <| Date.add Years 2 birthDate
-
-                else if ageYears < 3 then
-                    Just <| Date.add Years 3 birthDate
-
-                else if ageYears < 4 then
-                    Just <| Date.add Years 4 birthDate
-
-                else if not noRemainingSigns then
-                    Just <| Date.add Months 6 currentDate
-
                 else
-                    Nothing
+                    let
+                        ageMonths =
+                            Date.diff Months birthDate currentDate
+                    in
+                    if ageMonths < 6 then
+                        Just <| Date.add Months 6 birthDate
+
+                    else if ageMonths < 15 then
+                        Just <| Date.add Months 15 birthDate
+
+                    else
+                        let
+                            ageYears =
+                                Date.diff Years birthDate currentDate
+                        in
+                        if ageYears < 2 then
+                            Just <| Date.add Years 2 birthDate
+
+                        else if ageYears < 3 then
+                            Just <| Date.add Years 3 birthDate
+
+                        else if ageYears < 4 then
+                            Just <| Date.add Years 4 birthDate
+
+                        else if not noRemainingSigns then
+                            Just <| Date.add Months 6 currentDate
+
+                        else
+                            Nothing
             )
 
 
@@ -1628,7 +1620,7 @@ generateNextDateForMedicationVisit currentDate assembled db =
                                 |> List.reverse
                                 |> List.head
                     in
-                    Maybe.andThen
+                    Maybe.map
                         (\date ->
                             let
                                 compared =
@@ -1638,10 +1630,10 @@ generateNextDateForMedicationVisit currentDate assembled db =
                                 -- Next date already passed, or, it's due today.
                                 -- Per requirements, we schedule next date as if medication
                                 -- was administered today.
-                                Just <| Date.add Months 6 currentDate
+                                Date.add Months 6 currentDate
 
                             else
-                                Just date
+                                date
                         )
                         nextDate
             )
@@ -1697,13 +1689,13 @@ generateNextDateForImmunisationVisit currentDate assembled db =
     in
     -- If we see that next suggested date already passed, or is set for today,
     -- oer requirements, we set next visit to 1 vaccine interval from current date.
-    Maybe.andThen
+    Maybe.map
         (\nextDate ->
             if Date.compare nextDate currentDate /= GT then
-                Just <| Date.add unit interval currentDate
+                Date.add unit interval currentDate
 
             else
-                Just nextDate
+                nextDate
         )
         nextVisitDate
 

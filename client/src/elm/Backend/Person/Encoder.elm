@@ -1,6 +1,6 @@
 module Backend.Person.Encoder exposing (..)
 
-import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (Gender)
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils
     exposing

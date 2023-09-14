@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Components.SendViaWhatsAppDialog.Model exposing (..)
 import Components.SendViaWhatsAppDialog.Utils exposing (..)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -13,7 +13,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewCustomModal)
 
@@ -476,8 +476,8 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                 ]
                 [ text <| translate language Translate.Cancel ]
             , button
-                ([ classList [ ( "ui primary fluid button", True ), ( "disabled", not componentsSelected ) ] ]
-                    ++ continueButtonAction
+                (classList [ ( "ui primary fluid button", True ), ( "disabled", not componentsSelected ) ]
+                    :: continueButtonAction
                 )
                 [ text <| translate language Translate.Continue ]
             ]
@@ -488,24 +488,26 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
 viewConfirmationBeforeExecuting : Language -> NominalDate -> Site -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
 viewConfirmationBeforeExecuting language currentDate site reportType personId phoneNumber clearComponentsMsg =
     let
-        localCountryCode =
-            siteToCountryCode site
-
         phoneNumberForWhatsApp =
             if String.startsWith "+" phoneNumber then
                 -- International number with country code.
                 -- Trim '+' and add 00  prefix.
                 "00" ++ String.dropLeft 1 phoneNumber
 
-            else if String.startsWith "0" phoneNumber then
-                -- Local number with no country code.
-                -- Trim leading 0, and add 00 and country code.
-                "00" ++ countryCodeToString localCountryCode ++ trimLeadingZeros phoneNumber
-
             else
-                -- Local numberm without leading 0.
-                -- Add 00 and country code.
-                "00" ++ countryCodeToString localCountryCode ++ phoneNumber
+                let
+                    localCountryCode =
+                        siteToCountryCode site
+                in
+                if String.startsWith "0" phoneNumber then
+                    -- Local number with no country code.
+                    -- Trim leading 0, and add 00 and country code.
+                    "00" ++ countryCodeToString localCountryCode ++ trimLeadingZeros phoneNumber
+
+                else
+                    -- Local numberm without leading 0.
+                    -- Add 00 and country code.
+                    "00" ++ countryCodeToString localCountryCode ++ phoneNumber
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]

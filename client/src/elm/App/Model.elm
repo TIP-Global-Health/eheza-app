@@ -31,8 +31,6 @@ import Browser.Navigation as Nav
 import Config.Model
 import Device.Model exposing (Device)
 import Error.Model exposing (Error, ErrorType)
-import Http
-import Json.Encode exposing (Value)
 import List.Zipper as Zipper
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Encounter.Model
@@ -58,7 +56,7 @@ import Pages.NCD.RecurrentEncounter.Model
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Encounter.Model
 import Pages.Nutrition.ProgressReport.Model
-import Pages.Page exposing (DashboardPage(..), Page(..))
+import Pages.Page exposing (DashboardPage, Page(..))
 import Pages.PatientRecord.Model
 import Pages.People.Model
 import Pages.Person.Model

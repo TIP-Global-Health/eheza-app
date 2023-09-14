@@ -11,12 +11,10 @@ module Pages.Nutrition.Activity.View exposing
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
-import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.NutritionEncounter.Utils
     exposing
         ( calculateZScoreWeightForAge
@@ -27,36 +25,28 @@ import Backend.NutritionEncounter.Utils
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
-import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model
     exposing
-        ( ContributingFactorsForm
-        , DropZoneFile
-        , FollowUpForm
-        , HealthEducationForm
+        ( DropZoneFile
         , HeightForm
         , MuacForm
         , NCDAData
-        , NCDAForm
         , NextStepsTask(..)
         , NutritionForm
-        , SendToHCForm
         , WeightForm
         )
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
-        ( renderDatePart
-        , viewColorAlertIndication
+        ( viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
@@ -74,24 +64,18 @@ import Pages.Utils
         ( isTaskCompleted
         , taskCompleted
         , tasksBarId
-        , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
         , viewPersonDetails
         , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
-        , viewQuestionLabel
-        , viewSaveAction
         )
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), ZScore)
-import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
+import ZScore.Model exposing (Centimetres(..))
+import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge)
 
 
 view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> Html Msg
@@ -472,15 +456,16 @@ viewNutritionForm language currentDate setSignMsg form =
 viewPhotoContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> PhotoData -> List (Html Msg)
 viewPhotoContent language currentDate ( personId, measurements ) data =
     let
-        photoId =
-            Maybe.map Tuple.first measurements.photo
-
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
         -- measurement, if we have that.
         ( displayPhoto, saveMsg, isDisabled ) =
             case data.form.url of
                 Just url ->
+                    let
+                        photoId =
+                            Maybe.map Tuple.first measurements.photo
+                    in
                     ( Just url
                     , [ onClick <| SavePhoto personId photoId url ]
                     , False
@@ -504,12 +489,11 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
             viewPhotoForm language currentDate displayPhoto DropZoneComplete
         , div [ class "actions" ]
             [ button
-                ([ classList
+                (classList
                     [ ( "ui fluid primary button", True )
                     , ( "disabled", isDisabled )
                     ]
-                 ]
-                    ++ saveMsg
+                    :: saveMsg
                 )
                 [ text <| translate language Translate.Save ]
             ]
@@ -697,9 +681,6 @@ viewNCDAContent language currentDate id assembled data db =
         personId =
             assembled.participant.person
 
-        saveMsg =
-            SaveNCDA personId assembled.measurements.ncda
-
         config =
             { atHealthCenter = True
             , showTasksTray = True
@@ -729,12 +710,6 @@ viewNCDAContent language currentDate id assembled data db =
 viewNextStepsContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
 viewNextStepsContent language currentDate zscores id assembled db data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -848,6 +823,9 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     NextStepsSendToHC ->

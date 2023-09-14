@@ -1,11 +1,9 @@
 module Pages.Clinical.Fetch exposing (fetch)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Maybe.Extra
-import RemoteData exposing (RemoteData(..))
 
 
 fetch : Maybe VillageId -> ModelIndexedDb -> List MsgIndexedDb

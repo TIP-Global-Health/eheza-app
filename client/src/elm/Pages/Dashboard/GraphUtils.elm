@@ -17,22 +17,21 @@ module Pages.Dashboard.GraphUtils exposing
     , xScale
     , yAxis
     , yGridLine
-    , yScale
     )
 
 import AssocList as Dict exposing (Dict)
 import Axis
-import Backend.Dashboard.Model exposing (DashboardStats, Nutrition, Periods)
+import Backend.Dashboard.Model exposing (Nutrition)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Color exposing (Color)
 import Pages.Dashboard.Model exposing (FeverCause(..), allFeverCauses)
-import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
-import Time exposing (Month(..))
+import Scale exposing (BandScale, ContinuousScale, defaultBandConfig)
+import Time exposing (Month)
 import TypedSvg exposing (g, line, rect)
 import TypedSvg.Attributes as Explicit
 import TypedSvg.Attributes.InPx exposing (height, rx, ry, strokeWidth, x, x1, x2, y, y1, y2)
 import TypedSvg.Core exposing (Svg, attribute)
-import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), percent)
+import TypedSvg.Types exposing (percent)
 
 
 column : BandScale Month -> Float -> ( Month, Nutrition ) -> Svg msg
@@ -180,7 +179,7 @@ familyPlanningSignToColor sign =
             Color.rgb (210 / 255) (193 / 255) (255 / 255)
 
         Spermicide ->
-            Color.rgb (55 / 255) (0 / 255) (196 / 255)
+            Color.rgb (55 / 255) 0 (196 / 255)
 
         TubalLigatures ->
             Color.rgb (239 / 255) (86 / 255) (142 / 255)

@@ -1,17 +1,9 @@
 module Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Person.Decoder
-    exposing
-        ( decodeEducationLevel
-        , decodeGender
-        , decodeMaritalStatus
-        , decodeUbudehe
-        )
+import AssocList as Dict
 import Backend.ResilienceSurvey.Model exposing (..)
 import Backend.ResilienceSurvey.Utils exposing (..)
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)

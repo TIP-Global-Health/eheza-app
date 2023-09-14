@@ -14,9 +14,9 @@ import Backend.NutritionEncounter.Utils
         )
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.Utils exposing (resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson)
-import EverySet exposing (EverySet)
+import EverySet
 import Maybe.Extra
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
@@ -154,7 +154,7 @@ fetchForNCDAScoreboard id db =
 
         fetchAcuteIllnessDataMsgs =
             resolveIndividualParticipantsForPerson id AcuteIllnessEncounter db
-                |> List.map
+                |> List.concatMap
                     (\participantId ->
                         let
                             fetchMeasurementsMsgs =
@@ -172,6 +172,5 @@ fetchForNCDAScoreboard id db =
                         in
                         FetchAcuteIllnessEncountersForParticipant participantId :: fetchMeasurementsMsgs
                     )
-                |> List.concat
     in
     fetchAcuteIllnessDataMsgs ++ fetchPrenatalDataMsgs

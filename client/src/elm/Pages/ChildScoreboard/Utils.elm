@@ -1,21 +1,19 @@
 module Pages.ChildScoreboard.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getChildScoreboardEncountersForParticipant)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Measurement.Utils exposing (getPreviousMeasurements, mergeVaccinationProgressDicts)
 import Pages.ChildScoreboard.Activity.Utils
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.WellChild.Activity.Utils
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, translate)
+import RemoteData
 
 
 generatePreviousMeasurements :

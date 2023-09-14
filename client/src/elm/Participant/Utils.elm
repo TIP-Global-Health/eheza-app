@@ -38,7 +38,7 @@ motherParticipant : Participant PersonId Person MotherActivity Measurement.Model
 motherParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
-    , getMotherId = \motherId session -> Just motherId
+    , getMotherId = \motherId _ -> Just motherId
     , getName = .name
     , getParticipants = \session -> session.offlineSession.mothers
     , getValue = \id db -> Dict.get id db.people |> Maybe.withDefault NotAsked
@@ -51,5 +51,5 @@ motherParticipant =
     , toChildId = always Nothing
     , toMotherId = Just
     , toParticipantId = ParticipantMother
-    , viewMeasurements = \language date zscores isChw db -> viewMotherMeasurements language date
+    , viewMeasurements = \language date _ _ _ -> viewMotherMeasurements language date
     }

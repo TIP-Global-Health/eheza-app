@@ -1,6 +1,6 @@
 module Pages.Prenatal.Model exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model
@@ -17,7 +17,7 @@ import Backend.Measurement.Model
         )
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (..)
-import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 

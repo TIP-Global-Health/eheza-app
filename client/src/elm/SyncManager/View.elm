@@ -9,7 +9,7 @@ import Editable
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onCheck, onClick, onInput)
+import Html.Events exposing (onClick, onInput)
 import Json.Encode
 import List.Extra
 import List.Zipper as Zipper
@@ -20,8 +20,6 @@ import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendGeneralEntity(..)
-        , DownloadPhotosBatchRec
-        , DownloadPhotosMode(..)
         , DownloadSyncResponse
         , Model
         , Msg(..)
@@ -29,8 +27,7 @@ import SyncManager.Model
         , SyncStatus(..)
         )
 import SyncManager.Utils exposing (getSyncedHealthCenters)
-import Translate exposing (Language, translate)
-import Url
+import Translate exposing (Language)
 import Utils.Html exposing (spinner)
 import Utils.WebData
 
@@ -55,52 +52,6 @@ view language configuredModel db model =
 
         Nothing ->
             emptyNode
-
-
-{-| Helper to see the device UUID, and current nurse, if logged in.
--}
-viewDeviceInfo : Language -> ConfiguredModel -> Html Msg
-viewDeviceInfo language configuration =
-    let
-        loggedInNurse =
-            case RemoteData.toMaybe configuration.loggedIn of
-                Just loggedIn ->
-                    let
-                        nurse =
-                            Tuple.second loggedIn.nurse
-                    in
-                    div [] [ text <| "Nurse: " ++ nurse.name ]
-
-                Nothing ->
-                    div [] [ text "Nurse not logged in" ]
-
-        deviceIdInfo =
-            case RemoteData.toMaybe configuration.device of
-                Just device ->
-                    case device.deviceId of
-                        Just deviceId ->
-                            div [] [ text <| "Device ID: " ++ String.fromInt deviceId ]
-
-                        Nothing ->
-                            div []
-                                [ text """
-                                    Device ID not set as device was paired before June 2020.
-                                    You may re-pair to get a new ID, but in general this is not a problem -
-                                    it just makes troubleshooting a bit easier.
-                                    """
-                                ]
-
-                Nothing ->
-                    div [] [ text "Device ID not set, either not paired, or a pair before June 2020" ]
-    in
-    details
-        [ class "segment ui"
-        , property "open" (Json.Encode.bool False)
-        ]
-        [ summary [] [ text "Device info" ]
-        , loggedInNurse
-        , deviceIdInfo
-        ]
 
 
 viewSyncSettings : Language -> Model -> Html Msg
@@ -462,7 +413,7 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityDangerSigns identifier ->
                 viewMeasurement identifier "Danger Signs"
 
-            BackendAuthorityDashboardStats identifier ->
+            BackendAuthorityDashboardStats _ ->
                 text "Dashboard Statistics"
 
             BackendAuthorityExposure identifier ->
@@ -872,65 +823,10 @@ viewAuthorityEntity backendAuthorityEntity =
         ]
 
 
-viewDownloadPhotosBatch : Language -> Model -> DownloadPhotosBatchRec -> Html Msg
-viewDownloadPhotosBatch language model deferredPhoto =
-    case deferredPhoto.indexDbRemoteData of
-        RemoteData.Success (Just result) ->
-            let
-                fileName =
-                    result.photo
-                        |> Url.fromString
-                        |> Maybe.andThen
-                            (\url ->
-                                url.path
-                                    |> String.split "/"
-                                    |> List.Extra.last
-                            )
-                        |> Maybe.withDefault ""
-
-                attempt =
-                    result.attempts + 1
-
-                attemptString =
-                    case attempt of
-                        1 ->
-                            "1st"
-
-                        2 ->
-                            "2nd"
-
-                        3 ->
-                            "3rd"
-
-                        _ ->
-                            String.fromInt attempt ++ "th"
-            in
-            div []
-                [ text <|
-                    "Photos batch download ("
-                        ++ String.fromInt (deferredPhoto.batchCounter + 1)
-                        ++ " out of "
-                        ++ String.fromInt deferredPhoto.batchSize
-                        ++ ")"
-                , div []
-                    [ text <| attemptString ++ " attempt to download "
-                    , a [ href result.photo, target "_blank" ] [ text fileName ]
-                    ]
-                ]
-
-        _ ->
-            emptyNode
-
-
 {-| Show a list of Authorities that allow syncing from.
 -}
 viewHealthCentersForSync : Language -> ModelIndexedDb -> Model -> Html Msg
 viewHealthCentersForSync language db model =
-    let
-        -- The Health centers that are synced.
-        selectedHealthCentersUuid =
-            getSyncedHealthCenters model
-    in
     case db.healthCenters of
         RemoteData.Success healthCenters ->
             if Dict.isEmpty healthCenters then
@@ -938,6 +834,10 @@ viewHealthCentersForSync language db model =
                     [ summary [] [ text "No health centers synced yet" ] ]
 
             else
+                let
+                    selectedHealthCentersUuid =
+                        getSyncedHealthCenters model
+                in
                 details
                     [ class "segment ui"
                     , property "open" (Json.Encode.bool False)
