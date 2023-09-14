@@ -25,7 +25,8 @@ emptyModel =
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetDiagnosisMode DiagnosisMode
     | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
     | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)

@@ -5,6 +5,7 @@ module Backend.Model exposing
     , Revision(..)
     , emptyModelIndexedDb
     , ncdaEnabled
+    , sendViaWhatsAppEnabled
     , stockManagementEnabled
     )
 
@@ -661,4 +662,9 @@ ncdaEnabled =
 stockManagementEnabled : Bool
 stockManagementEnabled =
     -- For now, Stock Management feature is not launched.
+    False
+
+
+sendViaWhatsAppEnabled : Bool
+sendViaWhatsAppEnabled =
     False

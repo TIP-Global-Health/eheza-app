@@ -38,6 +38,15 @@ view language currentDate zscores site isChw childId ( sessionId, session ) db m
 
         componentsConfig =
             Just { setReportComponentsMsg = SetReportComponents }
+
+        bottomActionData =
+            Just <|
+                { showEndEncounterDialog = False
+                , allowEndEncounter = False
+                , closeEncounterMsg = NoOp
+                , setEndEncounterDialogStateMsg = always NoOp
+                , startEncounterMsg = NoOp
+                }
     in
     viewWebData language
         (viewProgressReport
@@ -58,7 +67,7 @@ view language currentDate zscores site isChw childId ( sessionId, session ) db m
             MsgSendViaWhatsAppDialog
             componentsConfig
             model.components
-            Nothing
+            bottomActionData
         )
         identity
         childData

@@ -64,6 +64,9 @@ countryCodeFromString code =
         "1" ->
             Just CountryCodeUSACanada
 
+        "972" ->
+            Just CountryCodeIsrael
+
         _ ->
             Nothing
 
@@ -91,6 +94,9 @@ countryCodeToString code =
 
         CountryCodeUSACanada ->
             "1"
+
+        CountryCodeIsrael ->
+            "972"
 
 
 siteToCountryCode : Site -> CountryCode

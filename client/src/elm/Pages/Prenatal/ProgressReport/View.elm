@@ -29,7 +29,7 @@ import Backend.Measurement.Model
         , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, labExpirationPeriod)
-import Backend.Model exposing (ModelIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, sendViaWhatsAppEnabled)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
@@ -296,11 +296,8 @@ viewContent language currentDate isChw initiator model assembled =
                                                 |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
 
-                                        sendViaWhatsAppEnabled =
-                                            -- For now, we disabled 'Send via WhatsApp' feature.
-                                            False
-
                                         ( actionsClass, actionButtonColor, sendViaWhatsAppButton ) =
+                                            -- @todo: Remove when WhatsApp feature is launched.
                                             if sendViaWhatsAppEnabled then
                                                 ( "actions two"
                                                 , "velvet"
@@ -370,9 +367,9 @@ viewContent language currentDate isChw initiator model assembled =
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
                         |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors)
                     , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnoses)
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnoses)
+                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
                     , viewPatientProgressPane language currentDate isChw assembled
