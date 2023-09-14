@@ -217,8 +217,7 @@ viewLanguageSwitcherAndVersion model =
                         SiteUnknown ->
                             [ English ]
             in
-            languagesBySite
-                |> List.map viewItem
+            List.map viewItem languagesBySite
                 |> ul [ class "links-translate" ]
     in
     div
