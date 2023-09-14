@@ -26,7 +26,8 @@ import Measurement.Model
         )
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
+        ( OutsideCareConfig
+        , corePhysicalExamFormWithDefault
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault

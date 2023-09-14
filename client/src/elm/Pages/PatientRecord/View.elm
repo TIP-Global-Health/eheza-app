@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Initiator(..), Person)
@@ -12,7 +12,7 @@ import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
@@ -583,7 +583,7 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
         ]
 
 
-viewFamilyPlanningEntry : Language -> ( NominalDate, FamilyPlanningSign ) -> Html any
+viewFamilyPlanningEntry : Language -> ( NominalDate, EverySet FamilyPlanningSign ) -> Html any
 viewFamilyPlanningEntry language ( date, signs ) =
     div [ class "entry family-planning" ]
         [ div [ class "date" ] [ text <| formatDDMMYYYY date ]
