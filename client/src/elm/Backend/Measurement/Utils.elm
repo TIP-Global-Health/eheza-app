@@ -3,16 +3,15 @@ module Backend.Measurement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person, Ubudehe(..))
-import Backend.Person.Utils exposing (ageInMonths, isAdult)
+import Backend.Model exposing (ModelIndexedDb, ncdaEnabled)
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Session.Model exposing (OfflineSession)
 import Date
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Maybe.Extra exposing (isJust)
-import Measurement.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
@@ -48,15 +47,6 @@ stored in the backend, or an edited value.
 currentValue : MeasurementData (Maybe ( id, value )) -> Maybe value
 currentValue data =
     Maybe.map Tuple.second data.current
-
-
-{-| Like `currentValue`, but also supplies the ID if we have one
-(i.e. if we're editing a value saved on the backend).
--}
-currentValueWithId : MeasurementData (Maybe ( id, value )) -> Maybe ( Maybe id, value )
-currentValueWithId data =
-    currentValue data
-        |> Maybe.map (\value -> ( Maybe.map Tuple.first data.current, value ))
 
 
 {-| Like `currentValue`, but for cases where we have a list of values.
@@ -3733,10 +3723,13 @@ ncdaSignToString value =
 
 expectNCDAActivity : NominalDate -> Person -> Bool
 expectNCDAActivity currentDate person =
-    -- Show for children that are younger than 2 years old.
-    ageInMonths currentDate person
-        |> Maybe.map (\ageMonths -> ageMonths < 24)
-        |> Maybe.withDefault False
+    -- @todo: remove when NCDA is launched.
+    ncdaEnabled
+        && -- Show for children that are younger than 2 years old.
+           (ageInMonths currentDate person
+                |> Maybe.map (\ageMonths -> ageMonths < 24)
+                |> Maybe.withDefault False
+           )
 
 
 lmpDateNotConfidentReasonToString : LmpDateNotConfidentReason -> String

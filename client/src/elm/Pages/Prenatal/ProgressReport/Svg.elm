@@ -97,16 +97,19 @@ viewBMIForEGA language points =
         measurements =
             points
                 |> List.filterMap
-                    (\( egaDays, bmi_ ) ->
-                        let
-                            ega =
-                                toFloat egaDays / 7 - horizontalMin
+                    (\( egaDays, bmi ) ->
+                        if
+                            withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
+                                && withinRange bmi verticalMin verticalMax
+                        then
+                            let
+                                egaGap =
+                                    toFloat egaDays / 7 - horizontalMin
 
-                            bmi =
-                                bmi_ - verticalMin
-                        in
-                        if withinRange ega horizontalMin horizontalMax && withinRange bmi verticalMin verticalMax then
-                            Just ( dimensionsPx.left + ega * horizontalStep, dimensionsPx.bottom - bmi * verticalStep )
+                                bmiGap =
+                                    bmi - verticalMin
+                            in
+                            Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - bmiGap * verticalStep )
 
                         else
                             Nothing
@@ -217,16 +220,19 @@ viewFundalHeightForEGA language points =
         measurements =
             points
                 |> List.filterMap
-                    (\( egaDays, height_ ) ->
-                        let
-                            ega =
-                                toFloat egaDays / 7 - horizontalMin
+                    (\( egaDays, height ) ->
+                        if
+                            withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
+                                && withinRange height verticalMin verticalMax
+                        then
+                            let
+                                egaGap =
+                                    toFloat egaDays / 7 - horizontalMin
 
-                            height =
-                                height_ - verticalMin
-                        in
-                        if withinRange ega horizontalMin horizontalMax && withinRange height verticalMin verticalMax then
-                            Just ( dimensionsPx.left + ega * horizontalStep, dimensionsPx.bottom - height * verticalStep )
+                                heightGap =
+                                    height - verticalMin
+                            in
+                            Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - heightGap * verticalStep )
 
                         else
                             Nothing

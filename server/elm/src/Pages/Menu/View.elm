@@ -1,17 +1,15 @@
 module Pages.Menu.View exposing (view)
 
 import App.Types exposing (Language)
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (fromEntityId, toEntityId)
-import Date
-import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra exposing (isJust)
 import Pages.Menu.Model exposing (..)
-import Pages.Utils exposing (emptySelectOption, viewActionButton, viewLabel)
+import Pages.Utils exposing (emptySelectOption, viewLabel)
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (GeoLocationId, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
 

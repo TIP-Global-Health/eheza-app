@@ -16,7 +16,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
-import Backend.Model exposing (ModelIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, ncdaEnabled)
 import Backend.NutritionEncounter.Utils
     exposing
         ( generateIndividualChildScoreboardMeasurementsForChild
@@ -245,6 +245,14 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                 TabNCDAScoreboard ->
                     viewNCDAScorecard language currentDate zscores ( childId, child ) db
 
+        tabs =
+            -- @todo: remove when NCDA is launched.
+            if ncdaEnabled then
+                viewTabs language setActiveTabMsg activeTab
+
+            else
+                emptyNode
+
         actions =
             if isNothing selectedComponents then
                 viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData
@@ -255,7 +263,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
     in
     div [ class "page-report well-child" ]
         [ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
-        , viewTabs language setActiveTabMsg activeTab
+        , tabs
         , div
             [ class "ui report unstackable items"
             , Html.Attributes.id "report-content"

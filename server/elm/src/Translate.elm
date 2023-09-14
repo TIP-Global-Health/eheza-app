@@ -60,7 +60,6 @@ type TranslationId
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
-    | NCDAFillTheBlanksItemLabel NCDAFillTheBlanksItem
     | NewSelection
     | NutritionBehavior
     | PleaseWaitMessage
@@ -292,28 +291,6 @@ translationSet transId =
                 ECDServices ->
                     { english = "ECD services provided to child"
                     , kinyarwanda = Just "Umwana yahawe servise n'ikigo mboneza mikurire"
-                    }
-
-        NCDAFillTheBlanksItemLabel item ->
-            case item of
-                HeightToAge ->
-                    { english = "Level of stuning using child length mat"
-                    , kinyarwanda = Just "Ikigero cyo kugwingira hakoreshejwe agasambi"
-                    }
-
-                WeightToAge ->
-                    { english = "Weight"
-                    , kinyarwanda = Just "Ibiro"
-                    }
-
-                MuacValue ->
-                    { english = "MUAC"
-                    , kinyarwanda = Just "Ikizigira"
-                    }
-
-                EdemaPresent ->
-                    { english = "Edema"
-                    , kinyarwanda = Just "Kubyimba"
                     }
 
         NewSelection ->

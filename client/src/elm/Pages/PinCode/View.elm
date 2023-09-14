@@ -1,10 +1,9 @@
 module Pages.PinCode.View exposing (view)
 
 import AssocList as Dict
-import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.Nurse.Model exposing (Nurse, Role(..))
+import Backend.Model exposing (ModelIndexedDb, stockManagementEnabled)
+import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
@@ -17,7 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Maybe.Extra exposing (isJust)
 import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
-import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time exposing (posixToMillis)
@@ -293,8 +292,8 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                             []
                        )
                     ++ (if
-                            -- For now, Stock Management feature is not launched.
-                            False
+                            -- @todo: remove when Stock Management is launched.
+                            stockManagementEnabled
                                 && not isChw
                         then
                             [ MenuStockManagement ]
