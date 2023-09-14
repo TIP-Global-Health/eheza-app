@@ -29,7 +29,7 @@ import Backend.Measurement.Model
         , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, labExpirationPeriod)
-import Backend.Model exposing (ModelIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, sendViaWhatsAppEnabled)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
@@ -285,12 +285,8 @@ viewContent language currentDate isChw initiator model assembled =
                                                 |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
 
-                                        sendViaWhatsAppEnabled =
-                                            -- Enabling for demo purposes.
-                                            -- @todo: revise.
-                                            True
-
                                         ( actionsClass, actionButtonColor, sendViaWhatsAppButton ) =
+                                            -- @todo: Remove when WhatsApp feature is launched.
                                             if sendViaWhatsAppEnabled then
                                                 ( "actions two"
                                                 , "velvet"
