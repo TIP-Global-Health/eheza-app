@@ -1,4 +1,18 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, SubModelReturn, Version, emptyLoggedInModel, emptyModel)
+module App.Model exposing
+    ( ConfiguredModel
+    , Flags
+    , LoggedInModel
+    , MemoryQuota
+    , Model
+    , Msg(..)
+    , MsgLoggedIn(..)
+    , RollbarErrorSource(..)
+    , StorageQuota
+    , SubModelReturn
+    , Version
+    , emptyLoggedInModel
+    , emptyModel
+    )
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
@@ -15,7 +29,7 @@ import Browser
 import Browser.Navigation as Nav
 import Config.Model
 import Device.Model exposing (Device)
-import Error.Model exposing (Error)
+import Error.Model exposing (Error, ErrorType)
 import Http
 import Json.Encode exposing (Value)
 import List.Zipper as Zipper
@@ -67,7 +81,6 @@ import SyncManager.Utils
 import Time
 import Translate.Model exposing (Language(..))
 import Url exposing (Url)
-import Uuid exposing (Uuid)
 import ZScore.Model
 
 
@@ -366,6 +379,7 @@ type Msg
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
+    | TriggerRollbar RollbarErrorSource ErrorType
 
 
 {-| Messages we can only handle if we're logged in.
@@ -442,3 +456,14 @@ type alias SubModelReturn subModel subMsg =
     , error : Maybe Error
     , appMsgs : List Msg
     }
+
+
+type RollbarErrorSource
+    = -- 2 error sources bellow are relevant only when device is online,
+      -- so error has will be written into DB, to make sure we don't send
+      -- same error twice, and notification will be sent right away.
+      SyncProcess
+    | ServiceWorker
+      -- DB errors may happen offline, so they will be written into DB,
+      -- and sent during sync, when device is online.
+    | IndexedDB

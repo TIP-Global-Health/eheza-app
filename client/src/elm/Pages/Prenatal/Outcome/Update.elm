@@ -26,7 +26,7 @@ update currentDate id msg model =
                     ( model
                     , Cmd.none
                     , [ Backend.IndividualEncounterParticipant.Model.ClosePrenatalSession dateConcluded outcome deliveryLocation
-                            |> Backend.Model.MsgIndividualSession id
+                            |> Backend.Model.MsgIndividualEncounterParticipant id
                             |> App.Model.MsgIndexedDb
                       , App.Model.SetActivePage destinationPage
                       ]

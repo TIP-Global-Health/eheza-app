@@ -43,30 +43,21 @@ type IndividualParticipantInitiator
 
 
 type alias Model =
-    { closePrenatalSession : WebData ()
-    , closeAcuteIllnessSession : WebData ()
-    , setEddDate : WebData ()
-    , setNewborn : WebData ()
+    { updateIndividualEncounterParticipant : WebData ()
     }
 
 
 type Msg
     = ClosePrenatalSession Date PregnancyOutcome DeliveryLocation
-    | HandleClosedPrenatalSession (WebData ())
     | CloseAcuteIllnessSession AcuteIllnessOutcome
-    | HandleClosedAcuteIllnessSession (WebData ())
     | SetEddDate NominalDate
-    | HandleSetEddDate (WebData ())
     | SetNewborn PersonId
-    | HandleSetNewborn (WebData ())
+    | HandleUpdatedIndividualEncounterParticipant (WebData ())
 
 
 emptyModel : Model
 emptyModel =
-    { closePrenatalSession = NotAsked
-    , closeAcuteIllnessSession = NotAsked
-    , setEddDate = NotAsked
-    , setNewborn = NotAsked
+    { updateIndividualEncounterParticipant = NotAsked
     }
 
 
