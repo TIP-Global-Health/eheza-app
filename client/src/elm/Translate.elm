@@ -2467,7 +2467,7 @@ translationSet trans =
         AddFamilyMemberFor name ->
             { english = "Add Family Member for " ++ name
             , kinyarwanda = Nothing
-            , kirundi = Just "Kongerako umwe mu bagize umuryango wa " ++ name
+            , kirundi = Just <| "Kongerako umwe mu bagize umuryango wa " ++ name
             }
 
         AddNewParticipant ->
@@ -3265,7 +3265,7 @@ translationSet trans =
         AllowedValuesRangeHelper constraints ->
             { english = "Allowed values are between " ++ String.fromFloat constraints.minVal ++ " and " ++ String.fromFloat constraints.maxVal ++ "."
             , kinyarwanda = Just <| "Imibare yemewe iri hagati ya " ++ String.fromFloat constraints.minVal ++ " na " ++ String.fromFloat constraints.maxVal ++ "."
-            , kirundi = Just "<|  ibiharuro vyemewe biri hagati ya " ++ String.fromFloat constraints.minVal ++ " na " ++ String.fromFloat constraints.maxVal ++ "."
+            , kirundi = Just <| "Ibiharuro vyemewe biri hagati ya " ++ String.fromFloat constraints.minVal ++ " na " ++ String.fromFloat constraints.maxVal ++ "."
             }
 
         AreYouSure ->
@@ -11823,7 +11823,7 @@ translationSet trans =
                 NoNCDPainSymptoms ->
                     { english = "None of the Above"
                     , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = JUst "Nta nimwe muri izo ziri hejuru"
+                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
                     }
 
         NCDProgressReport ->
