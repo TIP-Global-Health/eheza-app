@@ -14,7 +14,6 @@ import Pages.WellChild.Activity.Types exposing (..)
 type Msg
     = SetActivePage Page
     | SetWarningPopupState (Maybe WarningPopupType)
-    | NoOp
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
     | SetExpectedDateConcludedSelectorState (Maybe (DateSelectorConfig Msg))

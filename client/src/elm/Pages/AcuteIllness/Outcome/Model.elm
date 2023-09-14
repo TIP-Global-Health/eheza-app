@@ -18,8 +18,7 @@ emptyModel =
 
 
 type Msg
-    = NoOp
-    | SaveAcuteIllnessOutcome
+    = SaveAcuteIllnessOutcome
     | SetActivePage Page
     | SetAcuteIllnessOutcome String
     | SetAlertsDialogState Bool

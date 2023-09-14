@@ -11,14 +11,7 @@ import Pages.Prenatal.Outcome.Model exposing (..)
 
 update : NominalDate -> IndividualEncounterParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
-    let
-        noChange =
-            ( model, Cmd.none, [] )
-    in
     case msg of
-        NoOp ->
-            noChange
-
         SavePregnancyOutcome destinationPage ->
             Maybe.map3
                 (\dateConcluded outcome deliveryLocation ->
@@ -34,7 +27,7 @@ update currentDate id msg model =
                 model.pregnancyConcludedDate
                 model.pregnancyOutcome
                 model.deliveryLocation
-                |> Maybe.withDefault noChange
+                |> Maybe.withDefault ( model, Cmd.none, [] )
 
         SetActivePage page ->
             ( model

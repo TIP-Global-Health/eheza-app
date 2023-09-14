@@ -3308,7 +3308,7 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SaveWait personId measurementId updatedValue _ _ ->
+        SaveWait personId measurementId updatedValue ->
             let
                 extraMsgs =
                     -- When saving Wait activity, we pause the encounter, and

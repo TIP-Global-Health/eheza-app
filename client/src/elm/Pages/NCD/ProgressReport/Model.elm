@@ -37,8 +37,7 @@ type NCDRiskFactor
 
 
 type Msg
-    = NoOp
-    | CloseEncounter NCDEncounterId
+    = CloseEncounter NCDEncounterId
     | SetActivePage Page
     | SetDiagnosisMode DiagnosisMode
     | SetLabResultsMode (Maybe LabResultsMode)

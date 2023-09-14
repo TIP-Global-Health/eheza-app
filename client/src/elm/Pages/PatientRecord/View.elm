@@ -583,6 +583,7 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
         ]
 
 
+viewFamilyPlanningEntry : Language -> ( NominalDate, FamilyPlanningSign ) -> Html any
 viewFamilyPlanningEntry language ( date, signs ) =
     div [ class "entry family-planning" ]
         [ div [ class "date" ] [ text <| formatDDMMYYYY date ]

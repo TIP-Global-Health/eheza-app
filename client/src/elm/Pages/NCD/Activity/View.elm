@@ -746,6 +746,7 @@ viewOutsideCareContent language currentDate assembled form =
     ]
 
 
+outsideCareConfig : OutsideCareConfig MedicalCondition Msg
 outsideCareConfig =
     { setBoolInputMsg = SetOutsideCareSignBoolInput
     , setDiagnosisMsg = SetOutsideCareDiagnosis

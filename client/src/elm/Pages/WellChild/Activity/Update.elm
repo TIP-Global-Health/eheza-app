@@ -102,12 +102,6 @@ update currentDate isChw id db msg model =
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
-        NoOp ->
-            ( model
-            , Cmd.none
-            , []
-            )
-
         SetExpectedDateConcluded value ->
             let
                 updatedForm =

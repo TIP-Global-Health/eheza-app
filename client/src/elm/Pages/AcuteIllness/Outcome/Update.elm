@@ -12,14 +12,7 @@ import Pages.Page exposing (Page(..))
 
 update : NominalDate -> IndividualEncounterParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
-    let
-        noChange =
-            ( model, Cmd.none, [] )
-    in
     case msg of
-        NoOp ->
-            noChange
-
         SaveAcuteIllnessOutcome ->
             model.acuteIllnessOutcome
                 |> Maybe.map
@@ -33,7 +26,7 @@ update currentDate id msg model =
                           ]
                         )
                     )
-                |> Maybe.withDefault noChange
+                |> Maybe.withDefault ( model, Cmd.none, [] )
 
         SetActivePage page ->
             ( model

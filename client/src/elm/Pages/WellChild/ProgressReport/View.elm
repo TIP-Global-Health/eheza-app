@@ -26,7 +26,6 @@ import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, getHealthCenterName, graduatingAgeInMonth)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)

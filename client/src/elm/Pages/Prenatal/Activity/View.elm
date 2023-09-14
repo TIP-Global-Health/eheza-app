@@ -2147,7 +2147,7 @@ viewNextStepsContent language currentDate isChw assembled data =
                                                 value =
                                                     measurement.value
                                             in
-                                            SaveWait personId (Just measurementId) { value | patientNotified = True } secondPhase nextTask
+                                            SaveWait personId (Just measurementId) { value | patientNotified = True }
                                         )
                                         measurements.labsResults
                                         |> Maybe.withDefault NoOp

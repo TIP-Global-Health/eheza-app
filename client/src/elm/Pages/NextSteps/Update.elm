@@ -19,12 +19,6 @@ import Pages.Utils exposing (setMultiSelectInputValue)
 update : PersonId -> Activity -> Msg -> Model -> ( Model, Cmd Msg, List Pages.Session.Model.Msg )
 update childId activity msg model =
     case msg of
-        SetRedirectPage page ->
-            ( model
-            , Cmd.none
-            , [ Pages.Session.Model.SetActivePage page ]
-            )
-
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
