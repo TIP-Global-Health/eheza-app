@@ -1,10 +1,9 @@
-module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleChildB, exampleMother, exampleUser)
+module Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleChildB, exampleMother)
 
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Model exposing (EducationLevel(..), Person, Ubudehe(..))
 import EverySet
 import Time.Date exposing (date)
-import User.Model exposing (User)
 
 
 {-| } An example access token.
@@ -19,18 +18,6 @@ exampleAccessToken =
 exampleBackendUrl : String
 exampleBackendUrl =
     "https://example.com"
-
-
-{-| } An example user.
--}
-exampleUser : User
-exampleUser =
-    { id = 35
-    , name = "aya"
-    , avatarUrl = "http://example.com/avatar.jpg"
-    , clinics = []
-    , roles = EverySet.empty
-    }
 
 
 {-| An example child.

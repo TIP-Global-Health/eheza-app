@@ -789,7 +789,7 @@ plotChildData config data =
 viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeBoys language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (heightForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
@@ -805,7 +805,7 @@ viewHeightForAgeBoys language model data =
 viewHeightForAgeBoys0To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeBoys0To5 language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (heightForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText heightForAgeConfig0To5
         , xAxisLinesAndText heightForAgeConfig0To5
@@ -821,7 +821,7 @@ viewHeightForAgeBoys0To5 language model data =
 viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeBoys5To19 language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (heightForAgeLabels Male RangeFiveToNineteenYears)
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
@@ -837,7 +837,7 @@ viewHeightForAgeBoys5To19 language model data =
 viewHeightForAgeGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeGirls language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (heightForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
@@ -853,7 +853,7 @@ viewHeightForAgeGirls language model data =
 viewHeightForAgeGirls0To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeightForAgeGirls0To5 language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (heightForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText heightForAgeConfig0To5
         , xAxisLinesAndText heightForAgeConfig0To5
@@ -869,7 +869,7 @@ viewHeightForAgeGirls0To5 language model data =
 viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeGirls5To19 language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (heightForAgeLabels Female RangeFiveToNineteenYears)
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
@@ -885,7 +885,7 @@ viewHeightForAgeGirls5To19 language model data =
 viewWeightForAgeBoys : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
@@ -901,7 +901,7 @@ viewWeightForAgeBoys language model data =
 viewWeightForAgeBoys0To5 : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys0To5 language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText weightForAge0To5Config
         , xAxisLinesAndText weightForAge0To5Config
@@ -917,7 +917,7 @@ viewWeightForAgeBoys0To5 language model data =
 viewWeightForAgeBoys5To10 : Language -> Model -> List ( Months, Kilograms ) -> Html any
 viewWeightForAgeBoys5To10 language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForAgeLabels Male RangeFiveToTenYears)
         , yAxisLinesAndText weightForAge5To10Config
         , xAxisLinesAndText weightForAge5To10Config
@@ -933,7 +933,7 @@ viewWeightForAgeBoys5To10 language model data =
 viewWeightForAgeGirls : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeGirls language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
@@ -949,7 +949,7 @@ viewWeightForAgeGirls language model data =
 viewWeightForAgeGirls0To5 : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeGirls0To5 language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText weightForAge0To5Config
         , xAxisLinesAndText weightForAge0To5Config
@@ -965,7 +965,7 @@ viewWeightForAgeGirls0To5 language model data =
 viewWeightForAgeGirls5To10 : Language -> Model -> List ( Months, Kilograms ) -> Html any
 viewWeightForAgeGirls5To10 language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForAgeLabels Female RangeFiveToTenYears)
         , yAxisLinesAndText weightForAge5To10Config
         , xAxisLinesAndText weightForAge5To10Config
@@ -981,7 +981,7 @@ viewWeightForAgeGirls5To10 language model data =
 viewWeightForHeightBoys : Language -> Model -> List ( Length, Kilograms ) -> Html any
 viewWeightForHeightBoys language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForHeightLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
@@ -997,7 +997,7 @@ viewWeightForHeightBoys language model data =
 viewWeightForHeight0To5Boys : Language -> Model -> List ( Height, Kilograms ) -> Html any
 viewWeightForHeight0To5Boys language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForHeightLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText weightForHeight0To5Config
         , xAxisLinesAndText weightForHeight0To5Config
@@ -1013,7 +1013,7 @@ viewWeightForHeight0To5Boys language model data =
 viewWeightForHeightGirls : Language -> Model -> List ( Length, Kilograms ) -> Html any
 viewWeightForHeightGirls language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForHeightLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
@@ -1029,7 +1029,7 @@ viewWeightForHeightGirls language model data =
 viewWeightForHeight0To5Girls : Language -> Model -> List ( Height, Kilograms ) -> Html any
 viewWeightForHeight0To5Girls language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (weightForHeightLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText weightForHeight0To5Config
         , xAxisLinesAndText weightForHeight0To5Config
@@ -1045,7 +1045,7 @@ viewWeightForHeight0To5Girls language model data =
 viewHeadCircumferenceForAge0To13WeeksBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To13WeeksBoys language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Male RangeBirthToThirteenWeeks)
         , yAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
         , xAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
@@ -1061,7 +1061,7 @@ viewHeadCircumferenceForAge0To13WeeksBoys language model data =
 viewHeadCircumferenceForAge0To2Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To2Boys language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Male RangeBirthToTwoYears)
         , yAxisLinesAndText headCircumferenceForAge0To2Config
         , xAxisLinesAndText headCircumferenceForAge0To2Config
@@ -1077,7 +1077,7 @@ viewHeadCircumferenceForAge0To2Boys language model data =
 viewHeadCircumferenceForAge0To5Boys : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To5Boys language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Male RangeBirthToFiveYears)
         , yAxisLinesAndText headCircumferenceForAge0To5Config
         , xAxisLinesAndText headCircumferenceForAge0To5Config
@@ -1093,7 +1093,7 @@ viewHeadCircumferenceForAge0To5Boys language model data =
 viewHeadCircumferenceForAge0To13WeeksGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To13WeeksGirls language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Female RangeBirthToThirteenWeeks)
         , yAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
         , xAxisLinesAndText headCircumferenceForAge0To13WeeksConfig
@@ -1109,7 +1109,7 @@ viewHeadCircumferenceForAge0To13WeeksGirls language model data =
 viewHeadCircumferenceForAge0To2Girls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To2Girls language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Female RangeBirthToTwoYears)
         , yAxisLinesAndText headCircumferenceForAge0To2Config
         , xAxisLinesAndText headCircumferenceForAge0To2Config
@@ -1125,7 +1125,7 @@ viewHeadCircumferenceForAge0To2Girls language model data =
 viewHeadCircumferenceForAge0To5Girls : Language -> Model -> List ( Days, Centimetres ) -> Html any
 viewHeadCircumferenceForAge0To5Girls language model data =
     svg chartFrameAttributes <|
-        [ frame language "z-score-gray"
+        [ frame "z-score-gray"
         , labels language (headCircumferenceForAgeLabels Female RangeBirthToFiveYears)
         , yAxisLinesAndText headCircumferenceForAge0To5Config
         , xAxisLinesAndText headCircumferenceForAge0To5Config
@@ -1734,8 +1734,8 @@ labels language config =
         ]
 
 
-frame : Language -> String -> Svg any
-frame language color =
+frame : String -> Svg any
+frame color =
     g
         []
         [ rect

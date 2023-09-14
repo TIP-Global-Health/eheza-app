@@ -158,29 +158,30 @@ fetchForAge paths wrapper tagger =
             get paths.days
                 |> withExpect (expectJson (decodeForAge Days (\(Days x) -> x) wrapper))
                 |> toTask
-
-        monthsTask =
-            get paths.months
-                |> withExpect (expectJson (decodeForAge Months (\(Months x) -> x) wrapper))
-                |> toTask
     in
-    daysTask
-        |> Task.andThen
-            (\daysResult ->
-                Task.map
-                    (\monthsResult ->
-                        { male =
-                            { byDay = daysResult.male
-                            , byMonth = monthsResult.male
-                            }
-                        , female =
-                            { byDay = daysResult.female
-                            , byMonth = monthsResult.female
-                            }
+    Task.andThen
+        (\daysResult ->
+            let
+                monthsTask =
+                    get paths.months
+                        |> withExpect (expectJson (decodeForAge Months (\(Months x) -> x) wrapper))
+                        |> toTask
+            in
+            Task.map
+                (\monthsResult ->
+                    { male =
+                        { byDay = daysResult.male
+                        , byMonth = monthsResult.male
                         }
-                    )
-                    monthsTask
-            )
+                    , female =
+                        { byDay = daysResult.female
+                        , byMonth = monthsResult.female
+                        }
+                    }
+                )
+                monthsTask
+        )
+        daysTask
         |> RemoteData.asCmd
         |> Cmd.map tagger
 
