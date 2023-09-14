@@ -4119,7 +4119,7 @@ translationSet trans =
                 ActionDangerSignsPresent ->
                     { english = "Danger Signs Present"
                     , kinyarwanda = Just "Hagaragaye Ibimenyetso Mpuruza"
-                    , kirundi = Just ""
+                    , kirundi = Just "Ibimenyetso vy'ingorane zikabije bihari"
                     }
 
                 ActionReferredToHealthCenter ->
@@ -4143,19 +4143,19 @@ translationSet trans =
                 ActionBirthPlan ->
                     { english = "Birth Plan"
                     , kinyarwanda = Just "Gutegura gahunda yo kubyara"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umupango wo kuvyara"
                     }
 
         ChwActivity ->
             { english = "Chw Activity"
             , kinyarwanda = Just "Igikorwa cy'Umujyana w'Ubuzima"
-            , kirundi = Nothing
+            , kirundi = Just "Igikorwa c'Abaremeshakiyago"
             }
 
         ChildOf ->
             { english = "Child of"
             , kinyarwanda = Just "Umwana wa"
-            , kirundi = Nothing
+            , kirundi = Just "Umwana wa"
             }
 
         ChildName ->
@@ -4167,13 +4167,13 @@ translationSet trans =
         Clear ->
             { english = "Clear"
             , kinyarwanda = Just "Gukuraho"
-            , kirundi = Nothing
+            , kirundi = Just "biragaragara"
             }
 
         ClickTheCheckMark ->
             { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
-            , kirundi = Nothing
+            , kirundi = Just "Fyonda ku kemeza ko umurezi canke umuvyeyi ahari. Akamenyetso kemeza gaca gasa n'icatsi kibisi mu gihe umurezi/umuvyeyi ariwe kandi yinjijwe mu mashine."
             }
 
         ClinicType clinicType ->
@@ -4211,7 +4211,7 @@ translationSet trans =
         Clinical ->
             { english = "Clinical"
             , kinyarwanda = Just "Amakuru y’ubuvuzi"
-            , kirundi = Nothing
+            , kirundi = Just "Ivyo kwa muganga"
             }
 
         Dashboard dashboard ->
@@ -4220,19 +4220,19 @@ translationSet trans =
         ClinicalProgressReport ->
             { english = "Clinical Progress Report"
             , kinyarwanda = Just "Erekana raporo yibyavuye mu isuzuma"
-            , kirundi = Nothing
+            , kirundi = Just "Icegeranyo c'iterambera mu kuvugwa co kwa muganga"
             }
 
         CloseAcuteIllnessLabel ->
             { english = "or Close an Acute Illness"
             , kinyarwanda = Just "Cyangwa Ufunge Indwara ifatiyeho iheruka kuvurwa"
-            , kirundi = Nothing
+            , kirundi = Just "Canke Ugara ubugwayi bukomeye"
             }
 
         CloseAndContinue ->
             { english = "Close & Continue"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ugara hanyuma ubandanye"
             }
 
         Colline ->
@@ -4252,19 +4252,19 @@ translationSet trans =
                 ColorAlertRed ->
                     { english = "Red"
                     , kinyarwanda = Just "Umutuku"
-                    , kirundi = Nothing
+                    , kirundi = Just "Gitukura"
                     }
 
                 ColorAlertYellow ->
                     { english = "Yellow"
                     , kinyarwanda = Just "Umuhondo"
-                    , kirundi = Nothing
+                    , kirundi = Just "Ibara risa n'umutoto uhishiye"
                     }
 
                 ColorAlertGreen ->
                     { english = "Green"
                     , kinyarwanda = Just "Icyatsi"
-                    , kirundi = Nothing
+                    , kirundi = Just "Icatsi kibisi"
                     }
 
         Commune ->
@@ -4284,13 +4284,13 @@ translationSet trans =
                 FacilityHealthCenter ->
                     { english = "Complete a health center referral form"
                     , kinyarwanda = Just "Uzuza urupapuro rwo kohereza umurwayi ku kigo Nderabuzima"
-                    , kirundi = Nothing
+                    , kirundi = Just "Uzuza urupapuro rwo kurungika umurwayi kwa muganga rutangwa n'ivuriro"
                     }
 
                 FacilityHospital ->
                     { english = "Complete a hospital referral form"
                     , kinyarwanda = Just "Uzuza urupapuro rumwohereza ku bitaro"
-                    , kirundi = Nothing
+                    , kirundi = Just "Uzuza urupapuro rwo kurungika umurwayi kwa muganga rutangwa n'ibitaro"
                     }
 
                 FacilityMentalHealthSpecialist ->
@@ -13783,7 +13783,7 @@ translationSet trans =
                 BirthPlan ->
                     { english = "Birth Plan"
                     , kinyarwanda = Just "Gutegura gahunda yo kubyara"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umupango wo kuvyara"
                     }
 
                 Backend.PrenatalActivity.Model.NextSteps ->
