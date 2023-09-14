@@ -662,3 +662,10 @@ function hedley_update_7036() {
 function hedley_update_7037() {
   module_enable(['hedley_stock_management']);
 }
+
+/**
+ * Enable the Hedley NCDA module.
+ */
+function hedley_update_7038() {
+  module_enable(['hedley_ncda']);
+}

@@ -3,6 +3,9 @@ module Backend.Endpoints exposing (..)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardEncounter)
+import Backend.ChildScoreboardEncounter.Encoder exposing (encodeChildScoreboardEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
 import Backend.Clinic.Model exposing (Clinic)
@@ -1264,3 +1267,68 @@ stockUpdateEndpoint : ReadWriteEndPoint Error StockUpdateId StockUpdate StockUpd
 stockUpdateEndpoint =
     swEndpoint "nodes/stock_update" decodeStockUpdate
         |> withValueEncoder (object << encodeStockUpdate)
+
+
+childScoreboardEncounterEndpoint : ReadWriteEndPoint Error ChildScoreboardEncounterId ChildScoreboardEncounter ChildScoreboardEncounter (List IndividualEncounterParticipantId)
+childScoreboardEncounterEndpoint =
+    swEndpoint "nodes/child_scoreboard_encounter" decodeChildScoreboardEncounter
+        |> withValueEncoder (object << encodeChildScoreboardEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+childScoreboardMeasurementsEndpoint : ReadOnlyEndPoint Error ChildScoreboardEncounterId ChildScoreboardMeasurements ()
+childScoreboardMeasurementsEndpoint =
+    swEndpoint "nodes/child-scoreboard-measurements" decodeChildScoreboardMeasurements
+
+
+childScoreboardNCDAEndpoint : ReadWriteEndPoint Error ChildScoreboardNCDAId ChildScoreboardNCDA ChildScoreboardNCDA ()
+childScoreboardNCDAEndpoint =
+    swEndpoint "nodes/child_scoreboard_ncda" decodeChildScoreboardNCDA
+        |> withValueEncoder (object << encodeChildScoreboardNCDA)
+
+
+pregnancyByNewbornEndpoint : ReadOnlyEndPoint Error PersonId (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant )) ()
+pregnancyByNewbornEndpoint =
+    swEndpoint "nodes/pregnancy-by-newborn" decodePregnancyByNewborn
+
+
+childScoreboardBCGImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardBCGImmunisationId ChildScoreboardBCGImmunisation ChildScoreboardBCGImmunisation ()
+childScoreboardBCGImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_bcg_iz" decodeChildScoreboardBCGImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardBCGImmunisation)
+
+
+childScoreboardDTPImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardDTPImmunisationId ChildScoreboardDTPImmunisation ChildScoreboardDTPImmunisation ()
+childScoreboardDTPImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_dtp_iz" decodeChildScoreboardDTPImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardDTPImmunisation)
+
+
+childScoreboardIPVImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardIPVImmunisationId ChildScoreboardIPVImmunisation ChildScoreboardIPVImmunisation ()
+childScoreboardIPVImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_ipv_iz" decodeChildScoreboardIPVImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardIPVImmunisation)
+
+
+childScoreboardMRImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardMRImmunisationId ChildScoreboardMRImmunisation ChildScoreboardMRImmunisation ()
+childScoreboardMRImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_mr_iz" decodeChildScoreboardMRImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardMRImmunisation)
+
+
+childScoreboardOPVImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardOPVImmunisationId ChildScoreboardOPVImmunisation ChildScoreboardOPVImmunisation ()
+childScoreboardOPVImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_opv_iz" decodeChildScoreboardOPVImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardOPVImmunisation)
+
+
+childScoreboardPCV13ImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardPCV13ImmunisationId ChildScoreboardPCV13Immunisation ChildScoreboardPCV13Immunisation ()
+childScoreboardPCV13ImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_pcv13_iz" decodeChildScoreboardPCV13Immunisation
+        |> withValueEncoder (object << encodeChildScoreboardPCV13Immunisation)
+
+
+childScoreboardRotarixImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardRotarixImmunisationId ChildScoreboardRotarixImmunisation ChildScoreboardRotarixImmunisation ()
+childScoreboardRotarixImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_rotarix_iz" decodeChildScoreboardRotarixImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardRotarixImmunisation)

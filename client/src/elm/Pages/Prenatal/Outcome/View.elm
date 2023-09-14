@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))
 import Date exposing (Unit(..))
@@ -32,10 +33,8 @@ view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> Re
 view language currentDate id isChw initiator db model =
     let
         lastEncounterId =
-            Dict.get id db.prenatalEncountersByParticipant
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map Dict.keys
-                |> RemoteData.withDefault []
+            getPrenatalEncountersForParticipant db id
+                |> List.map Tuple.first
                 |> List.reverse
                 |> List.head
 

@@ -26,6 +26,13 @@ import Pages.AcuteIllness.Participant.Model
 import Pages.AcuteIllness.Participant.View
 import Pages.AcuteIllness.ProgressReport.Model
 import Pages.AcuteIllness.ProgressReport.View
+import Pages.ChildScoreboard.Activity.Model
+import Pages.ChildScoreboard.Activity.View
+import Pages.ChildScoreboard.Encounter.Model
+import Pages.ChildScoreboard.Encounter.View
+import Pages.ChildScoreboard.Participant.View
+import Pages.ChildScoreboard.Report.Model
+import Pages.ChildScoreboard.Report.View
 import Pages.Clinical.View
 import Pages.Clinics.View
 import Pages.Dashboard.View
@@ -467,6 +474,10 @@ viewUserPage page deviceName model configured =
                         Pages.NCD.Participant.View.view model.language currentDate healthCenterId id initiator model.indexedDb
                             |> flexPageWrapper model
 
+                    ChildScoreboardParticipantPage id ->
+                        Pages.ChildScoreboard.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper model
+
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language
                             currentDate
@@ -755,6 +766,36 @@ viewUserPage page deviceName model configured =
                         in
                         Pages.NCD.ProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
+                            |> flexPageWrapper model
+
+                    ChildScoreboardEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.childScoreboardEncounterPages
+                                    |> Maybe.withDefault Pages.ChildScoreboard.Encounter.Model.emptyModel
+                        in
+                        Pages.ChildScoreboard.Encounter.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageChildScoreboardEncounter id)
+                            |> flexPageWrapper model
+
+                    ChildScoreboardActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.childScoreboardActivityPages
+                                    |> Maybe.withDefault Pages.ChildScoreboard.Activity.Model.emptyModel
+                        in
+                        Pages.ChildScoreboard.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity)
+                            |> flexPageWrapper model
+
+                    ChildScoreboardReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.childScoreboardReportPages
+                                    |> Maybe.withDefault Pages.ChildScoreboard.Report.Model.emptyModel
+                        in
+                        Pages.ChildScoreboard.Report.View.view model.language currentDate model.zscores encounterId model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageChildScoreboardReport encounterId)
                             |> flexPageWrapper model
 
                     TraceContactPage traceContactId ->

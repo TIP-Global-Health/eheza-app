@@ -5,7 +5,6 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
@@ -32,7 +31,6 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils
@@ -67,7 +65,8 @@ import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, vie
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (thumbnailImage, viewModal)
+import Utils.Html exposing (thumbnailImage)
+import Utils.NominalDate exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 

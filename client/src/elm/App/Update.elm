@@ -40,6 +40,12 @@ import Pages.AcuteIllness.Participant.Model
 import Pages.AcuteIllness.Participant.Update
 import Pages.AcuteIllness.ProgressReport.Model
 import Pages.AcuteIllness.ProgressReport.Update
+import Pages.ChildScoreboard.Activity.Model
+import Pages.ChildScoreboard.Activity.Update
+import Pages.ChildScoreboard.Encounter.Model
+import Pages.ChildScoreboard.Encounter.Update
+import Pages.ChildScoreboard.Report.Model
+import Pages.ChildScoreboard.Report.Update
 import Pages.Clinics.Update
 import Pages.Dashboard.Model
 import Pages.Dashboard.Update
@@ -502,6 +508,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageChildScoreboardEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.childScoreboardEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.ChildScoreboard.Encounter.Model.emptyModel
+                                        |> Pages.ChildScoreboard.Encounter.Update.update subMsg
+                            in
+                            ( { data | childScoreboardEncounterPages = Dict.insert id subModel data.childScoreboardEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -624,6 +643,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageChildScoreboardActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.childScoreboardActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.ChildScoreboard.Activity.Model.emptyModel
+                                        |> Pages.ChildScoreboard.Activity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | childScoreboardActivityPages = Dict.insert ( id, activity ) subModel data.childScoreboardActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePregnancyOutcome id subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -686,6 +718,18 @@ update msg model =
                             in
                             ( { data | ncdProgressReportPages = Dict.insert id subModel data.ncdProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNCDProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageChildScoreboardReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    Dict.get id data.childScoreboardReportPages
+                                        |> Maybe.withDefault Pages.ChildScoreboard.Report.Model.emptyModel
+                                        |> Pages.ChildScoreboard.Report.Update.update subMsg
+                            in
+                            ( { data | childScoreboardReportPages = Dict.insert id subModel data.childScoreboardReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardReport id) subCmd
                             , extraMsgs
                             )
 

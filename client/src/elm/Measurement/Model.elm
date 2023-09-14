@@ -242,6 +242,8 @@ type MsgChild
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
+    | SetUpdateANCVisits Bool
+    | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetNCDAHelperState (Maybe NCDASign)
@@ -477,6 +479,7 @@ type alias VaccinationFormDynamicContentAndTasksConfig msg =
     , nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
     , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
     , firstDoseExpectedFrom : NominalDate
+    , suggestDoseToday : Bool
     }
 
 
@@ -1033,57 +1036,112 @@ emptyNCDAData =
 
 type alias NCDAForm =
     { step : Maybe NCDAStep
+
+    -- Step 1.
+    , updateANCVisits : Maybe Bool
+    , ancVisitsDates : Maybe (EverySet NominalDate)
+    , supplementsDuringPregnancy : Maybe Bool
+    , takenSupplementsPerGuidance : Maybe Bool
     , bornWithBirthDefect : Maybe Bool
+    , birthWeight : Maybe WeightInGrm
+
+    -- Step 2.
+    , childBehindOnVaccination : Maybe Bool
+    , childReceivesVitaminA : Maybe Bool
+    , childTakingVitaminA : Maybe Bool
+    , childReceivesDewormer : Maybe Bool
+    , childTakingDewormer : Maybe Bool
+    , ongeraMNP : Maybe Bool
+    , takingOngeraMNP : Maybe Bool
+    , childReceivesECD : Maybe Bool
+
+    -- Step 3.
+    , fiveFoodGroups : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
-    , ongeraMNP : Maybe Bool
-    , fiveFoodGroups : Maybe Bool
-    , mealFrequency6to8Months : Maybe Bool
-    , mealFrequency9to11Months : Maybe Bool
-    , mealFrequency12MonthsOrMore : Maybe Bool
-    , supportChildWithDisability : Maybe Bool
-    , conditionalCashTransfer : Maybe Bool
+    , mealsAtRecommendedTimes : Maybe Bool
+
+    -- Step 4.
+    , childReceivesFBF : Maybe Bool
+    , childTakingFBF : Maybe Bool
+    , beneficiaryCashTransfer : Maybe Bool
+    , receivingCashTransfer : Maybe Bool
     , conditionalFoodItems : Maybe Bool
+    , childWithAcuteMalnutrition : Maybe Bool
+    , treatedForAcuteMalnutrition : Maybe Bool
+    , childWithDisability : Maybe Bool
+    , receivingSupport : Maybe Bool
+    , childGotDiarrhea : Maybe Bool
+
+    -- Step 5.
     , hasCleanWater : Maybe Bool
     , hasHandwashingFacility : Maybe Bool
     , hasToilets : Maybe Bool
     , hasKitchenGarden : Maybe Bool
-    , regularPrenatalVisits : Maybe Bool
-    , ironSupplementsDuringPregnancy : Maybe Bool
-    , insecticideTreatedBednetsDuringPregnancy : Maybe Bool
-    , birthWeight : Maybe WeightInGrm
+    , insecticideTreatedBednets : Maybe Bool
     }
 
 
 emptyNCDAForm : NCDAForm
 emptyNCDAForm =
     { step = Nothing
+
+    -- Step 1.
+    , updateANCVisits = Nothing
+    , ancVisitsDates = Nothing
+    , supplementsDuringPregnancy = Nothing
+    , takenSupplementsPerGuidance = Nothing
     , bornWithBirthDefect = Nothing
+    , birthWeight = Nothing
+
+    -- Step 2.
+    , childBehindOnVaccination = Nothing
+    , childReceivesVitaminA = Nothing
+    , childTakingVitaminA = Nothing
+    , childReceivesDewormer = Nothing
+    , childTakingDewormer = Nothing
+    , ongeraMNP = Nothing
+    , takingOngeraMNP = Nothing
+    , childReceivesECD = Nothing
+
+    -- Step 3.
+    , fiveFoodGroups = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
-    , ongeraMNP = Nothing
-    , fiveFoodGroups = Nothing
-    , mealFrequency6to8Months = Nothing
-    , mealFrequency9to11Months = Nothing
-    , mealFrequency12MonthsOrMore = Nothing
-    , supportChildWithDisability = Nothing
-    , conditionalCashTransfer = Nothing
+    , mealsAtRecommendedTimes = Nothing
+
+    -- Step 4.
+    , childReceivesFBF = Nothing
+    , childTakingFBF = Nothing
+    , beneficiaryCashTransfer = Nothing
+    , receivingCashTransfer = Nothing
     , conditionalFoodItems = Nothing
+    , childWithAcuteMalnutrition = Nothing
+    , treatedForAcuteMalnutrition = Nothing
+    , childWithDisability = Nothing
+    , receivingSupport = Nothing
+    , childGotDiarrhea = Nothing
+
+    -- Step 5.
     , hasCleanWater = Nothing
     , hasHandwashingFacility = Nothing
     , hasToilets = Nothing
     , hasKitchenGarden = Nothing
-    , regularPrenatalVisits = Nothing
-    , ironSupplementsDuringPregnancy = Nothing
-    , insecticideTreatedBednetsDuringPregnancy = Nothing
-    , birthWeight = Nothing
+    , insecticideTreatedBednets = Nothing
     }
 
 
 type NCDAStep
-    = NCDAStepQuestionsAskedOnce
-    | NCDAStepPermanentQuestions1
-    | NCDAStepPermanentQuestions2
+    = NCDAStepAntenatalCare
+    | NCDAStepUniversalInterventions
+    | NCDAStepNutritionBehavior
+    | NCDAStepTargetedInterventions
+    | NCDAStepInfrastructureEnvironment
+
+
+type ANCVisitsViewMode
+    = ANCVisitsInitialMode
+    | ANCVisitsUpdateMode
 
 
 type GroupOfFoods
@@ -1151,3 +1209,54 @@ emptyHbA1cTestForm =
     , hba1cResult = Nothing
     , hba1cResultDirty = False
     }
+
+
+type alias NCDAContentConfig msg =
+    { -- Indicates if NCDA activity was performed at Health center,
+      -- or by CHW (during Child Scoreboard encounter).
+      atHealthCenter : Bool
+
+    -- Indications if display of tasks tray is required or not.
+    , showTasksTray : Bool
+
+    -- This allows setting desired value from invoking module.
+    -- If set to Nothing, it's resolved using Well Child data.
+    , behindOnVaccinations : Maybe Bool
+
+    -- Required data, which is resolved from previous encounters.
+    , pregnancySummary : Maybe PregnancySummaryValue
+    , ncdaNeverFilled : Bool
+    , ncdaNotFilledAfterAgeOfSixMonths : Bool
+
+    -- ANC Visit actions.
+    , setUpdateANCVisitsMsg : Bool -> msg
+    , toggleANCVisitDateMsg : NominalDate -> msg
+
+    -- Other actions.
+    , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
+    , setBirthWeightMsg : String -> msg
+    , setStepMsg : NCDAStep -> msg
+    , setHelperStateMsg : Maybe NCDASign -> msg
+    , saveMsg : msg
+    }
+
+
+minimalNumberOfANCVisits : Int
+minimalNumberOfANCVisits =
+    4
+
+
+type alias VaccinationProgressDict =
+    Dict WellChildVaccineType (Dict VaccineDose NominalDate)
+
+
+type ImmunisationTask
+    = TaskBCG
+    | TaskDTP
+    | TaskHPV
+    | TaskIPV
+    | TaskMR
+    | TaskOPV
+    | TaskPCV13
+    | TaskRotarix
+    | TaskOverview

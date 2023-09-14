@@ -10,7 +10,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 import Pages.WellChild.Activity.Types exposing (..)
-import Pages.WellChild.Encounter.Model exposing (VaccinationProgressDict)
 
 
 type Msg
@@ -99,6 +98,8 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
       -- NCDA
+    | SetUpdateANCVisits Bool
+    | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetNCDAFormStep NCDAStep

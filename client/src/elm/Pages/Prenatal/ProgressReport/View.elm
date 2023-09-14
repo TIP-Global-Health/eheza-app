@@ -30,7 +30,6 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc, labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
@@ -107,6 +106,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (thumbnailImage, viewModal)
+import Utils.NominalDate exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 

@@ -295,6 +295,21 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchChildScoreboardEncounter id ->
+            Dict.get id model.childScoreboardEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchChildScoreboardEncountersForParticipant id ->
+            Dict.get id model.childScoreboardEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchChildScoreboardMeasurements id ->
+            Dict.get id model.childScoreboardMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchStockManagementMeasurements id ->
             Dict.get id model.stockManagementMeasurements
                 |> Maybe.withDefault NotAsked
@@ -346,6 +361,11 @@ shouldFetch currentTime model msg =
 
         FetchTraceContact id ->
             Dict.get id model.traceContacts
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPregnancyByNewborn id ->
+            Dict.get id model.pregnancyByNewborn
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -407,6 +427,9 @@ forget msg model =
 
         FetchTraceContact id ->
             { model | traceContacts = Dict.remove id model.traceContacts }
+
+        FetchPregnancyByNewborn id ->
+            { model | pregnancyByNewborn = Dict.remove id model.pregnancyByNewborn }
 
         FetchIndividualEncounterParticipantsForPerson id ->
             { model | individualParticipantsByPerson = Dict.remove id model.individualParticipantsByPerson }
@@ -470,6 +493,15 @@ forget msg model =
 
         FetchNCDMeasurements id ->
             { model | ncdMeasurements = Dict.remove id model.ncdMeasurements }
+
+        FetchChildScoreboardEncounter id ->
+            { model | childScoreboardEncounters = Dict.remove id model.childScoreboardEncounters }
+
+        FetchChildScoreboardEncountersForParticipant id ->
+            { model | childScoreboardEncountersByParticipant = Dict.remove id model.childScoreboardEncountersByParticipant }
+
+        FetchChildScoreboardMeasurements id ->
+            { model | childScoreboardMeasurements = Dict.remove id model.childScoreboardMeasurements }
 
         FetchStockManagementMeasurements id ->
             { model | stockManagementMeasurements = Dict.remove id model.stockManagementMeasurements }

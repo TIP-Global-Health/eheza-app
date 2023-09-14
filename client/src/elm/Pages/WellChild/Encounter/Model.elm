@@ -8,6 +8,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildEncounter.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Measurement.Model exposing (VaccinationProgressDict)
 import Pages.Page exposing (Page)
 
 
@@ -61,7 +62,3 @@ type alias AssembledData =
     -- Similar to vaccinationHistory, but includes immunisation data of current encounter.
     , vaccinationProgress : VaccinationProgressDict
     }
-
-
-type alias VaccinationProgressDict =
-    Dict WellChildVaccineType (Dict VaccineDose NominalDate)

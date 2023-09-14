@@ -8,6 +8,9 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Update
+import Backend.ChildScoreboardActivity.Utils
+import Backend.ChildScoreboardEncounter.Model
+import Backend.ChildScoreboardEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
@@ -101,6 +104,8 @@ import Pages.AcuteIllness.Activity.Utils
         )
 import Pages.AcuteIllness.Encounter.Model
 import Pages.AcuteIllness.Encounter.Utils
+import Pages.ChildScoreboard.Activity.Utils
+import Pages.ChildScoreboard.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
 import Pages.GlobalCaseManagement.Utils
@@ -814,6 +819,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchChildScoreboardEncountersForParticipant id ->
+            ( { model | childScoreboardEncountersByParticipant = Dict.insert id Loading model.childScoreboardEncountersByParticipant }
+            , sw.select childScoreboardEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedChildScoreboardEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardEncountersForParticipant id data ->
+            ( { model | childScoreboardEncountersByParticipant = Dict.insert id data model.childScoreboardEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -943,6 +961,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedNCDMeasurements id data ->
             ( { model | ncdMeasurements = Dict.insert id data model.ncdMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchChildScoreboardMeasurements id ->
+            ( { model | childScoreboardMeasurements = Dict.insert id Loading model.childScoreboardMeasurements }
+            , sw.get childScoreboardMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardMeasurements id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardMeasurements id data ->
+            ( { model | childScoreboardMeasurements = Dict.insert id data model.childScoreboardMeasurements }
             , Cmd.none
             , []
             )
@@ -1314,6 +1345,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchChildScoreboardEncounter id ->
+            ( { model | childScoreboardEncounters = Dict.insert id Loading model.childScoreboardEncounters }
+            , sw.get childScoreboardEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardEncounter id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardEncounter id data ->
+            ( { model | childScoreboardEncounters = Dict.insert id data model.childScoreboardEncounters }
+            , Cmd.none
+            , []
+            )
+
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
             , sw.get sessionEndpoint sessionId
@@ -1388,6 +1432,19 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedTraceContact id data ->
             ( { model | traceContacts = Dict.insert id data model.traceContacts }
+            , Cmd.none
+            , []
+            )
+
+        FetchPregnancyByNewborn id ->
+            ( { model | pregnancyByNewborn = Dict.insert id Loading model.pregnancyByNewborn }
+            , sw.get pregnancyByNewbornEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPregnancyByNewborn id)
+            , []
+            )
+
+        HandleFetchedPregnancyByNewborn id data ->
+            ( { model | pregnancyByNewborn = Dict.insert id data model.pregnancyByNewborn }
             , Cmd.none
             , []
             )
@@ -2658,6 +2715,118 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults
                     )
 
+                [ ChildScoreboardNCDARevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardBCGImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardDTPImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardIPVImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardMRImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardOPVImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardPCV13ImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardRotarixImmunisationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =
@@ -2814,6 +2983,25 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | ncdEncounterRequests = Dict.insert encounterId subModel model.ncdEncounterRequests }
             , Cmd.map (MsgNCDEncounter encounterId) subCmd
+            , appMsgs
+            )
+
+        MsgChildScoreboardEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.childScoreboardEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.childScoreboardEncounterRequests
+                        |> Maybe.withDefault Backend.ChildScoreboardEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.ChildScoreboardEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | childScoreboardEncounterRequests = Dict.insert encounterId subModel model.childScoreboardEncounterRequests }
+            , Cmd.map (MsgChildScoreboardEncounter encounterId) subCmd
             , appMsgs
             )
 
@@ -3192,6 +3380,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage InitiatorParticipantsPage personId
 
+                                                    ChildScoreboardEncounter ->
+                                                        ChildScoreboardParticipantPage personId
+
                                                     NutritionEncounter ->
                                                         NutritionParticipantPage InitiatorParticipantsPage personId
 
@@ -3392,6 +3583,12 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                                         _ ->
                                             []
+
+                                ChildScoreboardEncounter ->
+                                    [ Backend.ChildScoreboardEncounter.Model.emptyChildScoreboardEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostChildScoreboardEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
 
                                 NutritionEncounter ->
                                     [ emptyNutritionEncounter sessionId currentDate healthCenterId
@@ -3620,6 +3817,34 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , rollbarOnFailure ++ appMsgs
             )
 
+        PostChildScoreboardEncounter childScoreboardEncounter ->
+            ( { model | postChildScoreboardEncounter = Dict.insert childScoreboardEncounter.participant Loading model.postChildScoreboardEncounter }
+            , sw.post childScoreboardEncounterEndpoint childScoreboardEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedChildScoreboardEncounter childScoreboardEncounter.participant)
+            , []
+            )
+
+        HandlePostedChildScoreboardEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( childScoreboardEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.ChildScoreboardEncounterPage childScoreboardEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postChildScoreboardEncounter = Dict.insert participantId data model.postChildScoreboardEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -3809,6 +4034,85 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 (\measurements -> { measurements | nutritions = Dict.insert uuid data measurements.nutritions })
                 model
             , True
+            )
+
+        ChildScoreboardEncounterRevision uuid data ->
+            let
+                childScoreboardEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.childScoreboardEncounters
+
+                childScoreboardEncountersByParticipant =
+                    Dict.remove data.participant model.childScoreboardEncountersByParticipant
+            in
+            ( { model
+                | childScoreboardEncounters = childScoreboardEncounters
+                , childScoreboardEncountersByParticipant = childScoreboardEncountersByParticipant
+              }
+            , recalc
+            )
+
+        ChildScoreboardBCGImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | bcgImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardDTPImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardIPVImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ipvImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardMRImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mrImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardNCDARevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardOPVImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | opvImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardPCV13ImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pcv13Immunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardRotarixImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         ClinicRevision uuid data ->
@@ -6346,6 +6650,24 @@ generateWellChildDangerSignsAlertMsgs currentDate maybeId =
             ]
         )
         maybeId
+        |> Maybe.withDefault []
+
+
+generateChildScoreboardAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> ChildScoreboardEncounterId -> List App.Model.Msg
+generateChildScoreboardAssesmentCompletedMsgs currentDate after id =
+    Pages.ChildScoreboard.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                if
+                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate assembled after)
+                        Backend.ChildScoreboardActivity.Utils.allActivities
+                then
+                    [ App.Model.SetActivePage (UserPage (ChildScoreboardReportPage id)) ]
+
+                else
+                    []
+            )
         |> Maybe.withDefault []
 
 

@@ -13,6 +13,7 @@ import Backend.IndividualEncounterParticipant.Model
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Model exposing (NCDEncounter)
+import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -120,25 +121,20 @@ viewNCDAction language currentDate selectedHealthCenter id db sessions =
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
             Maybe.map
-                (\sessionId ->
-                    Dict.get sessionId db.ncdEncountersByParticipant
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.map
-                            (\dict ->
-                                ( Dict.toList dict
-                                    |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
-                                    |> List.head
-                                    |> Maybe.map Tuple.first
-                                , Dict.toList dict
-                                    |> List.filter
-                                        (\( _, encounter ) ->
-                                            encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                        )
-                                    |> List.isEmpty
-                                    |> not
+                (getNCDEncountersForParticipant db
+                    >> (\list ->
+                            ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
+                                |> List.head
+                                |> Maybe.map Tuple.first
+                            , List.filter
+                                (\( _, encounter ) ->
+                                    encounter.startDate == currentDate && encounter.endDate == Just currentDate
                                 )
+                                list
+                                |> List.isEmpty
+                                |> not
                             )
-                        |> RemoteData.withDefault ( Nothing, False )
+                       )
                 )
                 maybeSessionId
                 |> Maybe.withDefault ( Nothing, False )
