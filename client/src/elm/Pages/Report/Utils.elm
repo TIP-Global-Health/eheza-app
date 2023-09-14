@@ -1,10 +1,8 @@
 module Pages.Report.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Date
@@ -12,8 +10,6 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Pages.Report.Model exposing (..)
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, TranslationId, translate, translateText)
 
 
 hivResultNormal : TestReport -> Bool

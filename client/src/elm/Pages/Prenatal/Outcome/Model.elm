@@ -1,7 +1,6 @@
 module Pages.Prenatal.Outcome.Model exposing (Model, Msg(..), emptyModel)
 
-import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, PregnancyOutcome(..))
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, PregnancyOutcome)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import Pages.Page exposing (Page)

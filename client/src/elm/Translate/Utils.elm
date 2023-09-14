@@ -2,7 +2,6 @@ module Translate.Utils exposing
     ( decodeLanguage
     , encodeLanguage
     , languageFromCode
-    , languageFromString
     , languageToCode
     , languageToString
     , selectLanguage
@@ -48,22 +47,6 @@ languageToString language =
 
         Kirundi ->
             "Kirundi"
-
-
-languageFromString : String -> Result String Language
-languageFromString str =
-    case str of
-        "English" ->
-            Ok English
-
-        "Kinyarwanda" ->
-            Ok Kinyarwanda
-
-        "Kirundi" ->
-            Ok Kirundi
-
-        _ ->
-            Err "Not a language"
 
 
 languageFromCode : String -> Result String Language

@@ -2,29 +2,23 @@ module Pages.ChildScoreboard.Participant.View exposing (view)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
-import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
+import Backend.ChildScoreboardEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
     exposing
         ( IndividualEncounterParticipant
-        , IndividualEncounterType(..)
-        , IndividualParticipantInitiator(..)
         , emptyIndividualEncounterParticipant
         )
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getChildScoreboardEncountersForParticipant)
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.ChildScoreboard.Participant.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
+import RemoteData exposing (RemoteData(..))
+import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -104,7 +98,7 @@ viewChildScoreboardAction language currentDate selectedHealthCenter id db sessio
         maybeSessionId =
             Dict.toList sessions
                 |> List.filter
-                    (\( sessionId, session ) ->
+                    (\( _, session ) ->
                         session.encounterType == Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
                     )
                 |> List.head

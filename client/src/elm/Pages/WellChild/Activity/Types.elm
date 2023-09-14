@@ -1,7 +1,5 @@
 module Pages.WellChild.Activity.Types exposing (..)
 
-import Backend.Measurement.Model exposing (VaccineDose)
-
 
 type VaccinationStatus
     = StatusBehind

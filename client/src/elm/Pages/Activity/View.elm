@@ -7,12 +7,12 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List as List
+import List
 import LocalData
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))

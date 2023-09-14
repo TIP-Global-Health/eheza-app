@@ -2,9 +2,6 @@ module Pages.Prenatal.RecurrentActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Date exposing (Date)
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
         ( BloodGpRsResultForm
@@ -13,7 +10,6 @@ import Measurement.Model
         , HepatitisBResultForm
         , LaboratoryTask
         , RandomBloodSugarResultForm
-        , SendToHCForm
         , SyphilisResultForm
         , UrineDipstickResultForm
         , VitalsForm
@@ -22,7 +18,6 @@ import Measurement.Model
         , emptyHemoglobinResultForm
         , emptyHepatitisBResultForm
         , emptyRandomBloodSugarResultForm
-        , emptySendToHCForm
         , emptySyphilisResultForm
         , emptyUrineDipstickResultForm
         , emptyVitalsForm

@@ -17,10 +17,9 @@ mother and child with the appropriate types.
 -}
 
 import Activity.Model exposing (ChildActivity, MotherActivity)
-import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (NutritionAssessment)
 import Measurement.Model
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page)
 
 
 type Msg activity measurement

@@ -1,29 +1,20 @@
 module Pages.HomeVisit.Encounter.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitActivity.Utils exposing (getActivityIcon, getAllActivities)
-import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
-import Backend.Measurement.Model exposing (HomeVisitMeasurements)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
 import Pages.HomeVisit.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.HomeVisit.Encounter.Model exposing (..)
 import Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewPersonDetails)
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem)
-import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -94,9 +85,6 @@ viewMainPageContent language currentDate id isChw db data model =
 
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
-
-        reportsTabTitle =
-            translate language Translate.ProgressReport
 
         tabs =
             div [ class "ui tabular menu" ]

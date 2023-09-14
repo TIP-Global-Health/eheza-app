@@ -4,17 +4,14 @@ import Activity.Model exposing (Activity)
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model
     exposing
-        ( ChildNutritionSign(..)
-        , ContributingFactorsSign(..)
+        ( ContributingFactorsSign(..)
         )
 import Backend.Session.Model
 import Measurement.Model
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NextSteps.Model exposing (Model, Msg(..))
-import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Page exposing (SessionPage(..))
 import Pages.Session.Model
 import Pages.Utils exposing (setMultiSelectInputValue)
-import RemoteData exposing (RemoteData(..))
 
 
 {-| The extra return parameter indicates our desire to change the `activePage`.

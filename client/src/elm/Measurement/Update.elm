@@ -14,10 +14,9 @@ import Backend.Measurement.Model
         , WeightInGrm(..)
         )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
-import EverySet exposing (EverySet)
-import Maybe.Extra
+import EverySet
 import Measurement.Model exposing (..)
-import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue)
+import Pages.Utils exposing (setMultiSelectInputValue)
 
 
 {-| The strategy used here, for the moment, is that the `model` tracks the UI,
@@ -98,7 +97,7 @@ updateChild msg model =
             let
                 newModel =
                     case outMsg of
-                        SavePhoto id photo ->
+                        SavePhoto _ _ ->
                             -- When we save a photo, we blank our local record
                             -- of the unsaved photo URL. We're saving the photo
                             -- locally, and when we succeed, we'll see it in

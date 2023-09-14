@@ -1,12 +1,12 @@
 module Pages.People.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
@@ -231,7 +231,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                         (Dict.filter
                             (\filteredPersonId filteredPerson ->
                                 -- Applying conditions explained above.
-                                not (relation == Just filteredPersonId)
+                                (relation /= Just filteredPersonId)
                                     && personTypeCondition filteredPerson
                                     && personRelationCondition filteredPersonId
                                     && chwCondition filteredPerson

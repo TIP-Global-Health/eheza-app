@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
-import Date exposing (Unit(..))
+import Date exposing (Unit)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -1137,11 +1137,6 @@ type NCDAStep
     | NCDAStepNutritionBehavior
     | NCDAStepTargetedInterventions
     | NCDAStepInfrastructureEnvironment
-
-
-type ANCVisitsViewMode
-    = ANCVisitsInitialMode
-    | ANCVisitsUpdateMode
 
 
 type GroupOfFoods

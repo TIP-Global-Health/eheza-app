@@ -1,8 +1,7 @@
 module Pages.ChildScoreboard.Activity.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model
     exposing
         ( ChildScoreboardMeasurements
@@ -14,47 +13,18 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import Date exposing (Unit(..))
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import List.Extra
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import EverySet
+import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
-        , generateFutureVaccinationsData
-        , generateVaccinationProgressForVaccine
-        , getPreviousMeasurements
+        ( generateFutureVaccinationsData
         , immunisationTaskToVaccineType
-        , isTestResultValid
-        , mergeVaccinationProgressDicts
-        , resolveLabTestDate
-        , vitalsFormWithDefault
         )
 import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
-import Pages.Utils
-    exposing
-        ( ifEverySetEmpty
-        , ifNullableTrue
-        , ifTrue
-        , maybeToBoolTask
-        , maybeValueConsideringIsDirtyField
-        , taskCompleted
-        , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewNumberInput
-        , viewQuestionLabel
-        )
-import RemoteData exposing (RemoteData(..))
-import Translate.Model exposing (Language(..))
 
 
 expectActivity : NominalDate -> AssembledData -> ChildScoreboardActivity -> Bool

@@ -1,12 +1,10 @@
 module Pages.Nutrition.Encounter.Update exposing (update)
 
 import App.Model
-import App.Ports
 import Backend.Model
-import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Model
 import Pages.Nutrition.Encounter.Model exposing (..)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

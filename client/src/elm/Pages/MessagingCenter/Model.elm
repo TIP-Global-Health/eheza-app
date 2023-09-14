@@ -8,8 +8,7 @@ import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model
     exposing
-        ( ResilienceSurvey
-        , ResilienceSurveyQuestion
+        ( ResilienceSurveyQuestion
         , ResilienceSurveyQuestionOption
         )
 import Date exposing (Date)

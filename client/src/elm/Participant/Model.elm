@@ -1,4 +1,4 @@
-module Participant.Model exposing (Participant, ParticipantId(..))
+module Participant.Model exposing (Participant)
 
 {-| This module provides a type which allows us to do certain things
 with either children or mothers, by providing a typeclass-like
@@ -11,7 +11,7 @@ with Child and ChildActivity.
 -}
 
 import Activity.Model exposing (Activity, CompletedAndPending)
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
@@ -60,7 +60,6 @@ type alias Participant id value activity msg date =
     , tagActivity : activity -> Activity
     , toChildId : id -> Maybe PersonId
     , toMotherId : id -> Maybe PersonId
-    , toParticipantId : id -> ParticipantId
     , viewMeasurements :
         Language
         -> NominalDate
@@ -73,8 +72,3 @@ type alias Participant id value activity msg date =
         -> EditableSession
         -> Html (Pages.Activity.Model.Msg id msg)
     }
-
-
-type ParticipantId
-    = ParticipantMother PersonId
-    | ParticipantChild PersonId

@@ -1,23 +1,16 @@
 module Pages.HomeVisit.Activity.View exposing (view)
 
-import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
-import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolveAllWeightMeasurementsForChild)
-import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Utils exposing (..)
 import Pages.HomeVisit.Activity.Model exposing (..)
 import Pages.HomeVisit.Activity.Utils exposing (..)
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
@@ -27,17 +20,14 @@ import Pages.Utils
     exposing
         ( taskCompleted
         , taskCompletedWithException
-        , tasksBarId
         , viewBoolInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewCustomSelectListInput
-        , viewLabel
         , viewPersonDetails
         , viewQuestionLabel
         )
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 

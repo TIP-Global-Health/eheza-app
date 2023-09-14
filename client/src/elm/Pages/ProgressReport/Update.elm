@@ -1,13 +1,10 @@
 module Pages.ProgressReport.Update exposing (update)
 
 import App.Model
-import Backend.Model
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
-import Pages.Page exposing (Page(..))
 import Pages.ProgressReport.Model exposing (..)
-import Pages.Session.Model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

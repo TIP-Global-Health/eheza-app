@@ -1,44 +1,30 @@
 module Pages.WellChild.Activity.Update exposing (update)
 
 import App.Model
-import App.Ports exposing (bindDropZone)
 import App.Utils exposing (focusOnCalendarMsg)
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Date
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (unwrap)
 import Measurement.Model
     exposing
-        ( ANCVisitsViewMode(..)
-        , HeightForm
-        , ImmunisationTask(..)
-        , MuacForm
-        , NutritionForm
-        , PhotoForm
+        ( ImmunisationTask(..)
         , VaccinationFormViewMode(..)
-        , WeightForm
-        , emptyHeightForm
-        , emptyMuacForm
-        , emptyNutritionForm
         , emptyPhotoForm
-        , emptyWeightForm
         )
 import Measurement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (..)
-import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
-import Result exposing (Result)
 
 
 update : NominalDate -> Bool -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -194,9 +180,6 @@ update currentDate isChw id db msg model =
 
         SavePregnancySummary personId saved ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
                 measurement =
                     getMeasurementValueFunc saved
 
@@ -205,6 +188,10 @@ update currentDate isChw id db msg model =
                         |> toPregnancySummaryValueWithDefault measurement
                         |> Maybe.map
                             (\value ->
+                                let
+                                    measurementId =
+                                        Maybe.map Tuple.first saved
+                                in
                                 [ Backend.WellChildEncounter.Model.SavePregnancySummary personId measurementId value
                                     |> Backend.Model.MsgWellChildEncounter id
                                     |> App.Model.MsgIndexedDb
@@ -280,11 +267,11 @@ update currentDate isChw id db msg model =
 
         SetVitalsIntInput formUpdateFunc value ->
             let
-                form =
-                    model.dangerSignsData.vitalsForm
-
                 updatedData =
                     let
+                        form =
+                            model.dangerSignsData.vitalsForm
+
                         updatedForm =
                             formUpdateFunc (String.toInt value) form
                     in
@@ -298,11 +285,11 @@ update currentDate isChw id db msg model =
 
         SetVitalsFloatInput formUpdateFunc value ->
             let
-                form =
-                    model.dangerSignsData.vitalsForm
-
                 updatedData =
                     let
+                        form =
+                            model.dangerSignsData.vitalsForm
+
                         updatedForm =
                             formUpdateFunc (String.toFloat value) form
                     in
@@ -712,7 +699,7 @@ update currentDate isChw id db msg model =
                         |> resolveVaccinationForm vaccineType
 
                 updatedForm =
-                    if value == True then
+                    if value then
                         { form
                             | viewMode = ViewModeVaccinationUpdate dose
                             , updatePreviousVaccines = Nothing

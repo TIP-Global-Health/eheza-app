@@ -1,6 +1,5 @@
 module Pages.Person.Model exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Initiator, ParticipantDirectoryOperation)
 import Date exposing (Date)

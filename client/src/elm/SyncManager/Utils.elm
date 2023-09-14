@@ -85,7 +85,7 @@ determineSyncStatus activePage model =
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
-                                    Just data ->
+                                    Just _ ->
                                         -- We still have data. Reset errors counter to 0, since last upload was succesfull.
                                         ( SyncUploadPhoto 0 webData, syncInfoAuthorities )
 
@@ -95,15 +95,6 @@ determineSyncStatus activePage model =
 
                             RemoteData.Failure error ->
                                 let
-                                    handleNetworkError =
-                                        if errorsCount > fileUploadFailureThreshold then
-                                            -- Threshold exceeded, as there's no internet connection - stop current sync cycle.
-                                            SyncIdle
-
-                                        else
-                                            -- Threshold not exceeded - increase counter and try uploading again.
-                                            SyncUploadPhoto (errorsCount + 1) webData
-
                                     handleNonNetworkError reason =
                                         if errorsCount > fileUploadFailureThreshold then
                                             -- Threshold exceeded - report an incident and stop current sync cycle.
@@ -115,6 +106,16 @@ determineSyncStatus activePage model =
                                 in
                                 case error of
                                     NetworkError _ ->
+                                        let
+                                            handleNetworkError =
+                                                if errorsCount > fileUploadFailureThreshold then
+                                                    -- Threshold exceeded, as there's no internet connection - stop current sync cycle.
+                                                    SyncIdle
+
+                                                else
+                                                    -- Threshold not exceeded - increase counter and try uploading again.
+                                                    SyncUploadPhoto (errorsCount + 1) webData
+                                        in
                                         ( handleNetworkError, syncInfoAuthorities )
 
                                     BadJson reason ->
@@ -130,7 +131,7 @@ determineSyncStatus activePage model =
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
-                                    Just data ->
+                                    Just _ ->
                                         -- We still have data. Reset errors counter to 0, since last upload was succesfull.
                                         ( SyncUploadScreenshot 0 webData, syncInfoAuthorities )
 
@@ -140,15 +141,6 @@ determineSyncStatus activePage model =
 
                             RemoteData.Failure error ->
                                 let
-                                    handleNetworkError =
-                                        if errorsCount > fileUploadFailureThreshold then
-                                            -- Threshold exceeded, as there's no internet connection - stop current sync cycle.
-                                            SyncIdle
-
-                                        else
-                                            -- Threshold not exceeded - increase counter and try uploading again.
-                                            SyncUploadScreenshot (errorsCount + 1) webData
-
                                     handleNonNetworkError reason =
                                         if errorsCount > fileUploadFailureThreshold then
                                             -- Threshold exceeded - report an incident and stop current sync cycle.
@@ -160,6 +152,16 @@ determineSyncStatus activePage model =
                                 in
                                 case error of
                                     NetworkError _ ->
+                                        let
+                                            handleNetworkError =
+                                                if errorsCount > fileUploadFailureThreshold then
+                                                    -- Threshold exceeded, as there's no internet connection - stop current sync cycle.
+                                                    SyncIdle
+
+                                                else
+                                                    -- Threshold not exceeded - increase counter and try uploading again.
+                                                    SyncUploadScreenshot (errorsCount + 1) webData
+                                        in
                                         ( handleNetworkError, syncInfoAuthorities )
 
                                     BadJson reason ->
@@ -323,13 +325,14 @@ determineDownloadPhotosStatus model =
     in
     if syncCycleRotate then
         let
-            currentStatus =
-                model.downloadPhotosStatus
-
             statusUpdated =
                 case model.syncStatus of
                     SyncIdle ->
                         -- Cases are ordered by the cycle order.
+                        let
+                            currentStatus =
+                                model.downloadPhotosStatus
+                        in
                         case currentStatus of
                             DownloadPhotosIdle ->
                                 DownloadPhotosInProcess model.downloadPhotosMode
@@ -1010,19 +1013,6 @@ getSyncSpeedForSubscriptions model =
 
             else
                 syncCycle
-
-        checkWebDataForPhotos webData =
-            case webData of
-                RemoteData.Failure error ->
-                    if Utils.WebData.isNetworkError error then
-                        -- It's a network error, so slow things down.
-                        checkWebData webData
-
-                    else
-                        syncCycle
-
-                _ ->
-                    syncCycle
     in
     case model.syncStatus of
         SyncIdle ->

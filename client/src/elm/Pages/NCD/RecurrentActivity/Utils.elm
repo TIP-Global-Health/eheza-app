@@ -1,37 +1,17 @@
 module Pages.NCD.RecurrentActivity.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.NCDActivity.Model exposing (..)
-import Backend.NCDEncounter.Types exposing (..)
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue, vitalsFormWithDefault)
+import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
 import Pages.NCD.Utils exposing (..)
-import Pages.Utils
-    exposing
-        ( ifEverySetEmpty
-        , ifNullableTrue
-        , ifTrue
-        , maybeValueConsideringIsDirtyField
-        , taskAllCompleted
-        , taskCompleted
-        , valueConsideringIsDirtyField
-        , viewBoolInput
-        , viewCustomLabel
-        , viewQuestionLabel
-        )
-import Translate exposing (Language, TranslationId, translate)
-import Translate.Model exposing (Language(..))
+import Translate.Model exposing (Language)
 
 
 expectActivity : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool

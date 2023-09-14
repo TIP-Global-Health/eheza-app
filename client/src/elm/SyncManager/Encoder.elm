@@ -20,7 +20,6 @@ import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendEntityIdentifier
-        , BackendGeneralEntity(..)
         , BackendWhatsAppEntity
         , IndexDbQueryUploadAuthorityResultRecord
         , IndexDbQueryUploadGeneralResultRecord

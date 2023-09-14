@@ -1,28 +1,21 @@
 module Pages.HomeVisit.Activity.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (HomeVisitEncounterId)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import List.Extra
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (..)
+import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Pages.HomeVisit.Activity.Model exposing (..)
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskCompleted)
-import RemoteData exposing (RemoteData(..))
+import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue)
 
 
 expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool
 expectActivity currentDate child data db activity =
     -- For now, we show all activities without any conditions.
-    case activity of
-        _ ->
-            True
+    True
 
 
 activityCompleted : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool

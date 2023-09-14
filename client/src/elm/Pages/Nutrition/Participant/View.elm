@@ -4,22 +4,19 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
+import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant, getNutritionEncountersForParticipant)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.Nutrition.Participant.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
+import RemoteData exposing (RemoteData(..))
+import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -65,9 +62,7 @@ viewHeader language isChw initiator =
             [ class "link-back"
             , onClick <| App.Model.SetActivePage <| UserPage goBackPage
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
@@ -119,7 +114,7 @@ viewNutritionAction language currentDate selectedHealthCenter id isChw db sessio
             sessions
                 |> Dict.toList
                 |> List.filter
-                    (\( sessionId, session ) ->
+                    (\( _, session ) ->
                         session.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
                     )
                 |> List.head
@@ -211,7 +206,7 @@ viewHomeVisitAction language currentDate selectedHealthCenter id isChw db sessio
             sessions
                 |> Dict.toList
                 |> List.filter
-                    (\( sessionId, session ) ->
+                    (\( _, session ) ->
                         session.encounterType == Backend.IndividualEncounterParticipant.Model.HomeVisitEncounter
                     )
                 |> List.head

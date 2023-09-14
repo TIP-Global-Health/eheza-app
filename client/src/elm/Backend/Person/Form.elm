@@ -2,7 +2,7 @@ module Backend.Person.Form exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
-import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (Gender)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils
@@ -13,7 +13,6 @@ import Backend.Person.Utils
         , generateFullName
         , hivStatusToString
         , isAdult
-        , isPersonAnAdult
         , maritalStatusToString
         , modeOfDeliveryToString
         , resolveExpectedAge
@@ -23,16 +22,15 @@ import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
 import Form.Field
-import Form.Init exposing (..)
 import Form.Validate exposing (..)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isNothing, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (ValidationError(..))
-import Utils.Form exposing (fromDecoder, nullable, required)
+import Utils.Form exposing (fromDecoder, nullable)
 import Utils.GeoLocation exposing (GeoInfo, getGeoInfo, getGeoLocation)
 
 
@@ -158,48 +156,6 @@ applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPers
                 maybeRelatedPerson
                     |> Maybe.andThen .healthCenterId
 
-        defaultHmisNumber =
-            maybeRelatedPerson
-                |> Maybe.andThen .hmisNumber
-
-        defaultModeOfDelivery =
-            maybeRelatedPerson
-                |> Maybe.andThen .modeOfDelivery
-
-        defaultHivStatus =
-            maybeRelatedPerson
-                |> Maybe.andThen .hivStatus
-
-        defaultlEducationLevel =
-            maybeRelatedPerson
-                |> Maybe.andThen .educationLevel
-
-        defaultlNumberOfChildrenl =
-            maybeRelatedPerson
-                |> Maybe.andThen .numberOfChildren
-
-        defaultMaritalStatus =
-            maybeRelatedPerson
-                |> Maybe.andThen .maritalStatus
-
-        defaultFirstName =
-            maybeRelatedPerson |> Maybe.map .firstName
-
-        defaultSecondName =
-            maybeRelatedPerson |> Maybe.map .secondName
-
-        defaultNationalIdNumber =
-            maybeRelatedPerson |> Maybe.andThen .nationalIdNumber
-
-        defaultBirthDate =
-            maybeRelatedPerson |> Maybe.andThen .birthDate
-
-        defaultAvatarUrl =
-            maybeRelatedPerson |> Maybe.andThen .avatarUrl
-
-        defaultTelephoneNumber =
-            maybeRelatedPerson |> Maybe.andThen .telephoneNumber
-
         validation =
             validatePerson site maybeRelatedPerson operation (Just currentDate)
 
@@ -302,6 +258,49 @@ applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPers
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
 
         EditPerson _ ->
+            let
+                defaultHmisNumber =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .hmisNumber
+
+                defaultModeOfDelivery =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .modeOfDelivery
+
+                defaultHivStatus =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .hivStatus
+
+                defaultlEducationLevel =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .educationLevel
+
+                defaultlNumberOfChildrenl =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .numberOfChildren
+
+                defaultMaritalStatus =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .maritalStatus
+
+                defaultFirstName =
+                    maybeRelatedPerson |> Maybe.map .firstName
+
+                defaultSecondName =
+                    maybeRelatedPerson |> Maybe.map .secondName
+
+                defaultNationalIdNumber =
+                    maybeRelatedPerson |> Maybe.andThen .nationalIdNumber
+
+                defaultBirthDate =
+                    maybeRelatedPerson |> Maybe.andThen .birthDate
+
+                defaultAvatarUrl =
+                    maybeRelatedPerson |> Maybe.andThen .avatarUrl
+
+                defaultTelephoneNumber =
+                    maybeRelatedPerson |> Maybe.andThen .telephoneNumber
+            in
             form
                 |> applyDefaultTextInput photo defaultAvatarUrl identity
                 |> applyDefaultTextInput firstName defaultFirstName identity
@@ -470,9 +469,6 @@ validateHmisNumber =
         |> andThen
             (\s ->
                 let
-                    trimmed =
-                        String.trim s
-
                     error =
                         customError InvalidHmisNumber
                 in
@@ -480,7 +476,7 @@ validateHmisNumber =
                     |> Maybe.map
                         (\number ->
                             if number > 0 && number < 16 then
-                                succeed trimmed
+                                succeed <| String.trim s
 
                             else
                                 fail error

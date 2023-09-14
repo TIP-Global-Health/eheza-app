@@ -15,21 +15,19 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, expectNCDAActivity, getMeasurementValueFunc, mapMeasurementData, weightValueFunc)
+import Backend.Measurement.Utils exposing (currentValues, expectNCDAActivity, getMeasurementValueFunc, mapMeasurementData, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
+import Backend.Session.Utils exposing (getChildMeasurementData2, getChildren, getMotherMeasurementData2, getMyMother)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
-import Maybe.Extra exposing (isJust, isNothing)
-import Measurement.Utils exposing (expectCounselingActivity, expectParticipantConsent)
-import RemoteData exposing (RemoteData(..))
+import Maybe.Extra exposing (isJust)
+import Measurement.Utils exposing (expectParticipantConsent)
 import ZScore.Model
-import ZScore.Utils exposing (zScoreWeightForAge)
 
 
 generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> PersonId -> ModelIndexedDb -> OfflineSession -> List NutritionAssessment
@@ -329,11 +327,7 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
                 |> Maybe.andThen .birthDate
                 |> Maybe.map
                     (\birthDate ->
-                        if diffMonths birthDate currentDate < 6 then
-                            False
-
-                        else
-                            True
+                        diffMonths birthDate currentDate >= 6
                     )
                 |> Maybe.withDefault False
 

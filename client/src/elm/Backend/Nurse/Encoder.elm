@@ -9,7 +9,6 @@ import Gizra.TimePosix exposing (encodePosixAsSeconds)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Time
 
 
 encodeNurse : Nurse -> List ( String, Value )

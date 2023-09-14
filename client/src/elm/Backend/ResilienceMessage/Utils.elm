@@ -1,8 +1,6 @@
 module Backend.ResilienceMessage.Utils exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.ResilienceMessage.Model exposing (..)
-import EverySet
 
 
 resilienceCategoryToString : ResilienceCategory -> String

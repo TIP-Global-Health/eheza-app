@@ -1,7 +1,6 @@
 module Pages.GlobalCaseManagement.Update exposing (update)
 
 import App.Model
-import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType(..), emptyAcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
@@ -12,7 +11,6 @@ import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
-import RemoteData exposing (RemoteData(..))
 
 
 update : NominalDate -> Maybe HealthCenterId -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -50,7 +48,7 @@ update currentDate healthCenterId msg db model =
                                         startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
 
                                     -- We should never get here, as Prenatal Encounter got it's own action.
-                                    FollowUpPrenatal data ->
+                                    FollowUpPrenatal _ ->
                                         []
 
                                     CaseManagementContactsTracing ->

@@ -1,41 +1,33 @@
 module Pages.Prenatal.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
-import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (SendToHCForm)
-import Measurement.Utils exposing (generateVaccinationProgressForVaccine, sendToHCFormWithDefault, toEverySet, vitalsFormWithDefault)
-import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage, viewTreatmentWithDosage)
-import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationLabel, viewAdministeredMedicationQuestion)
+import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Measurement.Utils exposing (generateVaccinationProgressForVaccine, toEverySet)
+import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
+import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Utils
     exposing
         ( getCurrentReasonForMedicationNonAdministration
         , ifEverySetEmpty
         , ifNullableTrue
-        , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , nonAdministrationReasonToSign
-        , taskAllCompleted
         , taskCompleted
-        , valueConsideringIsDirtyField
         , viewBoolInput
         , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
-        , viewCheckBoxSelectInputWithRecommendation
         , viewCustomLabel
         , viewInstructionsLabel
         , viewQuestionLabel
@@ -2645,7 +2637,7 @@ updateNonAdministrationSigns :
     -> MedicationDistributionForm
     -> Maybe (EverySet MedicationNonAdministrationSign)
 updateNonAdministrationSigns medication reasonToSignFunc value form =
-    if value == True then
+    if value then
         form.nonAdministrationSigns
             |> Maybe.andThen
                 (\nonAdministrationSigns ->
@@ -2832,7 +2824,7 @@ diagnosedHypertensionPrevoiusly assembled =
 
 resolvePreviousHypertensionDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
 resolvePreviousHypertensionDiagnosis nursePreviousEncountersData =
-    List.filterMap
+    List.concatMap
         (\data ->
             EverySet.toList data.diagnoses
                 |> List.filter
@@ -2840,10 +2832,8 @@ resolvePreviousHypertensionDiagnosis nursePreviousEncountersData =
                         List.member diagnosis hypertensionDiagnoses
                             || List.member diagnosis moderatePreeclampsiaDiagnoses
                     )
-                |> Just
         )
         nursePreviousEncountersData
-        |> List.concat
         |> List.map hierarchalHypertensionlikeDiagnosisToNumber
         |> Maybe.Extra.values
         |> List.maximum
@@ -2907,17 +2897,15 @@ resolveNCDReferralDiagnoses nursePreviousEncountersData =
 
 resolvePreviousHypertensionlikeDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
 resolvePreviousHypertensionlikeDiagnosis nursePreviousEncountersData =
-    List.filterMap
+    List.concatMap
         (\data ->
             EverySet.toList data.diagnoses
                 |> List.filter
                     (\diagnosis ->
                         List.member diagnosis hypertensionlikeDiagnoses
                     )
-                |> Just
         )
         nursePreviousEncountersData
-        |> List.concat
         |> List.map hierarchalHypertensionlikeDiagnosisToNumber
         |> Maybe.Extra.values
         |> List.maximum
@@ -2938,17 +2926,15 @@ hypertensionlikeDiagnoses =
 
 resolvePreviousDiabetesDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
 resolvePreviousDiabetesDiagnosis nursePreviousEncountersData =
-    List.filterMap
+    List.concatMap
         (\data ->
             EverySet.toList data.diagnoses
                 |> List.filter
                     (\diagnosis ->
                         List.member diagnosis diabetesDiagnoses
                     )
-                |> Just
         )
         nursePreviousEncountersData
-        |> List.concat
         |> List.head
 
 
@@ -3383,7 +3369,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                                         Nothing
                                   ]
                                     ++ accompanySection
-                                , [ config.formField ] ++ accompanyTasks
+                                , config.formField :: accompanyTasks
                                 )
 
                             else
@@ -3408,7 +3394,7 @@ resolveReferralToFacilityInputsAndTasks language currentDate phase assembled set
                    ]
                 ++ derivedSection
                 ++ [ div [ class "separator" ] [] ]
-            , [ config.referralField ] ++ derivedTasks
+            , config.referralField :: derivedTasks
             )
         )
         maybeConfig

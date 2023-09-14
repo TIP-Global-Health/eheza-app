@@ -1,36 +1,32 @@
 module Pages.StockManagement.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
-        ( Gender(..)
-        , ImageUrl(..)
+        ( ImageUrl(..)
         , StockCorrectionReason(..)
         , StockSupplier(..)
-        , StockUpdate
-        , StockUpdateType(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.StockUpdate.Model exposing (StockManagementData)
 import Backend.StockUpdate.Utils exposing (..)
-import Date exposing (Month, Unit(..))
+import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import EverySet
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYY, formatDDMMYYYY, fromLocalDateTime)
+import Gizra.Html exposing (emptyNode, showIf)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYY, formatDDMMYYYY)
 import Gizra.TimePosix exposing (viewTimePosix)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput)
 import Json.Decode
 import List.Extra
-import List.Zipper exposing (Zipper)
+import List.Zipper
 import Maybe exposing (Maybe)
-import Maybe.Extra exposing (isJust, isNothing)
+import Maybe.Extra
 import Pages.Dashboard.View exposing (chwCard)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 import Pages.StockManagement.Model exposing (..)
 import Pages.StockManagement.Utils exposing (..)
 import Pages.Utils
@@ -38,10 +34,8 @@ import Pages.Utils
         ( customPopup
         , maybeToBoolTask
         , resolveSelectedDateForMonthSelector
-        , taskCompleted
         , viewBoolInput
         , viewCheckBoxSelectInput
-        , viewCustomLabel
         , viewLabel
         , viewMonthSelector
         , viewNumberInput
@@ -56,9 +50,9 @@ import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import SyncManager.Model exposing (SyncInfoAuthorityZipper)
 import Time
-import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (spinner, viewModal)
-import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
+import Translate exposing (Language, translate)
+import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (sortByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -626,7 +620,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
                     Nothing
               ]
                 ++ derivedInputs
-            , [ form.confirmIdentity ] ++ derivedTasks
+            , form.confirmIdentity :: derivedTasks
             )
 
         ( tasksCompleted, totalTasks ) =
@@ -765,7 +759,7 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
                     Nothing
               ]
                 ++ derivedInputs
-            , [ form.confirmIdentity ] ++ derivedTasks
+            , form.confirmIdentity :: derivedTasks
             )
 
         ( tasksCompleted, totalTasks ) =

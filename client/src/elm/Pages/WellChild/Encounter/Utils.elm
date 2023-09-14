@@ -1,27 +1,13 @@
 module Pages.WellChild.Encounter.Utils exposing (..)
 
-import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant)
-import Backend.Person.Utils exposing (ageInMonths)
-import Backend.WellChildActivity.Model exposing (..)
-import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..))
 import Date exposing (Unit(..))
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import List.Extra
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (VaccinationProgressDict)
-import Measurement.Utils exposing (getPreviousMeasurements)
-import Pages.WellChild.Activity.Utils exposing (generateVaccinationProgress)
+import Measurement.Utils
 import Pages.WellChild.Encounter.Model exposing (..)
-import Pages.WellChild.Utils exposing (generateVaccinationProgressDicts)
-import RemoteData exposing (RemoteData(..), WebData)
-import Utils.NominalDate exposing (sortTuplesByDateDesc)
+import RemoteData exposing (WebData)
 
 
 generateAssembledData : WellChildEncounterId -> ModelIndexedDb -> WebData AssembledData
@@ -34,9 +20,6 @@ resolvePediatricCareMilestoneOnDate dueDate birthDate =
     let
         ageWeeks =
             Date.diff Weeks birthDate dueDate
-
-        ageMonths =
-            Date.diff Months birthDate dueDate
     in
     if ageWeeks < 6 then
         Nothing
@@ -44,32 +27,37 @@ resolvePediatricCareMilestoneOnDate dueDate birthDate =
     else if ageWeeks < 14 then
         Just Milestone6Weeks
 
-    else if ageMonths < 6 then
-        Just Milestone14Weeks
-
-    else if ageMonths < 9 then
-        Just Milestone6Months
-
-    else if ageMonths < 12 then
-        Just Milestone9Months
-
-    else if ageMonths < 15 then
-        Just Milestone12Months
-
-    else if ageMonths < 18 then
-        Just Milestone15Months
-
-    else if ageMonths < 24 then
-        Just Milestone18Months
-
-    else if ageMonths < 36 then
-        Just Milestone2Years
-
-    else if ageMonths < 48 then
-        Just Milestone3Years
-
     else
-        Just Milestone4Years
+        let
+            ageMonths =
+                Date.diff Months birthDate dueDate
+        in
+        if ageMonths < 6 then
+            Just Milestone14Weeks
+
+        else if ageMonths < 9 then
+            Just Milestone6Months
+
+        else if ageMonths < 12 then
+            Just Milestone9Months
+
+        else if ageMonths < 15 then
+            Just Milestone12Months
+
+        else if ageMonths < 18 then
+            Just Milestone15Months
+
+        else if ageMonths < 24 then
+            Just Milestone18Months
+
+        else if ageMonths < 36 then
+            Just Milestone2Years
+
+        else if ageMonths < 48 then
+            Just Milestone3Years
+
+        else
+            Just Milestone4Years
 
 
 resolveDateForPediatricCareMilestone : NominalDate -> PediatricCareMilestone -> NominalDate

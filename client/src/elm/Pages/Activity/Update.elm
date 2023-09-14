@@ -65,14 +65,15 @@ updateChild currentDate zscores msg model session activity childForm db =
                 updatedModel =
                     { model | filter = filter }
 
-                participants =
-                    calculateChildrenParticipants currentDate zscores session activity db updatedModel
-
                 outMsg =
                     if List.member activity [ Height, Muac, Weight ] |> not then
                         Nothing
 
                     else
+                        let
+                            participants =
+                                calculateChildrenParticipants currentDate zscores session activity db updatedModel
+                        in
                         case model.selectedTab of
                             Pending ->
                                 participants.pending

@@ -9,27 +9,22 @@ import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( calculateZScoreWeightForAge
-        , getWellChildEncountersForParticipant
-        , muacModerate
-        , muacSevere
+        ( getWellChildEncountersForParticipant
         , resolveIndividualNutritionValues
         , resolveIndividualWellChildValues
-        , zScoreWeightForAgeModerate
-        , zScoreWeightForAgeSevere
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2)
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -37,7 +32,6 @@ import List.Extra
 import LocalData
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
-import Pages.Nutrition.Encounter.Utils
 import Pages.Session.Model
 import Pages.Utils
     exposing
@@ -63,10 +57,9 @@ import Pages.Utils
 import Pages.WellChild.Encounter.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
-import Translate exposing (Language, TranslationId, translate)
-import Translate.Model exposing (Language(..))
+import Translate exposing (TranslationId, translate)
+import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -850,9 +843,6 @@ vaccinationFormDynamicContentAndTasks :
     -> ( List (Html msg), Int, Int )
 vaccinationFormDynamicContentAndTasks language currentDate config vaccineType form =
     let
-        birthDate =
-            config.birthDate
-
         expectedDoses =
             config.expectedDoses
 
@@ -874,14 +864,14 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
                 expectedDoses
 
         lastDoseData =
-            List.filter (\( dose, date ) -> date /= currentDate)
+            List.filter (\( _, date ) -> date /= currentDate)
                 allDosesGivenData
                 |> List.reverse
                 |> List.head
 
         doseGivenToday =
             List.filter
-                (\( dose, date ) ->
+                (\( _, date ) ->
                     date == currentDate
                 )
                 dosesFromCurrentEncounterData
@@ -892,10 +882,6 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
             case form.viewMode of
                 ViewModeInitial ->
                     let
-                        updatePreviousVaccines =
-                            (form.updatePreviousVaccines == Just True)
-                                && (form.administrationNote /= Just AdministeredToday)
-
                         noDoseGivenToday =
                             List.filter
                                 (\( _, date ) ->
@@ -906,7 +892,7 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
 
                         doseAllowedForDeletion =
                             List.filter
-                                (\( dose, date ) ->
+                                (\( _, date ) ->
                                     date /= currentDate
                                 )
                                 dosesFromCurrentEncounterData
@@ -1434,7 +1420,7 @@ outsideCareFormInputsAndTasksDiagnoses language config form =
                         Nothing
                   ]
                     ++ newDiagnosisSection
-                , [ form.givenNewDiagnosis ] ++ newDiagnosisTasks
+                , form.givenNewDiagnosis :: newDiagnosisTasks
                 )
 
             else
@@ -1459,7 +1445,7 @@ outsideCareFormInputsAndTasksDiagnoses language config form =
             Nothing
       ]
         ++ givenNewDiagnosisSection
-    , [ form.seenAtAnotherFacility ] ++ givenNewDiagnosisTasks
+    , form.seenAtAnotherFacility :: givenNewDiagnosisTasks
     )
 
 
@@ -1655,7 +1641,7 @@ hivTestFormWithDefault form saved =
             (\value ->
                 let
                     knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+                        value.executionNote == TestNoteKnownAsPositive
 
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
@@ -1946,7 +1932,7 @@ pregnancyTestFormWithDefault form saved =
             (\value ->
                 let
                     knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+                        value.executionNote == TestNoteKnownAsPositive
 
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
@@ -1998,7 +1984,7 @@ nonRDTFormWithDefault form saved =
             (\value ->
                 let
                     knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+                        value.executionNote == TestNoteKnownAsPositive
 
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
@@ -2208,9 +2194,8 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
                 )
     in
     ( div [ class "ui form laboratory hiv" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHIVTest) "" "label header"
-        ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHIVTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2280,8 +2265,8 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory malaria" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskMalariaTest) "" "label header" ]
-            ++ rdtInputs
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskMalariaTest) "" "label header"
+            :: rdtInputs
             ++ bloodSmearInputs
     , rdtTasksCompleted + bloodSmearTasksCompleted
     , rdtTasksTotal + bloodSmearTasksTotal
@@ -2308,8 +2293,8 @@ viewPregnancyTestForm language currentDate configInitial configPerformed form =
                 prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskPregnancyTest form
     in
     ( div [ class "ui form laboratory malaria" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPregnancyTest) "" "label header" ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPregnancyTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2329,8 +2314,8 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
             prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskPartnerHIVTest form
     in
     ( div [ class "ui form laboratory partner-hiv" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPartnerHIVTest) "" "label header" ]
-            ++ inputs
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPartnerHIVTest) "" "label header"
+            :: inputs
     , tasksCompleted
     , tasksTotal
     )
@@ -2363,28 +2348,29 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
                     ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
                         contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed task form
 
-                    setTestResultMsg =
-                        case task of
-                            TaskHIVTest ->
-                                Just configInitial.setHIVTestResultMsg
-
-                            TaskMalariaTest ->
-                                Just configInitial.setMalariaTestResultMsg
-
-                            TaskPregnancyTest ->
-                                Just configInitial.setPregnancyTestResultMsg
-
-                            TaskPartnerHIVTest ->
-                                Just configInitial.setPartnerHIVTestResultMsg
-
-                            _ ->
-                                Nothing
-
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
                             ( [], 0, 0 )
 
                         else
+                            let
+                                setTestResultMsg =
+                                    case task of
+                                        TaskHIVTest ->
+                                            Just configInitial.setHIVTestResultMsg
+
+                                        TaskMalariaTest ->
+                                            Just configInitial.setMalariaTestResultMsg
+
+                                        TaskPregnancyTest ->
+                                            Just configInitial.setPregnancyTestResultMsg
+
+                                        TaskPartnerHIVTest ->
+                                            Just configInitial.setPartnerHIVTestResultMsg
+
+                                        _ ->
+                                            Nothing
+                            in
                             Maybe.map
                                 (\setResultMsg ->
                                     ( [ viewLabel language <| Translate.LaboratoryTaskResult task
@@ -2464,9 +2450,8 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
-        ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2548,9 +2533,8 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
             ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
-        ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2578,9 +2562,8 @@ viewNonRDTFormCheckKnownAsPositive language currentDate configInitial configPerf
                 nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
     in
     ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
-        ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2601,9 +2584,8 @@ viewNonRDTForm language currentDate configInitial configPerformed task form =
             nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
     in
     ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
-        ]
-            ++ inputs
+        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
+            :: inputs
     , tasksCompleted
     , tasksTotal
     )
@@ -2744,8 +2726,8 @@ viewHbA1cTestForm language currentDate configInitial configPerformed previousTes
             ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory hba1c" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header" ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -3005,7 +2987,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                 \value form_ ->
                     let
                         ( executionNote, executionDate ) =
-                            if value == True then
+                            if value then
                                 ( Just TestNoteRunToday, Just currentDate )
 
                             else
@@ -4895,18 +4877,6 @@ resolveLabTestDate :
             )
     -> Maybe NominalDate
 resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
-    let
-        dateMeasured =
-            -- Date on which test was recorded.
-            -- Note that this is not the date when test was performed,
-            -- because it's possible to set past date for that.
-            -- We need the recorded date, because the logic says that
-            -- test that will not have results set for over 35 days is expired.
-            -- Can default to current date, because we use it only when there's
-            -- measurement value, and this means that there must be dateMeasured set.
-            Maybe.map (Tuple.second >> .dateMeasured) measurement
-                |> Maybe.withDefault currentDate
-    in
     getMeasurementValueFunc measurement
         |> Maybe.andThen
             (\value ->
@@ -4916,15 +4886,28 @@ resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
                         -- we treat the test as if it was not performed.
                         Nothing
 
-                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
-                        -- No results were entered for more than 35 days since the
-                        -- day on which measurement was taken.
-                        -- Test is considered expired, and is being ignored
-                        -- (as if it was never performed).
-                        Nothing
-
                     else
-                        value.executionDate
+                        let
+                            dateMeasured =
+                                -- Date on which test was recorded.
+                                -- Note that this is not the date when test was performed,
+                                -- because it's possible to set past date for that.
+                                -- We need the recorded date, because the logic says that
+                                -- test that will not have results set for over 35 days is expired.
+                                -- Can default to current date, because we use it only when there's
+                                -- measurement value, and this means that there must be dateMeasured set.
+                                Maybe.map (Tuple.second >> .dateMeasured) measurement
+                                    |> Maybe.withDefault currentDate
+                        in
+                        if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
+                            -- No results were entered for more than 35 days since the
+                            -- day on which measurement was taken.
+                            -- Test is considered expired, and is being ignored
+                            -- (as if it was never performed).
+                            Nothing
+
+                        else
+                            value.executionDate
 
                 else
                     Nothing

@@ -1,31 +1,27 @@
 module Pages.AcuteIllness.ProgressReport.View exposing (view)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..))
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInMonths, isChildUnderAgeOf5, isPersonAnAdult)
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
 import Date
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
-import Pages.AcuteIllness.Activity.Types exposing (NextStepsTask(..))
 import Pages.AcuteIllness.Activity.Utils
     exposing
-        ( muacRedOnSubsequentVisit
-        , resolveAcuteIllnessDiagnosis
-        , resolveAmoxicillinDosage
+        ( resolveAmoxicillinDosage
         , resolveCoartemDosage
         , resolveMedicationsNonAdministrationReasons
         , resolveORSDosage
@@ -49,21 +45,11 @@ import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport)
 import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
-import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model exposing (Site(..))
-import Translate exposing (Language, TranslationId, translate)
-import Translate.Model exposing (Language(..))
-import Utils.Html exposing (thumbnailImage, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
+import SyncManager.Model exposing (Site)
+import Translate exposing (TranslationId, translate)
+import Translate.Model exposing (Language)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
-
-
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 180
-    , height = 180
-    }
 
 
 view : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
@@ -78,9 +64,6 @@ view language currentDate site id isChw initiator db model =
 viewContent : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
 viewContent language currentDate site id isChw initiator model assembled =
     let
-        ( _, pendingActivities ) =
-            partitionActivities currentDate isChw assembled
-
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
@@ -93,12 +76,16 @@ viewContent language currentDate site id isChw initiator model assembled =
             else
                 Nothing
 
-        allowEndEncounter =
-            allowEndingEcounter currentDate isChw assembled pendingActivities
-
         endEncounterMenu =
             case initiator of
                 InitiatorEncounterPage ->
+                    let
+                        ( _, pendingActivities ) =
+                            partitionActivities currentDate isChw assembled
+
+                        allowEndEncounter =
+                            allowEndingEcounter currentDate isChw assembled pendingActivities
+                    in
                     viewEndEncounterMenuForProgressReport language
                         allowEndEncounter
                         SetEndEncounterDialogState
@@ -508,9 +495,6 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                                     |> getMeasurementValueFunc
                                     |> Maybe.map (\(MuacInCm muac_) -> muac_)
 
-                            muacValue =
-                                Maybe.map String.fromFloat muac
-
                             muacWarning =
                                 Maybe.map
                                     (\muac_ ->
@@ -537,6 +521,10 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                                     td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                                 else
+                                    let
+                                        muacValue =
+                                            Maybe.map String.fromFloat muac
+                                    in
                                     viewValueWithAlert muacValue muacWarning "muac"
                         in
                         tr []
@@ -605,7 +593,7 @@ viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondIni
         div [ class "pane nutrition-signs" ]
             [ viewPaneHeading language Translate.NitritionSigns
             , div [ class "pane-content" ] <|
-                viewNutritionSigns language assembled.person nutritions
+                viewNutritionSigns language nutritions
             ]
 
 
@@ -789,7 +777,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                     List.tail initialWithSubsequent
                         |> Maybe.withDefault []
                         |> List.reverse
-                        |> List.map
+                        |> List.concatMap
                             (\dataSubsequent ->
                                 dataSubsequent.measurements.treatmentOngoing
                                     |> Maybe.map
@@ -807,7 +795,6 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                                         )
                                     |> Maybe.withDefault []
                             )
-                        |> List.concat
             )
         |> Maybe.withDefault []
 

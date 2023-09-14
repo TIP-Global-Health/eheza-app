@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm)
+import Backend.Person.Form exposing (applyDefaultValuesForPerson, expectedAgeByForm)
 import Backend.Person.Model
     exposing
         ( ExpectedAge(..)
@@ -36,10 +36,10 @@ import Backend.Person.Utils
         )
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalActivity.Model
-import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.Relationship.Model exposing (MyRelationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
-import Date exposing (Date, Unit(..))
+import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Form exposing (Form)
 import Form.Field
@@ -50,13 +50,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
-import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Set
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
@@ -316,10 +315,6 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
         typeForThumbnail =
             defaultIconForPerson currentDate person
 
-        isAdult =
-            isPersonAnAdult currentDate person
-                |> Maybe.withDefault True
-
         relationshipLabel =
             otherPerson.relationship
                 |> Maybe.map
@@ -383,6 +378,10 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                         -- Allow any adult. Allow any child, when clinic type is
                                         -- Sorwathe/Achi. When clinic type is other, allow child
                                         -- with age lower than 26 month.
+                                        isAdult =
+                                            isPersonAnAdult currentDate person
+                                                |> Maybe.withDefault True
+
                                         qualifiesByAge =
                                             isAdult || List.member session.clinicType [ Sorwathe, Achi ] || childAgeCondition
 
@@ -811,11 +810,11 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                     ]
                 ]
 
-        genderField =
-            Form.getFieldAsString Backend.Person.Form.gender personForm
-
         genderInput =
             let
+                genderField =
+                    Form.getFieldAsString Backend.Person.Form.gender personForm
+
                 label =
                     div [ class "six wide column required" ]
                         [ text <| translate language Translate.GenderLabel ++ ":" ]
@@ -1019,20 +1018,21 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                     )
                 |> (::) emptyOption
 
-        familyInformationFields =
-            [ viewSelectInput language
-                Translate.FamilyUbudehe
-                ubudeheOptions
-                Backend.Person.Form.ubudehe
-                "ten"
-                "select-input"
-                True
-                personForm
-            ]
-
         -- Only field here is Ubudehe, and it's Rwanda specific.
         familyInformationSection =
             if site == SiteRwanda then
+                let
+                    familyInformationFields =
+                        [ viewSelectInput language
+                            Translate.FamilyUbudehe
+                            ubudeheOptions
+                            Backend.Person.Form.ubudehe
+                            "ten"
+                            "select-input"
+                            True
+                            personForm
+                        ]
+                in
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language Translate.FamilyInformation ++ ":" ]
@@ -1052,9 +1052,6 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                     else
                         ""
                    )
-
-        province =
-            Form.getFieldAsString Backend.Person.Form.province personForm
 
         district =
             Form.getFieldAsString Backend.Person.Form.district personForm
@@ -1091,6 +1088,9 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
 
         viewDistrict =
             let
+                province =
+                    Form.getFieldAsString Backend.Person.Form.province personForm
+
                 options =
                     emptyOption
                         :: (case getValueAsInt province of
@@ -1206,19 +1206,20 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                 True
                 personForm
 
-        addressFields =
-            [ viewProvince
-            , viewDistrict
-            , viewSector
-            , viewCell
-            , viewVillage
-            ]
-
         addressSection =
             if isChw then
                 []
 
             else
+                let
+                    addressFields =
+                        [ viewProvince
+                        , viewDistrict
+                        , viewSector
+                        , viewCell
+                        , viewVillage
+                        ]
+                in
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language Translate.AddressInformation ++ ":" ]
@@ -1240,15 +1241,15 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
             else
                 []
 
-        healthCenter =
-            Form.getFieldAsString Backend.Person.Form.healthCenter personForm
-
         healthCenterSection =
             if isChw then
                 []
 
             else
                 let
+                    healthCenter =
+                        Form.getFieldAsString Backend.Person.Form.healthCenter personForm
+
                     inputClass =
                         "select-input"
                             ++ (if isEditOperation && isFormFieldSet healthCenter then
@@ -1271,7 +1272,7 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
                                                         , healthCenter_.name
                                                         )
                                                     )
-                                                |> List.sortBy (\( id, name ) -> name)
+                                                |> List.sortBy (\( _, name ) -> name)
                                         )
                                     |> RemoteData.withDefault []
                                )

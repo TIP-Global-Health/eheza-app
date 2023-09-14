@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Maybe.Extra
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : IndividualEncounterParticipantId -> ModelIndexedDb -> List MsgIndexedDb

@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Session.Model exposing (batchSize)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 {-| Given a sessionId, what messages will we need to send in

@@ -5,7 +5,6 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Form
-import Backend.Person.Model exposing (Person)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)

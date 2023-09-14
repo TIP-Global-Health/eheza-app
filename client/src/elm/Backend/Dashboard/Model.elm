@@ -12,7 +12,6 @@ import Backend.Measurement.Model
         ( Call114Sign
         , DangerSign
         , FamilyPlanningSign
-        , FollowUpMeasurements
         , Gender
         , HCContactSign
         , HCRecommendation

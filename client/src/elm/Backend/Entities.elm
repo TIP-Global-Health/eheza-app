@@ -49,7 +49,7 @@ we need it.
 
 -}
 
-import Restful.Endpoint exposing (EntityUuid(..))
+import Restful.Endpoint exposing (EntityUuid)
 
 
 

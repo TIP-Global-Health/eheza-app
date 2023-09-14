@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Components.SendViaWhatsAppDialog.Model
 import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
-import Pages.Report.Model exposing (DiagnosisMode(..), LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..))
+import Pages.Report.Model exposing (DiagnosisMode(..), LabResultsMode)
 
 
 type alias Model =
