@@ -1,4 +1,4 @@
-module LocalConfig exposing (localConfigs)
+module LocalConfig.Example exposing (localConfigs)
 
 import AssocList as Dict exposing (..)
 import Config.Model as Config exposing (Model)
