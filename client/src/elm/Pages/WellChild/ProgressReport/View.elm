@@ -493,8 +493,7 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                                 viewGrowthPane language
                                     currentDate
                                     zscores
-                                    ( childId, child )
-                                    reportData.expectedSessions
+                                    child
                                     reportData.groupNutritionMeasurements
                                     reportData.individualNutritionMeasurementsWithDates
                                     reportData.individualWellChildMeasurementsWithDates
@@ -1164,13 +1163,12 @@ viewGrowthPane :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> ( PersonId, Person )
-    -> Dict SessionId Session
+    -> Person
     -> ChildMeasurementList
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> Html any
-viewGrowthPane language currentDate zscores ( childId, child ) expected historical nutritionMeasurements wellChildMeasurements =
+viewGrowthPane language currentDate zscores child historical nutritionMeasurements wellChildMeasurements =
     let
         --
         -- GROUP CONTEXT
@@ -1396,11 +1394,11 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
         [ viewPaneHeading language Translate.Growth
         , div [ class "pane-content" ]
             [ div [ class "growth-nutrition-signs" ] <|
-                viewNutritionSigns language child nutritionValues
+                viewNutritionSigns language nutritionValues
             , div [ class "growth-charts" ]
                 charts
             , div [ class "growth-photos" ] <|
-                viewPhotos language child photoValues
+                viewPhotos language photoValues
             ]
         ]
 
@@ -1475,8 +1473,8 @@ chartWeightForLengthAndHeight heights weight =
             )
 
 
-viewNutritionSigns : Language -> Person -> List ( NominalDate, EverySet ChildNutritionSign ) -> List (Html any)
-viewNutritionSigns language child measurements =
+viewNutritionSigns : Language -> List ( NominalDate, EverySet ChildNutritionSign ) -> List (Html any)
+viewNutritionSigns language measurements =
     let
         entriesHeading =
             div [ class "heading nutrition-signs" ]
@@ -1512,8 +1510,8 @@ viewNutritionSigns language child measurements =
     entriesHeading :: viewEntries language entries
 
 
-viewPhotos : Language -> Person -> List { a | dateMeasured : NominalDate, value : ImageUrl } -> List (Html any)
-viewPhotos language child measurements =
+viewPhotos : Language -> List { a | dateMeasured : NominalDate, value : ImageUrl } -> List (Html any)
+viewPhotos language measurements =
     let
         viewImageUrl (ImageUrl url) =
             div

@@ -9,7 +9,7 @@ import Backend.Session.Utils exposing (getMyMother)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
-import Participant.Model exposing (Participant, ParticipantId(..))
+import Participant.Model exposing (Participant)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -29,7 +29,6 @@ childParticipant =
     , tagActivity = ChildActivity
     , toChildId = Just
     , toMotherId = always Nothing
-    , toParticipantId = ParticipantChild
     , viewMeasurements = viewChildMeasurements
     }
 
@@ -50,6 +49,5 @@ motherParticipant =
     , tagActivity = MotherActivity
     , toChildId = always Nothing
     , toMotherId = Just
-    , toParticipantId = ParticipantMother
     , viewMeasurements = \language date _ _ _ -> viewMotherMeasurements language date
     }

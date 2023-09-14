@@ -46,7 +46,6 @@ type ECDPopupType
 type Tab
     = Completed
     | Pending
-    | Reports
 
 
 type alias AssembledData =
