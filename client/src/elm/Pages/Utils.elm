@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , MedicationDistributionValue
         , MedicationNonAdministrationSign(..)
         )
+import Backend.Model exposing (sendViaWhatsAppEnabled)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
@@ -937,11 +938,8 @@ viewEncounterActionButton language label buttonColor allowAction action =
 viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg -> Html msg
 viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
     let
-        sendViaWhatsAppEnabled =
-            -- For now, we disabled 'Send via WhatsApp' feature.
-            False
-
         ( actionsClass, endEncounterButtonColor, sendViaWhatsAppButton ) =
+            -- @todo: Remove when WhatsApp feature is launched.
             if sendViaWhatsAppEnabled then
                 ( "actions two"
                 , "velvet"

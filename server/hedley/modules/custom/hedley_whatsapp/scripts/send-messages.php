@@ -32,9 +32,13 @@ if (empty($key)) {
   return;
 }
 
+$template_namespace_id = variable_get('hedley_whatsapp_template_namespace_id', '');
+if (empty($template_namespace_id)) {
+  drush_print("WhatsApp template namespace ID not set. Aborting.");
+  return;
+}
+
 $client = new TextClient($key);
-// todo: delete this.
-// $result = $client->SendMessage('Hi!', 'TIP Health', [ '00972546925278' ]);.
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -42,27 +46,34 @@ $nid = drush_get_option('nid', 0);
 $batch = drush_get_option('batch', 50);
 
 // Get the allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 250);
 
 $type = 'whatsapp_record';
+// Maximal number of attempts of delivering message.
+$delivery_attempts = variable_get('hedley_whatsapp_delivery_attempts', 5);
 
-$base_query = new EntityFieldQuery();
-$base_query
-  ->entityCondition('entity_type', 'node')
-  ->propertyCondition('type', $type)
-  ->propertyCondition('status', NODE_PUBLISHED)
-  ->propertyOrderBy('nid');
+$base_query = db_select('node', 'n');
+$base_query->addField('n', 'nid');
+$base_query->condition('n.status', NODE_PUBLISHED);
+$base_query->condition('n.type', $type);
+$base_query->leftJoin('field_data_field_date_concluded', 'dc', 'n.nid = dc.entity_id');
+$base_query->isNull('dc.field_date_concluded_value');
+$base_query->leftJoin('field_data_field_delivery_attempts', 'da', 'n.nid = da.entity_id');
+$base_query->condition('da.field_delivery_attempts_value', $delivery_attempts, '<');
 
 $count_query = clone $base_query;
-$count_query->propertyCondition('nid', $nid, '>');
-$total = $count_query->count()->execute();
+if ($nid) {
+  $count_query->condition('n.nid', $nid, '>');
+}
+$executed = $count_query->execute();
+$total = $executed->rowCount();
 
 if ($total == 0) {
-  drush_print("There are no nodes of type $type in DB.");
+  drush_print("There are no $type messages to deliver.");
   exit;
 }
 
-drush_print("$total nodes of type $type located.");
+drush_print("Located $total $type messages for delivery.");
 
 $processed = 0;
 while ($processed < $total) {
@@ -71,20 +82,21 @@ while ($processed < $total) {
 
   $query = clone $base_query;
   if ($nid) {
-    $query->propertyCondition('nid', $nid, '>');
+    $query->condition('nid', $nid, '>');
   }
 
-  $result = $query
+  $ids = $query
     ->range(0, $batch)
-    ->execute();
+    ->execute()
+    ->fetchCol();
 
-  if (empty($result['node'])) {
+  if (empty($ids)) {
     // No more items left.
     break;
   }
 
   $messages = [];
-  $ids = array_keys($result['node']);
+  $mapping = [];
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
     $wrapper = entity_metadata_wrapper('node', $node);
@@ -97,44 +109,57 @@ while ($processed < $total) {
     if (empty($fid)) {
       continue;
     }
-    $file = file_load($fid);
 
+    $file = file_load($fid);
     $report_type = $wrapper->field_report_type->value();
     $date = date('d-m-Y', $wrapper->field_date_measured->value());
     $datetime = DateTime::createFromFormat('!d-m-Y', $date, new DateTimeZone("UTC"));
-
-    $first_name = trim($wrapper->field_first_name->value());
-    $second_name = trim($wrapper->field_second_name->value());
+    $patient_id = $wrapper->field_person->getIdentifier();
+    $wrapper_patient = entity_metadata_wrapper('node', $patient_id);
+    $first_name = trim($wrapper_patient->field_first_name->value());
+    $second_name = trim($wrapper_patient->field_second_name->value());
     if (empty($first_name) && empty($second_name)) {
       $second_name = $wrapper->label();
     }
     $patient_name = "$second_name $first_name";
 
     try {
-      $message = new Message('', 'TIP Health', [$phone_number]);
+      $reference = $patient_name . '-' . $node->created;
+      $mapping[$reference] = $node;
+
+      $image_uri = file_create_url($file->uri);
+      if (strpos($image_uri, 'http://') === 0) {
+        $image_uri = str_replace('http://', 'https://', $image_uri);
+      }
+
+      drush_print("Image: $image_uri");
 
       $header_param =
         new ComponentParameterImage(
           new MediaContent(
             $file->filename,
-            file_create_url($file->uri),
+            $image_uri,
             $file->filemime
           )
         );
 
       $body_param1 = new ComponentParameterText($report_type);
       $body_param2 = new ComponentParameterText($patient_name);
-      $body_param3 = new ComponentParameterDatetime('', $datetime);
+      $body_param3 = new ComponentParameterDatetime($date, $datetime);
 
-      // todo: enter namespace.
-      // todo: need to set language ?
+      $message = new Message(
+        '',
+        'Tip Global Health',
+        [$phone_number],
+        $reference
+      );
       $message
         ->WithChannels([Channels::WHATSAPP])
         ->WithTemplate(
           new TemplateMessage(
             new WhatsappTemplate(
+              $template_namespace_id,
               'progress_report',
-              'the-namespace-of-template',
               new Language('en'),
               [
                 new ComponentHeader([$header_param]),
@@ -152,11 +177,35 @@ while ($processed < $total) {
     }
   }
 
-  $result = $client->send([$messages]);
-  // todo: process response.
+  drush_print('Forwarding messages to vendor...');
+
+  $result = $client->send($messages);
+
   drush_print("Status code: $result->statusCode");
   drush_print("Status message: $result->statusMessage");
-  drush_print("Details: $result->details");
+
+  $details = $result->details;
+  foreach ($details as $delivery_result) {
+    if (empty($delivery_result->reference)) {
+      continue;
+    }
+
+    $node = $mapping[$delivery_result->reference];
+    if (empty($node)) {
+      continue;
+    }
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    if ($delivery_result->messageErrorCode === 0) {
+      $wrapper->field_date_concluded->set(time());
+      $wrapper->save();
+    }
+    else {
+      $attempts = $wrapper->field_delivery_attempts->value();
+      $wrapper->field_delivery_attempts->set($attempts + 1);
+      $wrapper->save();
+    }
+  }
 
   $nid = end($ids);
 
@@ -167,7 +216,7 @@ while ($processed < $total) {
 
   $count = count($nodes);
   $processed += $count;
-  drush_print("$count nodes of type $type processed.");
+  drush_print("$count $type messages processed.");
 }
 
-drush_print("Done! $processed WhatsApp records processed.");
+drush_print("Done! Total of $processed $type messages processed.");

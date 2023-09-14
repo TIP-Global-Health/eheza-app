@@ -46,6 +46,8 @@ type CountryCode
     | CountryCodeTanzania
     | CountryCodeBurundi
     | CountryCodeUSACanada
+      -- @todo: delete this.
+    | CountryCodeIsrael
 
 
 type alias ReportComponentsConfig msg =
@@ -75,8 +77,8 @@ type ReportComponentWellChild
 
 type ReportComponentAntenatal
     = ComponentAntenatalRiskFactors
-    | ComponentAntenatalMedicalDiagnoses
-    | ComponentAntenatalObstetricalDiagnoses
+    | ComponentAntenatalMedicalDiagnosis
+    | ComponentAntenatalObstetricalDiagnosis
     | ComponentAntenatalCHWActivity
     | ComponentAntenatalPatientProgress
     | ComponentAntenatalLabsResults

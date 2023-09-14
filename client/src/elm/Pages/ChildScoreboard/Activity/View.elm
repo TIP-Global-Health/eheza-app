@@ -480,7 +480,7 @@ viewVaccinationForm language currentDate assembled vaccineType form =
                     , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
                     ]
                 ]
-            , viewLabel language (Translate.WellChildImmunisationHistory vaccineType)
+            , viewLabel language (Translate.WellChildImmunizationHistory vaccineType)
             ]
                 ++ contentByViewMode
         ]

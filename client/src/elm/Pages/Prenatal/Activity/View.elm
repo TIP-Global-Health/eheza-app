@@ -2657,7 +2657,7 @@ viewVaccinationForm language currentDate assembled vaccineType form =
                 [ i [ class "icon-open-book" ] []
                 , div [ class "description" ] [ text <| translate language <| Translate.PrenatalImmunisationDescription vaccineType ]
                 ]
-            , viewLabel language (Translate.PrenatalImmunisationHistory vaccineType)
+            , viewLabel language (Translate.PrenatalImmunizationHistory vaccineType)
             ]
                 ++ contentByViewMode
         ]

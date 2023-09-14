@@ -77,7 +77,8 @@ import Pages.Report.Utils
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils
     exposing
-        ( viewEndEncounterButton
+        ( viewEncounterActionButton
+        , viewEndEncounterButton
         , viewEndEncounterDialog
         , viewEndEncounterMenuForProgressReport
         , viewPersonDetailsExtended
@@ -588,6 +589,21 @@ viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActio
                         Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord _ _ ->
                             viewStartEncounterButton language data.startEncounterMsg
 
+                        Pages.WellChild.ProgressReport.Model.InitiatorNutritionGroup _ _ ->
+                            case activeTab of
+                                TabSPVReport ->
+                                    viewEncounterActionButton language
+                                        Translate.SendViaWhatsApp
+                                        "velvet"
+                                        True
+                                        (msgSendViaWhatsAppDialogMsg <|
+                                            Components.SendViaWhatsAppDialog.Model.SetState <|
+                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                        )
+
+                                TabNCDAScoreboard ->
+                                    emptyNode
+
                         _ ->
                             case activeTab of
                                 TabSPVReport ->
@@ -966,7 +982,7 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
 viewVaccinationHistoryPane : Language -> NominalDate -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
 viewVaccinationHistoryPane language currentDate child vaccinationProgress db =
     div [ class "pane vaccination-history" ] <|
-        [ viewPaneHeading language Translate.ImmunisationHistory
+        [ viewPaneHeading language Translate.ImmunizationHistory
         , div [ class "pane-content" ] <|
             viewVaccinationOverview language currentDate child vaccinationProgress db
         ]

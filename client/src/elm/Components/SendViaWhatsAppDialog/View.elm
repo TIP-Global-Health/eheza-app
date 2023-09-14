@@ -158,6 +158,7 @@ viewPhoneInput language currentDate data =
                 , CountryCodeTanzania
                 , CountryCodeBurundi
                 , CountryCodeUSACanada
+                , CountryCodeIsrael
                 ]
 
         curerntPhoneNumber =
@@ -353,8 +354,8 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                     in
                     viewCheckBoxMultipleSelectInput language
                         [ ComponentAntenatalRiskFactors
-                        , ComponentAntenatalMedicalDiagnoses
-                        , ComponentAntenatalObstetricalDiagnoses
+                        , ComponentAntenatalMedicalDiagnosis
+                        , ComponentAntenatalObstetricalDiagnosis
                         , ComponentAntenatalCHWActivity
                         , ComponentAntenatalPatientProgress
                         , ComponentAntenatalLabsResults
