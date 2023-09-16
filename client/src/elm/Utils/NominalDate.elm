@@ -30,7 +30,7 @@ renderAgeMonthsDays language birthDate now =
             diff.months
     in
     if days == 1 && months == 0 then
-        translate language <| Translate.AgeSingleDayWithoutMonth months days
+        translate language <| Translate.AgeSingleDayWithoutMonth days
 
     else if months == 0 then
         translate language <| Translate.AgeDays days

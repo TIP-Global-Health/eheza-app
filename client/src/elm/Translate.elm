@@ -356,7 +356,7 @@ type TranslationId
     | AgeSingleMonth Int Int
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
-    | AgeSingleDayWithoutMonth Int Int
+    | AgeSingleDayWithoutMonth Int
     | AlertChwToFollowUp
     | AgeOneYearOld
     | AgeOneYearAndOneMonth
@@ -2858,7 +2858,7 @@ translationSet trans =
             , kirundi = Just <| String.fromInt months ++ " Amezi " ++ String.fromInt days ++ " Umunsi"
             }
 
-        AgeSingleDayWithoutMonth _ days ->
+        AgeSingleDayWithoutMonth days ->
             { english = String.fromInt days ++ " day"
             , kinyarwanda = Just <| String.fromInt days ++ " Umunsi"
             , kirundi = Just <| String.fromInt days ++ " Umunsi"
