@@ -5425,11 +5425,17 @@ var $author$project$App$Fetch$fetch = function (model) {
 	}
 };
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $author$project$Backend$Model$MsgMenu = function (a) {
+	return {$: 'MsgMenu', a: a};
+};
 var $author$project$Backend$Model$MsgScoreboard = function (a) {
 	return {$: 'MsgScoreboard', a: a};
 };
 var $author$project$App$Model$SetCurrentTime = function (a) {
 	return {$: 'SetCurrentTime', a: a};
+};
+var $author$project$Backend$Menu$Model$SetData = function (a) {
+	return {$: 'SetData', a: a};
 };
 var $author$project$Backend$Scoreboard$Model$SetData = function (a) {
 	return {$: 'SetData', a: a};
@@ -5452,7 +5458,7 @@ var $author$project$App$Types$NotFound = {$: 'NotFound'};
 var $author$project$Pages$Menu$Model$emptyModel = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, selected: false, village: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
 var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
-var $author$project$Backend$Model$emptyModelBackend = {scoreboardData: $elm$core$Maybe$Nothing};
+var $author$project$Backend$Model$emptyModelBackend = {menuData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
 };
@@ -5766,6 +5772,54 @@ var $author$project$Pages$Scoreboard$Update$update = F2(
 var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
+	});
+var $author$project$Backend$Menu$Model$MenuData = function (site) {
+	return {site: site};
+};
+var $author$project$Backend$Menu$Model$SiteBurundi = {$: 'SiteBurundi'};
+var $author$project$Backend$Menu$Model$SiteRwanda = {$: 'SiteRwanda'};
+var $author$project$Backend$Menu$Model$SiteUnknown = {$: 'SiteUnknown'};
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$Backend$Menu$Decoder$siteFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'rwanda':
+			return $author$project$Backend$Menu$Model$SiteRwanda;
+		case 'burundi':
+			return $author$project$Backend$Menu$Model$SiteBurundi;
+		default:
+			return $author$project$Backend$Menu$Model$SiteUnknown;
+	}
+};
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Backend$Menu$Decoder$decodeSite = A2(
+	$elm$json$Json$Decode$andThen,
+	A2($elm$core$Basics$composeR, $author$project$Backend$Menu$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
+	$elm$json$Json$Decode$string);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Menu$Decoder$decodeMenuData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'site',
+	$author$project$Backend$Menu$Decoder$decodeSite,
+	$elm$json$Json$Decode$succeed($author$project$Backend$Menu$Model$MenuData));
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Backend$Menu$Update$update = F3(
+	function (currentDate, msg, model) {
+		var value = msg.a;
+		var modelUpdated = _Utils_update(
+			model,
+			{
+				menuData: $elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Menu$Decoder$decodeMenuData, value))
+			});
+		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
 var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
 	function (entityName, entityType, records) {
@@ -6607,7 +6661,6 @@ var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 		return $elm$json$Json$Decode$fail(errorMessage);
 	}
 };
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
@@ -6800,8 +6853,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues = function (c
 		$author$project$Backend$Scoreboard$Decoder$sanitizeSingleValuePerMonth(currentDate),
 		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
 };
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -7083,13 +7134,6 @@ var $author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationPr
 				generateVaccinationProgressForVaccine(data.mr))
 			]));
 };
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
 var $author$project$Backend$Scoreboard$Decoder$decodeVaccinationProgressDict = A2(
 	$elm$json$Json$Decode$map,
 	$author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationProgressDict,
@@ -7441,18 +7485,33 @@ var $author$project$Backend$Utils$updateSubModel = F4(
 	});
 var $author$project$Backend$Update$updateBackend = F3(
 	function (currentDate, msg, model) {
-		var subMsg = msg.a;
-		return A4(
-			$author$project$Backend$Utils$updateSubModel,
-			subMsg,
-			F2(
-				function (subMsg_, model_) {
-					return A3($author$project$Backend$Scoreboard$Update$update, currentDate, subMsg_, model_);
-				}),
-			function (subCmds) {
-				return $author$project$Backend$Model$MsgScoreboard(subCmds);
-			},
-			model);
+		if (msg.$ === 'MsgMenu') {
+			var subMsg = msg.a;
+			return A4(
+				$author$project$Backend$Utils$updateSubModel,
+				subMsg,
+				F2(
+					function (subMsg_, model_) {
+						return A3($author$project$Backend$Menu$Update$update, currentDate, subMsg_, model_);
+					}),
+				function (subCmds) {
+					return $author$project$Backend$Model$MsgMenu(subCmds);
+				},
+				model);
+		} else {
+			var subMsg = msg.a;
+			return A4(
+				$author$project$Backend$Utils$updateSubModel,
+				subMsg,
+				F2(
+					function (subMsg_, model_) {
+						return A3($author$project$Backend$Scoreboard$Update$update, currentDate, subMsg_, model_);
+					}),
+				function (subCmds) {
+					return $author$project$Backend$Model$MsgScoreboard(subCmds);
+				},
+				model);
+		}
 	});
 var $elm_community$maybe_extra$Maybe$Extra$unwrap = F3(
 	function (d, f, m) {
@@ -7584,7 +7643,12 @@ var $author$project$App$Update$init = function (flags) {
 		var _v0 = model.activePage;
 		switch (_v0.$) {
 			case 'Menu':
-				return model;
+				return A2(
+					$author$project$App$Update$update,
+					$author$project$App$Model$MsgBackend(
+						$author$project$Backend$Model$MsgMenu(
+							$author$project$Backend$Menu$Model$SetData(flags.appData))),
+					model).a;
 			case 'Scoreboard':
 				return A2(
 					$author$project$App$Update$update,
@@ -7654,17 +7718,17 @@ var $author$project$Translate$Village = {$: 'Village'};
 var $author$project$Translate$translateHttpError = function (transId) {
 	switch (transId.$) {
 		case 'ErrorBadUrl':
-			return {english: 'URL is not valid.', kinyarwanda: $elm$core$Maybe$Nothing};
+			return {english: 'URL is not valid.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 		case 'ErrorBadPayload':
 			var message = transId.a;
-			return {english: 'The server responded with data of an unexpected type: ' + message, kinyarwanda: $elm$core$Maybe$Nothing};
+			return {english: 'The server responded with data of an unexpected type: ' + message, kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 		case 'ErrorBadStatus':
 			var err = transId.a;
-			return {english: err, kinyarwanda: $elm$core$Maybe$Nothing};
+			return {english: err, kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 		case 'ErrorNetworkError':
-			return {english: 'There was a network error.', kinyarwanda: $elm$core$Maybe$Nothing};
+			return {english: 'There was a network error.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 		default:
-			return {english: 'The network request timed out.', kinyarwanda: $elm$core$Maybe$Nothing};
+			return {english: 'The network request timed out.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 	}
 };
 var $author$project$Translate$translateMonth = F2(
@@ -7673,98 +7737,122 @@ var $author$project$Translate$translateMonth = F2(
 			case 'Jan':
 				return _short ? {
 					english: 'Jan',
-					kinyarwanda: $elm$core$Maybe$Just('Mut')
+					kinyarwanda: $elm$core$Maybe$Just('Mut'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'January',
-					kinyarwanda: $elm$core$Maybe$Just('Mutarama')
+					kinyarwanda: $elm$core$Maybe$Just('Mutarama'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Feb':
 				return _short ? {
 					english: 'Feb',
-					kinyarwanda: $elm$core$Maybe$Just('Gas')
+					kinyarwanda: $elm$core$Maybe$Just('Gas'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'February',
-					kinyarwanda: $elm$core$Maybe$Just('Gashyantare')
+					kinyarwanda: $elm$core$Maybe$Just('Gashyantare'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Mar':
 				return _short ? {
 					english: 'Mar',
-					kinyarwanda: $elm$core$Maybe$Just('Wer')
+					kinyarwanda: $elm$core$Maybe$Just('Wer'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'March',
-					kinyarwanda: $elm$core$Maybe$Just('Werurwe')
+					kinyarwanda: $elm$core$Maybe$Just('Werurwe'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Apr':
 				return _short ? {
 					english: 'Apr',
-					kinyarwanda: $elm$core$Maybe$Just('Mat')
+					kinyarwanda: $elm$core$Maybe$Just('Mat'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'April',
-					kinyarwanda: $elm$core$Maybe$Just('Mata')
+					kinyarwanda: $elm$core$Maybe$Just('Mata'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'May':
 				return _short ? {
 					english: 'May',
-					kinyarwanda: $elm$core$Maybe$Just('Gic')
+					kinyarwanda: $elm$core$Maybe$Just('Gic'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'May',
-					kinyarwanda: $elm$core$Maybe$Just('Gicurasi')
+					kinyarwanda: $elm$core$Maybe$Just('Gicurasi'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Jun':
 				return _short ? {
 					english: 'Jun',
-					kinyarwanda: $elm$core$Maybe$Just('Kam')
+					kinyarwanda: $elm$core$Maybe$Just('Kam'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'June',
-					kinyarwanda: $elm$core$Maybe$Just('Kamena')
+					kinyarwanda: $elm$core$Maybe$Just('Kamena'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Jul':
 				return _short ? {
 					english: 'Jul',
-					kinyarwanda: $elm$core$Maybe$Just('Nya')
+					kinyarwanda: $elm$core$Maybe$Just('Nya'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'July',
-					kinyarwanda: $elm$core$Maybe$Just('Nyakanga')
+					kinyarwanda: $elm$core$Maybe$Just('Nyakanga'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Aug':
 				return _short ? {
 					english: 'Aug',
-					kinyarwanda: $elm$core$Maybe$Just('Kan')
+					kinyarwanda: $elm$core$Maybe$Just('Kan'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'August',
-					kinyarwanda: $elm$core$Maybe$Just('Kanama')
+					kinyarwanda: $elm$core$Maybe$Just('Kanama'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Sep':
 				return _short ? {
 					english: 'Sep',
-					kinyarwanda: $elm$core$Maybe$Just('Nze')
+					kinyarwanda: $elm$core$Maybe$Just('Nze'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'September',
-					kinyarwanda: $elm$core$Maybe$Just('Nzeri')
+					kinyarwanda: $elm$core$Maybe$Just('Nzeri'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Oct':
 				return _short ? {
 					english: 'Oct',
-					kinyarwanda: $elm$core$Maybe$Just('Ukw')
+					kinyarwanda: $elm$core$Maybe$Just('Ukw'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'October',
-					kinyarwanda: $elm$core$Maybe$Just('Ukwakira')
+					kinyarwanda: $elm$core$Maybe$Just('Ukwakira'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'Nov':
 				return _short ? {
 					english: 'Nov',
-					kinyarwanda: $elm$core$Maybe$Just('Ugu')
+					kinyarwanda: $elm$core$Maybe$Just('Ugu'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'November',
-					kinyarwanda: $elm$core$Maybe$Just('Ugushyingo')
+					kinyarwanda: $elm$core$Maybe$Just('Ugushyingo'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 			default:
 				return _short ? {
 					english: 'Dec',
-					kinyarwanda: $elm$core$Maybe$Just('Uku')
+					kinyarwanda: $elm$core$Maybe$Just('Uku'),
+					kirundi: $elm$core$Maybe$Nothing
 				} : {
 					english: 'December',
-					kinyarwanda: $elm$core$Maybe$Just('Ukuboza')
+					kinyarwanda: $elm$core$Maybe$Just('Ukuboza'),
+					kirundi: $elm$core$Maybe$Nothing
 				};
 		}
 	});
@@ -7773,24 +7861,32 @@ var $author$project$Translate$translationSet = function (transId) {
 	while (true) {
 		switch (transId.$) {
 			case 'AcuteMalnutrition':
-				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'AggregatedChildScoreboard':
-				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ANCNewborn':
-				return {english: 'ANC + Newborn', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'ANC + Newborn', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Colline':
+				return {english: 'Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'CollineSub':
+				return {english: 'Sub-Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Commune':
+				return {english: 'Commune', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Cell':
-				return {english: 'Cell', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Cell', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'District':
-				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Demographics':
-				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'EmptyString':
+				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'GenerateReport':
-				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'HttpError':
 				var val = transId.a;
 				return $author$project$Translate$translateHttpError(val);
 			case 'InfrastructureEnvironmentWash':
-				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Month':
 				var month = transId.a;
 				return A2($author$project$Translate$translateMonth, month, false);
@@ -7798,43 +7894,45 @@ var $author$project$Translate$translationSet = function (transId) {
 				var item = transId.a;
 				switch (item.$) {
 					case 'ChildrenUnder2':
-						return {english: 'Children under 2', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Children under 2', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'NewbornsThisMonth':
-						return {english: 'Number of Newborns this month', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Number of Newborns this month', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Low Birth Weigh (Y/N)', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Low Birth Weigh (Y/N)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDAAcuteMalnutritionItemLabel':
 				var item = transId.a;
 				switch (item.$) {
 					case 'SevereAcuteMalnutrition':
-						return {english: 'Severe Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Severe Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ModerateAcuteMalnutrition':
-						return {english: 'Moderate Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Moderate Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Good Nutrition', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Good Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDAStuntingItemLabel':
 				var item = transId.a;
 				switch (item.$) {
 					case 'SevereStunting':
-						return {english: 'Severe Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Severe Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ModerateStunting':
-						return {english: 'Moderate Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Moderate Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'No Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'No Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDAANCNewbornItemLabel':
 				var item = transId.a;
 				if (item.$ === 'RegularCheckups') {
 					return {
 						english: 'Regular prenatal and postpartum checkups',
-						kinyarwanda: $elm$core$Maybe$Just('Yisuzumishije uko bikwiye atwite na nyuma yo kubyara')
+						kinyarwanda: $elm$core$Maybe$Just('Yisuzumishije uko bikwiye atwite na nyuma yo kubyara'),
+						kirundi: $elm$core$Maybe$Nothing
 					};
 				} else {
 					return {
 						english: 'Iron during pregnancy',
-						kinyarwanda: $elm$core$Maybe$Just('Yafashe umuti wongera amaraso atwite')
+						kinyarwanda: $elm$core$Maybe$Just('Yafashe umuti wongera amaraso atwite'),
+						kirundi: $elm$core$Maybe$Nothing
 					};
 				}
 			case 'NCDAInfrastructureEnvironmentWashItemLabel':
@@ -7843,27 +7941,32 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'HasToilets':
 						return {
 							english: 'Household has toilets',
-							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite ubwiherero')
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite ubwiherero'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'HasCleanWater':
 						return {
 							english: 'Household has clean water',
-							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite amazi meza')
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite amazi meza'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'HasHandwashingFacility':
 						return {
 							english: 'Household has handwashing facility',
-							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite kandagirukarabe')
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite kandagirukarabe'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'HasKitchenGarden':
 						return {
 							english: 'Household has kitchen garden',
-							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite akarima k\'igikoni')
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite akarima k\'igikoni'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					default:
 						return {
 							english: 'Insecticide treated bed nets',
-							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite nzitiramibu ikoranye umuti')
+							kinyarwanda: $elm$core$Maybe$Just('Urugo rufite nzitiramibu ikoranye umuti'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 				}
 			case 'NCDANutritionBehaviorItemLabel':
@@ -7872,53 +7975,62 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'BreastfedSixMonths':
 						return {
 							english: 'Breastfed baby for 6 mo without interruption',
-							kinyarwanda: $elm$core$Maybe$Just('Konsa umwana amezi 6 utamuvangiye')
+							kinyarwanda: $elm$core$Maybe$Just('Konsa umwana amezi 6 utamuvangiye'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'AppropriateComplementaryFeeding':
 						return {
 							english: 'Appropriate complementary feeding (6-24 mo)',
-							kinyarwanda: $elm$core$Maybe$Just('Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)')
+							kinyarwanda: $elm$core$Maybe$Just('Imfashabere igizwe n’indyo yuzuye (Amezi 6-24)'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'DiverseDiet':
 						return {
 							english: 'Does the child have a diverse diet?',
-							kinyarwanda: $elm$core$Maybe$Just('Umwana afata indyo yuzuye')
+							kinyarwanda: $elm$core$Maybe$Just('Umwana afata indyo yuzuye'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					default:
 						return {
 							english: 'Number of times a child eats a day',
-							kinyarwanda: $elm$core$Maybe$Just('Inshuro umwana afata ifunguro ku munsi')
+							kinyarwanda: $elm$core$Maybe$Just('Inshuro umwana afata ifunguro ku munsi'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 				}
 			case 'NCDATargetedInterventionsItemLabel':
 				var item = transId.a;
 				switch (item.$) {
 					case 'FBFGiven':
-						return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'TreatmentForAcuteMalnutrition':
 						return {
 							english: 'Treatment for acute malnutrition (severe or moderate)',
-							kinyarwanda: $elm$core$Maybe$Just('Kuvura imiritre mibi  ifatiyeho(Ikabije cg yoroheje)')
+							kinyarwanda: $elm$core$Maybe$Just('Kuvura imiritre mibi  ifatiyeho(Ikabije cg yoroheje)'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'TreatmentForDiarrhea':
 						return {
 							english: 'Treatment of diarrhea (ORS & Zinc)',
-							kinyarwanda: $elm$core$Maybe$Just('Kuvura impiswi(Ukoresheje Zinc cg ORS)')
+							kinyarwanda: $elm$core$Maybe$Just('Kuvura impiswi(Ukoresheje Zinc cg ORS)'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'SupportChildWithDisability':
 						return {
 							english: 'Provide support to a child with a disability ',
-							kinyarwanda: $elm$core$Maybe$Just('Guha umwana ufite ubumuga ubufasha bwihariye')
+							kinyarwanda: $elm$core$Maybe$Just('Guha umwana ufite ubumuga ubufasha bwihariye'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'ConditionalCashTransfer':
 						return {
 							english: 'Receipt of conditional cash transfer e.g. NSDS, VUP',
-							kinyarwanda: $elm$core$Maybe$Just('Gufata amafaranga y’inkunga agenerwa umugore utwite n’uwonsa bo mu miryango ikennye (icyiciro cya 1 n’icya 2) – NSDS, VUP')
+							kinyarwanda: $elm$core$Maybe$Just('Gufata amafaranga y’inkunga agenerwa umugore utwite n’uwonsa bo mu miryango ikennye (icyiciro cya 1 n’icya 2) – NSDS, VUP'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					default:
 						return {
 							english: 'Receipt of conditional food items including small livestock',
-							kinyarwanda: $elm$core$Maybe$Just('Gufata inkunga z’ingoboka harimo ibiryo n\'amatungo magufi')
+							kinyarwanda: $elm$core$Maybe$Just('Gufata inkunga z’ingoboka harimo ibiryo n\'amatungo magufi'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 				}
 			case 'NCDAUniversalInterventionItemLabel':
@@ -7927,36 +8039,40 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'Immunization':
 						return {
 							english: 'Immunization',
-							kinyarwanda: $elm$core$Maybe$Just('Ikingira')
+							kinyarwanda: $elm$core$Maybe$Just('Ikingira'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'VitaminA':
-						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing};
+						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'Deworming':
 						return {
 							english: 'Deworming',
-							kinyarwanda: $elm$core$Maybe$Just('Imiti y\'inzoka')
+							kinyarwanda: $elm$core$Maybe$Just('Imiti y\'inzoka'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'OngeraMNP':
 						return {
 							english: 'Use additional nutrients (Ongera)',
-							kinyarwanda: $elm$core$Maybe$Just('Koresha Ongera intungamubiri')
+							kinyarwanda: $elm$core$Maybe$Just('Koresha Ongera intungamubiri'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 					default:
 						return {
 							english: 'ECD services provided to child',
-							kinyarwanda: $elm$core$Maybe$Just('Umwana yahawe servise n\'ikigo mboneza mikurire')
+							kinyarwanda: $elm$core$Maybe$Just('Umwana yahawe servise n\'ikigo mboneza mikurire'),
+							kirundi: $elm$core$Maybe$Nothing
 						};
 				}
 			case 'NewSelection':
-				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NutritionBehavior':
-				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PleaseWaitMessage':
-				return {english: 'Please wait. This action may take a couple of minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Please wait. This action may take a couple of minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Province':
-				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Sector':
-				return {english: 'Sector', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Sector', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectedEntity':
 				var entity = transId.a;
 				switch (entity.$) {
@@ -7978,34 +8094,46 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 				}
 			case 'Stunting':
-				return {english: 'Stunting', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Status':
-				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TargetedInterventions':
-				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
-				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'UniversalIntervention':
+				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			default:
-				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing};
+				return {english: 'Zone', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 		}
 	}
 };
 var $author$project$Translate$translate = F2(
 	function (language, transId) {
 		var set = $author$project$Translate$translationSet(transId);
-		if (language.$ === 'English') {
-			return function ($) {
-				return $.english;
-			}(set);
-		} else {
-			return A2(
-				$elm$core$Maybe$withDefault,
-				function ($) {
+		switch (language.$) {
+			case 'English':
+				return function ($) {
 					return $.english;
-				}(set),
-				function ($) {
-					return $.kinyarwanda;
-				}(set));
+				}(set);
+			case 'Kinyarwanda':
+				return A2(
+					$elm$core$Maybe$withDefault,
+					function ($) {
+						return $.english;
+					}(set),
+					function ($) {
+						return $.kinyarwanda;
+					}(set));
+			default:
+				return A2(
+					$elm$core$Maybe$withDefault,
+					function ($) {
+						return $.english;
+					}(set),
+					function ($) {
+						return $.kirundi;
+					}(set));
 		}
 	});
 var $author$project$Utils$WebData$errorString = F2(
@@ -8116,9 +8244,10 @@ var $author$project$Error$View$view = F2(
 						errors))
 				]));
 	});
+var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
+var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
 var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
-var $author$project$Translate$Province = {$: 'Province'};
 var $author$project$Pages$Menu$Model$SelectionMade = {$: 'SelectionMade'};
 var $author$project$Pages$Menu$Model$SetGeoLocation = F2(
 	function (a, b) {
@@ -8135,7 +8264,6 @@ var $elm$core$Maybe$andThen = F2(
 		}
 	});
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $pzp1997$assoc_list$AssocList$filter = F2(
 	function (isGood, _v0) {
 		var alist = _v0.a;
@@ -8167,11 +8295,150 @@ var $author$project$Backend$Entities$fromEntityId = function (_v0) {
 	var a = _v0.a;
 	return a;
 };
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$Utils$GeoLocation$geoLocationDictToOptions = A2(
+	$elm$core$Basics$composeR,
+	$pzp1997$assoc_list$AssocList$toList,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$map(
+			function (_v0) {
+				var id = _v0.a;
+				var geoLocation = _v0.b;
+				return _Utils_Tuple2(
+					$elm$core$String$fromInt(
+						$author$project$Backend$Entities$fromEntityId(id)),
+					geoLocation.name);
+			}),
+		$elm$core$List$sortBy($elm$core$Tuple$second)));
 var $author$project$Utils$GeoLocation$GeoLocation = F2(
 	function (name, parent) {
 		return {name: name, parent: parent};
 	});
-var $author$project$Utils$GeoLocation$getGeoCells = $pzp1997$assoc_list$AssocList$fromList(
+var $author$project$Utils$GeoLocation$getGeoCellsForBurundi = $pzp1997$assoc_list$AssocList$fromList(
+	_List_fromArray(
+		[
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(4),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mushishi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(3)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(10),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mirango',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(3)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(15),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kabwayi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(3)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(19),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kigutu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(3)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(24),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Migera',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(23)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(27),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Karirimvya',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(23)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(33),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyakuguma',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(32)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(41),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kanenge',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(32)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(46),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mayengo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(32)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(51),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Cabara',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(32)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(57),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gashasha',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(32)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(66),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mutambara',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(65)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(74),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gatete',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(65)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(81),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Busebwa',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(65)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(88),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mugara',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(65)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(97),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gitwe',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(96)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(102),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Karagara',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(96))))
+		]));
+var $author$project$Utils$GeoLocation$getGeoCellsForRwanda = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
 		_List_fromArray(
 			[
@@ -10412,59 +10679,152 @@ var $author$project$Utils$GeoLocation$getGeoCells = $pzp1997$assoc_list$AssocLis
 					$elm$core$Maybe$Just(
 						$author$project$Backend$Entities$toEntityId(2590))))
 			])));
-var $author$project$Utils$GeoLocation$getGeoDistricts = $pzp1997$assoc_list$AssocList$fromList(
+var $author$project$Utils$GeoLocation$getGeoCells = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $author$project$Utils$GeoLocation$getGeoCellsForRwanda;
+		case 'SiteBurundi':
+			return $author$project$Utils$GeoLocation$getGeoCellsForBurundi;
+		default:
+			return $pzp1997$assoc_list$AssocList$empty;
+	}
+};
+var $author$project$Utils$GeoLocation$getGeoDistricts = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $pzp1997$assoc_list$AssocList$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(2),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Gakenke',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(1)))),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(736),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Rulindo',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(1)))),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(1321),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Bugesera',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(1320)))),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(1991),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Nyarugenge',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(1990)))),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(2046),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Gasabo',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(1990))))
+					]));
+		case 'SiteBurundi':
+			return $pzp1997$assoc_list$AssocList$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(2),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Vyanda',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(1)))),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(31),
+						A2(
+							$author$project$Utils$GeoLocation$GeoLocation,
+							'Rumonge',
+							$elm$core$Maybe$Just(
+								$author$project$Backend$Entities$toEntityId(30))))
+					]));
+		default:
+			return $pzp1997$assoc_list$AssocList$empty;
+	}
+};
+var $author$project$Utils$GeoLocation$getGeoProvinces = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $pzp1997$assoc_list$AssocList$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(1),
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Amajyaruguru', $elm$core$Maybe$Nothing)),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(1320),
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Iburasirazuba', $elm$core$Maybe$Nothing)),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(1990),
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Umujyi wa kigali', $elm$core$Maybe$Nothing))
+					]));
+		case 'SiteBurundi':
+			return $pzp1997$assoc_list$AssocList$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(1),
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Bururi', $elm$core$Maybe$Nothing)),
+						_Utils_Tuple2(
+						$author$project$Backend$Entities$toEntityId(30),
+						A2($author$project$Utils$GeoLocation$GeoLocation, 'Rumonge', $elm$core$Maybe$Nothing))
+					]));
+		default:
+			return $pzp1997$assoc_list$AssocList$empty;
+	}
+};
+var $author$project$Utils$GeoLocation$getGeoSectorsForBurundi = $pzp1997$assoc_list$AssocList$fromList(
 	_List_fromArray(
 		[
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(2),
+			$author$project$Backend$Entities$toEntityId(3),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gakenke',
+				'Gitsiro',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(1)))),
+					$author$project$Backend$Entities$toEntityId(2)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(736),
+			$author$project$Backend$Entities$toEntityId(23),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rulindo',
+				'Rweza',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(1)))),
+					$author$project$Backend$Entities$toEntityId(2)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(1321),
+			$author$project$Backend$Entities$toEntityId(32),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Bugesera',
+				'Kigwena',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(1320)))),
+					$author$project$Backend$Entities$toEntityId(31)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(1991),
+			$author$project$Backend$Entities$toEntityId(65),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyarugenge',
+				'Gatete',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(1990)))),
+					$author$project$Backend$Entities$toEntityId(31)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(2046),
+			$author$project$Backend$Entities$toEntityId(96),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gasabo',
+				'Buruhukiro',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(1990))))
+					$author$project$Backend$Entities$toEntityId(31))))
 		]));
-var $author$project$Utils$GeoLocation$getGeoProvinces = $pzp1997$assoc_list$AssocList$fromList(
-	_List_fromArray(
-		[
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(1),
-			A2($author$project$Utils$GeoLocation$GeoLocation, 'Amajyaruguru', $elm$core$Maybe$Nothing)),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(1320),
-			A2($author$project$Utils$GeoLocation$GeoLocation, 'Iburasirazuba', $elm$core$Maybe$Nothing)),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(1990),
-			A2($author$project$Utils$GeoLocation$GeoLocation, 'Umujyi wa kigali', $elm$core$Maybe$Nothing))
-		]));
-var $author$project$Utils$GeoLocation$getGeoSectors = $pzp1997$assoc_list$AssocList$fromList(
+var $author$project$Utils$GeoLocation$getGeoSectorsForRwanda = $pzp1997$assoc_list$AssocList$fromList(
 	_List_fromArray(
 		[
 			_Utils_Tuple2(
@@ -10944,7 +11304,581 @@ var $author$project$Utils$GeoLocation$getGeoSectors = $pzp1997$assoc_list$AssocL
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(2046))))
 		]));
-var $author$project$Utils$GeoLocation$getGeoVillages = $pzp1997$assoc_list$AssocList$fromList(
+var $author$project$Utils$GeoLocation$getGeoSectors = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $author$project$Utils$GeoLocation$getGeoSectorsForRwanda;
+		case 'SiteBurundi':
+			return $author$project$Utils$GeoLocation$getGeoSectorsForBurundi;
+		default:
+			return $pzp1997$assoc_list$AssocList$empty;
+	}
+};
+var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_list$AssocList$fromList(
+	_List_fromArray(
+		[
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(5),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gitega',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(4)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(6),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mparaga',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(4)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(7),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gako',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(4)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(8),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mibaga',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(4)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(9),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gatandu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(4)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(11),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mirango',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(10)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(12),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kiziba',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(10)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(13),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Migezi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(10)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(14),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Murago',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(10)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(16),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mugano',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(15)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(17),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kabuye',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(15)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(18),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyentonga',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(15)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(20),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kigutu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(19)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(21),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyentambwe',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(19)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(22),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gitsinda',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(19)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(25),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Migera',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(24)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(26),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kaganza',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(24)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(28),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Murago',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(27)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(29),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Karirimvya',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(27)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(34),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kirongorokerwa i',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(33)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(35),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kanyiriri',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(33)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(36),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kirongorokerwa ii',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(33)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(37),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyakuguma i',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(33)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(38),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gitaza',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(33)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(39),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kompanyi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(33)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(40),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyakuguma ii',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(33)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(42),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gakamba',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(41)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(43),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mukunde i',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(41)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(44),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Ruranga',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(41)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(45),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mukunde ii',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(41)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(47),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mayengo a',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(46)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(48),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mayengo b & d',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(46)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(49),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mayengo c & d',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(46)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(50),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mayengo b',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(46)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(52),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Ngongo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(51)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(53),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gasangu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(51)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(54),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kirerama',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(51)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(55),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kinindo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(51)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(56),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Giheta',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(51)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(58),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Munanirra',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(57)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(59),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Rusengo i',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(57)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(60),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Buganga',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(57)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(61),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Munanira',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(57)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(62),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyamahongo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(57)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(63),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Yerusalemu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(57)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(64),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Rusengo ii',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(57)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(67),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mutambara i',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(66)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(68),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Makombe',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(66)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(69),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kigwati i',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(66)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(70),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gahore',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(66)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(71),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kayange',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(66)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(72),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kigwati ii',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(66)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(73),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mutambara ii',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(66)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(75),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Giharo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(74)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(76),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gatete',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(74)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(77),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gafunzo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(74)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(78),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gasenyi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(74)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(79),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Moderne',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(74)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(80),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gisagara',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(74)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(82),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Busebwa',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(81)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(83),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kibanga',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(81)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(84),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Buhinda',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(81)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(85),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Buzimba',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(81)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(86),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kayabazi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(81)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(87),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mahoro',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(81)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(89),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Ruremba',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(88)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(90),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Soko',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(88)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(91),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Muhuta',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(88)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(92),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyamiyaga',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(88)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(93),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kavyiru',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(88)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(94),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gakuyo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(88)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(95),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Rera',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(88)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(98),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Ruhongo',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(97)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(99),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Musovu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(97)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(100),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Buzimba',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(97)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(101),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyabiraba',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(97)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(103),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mwagu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(102)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(104),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Gafumbe',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(102)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(105),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Mambi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(102)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(106),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Nyabigonzi',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(102))))
+		]));
+var $author$project$Utils$GeoLocation$getGeoVillagesForRwanda = $pzp1997$assoc_list$AssocList$fromList(
 	_Utils_ap(
 		_List_fromArray(
 			[
@@ -26555,23 +27489,25 @@ var $author$project$Utils$GeoLocation$getGeoVillages = $pzp1997$assoc_list$Assoc
 												$elm$core$Maybe$Just(
 													$author$project$Backend$Entities$toEntityId(2615))))
 										]))))))))));
-var $author$project$Utils$GeoLocation$geoInfo = {cells: $author$project$Utils$GeoLocation$getGeoCells, districts: $author$project$Utils$GeoLocation$getGeoDistricts, provinces: $author$project$Utils$GeoLocation$getGeoProvinces, sectors: $author$project$Utils$GeoLocation$getGeoSectors, villages: $author$project$Utils$GeoLocation$getGeoVillages};
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Utils$GeoLocation$geoLocationDictToOptions = A2(
-	$elm$core$Basics$composeR,
-	$pzp1997$assoc_list$AssocList$toList,
-	A2(
-		$elm$core$Basics$composeR,
-		$elm$core$List$map(
-			function (_v0) {
-				var id = _v0.a;
-				var geoLocation = _v0.b;
-				return _Utils_Tuple2(
-					$elm$core$String$fromInt(
-						$author$project$Backend$Entities$fromEntityId(id)),
-					geoLocation.name);
-			}),
-		$elm$core$List$sortBy($elm$core$Tuple$second)));
+var $author$project$Utils$GeoLocation$getGeoVillages = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $author$project$Utils$GeoLocation$getGeoVillagesForRwanda;
+		case 'SiteBurundi':
+			return $author$project$Utils$GeoLocation$getGeoVillagesForBurundi;
+		default:
+			return $pzp1997$assoc_list$AssocList$empty;
+	}
+};
+var $author$project$Utils$GeoLocation$getGeoInfo = function (site) {
+	return {
+		cells: $author$project$Utils$GeoLocation$getGeoCells(site),
+		districts: $author$project$Utils$GeoLocation$getGeoDistricts(site),
+		provinces: $author$project$Utils$GeoLocation$getGeoProvinces(site),
+		sectors: $author$project$Utils$GeoLocation$getGeoSectors(site),
+		villages: $author$project$Utils$GeoLocation$getGeoVillages(site)
+	};
+};
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -26616,6 +27552,55 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$html$Html$Events$on,
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Translate$Province = {$: 'Province'};
+var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1 = function (site) {
+	return $author$project$Translate$Province;
+};
+var $author$project$Translate$Commune = {$: 'Commune'};
+var $author$project$Translate$EmptyString = {$: 'EmptyString'};
+var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2 = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $author$project$Translate$District;
+		case 'SiteBurundi':
+			return $author$project$Translate$Commune;
+		default:
+			return $author$project$Translate$EmptyString;
+	}
+};
+var $author$project$Translate$Zone = {$: 'Zone'};
+var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel3 = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $author$project$Translate$Sector;
+		case 'SiteBurundi':
+			return $author$project$Translate$Zone;
+		default:
+			return $author$project$Translate$EmptyString;
+	}
+};
+var $author$project$Translate$Colline = {$: 'Colline'};
+var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel4 = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $author$project$Translate$Cell;
+		case 'SiteBurundi':
+			return $author$project$Translate$Colline;
+		default:
+			return $author$project$Translate$EmptyString;
+	}
+};
+var $author$project$Translate$CollineSub = {$: 'CollineSub'};
+var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5 = function (site) {
+	switch (site.$) {
+		case 'SiteRwanda':
+			return $author$project$Translate$Village;
+		case 'SiteBurundi':
+			return $author$project$Translate$CollineSub;
+		default:
+			return $author$project$Translate$EmptyString;
+	}
 };
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
@@ -26762,74 +27747,11 @@ var $author$project$Pages$Menu$View$viewSelectListInput = F6(
 					selectOptions)
 				]));
 	});
-var $author$project$Pages$Menu$View$view = F2(
-	function (language, model) {
-		var villageInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Backend$Entities$fromEntityId(parentId),
-							$author$project$Utils$GeoLocation$geoInfo.villages));
-					return A6(
-						$author$project$Pages$Menu$View$viewSelectListInput,
-						language,
-						model.village,
-						options,
-						$author$project$Pages$Menu$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											village: A2(
-												$elm$core$Maybe$map,
-												$author$project$Backend$Entities$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Translate$Village,
-						false);
-				},
-				model.cell));
-		var sectorInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Backend$Entities$fromEntityId(parentId),
-							$author$project$Utils$GeoLocation$geoInfo.sectors));
-					return A6(
-						$author$project$Pages$Menu$View$viewSelectListInput,
-						language,
-						model.sector,
-						options,
-						$author$project$Pages$Menu$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											sector: A2(
-												$elm$core$Maybe$map,
-												$author$project$Backend$Entities$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Translate$Sector,
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.cell));
-				},
-				model.district));
+var $author$project$Pages$Menu$View$viewMenu = F3(
+	function (language, data, model) {
+		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
 		var provinceInput = function () {
-			var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions($author$project$Utils$GeoLocation$geoInfo.provinces);
+			var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(geoInfo.provinces);
 			return A6(
 				$author$project$Pages$Menu$View$viewSelectListInput,
 				language,
@@ -26847,9 +27769,73 @@ var $author$project$Pages$Menu$View$view = F2(
 										$elm$core$String$toInt(value))
 								});
 						})),
-				$author$project$Translate$Province,
+				$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1(data.site),
 				$elm_community$maybe_extra$Maybe$Extra$isJust(model.district));
 		}();
+		var sectorInput = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (parentId) {
+					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
+						A2(
+							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
+							$author$project$Backend$Entities$fromEntityId(parentId),
+							geoInfo.sectors));
+					return A6(
+						$author$project$Pages$Menu$View$viewSelectListInput,
+						language,
+						model.sector,
+						options,
+						$author$project$Pages$Menu$Model$SetGeoLocation(
+							F2(
+								function (value, form) {
+									return _Utils_update(
+										form,
+										{
+											sector: A2(
+												$elm$core$Maybe$map,
+												$author$project$Backend$Entities$toEntityId,
+												$elm$core$String$toInt(value))
+										});
+								})),
+						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel3(data.site),
+						$elm_community$maybe_extra$Maybe$Extra$isJust(model.cell));
+				},
+				model.district));
+		var villageInput = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (parentId) {
+					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
+						A2(
+							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
+							$author$project$Backend$Entities$fromEntityId(parentId),
+							geoInfo.villages));
+					return A6(
+						$author$project$Pages$Menu$View$viewSelectListInput,
+						language,
+						model.village,
+						options,
+						$author$project$Pages$Menu$Model$SetGeoLocation(
+							F2(
+								function (value, form) {
+									return _Utils_update(
+										form,
+										{
+											village: A2(
+												$elm$core$Maybe$map,
+												$author$project$Backend$Entities$toEntityId,
+												$elm$core$String$toInt(value))
+										});
+								})),
+						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5(data.site),
+						false);
+				},
+				model.cell));
 		var districtInput = A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Gizra$Html$emptyNode,
@@ -26860,7 +27846,7 @@ var $author$project$Pages$Menu$View$view = F2(
 						A2(
 							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
 							$author$project$Backend$Entities$fromEntityId(parentId),
-							$author$project$Utils$GeoLocation$geoInfo.districts));
+							geoInfo.districts));
 					return A6(
 						$author$project$Pages$Menu$View$viewSelectListInput,
 						language,
@@ -26878,7 +27864,7 @@ var $author$project$Pages$Menu$View$view = F2(
 												$elm$core$String$toInt(value))
 										});
 								})),
-						$author$project$Translate$District,
+						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2(data.site),
 						$elm_community$maybe_extra$Maybe$Extra$isJust(model.sector));
 				},
 				model.province));
@@ -26892,7 +27878,7 @@ var $author$project$Pages$Menu$View$view = F2(
 						A2(
 							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
 							$author$project$Backend$Entities$fromEntityId(parentId),
-							$author$project$Utils$GeoLocation$geoInfo.cells));
+							geoInfo.cells));
 					return A6(
 						$author$project$Pages$Menu$View$viewSelectListInput,
 						language,
@@ -26910,7 +27896,7 @@ var $author$project$Pages$Menu$View$view = F2(
 												$elm$core$String$toInt(value))
 										});
 								})),
-						$author$project$Translate$Cell,
+						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel4(data.site),
 						$elm_community$maybe_extra$Maybe$Extra$isJust(model.village));
 				},
 				model.sector));
@@ -26936,7 +27922,7 @@ var $author$project$Pages$Menu$View$view = F2(
 									A2(
 										$elm$core$Maybe$andThen,
 										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.villages);
+											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.villages);
 										},
 										model.village)));
 							var sectorPart = A2(
@@ -26950,7 +27936,7 @@ var $author$project$Pages$Menu$View$view = F2(
 									A2(
 										$elm$core$Maybe$andThen,
 										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.sectors);
+											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.sectors);
 										},
 										model.sector)));
 							var provincePart = A2(
@@ -26961,7 +27947,7 @@ var $author$project$Pages$Menu$View$view = F2(
 									function ($) {
 										return $.name;
 									},
-									A2($pzp1997$assoc_list$AssocList$get, province, $author$project$Utils$GeoLocation$geoInfo.provinces)));
+									A2($pzp1997$assoc_list$AssocList$get, province, geoInfo.provinces)));
 							var districtPart = A2(
 								$elm$core$Maybe$withDefault,
 								'',
@@ -26970,7 +27956,7 @@ var $author$project$Pages$Menu$View$view = F2(
 									function ($) {
 										return $.name;
 									},
-									A2($pzp1997$assoc_list$AssocList$get, district, $author$project$Utils$GeoLocation$geoInfo.districts)));
+									A2($pzp1997$assoc_list$AssocList$get, district, geoInfo.districts)));
 							var cellPart = A2(
 								$elm$core$Maybe$withDefault,
 								'',
@@ -26982,7 +27968,7 @@ var $author$project$Pages$Menu$View$view = F2(
 									A2(
 										$elm$core$Maybe$andThen,
 										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, $author$project$Utils$GeoLocation$geoInfo.cells);
+											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.cells);
 										},
 										model.cell)));
 							var suffix = provincePart + ('/' + (districtPart + (sectorPart + (cellPart + villagePart))));
@@ -27046,7 +28032,22 @@ var $author$project$Pages$Menu$View$view = F2(
 						[actionButton]))
 				]));
 	});
-var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$Pages$Menu$View$view = F3(
+	function (language, modelBackend, model) {
+		var _v0 = modelBackend.menuData;
+		if (_v0.$ === 'Just') {
+			if (_v0.a.$ === 'Ok') {
+				var data = _v0.a.a;
+				return A3($author$project$Pages$Menu$View$viewMenu, language, data, model);
+			} else {
+				var err = _v0.a.a;
+				return $elm$html$Html$text(
+					$elm$core$Debug$toString(err));
+			}
+		} else {
+			return $author$project$Gizra$Html$emptyNode;
+		}
+	});
 var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
 	return {$: 'ChaneYearGap', a: a};
 };
@@ -29259,7 +30260,7 @@ var $author$project$App$View$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgMenuPage,
-						A2($author$project$Pages$Menu$View$view, model.language, model.menuPage))
+						A3($author$project$Pages$Menu$View$view, model.language, model.backend, model.menuPage))
 					]));
 		case 'Scoreboard':
 			return A2(

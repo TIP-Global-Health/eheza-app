@@ -176,6 +176,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'base_revision' => $base,
       'revision_count' => $count,
       'rollbar_token' => variable_get('hedley_general_rollbar_token', ''),
+      'site' => variable_get('hedley_general_site_name', ''),
     ];
 
     if (!empty($request['access_token'])) {

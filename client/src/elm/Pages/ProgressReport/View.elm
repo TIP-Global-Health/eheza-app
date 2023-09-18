@@ -16,13 +16,14 @@ import Pages.ProgressReport.Model exposing (..)
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Bool -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores isChw childId ( sessionId, session ) db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site isChw childId ( sessionId, session ) db model =
     let
         childData =
             getChild childId session.offlineSession
@@ -52,6 +53,7 @@ view language currentDate zscores isChw childId ( sessionId, session ) db model 
             language
             currentDate
             zscores
+            site
             isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken

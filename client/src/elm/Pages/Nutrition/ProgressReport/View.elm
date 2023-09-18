@@ -24,6 +24,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.NominalDate exposing (renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -32,8 +33,8 @@ import ZScore.Utils exposing (diffDays)
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id isChw db model =
     let
         encounter =
             Dict.get id db.nutritionEncounters
@@ -91,6 +92,7 @@ view language currentDate zscores id isChw db model =
         (viewProgressReport language
             currentDate
             zscores
+            site
             isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken

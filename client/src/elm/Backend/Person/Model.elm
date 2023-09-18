@@ -78,6 +78,9 @@ type Ubudehe
     | Ubudehe2
     | Ubudehe3
     | Ubudehe4
+      -- Ubudehe is Rwanda specific, so other sites will
+      -- have the field preset to NoUbudehe.
+    | NoUbudehe
 
 
 allUbudehes : List Ubudehe

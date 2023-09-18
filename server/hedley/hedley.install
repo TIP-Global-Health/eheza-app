@@ -669,3 +669,12 @@ function hedley_update_7037() {
 function hedley_update_7038() {
   module_enable(['hedley_ncda']);
 }
+
+/**
+ * If not set already, sets default site to 'rwanda'.
+ */
+function hedley_update_7039() {
+  if (empty(variable_get('hedley_general_site_name', ''))) {
+    variable_set('hedley_general_site_name', 'rwanda');
+  }
+}

@@ -14,6 +14,7 @@ import Pages.ChildScoreboard.Encounter.View exposing (acuteIllnessEncounterPopup
 import Pages.ChildScoreboard.Report.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard)
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
@@ -21,17 +22,17 @@ import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> ChildScoreboardEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardEncounterId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores site db model assembled =
     let
         ( _, pendingActivities ) =
             List.filter (expectActivity currentDate assembled) allActivities
@@ -46,7 +47,7 @@ viewHeaderAndContent language currentDate zscores db model assembled =
     div [ class "page-report child-scoreboard" ]
         [ viewHeader language assembled.id
         , div [ class "ui report unstackable items" ] <|
-            viewNCDAScorecard language currentDate zscores ( assembled.participant.person, assembled.person ) db
+            viewNCDAScorecard language currentDate zscores site ( assembled.participant.person, assembled.person ) db
                 ++ [ endEncounterButton ]
         , viewModal <| acuteIllnessEncounterPopup language assembled model.showAIEncounterPopup TriggerAcuteIllnessEncounter
         ]

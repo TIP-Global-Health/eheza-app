@@ -105,6 +105,7 @@ import Pages.WellChild.ProgressReport.Model exposing (..)
 import Pages.WellChild.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
@@ -124,8 +125,8 @@ import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightFo
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id isChw db model =
     let
         encounter =
             Dict.get id db.wellChildEncounters
@@ -182,6 +183,7 @@ view language currentDate zscores id isChw db model =
         (viewProgressReport language
             currentDate
             zscores
+            site
             isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
@@ -205,6 +207,7 @@ viewProgressReport :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
@@ -221,7 +224,7 @@ viewProgressReport :
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
     let
         content =
             case activeTab of
@@ -229,6 +232,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                     viewContent language
                         currentDate
                         zscores
+                        site
                         isChw
                         initiator
                         mandatoryNutritionAssessmentMeasurementsTaken
@@ -243,7 +247,7 @@ viewProgressReport language currentDate zscores isChw initiator mandatoryNutriti
                         ( childId, child )
 
                 TabNCDAScoreboard ->
-                    viewNCDAScorecard language currentDate zscores ( childId, child ) db
+                    viewNCDAScorecard language currentDate zscores site ( childId, child ) db
 
         tabs =
             -- @todo: remove when NCDA is launched.
@@ -441,6 +445,7 @@ viewContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
@@ -454,7 +459,7 @@ viewContent :
     -> Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
     -> ( PersonId, Person )
     -> List (Html msg)
-viewContent language currentDate zscores isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
+viewContent language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
     let
         reportData =
             assembleProgresReportData childId db
@@ -565,6 +570,7 @@ viewContent language currentDate zscores isChw initiator mandatoryNutritionAsses
                 (Components.SendViaWhatsAppDialog.View.view
                     language
                     currentDate
+                    site
                     ( childId, child )
                     Components.SendViaWhatsAppDialog.Model.ReportWellChild
                     componentsConfig
@@ -1641,10 +1647,11 @@ viewNCDAScorecard :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> ( PersonId, Person )
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAScorecard language currentDate zscores ( childId, child ) db =
+viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
     let
         reportData =
             assembleProgresReportData childId db
@@ -1695,7 +1702,7 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
                 )
                 |> Maybe.withDefault Dict.empty
     in
-    [ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child )
+    [ viewChildIdentificationPane language currentDate site allNCDAQuestionnaires db ( childId, child )
     , viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires
     , viewUniversalInterventionsPane language
         currentDate
@@ -1730,11 +1737,12 @@ viewNCDAScorecard language currentDate zscores ( childId, child ) db =
 viewChildIdentificationPane :
     Language
     -> NominalDate
+    -> Site
     -> List ( NominalDate, NCDAValue )
     -> ModelIndexedDb
     -> ( PersonId, Person )
     -> Html any
-viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( childId, child ) =
+viewChildIdentificationPane language currentDate site allNCDAQuestionnaires db ( childId, child ) =
     let
         parentsIds =
             Dict.get childId db.relationshipsByPerson
@@ -1865,8 +1873,18 @@ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( chil
             viewEntry Translate.GenderLabel (translate language <| Translate.Gender child.gender)
 
         ubudeheEntry =
-            Maybe.map (Translate.UbudeheNumber >> translate language >> viewEntry Translate.UbudeheLabel) child.ubudehe
-                |> Maybe.withDefault emptyNode
+            if site == SiteRwanda then
+                Maybe.map
+                    (Translate.UbudeheNumber
+                        >> translate language
+                        >> viewEntry Translate.UbudeheLabel
+                        >> List.singleton
+                    )
+                    child.ubudehe
+                    |> Maybe.withDefault []
+
+            else
+                []
 
         viewEntry labelTransId content =
             p []
@@ -1884,7 +1902,7 @@ viewChildIdentificationPane language currentDate allNCDAQuestionnaires db ( chil
                 ]
                     ++ bornUnderweighEntry
                     ++ birthDefectEntry
-                    ++ [ ubudeheEntry ]
+                    ++ ubudeheEntry
             , div [ class "column" ] <|
                 motherInfoEntry
                     ++ fatherInfoEntry

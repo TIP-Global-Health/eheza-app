@@ -14,8 +14,7 @@ import Utils.WebData
 -}
 getLoggedInData : Model -> Maybe ( HealthCenterId, LoggedInModel )
 getLoggedInData model =
-    model.configuration
-        |> RemoteData.toMaybe
+    RemoteData.toMaybe model.configuration
         |> Maybe.andThen (.loggedIn >> RemoteData.toMaybe)
         |> Maybe.map2 (\healthCenterId loggedIn -> ( healthCenterId, loggedIn )) model.healthCenterId
 

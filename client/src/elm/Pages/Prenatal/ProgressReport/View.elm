@@ -104,23 +104,33 @@ import Pages.Utils
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (thumbnailImage, viewModal)
 import Utils.NominalDate exposing (sortByDateDesc, sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw initiator db model =
+view :
+    Language
+    -> NominalDate
+    -> Site
+    -> PrenatalEncounterId
+    -> Bool
+    -> PrenatalProgressReportInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate site id isChw initiator db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewContentAndHeader language currentDate isChw initiator model) identity assembled
+    viewWebData language (viewContentAndHeader language currentDate site isChw initiator model) identity assembled
 
 
-viewContentAndHeader : Language -> NominalDate -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContentAndHeader language currentDate isChw initiator model assembled =
+viewContentAndHeader : Language -> NominalDate -> Site -> Bool -> PrenatalProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContentAndHeader language currentDate site isChw initiator model assembled =
     let
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -145,6 +155,7 @@ viewContentAndHeader language currentDate isChw initiator model assembled =
             (Components.SendViaWhatsAppDialog.View.view
                 language
                 currentDate
+                site
                 ( assembled.participant.person, assembled.person )
                 Components.SendViaWhatsAppDialog.Model.ReportAntenatal
                 componentsConfig

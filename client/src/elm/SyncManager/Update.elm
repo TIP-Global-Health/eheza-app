@@ -807,6 +807,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                                 , deviceName = data.deviceName
                                                 , status = status
                                                 , rollbarToken = data.rollbarToken
+                                                , site = data.site
                                             }
                                        )
 

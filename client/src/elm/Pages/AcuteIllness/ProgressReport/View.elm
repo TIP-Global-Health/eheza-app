@@ -51,6 +51,7 @@ import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProg
 import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage, viewModal)
@@ -65,17 +66,17 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw initiator db model =
+view : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id isChw initiator db model =
     let
         assembled =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewContent language currentDate id isChw initiator model) identity assembled
+    viewWebData language (viewContent language currentDate site id isChw initiator model) identity assembled
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw initiator model assembled =
+viewContent : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site id isChw initiator model assembled =
     let
         ( _, pendingActivities ) =
             partitionActivities currentDate isChw assembled
@@ -132,6 +133,7 @@ viewContent language currentDate id isChw initiator model assembled =
             (Components.SendViaWhatsAppDialog.View.view
                 language
                 currentDate
+                site
                 ( assembled.participant.person, assembled.person )
                 Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness
                 Nothing

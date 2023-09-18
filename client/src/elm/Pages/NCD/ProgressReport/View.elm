@@ -62,14 +62,15 @@ import Pages.Utils
         , viewPersonDetailsExtended
         )
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> NCDEncounterId -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id initiator db model =
+view : Language -> NominalDate -> Site -> NCDEncounterId -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id initiator db model =
     let
         assembled =
             generateAssembledData id db
@@ -78,7 +79,7 @@ view language currentDate id initiator db model =
             viewHeader language initiator model
 
         content =
-            viewWebData language (viewContent language currentDate initiator db model) identity assembled
+            viewWebData language (viewContent language currentDate site initiator db model) identity assembled
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -185,8 +186,8 @@ viewHeader language initiator model =
         ]
 
 
-viewContent : Language -> NominalDate -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate initiator db model assembled =
+viewContent : Language -> NominalDate -> Site -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site initiator db model assembled =
     let
         derivedContent =
             let
@@ -329,6 +330,7 @@ viewContent language currentDate initiator db model assembled =
                             (Components.SendViaWhatsAppDialog.View.view
                                 language
                                 currentDate
+                                site
                                 ( assembled.participant.person, assembled.person )
                                 Components.SendViaWhatsAppDialog.Model.ReportNCD
                                 componentsConfig

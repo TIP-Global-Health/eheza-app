@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm, validatePerson)
+import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm)
 import Backend.Person.Model
     exposing
         ( ExpectedAge(..)
@@ -58,9 +58,10 @@ import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
+import Utils.GeoLocation exposing (..)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -461,8 +462,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate maybeVillageId isChw operation initiator model db =
+viewCreateEditForm : Language -> NominalDate -> Site -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate site maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -491,7 +492,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             currentDate
 
         personForm =
-            applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
+            applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
@@ -1000,6 +1001,14 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                                 ]
                    )
 
+        demographicSection =
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language Translate.ParticipantDemographicInformation ++ ":" ]
+            , demographicFields
+                |> fieldset [ class "registration-form" ]
+            ]
+
         ubudeheOptions =
             allUbudehes
                 |> List.map
@@ -1011,8 +1020,29 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 |> (::) emptyOption
 
         familyInformationFields =
-            [ viewSelectInput language Translate.FamilyUbudehe ubudeheOptions Backend.Person.Form.ubudehe "ten" "select-input" True personForm
+            [ viewSelectInput language
+                Translate.FamilyUbudehe
+                ubudeheOptions
+                Backend.Person.Form.ubudehe
+                "ten"
+                "select-input"
+                True
+                personForm
             ]
+
+        -- Only field here is Ubudehe, and it's Rwanda specific.
+        familyInformationSection =
+            if site == SiteRwanda then
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.FamilyInformation ++ ":" ]
+                , familyInformationFields
+                    |> fieldset [ class "registration-form family-info" ]
+                    |> Html.map (MsgForm operation initiator)
+                ]
+
+            else
+                []
 
         geoLocationInputClass isDisabled =
             "select-input"
@@ -1038,6 +1068,9 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
         village =
             Form.getFieldAsString Backend.Person.Form.village personForm
 
+        geoInfo =
+            getGeoInfo site
+
         viewProvince =
             let
                 options =
@@ -1048,7 +1081,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     isFormFieldSet district
             in
             viewSelectInput language
-                Translate.Province
+                (resolveGeoSructureLabelLevel1 site)
                 options
                 Backend.Person.Form.province
                 "ten"
@@ -1074,7 +1107,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     isFormFieldSet sector
             in
             viewSelectInput language
-                Translate.District
+                (resolveGeoSructureLabelLevel2 site)
                 options
                 Backend.Person.Form.district
                 "ten"
@@ -1100,7 +1133,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     isFormFieldSet cell
             in
             viewSelectInput language
-                Translate.Sector
+                (resolveGeoSructureLabelLevel3 site)
                 options
                 Backend.Person.Form.sector
                 "ten"
@@ -1126,7 +1159,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     isFormFieldSet village
             in
             viewSelectInput language
-                Translate.Cell
+                (resolveGeoSructureLabelLevel4 site)
                 options
                 Backend.Person.Form.cell
                 "ten"
@@ -1165,7 +1198,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                            )
             in
             viewSelectInput language
-                Translate.Village
+                (resolveGeoSructureLabelLevel5 site)
                 options
                 Backend.Person.Form.village
                 "ten"
@@ -1264,18 +1297,8 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 [ text <| translate language Translate.Save ]
 
         formContent =
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.ParticipantDemographicInformation ++ ":" ]
-            , demographicFields
-                |> fieldset [ class "registration-form" ]
-            , h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.FamilyInformation ++ ":" ]
-            , familyInformationFields
-                |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm operation initiator)
-            ]
+            demographicSection
+                ++ familyInformationSection
                 ++ addressSection
                 ++ contactInformationSection
                 ++ healthCenterSection

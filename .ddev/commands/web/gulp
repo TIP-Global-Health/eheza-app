@@ -15,6 +15,11 @@ then
     exit 1
   fi
 
+  if [[ -z "${EHEZA_SITE}" ]]; then
+    echo "Please specify EHEZA_SITE in your DDEV local config, as for deployment, we must know for which site it's being performed."
+    exit 1
+  fi
+
   if [ ! -d ../../eheza-infra ]; then
   echo "Cloning eheza-infra repo..."
     git clone "${EHEZA_INFRA_REPO_REMOTE}" ../../eheza-infra
@@ -25,8 +30,7 @@ then
     cd -
   fi
 
-  cp ../../eheza-infra/elm/Config.Deploy.elm ${CLIENT_PATH}/src/elm/
-
+  cp ../../eheza-infra/elm/${EHEZA_SITE}/Config.Deploy.elm ${CLIENT_PATH}/src/elm/
 fi
 
 cd ../../client  && gulp $@

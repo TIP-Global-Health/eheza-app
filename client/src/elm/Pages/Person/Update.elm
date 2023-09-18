@@ -15,10 +15,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
+update : NominalDate -> Site -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate site selectedHealthCenter maybeVillageId isChw msg db model =
     case msg of
         MsgForm operation initiator subMsg ->
             let
@@ -40,14 +41,14 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                         |> Maybe.andThen (getVillageById db)
 
                 newForm =
-                    Form.update (validatePerson related operation (Just currentDate)) subMsg model.form
+                    Form.update (validatePerson site related operation (Just currentDate)) subMsg model.form
 
                 appMsgs =
                     case subMsg of
                         Form.Submit ->
                             let
                                 formWithDefaults =
-                                    applyDefaultValuesForPerson currentDate maybeVillage isChw related operation model.form
+                                    applyDefaultValuesForPerson currentDate site maybeVillage isChw related operation model.form
                             in
                             case operation of
                                 CreatePerson _ ->
@@ -113,16 +114,16 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate selectedHealthCenter maybeVillageId isChw (MsgForm operation initiator subMsg) db model
+            update currentDate site selectedHealthCenter maybeVillageId isChw (MsgForm operation initiator subMsg) db model
 
         ResetCreateForm ->
-            ( Pages.Person.Model.emptyCreateModel
+            ( Pages.Person.Model.emptyCreateModel site
             , Cmd.none
             , []
             )
 
         ResetEditForm ->
-            ( Pages.Person.Model.emptyEditModel
+            ( Pages.Person.Model.emptyEditModel site
             , Cmd.none
             , []
             )
@@ -141,7 +142,7 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation initiator
             in
-            update currentDate selectedHealthCenter maybeVillageId isChw setFieldMsg db model
+            update currentDate site selectedHealthCenter maybeVillageId isChw setFieldMsg db model
 
         SetDateSelectorState state ->
             ( { model | dateSelectorPopupState = state }

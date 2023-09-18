@@ -28,20 +28,21 @@ import Pages.ProgressReport.View
 import Pages.Session.Model exposing (..)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewError, viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Bool -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate zscores isChw nurse sessionId page model db =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate zscores site isChw nurse sessionId page model db =
     let
         sessionData =
             Dict.get sessionId db.sessions
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
-        (\session -> viewFoundSession language currentDate zscores isChw nurse ( sessionId, session ) page model db)
+        (\session -> viewFoundSession language currentDate zscores site isChw nurse ( sessionId, session ) page model db)
         (wrapError language sessionId)
         sessionData
 
@@ -67,8 +68,8 @@ wrapError language sessionId errorHtml =
         ]
 
 
-viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Bool -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
-viewFoundSession language currentDate zscores isChw nurse ( sessionId, session ) page model db =
+viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
+viewFoundSession language currentDate zscores site isChw nurse ( sessionId, session ) page model db =
     let
         editableSession =
             Dict.get sessionId db.editableSessions
@@ -86,7 +87,7 @@ viewFoundSession language currentDate zscores isChw nurse ( sessionId, session )
 
     else if authorized then
         viewWebData language
-            (viewEditableSession language currentDate zscores isChw nurse sessionId page model db)
+            (viewEditableSession language currentDate zscores site isChw nurse sessionId page model db)
             (wrapError language sessionId)
             editableSession
 
@@ -94,8 +95,20 @@ viewFoundSession language currentDate zscores isChw nurse ( sessionId, session )
         viewUnauthorizedSession language sessionId session db
 
 
-viewEditableSession : Language -> NominalDate -> ZScore.Model.Model -> Bool -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> EditableSession -> Html Msg
-viewEditableSession language currentDate zscores isChw nurse sessionId page model db session =
+viewEditableSession :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> Bool
+    -> Nurse
+    -> SessionId
+    -> SessionPage
+    -> Model
+    -> ModelIndexedDb
+    -> EditableSession
+    -> Html Msg
+viewEditableSession language currentDate zscores site isChw nurse sessionId page model db session =
     case page of
         ActivitiesPage ->
             model.activitiesPage
@@ -128,7 +141,7 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
         ProgressReportPage childId ->
             Dict.get childId model.progressReportPages
                 |> Maybe.withDefault Pages.ProgressReport.Model.emptyModel
-                |> Pages.ProgressReport.View.view language currentDate zscores isChw childId ( sessionId, session ) db
+                |> Pages.ProgressReport.View.view language currentDate zscores site isChw childId ( sessionId, session ) db
                 |> Html.map (MsgProgressReport childId)
 
         ChildPage childId ->
@@ -140,7 +153,7 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
         MotherPage motherId ->
             Dict.get motherId model.motherPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewMother language currentDate zscores isChw motherId ( sessionId, session ) model db
+                |> Pages.Participant.View.viewMother language currentDate zscores site isChw motherId ( sessionId, session ) model db
                 |> Html.map (MsgMother motherId)
 
         NextStepsPage childId activity ->

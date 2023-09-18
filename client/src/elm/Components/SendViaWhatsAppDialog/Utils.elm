@@ -2,6 +2,7 @@ module Components.SendViaWhatsAppDialog.Utils exposing (..)
 
 import Components.SendViaWhatsAppDialog.Model exposing (..)
 import EverySet exposing (EverySet)
+import SyncManager.Model exposing (Site(..))
 
 
 reportTypeToString : ReportType -> String
@@ -96,6 +97,21 @@ countryCodeToString code =
 
         CountryCodeIsrael ->
             "972"
+
+
+siteToCountryCode : Site -> CountryCode
+siteToCountryCode site =
+    case site of
+        SiteRwanda ->
+            CountryCodeRwanda
+
+        SiteBurundi ->
+            CountryCodeBurundi
+
+        -- We should never get here, as the should always
+        -- be info of the site at which device operate.
+        SiteUnknown ->
+            CountryCodeRwanda
 
 
 trimLeadingZeros : String -> String

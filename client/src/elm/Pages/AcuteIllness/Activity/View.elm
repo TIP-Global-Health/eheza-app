@@ -81,28 +81,29 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import Set
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, filterGeoLocationDictByParent, geoInfo, geoLocationDictToOptions)
+import Utils.GeoLocation exposing (..)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw activity db model =
+view : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id isChw activity db model =
     let
         assembled =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site id isChw activity db model assembled =
     div [ class "page-activity acute-illness" ]
         [ viewHeader language id activity <| Maybe.map Tuple.second assembled.diagnosis
-        , viewContent language currentDate id isChw activity db model assembled
+        , viewContent language currentDate site id isChw activity db model assembled
         , viewModal <|
             warningPopup language
                 currentDate
@@ -150,10 +151,10 @@ viewHeader language id activity diagnosis =
         ]
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw activity db model assembled =
+viewContent : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site id isChw activity db model assembled =
     (viewPersonDetailsWithAlert language currentDate isChw assembled model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id isChw activity db assembled model
+        :: viewActivity language currentDate site id isChw activity db assembled model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -401,8 +402,8 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id isChw activity db assembled model =
+viewActivity : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate site id isChw activity db assembled model =
     let
         personId =
             assembled.participant.person
@@ -430,7 +431,7 @@ viewActivity language currentDate id isChw activity db assembled model =
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate id isChw assembled db model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate site id isChw assembled db model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
@@ -1569,8 +1570,8 @@ viewTreatmentReviewForm language currentDate measurements form =
         |> div [ class "ui form treatment-review" ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate site id isChw assembled db data =
     let
         personId =
             assembled.participant.person
@@ -1736,7 +1737,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                     measurements.contactsTracing
                         |> getMeasurementValueFunc
                         |> contactsTracingFormWithDefault data.contactsTracingForm
-                        |> viewContactsTracingForm language currentDate db contactsTracingFinished
+                        |> viewContactsTracingForm language currentDate site db contactsTracingFinished
 
                 Just NextStepsSymptomsReliefGuidance ->
                     measurements.healthEducation
@@ -3002,8 +3003,8 @@ viewFollowUpLabel language actionTranslationId iconClass =
     viewInstructionsLabel iconClass message
 
 
-viewContactsTracingForm : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactsTracingForm -> Html Msg
-viewContactsTracingForm language currentDate db contactsTracingFinished form =
+viewContactsTracingForm : Language -> NominalDate -> Site -> ModelIndexedDb -> Bool -> ContactsTracingForm -> Html Msg
+viewContactsTracingForm language currentDate site db contactsTracingFinished form =
     let
         content =
             case form.state of
@@ -3016,13 +3017,13 @@ viewContactsTracingForm language currentDate db contactsTracingFinished form =
                             Maybe.map Dict.keys form.contacts
                                 |> Maybe.withDefault []
                     in
-                    viewContactsTracingFormSearchParticipants language currentDate db recordedContacts data
+                    viewContactsTracingFormSearchParticipants language currentDate site db recordedContacts data
 
                 ContactsTracingFormRecordContactDetails personId data ->
                     viewContactsTracingFormRecordContactDetails language currentDate personId db data
 
                 ContactsTracingFormRegisterContact data ->
-                    viewCreateContactForm language currentDate db data
+                    viewCreateContactForm language currentDate site db data
     in
     div [ class "ui form contacts-tracing" ]
         content
@@ -3129,8 +3130,8 @@ viewTracedContact language currentDate db finished contact =
         ]
 
 
-viewContactsTracingFormSearchParticipants : Language -> NominalDate -> ModelIndexedDb -> List PersonId -> SearchParticipantsData -> List (Html Msg)
-viewContactsTracingFormSearchParticipants language currentDate db existingContacts data =
+viewContactsTracingFormSearchParticipants : Language -> NominalDate -> Site -> ModelIndexedDb -> List PersonId -> SearchParticipantsData -> List (Html Msg)
+viewContactsTracingFormSearchParticipants language currentDate site db existingContacts data =
     let
         searchForm =
             Pages.Utils.viewSearchForm language data.input Translate.PlaceholderSearchContactName SetContactsTracingInput
@@ -3189,7 +3190,7 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
                     [ class "single-action" ]
                     [ div
                         [ class "ui primary button"
-                        , onClick <| SetContactsTracingFormState <| ContactsTracingFormRegisterContact emptyRegisterContactData
+                        , onClick <| SetContactsTracingFormState <| ContactsTracingFormRegisterContact (emptyRegisterContactData site)
                         ]
                         [ text <| translate language Translate.RegisterNewContact ]
                     ]
@@ -3364,8 +3365,8 @@ viewContactTracingParticipant language currentDate personId person checked newFo
         ]
 
 
-viewCreateContactForm : Language -> NominalDate -> ModelIndexedDb -> RegisterContactData -> List (Html Msg)
-viewCreateContactForm language currentDate db data =
+viewCreateContactForm : Language -> NominalDate -> Site -> ModelIndexedDb -> RegisterContactData -> List (Html Msg)
+viewCreateContactForm language currentDate site db data =
     let
         request =
             db.postPerson
@@ -3459,6 +3460,9 @@ viewCreateContactForm language currentDate db data =
         village =
             Form.getFieldAsString Backend.Person.Form.village data
 
+        geoInfo =
+            getGeoInfo site
+
         viewProvince =
             let
                 options =
@@ -3469,7 +3473,7 @@ viewCreateContactForm language currentDate db data =
                     isFormFieldSet district
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Province
+                (resolveGeoSructureLabelLevel1 site)
                 options
                 Backend.Person.Form.province
                 "ten"
@@ -3495,7 +3499,7 @@ viewCreateContactForm language currentDate db data =
                     isFormFieldSet sector
             in
             Pages.Person.View.viewSelectInput language
-                Translate.District
+                (resolveGeoSructureLabelLevel2 site)
                 options
                 Backend.Person.Form.district
                 "ten"
@@ -3521,7 +3525,7 @@ viewCreateContactForm language currentDate db data =
                     isFormFieldSet cell
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Sector
+                (resolveGeoSructureLabelLevel3 site)
                 options
                 Backend.Person.Form.sector
                 "ten"
@@ -3547,7 +3551,7 @@ viewCreateContactForm language currentDate db data =
                     isFormFieldSet village
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Cell
+                (resolveGeoSructureLabelLevel4 site)
                 options
                 Backend.Person.Form.cell
                 "ten"
@@ -3570,7 +3574,7 @@ viewCreateContactForm language currentDate db data =
                            )
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Village
+                (resolveGeoSructureLabelLevel5 site)
                 options
                 Backend.Person.Form.village
                 "ten"

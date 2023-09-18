@@ -291,6 +291,9 @@ ubudeheToInt ubudehe =
         Ubudehe4 ->
             4
 
+        NoUbudehe ->
+            0
+
 
 ubudeheFromInt : Int -> Maybe Ubudehe
 ubudeheFromInt value =
@@ -306,6 +309,9 @@ ubudeheFromInt value =
 
         4 ->
             Just Ubudehe4
+
+        0 ->
+            Just NoUbudehe
 
         _ ->
             Nothing

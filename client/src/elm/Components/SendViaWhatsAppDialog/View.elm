@@ -13,18 +13,19 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewCustomModal)
 
 
-view : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
-view language currentDate ( personId, person ) reportType componentsConfig model =
+view : Language -> NominalDate -> Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> Model -> Html (Msg msg)
+view language currentDate site ( personId, person ) reportType componentsConfig model =
     viewCustomModal [ "bright" ] <|
-        Maybe.map (viewDialog language currentDate ( personId, person ) reportType componentsConfig) model.state
+        Maybe.map (viewDialog language currentDate site ( personId, person ) reportType componentsConfig) model.state
 
 
-viewDialog : Language -> NominalDate -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
-viewDialog language currentDate ( personId, person ) reportType componentsConfig state =
+viewDialog : Language -> NominalDate -> Site -> ( PersonId, Person ) -> ReportType -> Maybe (ReportComponentsConfig msg) -> DialogState -> Html (Msg msg)
+viewDialog language currentDate site ( personId, person ) reportType componentsConfig state =
     let
         content =
             case state of
@@ -35,7 +36,7 @@ viewDialog language currentDate ( personId, person ) reportType componentsConfig
                     viewPhoneVerification language currentDate allowComponentsSelection phoneNumber
 
                 PhoneInput data ->
-                    viewPhoneInput language currentDate data
+                    viewPhoneInput language currentDate site data
 
                 PhoneUpdateAtProfile phoneNumber ->
                     viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId person phoneNumber
@@ -54,7 +55,7 @@ viewDialog language currentDate ( personId, person ) reportType componentsConfig
                             config.setReportComponentsMsg Nothing
                         )
                         componentsConfig
-                        |> viewConfirmationBeforeExecuting language currentDate reportType personId phoneNumber
+                        |> viewConfirmationBeforeExecuting language currentDate site reportType personId phoneNumber
 
                 ExecutionResult result ->
                     Maybe.map
@@ -139,8 +140,8 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
     ]
 
 
-viewPhoneInput : Language -> NominalDate -> PhoneData -> List (Html (Msg msg))
-viewPhoneInput language currentDate data =
+viewPhoneInput : Language -> NominalDate -> Site -> PhoneData -> List (Html (Msg msg))
+viewPhoneInput language currentDate site data =
     let
         countryCodeOptions =
             List.map
@@ -162,12 +163,11 @@ viewPhoneInput language currentDate data =
                 ]
 
         curerntPhoneNumber =
-            case data.countryCode of
-                CountryCodeRwanda ->
-                    "0" ++ trimLeadingZeros data.phone
+            if siteToCountryCode site == data.countryCode then
+                "0" ++ trimLeadingZeros data.phone
 
-                _ ->
-                    "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
+            else
+                "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppPhoneInputHeader ]
@@ -485,9 +485,12 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
     ]
 
 
-viewConfirmationBeforeExecuting : Language -> NominalDate -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
-viewConfirmationBeforeExecuting language currentDate reportType personId phoneNumber clearComponentsMsg =
+viewConfirmationBeforeExecuting : Language -> NominalDate -> Site -> ReportType -> PersonId -> String -> Maybe msg -> List (Html (Msg msg))
+viewConfirmationBeforeExecuting language currentDate site reportType personId phoneNumber clearComponentsMsg =
     let
+        localCountryCode =
+            siteToCountryCode site
+
         phoneNumberForWhatsApp =
             if String.startsWith "+" phoneNumber then
                 -- International number with country code.
@@ -495,14 +498,14 @@ viewConfirmationBeforeExecuting language currentDate reportType personId phoneNu
                 "00" ++ String.dropLeft 1 phoneNumber
 
             else if String.startsWith "0" phoneNumber then
-                -- Rwanda number with no country code.
+                -- Local number with no country code.
                 -- Trim leading 0, and add 00 and country code.
-                "00" ++ countryCodeToString CountryCodeRwanda ++ trimLeadingZeros phoneNumber
+                "00" ++ countryCodeToString localCountryCode ++ trimLeadingZeros phoneNumber
 
             else
-                -- Rwanda numberm without leading 0.
+                -- Local numberm without leading 0.
                 -- Add 00 and country code.
-                "00" ++ countryCodeToString CountryCodeRwanda ++ phoneNumber
+                "00" ++ countryCodeToString localCountryCode ++ phoneNumber
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]

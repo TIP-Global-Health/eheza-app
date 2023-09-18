@@ -106,9 +106,11 @@ import Pages.WellChild.ProgressReport.View
 import Pages.Wellbeing.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
+import SyncManager.Model exposing (Site(..))
 import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
+import Translate.Utils exposing (languageToString)
 import Utils.Html exposing (viewLoading)
 import Version
 
@@ -185,32 +187,42 @@ viewLanguageSwitcherAndVersion model =
                         , class "sync-icon"
                         ]
                         [ i [ class "icon undo" ] [] ]
+
+        languagesMenu =
+            let
+                viewItem language =
+                    let
+                        label =
+                            languageToString language
+                    in
+                    li
+                        [ classList
+                            [ ( "item", True )
+                            , ( "active", model.language == language )
+                            ]
+                        , onClick <| SetLanguage language
+                        ]
+                        [ text label
+                        , a [] [ span [ class <| "icon-" ++ String.toLower label ] [] ]
+                        ]
+
+                languagesBySite =
+                    case model.syncManager.syncInfoGeneral.site of
+                        SiteRwanda ->
+                            [ English, Kinyarwanda ]
+
+                        SiteBurundi ->
+                            [ English, Kirundi ]
+
+                        SiteUnknown ->
+                            [ English ]
+            in
+            List.map viewItem languagesBySite
+                |> ul [ class "links-translate" ]
     in
     div
         [ class "ui language-switcher" ]
-        [ ul
-            [ class "links-translate" ]
-            [ li
-                [ classList
-                    [ ( "item english", True )
-                    , ( "active", model.language == English )
-                    ]
-                , onClick <| SetLanguage English
-                ]
-                [ text "English"
-                , a [] [ span [ class "icon-english" ] [] ]
-                ]
-            , li
-                [ classList
-                    [ ( "item kinyarwanda", True )
-                    , ( "active", model.language == Kinyarwanda )
-                    ]
-                , onClick <| SetLanguage Kinyarwanda
-                ]
-                [ text "Kinyarwanda"
-                , a [] [ span [ class "icon-kinyarwanda" ] [] ]
-                ]
-            ]
+        [ languagesMenu
         , devicePageShortcut
         , span
             [ class "version"
@@ -262,6 +274,9 @@ viewConfiguredModel model configured =
 
                 else
                     Just model.syncManager.syncInfoGeneral.deviceName
+
+            site =
+                model.syncManager.syncInfoGeneral.site
         in
         case model.activePage of
             DevicePage ->
@@ -291,11 +306,11 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper model
 
             UserPage userPage ->
-                viewUserPage userPage deviceName model configured
+                viewUserPage userPage deviceName site model configured
 
 
-viewUserPage : UserPage -> Maybe String -> Model -> ConfiguredModel -> Html Msg
-viewUserPage page deviceName model configured =
+viewUserPage : UserPage -> Maybe String -> Site -> Model -> ConfiguredModel -> Html Msg
+viewUserPage page deviceName site model configured =
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
@@ -338,13 +353,14 @@ viewUserPage page deviceName model configured =
                                 Dict.get prenatalEncounterId loggedInModel.clinicalProgressReportPages
                                     |> Maybe.withDefault Pages.Prenatal.ProgressReport.Model.emptyModel
                         in
-                        Pages.Prenatal.ProgressReport.View.view model.language currentDate prenatalEncounterId isChw initiator model.indexedDb page_
+                        Pages.Prenatal.ProgressReport.View.view model.language currentDate site prenatalEncounterId isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageClinicalProgressReport prenatalEncounterId)
                             |> flexPageWrapper model
 
                     CreatePersonPage relation initiator ->
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
+                            site
                             model.villageId
                             isChw
                             (CreatePerson relation)
@@ -404,17 +420,23 @@ viewUserPage page deviceName model configured =
                             |> flexPageWrapper model
 
                     DemographicsReportPage initiator prenatalEncounterId ->
-                        Pages.Prenatal.DemographicsReport.View.view model.language currentDate prenatalEncounterId initiator model.indexedDb
+                        Pages.Prenatal.DemographicsReport.View.view model.language
+                            currentDate
+                            site
+                            prenatalEncounterId
+                            initiator
+                            model.indexedDb
                             |> flexPageWrapper model
 
                     EditPersonPage id ->
                         let
                             page_ =
                                 Dict.get id loggedInModel.editPersonPages
-                                    |> Maybe.withDefault Pages.Person.Model.emptyEditModel
+                                    |> Maybe.withDefault (Pages.Person.Model.emptyEditModel site)
                         in
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
+                            site
                             model.villageId
                             isChw
                             (EditPerson id)
@@ -517,6 +539,7 @@ viewUserPage page deviceName model configured =
                             model.language
                             currentDate
                             model.zscores
+                            site
                             isChw
                             (Tuple.second loggedInModel.nurse)
                             sessionId
@@ -616,7 +639,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.nutritionProgressReportPages
                                     |> Maybe.withDefault Pages.Nutrition.ProgressReport.Model.emptyModel
                         in
-                        Pages.Nutrition.ProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
+                        Pages.Nutrition.ProgressReport.View.view model.language currentDate model.zscores site encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionProgressReport encounterId)
                             |> flexPageWrapper model
 
@@ -636,7 +659,14 @@ viewUserPage page deviceName model configured =
                                 Dict.get ( id, activity ) loggedInModel.acuteIllnessActivityPages
                                     |> Maybe.withDefault Pages.AcuteIllness.Activity.Model.emptyModel
                         in
-                        Pages.AcuteIllness.Activity.View.view model.language currentDate id isChw activity model.indexedDb page_
+                        Pages.AcuteIllness.Activity.View.view model.language
+                            currentDate
+                            site
+                            id
+                            isChw
+                            activity
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
                             |> flexPageWrapper model
 
@@ -646,7 +676,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.acuteIllnessProgressReportPages
                                     |> Maybe.withDefault Pages.AcuteIllness.ProgressReport.Model.emptyModel
                         in
-                        Pages.AcuteIllness.ProgressReport.View.view model.language currentDate encounterId isChw initiator model.indexedDb page_
+                        Pages.AcuteIllness.ProgressReport.View.view model.language currentDate site encounterId isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> flexPageWrapper model
 
@@ -706,7 +736,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.wellChildProgressReportPages
                                     |> Maybe.withDefault Pages.WellChild.ProgressReport.Model.emptyModel
                         in
-                        Pages.WellChild.ProgressReport.View.view model.language currentDate model.zscores encounterId isChw model.indexedDb page_
+                        Pages.WellChild.ProgressReport.View.view model.language currentDate model.zscores site encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
                             |> flexPageWrapper model
 
@@ -764,7 +794,7 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.ncdProgressReportPages
                                     |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
                         in
-                        Pages.NCD.ProgressReport.View.view model.language currentDate encounterId initiator model.indexedDb page_
+                        Pages.NCD.ProgressReport.View.view model.language currentDate site encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
                             |> flexPageWrapper model
 
@@ -794,7 +824,13 @@ viewUserPage page deviceName model configured =
                                 Dict.get encounterId loggedInModel.childScoreboardReportPages
                                     |> Maybe.withDefault Pages.ChildScoreboard.Report.Model.emptyModel
                         in
-                        Pages.ChildScoreboard.Report.View.view model.language currentDate model.zscores encounterId model.indexedDb page_
+                        Pages.ChildScoreboard.Report.View.view model.language
+                            currentDate
+                            model.zscores
+                            site
+                            encounterId
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardReport encounterId)
                             |> flexPageWrapper model
 
@@ -821,6 +857,7 @@ viewUserPage page deviceName model configured =
                         Pages.PatientRecord.View.view model.language
                             currentDate
                             model.zscores
+                            site
                             personId
                             isChw
                             initiator

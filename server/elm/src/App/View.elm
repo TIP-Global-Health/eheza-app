@@ -18,6 +18,7 @@ view model =
                 , Html.map MsgMenuPage <|
                     Pages.Menu.View.view
                         model.language
+                        model.backend
                         model.menuPage
                 ]
 

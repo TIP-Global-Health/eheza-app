@@ -357,14 +357,20 @@ const getSyncInfoGeneral = function() {
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
     storageArr.remainingToUpload = parseInt(storageArr.remainingToUpload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
+
     if (storageArr.rollbarToken === undefined) {
       storageArr.rollbarToken = '';
     }
+
+    if (storageArr.site === undefined) {
+      storageArr.site = '';
+    }
+
     return storageArr;
   }
 
   // No sync info saved yet.
-  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '' };
+  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '', site: '' };
 };
 
 /**

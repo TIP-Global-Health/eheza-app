@@ -80,7 +80,7 @@ import Pages.WellChild.ProgressReport.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import ServiceWorker.Model
-import SyncManager.Model
+import SyncManager.Model exposing (Site)
 import SyncManager.Utils
 import Time
 import Translate.Model exposing (Language(..))
@@ -311,9 +311,9 @@ type alias LoggedInModel =
     }
 
 
-emptyLoggedInModel : Maybe VillageId -> ( NurseId, Nurse ) -> LoggedInModel
-emptyLoggedInModel villageId nurse =
-    { createPersonPage = Pages.Person.Model.emptyCreateModel
+emptyLoggedInModel : Site -> Maybe VillageId -> ( NurseId, Nurse ) -> LoggedInModel
+emptyLoggedInModel site villageId nurse =
+    { createPersonPage = Pages.Person.Model.emptyCreateModel site
     , dashboardPage = Pages.Dashboard.Model.emptyModel villageId
     , globalCaseManagementPage = Pages.GlobalCaseManagement.Model.emptyModel
     , editPersonPages = Dict.empty
