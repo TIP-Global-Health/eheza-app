@@ -1,19 +1,15 @@
 module Pages.HomeVisit.Activity.Update exposing (update)
 
 import App.Model
-import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (unwrap)
 import Pages.HomeVisit.Activity.Model exposing (..)
 import Pages.HomeVisit.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import RemoteData exposing (RemoteData(..))
-import Result exposing (Result)
 
 
 update : NominalDate -> HomeVisitEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

@@ -3,7 +3,6 @@ module Pages.AcuteIllness.ProgressReport.Update exposing (update)
 import App.Model
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Model
-import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
 import Pages.AcuteIllness.ProgressReport.Model exposing (..)

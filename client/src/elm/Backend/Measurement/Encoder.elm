@@ -11,9 +11,9 @@ import Backend.Person.Utils exposing (genderToString)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
-import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
+import Json.Encode exposing (Value, bool, float, int, list, string)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
+import Restful.Endpoint exposing (EntityUuid, encodeEntityUuid, fromEntityUuid)
 import Translate.Utils exposing (encodeLanguage)
 import Utils.Json exposing (encodeEverySet)
 
@@ -442,8 +442,8 @@ encodeHIVTestValue type_ value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
         ++ result
-        ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns ) ]
-        ++ [ ( "deleted", bool False )
+        ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns )
+           , ( "deleted", bool False )
            , ( "type", string type_ )
            ]
 
@@ -885,10 +885,9 @@ encodePrenatalMentalHealthValue value =
     in
     [ ( "mental_health_signs", list string signs )
     , ( "specialist_at_hc", bool value.specialistAtHC )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_mental_health" )
     ]
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_mental_health" )
-           ]
 
 
 encodePrenatalTetanusImmunisation : PrenatalTetanusImmunisation -> List ( String, Value )

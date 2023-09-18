@@ -58,7 +58,7 @@ import Backend.ResilienceSurvey.Encoder exposing (encodeResilienceSurvey)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.Session.Encoder exposing (encodeSession)
-import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
+import Backend.Session.Model exposing (Session)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
 import Backend.Village.Decoder exposing (decodeVillage)
@@ -68,7 +68,7 @@ import Backend.WellChildEncounter.Encoder exposing (encodeWellChildEncounter)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Http exposing (Error)
 import Json.Decode exposing (Decoder, field)
-import Json.Encode exposing (Value, object)
+import Json.Encode exposing (object)
 import Maybe.Extra
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, drupalBackend, endpoint, fromEntityUuid, toEntityUuid, withKeyEncoder, withParamsEncoder, withValueEncoder)
 
@@ -320,17 +320,13 @@ stockManagementMeasurementsEndpoint =
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
-    = AllSessions
-    | ForClinic ClinicId
+    = ForClinic ClinicId
     | ForChild PersonId
 
 
 encodeSessionParams : SessionParams -> List ( String, String )
 encodeSessionParams params =
     case params of
-        AllSessions ->
-            []
-
         ForClinic clinic ->
             [ ( "clinic", fromEntityUuid clinic ) ]
 

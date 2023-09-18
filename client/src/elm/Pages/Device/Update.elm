@@ -2,7 +2,6 @@ module Pages.Device.Update exposing (update)
 
 import App.Model
 import Pages.Device.Model exposing (..)
-import SyncManager.Model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Maybe.Extra
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : IndividualEncounterParticipantId -> ModelIndexedDb -> List MsgIndexedDb
@@ -29,9 +29,9 @@ fetch participantId db =
             List.map FetchAcuteIllnessMeasurements encountersIds
     in
     Maybe.Extra.values
-        [ Maybe.map FetchIndividualEncounterParticipant (Just participantId)
+        [ Just (FetchIndividualEncounterParticipant participantId)
         , Maybe.map FetchPerson personId
-        , Maybe.map FetchAcuteIllnessEncountersForParticipant (Just participantId)
+        , Just (FetchAcuteIllnessEncountersForParticipant participantId)
         , Maybe.map FetchAcuteIllnessEncounter firstEncounterId
         ]
         ++ fetchMeasurements

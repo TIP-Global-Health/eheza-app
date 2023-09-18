@@ -1,27 +1,24 @@
 module Pages.PatientRecord.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
-import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.View
-import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (..)
@@ -32,22 +29,13 @@ import Pages.Report.Utils exposing (diagnosisEntryStatusToString)
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , taskCompleted
-        , tasksBarId
-        , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewQuestionLabel
-        , viewSaveAction
-        , viewStartEncounterButton
+        ( viewStartEncounterButton
         )
-import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
-import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewPaneHeading, viewProgressReport)
-import RemoteData exposing (RemoteData(..))
+import Pages.WellChild.ProgressReport.Model
+import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading)
+import RemoteData
 import SyncManager.Model exposing (Site(..))
-import Translate exposing (Language, TranslationId, translate, translateText)
+import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage)
 import Utils.NominalDate exposing (sortByDate, sortTuplesByDateDesc)
 import ZScore.Model
@@ -584,9 +572,8 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
             ( familyPlanning.dateMeasured, familyPlanning.value )
 
         prenatalEncountersIds =
-            List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
+            List.concatMap (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
                 prenatalParticipantsIds
-                |> List.concat
     in
     div [ class "pane family-planning" ]
         [ viewPaneHeading language <| Translate.PatientRecordFilter FilterFamilyPlanning
@@ -596,6 +583,7 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
         ]
 
 
+viewFamilyPlanningEntry : Language -> ( NominalDate, EverySet FamilyPlanningSign ) -> Html any
 viewFamilyPlanningEntry language ( date, signs ) =
     div [ class "entry family-planning" ]
         [ div [ class "date" ] [ text <| formatDDMMYYYY date ]

@@ -2,20 +2,16 @@ module Pages.NCD.Activity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
-import Backend.Person.Model exposing (Person)
-import EverySet
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model
     exposing
         ( ContentAndTasksForPerformedLaboratoryTestConfig
@@ -30,7 +26,8 @@ import Measurement.Model
         )
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
+        ( OutsideCareConfig
+        , corePhysicalExamFormWithDefault
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
@@ -51,12 +48,12 @@ import Measurement.Utils
         , viewUrineDipstickForm
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (viewCorePhysicalExamForm, viewFamilyPlanningForm, viewVitalsForm)
+import Measurement.View exposing (viewFamilyPlanningForm)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
 import Pages.NCD.Model exposing (..)
-import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault, resolveReferralInputsAndTasks)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
 import Pages.NCD.View exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
@@ -67,16 +64,12 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
         , viewCustomLabel
-        , viewLabel
-        , viewNumberInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
         )
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -283,15 +276,6 @@ viewFamilyPlanningContent language currentDate assembled data =
 viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
 viewExaminationContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
-        measurements =
-            assembled.measurements
-
         tasks =
             [ TaskVitals, TaskCoreExam ]
 
@@ -382,6 +366,12 @@ viewExaminationContent language currentDate assembled data =
             Maybe.map
                 (\task ->
                     let
+                        personId =
+                            assembled.participant.person
+
+                        measurements =
+                            assembled.measurements
+
                         saveAction =
                             case task of
                                 TaskVitals ->
@@ -453,15 +443,6 @@ viewCoreExamForm language currentDate form =
 viewMedicalHistoryContent : Language -> NominalDate -> AssembledData -> MedicalHistoryData -> List (Html Msg)
 viewMedicalHistoryContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
-        measurements =
-            assembled.measurements
-
         tasks =
             [ TaskCoMorbidities
             , TaskMedicationHistory
@@ -609,6 +590,12 @@ viewMedicalHistoryContent language currentDate assembled data =
             Maybe.map
                 (\task ->
                     let
+                        personId =
+                            assembled.participant.person
+
+                        measurements =
+                            assembled.measurements
+
                         saveButtonActive =
                             tasksCompleted == totalTasks
 
@@ -760,6 +747,7 @@ viewOutsideCareContent language currentDate assembled form =
     ]
 
 
+outsideCareConfig : OutsideCareConfig MedicalCondition Msg
 outsideCareConfig =
     { setBoolInputMsg = SetOutsideCareSignBoolInput
     , setDiagnosisMsg = SetOutsideCareDiagnosis
@@ -878,12 +866,6 @@ viewFamilyHistoryForm language currentDate form =
 viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
 viewLaboratoryContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -1038,6 +1020,9 @@ viewLaboratoryContent language currentDate assembled data =
             Maybe.map
                 (\task ->
                     let
+                        personId =
+                            assembled.participant.person
+
                         saveMsg =
                             case task of
                                 TaskHIVTest ->
@@ -1149,12 +1134,6 @@ contentAndTasksForPerformedLaboratoryTestConfig =
 viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
 viewNextStepsContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -1271,6 +1250,9 @@ viewNextStepsContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskHealthEducation ->

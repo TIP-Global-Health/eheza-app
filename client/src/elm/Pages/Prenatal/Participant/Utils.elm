@@ -1,6 +1,5 @@
 module Pages.Prenatal.Participant.Utils exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)

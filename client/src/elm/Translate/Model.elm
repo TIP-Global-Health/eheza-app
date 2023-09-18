@@ -1,4 +1,4 @@
-module Translate.Model exposing (Language(..), TranslationSet, allLanguages)
+module Translate.Model exposing (Language(..), TranslationSet)
 
 {-| This exposes the types used for translation.
 
@@ -11,14 +11,6 @@ type Language
     = English
     | Kinyarwanda
     | Kirundi
-
-
-allLanguages : List Language
-allLanguages =
-    [ English
-    , Kinyarwanda
-    , Kirundi
-    ]
 
 
 type alias TranslationSet a =

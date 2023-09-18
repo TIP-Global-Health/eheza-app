@@ -1,6 +1,5 @@
 module Pages.Device.Model exposing (Model, Msg(..), emptyModel)
 
-import Backend.Entities exposing (..)
 import Pages.Page exposing (Page)
 import SyncManager.Model
 

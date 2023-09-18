@@ -2,32 +2,19 @@ module Pages.StockManagement.Update exposing (update)
 
 import App.Model
 import App.Ports exposing (bindSignaturePad, clearSignaturePad, storeSignature)
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ImageUrl(..), StockUpdateType(..))
-import Backend.Model exposing (ModelIndexedDb)
-import Backend.Nurse.Model
+import Backend.Model
 import Backend.StockUpdate.Model
 import Backend.StockUpdate.Utils exposing (stockSupplierFromString)
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
 import Pages.StockManagement.Model exposing (..)
 import Pages.StockManagement.Utils exposing (..)
-import RemoteData exposing (RemoteData(..))
-import Time
-import Time.Extra
 
 
 update : NominalDate -> Maybe HealthCenterId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate maybeHealthCenterId msg model =
-    let
-        noChange =
-            ( model
-            , Cmd.none
-            , []
-            )
-    in
     case msg of
         SetActivePage page ->
             ( model
@@ -85,7 +72,10 @@ update currentDate maybeHealthCenterId msg model =
                     update currentDate maybeHealthCenterId (SetDisplayMode (ModeMonthDetails (monthGap + value))) model
 
                 _ ->
-                    noChange
+                    ( model
+                    , Cmd.none
+                    , []
+                    )
 
         SetReceiveStockConfirmIdentity confirmed ->
             let

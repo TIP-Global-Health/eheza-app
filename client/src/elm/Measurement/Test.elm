@@ -1,18 +1,11 @@
 module Measurement.Test exposing (all)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Measurement.Model exposing (ColorAlertIndication(..))
-import Date
 import Expect
-import Fixtures exposing (exampleAccessToken, exampleBackendUrl, exampleChildA, exampleUser)
-import Html
-import Html.Attributes as Attr
-import Measurement.Model exposing (..)
 import Measurement.View exposing (..)
-import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
-import Test.Html.Selector as Selector exposing (class, classes, id, tag, text)
+import Test.Html.Selector exposing (classes, text)
 import Translate.Model exposing (Language(..))
 
 

@@ -1,7 +1,5 @@
 module Pages.WellChild.ProgressReport.View exposing
     ( view
-    , viewContent
-    , viewHeader
     , viewNCDAScorecard
     , viewNutritionSigns
     , viewPaneHeading
@@ -9,13 +7,12 @@ module Pages.WellChild.ProgressReport.View exposing
     , viewProgressReport
     )
 
-import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementDateMeasuredFunc, getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
 import Backend.Model exposing (ModelIndexedDb, ncdaEnabled)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -24,18 +21,16 @@ import Backend.NutritionEncounter.Utils
         , getNutritionEncountersForParticipant
         , getWellChildEncountersForParticipant
         )
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
+import Backend.PatientRecord.Model
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, getHealthCenterName, graduatingAgeInMonth, isChildUnderAgeOf5, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInMonths, getHealthCenterName, graduatingAgeInMonth)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Backend.Session.Model exposing (Session)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)
         , PediatricCareMilestone(..)
         , WellChildEncounter
-        , WellChildEncounterType(..)
         , ecdMilestoneWarnings
         , headCircumferenceWarnings
         , pediatricCareMilestones
@@ -62,7 +57,6 @@ import Measurement.Utils
         , getPreviousMeasurements
         , resolveChildANCPregnancyData
         )
-import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Nutrition.Activity.View exposing (translateNutritionAssement)
 import Pages.Nutrition.Encounter.Utils
@@ -71,7 +65,6 @@ import Pages.Report.Model exposing (DiagnosisMode(..), PaneEntryStatus(..), Repo
 import Pages.Report.Utils
     exposing
         ( diagnosisEntryStatusToString
-        , getAcuteIllnessDiagnosisForEncounters
         , getAcuteIllnessEncountersForParticipant
         )
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
@@ -84,7 +77,6 @@ import Pages.Utils
         , viewPersonDetailsExtended
         , viewStartEncounterButton
         )
-import Pages.WellChild.Activity.Types exposing (VaccinationStatus(..))
 import Pages.WellChild.Activity.Utils
     exposing
         ( expectedECDSignsOnMilestone
@@ -102,25 +94,22 @@ import Pages.WellChild.Encounter.Utils
         )
 import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities)
 import Pages.WellChild.ProgressReport.Model exposing (..)
-import Pages.WellChild.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model exposing (Site(..))
-import Translate exposing (Language, TranslationId, translate, translateText)
-import Translate.Model exposing (Language(..))
-import Utils.Html exposing (thumbnailImage, viewModal)
+import Translate exposing (TranslationId, translate, translateText)
+import Translate.Model exposing (Language)
+import Utils.Html exposing (viewModal)
 import Utils.NominalDate
     exposing
-        ( renderAgeMonthsDays
-        , sortByDate
-        , sortByDateDesc
+        ( sortByDateDesc
         , sortDatesDesc
         , sortEncounterTuplesDesc
         , sortTuplesByDate
         , sortTuplesByDateDesc
         )
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Days(..), Kilograms(..), Length(..), Months(..), ZScore)
+import ZScore.Model exposing (Centimetres(..), Days, Kilograms(..), Length(..), Months(..))
 import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
@@ -470,10 +459,6 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
         individualNutritionMeasurements =
             getPreviousMeasurements reportData.individualNutritionMeasurementsWithDates
 
-        vaccinationProgress =
-            Maybe.map .vaccinationProgress reportData.maybeAssembled
-                |> Maybe.withDefault Dict.empty
-
         derivedContent =
             case diagnosisMode of
                 ModeActiveDiagnosis ->
@@ -482,6 +467,10 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                         -- typing new phone number. Therefore, we do not show it when
                         -- 'Send via WhatsApp' dialog is open, until its final
                         -- confirmation steps.
+                        vaccinationProgress =
+                            Maybe.map .vaccinationProgress reportData.maybeAssembled
+                                |> Maybe.withDefault Dict.empty
+
                         showGrowthPaneByWhatsAppDialog =
                             Maybe.map
                                 (\state ->
@@ -503,8 +492,7 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                                 viewGrowthPane language
                                     currentDate
                                     zscores
-                                    ( childId, child )
-                                    reportData.expectedSessions
+                                    child
                                     reportData.groupNutritionMeasurements
                                     reportData.individualNutritionMeasurementsWithDates
                                     reportData.individualWellChildMeasurementsWithDates
@@ -1004,7 +992,7 @@ viewECDPane :
     -> Html any
 viewECDPane language currentDate child wellChildEncounters individualWellChildMeasurementsWithDates db =
     Maybe.map
-        (\birthDate ->
+        (\_ ->
             let
                 milestonesToCurrentDateWithStatus =
                     generateECDMilestonesWithStatus currentDate child wellChildEncounters individualWellChildMeasurementsWithDates
@@ -1174,30 +1162,17 @@ viewGrowthPane :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> ( PersonId, Person )
-    -> Dict SessionId Session
+    -> Person
     -> ChildMeasurementList
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
     -> Html any
-viewGrowthPane language currentDate zscores ( childId, child ) expected historical nutritionMeasurements wellChildMeasurements =
+viewGrowthPane language currentDate zscores child historical nutritionMeasurements wellChildMeasurements =
     let
         --
         -- GROUP CONTEXT
         --
-        expectedSessions =
-            Dict.toList expected
-                |> List.map (\( uuid, expectedSession ) -> ( fromEntityUuid uuid, expectedSession.startDate ))
-                |> List.filter hasGroupMeasurement
-
         -- Do we have any kind of measurement for the child for the specified session?
-        hasGroupMeasurement ( id, _ ) =
-            Dict.member id heightValuesBySession
-                || Dict.member id muacValuesBySession
-                || Dict.member id weightValuesBySession
-                || Dict.member id nutritionValuesBySession
-                || Dict.member id photoValuesBySession
-
         -- This includes any edits that have been saved locally, but not as-you-type
         -- in the UI before you hit "Save" or "Update".
         valuesIndexedBySession func =
@@ -1223,9 +1198,6 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
         weightValuesBySession =
             valuesIndexedBySession .weights
 
-        muacValuesBySession =
-            valuesIndexedBySession .muacs
-
         photoValuesBySession =
             valuesIndexedBySession .photos
 
@@ -1235,21 +1207,10 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
         --
         -- INDIVIDUAL CONTEXT
         --
-        expectedIndividualEncounters =
-            List.map (\( startDate, ( uuid, _ ) ) -> ( fromEntityUuid uuid, startDate ))
-                >> List.filter hasEncounterMeasurement
-
         -- Do we have any kind of measurement for the child for the specified encounter?
-        hasEncounterMeasurement ( id, _ ) =
-            Dict.member id heightValuesByEncounter
-                || Dict.member id muacValuesByEncounter
-                || Dict.member id weightValuesByEncounter
-                || Dict.member id nutritionValuesByEncounter
-                || Dict.member id photoValuesByEncounter
-
         valuesIndexedByEncounter func =
             List.filterMap
-                (\( startDate, ( uuid, measurements ) ) ->
+                (\( _, ( _, measurements ) ) ->
                     func measurements
                         |> Maybe.andThen
                             (Tuple.second
@@ -1279,11 +1240,6 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                 (valuesIndexedByEncounter .weight nutritionMeasurements)
                 (valuesIndexedByEncounter .weight wellChildMeasurements)
 
-        muacValuesByEncounter =
-            Dict.union
-                (valuesIndexedByEncounter .muac nutritionMeasurements)
-                (valuesIndexedByEncounter .muac wellChildMeasurements)
-
         photoValuesByEncounter =
             Dict.union
                 (valuesIndexedByEncounter .photo nutritionMeasurements)
@@ -1294,24 +1250,11 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                 (valuesIndexedByEncounter .nutrition nutritionMeasurements)
                 (valuesIndexedByEncounter .nutrition wellChildMeasurements)
 
-        headCircumferenceValuesByEncounter =
-            valuesIndexedByEncounter .headCircumference wellChildMeasurements
-
         --
         -- COMMON CONTEXT
         --
-        sessionsAndEncounters =
-            expectedSessions
-                ++ expectedIndividualEncounters nutritionMeasurements
-                ++ expectedIndividualEncounters wellChildMeasurements
-                |> List.sortWith (\s1 s2 -> Date.compare (Tuple.second s1) (Tuple.second s2))
-                |> List.reverse
-
         heightValues =
             Dict.values heightValuesBySession ++ Dict.values heightValuesByEncounter
-
-        muacValues =
-            Dict.values muacValuesBySession ++ Dict.values muacValuesByEncounter
 
         weightValues =
             Dict.values weightValuesBySession ++ Dict.values weightValuesByEncounter
@@ -1324,81 +1267,81 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
         photoValues =
             Dict.values photoValuesBySession ++ Dict.values photoValuesByEncounter
 
-        headCircumferenceValues =
-            Dict.values headCircumferenceValuesByEncounter
-
-        zScoreViewCharts =
-            case child.gender of
-                Male ->
-                    { heightForAge = ZScore.View.viewHeightForAgeBoys
-                    , heightForAge0To5 = ZScore.View.viewHeightForAgeBoys0To5
-                    , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
-                    , weightForAge = ZScore.View.viewWeightForAgeBoys
-                    , weightForAge0To5 = ZScore.View.viewWeightForAgeBoys0To5
-                    , weightForAge5To10 = ZScore.View.viewWeightForAgeBoys5To10
-                    , weightForHeight = ZScore.View.viewWeightForHeightBoys
-                    , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Boys
-                    , viewHeadCircumferenceForAge0To13Weeks = ZScore.View.viewHeadCircumferenceForAge0To13WeeksBoys
-                    , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Boys
-                    , headCircumferenceForAge0To5 = ZScore.View.viewHeadCircumferenceForAge0To5Boys
-                    }
-
-                Female ->
-                    { heightForAge = ZScore.View.viewHeightForAgeGirls
-                    , heightForAge0To5 = ZScore.View.viewHeightForAgeGirls0To5
-                    , heightForAge5To19 = ZScore.View.viewHeightForAgeGirls5To19
-                    , weightForAge = ZScore.View.viewWeightForAgeGirls
-                    , weightForAge0To5 = ZScore.View.viewWeightForAgeGirls0To5
-                    , weightForAge5To10 = ZScore.View.viewWeightForAgeGirls5To10
-                    , weightForHeight = ZScore.View.viewWeightForHeightGirls
-                    , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Girls
-                    , viewHeadCircumferenceForAge0To13Weeks = ZScore.View.viewHeadCircumferenceForAge0To13WeeksGirls
-                    , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Girls
-                    , headCircumferenceForAge0To5 = ZScore.View.viewHeadCircumferenceForAge0To5Girls
-                    }
-
         heightForAgeData =
             List.filterMap (chartHeightForAge child) heightValues
 
         heightForAgeDaysData =
             heightForAgeData
-                |> List.map (\( days, month, height ) -> ( days, height ))
+                |> List.map (\( days, _, height ) -> ( days, height ))
 
         heightForAgeMonthsData =
             heightForAgeData
-                |> List.map (\( days, month, height ) -> ( month, height ))
+                |> List.map (\( _, month, height ) -> ( month, height ))
 
         weightForAgeData =
             List.filterMap (chartWeightForAge child) weightValues
 
         weightForAgeDaysData =
             weightForAgeData
-                |> List.map (\( days, month, weight ) -> ( days, weight ))
+                |> List.map (\( days, _, weight ) -> ( days, weight ))
 
         weightForAgeMonthsData =
             weightForAgeData
-                |> List.map (\( days, month, weight ) -> ( month, weight ))
+                |> List.map (\( _, month, weight ) -> ( month, weight ))
 
         weightForLengthAndHeightData =
             List.filterMap (chartWeightForLengthAndHeight heightValues) weightValues
 
         weightForLengthData =
             weightForLengthAndHeightData
-                |> List.map (\( length, height, weight ) -> ( length, weight ))
+                |> List.map (\( length, _, weight ) -> ( length, weight ))
 
         weightForHeightData =
             weightForLengthAndHeightData
-                |> List.map (\( length, height, weight ) -> ( height, weight ))
-
-        headCircumferenceForAgeData =
-            List.filterMap (chartHeadCircumferenceForAge child) headCircumferenceValues
+                |> List.map (\( _, height, weight ) -> ( height, weight ))
 
         charts =
             Maybe.map
                 (\birthDate ->
                     let
-                        childAgeInWeeks =
-                            diffWeeks birthDate currentDate
+                        headCircumferenceValuesByEncounter =
+                            valuesIndexedByEncounter .headCircumference wellChildMeasurements
+
+                        headCircumferenceValues =
+                            Dict.values headCircumferenceValuesByEncounter
+
+                        zScoreViewCharts =
+                            case child.gender of
+                                Male ->
+                                    { heightForAge = ZScore.View.viewHeightForAgeBoys
+                                    , heightForAge0To5 = ZScore.View.viewHeightForAgeBoys0To5
+                                    , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
+                                    , weightForAge = ZScore.View.viewWeightForAgeBoys
+                                    , weightForAge0To5 = ZScore.View.viewWeightForAgeBoys0To5
+                                    , weightForAge5To10 = ZScore.View.viewWeightForAgeBoys5To10
+                                    , weightForHeight = ZScore.View.viewWeightForHeightBoys
+                                    , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Boys
+                                    , viewHeadCircumferenceForAge0To13Weeks = ZScore.View.viewHeadCircumferenceForAge0To13WeeksBoys
+                                    , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Boys
+                                    , headCircumferenceForAge0To5 = ZScore.View.viewHeadCircumferenceForAge0To5Boys
+                                    }
+
+                                Female ->
+                                    { heightForAge = ZScore.View.viewHeightForAgeGirls
+                                    , heightForAge0To5 = ZScore.View.viewHeightForAgeGirls0To5
+                                    , heightForAge5To19 = ZScore.View.viewHeightForAgeGirls5To19
+                                    , weightForAge = ZScore.View.viewWeightForAgeGirls
+                                    , weightForAge0To5 = ZScore.View.viewWeightForAgeGirls0To5
+                                    , weightForAge5To10 = ZScore.View.viewWeightForAgeGirls5To10
+                                    , weightForHeight = ZScore.View.viewWeightForHeightGirls
+                                    , weightForHeight0To5 = ZScore.View.viewWeightForHeight0To5Girls
+                                    , viewHeadCircumferenceForAge0To13Weeks = ZScore.View.viewHeadCircumferenceForAge0To13WeeksGirls
+                                    , headCircumferenceForAge0To2 = ZScore.View.viewHeadCircumferenceForAge0To2Girls
+                                    , headCircumferenceForAge0To5 = ZScore.View.viewHeadCircumferenceForAge0To5Girls
+                                    }
+
+                        headCircumferenceForAgeData =
+                            List.filterMap (chartHeadCircumferenceForAge child) headCircumferenceValues
 
                         childAgeInMonths =
                             diffMonths birthDate currentDate
@@ -1410,6 +1353,9 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
                     -- childern with age below 13 weeks.
                     if childAgeInMonths < graduatingAgeInMonth then
                         let
+                            childAgeInWeeks =
+                                diffWeeks birthDate currentDate
+
                             headCircumferenceChart =
                                 if childAgeInWeeks < 13 then
                                     zScoreViewCharts.viewHeadCircumferenceForAge0To13Weeks language zscores headCircumferenceForAgeData
@@ -1447,11 +1393,11 @@ viewGrowthPane language currentDate zscores ( childId, child ) expected historic
         [ viewPaneHeading language Translate.Growth
         , div [ class "pane-content" ]
             [ div [ class "growth-nutrition-signs" ] <|
-                viewNutritionSigns language child nutritionValues
+                viewNutritionSigns language nutritionValues
             , div [ class "growth-charts" ]
                 charts
             , div [ class "growth-photos" ] <|
-                viewPhotos language child photoValues
+                viewPhotos language photoValues
             ]
         ]
 
@@ -1526,8 +1472,8 @@ chartWeightForLengthAndHeight heights weight =
             )
 
 
-viewNutritionSigns : Language -> Person -> List ( NominalDate, EverySet ChildNutritionSign ) -> List (Html any)
-viewNutritionSigns language child measurements =
+viewNutritionSigns : Language -> List ( NominalDate, EverySet ChildNutritionSign ) -> List (Html any)
+viewNutritionSigns language measurements =
     let
         entriesHeading =
             div [ class "heading nutrition-signs" ]
@@ -1563,8 +1509,8 @@ viewNutritionSigns language child measurements =
     entriesHeading :: viewEntries language entries
 
 
-viewPhotos : Language -> Person -> List { a | dateMeasured : NominalDate, value : ImageUrl } -> List (Html any)
-viewPhotos language child measurements =
+viewPhotos : Language -> List { a | dateMeasured : NominalDate, value : ImageUrl } -> List (Html any)
+viewPhotos language measurements =
     let
         viewImageUrl (ImageUrl url) =
             div
@@ -1744,20 +1690,20 @@ viewChildIdentificationPane :
     -> Html any
 viewChildIdentificationPane language currentDate site allNCDAQuestionnaires db ( childId, child ) =
     let
-        parentsIds =
-            Dict.get childId db.relationshipsByPerson
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (Dict.values
-                        >> List.filter (.relatedBy >> (==) MyParent)
-                        >> EverySet.fromList
-                        >> EverySet.toList
-                        >> List.map .relatedTo
-                    )
-                |> Maybe.withDefault []
-
         ( mother, father ) =
             let
+                parentsIds =
+                    Dict.get childId db.relationshipsByPerson
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (Dict.values
+                                >> List.filter (.relatedBy >> (==) MyParent)
+                                >> EverySet.fromList
+                                >> EverySet.toList
+                                >> List.map .relatedTo
+                            )
+                        |> Maybe.withDefault []
+
                 parents =
                     List.filterMap
                         (\personId ->
@@ -1927,13 +1873,6 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
                         ( eddDate, encountersDatesFromANCData ) =
                             resolveChildANCPregnancyData childId db
 
-                        pregnancyStartDate =
-                            Maybe.map eddToLmpDate eddDate
-                                |> Maybe.withDefault
-                                    -- If we don't have LMP date, we'll assume that
-                                    -- pregnancy was complete (lasted 9 months).
-                                    (eddToLmpDate birthDate)
-
                         encountersDatesFromNCDAdata =
                             List.filterMap
                                 (\( _, value ) ->
@@ -1950,20 +1889,28 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
                         allEncountersDates =
                             EverySet.union encountersDatesFromANCData encountersDatesFromNCDAdata
                                 |> EverySet.toList
-
-                        cellValueForMonth =
-                            -- Per requirements, if there were at least 4 encounters, we put
-                            -- green V. If less, red X.
-                            if List.length allEncountersDates < 4 then
-                                NCDACellValueX
-
-                            else
-                                NCDACellValueV
                     in
                     if List.isEmpty allEncountersDates then
                         List.repeat 9 NCDACellValueEmpty
 
                     else
+                        let
+                            pregnancyStartDate =
+                                Maybe.map eddToLmpDate eddDate
+                                    |> Maybe.withDefault
+                                        -- If we don't have LMP date, we'll assume that
+                                        -- pregnancy was complete (lasted 9 months).
+                                        (eddToLmpDate birthDate)
+
+                            cellValueForMonth =
+                                -- Per requirements, if there were at least 4 encounters, we put
+                                -- green V. If less, red X.
+                                if List.length allEncountersDates < 4 then
+                                    NCDACellValueX
+
+                                else
+                                    NCDACellValueV
+                        in
                         List.repeat 9 NCDACellValueDash
                             |> List.indexedMap
                                 (\index cellValue ->
@@ -2043,7 +1990,7 @@ viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQu
                 let
                     breastfedForSixMonths =
                         List.map (Tuple.second >> .signs >> EverySet.member BreastfedForSixMonths) allNCDAQuestionnaires
-                            |> List.any ((==) True)
+                            |> List.member True
 
                     firstPeriodIndicator =
                         if breastfedForSixMonths then
@@ -2064,9 +2011,6 @@ viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQu
                     ++ secondPeriod
                     |> Dict.fromList
 
-        breastfedForSixMonthsValues =
-            generateValues currentDate child (Just breastfedForSixMonthsByAgeInMonths) ((==) NCDACellValueV)
-
         appropriateComplementaryFeedingValues =
             generateValues currentDate
                 child
@@ -2084,6 +2028,9 @@ viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQu
         -- reached the age for which value is given (empty value otherwise).
         ( breastfedForSixMonthsFirstPeriod, breastfedForSixMonthsSecondPeriod ) =
             let
+                breastfedForSixMonthsValues =
+                    generateValues currentDate child (Just breastfedForSixMonthsByAgeInMonths) ((==) NCDACellValueV)
+
                 firstPeriod =
                     List.take 6 breastfedForSixMonthsValues
 
@@ -2366,12 +2313,12 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
             Maybe.andThen
                 (\birthDate ->
                     List.filter
-                        (\( participantId, participant ) ->
+                        (\( _, participant ) ->
                             diffMonths birthDate participant.startDate < 24
                         )
                         acuteIllnesses
-                        |> List.map
-                            (\( participantId, participant ) ->
+                        |> List.concatMap
+                            (\( participantId, _ ) ->
                                 getAcuteIllnessEncountersForParticipant db participantId
                                     |> List.filterMap
                                         (\( encounterId, encounter ) ->
@@ -2400,7 +2347,6 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
                                                 Nothing
                                         )
                             )
-                        |> List.concat
                         |> distributeByAgeInMonths child
                 )
                 child.birthDate
@@ -2494,9 +2440,9 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                                     -- after the reference date.
                                     vaccinationProgressOnReferrenceDate =
                                         Dict.map
-                                            (\vaccineType dosesDict ->
+                                            (\_ dosesDict ->
                                                 Dict.filter
-                                                    (\dose administeredDate ->
+                                                    (\_ administeredDate ->
                                                         Date.compare administeredDate referenceDate == LT
                                                     )
                                                     dosesDict
@@ -2593,7 +2539,7 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                         -- In case we got both values for months, we give preference to
                         -- CHW value, because it's the one that can tell us if supplement was
                         -- taken, or not.
-                        (\key nurseValue chwValue -> Dict.insert key chwValue)
+                        (\key _ chwValue -> Dict.insert key chwValue)
                         (\key value -> Dict.insert key value)
                         nurseDict
                         chwDict

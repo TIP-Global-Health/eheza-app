@@ -1,7 +1,7 @@
 module Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 
 import Backend.PmtctParticipant.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)

@@ -1,9 +1,8 @@
 module Pages.ChildScoreboard.Activity.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.ChildScoreboardActivity.Model exposing (..)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -13,23 +12,20 @@ import Backend.NutritionEncounter.Utils
         , resolveNCDANeverFilled
         , resolveNCDANotFilledAfterAgeOfSixMonths
         )
-import Backend.Person.Model exposing (Person)
 import Date
 import EverySet
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
 import List.Extra
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model
     exposing
         ( ImmunisationTask(..)
         , NCDAData
         , VaccinationFormViewMode(..)
-        , VaccinationProgressDict
         , emptyVaccinationForm
         )
 import Measurement.Utils
@@ -51,12 +47,9 @@ import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
-import Pages.ChildScoreboard.Utils exposing (generateVaccinationProgressDicts)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewLabel, viewPersonDetailsExtended, viewSaveAction)
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (viewModal)
+import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -166,12 +159,6 @@ viewImmunisationContent :
     -> List (Html Msg)
 viewImmunisationContent language currentDate assembled db data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -337,6 +324,9 @@ viewImmunisationContent language currentDate assembled db data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskBCG ->
@@ -522,14 +512,15 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                 initialOpvAdministeredByForm =
                     wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
 
-                initialOpvAdministeredByProgress =
-                    wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
-
                 initialOpvAdministered =
                     if form.administeredDosesDirty then
                         initialOpvAdministeredByForm
 
                     else
+                        let
+                            initialOpvAdministeredByProgress =
+                                wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+                        in
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =

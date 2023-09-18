@@ -1,19 +1,18 @@
 module Pages.TraceContact.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ContactTraceItem)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (generateFullName)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra
 import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -31,8 +30,8 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSaveAction
         )
-import RemoteData exposing (RemoteData)
-import Translate exposing (Language, TranslationId, translate)
+import RemoteData
+import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage, viewModal)
 
 
@@ -64,8 +63,8 @@ view language currentDate id db model =
 
         content =
             div [ class "ui unstackable items" ] <|
-                [ div [ class "item" ] personDetails ]
-                    ++ traceContentStepForm
+                div [ class "item" ] personDetails
+                    :: traceContentStepForm
     in
     div [ class "page-activity trace-contact" ]
         [ viewHeader language

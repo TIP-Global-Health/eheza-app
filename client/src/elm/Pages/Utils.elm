@@ -8,12 +8,9 @@ import Backend.Measurement.Model
         ( AdministrationNote(..)
         , ImageUrl(..)
         , MedicationDistributionSign(..)
-        , MedicationDistributionValue
         , MedicationNonAdministrationSign(..)
         )
 import Backend.Model exposing (sendViaWhatsAppEnabled)
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
@@ -28,10 +25,8 @@ import Html.Events exposing (..)
 import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust, or, unwrap)
-import Pages.Page exposing (Page(..), UserPage(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model
-import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
@@ -78,18 +73,20 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                 )
 
             else
-                let
-                    renderAgeFunc =
-                        if isAboveAgeOf2Years then
-                            renderAgeYearsMonths
-
-                        else
-                            renderAgeMonthsDays
-                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> renderAgeFunc language birthDate currentDate)
+                        (\birthDate ->
+                            let
+                                renderAgeFunc =
+                                    if isAboveAgeOf2Years then
+                                        renderAgeYearsMonths
+
+                                    else
+                                        renderAgeMonthsDays
+                            in
+                            renderAgeFunc language birthDate currentDate
+                        )
                 )
     in
     [ div [ class "ui image" ]
@@ -145,18 +142,20 @@ viewPersonDetailsExtended language currentDate person =
                 )
 
             else
-                let
-                    renderAgeFunc =
-                        if isAboveAgeOf2Years then
-                            renderAgeYearsMonths
-
-                        else
-                            renderAgeMonthsDays
-                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate))
+                        (\birthDate ->
+                            let
+                                renderAgeFunc =
+                                    if isAboveAgeOf2Years then
+                                        renderAgeYearsMonths
+
+                                    else
+                                        renderAgeMonthsDays
+                            in
+                            viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate)
+                        )
                     |> Maybe.withDefault emptyNode
                 )
 

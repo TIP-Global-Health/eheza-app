@@ -1,23 +1,18 @@
 module Pages.NCD.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (NCDEncounterId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (..)
-import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import Date
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import List.Extra
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils
     exposing
@@ -45,8 +40,7 @@ import Pages.Utils
         , viewNumberInput
         , viewQuestionLabel
         )
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, translate)
+import Translate
 import Translate.Model exposing (Language(..))
 
 
@@ -680,8 +674,7 @@ socialHistoryFormInputsAndTasks language currentDate form =
            ]
     , alcoholTasks
         ++ cigarettesTasks
-        ++ [ form.salt, form.difficult4Times, form.helpAtHome ]
-        ++ [ maybeToBoolTask form.foodGroup ]
+        ++ [ form.salt, form.difficult4Times, form.helpAtHome, maybeToBoolTask form.foodGroup ]
     )
 
 

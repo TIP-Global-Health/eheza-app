@@ -1,16 +1,14 @@
 module Pages.Prenatal.RecurrentActivity.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
+import EverySet
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue, vitalsFormWithDefault)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
@@ -21,16 +19,13 @@ import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
-        , ifTrue
-        , maybeValueConsideringIsDirtyField
         , taskAllCompleted
         , taskCompleted
-        , valueConsideringIsDirtyField
         , viewBoolInput
         , viewCustomLabel
         , viewQuestionLabel
         )
-import Translate exposing (Language, TranslationId, translate)
+import Translate
 import Translate.Model exposing (Language(..))
 
 
@@ -238,9 +233,6 @@ nextStepsTaskCompleted currentDate assembled task =
 
         NextStepsMedicationDistribution ->
             let
-                allowedSigns =
-                    NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
-
                 medicationDistributionRequired =
                     resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
                         |> List.isEmpty
@@ -248,6 +240,10 @@ nextStepsTaskCompleted currentDate assembled task =
 
                 medicationDistributionCompleted =
                     if medicationDistributionRequired then
+                        let
+                            allowedSigns =
+                                NoMedicationDistributionSignsRecurrentPhase :: medicationsRecurrentPhase
+                        in
                         medicationDistributionMeasurementTaken allowedSigns assembled.measurements
 
                     else
@@ -455,8 +451,7 @@ healthEducationFormInputsAndTasks language assembled form =
             , diabetes
             ]
     in
-    ( List.map Tuple.first inputsAndTasks
-        |> List.concat
+    ( List.concatMap Tuple.first inputsAndTasks
     , List.map Tuple.second inputsAndTasks
         |> Maybe.Extra.values
     )

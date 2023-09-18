@@ -1,73 +1,18 @@
 module Pages.Prenatal.ProgressReport.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.Model exposing (ModelIndexedDb)
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
-import Backend.PrenatalActivity.Model
-    exposing
-        ( PregnancyTrimester(..)
-        , allMedicalDiagnoses
-        , allObstetricalDiagnoses
-        , allRiskFactors
-        , allTrimesters
-        )
-import Backend.PrenatalActivity.Utils
-    exposing
-        ( generateRiskFactorAlertData
-        , getEncounterTrimesterData
-        )
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
-import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
-import Date exposing (Interval(..), Unit(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
+import Date
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils
-    exposing
-        ( outsideCareMedicationOptionsAnemia
-        , outsideCareMedicationOptionsHIV
-        , outsideCareMedicationOptionsHypertension
-        , outsideCareMedicationOptionsMalaria
-        , outsideCareMedicationOptionsSyphilis
-        )
-import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
-import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
-import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
-import Pages.Prenatal.RecurrentActivity.Utils
-import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
     exposing
         ( applyHypertensionlikeDiagnosesHierarchy
-        , diagnosedMalaria
-        , hypertensionDiagnoses
-        , outsideCareDiagnoses
-        , recommendedTreatmentSignsForHypertension
-        , recommendedTreatmentSignsForMalaria
-        , recommendedTreatmentSignsForSyphilis
         , resolvePreviousHypertensionDiagnosis
         )
-import Pages.Report.Model exposing (LabResultsCurrentMode(..), LabResultsHistoryMode(..), LabResultsMode(..), TestReport(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPhotoThumbFromImageUrl)
-import RemoteData exposing (RemoteData(..), WebData)
-import Round
-import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (sortByDateDesc, sortTuplesByDateDesc)
-import Utils.WebData exposing (viewWebData)
+import Translate exposing (Language, translate)
 
 
 thumbnailDimensions : { width : Int, height : Int }

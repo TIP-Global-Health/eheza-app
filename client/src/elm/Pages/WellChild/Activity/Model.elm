@@ -1,6 +1,5 @@
 module Pages.WellChild.Activity.Model exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
@@ -15,7 +14,6 @@ import Pages.WellChild.Activity.Types exposing (..)
 type Msg
     = SetActivePage Page
     | SetWarningPopupState (Maybe WarningPopupType)
-    | NoOp
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
     | SetExpectedDateConcludedSelectorState (Maybe (DateSelectorConfig Msg))

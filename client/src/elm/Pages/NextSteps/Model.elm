@@ -4,7 +4,6 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
-import Pages.Page exposing (Page)
 
 
 {-| This module manages the state for the first part of the UI
@@ -35,8 +34,7 @@ type alias Model =
 
 
 type Msg
-    = SetRedirectPage Page
-    | SetWarningPopupState (List NutritionAssessment)
+    = SetWarningPopupState (List NutritionAssessment)
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool

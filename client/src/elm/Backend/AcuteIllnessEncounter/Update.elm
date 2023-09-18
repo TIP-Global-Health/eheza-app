@@ -2,20 +2,16 @@ module Backend.AcuteIllnessEncounter.Update exposing (update)
 
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessEncounter)
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model exposing (..)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
-import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Json.Encode exposing (object)
-import Json.Encode.Extra
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
+import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 
 update :

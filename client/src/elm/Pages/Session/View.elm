@@ -28,9 +28,9 @@ import Pages.ProgressReport.View
 import Pages.Session.Model exposing (..)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
-import Utils.WebData exposing (viewError, viewWebData)
+import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
@@ -71,10 +71,6 @@ wrapError language sessionId errorHtml =
 viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
 viewFoundSession language currentDate zscores site isChw nurse ( sessionId, session ) page model db =
     let
-        editableSession =
-            Dict.get sessionId db.editableSessions
-                |> Maybe.withDefault NotAsked
-
         authorized =
             db.clinics
                 |> RemoteData.toMaybe
@@ -86,6 +82,11 @@ viewFoundSession language currentDate zscores site isChw nurse ( sessionId, sess
         viewClosedSession language sessionId session db
 
     else if authorized then
+        let
+            editableSession =
+                Dict.get sessionId db.editableSessions
+                    |> Maybe.withDefault NotAsked
+        in
         viewWebData language
             (viewEditableSession language currentDate zscores site isChw nurse sessionId page model db)
             (wrapError language sessionId)

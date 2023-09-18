@@ -68,7 +68,6 @@ to `NotAsked`, in cases where (for instance) the user has acknowledged
 an error and wishes to retry the request.
 
     import Http exposing (Error(..))
-    import Fixtures exposing (Msg(..))
     import RemoteData exposing (..)
 
     whenNotAsked DoThis NotAsked --> Just DoThis

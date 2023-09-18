@@ -8,7 +8,6 @@ import App.Utils exposing (getLoggedInData, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
-import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.Nurse.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
@@ -22,13 +21,11 @@ import Browser.Navigation as Nav
 import Config
 import Device.Decoder
 import Device.Encoder
-import Dict as LegacyDict
 import Error.Model exposing (ErrorType(..))
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode
-import Json.Encode
 import MD5
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Update
@@ -111,7 +108,7 @@ import Pages.WellChild.Encounter.Model
 import Pages.WellChild.Encounter.Update
 import Pages.WellChild.ProgressReport.Model
 import Pages.WellChild.ProgressReport.Update
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -124,7 +121,6 @@ import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import Url
 import Utils.WebData
-import Version
 import ZScore.Model
 import ZScore.Update
 
@@ -137,7 +133,7 @@ init flags url key =
                 Ok language ->
                     language
 
-                Err msg ->
+                Err _ ->
                     English
 
         url_ =
@@ -226,9 +222,6 @@ updateAndThenFetch msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        noChange =
-            ( model, Cmd.none )
-
         currentDate =
             fromLocalDateTime model.currentTime
 
@@ -1126,7 +1119,7 @@ update msg model =
                         in
                         sequence update appMsgs ( updatedModel, cmd )
                     )
-                |> Maybe.withDefault noChange
+                |> Maybe.withDefault ( model, Cmd.none )
 
         TryPinCode code ->
             updateConfigured
@@ -1225,22 +1218,16 @@ update msg model =
             sequence update dataToFetch ( newModel, Cmd.none )
 
         UrlRequested urlRequest ->
-            let
-                ( modelUpdated, cmd ) =
-                    case urlRequest of
-                        Browser.Internal url ->
-                            ( model, Nav.pushUrl model.navigationKey (Url.toString url) )
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.navigationKey (Url.toString url) )
 
-                        -- As we use a tag in multiple places in HTML and CSS,
-                        -- we'll get `External ""` msg when it's clicked.
-                        -- Therefore, we will not react to external Url requests,
-                        -- because app does not require it anyway.
-                        Browser.External href ->
-                            ( model, Cmd.none )
-            in
-            ( modelUpdated
-            , cmd
-            )
+                -- As we use a tag in multiple places in HTML and CSS,
+                -- we'll get `External ""` msg when it's clicked.
+                -- Therefore, we will not react to external Url requests,
+                -- because app does not require it anyway.
+                Browser.External _ ->
+                    ( model, Cmd.none )
 
         UrlChanged url ->
             let

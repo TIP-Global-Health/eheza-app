@@ -1,8 +1,6 @@
 module Backend.ResilienceSurvey.Utils exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.ResilienceSurvey.Model exposing (..)
-import EverySet
 
 
 resilienceSurveyTypeToString : ResilienceSurveyType -> String

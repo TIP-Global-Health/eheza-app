@@ -8,9 +8,8 @@ via sending messages through the `update` function.
 -}
 
 import App.Model
-import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Model
-import Error.Model exposing (Error, ErrorType(..))
+import Error.Model exposing (ErrorType(..))
 import Gizra.Update exposing (sequenceExtra)
 import Json.Decode exposing (Value, decodeValue)
 import Pages.Page

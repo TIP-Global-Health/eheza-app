@@ -3,7 +3,6 @@ module Backend.ResilienceSurvey.Update exposing (update)
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (resilienceSurveyEndpoint)
-import Backend.Entities exposing (..)
 import Backend.ResilienceSurvey.Model exposing (..)
 import Backend.Utils exposing (sw)
 import Gizra.NominalDate exposing (NominalDate)

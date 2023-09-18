@@ -2,11 +2,9 @@ module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
-import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import AssocList as Dict
 import Backend.Fetch
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.AcuteIllness.Activity.Fetch
 import Pages.AcuteIllness.Activity.Model
@@ -38,7 +36,7 @@ import Pages.Nutrition.Activity.Fetch
 import Pages.Nutrition.Encounter.Fetch
 import Pages.Nutrition.Participant.Fetch
 import Pages.Nutrition.ProgressReport.Fetch
-import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Fetch
 import Pages.People.Fetch
 import Pages.Person.Fetch
@@ -60,7 +58,6 @@ import Pages.WellChild.Encounter.Fetch
 import Pages.WellChild.Participant.Fetch
 import Pages.WellChild.ProgressReport.Fetch
 import Pages.Wellbeing.Fetch
-import Time
 
 
 {-| Basically, we're following down the `view` hierarchy to determine, given
@@ -80,15 +77,15 @@ views. more often than that.
 -}
 fetch : Model -> List Msg
 fetch model =
-    let
-        currentDate =
-            fromLocalDateTime model.currentTime
-    in
     if not model.serviceWorker.active then
         -- Do not fetch anything, until service worker is active.
         []
 
     else
+        let
+            currentDate =
+                fromLocalDateTime model.currentTime
+        in
         case model.activePage of
             DevicePage ->
                 List.map MsgIndexedDb Pages.Device.Fetch.fetch
@@ -121,7 +118,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage (DashboardPage subPage) ->
+            UserPage (DashboardPage _) ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( healthCenterId, loggedIn ) ->
@@ -132,7 +129,7 @@ fetch model =
 
             UserPage GlobalCaseManagementPage ->
                 Maybe.map
-                    (\( healthCenterId, loggedIn ) ->
+                    (\( healthCenterId, _ ) ->
                         Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId model.villageId model.indexedDb
                             |> List.map MsgIndexedDb
                     )
@@ -171,7 +168,7 @@ fetch model =
             UserPage (PrenatalParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
-                        (\( _, loggedIn ) ->
+                        (\_ ->
                             Pages.Prenatal.Participant.Fetch.fetch personId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
@@ -180,7 +177,7 @@ fetch model =
             UserPage (NutritionParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
-                        (\( _, loggedIn ) ->
+                        (\_ ->
                             Pages.Nutrition.Participant.Fetch.fetch personId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
@@ -189,7 +186,7 @@ fetch model =
             UserPage (AcuteIllnessParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
-                        (\( _, loggedIn ) ->
+                        (\_ ->
                             Pages.AcuteIllness.Participant.Fetch.fetch personId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
@@ -198,7 +195,7 @@ fetch model =
             UserPage (WellChildParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
-                        (\( _, loggedIn ) ->
+                        (\_ ->
                             Pages.WellChild.Participant.Fetch.fetch personId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
@@ -207,7 +204,7 @@ fetch model =
             UserPage (NCDParticipantPage _ personId) ->
                 getLoggedInData model
                     |> Maybe.map
-                        (\( _, loggedIn ) ->
+                        (\_ ->
                             Pages.NCD.Participant.Fetch.fetch personId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
@@ -216,7 +213,7 @@ fetch model =
             UserPage (ChildScoreboardParticipantPage personId) ->
                 getLoggedInData model
                     |> Maybe.map
-                        (\( _, loggedIn ) ->
+                        (\_ ->
                             Pages.ChildScoreboard.Participant.Fetch.fetch personId model.indexedDb
                                 |> List.map MsgIndexedDb
                         )
@@ -255,7 +252,7 @@ fetch model =
                 Pages.Prenatal.RecurrentActivity.Fetch.fetch encounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (PrenatalLabsHistoryPage originatingEncounterId labEncounterId _) ->
+            UserPage (PrenatalLabsHistoryPage _ labEncounterId _) ->
                 Pages.Prenatal.RecurrentActivity.Fetch.fetch labEncounterId model.indexedDb
                     |> List.map MsgIndexedDb
 

@@ -67,6 +67,7 @@ rules =
 ignoredDirectories : List String
 ignoredDirectories =
     [ "src/generated"
+    , "src/elm/Error"
     , "src/elm/Gizra"
     , "src/elm/Restful"
     , "src/elm/Utils"

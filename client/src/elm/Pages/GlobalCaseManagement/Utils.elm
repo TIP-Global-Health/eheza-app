@@ -2,16 +2,13 @@ module Pages.GlobalCaseManagement.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model
     exposing
         ( FollowUpMeasurements
         , FollowUpOption(..)
-        , FollowUpValue
         , LaboratoryTest(..)
         , LabsResultsValue
         , NCDLabsResults
-        , PrenatalFollowUpValue
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -22,7 +19,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.Utils
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (WebData)
 
 
 chwFilters : List CaseManagementFilter

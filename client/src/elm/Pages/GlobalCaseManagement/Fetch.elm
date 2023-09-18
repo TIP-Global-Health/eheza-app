@@ -1,19 +1,18 @@
 module Pages.GlobalCaseManagement.Fetch exposing (fetch)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FollowUpMeasurements)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Backend.Village.Model exposing (Village)
-import Backend.Village.Utils exposing (getVillageById, isVillageResident)
-import EverySet exposing (EverySet)
+import Backend.Village.Utils exposing (getVillageById)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Utils
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : NominalDate -> HealthCenterId -> Maybe VillageId -> ModelIndexedDb -> List MsgIndexedDb
@@ -69,9 +68,8 @@ fetchForCHWAtVillage currentDate village db followUps =
             FetchIndividualEncounterParticipantsForPeople residentsForNutrition
 
         fetchHomeVisitEncountersMsg =
-            List.map (\personId -> resolveIndividualParticipantsForPerson personId HomeVisitEncounter db)
+            List.concatMap (\personId -> resolveIndividualParticipantsForPerson personId HomeVisitEncounter db)
                 residentsForNutrition
-                |> List.concat
                 |> FetchHomeVisitEncountersForParticipants
 
         --

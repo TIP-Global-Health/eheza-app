@@ -2,38 +2,38 @@ module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
-import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessActivity.Utils
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
 import Backend.AcuteIllnessEncounter.Utils
-import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.ChildScoreboardActivity.Utils
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.HomeVisitActivity.Utils
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.Measurement.Utils
-import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
+import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
 import Backend.NCDActivity.Utils
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
 import Backend.NCDEncounter.Utils
-import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.NutritionActivity.Model exposing (NutritionActivity)
 import Backend.NutritionActivity.Utils
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PatientRecord.Utils
-import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Model exposing (Initiator)
 import Backend.Person.Utils
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.PrenatalActivity.Utils
-import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
 import Backend.PrenatalEncounter.Utils exposing (..)
-import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildActivity.Utils
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import Url
-import Url.Parser as Parser exposing ((</>), Parser, custom, int, map, oneOf, s, string, top)
+import Url.Parser as Parser exposing ((</>), Parser, custom, map, oneOf, s, string, top)
 
 
 activePageByUrl : Url.Url -> Page
@@ -52,7 +52,7 @@ pageToFragment current =
         PinCodePage ->
             Just "pincode"
 
-        PageNotFound url ->
+        PageNotFound _ ->
             -- If we couldn't interpret the URL, we don't try to change it.
             Nothing
 

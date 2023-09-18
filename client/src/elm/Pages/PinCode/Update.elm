@@ -9,12 +9,6 @@ import Time.Extra
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
 update msg model =
     case msg of
-        ClearPinCode ->
-            ( { model | code = "" }
-            , Cmd.none
-            , Nothing
-            )
-
         HandleLoginClicked ->
             ( { model | code = "" }
             , Cmd.none

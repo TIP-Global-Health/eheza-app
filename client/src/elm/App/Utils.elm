@@ -3,11 +3,9 @@ module App.Utils exposing (..)
 import App.Model exposing (..)
 import Backend.Entities exposing (HealthCenterId)
 import Error.Model exposing (Error, ErrorType(..))
-import Json.Decode
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra
 import RemoteData exposing (RemoteData(..), WebData)
 import Task
-import Utils.WebData
 
 
 {-| Returns the logged in model and selected health center, if we're logged in.

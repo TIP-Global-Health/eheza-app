@@ -1,11 +1,8 @@
 module Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (ImageUrl(..), StockCorrectionReason(..), StockSupplier(..), StockUpdate, StockUpdateType(..))
-import Backend.StockUpdate.Model exposing (..)
+import Backend.Measurement.Model exposing (ImageUrl(..), StockCorrectionReason, StockSupplier, StockUpdate, StockUpdateType)
 import Backend.StockUpdate.Utils exposing (..)
-import EverySet
-import Gizra.NominalDate exposing (encodeYYYYMMDD)
+import Gizra.NominalDate
 import Json.Encode exposing (..)
 import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeIfExists)

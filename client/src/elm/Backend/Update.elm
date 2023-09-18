@@ -4,7 +4,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), SummaryByActivi
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Update
@@ -16,8 +16,6 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Fetch
-import Backend.HomeVisitActivity.Model
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..), IndividualParticipantInitiator(..))
@@ -25,7 +23,6 @@ import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model
     exposing
         ( ChildMeasurements
-        , ChildNutritionSign
         , HistoricalMeasurements
         , Measurements
         , WellChildSymptom(..)
@@ -56,7 +53,6 @@ import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model
     exposing
         ( PrenatalEncounterPostCreateDestination(..)
-        , PrenatalEncounterType(..)
         , PrenatalProgressReportInitiator(..)
         , emptyPrenatalEncounter
         )
@@ -69,7 +65,7 @@ import Backend.ResilienceMessage.Model
 import Backend.ResilienceMessage.Update
 import Backend.ResilienceSurvey.Model
 import Backend.ResilienceSurvey.Update
-import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
+import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
 import Backend.StockUpdate.Model
@@ -79,17 +75,16 @@ import Backend.TraceContact.Model
 import Backend.TraceContact.Update
 import Backend.Utils exposing (..)
 import Backend.Village.Utils exposing (getVillageClinicId)
-import Backend.WellChildActivity.Model
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (OutMsgMother(..))
+import Maybe.Extra exposing (isJust)
+import Measurement.Model
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Types
 import Pages.AcuteIllness.Activity.Utils
@@ -114,7 +109,6 @@ import Pages.NCD.Utils
 import Pages.NextSteps.Model
 import Pages.Nutrition.Activity.Model
 import Pages.Nutrition.Activity.Utils
-import Pages.Nutrition.Encounter.Model
 import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
@@ -129,12 +123,11 @@ import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
-import Pages.WellChild.Activity.Model
 import Pages.WellChild.Activity.Utils
 import Pages.WellChild.Encounter.Model
 import Pages.WellChild.Encounter.Utils
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
+import Restful.Endpoint exposing (toCmd, toTask)
 import SyncManager.Model
 import Task
 import Time
@@ -1886,7 +1879,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , []
                     )
 
-                [ SymptomsGeneralRevision uuid data ] ->
+                [ SymptomsGeneralRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1896,7 +1889,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ SymptomsRespiratoryRevision uuid data ] ->
+                [ SymptomsRespiratoryRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1906,7 +1899,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ SymptomsGIRevision uuid data ] ->
+                [ SymptomsGIRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1916,7 +1909,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ TravelHistoryRevision uuid data ] ->
+                [ TravelHistoryRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1926,7 +1919,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ExposureRevision uuid data ] ->
+                [ ExposureRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1936,7 +1929,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessVitalsRevision uuid data ] ->
+                [ AcuteIllnessVitalsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1946,7 +1939,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessCoreExamRevision uuid data ] ->
+                [ AcuteIllnessCoreExamRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1956,7 +1949,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteFindingsRevision uuid data ] ->
+                [ AcuteFindingsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1966,7 +1959,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ MalariaTestingRevision uuid data ] ->
+                [ MalariaTestingRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1976,7 +1969,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ CovidTestingRevision uuid data ] ->
+                [ CovidTestingRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1986,7 +1979,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessDangerSignsRevision uuid data ] ->
+                [ AcuteIllnessDangerSignsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1996,7 +1989,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessMuacRevision uuid data ] ->
+                [ AcuteIllnessMuacRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -2006,7 +1999,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessNutritionRevision uuid data ] ->
+                [ AcuteIllnessNutritionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -2016,7 +2009,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ TreatmentOngoingRevision uuid data ] ->
+                [ TreatmentOngoingRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -2026,7 +2019,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ IsolationRevision uuid data ] ->
+                [ IsolationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2041,7 +2034,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ Call114Revision uuid data ] ->
+                [ Call114Revision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2056,7 +2049,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ HCContactRevision uuid data ] ->
+                [ HCContactRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2071,7 +2064,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ MedicationDistributionRevision uuid data ] ->
+                [ MedicationDistributionRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2086,7 +2079,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ SendToHCRevision uuid data ] ->
+                [ SendToHCRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2101,7 +2094,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ HealthEducationRevision uuid data ] ->
+                [ HealthEducationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2116,7 +2109,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessFollowUpRevision uuid data ] ->
+                [ AcuteIllnessFollowUpRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2131,7 +2124,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NutritionHeightRevision uuid data ] ->
+                [ NutritionHeightRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
@@ -2141,7 +2134,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NutritionMuacRevision uuid data ] ->
+                [ NutritionMuacRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
@@ -2151,7 +2144,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NutritionNutritionRevision uuid data ] ->
+                [ NutritionNutritionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
@@ -2161,7 +2154,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NutritionWeightRevision uuid data ] ->
+                [ NutritionWeightRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
@@ -2211,7 +2204,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ DangerSignsRevision uuid data ] ->
+                [ DangerSignsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             -- This is the only place where we ask to update assessment for CHW, since
@@ -2223,7 +2216,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ PrenatalSymptomReviewRevision uuid data ] ->
+                [ PrenatalSymptomReviewRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2233,7 +2226,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ CorePhysicalExamRevision uuid data ] ->
+                [ CorePhysicalExamRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2243,7 +2236,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ LastMenstrualPeriodRevision uuid data ] ->
+                [ LastMenstrualPeriodRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2253,7 +2246,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ PregnancyTestRevision uuid data ] ->
+                [ PregnancyTestRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2263,7 +2256,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ MedicationRevision uuid data ] ->
+                [ MedicationRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2273,7 +2266,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ VitalsRevision uuid data ] ->
+                [ VitalsRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
@@ -2292,7 +2285,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalHIVTestRevision uuid data ] ->
+                [ PrenatalHIVTestRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2302,7 +2295,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ PrenatalHIVPCRTestRevision uuid data ] ->
+                [ PrenatalHIVPCRTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
@@ -2323,7 +2316,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalSyphilisTestRevision uid data ] ->
+                [ PrenatalSyphilisTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
@@ -2349,7 +2342,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalHepatitisBTestRevision uid data ] ->
+                [ PrenatalHepatitisBTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
@@ -2373,7 +2366,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalMalariaTestRevision uuid data ] ->
+                [ PrenatalMalariaTestRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2383,7 +2376,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ PrenatalUrineDipstickTestRevision uid data ] ->
+                [ PrenatalUrineDipstickTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
@@ -2404,7 +2397,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalBloodGpRsTestRevision uid data ] ->
+                [ PrenatalBloodGpRsTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to the model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
@@ -2428,7 +2421,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalHemoglobinTestRevision uid data ] ->
+                [ PrenatalHemoglobinTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
@@ -2449,7 +2442,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalRandomBloodSugarTestRevision uid data ] ->
+                [ PrenatalRandomBloodSugarTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
@@ -2473,7 +2466,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalMentalHealthRevision uuid data ] ->
+                [ PrenatalMentalHealthRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2483,7 +2476,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ BreastExamRevision uuid data ] ->
+                [ BreastExamRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2493,7 +2486,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ PrenatalBreastfeedingRevision uuid data ] ->
+                [ PrenatalBreastfeedingRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2503,7 +2496,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ PrenatalGUExamRevision uuid data ] ->
+                [ PrenatalGUExamRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2513,7 +2506,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildHeightRevision uuid data ] ->
+                [ WellChildHeightRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -2523,7 +2516,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildHeadCircumferenceRevision uuid data ] ->
+                [ WellChildHeadCircumferenceRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -2533,7 +2526,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildMuacRevision uuid data ] ->
+                [ WellChildMuacRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -2543,7 +2536,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildNutritionRevision uuid data ] ->
+                [ WellChildNutritionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -2553,7 +2546,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildWeightRevision uuid data ] ->
+                [ WellChildWeightRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -2563,7 +2556,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildSymptomsReviewRevision uuid data ] ->
+                [ WellChildSymptomsReviewRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2576,7 +2569,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildVitalsRevision uuid data ] ->
+                [ WellChildVitalsRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2589,7 +2582,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildECDRevision uuid data ] ->
+                [ WellChildECDRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2602,7 +2595,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NCDRandomBloodSugarTestRevision uid data ] ->
+                [ NCDRandomBloodSugarTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
@@ -2623,7 +2616,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ NCDUrineDipstickTestRevision uid data ] ->
+                [ NCDUrineDipstickTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
@@ -2644,7 +2637,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ NCDCreatinineTestRevision uid data ] ->
+                [ NCDCreatinineTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
@@ -2665,7 +2658,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ NCDLiverFunctionTestRevision uid data ] ->
+                [ NCDLiverFunctionTestRevision _ data ] ->
                     let
                         ( newModel, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
@@ -2680,7 +2673,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults
                     )
 
-                [ NCDCoMorbiditiesRevision uid data ] ->
+                [ NCDCoMorbiditiesRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNCD data.participantId data.encounterId
@@ -2690,7 +2683,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NCDVitalsRevision uid data ] ->
+                [ NCDVitalsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNCD data.participantId data.encounterId
@@ -2700,7 +2693,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NCDLipidPanelTestRevision uid data ] ->
+                [ NCDLipidPanelTestRevision _ data ] ->
                     let
                         ( newModel, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
@@ -2715,7 +2708,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgsForLabsResults
                     )
 
-                [ ChildScoreboardNCDARevision uuid data ] ->
+                [ ChildScoreboardNCDARevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2729,7 +2722,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ChildScoreboardBCGImmunisationRevision uuid data ] ->
+                [ ChildScoreboardBCGImmunisationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2743,7 +2736,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ChildScoreboardDTPImmunisationRevision uuid data ] ->
+                [ ChildScoreboardDTPImmunisationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2757,7 +2750,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ChildScoreboardIPVImmunisationRevision uuid data ] ->
+                [ ChildScoreboardIPVImmunisationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2771,7 +2764,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ChildScoreboardMRImmunisationRevision uuid data ] ->
+                [ ChildScoreboardMRImmunisationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2785,7 +2778,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ChildScoreboardOPVImmunisationRevision uuid data ] ->
+                [ ChildScoreboardOPVImmunisationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2799,7 +2792,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ChildScoreboardPCV13ImmunisationRevision uuid data ] ->
+                [ ChildScoreboardPCV13ImmunisationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -2813,7 +2806,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ChildScoreboardRotarixImmunisationRevision uuid data ] ->
+                [ ChildScoreboardRotarixImmunisationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -3206,15 +3199,11 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                 (Dict.get clinicId
                                                     >> Maybe.andThen
                                                         (\clinic ->
-                                                            let
-                                                                graduationDate =
-                                                                    Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
-                                                            in
                                                             if List.member clinic.clinicType [ Sorwathe, Achi ] then
                                                                 Nothing
 
                                                             else
-                                                                graduationDate
+                                                                Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
                                                         )
                                                 )
                                 in
@@ -3407,7 +3396,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         , []
                                         )
 
-                                    GroupEncounterOrigin sessionId ->
+                                    GroupEncounterOrigin _ ->
                                         let
                                             nextPage =
                                                 case relation of
@@ -3497,7 +3486,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                             -- If we succeed, we reset the form, and go to the page
                             -- showing the new person.
                             RemoteData.map
-                                (\person ->
+                                (\_ ->
                                     [ Pages.Person.Model.ResetEditForm
                                         |> App.Model.MsgPageEditPerson personId
                                         |> App.Model.MsgLoggedIn
@@ -4000,7 +3989,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        CatchmentAreaRevision uuid data ->
+        CatchmentAreaRevision _ _ ->
             noChange
 
         ChildFbfRevision uuid data ->
@@ -4140,7 +4129,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        CounselingScheduleRevision uuid data ->
+        CounselingScheduleRevision _ _ ->
             -- Just invalidate our value ... if someone wants it, we'll refetch it.
             ( { model | everyCounselingSchedule = NotAsked }
             , True
@@ -4154,7 +4143,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        CounselingTopicRevision uuid data ->
+        CounselingTopicRevision _ _ ->
             ( { model | everyCounselingSchedule = NotAsked }
             , True
             )
@@ -4599,7 +4588,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        NurseRevision uuid data ->
+        NurseRevision _ _ ->
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             noChange
 
@@ -4794,7 +4783,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        PmtctParticipantRevision uuid data ->
+        PmtctParticipantRevision _ data ->
             ( { model
                 | expectedSessions =
                     model.expectedSessions
@@ -5047,7 +5036,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        RelationshipRevision uuid data ->
+        RelationshipRevision _ _ ->
             ( { model | relationshipsByPerson = Dict.empty }
             , True
             )
@@ -5575,10 +5564,6 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
 
                     diagnosesAfter =
                         Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
-
-                    addedDiagnoses =
-                        EverySet.diff diagnosesAfter diagnosesBefore
-                            |> EverySet.toList
                 in
                 if everySetsEqual diagnosesBefore diagnosesAfter then
                     []
@@ -5586,6 +5571,11 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                 else
                     -- Here we know that trigger for update came form another encounter.
                     -- Therefore, we only need to perform actions for that originating encounter.
+                    let
+                        addedDiagnoses =
+                            EverySet.diff diagnosesAfter diagnosesBefore
+                                |> EverySet.toList
+                    in
                     Maybe.map
                         (\( originatingEncounterId, targetDiagnoses ) ->
                             let
@@ -5599,42 +5589,44 @@ generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAsses
                                             (\diagnosis ->
                                                 List.member diagnosis Pages.Prenatal.Utils.diabetesDiagnoses
                                             )
-
-                                rhNegativeDiagnosis =
-                                    EverySet.member DiagnosisRhesusNegative reportedDiagnoses
                             in
                             if EverySet.isEmpty reportedDiagnoses then
                                 []
 
-                            else if
-                                (-- Reporting back about previous diagnosis results in hospital referral
-                                 -- at Next steps. For Diabetes, we have logic saying that when it's first
-                                 -- diagnosed, the patient is referred to hospital.
-                                 -- On next occasions, no next steps are required.
-                                 -- Therefore, if we know that Diabetes was already diagnosed, we will not
-                                 -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
-                                 diabetesDiagnoses
-                                    && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
-                                )
-                                    || (-- Reporting back about previous diagnosis results in hospital referral
-                                        -- at Next steps.
-                                        -- Even though the Blood group and rhesus test are supposed to be run once,
-                                        -- we continue offering it until we get a result.
-                                        -- This way, theoretically, it's possible to have multiple tests pending,
-                                        -- and results can be entered multiple times.
-                                        -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
-                                        -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
-                                        rhNegativeDiagnosis
-                                            && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
-                                       )
-                            then
-                                []
-
                             else
-                                Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
-                                    |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
-                                    |> App.Model.MsgIndexedDb
-                                    |> List.singleton
+                                let
+                                    rhNegativeDiagnosis =
+                                        EverySet.member DiagnosisRhesusNegative reportedDiagnoses
+                                in
+                                if
+                                    (-- Reporting back about previous diagnosis results in hospital referral
+                                     -- at Next steps. For Diabetes, we have logic saying that when it's first
+                                     -- diagnosed, the patient is referred to hospital.
+                                     -- On next occasions, no next steps are required.
+                                     -- Therefore, if we know that Diabetes was already diagnosed, we will not
+                                     -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
+                                     diabetesDiagnoses
+                                        && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
+                                    )
+                                        || (-- Reporting back about previous diagnosis results in hospital referral
+                                            -- at Next steps.
+                                            -- Even though the Blood group and rhesus test are supposed to be run once,
+                                            -- we continue offering it until we get a result.
+                                            -- This way, theoretically, it's possible to have multiple tests pending,
+                                            -- and results can be entered multiple times.
+                                            -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
+                                            -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
+                                            rhNegativeDiagnosis
+                                                && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
+                                           )
+                                then
+                                    []
+
+                                else
+                                    Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
+                                        |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
                         )
                         originData
                         |> -- No originating encounter data, therefore, perform
@@ -6253,15 +6245,15 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                                 mapMeasurementData .followUp measurements
                                                     |> .current
 
-                                            followUpId =
-                                                Maybe.map Tuple.first followUp
-
                                             followUpValue =
                                                 getMeasurementValueFunc followUp
                                         in
                                         Maybe.map
                                             (\value ->
                                                 let
+                                                    followUpId =
+                                                        Maybe.map Tuple.first followUp
+
                                                     updatedValue =
                                                         { value | assesment = assessmentForBackend }
                                                 in
@@ -6285,15 +6277,15 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                                 mapMeasurementData .nutrition measurements
                                                     |> .current
 
-                                            nutritionId =
-                                                Maybe.map Tuple.first nutrition
-
                                             nutritionValue =
                                                 getMeasurementValueFunc nutrition
                                         in
                                         Maybe.map
                                             (\value ->
                                                 let
+                                                    nutritionId =
+                                                        Maybe.map Tuple.first nutrition
+
                                                     updatedValue =
                                                         { value | assesment = assessmentForBackend }
                                                 in
@@ -6306,14 +6298,6 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                             nutritionValue
                                             |> Maybe.withDefault []
                                     )
-
-                        personByPersonMsgs =
-                            updateAssesmentMsgs
-                                ++ [ Pages.Participant.Model.SetWarningPopupState assessmentAfter
-                                        |> Pages.Session.Model.MsgChild childId
-                                        |> App.Model.MsgPageSession sessionId
-                                        |> App.Model.MsgLoggedIn
-                                   ]
 
                         activityByActivityMsgs childActivity =
                             updateAssesmentMsgs
@@ -6333,7 +6317,12 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                     else
                         case activePage of
                             UserPage (SessionPage _ (ChildPage _)) ->
-                                personByPersonMsgs
+                                updateAssesmentMsgs
+                                    ++ [ Pages.Participant.Model.SetWarningPopupState assessmentAfter
+                                            |> Pages.Session.Model.MsgChild childId
+                                            |> App.Model.MsgPageSession sessionId
+                                            |> App.Model.MsgLoggedIn
+                                       ]
 
                             UserPage (SessionPage _ (ActivityPage (ChildActivity Muac))) ->
                                 activityByActivityMsgs Muac
@@ -6617,21 +6606,22 @@ generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw after id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
-                let
-                    navigateToProgressReportMsg =
-                        App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Model.InitiatorEncounterPage id))
-                in
                 if not <| activityCompleted currentDate isChw assembled AcuteIllnessNextSteps then
                     []
 
-                else if assembled.initialEncounter then
-                    [ navigateToProgressReportMsg ]
-
-                else if noImprovementOnSubsequentVisit currentDate assembled.person assembled.measurements then
-                    [ navigateToProgressReportMsg ]
-
                 else
-                    [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage assembled.encounter.participant)) ]
+                    let
+                        navigateToProgressReportMsg =
+                            App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Model.InitiatorEncounterPage id))
+                    in
+                    if assembled.initialEncounter then
+                        [ navigateToProgressReportMsg ]
+
+                    else if noImprovementOnSubsequentVisit currentDate assembled.person assembled.measurements then
+                        [ navigateToProgressReportMsg ]
+
+                    else
+                        [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage assembled.encounter.participant)) ]
             )
         |> Maybe.withDefault []
 

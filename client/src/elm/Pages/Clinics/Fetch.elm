@@ -1,13 +1,12 @@
 module Pages.Clinics.Fetch exposing (fetch)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import List.Extra
 import List.Zipper as Zipper
-import Maybe.Extra
 import Pages.Clinics.Model exposing (Model)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (SyncInfoStatus(..))
 import SyncManager.Utils exposing (getSyncedHealthCenters)
@@ -60,10 +59,6 @@ fetch selectedHealthCenterId db syncManager model =
                 |> Maybe.andThen
                     (\clinics ->
                         let
-                            syncedHealthCenters =
-                                getSyncedHealthCenters syncManager
-                                    |> List.map toEntityUuid
-
                             selectedHealthCenterSyncInfo =
                                 syncManager.syncInfoAuthorities
                                     |> Maybe.andThen
@@ -82,6 +77,11 @@ fetch selectedHealthCenterId db syncManager model =
                                         []
 
                                     _ ->
+                                        let
+                                            syncedHealthCenters =
+                                                getSyncedHealthCenters syncManager
+                                                    |> List.map toEntityUuid
+                                        in
                                         Dict.filter
                                             (\_ clinic ->
                                                 -- Group belongs to seleced health center.
