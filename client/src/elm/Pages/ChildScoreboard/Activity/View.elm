@@ -49,24 +49,25 @@ import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewLabel, viewPersonDetailsExtended, viewSaveAction)
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site id activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site id activity db model assembled =
     div [ class "page-activity child-scoreboard" ] <|
         [ viewHeader language id activity
-        , viewContent language currentDate activity db model assembled
+        , viewContent language currentDate site activity db model assembled
         ]
 
 
@@ -84,22 +85,22 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity db model assembled =
+viewContent : Language -> NominalDate -> Site -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site activity db model assembled =
     div [ class "ui unstackable items" ] <|
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-            :: viewActivity language currentDate activity assembled db model
+            :: viewActivity language currentDate site activity assembled db model
         )
 
 
-viewActivity : Language -> NominalDate -> ChildScoreboardActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate activity assembled db model =
+viewActivity : Language -> NominalDate -> Site -> ChildScoreboardActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate site activity assembled db model =
     case activity of
         ChildScoreboardNCDA ->
             viewNCDAContent language currentDate assembled db model.ncdaData
 
         ChildScoreboardVaccinationHistory ->
-            viewImmunisationContent language currentDate assembled db model.immunisationData
+            viewImmunisationContent language currentDate site assembled db model.immunisationData
 
 
 viewNCDAContent :
@@ -153,11 +154,12 @@ viewNCDAContent language currentDate assembled db data =
 viewImmunisationContent :
     Language
     -> NominalDate
+    -> Site
     -> AssembledData
     -> ModelIndexedDb
     -> ImmunisationData
     -> List (Html Msg)
-viewImmunisationContent language currentDate assembled db data =
+viewImmunisationContent language currentDate site assembled db data =
     let
         measurements =
             assembled.measurements
@@ -303,7 +305,7 @@ viewImmunisationContent language currentDate assembled db data =
                                     VaccineHPV ->
                                         emptyVaccinationForm
                         in
-                        ( viewVaccinationForm language currentDate assembled vaccineType vaccinationForm
+                        ( viewVaccinationForm language currentDate site assembled vaccineType vaccinationForm
                         , False
                         , vaccinationForm.viewMode == ViewModeInitial
                         )
@@ -454,8 +456,8 @@ immunisationTasksCompletedFromTotal language currentDate assembled data task =
         |> Maybe.withDefault ( 0, 0 )
 
 
-viewVaccinationForm : Language -> NominalDate -> AssembledData -> WellChildVaccineType -> ChildScoreboardVaccinationForm -> Html Msg
-viewVaccinationForm language currentDate assembled vaccineType form =
+viewVaccinationForm : Language -> NominalDate -> Site -> AssembledData -> WellChildVaccineType -> ChildScoreboardVaccinationForm -> Html Msg
+viewVaccinationForm language currentDate site assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
             vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form
@@ -466,7 +468,7 @@ viewVaccinationForm language currentDate assembled vaccineType form =
             [ div [ class "header icon-label" ] <|
                 [ i [ class "icon-open-book" ] []
                 , div []
-                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription vaccineType ]
+                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription site vaccineType ]
                     , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
                     ]
                 ]

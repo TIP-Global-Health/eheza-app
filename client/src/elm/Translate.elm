@@ -143,6 +143,7 @@ import Pages.WellChild.ProgressReport.Model
         , NCDAUniversalInterventionsItem(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
@@ -1650,7 +1651,7 @@ type TranslationId
     | WellChildECDMilestoneForDiagnosisPane PediatricCareMilestone
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
-    | WellChildImmunisationDescription WellChildVaccineType
+    | WellChildImmunisationDescription Site WellChildVaccineType
     | WellChildImmunisationDosage WellChildVaccineType
     | WellChildImmunisationHeader WellChildVaccineType
     | WellChildImmunizationHistory WellChildVaccineType
@@ -20333,8 +20334,8 @@ translationSet trans =
             }
 
         TraveledToCOVID19CountryQuestion ->
-            { english = "Have you traveled to any country or district in Rwanda known to have COVID-19 in the past 14 days"
-            , kinyarwanda = Just "Waba waragiye mu gihugu cyangwa mu karere mu Rwanda bizwi ko hagaragayemo ubwandu bwa Covid 19 mu minsi 14 ishize"
+            { english = "Have you traveled to any country or district known to have COVID-19 in the past 14 days"
+            , kinyarwanda = Just "Waba waragiye mu gihugu cyangwa mu karere mu bizwi ko hagaragayemo ubwandu bwa Covid 19 mu minsi 14 ishize"
             , kirundi = Nothing
             }
 
@@ -21208,7 +21209,7 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        WellChildImmunisationDescription task ->
+        WellChildImmunisationDescription site task ->
             case task of
                 VaccineBCG ->
                     { english = "BCG protects your child from getting the worst complications of tuberculosis, which can affect the lungs and could be deadly for young children."
@@ -21253,10 +21254,18 @@ translationSet trans =
                     }
 
                 VaccineRotarix ->
-                    { english = "Protects against diarrhea caused by the Rotavirus. Diarrhea is the 3rd leading cause of death of children in Rwanda."
-                    , kinyarwanda = Just "Rurinda umwana impiswi ziterwa n'udukoko twa rotavirusi. Impiswi ni impamvu ya gatatu itera imfu z'abana mu Rwanda."
-                    , kirundi = Nothing
-                    }
+                    case site of
+                        SiteRwanda ->
+                            { english = "Protects against diarrhea caused by the Rotavirus. Diarrhea is the 3rd leading cause of death of children in Rwanda."
+                            , kinyarwanda = Just "Rurinda umwana impiswi ziterwa n'udukoko twa rotavirusi. Impiswi ni impamvu ya gatatu itera imfu z'abana mu Rwanda."
+                            , kirundi = Nothing
+                            }
+
+                        _ ->
+                            { english = "Protects against diarrhea caused by the Rotavirus."
+                            , kinyarwanda = Just "Rurinda umwana impiswi ziterwa n'udukoko twa rotavirusi."
+                            , kirundi = Nothing
+                            }
 
         WellChildImmunisationDosage task ->
             case task of

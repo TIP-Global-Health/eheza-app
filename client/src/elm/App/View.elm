@@ -726,7 +726,15 @@ viewUserPage page deviceName site model configured =
                                 Dict.get ( id, activity ) loggedInModel.wellChildActivityPages
                                     |> Maybe.withDefault Pages.WellChild.Activity.Model.emptyModel
                         in
-                        Pages.WellChild.Activity.View.view model.language currentDate model.zscores id isChw activity model.indexedDb page_
+                        Pages.WellChild.Activity.View.view model.language
+                            currentDate
+                            model.zscores
+                            site
+                            id
+                            isChw
+                            activity
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildActivity id activity)
                             |> flexPageWrapper model
 
@@ -814,7 +822,7 @@ viewUserPage page deviceName site model configured =
                                 Dict.get ( id, activity ) loggedInModel.childScoreboardActivityPages
                                     |> Maybe.withDefault Pages.ChildScoreboard.Activity.Model.emptyModel
                         in
-                        Pages.ChildScoreboard.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.ChildScoreboard.Activity.View.view model.language currentDate site id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity)
                             |> flexPageWrapper model
 
