@@ -671,8 +671,10 @@ function hedley_update_7038() {
 }
 
 /**
- * Sets default site to 'rwanda'.
+ * If not set already, sets default site to 'rwanda'.
  */
 function hedley_update_7039() {
-  variable_set('hedley_general_site_name', 'rwanda');
+  if (empty(variable_get('hedley_general_site_name', ''))) {
+    variable_set('hedley_general_site_name', 'rwanda');
+  }
 }
