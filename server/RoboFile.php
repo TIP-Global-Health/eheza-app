@@ -408,7 +408,7 @@ class RoboFile extends Tasks {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php --limit_date=$limit_date --region=$region");
   }
 
-/**
+  /**
    * Generates the demographics report.
    */
   public function reportDemographicsHc($limit_date = NULL, $region = NULL) {
@@ -447,11 +447,6 @@ class RoboFile extends Tasks {
 
   /**
    * Generates the nutrition report.
-   *
-   * @param string $date
-   *   The date to generate the report for.
-   * @param string $district
-   *   The district to generate the report for.
    */
   public function reportNutrition($region = NULL) {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --region=$region");
