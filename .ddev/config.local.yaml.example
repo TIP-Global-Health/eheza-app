@@ -3,7 +3,7 @@ web_environment:
   # - EHEZA_SITE=rwanda
   # - GITHUB_USERNAME=
   # - GITHUB_ACCESS_TOKEN=
-  # - PANTHEON_NAME=ihangane
+  # - PANTHEON_NAME=
 hooks:
   post-import-db:
     # Sanitize email addresses
