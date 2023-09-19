@@ -318,20 +318,6 @@ div.language-switcher {
   margin: 10px auto;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-
-  .version {
-    margin-right: 16px;
-    height: 24px;
-    color: $color-white;
-    font-size: .6em;
-    cursor: pointer;
-  }
-
-  .sync-icon {
-    color: $color-white;
-    cursor: pointer;
-  }
 
   .links-translate {
     margin: 0;
@@ -339,6 +325,7 @@ div.language-switcher {
     list-style: none;
     display: flex;
     justify-content: flex-start;
+    width: 49%;
 
     li {
       display: inline-block;
@@ -375,6 +362,29 @@ div.language-switcher {
       position: absolute;
       top: -4px;
       left: -4px;
+    }
+  }
+
+  .sync-icon {
+    color: $color-white;
+    cursor: pointer;
+  }
+
+  .version-env {
+    display: flex;
+    flex-direction: column;
+    line-height: 20px;
+    margin-left: auto;
+    margin-right: 16px;
+    color: $color-white;
+    font-size: .6em;
+    cursor: pointer;
+
+    .env-name {
+      color: $color-orange;
+      font-size: 16px;
+      font-weight: 900;
+      text-align: center;
     }
   }
 }
