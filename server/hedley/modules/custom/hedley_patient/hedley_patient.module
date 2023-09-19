@@ -16,6 +16,25 @@ define('HEDLEY_PATIENT_EDUCATION_UNIVERSITY', 5);
 define('HEDLEY_PATIENT_EDUCATION_ADVANCED', 6);
 
 /**
+ * Implements hook_menu().
+ */
+function hedley_patient_menu() {
+  $items = [];
+
+  $items['admin/content/consolidate-patients'] = [
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Consolidate Patients',
+    'description' => 'Consolidate original patient with its duplicate',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['hedley_patient_consolidate_patients_form'],
+    'access callback' => 'hedley_admin_administrators_access',
+    'weight' => 2,
+  ];
+
+  return $items;
+}
+
+/**
  * Implements hook_node_insert().
  */
 function hedley_patient_node_insert($node) {
@@ -234,4 +253,42 @@ function hedley_patient_mother_birth_date_validation($form, &$form_state) {
  */
 function hedley_patient_arrays_equal(array $array1, array $array2) {
   return count($array1) == count($array2) && empty(array_diff($array1, $array2));
+}
+
+function hedley_patient_consolidate_patients_form($form, &$form_state) {
+  $form['person1'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Node ID of the original patient'),
+    '#required' => TRUE,
+  );
+
+  $form['person2'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Node ID of the duplicate patient'),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Consolidate Patients'),
+  );
+
+  return $form;
+}
+
+function hedley_patient_consolidate_patients_form_submit($form, &$form_state) {
+  // Get the values of the input fields.
+  $original_patient = $form_state['values']['person1'];
+  $duplicate_patient = $form_state['values']['person2'];
+
+  // Build the Drush command to execute.
+  $drush_command = 'drush consolidate-patients';
+  $arguments = '--original=' . escapeshellarg($original_patient) . ' --duplicate=' . escapeshellarg($duplicate_patient);
+
+  // Execute the Drush command as a shell command.
+  $command = $drush_command . ' ' . $arguments;
+  $output = shell_exec($command);
+
+  // Display the output on the page.
+  drupal_set_message($output);
 }
