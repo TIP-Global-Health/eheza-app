@@ -7,6 +7,7 @@ import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
+import Config.Model
 import Config.View
 import Error.View
 import EverySet
@@ -133,8 +134,8 @@ view model =
 
 {-| Given some HTML, wrap it in the new flex-box based structure.
 -}
-flexPageWrapper : Model -> Html Msg -> Html Msg
-flexPageWrapper model html =
+flexPageWrapper : Config.Model.Model -> Model -> Html Msg -> Html Msg
+flexPageWrapper config model html =
     let
         syncManager =
             if model.activePage == DevicePage then
@@ -151,16 +152,16 @@ flexPageWrapper model html =
                 [ html ]
     in
     div [ class "page container" ] <|
-        (viewLanguageSwitcherAndVersion model :: syncManager)
+        (viewLanguageSwitcherAndVersion config model :: syncManager)
             ++ [ content ]
 
 
 {-| Given some HTML, wrap it the old way.
 -}
-oldPageWrapper : Model -> Html Msg -> Html Msg
-oldPageWrapper model html =
+oldPageWrapper : Config.Model.Model -> Model -> Html Msg -> Html Msg
+oldPageWrapper config model html =
     div [ class "container" ]
-        [ viewLanguageSwitcherAndVersion model
+        [ viewLanguageSwitcherAndVersion config model
         , html
         ]
 
@@ -168,8 +169,8 @@ oldPageWrapper model html =
 {-| The language switcher view which sets a preferred language for each user and
 saves the current language via the Update function in local storage.
 -}
-viewLanguageSwitcherAndVersion : Model -> Html Msg
-viewLanguageSwitcherAndVersion model =
+viewLanguageSwitcherAndVersion : Config.Model.Model -> Model -> Html Msg
+viewLanguageSwitcherAndVersion config model =
     let
         devicePageShortcut =
             case model.activePage of
@@ -217,19 +218,29 @@ viewLanguageSwitcherAndVersion model =
             in
             List.map viewItem languagesBySite
                 |> ul [ class "links-translate" ]
+
+        envName =
+            if List.any (\domain -> String.contains domain config.backendUrl) [ "pantheon.io", "ddev.site" ] then
+                span [ class "env-name" ] [ text <| String.toUpper config.name ++ " env" ]
+
+            else
+                emptyNode
     in
     div
         [ class "ui language-switcher" ]
         [ languagesMenu
         , devicePageShortcut
-        , span
-            [ class "version"
+        , div
+            [ class "version-env"
             , onClick <| SetActivePage ServiceWorkerPage
             ]
-            [ ServiceWorker.View.viewIcon model.serviceWorker
-            , text <| translate model.language Translate.Version
-            , text ": "
-            , text <| .build Version.version
+            [ span [ class "version" ]
+                [ ServiceWorker.View.viewIcon model.serviceWorker
+                , text <| translate model.language Translate.Version
+                , text ": "
+                , text <| .build Version.version
+                ]
+            , envName
             ]
         ]
 
@@ -248,7 +259,7 @@ viewConfiguredModel model configured =
         -- service worker for the normal operation of the app).
         ServiceWorker.View.view model.currentTime model.language model.serviceWorker
             |> Html.map MsgServiceWorker
-            |> flexPageWrapper model
+            |> flexPageWrapper configured.config model
 
     else if not (RemoteData.isSuccess configured.device) then
         -- If our device is not paired, then the only thing we allow is the pairing
@@ -257,12 +268,12 @@ viewConfiguredModel model configured =
             ServiceWorkerPage ->
                 ServiceWorker.View.view model.currentTime model.language model.serviceWorker
                     |> Html.map MsgServiceWorker
-                    |> flexPageWrapper model
+                    |> flexPageWrapper configured.config model
 
             _ ->
                 Pages.Device.View.view model.language configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
-                    |> flexPageWrapper model
+                    |> flexPageWrapper configured.config model
 
     else
         let
@@ -277,7 +288,7 @@ viewConfiguredModel model configured =
             DevicePage ->
                 Pages.Device.View.view model.language configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
-                    |> flexPageWrapper model
+                    |> flexPageWrapper configured.config model
 
             PinCodePage ->
                 Pages.PinCode.View.view model.language
@@ -289,16 +300,16 @@ viewConfiguredModel model configured =
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
-                    |> flexPageWrapper model
+                    |> flexPageWrapper configured.config model
 
             PageNotFound url ->
                 Pages.PageNotFound.View.view model.language url
-                    |> oldPageWrapper model
+                    |> oldPageWrapper configured.config model
 
             ServiceWorkerPage ->
                 ServiceWorker.View.view model.currentTime model.language model.serviceWorker
                     |> Html.map MsgServiceWorker
-                    |> flexPageWrapper model
+                    |> flexPageWrapper configured.config model
 
             UserPage userPage ->
                 let
@@ -330,11 +341,11 @@ viewUserPage page deviceName site model configured =
                 case page of
                     MyAccountPage ->
                         Pages.MyAccount.View.view model.language loggedInModel.nurse
-                            |> oldPageWrapper model
+                            |> oldPageWrapper configured.config model
 
                     ClinicalPage ->
                         Pages.Clinical.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw model
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     ClinicsPage ->
                         Pages.Clinics.View.view model.language
@@ -345,7 +356,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             model.syncManager
                             |> Html.map (MsgLoggedIn << MsgPageClinics)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     ClinicalProgressReportPage initiator prenatalEncounterId ->
                         let
@@ -355,7 +366,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Prenatal.ProgressReport.View.view model.language currentDate site prenatalEncounterId isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageClinicalProgressReport prenatalEncounterId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     CreatePersonPage relation initiator ->
                         Pages.Person.View.viewCreateEditForm model.language
@@ -368,7 +379,7 @@ viewUserPage page deviceName site model configured =
                             loggedInModel.createPersonPage
                             model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     DashboardPage subPage ->
                         let
@@ -382,7 +393,7 @@ viewUserPage page deviceName site model configured =
                                     loggedInModel.dashboardPage
                                     model.indexedDb
                                     |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
-                                    |> flexPageWrapper model
+                                    |> flexPageWrapper configured.config model
 
                             viewPageNotFound =
                                 Pages.PageNotFound.View.viewPage model.language (SetActivePage PinCodePage) (UserPage <| DashboardPage subPage)
@@ -417,7 +428,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             loggedInModel.globalCaseManagementPage
                             |> Html.map (MsgLoggedIn << MsgPageGlobalCaseManagement)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     DemographicsReportPage initiator prenatalEncounterId ->
                         Pages.Prenatal.DemographicsReport.View.view model.language
@@ -426,7 +437,7 @@ viewUserPage page deviceName site model configured =
                             prenatalEncounterId
                             initiator
                             model.indexedDb
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     EditPersonPage id ->
                         let
@@ -444,11 +455,11 @@ viewUserPage page deviceName site model configured =
                             page_
                             model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageEditPerson id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PersonPage id initiator ->
                         Pages.Person.View.view model.language currentDate isChw initiator id model.indexedDb
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PersonsPage relation initiator ->
                         Pages.People.View.view model.language
@@ -462,7 +473,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             loggedInModel.personsPage
                             |> Html.map (MsgLoggedIn << MsgPagePersons)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PrenatalParticipantPage initiator id ->
                         let
@@ -472,15 +483,15 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Prenatal.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalParticipant id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NutritionParticipantPage initiator id ->
                         Pages.Nutrition.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     WellChildParticipantPage initiator id ->
                         Pages.WellChild.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     AcuteIllnessParticipantPage initiator id ->
                         let
@@ -490,15 +501,15 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.AcuteIllness.Participant.View.view model.language currentDate healthCenterId id isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NCDParticipantPage initiator id ->
                         Pages.NCD.Participant.View.view model.language currentDate healthCenterId id initiator model.indexedDb
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     ChildScoreboardParticipantPage id ->
                         Pages.ChildScoreboard.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language
@@ -509,7 +520,7 @@ viewUserPage page deviceName site model configured =
                             loggedInModel.individualEncounterParticipantsPage
                             model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     RelationshipPage id1 id2 initiator ->
                         let
@@ -527,7 +538,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     SessionPage sessionId subPage ->
                         let
@@ -547,7 +558,7 @@ viewUserPage page deviceName site model configured =
                             sessionPages
                             model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
-                            |> oldPageWrapper model
+                            |> oldPageWrapper configured.config model
 
                     PrenatalEncounterPage id ->
                         let
@@ -557,7 +568,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Prenatal.Encounter.View.view model.language currentDate id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PrenatalActivityPage id activity ->
                         let
@@ -567,7 +578,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Prenatal.Activity.View.view model.language currentDate id isChw activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PrenatalRecurrentEncounterPage id ->
                         let
@@ -577,7 +588,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Prenatal.RecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PrenatalRecurrentActivityPage id activity ->
                         let
@@ -587,7 +598,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Prenatal.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PrenatalLabsHistoryPage id labEncounterId lab ->
                         let
@@ -597,11 +608,11 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Prenatal.RecurrentActivity.View.viewLabsHistory model.language currentDate id labEncounterId lab model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalLabsHistory id labEncounterId lab)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     IndividualEncounterTypesPage ->
                         Pages.IndividualEncounterTypes.View.view model.language currentDate healthCenterId isChw model
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PregnancyOutcomePage initiator id ->
                         let
@@ -611,7 +622,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Prenatal.Outcome.View.view model.language currentDate id isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NutritionEncounterPage id ->
                         let
@@ -621,7 +632,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Nutrition.Encounter.View.view model.language currentDate model.zscores id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NutritionActivityPage id activity ->
                         let
@@ -631,7 +642,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Nutrition.Activity.View.view model.language currentDate model.zscores id activity isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NutritionProgressReportPage encounterId ->
                         let
@@ -641,7 +652,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.Nutrition.ProgressReport.View.view model.language currentDate model.zscores site encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionProgressReport encounterId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     AcuteIllnessEncounterPage id ->
                         let
@@ -651,7 +662,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.AcuteIllness.Encounter.View.view model.language currentDate id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     AcuteIllnessActivityPage id activity ->
                         let
@@ -668,7 +679,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     AcuteIllnessProgressReportPage initiator encounterId ->
                         let
@@ -678,7 +689,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.AcuteIllness.ProgressReport.View.view model.language currentDate site encounterId isChw initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     AcuteIllnessOutcomePage id ->
                         let
@@ -688,7 +699,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.AcuteIllness.Outcome.View.view model.language currentDate id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     HomeVisitEncounterPage id ->
                         let
@@ -698,7 +709,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.HomeVisit.Encounter.View.view model.language currentDate id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageHomeVisitEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     HomeVisitActivityPage id activity ->
                         let
@@ -708,7 +719,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.HomeVisit.Activity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     WellChildEncounterPage id ->
                         let
@@ -718,7 +729,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.WellChild.Encounter.View.view model.language currentDate model.zscores id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     WellChildActivityPage id activity ->
                         let
@@ -728,7 +739,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.WellChild.Activity.View.view model.language currentDate model.zscores id isChw activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     WellChildProgressReportPage encounterId ->
                         let
@@ -738,7 +749,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.WellChild.ProgressReport.View.view model.language currentDate model.zscores site encounterId isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NCDEncounterPage id ->
                         let
@@ -748,7 +759,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.NCD.Encounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NCDActivityPage id activity ->
                         let
@@ -758,7 +769,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.NCD.Activity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NCDRecurrentEncounterPage id ->
                         let
@@ -768,7 +779,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.NCD.RecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NCDRecurrentActivityPage id activity ->
                         let
@@ -778,7 +789,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.NCD.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     NCDProgressReportPage initiator ->
                         let
@@ -796,7 +807,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.NCD.ProgressReport.View.view model.language currentDate site encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     ChildScoreboardEncounterPage id ->
                         let
@@ -806,7 +817,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.ChildScoreboard.Encounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardEncounter id)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     ChildScoreboardActivityPage id activity ->
                         let
@@ -816,7 +827,7 @@ viewUserPage page deviceName site model configured =
                         in
                         Pages.ChildScoreboard.Activity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     ChildScoreboardReportPage encounterId ->
                         let
@@ -832,7 +843,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardReport encounterId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     TraceContactPage traceContactId ->
                         let
@@ -846,7 +857,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageTraceContact traceContactId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     PatientRecordPage initiator personId ->
                         let
@@ -864,7 +875,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     MessagingCenterPage ->
                         let
@@ -882,7 +893,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     WellbeingPage ->
                         let
@@ -900,7 +911,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
                     StockManagementPage ->
                         let
@@ -916,7 +927,7 @@ viewUserPage page deviceName site model configured =
                             model.indexedDb
                             loggedInModel.stockManagementPage
                             |> Html.map (MsgLoggedIn << MsgPageStockManagement)
-                            |> flexPageWrapper model
+                            |> flexPageWrapper configured.config model
 
             else
                 Pages.PinCode.View.view model.language
@@ -928,7 +939,7 @@ viewUserPage page deviceName site model configured =
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
-                    |> flexPageWrapper model
+                    |> flexPageWrapper configured.config model
 
         Nothing ->
             Pages.PinCode.View.view model.language
@@ -940,4 +951,4 @@ viewUserPage page deviceName site model configured =
                 configured.pinCodePage
                 model.indexedDb
                 |> Html.map MsgPagePinCode
-                |> flexPageWrapper model
+                |> flexPageWrapper configured.config model
