@@ -220,7 +220,7 @@ viewLanguageSwitcherAndVersion config model =
                 |> ul [ class "links-translate" ]
 
         envName =
-            if List.any (\domain -> String.contains domain config.backendUrl) [ "pantheon.io", "ddev.site" ] then
+            if List.any (\domain -> String.contains domain config.backendUrl) [ "pantheonsite.io", "ddev.site" ] then
                 span [ class "env-name" ] [ text <| String.toUpper config.name ++ " env" ]
 
             else
