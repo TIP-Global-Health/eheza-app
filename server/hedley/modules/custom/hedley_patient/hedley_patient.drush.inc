@@ -92,43 +92,52 @@ function hedley_patient_patient_measurements_report() {
 function hedley_patient_consolidate_patients() {
   drush_print('Running validations ...');
   drush_print('');
-  $success = _consolidate_patients_validate();
-  if ($success) {
+
+  $original = drush_get_option('original');
+  $duplicate = drush_get_option('duplicate');
+  if (empty($original) || empty($duplicate)) {
+    drush_print('ERROR! You have to specify both --original and --duplicate parameter.');
+    return;
+  }
+
+  $result = _consolidate_patients_validate($original, $duplicate);
+  foreach ($result['messages'] as $message) {
+    drush_print($message);
+  }
+  
+  if ($result['success']) {
     drush_print('Executing consolidation ...');
     drush_print('');
 
-    _consolidate_patients_execute();
+    _consolidate_patients_execute($original, $duplicate);
   }
 }
 
 /**
  * Runs validations before executing consolidation process.
  *
- * @return bool
- *   True, if all validations passed.
+ * @return array
+ *   Result and corresponding messages.
  *
  * @throws \EntityMetadataWrapperException
  */
-function _consolidate_patients_validate() {
-  $original = drush_get_option('original');
-  $duplicate = drush_get_option('duplicate');
-
-  if (empty($original) || empty($duplicate)) {
-    drush_print('ERROR! You have to specify both --original and --duplicate parameter.');
-    return FALSE;
-  }
+function _consolidate_patients_validate($original, $duplicate) {
+  $return = [
+    'success' => FALSE,
+    'messages' => [],
+  ];
 
   $wrapper_original = entity_metadata_wrapper('node', $original);
   $wrapper_duplicate = entity_metadata_wrapper('node', $duplicate);
 
   if ($wrapper_original->getBundle() !== 'person') {
-    drush_print('ERROR! Original patient node type is not of a person. Please fix and try again.');
-    return FALSE;
+    $return['messages'][] = 'ERROR! Original patient node type is not of a person. Please fix and try again.';
+    return $return;
   }
 
   if ($wrapper_duplicate->getBundle() !== 'person') {
-    drush_print('ERROR! Duplicate patient node type is not of a person. Please fix and try again.');
-    return FALSE;
+    $return['messages'][] = 'ERROR! Duplicate patient node type is not of a person. Please fix and try again.';
+    return $return;
   }
 
   $health_center_original = $wrapper_original->field_health_center->getIdentifier();
@@ -136,44 +145,47 @@ function _consolidate_patients_validate() {
   // Do not allow consolidation, if patients are assigned to
   // different health centers.
   if ($health_center_original !== $health_center_duplicate) {
-    drush_print('ERROR! Patients do not belong to same Health Center.');
-    return FALSE;
+    $return['messages'][] = 'ERROR! Patients do not belong to same Health Center.';
+    return $return;
   }
 
   // Get all measurements that belong to duplicate patient.
   $measurements_of_duplicate = hedley_general_get_person_measurements($duplicate);
   $measurements_by_encounter_type = _group_measurements_by_encounter_type($measurements_of_duplicate);
   foreach ($measurements_by_encounter_type as $encounter_type => $measurements) {
+    // Making sure execution function exists.
     $function = '_consolidate_' . $encounter_type . '_content_execute';
     if (!function_exists($function)) {
-      drush_print("ERROR! Mandatory $function() function does not exist.");
-      return FALSE;
+      $return['messages'][] = "ERROR! Mandatory $function() function does not exist.";
+      return $return;
     }
 
+    // Making sure validation function exists.
     $function = '_consolidate_' . $encounter_type . '_content_validate';
     if (!function_exists($function)) {
-      drush_print("ERROR! Mandatory $function() function does not exist.");
-      return FALSE;
+      $return['messages'][] = "ERROR! Mandatory $function() function does not exist.";
+      return $return;
     }
 
+    // Running validation function
     if ($encounter_type == 'session') {
-      $success = $function($measurements, $original);
+      $function_result = $function($measurements, $original);
     }
     else {
-      $success = $function($measurements, $original, $duplicate);
+      $function_result = $function($measurements, $original, $duplicate);
     }
     // If consolidation failed, we make no changes, so that a fix could be
     // applied, and command could be executed again.
-    if (!$success) {
-      return FALSE;
+    if (!$function_result['success']) {
+      $return['messages'] = array_merge($return['messages'], $function_result['message']);
+      return $return;
     }
   }
 
-  drush_print('');
-  drush_print('SUCCESS! All validations passed!');
-  drush_print('');
+  $return['success'] = TRUE;
+  $return['messages'][] = 'SUCCESS! All validations passed!';
 
-  return TRUE;
+  return $return;
 }
 
 /**
@@ -184,10 +196,7 @@ function _consolidate_patients_validate() {
  *
  * @throws \EntityMetadataWrapperException
  */
-function _consolidate_patients_execute() {
-  $original = drush_get_option('original');
-  $duplicate = drush_get_option('duplicate');
-
+function _consolidate_patients_execute($original, $duplicate) {
   $wrapper_duplicate = entity_metadata_wrapper('node', $duplicate);
 
   // Get all measurements that belong to duplicate patient.
@@ -221,12 +230,17 @@ function _consolidate_patients_execute() {
  * @param int $original
  *   Node ID of the 'original' patient.
  *
- * @return bool
- *   True, if consolidation was successful.
+ * @return array
+ *   Result and corresponding messages.
  */
 function _consolidate_session_content_validate(array $measurements, $original) {
+  $return = [
+    'success' => FALSE,
+    'messages' => [],
+  ];
+
   $count = count($measurements);
-  drush_print("Duplicate got $count group encounter measurements.");
+  $return['messages'][] = "Duplicate got $count group encounter measurements.";
 
   $clinics_duplicate = [];
   // Generate a list of Groups to which measurements (of the duplicate) belong.
@@ -245,7 +259,7 @@ function _consolidate_session_content_validate(array $measurements, $original) {
 
   $list = implode(',', $clinics_duplicate);
   $count = count($clinics_duplicate);
-  drush_print("Measurements belong to $count clinics: $list");
+  $return['messages'][] = "Measurements belong to $count clinics: $list";
 
   $participants_original = hedley_person_pmtct_participants_for_person($original);
   $clinics_original = [];
@@ -257,18 +271,20 @@ function _consolidate_session_content_validate(array $measurements, $original) {
 
   $list = implode(',', $clinics_original);
   $count = count($clinics_original);
-  drush_print("Original participates in $count groups: $list");
+  $return['messages'][] = "Original participates in $count groups: $list";
 
   // Verify that the 'original' patient participates in all the groups
   // to which measurements of the duplicate belong.
   foreach ($clinics_duplicate as $clinic) {
     if (!in_array($clinic, $clinics_original)) {
-      drush_print("ERROR! Original is not participating in clinic $clinic. Please fix and try again.");
-      return FALSE;
+      $return['messages'][] = "ERROR! Original is not participating in clinic $clinic. Please fix and try again.";
+      return $return;
     }
   }
 
-  return TRUE;
+  $return['success'] = TRUE;
+
+  return $return;
 }
 
 /**
@@ -300,22 +316,27 @@ function _consolidate_session_content_execute(array $measurements, $original) {
  * @param int $duplicate
  *   Node ID of the 'duplicate' patient.
  *
- * @return bool
- *   True, if validation was successful.
+ * @return array
+ *    Result and corresponding messages.
  */
 function _consolidate_prenatal_encounter_content_validate(array $measurements, $original, $duplicate) {
+  $return = [
+    'success' => TRUE,
+    'messages' => [],
+  ];
+
   $count = count($measurements);
-  drush_print("Duplicate got $count prenatal_encounter measurements.");
+  $return['messages'][] = "Duplicate got $count prenatal_encounter measurements.";
 
   $participants_original = hedley_person_individual_participants_for_person($original, 'antenatal', 'DESC');
   $count = count($participants_original);
-  drush_print("Original got $count prenatal_encounter participants.");
+  $return['messages'][] = "Original got $count prenatal_encounter participants.";
 
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'antenatal', 'DESC');
   $count = count($participants_duplicate);
-  drush_print("Duplicate got $count prenatal_encounter participants.");
+  $return['messages'][] = "Duplicate got $count prenatal_encounter participants.";
 
-  return TRUE;
+  return $return;
 }
 
 /**
@@ -423,8 +444,8 @@ function _consolidate_prenatal_encounter_content_execute(array $measurements, $o
  *
  * @see: _consolidate_single_participant_content_validate()
  *
- * @return bool
- *   True, if validation was successful.
+ * @return array
+ *   Result and corresponding messages.
  *
  * @throws \EntityMetadataWrapperException
  */
@@ -462,8 +483,8 @@ function _consolidate_nutrition_encounter_content_execute(array $measurements, $
  *
  * @see: _consolidate_single_participant_content_validate()
  *
- * @return bool
- *   True, if validation was successful.
+ * @return array
+ *   Result and corresponding messages.
  *
  * @throws \EntityMetadataWrapperException
  */
@@ -501,8 +522,8 @@ function _consolidate_home_visit_encounter_content_execute(array $measurements, 
  *
  * @see: _consolidate_single_participant_content_validate()
  *
- * @return bool
- *   True, if validation was successful.
+ * @return array
+ *   Result and corresponding messages.
  *
  * @throws \EntityMetadataWrapperException
  */
@@ -540,8 +561,8 @@ function _consolidate_well_child_encounter_content_execute(array $measurements, 
  *
  * @see: _consolidate_single_participant_content_validate()
  *
- * @return bool
- *   True, if validation was successful.
+ * @return array
+ *   Result and corresponding messages.
  *
  * @throws \EntityMetadataWrapperException
  */
@@ -579,8 +600,8 @@ function _consolidate_ncd_encounter_content_execute(array $measurements, $origin
  *
  * @see: _consolidate_single_participant_content_validate()
  *
- * @return bool
- *   True, if validation was successful.
+ * @return array
+ *   Result and corresponding messages.
  *
  * @throws \EntityMetadataWrapperException
  */
@@ -627,39 +648,44 @@ function _consolidate_child_scoreboard_encounter_content_execute(array $measurem
  * @param string $encounter_type
  *   The type of encounter.
  *
- * @return bool
- *   True, if validation was successful.
+ * @return array
+ *   Result and corresponding messages.
  *
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_single_participant_content_validate(array $measurements, $original, $duplicate, $encounter_type) {
+  $return = [
+    'success' => FALSE,
+    'messages' => [],
+  ];
+
   $encounter_type_value = HEDLEY_PATIENT_ENCOUNTER_TYPE_VALUE_MAPPING[$encounter_type];
   if (empty($encounter_type_value)) {
-    drush_print("Error: $encounter_type does not appear in mapping (not supported).");
-    return FALSE;
+    $return['messages'][] = "Error: $encounter_type does not appear in mapping (not supported).";
+    return $return;
   }
 
   $count_measurements = count($measurements);
-  drush_print("Duplicate got $count_measurements $encounter_type measurements.");
+  $return['messages'][] = "Duplicate got $count_measurements $encounter_type measurements.";
 
   $participants_original = hedley_person_individual_participants_for_person($original, $encounter_type_value, 'DESC');
   $count_original = count($participants_original);
   if ($count_original > 1) {
-    drush_print('Error: There are multiple participants for original, while only one is allowed.');
-    drush_print('Can not determine with which participant to consolidate.');
-    return FALSE;
+    $return['messages'][] = 'Error: There are multiple participants for original, while only one is allowed. Can not determine with which participant to consolidate.';
+    return $return;
   }
 
-  drush_print("Original got $count_original $encounter_type participants.");
+  $return['messages'][] = "Original got $count_original $encounter_type participants.";
 
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, $encounter_type_value, 'DESC');
   $count_duplicate = count($participants_duplicate);
   if ($count_duplicate == 0 && $count_measurements > 0) {
-    drush_print("Error: Duplicate got 0 $encounter_type participants. Can not pull encounters data for duplicate.");
-    return FALSE;
+    $return['messages'][] = "Error: Duplicate got 0 $encounter_type participants. Can not pull encounters data for duplicate.";
+    return $return;
   }
 
-  return TRUE;
+  $return['success'] = TRUE;
+  return $return;
 }
 
 /**
@@ -743,14 +769,19 @@ function _consolidate_single_participant_content_execute(array $measurements, $o
  *   True, if validation was successful.
  */
 function _consolidate_acute_illness_encounter_content_validate(array $measurements, $original, $duplicate) {
+  $return = [
+    'success' => TRUE,
+    'messages' => [],
+  ];
+
   $count = count($measurements);
-  drush_print("Duplicate got $count acute_illness measurements.");
+  $return['messages'][] = "Duplicate got $count acute_illness measurements.";
 
   $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'acute_illness', 'DESC');
   $count = count($participants_duplicate);
-  drush_print("Duplicate got $count acute_illness Participants.");
+  $return['messages'][] = "Duplicate got $count acute_illness Participants.";
 
-  return TRUE;
+  return $return;
 }
 
 /**

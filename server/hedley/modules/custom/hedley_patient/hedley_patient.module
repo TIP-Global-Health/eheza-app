@@ -255,31 +255,96 @@ function hedley_patient_arrays_equal(array $array1, array $array2) {
   return count($array1) == count($array2) && empty(array_diff($array1, $array2));
 }
 
-function hedley_patient_consolidate_patients_form($form, &$form_state) {
-  $form['person1'] = array(
+/**
+ * Patients import form. Form content changes based on step we're at.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
+function  hedley_patient_consolidate_patients_form(array $form, array &$form_state) {
+  if (empty($form_state['storage'])) {
+    return hedley_patient_get_data_form($form, $form_state);
+  }
+
+  switch ($form_state['storage']['step']) {
+    case 'validation':
+      return hedley_patient_confirmation($form, $form_state);
+
+    case 'summary':
+      return hedley_patient_summary($form, $form_state);
+  }
+}
+
+function hedley_patient_get_data_form(array$form, array &$form_state) {
+  $form['#prefix'] = '<div id="get-data-form-wrapper">';
+  $form['#suffix'] = '</div>';
+  $form['#tree'] = TRUE;
+
+  $form['original'] = array(
     '#type' => 'textfield',
-    '#title' => t('Node ID of the original patient'),
+    '#title' => t('ID of the original patient'),
     '#required' => TRUE,
   );
 
-  $form['person2'] = array(
+  $form['duplicate'] = array(
     '#type' => 'textfield',
-    '#title' => t('Node ID of the duplicate patient'),
+    '#title' => t('ID of the duplicate patient'),
     '#required' => TRUE,
   );
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Consolidate Patients'),
+    '#value' => t('Validate'),
+    '#submit' => ['hedley_patient_consolidate_patients_validate'],
+    '#limit_validation_errors' => [],
+    '#ajax' => array(
+      'wrapper' => 'get-data-form-wrapper',
+      'callback' => 'hedley_patient_consolidate_patients_form_callback',
+      'effect' => 'fade',
+    ),
+    //'#value' => t('Consolidate Patients'),
   );
 
   return $form;
 }
 
+/**
+ * Import form AJAX callback.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   The form.
+ */
+function hedley_patient_consolidate_patients_form_callback(array $form, array $form_state) {
+  return $form;
+}
+
+module_load_include('inc', 'hedley_patient', 'hedley_patient.drush');
+
+function hedley_patient_consolidate_patients_validate($form, &$form_state) {
+  $original = $form_state['values']['original'];
+  $duplicate = $form_state['values']['duplicate'];
+
+  $result = _consolidate_patients_validate($original, $duplicate);
+
+  $form_state['storage']['messages'] = $result['messages'];
+  $form_state['storage']['step'] = $result['success'] ? 'confirmation' : 'summary';
+  $form_state['rebuild'] = TRUE;
+}
+
 function hedley_patient_consolidate_patients_form_submit($form, &$form_state) {
   // Get the values of the input fields.
-  $original_patient = $form_state['values']['person1'];
-  $duplicate_patient = $form_state['values']['person2'];
+  $original_patient = $form_state['values']['original'];
+  $duplicate_patient = $form_state['values']['duplicate'];
 
   // Build the Drush command to execute.
   $drush_command = 'drush consolidate-patients';
