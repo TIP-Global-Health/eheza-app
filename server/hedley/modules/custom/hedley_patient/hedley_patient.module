@@ -272,11 +272,11 @@ function  hedley_patient_consolidate_patients_form(array $form, array &$form_sta
   }
 
   switch ($form_state['storage']['step']) {
-    case 'validation':
-      return hedley_patient_confirmation($form, $form_state);
+    case 'confirmation':
+      return hedley_patient_consolidate_patients_confirmation_form($form, $form_state);
 
     case 'summary':
-      return hedley_patient_summary($form, $form_state);
+      return hedley_patient_consolidate_patients_summary_form($form, $form_state);
   }
 }
 
@@ -285,30 +285,29 @@ function hedley_patient_get_data_form(array$form, array &$form_state) {
   $form['#suffix'] = '</div>';
   $form['#tree'] = TRUE;
 
-  $form['original'] = array(
+  $form['original'] = [
     '#type' => 'textfield',
     '#title' => t('ID of the original patient'),
     '#required' => TRUE,
-  );
+  ];
 
-  $form['duplicate'] = array(
+  $form['duplicate'] = [
     '#type' => 'textfield',
     '#title' => t('ID of the duplicate patient'),
     '#required' => TRUE,
-  );
+  ];
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Validate'),
     '#submit' => ['hedley_patient_consolidate_patients_validate'],
     '#limit_validation_errors' => [],
-    '#ajax' => array(
+    '#ajax' => [
       'wrapper' => 'get-data-form-wrapper',
       'callback' => 'hedley_patient_consolidate_patients_form_callback',
       'effect' => 'fade',
-    ),
-    //'#value' => t('Consolidate Patients'),
-  );
+    ],
+  ];
 
   return $form;
 }
@@ -324,22 +323,111 @@ function hedley_patient_get_data_form(array$form, array &$form_state) {
  * @return array
  *   The form.
  */
-function hedley_patient_consolidate_patients_form_callback(array $form, array $form_state) {
+function hedley_patient_consolidate_patients_form_callback(array $form, array &$form_state) {
   return $form;
 }
 
 module_load_include('inc', 'hedley_patient', 'hedley_patient.drush');
 
 function hedley_patient_consolidate_patients_validate($form, &$form_state) {
-  $original = $form_state['values']['original'];
-  $duplicate = $form_state['values']['duplicate'];
-
+  $original =  $form['original']['#value'];
+  $duplicate = $form['duplicate']['#value'];
   $result = _consolidate_patients_validate($original, $duplicate);
-
   $form_state['storage']['messages'] = $result['messages'];
   $form_state['storage']['step'] = $result['success'] ? 'confirmation' : 'summary';
   $form_state['rebuild'] = TRUE;
 }
+
+function hedley_patient_consolidate_patients_confirmation_form(array $form, array &$form_state) {
+  $form['#prefix'] = '<div id="confirmation-form-wrapper">';
+  $form['#suffix'] = '</div>';
+  $form['#tree'] = TRUE;
+
+  $message = '';
+  foreach ($form_state['storage']['messages'] as $line) {
+    $message .= "<div>$line</div>";
+  }
+
+  $form['message'] = [
+    '#markup' => $message,
+    '#type' => 'item',
+  ];
+
+  $form['actions']['submit'] = [
+    '#type'   => 'submit',
+    '#value'  => t('Consolidate'),
+    '#submit' => ['hedley_patient_consolidate_patients_execute'],
+    '#limit_validation_errors' => [],
+  ];
+
+  $form['actions']['cancel'] = [
+    '#type'   => 'submit',
+    '#value'  => t('No'),
+    '#submit' => ['hedley_patient_consolidate_patients_reset'],
+    '#limit_validation_errors' => [],
+  ];
+
+  return $form;
+}
+
+function hedley_patient_consolidate_patients_execute($form, &$form_state) {
+  $original =  $form['original']['#value'];
+  $duplicate = $form['duplicate']['#value'];
+  $result = _consolidate_patients_execute($original, $duplicate);
+  $form_state['storage']['messages'] = $result['messages'];
+  $form_state['storage']['step'] = 'summary';
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Patients import form - step 3.
+ *
+ * Presents summary for result of performed import.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
+function hedley_patient_consolidate_patients_summary_form(array $form, array &$form_state) {
+  $message = '';
+  foreach ($form_state['storage']['messages'] as $line) {
+    $message .= "<div>$line</div>";
+  }
+
+  $form['message'] = [
+    '#markup' => $message,
+    '#type' => 'item',
+  ];
+
+  $form['actions']['submit'] = [
+    '#type'   => 'submit',
+    '#value'  => t('Ok'),
+    '#submit' => ['hedley_patient_consolidate_patients_reset'],
+    '#limit_validation_errors' => [],
+  ];
+
+  return $form;
+}
+
+/**
+ * Reset form callback.
+ *
+ * Used for confirmation decline ('No' button), and summary 'Ok' submit.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ */
+function hedley_patient_consolidate_patients_reset(array $form, array &$form_state) {
+  $form_state['storage'] = [];
+  $form_state['rebuild'] = TRUE;
+}
+
 
 function hedley_patient_consolidate_patients_form_submit($form, &$form_state) {
   // Get the values of the input fields.
