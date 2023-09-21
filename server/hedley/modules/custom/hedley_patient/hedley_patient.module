@@ -360,6 +360,8 @@ function hedley_patient_consolidate_patients_validate(array $form, array &$form_
   $duplicate = $form['duplicate']['#value'];
   // Executing function from hedley_patient.drush.inc.
   $result = _consolidate_patients_validate($original, $duplicate);
+  $form_state['storage']['original'] = $original;
+  $form_state['storage']['duplicate'] = $duplicate;
   $form_state['storage']['messages'] = $result['messages'];
   $form_state['storage']['step'] = $result['success'] ? 'confirmation' : 'summary';
   $form_state['rebuild'] = TRUE;
@@ -421,11 +423,11 @@ function hedley_patient_consolidate_patients_confirmation_form(array $form, arra
  * @throws EntityMetadataWrapperException
  */
 function hedley_patient_consolidate_patients_execute(array $form, array &$form_state) {
-  $original = $form['original']['#value'];
-  $duplicate = $form['duplicate']['#value'];
+  $original = $form_state['storage']['original'];
+  $duplicate = $form_state['storage']['duplicate'];
   // Executing function from hedley_patient.drush.inc.
-  $result = _consolidate_patients_execute($original, $duplicate);
-  $form_state['storage']['messages'] = $result['messages'];
+  $messages = _consolidate_patients_execute($original, $duplicate);
+  $form_state['storage']['messages'] = $messages;
   $form_state['storage']['step'] = 'summary';
   $form_state['rebuild'] = TRUE;
 }
