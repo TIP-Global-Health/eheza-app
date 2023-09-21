@@ -256,17 +256,19 @@ function hedley_patient_arrays_equal(array $array1, array $array2) {
 }
 
 /**
- * Patients import form. Form content changes based on step we're at.
+ * Patients consolidation form.
+ *
+ * Shows dynamic content, based on step we're at.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
  */
-function  hedley_patient_consolidate_patients_form(array $form, array &$form_state) {
+function hedley_patient_consolidate_patients_form(array $form, array &$form_state) {
   if (empty($form_state['storage'])) {
     return hedley_patient_get_data_form($form, $form_state);
   }
@@ -280,7 +282,20 @@ function  hedley_patient_consolidate_patients_form(array $form, array &$form_sta
   }
 }
 
-function hedley_patient_get_data_form(array$form, array &$form_state) {
+/**
+ * Patients consolidation form - step 1.
+ *
+ * Presents input for original and duplicate patient node IDs.
+ *
+ * @param array $form
+ *   The form being processed.
+ * @param array $form_state
+ *   The form state.
+ *
+ * @return array
+ *   Form array.
+ */
+function hedley_patient_get_data_form(array $form, array &$form_state) {
   $form['#prefix'] = '<div id="get-data-form-wrapper">';
   $form['#suffix'] = '</div>';
   $form['#tree'] = TRUE;
@@ -316,9 +331,9 @@ function hedley_patient_get_data_form(array$form, array &$form_state) {
  * Import form AJAX callback.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   The form.
@@ -327,17 +342,42 @@ function hedley_patient_consolidate_patients_form_callback(array $form, array &$
   return $form;
 }
 
+// Loading validate() and execute() functions.
 module_load_include('inc', 'hedley_patient', 'hedley_patient.drush');
 
-function hedley_patient_consolidate_patients_validate($form, &$form_state) {
-  $original =  $form['original']['#value'];
+/**
+ * Executes validation checks before patients consolidation.
+ *
+ * @param array $form
+ *   The form being processed.
+ * @param array $form_state
+ *   The form state.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_patient_consolidate_patients_validate(array $form, array &$form_state) {
+  $original = $form['original']['#value'];
   $duplicate = $form['duplicate']['#value'];
+  // Executing function from hedley_patient.drush.inc.
   $result = _consolidate_patients_validate($original, $duplicate);
   $form_state['storage']['messages'] = $result['messages'];
   $form_state['storage']['step'] = $result['success'] ? 'confirmation' : 'summary';
   $form_state['rebuild'] = TRUE;
 }
 
+/**
+ * Patients consolidation form - step 2.
+ *
+ * Confirmation form for consolidation execution, or canceling operation.
+ *
+ * @param array $form
+ *   The form being processed.
+ * @param array $form_state
+ *   The form state.
+ *
+ * @return array
+ *   Form array.
+ */
 function hedley_patient_consolidate_patients_confirmation_form(array $form, array &$form_state) {
   $form['#prefix'] = '<div id="confirmation-form-wrapper">';
   $form['#suffix'] = '</div>';
@@ -370,9 +410,20 @@ function hedley_patient_consolidate_patients_confirmation_form(array $form, arra
   return $form;
 }
 
-function hedley_patient_consolidate_patients_execute($form, &$form_state) {
-  $original =  $form['original']['#value'];
+/**
+ * Executes consolidation for a pair of patients.
+ *
+ * @param array $form
+ *   The form being processed.
+ * @param array $form_state
+ *   The form state.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_patient_consolidate_patients_execute(array $form, array &$form_state) {
+  $original = $form['original']['#value'];
   $duplicate = $form['duplicate']['#value'];
+  // Executing function from hedley_patient.drush.inc.
   $result = _consolidate_patients_execute($original, $duplicate);
   $form_state['storage']['messages'] = $result['messages'];
   $form_state['storage']['step'] = 'summary';
@@ -380,14 +431,14 @@ function hedley_patient_consolidate_patients_execute($form, &$form_state) {
 }
 
 /**
- * Patients import form - step 3.
+ * Patients consolidation form - step 3.
  *
- * Presents summary for result of performed import.
+ * Presents summary for result of validation errors or consolidation execution.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -414,34 +465,16 @@ function hedley_patient_consolidate_patients_summary_form(array $form, array &$f
 }
 
 /**
- * Reset form callback.
+ * Reset form execution.
  *
  * Used for confirmation decline ('No' button), and summary 'Ok' submit.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  */
 function hedley_patient_consolidate_patients_reset(array $form, array &$form_state) {
   $form_state['storage'] = [];
   $form_state['rebuild'] = TRUE;
-}
-
-
-function hedley_patient_consolidate_patients_form_submit($form, &$form_state) {
-  // Get the values of the input fields.
-  $original_patient = $form_state['values']['original'];
-  $duplicate_patient = $form_state['values']['duplicate'];
-
-  // Build the Drush command to execute.
-  $drush_command = 'drush consolidate-patients';
-  $arguments = '--original=' . escapeshellarg($original_patient) . ' --duplicate=' . escapeshellarg($duplicate_patient);
-
-  // Execute the Drush command as a shell command.
-  $command = $drush_command . ' ' . $arguments;
-  $output = shell_exec($command);
-
-  // Display the output on the page.
-  drupal_set_message($output);
 }

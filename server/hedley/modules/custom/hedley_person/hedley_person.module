@@ -86,9 +86,9 @@ function hedley_person_menu() {
  * Patients import form. Form content changes based on step we're at.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -113,9 +113,9 @@ function hedley_person_import_form(array $form, array &$form_state) {
  * Presents input for Google spreadsheet ID, with patients data.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -165,9 +165,9 @@ function hedley_person_get_data(array $form, array $form_state) {
  * Presents summary of fetched CSV, and asks for confirmation to proceed.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -205,9 +205,9 @@ function hedley_person_confirmation(array $form, array $form_state) {
  * Presents summary for result of performed import.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -238,9 +238,9 @@ function hedley_person_summary(array $form, array $form_state) {
  * - If there're no errors, forwards form to 'Confirmation' step.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  */
 function hedley_person_import_get_data(array $form, array &$form_state) {
   $spreadsheet_id = $form['spreadsheet_id']['#value'];
@@ -341,9 +341,9 @@ function hedley_person_import_get_data(array $form, array &$form_state) {
  * Creates BATCH operation that performs import of patients.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  */
 function hedley_person_execute_import(array $form, array &$form_state) {
   $patient_type = $form_state['storage']['$patient_type'];
@@ -441,9 +441,9 @@ function hedley_person_execute_batch_import($patient_type, array $lines, array &
  * Used for confirmation decline ('No' button), and summary 'Ok' submit.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  */
 function hedley_person_reset_form(array $form, array &$form_state) {
   $form_state['storage'] = [];
@@ -1112,9 +1112,9 @@ function hedley_person_resolve_person_by_national_id($national_id) {
  * Import form AJAX callback.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   The form.
