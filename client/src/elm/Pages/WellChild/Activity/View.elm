@@ -72,6 +72,7 @@ import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -79,23 +80,33 @@ import ZScore.Model exposing (Centimetres(..))
 import ZScore.Utils exposing (diffDays, viewZScore, zScoreHeadCircumferenceForAge)
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw activity db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> WellChildEncounterId
+    -> Bool
+    -> WellChildActivity
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site id isChw activity db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw activity db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores site id isChw activity db model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores site id isChw activity db model assembled =
     let
         header =
             viewHeader language id activity
 
         content =
-            viewContent language currentDate zscores id isChw activity db model assembled
+            viewContent language currentDate zscores site id isChw activity db model assembled
     in
     div [ class "page-activity well-child" ]
         [ header
@@ -122,10 +133,10 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id isChw activity db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores site id isChw activity db model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewActivity language currentDate zscores id isChw activity assembled db model
+        :: viewActivity language currentDate zscores site id isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -179,6 +190,7 @@ viewActivity :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> WellChildEncounterId
     -> Bool
     -> WellChildActivity
@@ -186,7 +198,7 @@ viewActivity :
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewActivity language currentDate zscores id isChw activity assembled db model =
+viewActivity language currentDate zscores site id isChw activity assembled db model =
     case activity of
         WellChildPregnancySummary ->
             viewPregnancySummaryForm language currentDate assembled model.pregnancySummaryForm
@@ -198,7 +210,7 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
 
         WellChildImmunisation ->
-            viewImmunisationContent language currentDate isChw assembled db model.immunisationData
+            viewImmunisationContent language currentDate site isChw assembled db model.immunisationData
 
         WellChildECD ->
             viewECDForm language currentDate assembled model.ecdForm
@@ -994,12 +1006,13 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
 viewImmunisationContent :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> ImmunisationData
     -> List (Html Msg)
-viewImmunisationContent language currentDate isChw assembled db data =
+viewImmunisationContent language currentDate site isChw assembled db data =
     let
         measurements =
             assembled.measurements
@@ -1134,7 +1147,7 @@ viewImmunisationContent language currentDate isChw assembled db data =
                                             |> getMeasurementValueFunc
                                             |> vaccinationFormWithDefault data.rotarixForm
                         in
-                        ( viewVaccinationForm language currentDate isChw assembled vaccineType vaccinationForm
+                        ( viewVaccinationForm language currentDate site isChw assembled vaccineType vaccinationForm
                         , False
                         , vaccinationForm.viewMode == ViewModeInitial
                         )
@@ -1280,8 +1293,8 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
         |> Maybe.withDefault ( 0, 0 )
 
 
-viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> WellChildVaccineType -> WellChildVaccinationForm -> Html Msg
-viewVaccinationForm language currentDate isChw assembled vaccineType form =
+viewVaccinationForm : Language -> NominalDate -> Site -> Bool -> AssembledData -> WellChildVaccineType -> WellChildVaccinationForm -> Html Msg
+viewVaccinationForm language currentDate site isChw assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
             vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form
@@ -1292,7 +1305,7 @@ viewVaccinationForm language currentDate isChw assembled vaccineType form =
             [ div [ class "header icon-label" ] <|
                 [ i [ class "icon-open-book" ] []
                 , div []
-                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription vaccineType ]
+                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription site vaccineType ]
                     , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
                     ]
                 ]
