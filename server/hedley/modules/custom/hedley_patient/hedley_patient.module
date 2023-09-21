@@ -390,6 +390,13 @@ function hedley_patient_consolidate_patients_confirmation_form(array $form, arra
     $message .= "<div>$line</div>";
   }
 
+  $original_info = hedley_patient_generate_consolidated_patient_info($form_state['storage']['original']);
+  $duplicate_info = hedley_patient_generate_consolidated_patient_info($form_state['storage']['duplicate']);
+  $message .= '<br>';
+  $message .= "<div>Original patient: $original_info</div>";
+  $message .= "<div>Duplicate patient: $duplicate_info</div>";
+  $message .= '<br>';
+
   $form['message'] = [
     '#markup' => $message,
     '#type' => 'item',
@@ -404,7 +411,7 @@ function hedley_patient_consolidate_patients_confirmation_form(array $form, arra
 
   $form['actions']['cancel'] = [
     '#type'   => 'submit',
-    '#value'  => t('No'),
+    '#value'  => t('Cancel'),
     '#submit' => ['hedley_patient_consolidate_patients_reset'],
     '#limit_validation_errors' => [],
   ];
@@ -479,4 +486,28 @@ function hedley_patient_consolidate_patients_summary_form(array $form, array &$f
 function hedley_patient_consolidate_patients_reset(array $form, array &$form_state) {
   $form_state['storage'] = [];
   $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Generate patient information from a node.
+ *
+ * This function loads a node with the given node ID and retrieves the patient's
+ * name and birth date information. It then formats and returns a string
+ * containing the patient's name and birth date in a readable format.
+ *
+ * @param int $nid
+ *   The node ID of the patient's record.
+ *
+ * @return string
+ *   A formatted string containing patient information, including the patient's
+ *   name and birth date.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_patient_generate_consolidated_patient_info($nid) {
+  $node = node_load($nid);
+  $name = hedley_person_get_paitent_name($node);
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $birth_date = date("Y-m-d", $wrapper->field_birth_date->value());
+  return "Name: $name, Birth date: $birth_date";
 }

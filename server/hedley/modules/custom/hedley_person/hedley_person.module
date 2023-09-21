@@ -1411,3 +1411,31 @@ function hedley_person_content_affected_by_deletion($person_id) {
 
   return $ids;
 }
+
+/**
+ * Get the patient's full name from a node.
+ *
+ * This function retrieves the patient's full name from a given node using
+ * entity metadata wrappers. It first tries to fetch the values of the
+ * 'field_first_name' and 'field_second_name' fields and constructs the full
+ * name using them. If both fields are empty, it uses the node's label as the
+ * patient's name.
+ *
+ * @param object $node
+ *   The node object from which to retrieve the patient's name.
+ *
+ * @return string
+ *   The patient's full name.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_person_get_paitent_name($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $first_name = trim($wrapper->field_first_name->value());
+  $second_name = trim($wrapper->field_second_name->value());
+  if (empty($first_name) && empty($second_name)) {
+    $second_name = $wrapper->label();
+  }
+
+  return empty($first_name) ? $second_name : "$second_name $first_name";
+}
