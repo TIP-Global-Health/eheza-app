@@ -393,8 +393,8 @@ function hedley_patient_consolidate_patients_confirmation_form(array $form, arra
   $original_info = hedley_patient_generate_consolidated_patient_info($form_state['storage']['original']);
   $duplicate_info = hedley_patient_generate_consolidated_patient_info($form_state['storage']['duplicate']);
   $message .= '<br>';
-  $message .= "<div>Original patient: $original_info</div>";
-  $message .= "<div>Duplicate patient: $duplicate_info</div>";
+  $message .= '<div>' . t('Original patient: @original_info', ['@original_info' => $original_info]) . '</div>';
+  $message .= '<div>' . t('Duplicate patient: @duplicate_info', ['@duplicate_info' => $duplicate_info]) . '</div>';
   $message .= '<br>';
 
   $form['message'] = [
