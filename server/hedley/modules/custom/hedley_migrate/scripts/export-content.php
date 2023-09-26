@@ -815,7 +815,8 @@ foreach ($health_centers_ids as $health_center_id) {
 
   $people_ids = array_unique(array_merge($groups_patients_ids, $health_center_patients_ids));
   foreach ($people_ids as $person_id) {
-    $wrapper = entity_metadata_wrapper('node', $person_id);
+    $person = node_load($person_id);
+    $wrapper = entity_metadata_wrapper('node', $person);
     $gender = $wrapper->field_gender->value();
     $birth_date = $wrapper->field_birth_date->value();
 
@@ -840,12 +841,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
     }
     else {
-      $first_name = trim($wrapper->field_first_name->value());
-      $second_name = trim($wrapper->field_second_name->value());
-      if (empty($first_name) && empty($second_name)) {
-        $second_name = $wrapper->label();
-      }
-
+      $name = hedley_person_get_paitent_name($person);
       $national_id = $wrapper->field_national_id_number->value();
       $phone_number = $wrapper->field_phone_number->value();
       $image = $wrapper->field_photo->value();
@@ -854,7 +850,7 @@ foreach ($health_centers_ids as $health_center_id) {
 
     $people[$person_id] = [
       $person_id,
-      "$second_name $first_name",
+      $name,
       $first_name,
       $second_name,
       $gender,
