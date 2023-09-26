@@ -397,15 +397,17 @@ function hedley_admin_devices_sync_state_table(array $form, array &$form_state) 
  *   TRUE if the user has access, FALSE otherwise.
  */
 function hedley_admin_administrators_access() {
-  global $user;
-
   if (user_is_anonymous()) {
     return FALSE;
   }
+
+  global $user;
 
   if ($user->uid == 1) {
     return TRUE;
   }
 
-  return in_array('administrator', $user->roles);
+  $admin_role = user_role_load_by_name('administrator');
+
+  return user_has_role($admin_role->rid);
 }
