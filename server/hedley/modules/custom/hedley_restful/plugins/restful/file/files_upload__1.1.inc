@@ -19,6 +19,6 @@ $plugin = array(
   'authentication_optional' => FALSE,
   'menu_item' => variable_get('restful_hook_menu_base_path', 'api') . '/file-upload',
   'options' => [
-    'scheme' => 'public',
+    'scheme' => 'private',
   ],
 );
