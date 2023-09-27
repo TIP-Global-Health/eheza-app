@@ -351,7 +351,7 @@ type alias Model =
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
     , syncSpeed : Editable SyncSpeed
 
-    -- We genereate and store Geo structure, to avoid pereated recalculations
+    -- We genereate and store Geo structure, to avoid repeated recalculations
     -- on every click (at View), which causes unacceptable slowness.
     , geoInfo : GeoInfo
     , reverseGeoInfo : ReverseGeoInfo
