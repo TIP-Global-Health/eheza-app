@@ -26,6 +26,7 @@ import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Form
 import Form.Input
+import GeoLocation.Utils exposing (..)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
@@ -73,7 +74,6 @@ import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (..)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
