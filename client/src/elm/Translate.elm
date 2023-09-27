@@ -619,7 +619,6 @@ type TranslationId
     | FollowUpWithMotherLabel
     | FollowUpOption FollowUpOption
     | FollowUpDueOption FollowUpDueOption
-    | FoodSupplementationConsumedQuestion
     | ForIllustrativePurposesOnly
     | FormError (ErrorValue ValidationError)
     | FormField String
@@ -5801,12 +5800,6 @@ translationSet trans =
                     , kirundi = Just "Ukwezi gukurikira"
                     }
 
-        FoodSupplementationConsumedQuestion ->
-            { english = "Is the food supplementation being consumed"
-            , kinyarwanda = Just "Inyongeramirire ihabwa umwana nkuko bikwiriye"
-            , kirundi = Nothing
-            }
-
         ForIllustrativePurposesOnly ->
             { english = "For illustrative purposes only"
             , kinyarwanda = Just "Ku mpamvu zumvikana gusa"
@@ -10343,7 +10336,10 @@ translationSet trans =
                     }
 
                 TakingOngeraMNP ->
-                    translationSet FoodSupplementationConsumedQuestion
+                    { english = "Is Ongera-MNP being consumed"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 FiveFoodGroups ->
                     { english = "Does the child receive food items from the 5 food groups in the last 24 hours"
@@ -10376,9 +10372,9 @@ translationSet trans =
                     }
 
                 Backend.Measurement.Model.ConditionalFoodItems ->
-                    { english = "Receipt of conditional food items including small livestock"
-                    , kinyarwanda = Just "Gufata inkunga z’ingoboka harimo ibiryo n'amatungo magufi"
-                    , kirundi = Just "Ukuronka ibifungugwa vyangobwa/bitegekanijwe, hamwe nibivuye mu bitungwa bitobito"
+                    { english = "Receipt of other support (e.g., food items or small livestock)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 ChildWithAcuteMalnutrition ->
@@ -10454,7 +10450,10 @@ translationSet trans =
                     }
 
                 ChildTakingFBF ->
-                    translationSet FoodSupplementationConsumedQuestion
+                    { english = "Is FBF being consumed"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 ChildReceivesVitaminA ->
                     { english = "Did the child receive Vitamin A in the last six months"
@@ -10656,9 +10655,9 @@ translationSet trans =
                     }
 
                 Pages.WellChild.ProgressReport.Model.ConditionalFoodItems ->
-                    { english = "Receipt of conditional food items including small livestock"
-                    , kinyarwanda = Just "Gufata inkunga z’ingoboka harimo ibiryo n'amatungo magufi"
-                    , kirundi = Just "Ukuronka ibifungugwa vyangobwa/bitegekanijwe, hamwe nibivuye mu bitungwa bitobito"
+                    { english = "Receipt of other support (e.g., food items or small livestock)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
         NCDAUniversalInterventionsItemLabel item ->
