@@ -684,6 +684,7 @@ viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
                         Pages.AcuteIllness.Activity.View.view model.language
                             currentDate
                             site
+                            geoInfo
                             id
                             isChw
                             activity
