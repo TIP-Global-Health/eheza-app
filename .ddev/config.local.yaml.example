@@ -30,6 +30,9 @@ hooks:
     - exec-host: ddev nvm alias default 10.16.0
     - exec-host: ddev client-install
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
+    - exec: "cd .. && cp hedley/modules/custom/hedley_migrate/csv/health_center_$EHEZA_SITE.csv hedley/modules/custom/hedley_migrate/csv/health_center.csv"
+    - exec: "cd .. && cp hedley/modules/custom/hedley_migrate/csv/person_$EHEZA_SITE.csv hedley/modules/custom/hedley_migrate/csv/person.csv"
+    - exec: "cd .. && cp hedley/modules/custom/hedley_migrate/csv/village_$EHEZA_SITE.csv hedley/modules/custom/hedley_migrate/csv/village.csv"
     # If DDEV creates server/www/, it is owned by root for some reasons,
     # so we have a placeholder .gitignore there, that ignores everything, but
     # the gitignore, during the install process, it gets altered, so we restore
@@ -40,6 +43,7 @@ hooks:
     - exec: drush fra -y
     - exec: composer update --lock -d sites/default/files/composer
     - exec: composer install -d sites/default/files/composer
+    - exec: drush vset hedley_general_site_name $EHEZA_SITE
     # Run migration
     - exec: drush en -y hedley_migrate
     - exec: drush en -y migrate migrate_ui migrate_extras
