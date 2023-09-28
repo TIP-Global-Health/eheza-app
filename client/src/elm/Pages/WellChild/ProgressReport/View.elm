@@ -2492,8 +2492,19 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
         immunizationValues =
             generateValues currentDate child immunizationByAgeInMonths ((==) NCDACellValueV)
 
+        -- When CHW conducts NCDA, at Vitamin A section, there's an option for marking as not
+        -- applicable. The requirements if this option is selected is to have dash on scorecard.
+        -- Dash is set also in case there's not questioneer for the month, so, if in case
+        -- 'not applicable', is selected, we filter out the questioneer.
+        chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable =
+            Maybe.map (Dict.filter (\_ value -> value.receivesVitaminA /= Just OptionNotApplicable))
+                chwQuestionnairesByAgeInMonths
+
         vitaminAValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingVitaminA)
+            generateValues currentDate
+                child
+                chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable
+                (.signs >> EverySet.member ChildTakingVitaminA)
                 |> List.indexedMap
                     -- Vitamin A should not be administered before age of 6 months.
                     (postProcessMedicineRawValue 6)
