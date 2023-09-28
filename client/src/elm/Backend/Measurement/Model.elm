@@ -2795,6 +2795,22 @@ type alias ChildScoreboardRotarixImmunisation =
     ChildScoreboardMeasurement VaccinationValue
 
 
+type alias ChildScoreboardHeight =
+    ChildScoreboardMeasurement HeightInCm
+
+
+type alias ChildScoreboardMuac =
+    ChildScoreboardMeasurement MuacInCm
+
+
+type alias ChildScoreboardNutrition =
+    ChildScoreboardMeasurement NutritionValue
+
+
+type alias ChildScoreboardWeight =
+    ChildScoreboardMeasurement WeightInKg
+
+
 
 -- Stock Management:
 
@@ -3143,14 +3159,18 @@ type alias NCDMeasurements =
 
 
 type alias ChildScoreboardMeasurements =
-    { ncda : Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA )
-    , bcgImmunisation : Maybe ( ChildScoreboardBCGImmunisationId, ChildScoreboardBCGImmunisation )
+    { bcgImmunisation : Maybe ( ChildScoreboardBCGImmunisationId, ChildScoreboardBCGImmunisation )
     , dtpImmunisation : Maybe ( ChildScoreboardDTPImmunisationId, ChildScoreboardDTPImmunisation )
+    , height : Maybe ( ChildScoreboardHeightId, ChildScoreboardHeight )
     , ipvImmunisation : Maybe ( ChildScoreboardIPVImmunisationId, ChildScoreboardIPVImmunisation )
     , mrImmunisation : Maybe ( ChildScoreboardMRImmunisationId, ChildScoreboardMRImmunisation )
+    , muac : Maybe ( ChildScoreboardMuacId, ChildScoreboardMuac )
+    , ncda : Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA )
+    , nutrition : Maybe ( ChildScoreboardNutritionId, ChildScoreboardNutrition )
     , opvImmunisation : Maybe ( ChildScoreboardOPVImmunisationId, ChildScoreboardOPVImmunisation )
     , pcv13Immunisation : Maybe ( ChildScoreboardPCV13ImmunisationId, ChildScoreboardPCV13Immunisation )
     , rotarixImmunisation : Maybe ( ChildScoreboardRotarixImmunisationId, ChildScoreboardRotarixImmunisation )
+    , weight : Maybe ( ChildScoreboardWeightId, ChildScoreboardWeight )
     }
 
 
