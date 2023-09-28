@@ -82,7 +82,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -394,7 +394,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Administration Dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -489,7 +489,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -801,7 +801,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1116,7 +1116,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Administration Dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1211,7 +1211,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1484,7 +1484,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1913,7 +1913,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Scheduled Date',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2091,7 +2091,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date concluded',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2147,7 +2147,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2534,7 +2534,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2940,7 +2940,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3289,7 +3289,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3693,7 +3693,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Administration Dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3788,7 +3788,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4100,7 +4100,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Administration Dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4195,7 +4195,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4506,7 +4506,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4818,7 +4818,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Administration Dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4913,7 +4913,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5186,7 +5186,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5504,7 +5504,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'ANC visits dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5560,7 +5560,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5705,6 +5705,43 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => -3,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_ncda-field_receive_option'.
+  $field_instances['node-well_child_ncda-field_receive_option'] = array(
+    'bundle' => 'well_child_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_receive_option',
+    'label' => 'Receives Vitamin A',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 17,
     ),
   );
 
@@ -5915,7 +5952,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5972,7 +6009,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Immunisation Date',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6073,7 +6110,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Pediatric Visit Date',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6302,7 +6339,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6689,7 +6726,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Administration Dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6784,7 +6821,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -7096,7 +7133,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Administration Dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -7191,7 +7228,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -7464,7 +7501,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -7920,7 +7957,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -8015,7 +8052,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Expected date concluded',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -8457,7 +8494,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Administration Dates',
     'required' => 0,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -8552,7 +8589,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -8828,7 +8865,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9177,7 +9214,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9534,7 +9571,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9891,7 +9928,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -10209,7 +10246,7 @@ function hedley_well_child_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-     'default_value' => 'blank',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -10672,6 +10709,7 @@ function hedley_well_child_field_default_field_instances() {
   t('Pregnancy Summary Signs');
   t('Reason For Not Providing Education');
   t('Reason for Not Sending to HC');
+  t('Receives Vitamin A');
   t('Respiratory rate');
   t('Scheduled Date');
   t('Send to HC');
