@@ -11,6 +11,7 @@ import Config.Model
 import Config.View
 import Error.View
 import EverySet
+import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
@@ -315,12 +316,18 @@ viewConfiguredModel model configured =
                 let
                     site =
                         model.syncManager.syncInfoGeneral.site
+
+                    geoInfo =
+                        model.syncManager.geoInfo
+
+                    reverseGeoInfo =
+                        model.syncManager.reverseGeoInfo
                 in
-                viewUserPage userPage deviceName site model configured
+                viewUserPage userPage deviceName site geoInfo reverseGeoInfo model configured
 
 
-viewUserPage : UserPage -> Maybe String -> Site -> Model -> ConfiguredModel -> Html Msg
-viewUserPage page deviceName site model configured =
+viewUserPage : UserPage -> Maybe String -> Site -> GeoInfo -> ReverseGeoInfo -> Model -> ConfiguredModel -> Html Msg
+viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
@@ -372,6 +379,8 @@ viewUserPage page deviceName site model configured =
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
                             site
+                            geoInfo
+                            reverseGeoInfo
                             model.villageId
                             isChw
                             (CreatePerson relation)
@@ -448,6 +457,8 @@ viewUserPage page deviceName site model configured =
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
                             site
+                            geoInfo
+                            reverseGeoInfo
                             model.villageId
                             isChw
                             (EditPerson id)
@@ -673,6 +684,7 @@ viewUserPage page deviceName site model configured =
                         Pages.AcuteIllness.Activity.View.view model.language
                             currentDate
                             site
+                            geoInfo
                             id
                             isChw
                             activity

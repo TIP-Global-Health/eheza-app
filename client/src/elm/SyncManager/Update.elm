@@ -10,6 +10,7 @@ import Device.Encoder
 import Device.Model exposing (Device)
 import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
+import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeValue)
@@ -813,10 +814,16 @@ update currentDate currentTime activePage dbVersion device msg model =
                                        )
 
                             modelWithSyncStatus =
+                                let
+                                    geoInfo =
+                                        getGeoInfo syncInfoGeneral.site
+                                in
                                 SyncManager.Utils.determineSyncStatus activePage
                                     { model
                                         | syncStatus = SyncDownloadGeneral model.downloadGeneralResponse
                                         , syncInfoGeneral = syncInfoGeneral
+                                        , geoInfo = geoInfo
+                                        , reverseGeoInfo = getReverseGeoInfo geoInfo
                                     }
                         in
                         SubModelReturn

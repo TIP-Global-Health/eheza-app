@@ -1,30 +1,10 @@
-module Utils.GeoLocation exposing (..)
+module GeoLocation.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import GeoLocation.Model exposing (..)
 import Restful.Endpoint exposing (EntityId, fromEntityId, toEntityId)
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId)
-
-
-{-| This is here to have a partially type-safe key for the Dict.
-We're not actually storing these on the backend at the moment, and if
-we did, they would need to be an EntityUuid rather than an EntityId.
--}
-type alias GeoLocationId =
-    EntityId GeoLocationIdType
-
-
-type GeoLocationIdType
-    = GeoLocationIdType
-
-
-type alias GeoInfo =
-    { provinces : Dict GeoLocationId GeoLocation
-    , districts : Dict GeoLocationId GeoLocation
-    , sectors : Dict GeoLocationId GeoLocation
-    , cells : Dict GeoLocationId GeoLocation
-    , villages : Dict GeoLocationId GeoLocation
-    }
 
 
 getGeoInfo : Site -> GeoInfo
@@ -37,30 +17,9 @@ getGeoInfo site =
     }
 
 
-type alias GeoLocation =
-    { name : String
-    , parent : Maybe GeoLocationId
-    }
-
-
-type alias ParentId =
-    GeoLocationId
-
-
-type alias Name =
-    String
-
-
-type alias ReverseGeoInfo =
-    Dict (Maybe ParentId) (Dict Name ( GeoLocationId, GeoLocation ))
-
-
-getReverseGeoInfo : Site -> ReverseGeoInfo
-getReverseGeoInfo site =
+getReverseGeoInfo : GeoInfo -> ReverseGeoInfo
+getReverseGeoInfo geoInfo =
     let
-        geoInfo =
-            getGeoInfo site
-
         merge id loc accum =
             accum
                 |> Maybe.withDefault Dict.empty
@@ -83,10 +42,9 @@ getReverseGeoInfo site =
         ]
 
 
-getGeoLocation : Site -> Maybe ParentId -> Name -> Maybe ( GeoLocationId, GeoLocation )
-getGeoLocation site parent name =
-    getReverseGeoInfo site
-        |> Dict.get parent
+getGeoLocation : ReverseGeoInfo -> Maybe ParentId -> String -> Maybe ( GeoLocationId, GeoLocation )
+getGeoLocation reverseGeoInfo parent name =
+    Dict.get parent reverseGeoInfo
         |> Maybe.andThen (Dict.get (String.toLower name))
 
 

@@ -1,6 +1,6 @@
 module SyncManager.Model exposing (..)
 
-import AssocList exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Clinic.Model exposing (Clinic)
@@ -27,6 +27,7 @@ import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Components.SendViaWhatsAppDialog.Model exposing (ReportType)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import Editable exposing (Editable)
+import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo, emptyGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
@@ -349,6 +350,11 @@ type alias Model =
     -- `idle` - 50; which is the minimum we will allow.
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
     , syncSpeed : Editable SyncSpeed
+
+    -- We genereate and store Geo structure, to avoid repeated recalculations
+    -- on every click (at View), which causes unacceptable slowness.
+    , geoInfo : GeoInfo
+    , reverseGeoInfo : ReverseGeoInfo
     }
 
 
@@ -366,6 +372,8 @@ emptyModel flags =
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
+    , geoInfo = emptyGeoInfo
+    , reverseGeoInfo = Dict.empty
     }
 
 
