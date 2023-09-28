@@ -290,7 +290,9 @@ type NCDASign
     | ChildGotDiarrhea
     | ChildReceivesFBF
     | ChildTakingFBF
-    | -- @todo: remove
+    | -- This option is not an actual sign, as we got dedicated field for it,
+      -- to support 'not applicable' value. We keep it though, to maintain
+      -- form display logic which is common for all signs.
       ChildReceivesVitaminA
     | ChildTakingVitaminA
     | ChildReceivesDewormer

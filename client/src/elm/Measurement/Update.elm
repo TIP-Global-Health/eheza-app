@@ -344,6 +344,26 @@ updateChild msg model =
             , Nothing
             )
 
+        SetChildReceivesVitaminA value ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | childReceivesVitaminA = Just value
+                                    , childTakingVitaminA = Nothing
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
         SetNCDAHelperState state ->
             let
                 updatedData =

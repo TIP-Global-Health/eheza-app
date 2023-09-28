@@ -969,6 +969,7 @@ type TranslationId
     | NoContactReason NoContactReason
     | NoMatchesFound
     | NormalRange
+    | NotApplicable
     | NoTreatmentAdministered
     | NoTreatmentRecorded
     | NutritionSigns
@@ -1180,6 +1181,7 @@ type TranslationId
     | ReceivedMebendazole
     | ReceivedMosquitoNet
     | ReceivedVitaminA
+    | ReceiveOption ReceiveOption
     | Recommendation114 Recommendation114
     | RecommendationSite RecommendationSite
     | Recommended
@@ -6028,10 +6030,7 @@ translationSet trans =
                     }
 
                 HCRecommendationNotApplicable ->
-                    { english = "Not Applicable"
-                    , kinyarwanda = Just "Ibi ntibikorwa"
-                    , kirundi = Just "Ntibikenewe"
-                    }
+                    translationSet NotApplicable
 
         HCResponseQuestion ->
             { english = "What was the Health Center's response"
@@ -10276,6 +10275,24 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                ChildReceivesVitaminA ->
+                    { english = "Provide counseling on the importance of Vitamin A and advise them not to miss it again"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ChildReceivesDewormer ->
+                    { english = "Provide counseling on the importance of deworming medication and advise them not to miss it again"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ChildReceivesECD ->
+                    { english = "Provide counseling on the importance of brain stimulatio activities for the development of the child"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 _ ->
                     { english = ""
                     , kinyarwanda = Nothing
@@ -11492,6 +11509,12 @@ translationSet trans =
             { english = "Normal Range"
             , kinyarwanda = Just "Ibimeze neza"
             , kirundi = Just "Icanya gisanzwe"
+            }
+
+        NotApplicable ->
+            { english = "Not Applicable "
+            , kinyarwanda = Just "Ibi ntibikorwa"
+            , kirundi = Just "Ntibikenewe"
             }
 
         NoTreatmentAdministered ->
@@ -16370,10 +16393,7 @@ translationSet trans =
                     }
 
                 IsolationReasonNotApplicable ->
-                    { english = "Not Applicable "
-                    , kinyarwanda = Just "Ibi ntibikorwa"
-                    , kirundi = Just "Ntibikenewe"
-                    }
+                    translationSet NotApplicable
 
         ReasonForNotProvidingHealthEducation reason ->
             case reason of
@@ -16487,6 +16507,17 @@ translationSet trans =
             , kirundi = Just "Mbega wararonse icunyunyu ca Vitamine A"
             }
 
+        ReceiveOption option ->
+            case option of
+                OptionReceive ->
+                    translationSet Yes
+
+                OptionNotReceive ->
+                    translationSet No
+
+                OptionNotApplicable ->
+                    translationSet NotApplicable
+
         Recommendation114 recommendation ->
             case recommendation of
                 SendToHealthCenter ->
@@ -16570,10 +16601,7 @@ translationSet trans =
                     }
 
                 RecommendationSiteNotApplicable ->
-                    { english = "Not Applicable"
-                    , kinyarwanda = Just "Ibi ntibikorwa"
-                    , kirundi = Just "Ntibikenewe"
-                    }
+                    translationSet NotApplicable
 
         Recommended ->
             { english = "Recommended"
@@ -18812,10 +18840,7 @@ translationSet trans =
                     }
 
                 ResponsePeriodNotApplicable ->
-                    { english = "Not Applicable"
-                    , kinyarwanda = Just "Ibi ntibikorwa"
-                    , kirundi = Just "Ntibikenewe"
-                    }
+                    translationSet NotApplicable
 
         Result ->
             { english = "Result"
@@ -18906,10 +18931,7 @@ translationSet trans =
                     }
 
                 RecommendationSiteNotApplicable ->
-                    { english = "Not Applicable"
-                    , kinyarwanda = Just "Ibi ntibikorwa"
-                    , kirundi = Just "Ntibikenewe"
-                    }
+                    translationSet NotApplicable
 
         ResultsMissing ->
             { english = "Results Missing"

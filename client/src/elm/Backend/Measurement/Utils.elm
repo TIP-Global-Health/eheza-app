@@ -3566,6 +3566,7 @@ ncdaSignFromString value =
         "child-taking-fbf" ->
             Just ChildTakingFBF
 
+        -- Sign not set on backend anymore.
         "child-receives-vitamin-a" ->
             Just ChildReceivesVitaminA
 
@@ -3666,6 +3667,7 @@ ncdaSignToString value =
         ChildTakingFBF ->
             "child-taking-fbf"
 
+        -- Sign not set on backend anymore.
         ChildReceivesVitaminA ->
             "child-receives-vitamin-a"
 

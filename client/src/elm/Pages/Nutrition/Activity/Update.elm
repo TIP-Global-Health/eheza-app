@@ -332,6 +332,26 @@ update currentDate id db msg model =
             , []
             )
 
+        SetChildReceivesVitaminA value ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | childReceivesVitaminA = Just value
+                                    , childTakingVitaminA = Nothing
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetNCDAFormStep step ->
             let
                 updatedForm =
