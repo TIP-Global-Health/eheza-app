@@ -41,6 +41,16 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create child_scoreboard_height content'.
+  $permissions['create child_scoreboard_height content'] = array(
+    'name' => 'create child_scoreboard_height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create child_scoreboard_ipv_iz content'.
   $permissions['create child_scoreboard_ipv_iz content'] = array(
     'name' => 'create child_scoreboard_ipv_iz content',
@@ -61,9 +71,29 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create child_scoreboard_muac content'.
+  $permissions['create child_scoreboard_muac content'] = array(
+    'name' => 'create child_scoreboard_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create child_scoreboard_ncda content'.
   $permissions['create child_scoreboard_ncda content'] = array(
     'name' => 'create child_scoreboard_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create child_scoreboard_nutrition content'.
+  $permissions['create child_scoreboard_nutrition content'] = array(
+    'name' => 'create child_scoreboard_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -101,6 +131,16 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create child_scoreboard_weight content'.
+  $permissions['create child_scoreboard_weight content'] = array(
+    'name' => 'create child_scoreboard_weight content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any child_scoreboard_bcg_iz content'.
   $permissions['delete any child_scoreboard_bcg_iz content'] = array(
     'name' => 'delete any child_scoreboard_bcg_iz content',
@@ -128,6 +168,15 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any child_scoreboard_height content'.
+  $permissions['delete any child_scoreboard_height content'] = array(
+    'name' => 'delete any child_scoreboard_height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any child_scoreboard_ipv_iz content'.
   $permissions['delete any child_scoreboard_ipv_iz content'] = array(
     'name' => 'delete any child_scoreboard_ipv_iz content',
@@ -146,9 +195,27 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any child_scoreboard_muac content'.
+  $permissions['delete any child_scoreboard_muac content'] = array(
+    'name' => 'delete any child_scoreboard_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any child_scoreboard_ncda content'.
   $permissions['delete any child_scoreboard_ncda content'] = array(
     'name' => 'delete any child_scoreboard_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any child_scoreboard_nutrition content'.
+  $permissions['delete any child_scoreboard_nutrition content'] = array(
+    'name' => 'delete any child_scoreboard_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -182,6 +249,15 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any child_scoreboard_weight content'.
+  $permissions['delete any child_scoreboard_weight content'] = array(
+    'name' => 'delete any child_scoreboard_weight content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own child_scoreboard_bcg_iz content'.
   $permissions['delete own child_scoreboard_bcg_iz content'] = array(
     'name' => 'delete own child_scoreboard_bcg_iz content',
@@ -209,6 +285,15 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own child_scoreboard_height content'.
+  $permissions['delete own child_scoreboard_height content'] = array(
+    'name' => 'delete own child_scoreboard_height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own child_scoreboard_ipv_iz content'.
   $permissions['delete own child_scoreboard_ipv_iz content'] = array(
     'name' => 'delete own child_scoreboard_ipv_iz content',
@@ -227,9 +312,27 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own child_scoreboard_muac content'.
+  $permissions['delete own child_scoreboard_muac content'] = array(
+    'name' => 'delete own child_scoreboard_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own child_scoreboard_ncda content'.
   $permissions['delete own child_scoreboard_ncda content'] = array(
     'name' => 'delete own child_scoreboard_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own child_scoreboard_nutrition content'.
+  $permissions['delete own child_scoreboard_nutrition content'] = array(
+    'name' => 'delete own child_scoreboard_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -257,6 +360,15 @@ function hedley_ncda_user_default_permissions() {
   // Exported permission: 'delete own child_scoreboard_rotarix_iz content'.
   $permissions['delete own child_scoreboard_rotarix_iz content'] = array(
     'name' => 'delete own child_scoreboard_rotarix_iz content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own child_scoreboard_weight content'.
+  $permissions['delete own child_scoreboard_weight content'] = array(
+    'name' => 'delete own child_scoreboard_weight content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -293,6 +405,16 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any child_scoreboard_height content'.
+  $permissions['edit any child_scoreboard_height content'] = array(
+    'name' => 'edit any child_scoreboard_height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any child_scoreboard_ipv_iz content'.
   $permissions['edit any child_scoreboard_ipv_iz content'] = array(
     'name' => 'edit any child_scoreboard_ipv_iz content',
@@ -313,9 +435,29 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any child_scoreboard_muac content'.
+  $permissions['edit any child_scoreboard_muac content'] = array(
+    'name' => 'edit any child_scoreboard_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any child_scoreboard_ncda content'.
   $permissions['edit any child_scoreboard_ncda content'] = array(
     'name' => 'edit any child_scoreboard_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any child_scoreboard_nutrition content'.
+  $permissions['edit any child_scoreboard_nutrition content'] = array(
+    'name' => 'edit any child_scoreboard_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -353,6 +495,16 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any child_scoreboard_weight content'.
+  $permissions['edit any child_scoreboard_weight content'] = array(
+    'name' => 'edit any child_scoreboard_weight content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own child_scoreboard_bcg_iz content'.
   $permissions['edit own child_scoreboard_bcg_iz content'] = array(
     'name' => 'edit own child_scoreboard_bcg_iz content',
@@ -383,6 +535,16 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own child_scoreboard_height content'.
+  $permissions['edit own child_scoreboard_height content'] = array(
+    'name' => 'edit own child_scoreboard_height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own child_scoreboard_ipv_iz content'.
   $permissions['edit own child_scoreboard_ipv_iz content'] = array(
     'name' => 'edit own child_scoreboard_ipv_iz content',
@@ -403,9 +565,29 @@ function hedley_ncda_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own child_scoreboard_muac content'.
+  $permissions['edit own child_scoreboard_muac content'] = array(
+    'name' => 'edit own child_scoreboard_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own child_scoreboard_ncda content'.
   $permissions['edit own child_scoreboard_ncda content'] = array(
     'name' => 'edit own child_scoreboard_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own child_scoreboard_nutrition content'.
+  $permissions['edit own child_scoreboard_nutrition content'] = array(
+    'name' => 'edit own child_scoreboard_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -436,6 +618,16 @@ function hedley_ncda_user_default_permissions() {
   // Exported permission: 'edit own child_scoreboard_rotarix_iz content'.
   $permissions['edit own child_scoreboard_rotarix_iz content'] = array(
     'name' => 'edit own child_scoreboard_rotarix_iz content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own child_scoreboard_weight content'.
+  $permissions['edit own child_scoreboard_weight content'] = array(
+    'name' => 'edit own child_scoreboard_weight content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
