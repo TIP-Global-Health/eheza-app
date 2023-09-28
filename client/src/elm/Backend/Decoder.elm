@@ -96,14 +96,23 @@ decodeRevision =
                     "child_scoreboard_dtp_iz" ->
                         decodeWithUuid ChildScoreboardDTPImmunisationRevision decodeChildScoreboardDTPImmunisation
 
+                    "child_scoreboard_height" ->
+                        decodeWithUuid ChildScoreboardHeightRevision decodeChildScoreboardHeight
+
                     "child_scoreboard_ipv_iz" ->
                         decodeWithUuid ChildScoreboardIPVImmunisationRevision decodeChildScoreboardIPVImmunisation
 
                     "child_scoreboard_mr_iz" ->
                         decodeWithUuid ChildScoreboardMRImmunisationRevision decodeChildScoreboardMRImmunisation
 
+                    "child_scoreboard_muac" ->
+                        decodeWithUuid ChildScoreboardMuacRevision decodeChildScoreboardMuac
+
                     "child_scoreboard_ncda" ->
                         decodeWithUuid ChildScoreboardNCDARevision decodeChildScoreboardNCDA
+
+                    "child_scoreboard_nutrition" ->
+                        decodeWithUuid ChildScoreboardNutritionRevision decodeChildScoreboardNutrition
 
                     "child_scoreboard_opv_iz" ->
                         decodeWithUuid ChildScoreboardOPVImmunisationRevision decodeChildScoreboardOPVImmunisation
@@ -113,6 +122,9 @@ decodeRevision =
 
                     "child_scoreboard_rotarix_iz" ->
                         decodeWithUuid ChildScoreboardRotarixImmunisationRevision decodeChildScoreboardRotarixImmunisation
+
+                    "child_scoreboard_weight" ->
+                        decodeWithUuid ChildScoreboardWeightRevision decodeChildScoreboardWeight
 
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic

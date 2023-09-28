@@ -4056,6 +4056,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        ChildScoreboardHeightRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | height = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         ChildScoreboardIPVImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
@@ -4072,10 +4080,26 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        ChildScoreboardMuacRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         ChildScoreboardNCDARevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
                 (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardNutritionRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -4100,6 +4124,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapChildScoreboardMeasurements
                 data.encounterId
                 (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardWeightRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | weight = Just ( uuid, data ) })
                 model
             , recalc
             )
