@@ -503,14 +503,23 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityChildScoreboardDTPImmunisation identifier ->
             getIdentifier identifier "child_scoreboard_dtp_iz"
 
+        BackendAuthorityChildScoreboardHeight identifier ->
+            getIdentifier identifier "child_scoreboard_height"
+
         BackendAuthorityChildScoreboardIPVImmunisation identifier ->
             getIdentifier identifier "child_scoreboard_ipv_iz"
 
         BackendAuthorityChildScoreboardMRImmunisation identifier ->
             getIdentifier identifier "child_scoreboard_mr_iz"
 
+        BackendAuthorityChildScoreboardMuac identifier ->
+            getIdentifier identifier "child_scoreboard_muac"
+
         BackendAuthorityChildScoreboardNCDA identifier ->
             getIdentifier identifier "child_scoreboard_ncda"
+
+        BackendAuthorityChildScoreboardNutrition identifier ->
+            getIdentifier identifier "child_scoreboard_nutrition"
 
         BackendAuthorityChildScoreboardOPVImmunisation identifier ->
             getIdentifier identifier "child_scoreboard_opv_iz"
@@ -520,6 +529,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
             getIdentifier identifier "child_scoreboard_rotarix_iz"
+
+        BackendAuthorityChildScoreboardWeight identifier ->
+            getIdentifier identifier "child_scoreboard_weight"
 
         BackendAuthorityClinic identifier ->
             getIdentifier identifier "clinic"
@@ -1196,14 +1208,23 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityChildScoreboardDTPImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeChildScoreboardDTPImmunisation identifier
 
+        BackendAuthorityChildScoreboardHeight identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardHeight identifier
+
         BackendAuthorityChildScoreboardIPVImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeChildScoreboardIPVImmunisation identifier
 
         BackendAuthorityChildScoreboardMRImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeChildScoreboardMRImmunisation identifier
 
+        BackendAuthorityChildScoreboardMuac identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardMuac identifier
+
         BackendAuthorityChildScoreboardNCDA identifier ->
             encode Backend.Measurement.Encoder.encodeChildScoreboardNCDA identifier
+
+        BackendAuthorityChildScoreboardNutrition identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardNutrition identifier
 
         BackendAuthorityChildScoreboardOPVImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeChildScoreboardOPVImmunisation identifier
@@ -1213,6 +1234,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeChildScoreboardRotarixImmunisation identifier
+
+        BackendAuthorityChildScoreboardWeight identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardWeight identifier
 
         BackendAuthorityClinic identifier ->
             encode Backend.Clinic.Encoder.encodeClinic identifier
@@ -1888,14 +1912,23 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityChildScoreboardDTPImmunisation identifier ->
             ChildScoreboardDTPImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityChildScoreboardHeight identifier ->
+            ChildScoreboardHeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityChildScoreboardIPVImmunisation identifier ->
             ChildScoreboardIPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityChildScoreboardMRImmunisation identifier ->
             ChildScoreboardMRImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityChildScoreboardMuac identifier ->
+            ChildScoreboardMuacRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityChildScoreboardNCDA identifier ->
             ChildScoreboardNCDARevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardNutrition identifier ->
+            ChildScoreboardNutritionRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityChildScoreboardOPVImmunisation identifier ->
             ChildScoreboardOPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -1905,6 +1938,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
             ChildScoreboardRotarixImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardWeight identifier ->
+            ChildScoreboardWeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityClinic identifier ->
             ClinicRevision (toEntityUuid identifier.uuid) identifier.entity

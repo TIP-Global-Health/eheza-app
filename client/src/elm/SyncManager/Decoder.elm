@@ -508,6 +508,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeChildScoreboardDTPImmunisation
                             BackendAuthorityChildScoreboardDTPImmunisation
 
+                    "child_scoreboard_height" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardHeight
+                            BackendAuthorityChildScoreboardHeight
+
                     "child_scoreboard_ipv_iz" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeChildScoreboardIPVImmunisation
@@ -518,10 +523,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeChildScoreboardMRImmunisation
                             BackendAuthorityChildScoreboardMRImmunisation
 
+                    "child_scoreboard_muac" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardMuac
+                            BackendAuthorityChildScoreboardMuac
+
                     "child_scoreboard_ncda" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeChildScoreboardNCDA
                             BackendAuthorityChildScoreboardNCDA
+
+                    "child_scoreboard_nutrition" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardNutrition
+                            BackendAuthorityChildScoreboardNutrition
 
                     "child_scoreboard_opv_iz" ->
                         doDecode
@@ -537,6 +552,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeChildScoreboardRotarixImmunisation
                             BackendAuthorityChildScoreboardRotarixImmunisation
+
+                    "child_scoreboard_weight" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardWeight
+                            BackendAuthorityChildScoreboardWeight
 
                     "clinic" ->
                         doDecode

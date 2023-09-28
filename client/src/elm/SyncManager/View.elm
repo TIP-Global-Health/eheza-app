@@ -380,11 +380,20 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityChildScoreboardIPVImmunisation identifier ->
                 viewMeasurement identifier "Child Scoreboard IPV Immunisation"
 
+            BackendAuthorityChildScoreboardHeight identifier ->
+                viewMeasurement identifier "Child Scoreboard Height"
+
             BackendAuthorityChildScoreboardMRImmunisation identifier ->
                 viewMeasurement identifier "Child Scoreboard MR Immunisation"
 
+            BackendAuthorityChildScoreboardMuac identifier ->
+                viewMeasurement identifier "Child Scoreboard Muac"
+
             BackendAuthorityChildScoreboardNCDA identifier ->
                 viewMeasurement identifier "Child Scoreboard NCDA"
+
+            BackendAuthorityChildScoreboardNutrition identifier ->
+                viewMeasurement identifier "Child Scoreboard Nutrition"
 
             BackendAuthorityChildScoreboardOPVImmunisation identifier ->
                 viewMeasurement identifier "Child Scoreboard OPV Immunisation"
@@ -394,6 +403,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
                 viewMeasurement identifier "Child Scoreboard Rotarix Immunisation"
+
+            BackendAuthorityChildScoreboardWeight identifier ->
+                viewMeasurement identifier "Child Scoreboard Weight"
 
             BackendAuthorityClinic identifier ->
                 text <| "Clinic " ++ identifier.entity.name
