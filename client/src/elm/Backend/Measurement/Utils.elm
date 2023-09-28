@@ -3721,6 +3721,35 @@ ncdaSignToString value =
             "none"
 
 
+receiveOptionFromString : String -> Maybe ReceiveOption
+receiveOptionFromString value =
+    case value of
+        "receive" ->
+            Just OptionReceive
+
+        "not-receive" ->
+            Just OptionNotReceive
+
+        "not-applicable" ->
+            Just OptionNotApplicable
+
+        _ ->
+            Nothing
+
+
+receiveOptionToString : ReceiveOption -> String
+receiveOptionToString value =
+    case value of
+        OptionReceive ->
+            "receive"
+
+        OptionNotReceive ->
+            "not-receive"
+
+        OptionNotApplicable ->
+            "not-applicable"
+
+
 expectNCDAActivity : NominalDate -> Person -> Bool
 expectNCDAActivity currentDate person =
     -- @todo: remove when NCDA is launched.

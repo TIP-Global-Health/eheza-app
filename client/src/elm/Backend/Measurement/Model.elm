@@ -277,6 +277,7 @@ type alias NCDAValue =
     { signs : EverySet NCDASign
     , birthWeight : Maybe WeightInGrm
     , ancVisitsDates : EverySet NominalDate
+    , receivesVitaminA : Maybe ReceiveOption
     }
 
 
@@ -289,7 +290,8 @@ type NCDASign
     | ChildGotDiarrhea
     | ChildReceivesFBF
     | ChildTakingFBF
-    | ChildReceivesVitaminA
+    | -- @todo: remove
+      ChildReceivesVitaminA
     | ChildTakingVitaminA
     | ChildReceivesDewormer
     | ChildTakingDewormer
@@ -312,6 +314,12 @@ type NCDASign
     | TakingOngeraMNP
     | TreatedForAcuteMalnutrition
     | NoNCDASigns
+
+
+type ReceiveOption
+    = OptionReceive
+    | OptionNotReceive
+    | OptionNotApplicable
 
 
 

@@ -5152,6 +5152,7 @@ decodeNCDAValue =
         |> required "ncda_signs" (decodeEverySet decodeNCDASign)
         |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
         |> required "anc_visits_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> optional "receive_option" (nullable decodeReceiveOption) Nothing
 
 
 decodeNCDASign : Decoder NCDASign
@@ -5162,6 +5163,17 @@ decodeNCDASign =
                 ncdaSignFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDASign")
+            )
+
+
+decodeReceiveOption : Decoder ReceiveOption
+decodeReceiveOption =
+    string
+        |> andThen
+            (\s ->
+                receiveOptionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized ReceiveOption")
             )
 
 
