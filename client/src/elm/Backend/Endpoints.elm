@@ -1328,3 +1328,27 @@ childScoreboardRotarixImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreb
 childScoreboardRotarixImmunisationEndpoint =
     swEndpoint "nodes/child_scoreboard_rotarix_iz" decodeChildScoreboardRotarixImmunisation
         |> withValueEncoder (object << encodeChildScoreboardRotarixImmunisation)
+
+
+childScoreboardHeightEndpoint : ReadWriteEndPoint Error ChildScoreboardHeightId ChildScoreboardHeight ChildScoreboardHeight ()
+childScoreboardHeightEndpoint =
+    swEndpoint "nodes/child_scoreboard_height" decodeChildScoreboardHeight
+        |> withValueEncoder (object << encodeChildScoreboardHeight)
+
+
+childScoreboardMuacEndpoint : ReadWriteEndPoint Error ChildScoreboardMuacId ChildScoreboardMuac ChildScoreboardMuac ()
+childScoreboardMuacEndpoint =
+    swEndpoint "nodes/child_scoreboard_muac" decodeChildScoreboardMuac
+        |> withValueEncoder (object << encodeChildScoreboardMuac)
+
+
+childScoreboardNutritionEndpoint : ReadWriteEndPoint Error ChildScoreboardNutritionId ChildScoreboardNutrition ChildScoreboardNutrition ()
+childScoreboardNutritionEndpoint =
+    swEndpoint "nodes/child_scoreboard_nutrition" decodeChildScoreboardNutrition
+        |> withValueEncoder (object << encodeChildScoreboardNutrition)
+
+
+childScoreboardWeightEndpoint : ReadWriteEndPoint Error ChildScoreboardWeightId ChildScoreboardWeight ChildScoreboardWeight ()
+childScoreboardWeightEndpoint =
+    swEndpoint "nodes/child_scoreboard_weight" decodeChildScoreboardWeight
+        |> withValueEncoder (object << encodeChildScoreboardWeight)
