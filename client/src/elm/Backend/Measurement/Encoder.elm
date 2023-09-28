@@ -33,6 +33,11 @@ encodeWellChildHeight =
     encodeWellChildMeasurement (encodeHeightValueWithType "well_child_height")
 
 
+encodeChildScoreboardHeight : ChildScoreboardHeight -> List ( String, Value )
+encodeChildScoreboardHeight =
+    encodeChildScoreboardMeasurement (encodeHeightValueWithType "child_scoreboard_height")
+
+
 encodeHeightValueWithType : String -> HeightInCm -> List ( String, Value )
 encodeHeightValueWithType type_ (HeightInCm height) =
     [ ( "height", float height )
@@ -56,6 +61,11 @@ encodeWellChildMuac =
     encodeWellChildMeasurement (encodeMuacValueWithType "well_child_muac")
 
 
+encodeChildScoreboardMuac : ChildScoreboardMuac -> List ( String, Value )
+encodeChildScoreboardMuac =
+    encodeChildScoreboardMeasurement (encodeMuacValueWithType "child_scoreboard_muac")
+
+
 encodeMuacValueWithType : String -> MuacInCm -> List ( String, Value )
 encodeMuacValueWithType type_ (MuacInCm muac) =
     [ ( "muac", float muac )
@@ -77,6 +87,11 @@ encodeNutritionWeight =
 encodeWellChildWeight : WellChildWeight -> List ( String, Value )
 encodeWellChildWeight =
     encodeWellChildMeasurement (encodeWeightValueWithType "well_child_weight")
+
+
+encodeChildScoreboardWeight : ChildScoreboardWeight -> List ( String, Value )
+encodeChildScoreboardWeight =
+    encodeChildScoreboardMeasurement (encodeWeightValueWithType "child_scoreboard_weight")
 
 
 encodeWeightValueWithType : String -> WeightInKg -> List ( String, Value )
@@ -992,6 +1007,11 @@ encodeNutritionNutrition =
 encodeWellChildNutrition : WellChildNutrition -> List ( String, Value )
 encodeWellChildNutrition =
     encodeWellChildMeasurement (encodeNutritionValueWithType "well_child_nutrition")
+
+
+encodeChildScoreboardNutrition : ChildScoreboardNutrition -> List ( String, Value )
+encodeChildScoreboardNutrition =
+    encodeChildScoreboardMeasurement (encodeNutritionValueWithType "child_scoreboard_nutrition")
 
 
 encodeNutritionValueWithType : String -> NutritionValue -> List ( String, Value )

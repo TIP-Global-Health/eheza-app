@@ -279,14 +279,18 @@ decodeNCDMeasurements =
 decodeChildScoreboardMeasurements : Decoder ChildScoreboardMeasurements
 decodeChildScoreboardMeasurements =
     succeed ChildScoreboardMeasurements
-        |> optional "child_scoreboard_ncda" (decodeHead decodeChildScoreboardNCDA) Nothing
         |> optional "child_scoreboard_bcg_iz" (decodeHead decodeChildScoreboardBCGImmunisation) Nothing
         |> optional "child_scoreboard_dtp_iz" (decodeHead decodeChildScoreboardDTPImmunisation) Nothing
+        |> optional "child_scoreboard_height" (decodeHead decodeChildScoreboardHeight) Nothing
         |> optional "child_scoreboard_ipv_iz" (decodeHead decodeChildScoreboardIPVImmunisation) Nothing
         |> optional "child_scoreboard_mr_iz" (decodeHead decodeChildScoreboardMRImmunisation) Nothing
+        |> optional "child_scoreboard_muac" (decodeHead decodeChildScoreboardMuac) Nothing
+        |> optional "child_scoreboard_ncda" (decodeHead decodeChildScoreboardNCDA) Nothing
+        |> optional "child_scoreboard_nutrition" (decodeHead decodeChildScoreboardNutrition) Nothing
         |> optional "child_scoreboard_opv_iz" (decodeHead decodeChildScoreboardOPVImmunisation) Nothing
         |> optional "child_scoreboard_pcv13_iz" (decodeHead decodeChildScoreboardPCV13Immunisation) Nothing
         |> optional "child_scoreboard_rotarix_iz" (decodeHead decodeChildScoreboardRotarixImmunisation) Nothing
+        |> optional "child_scoreboard_weight" (decodeHead decodeChildScoreboardWeight) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -5282,3 +5286,29 @@ decodeChildScoreboardPCV13Immunisation =
 decodeChildScoreboardRotarixImmunisation : Decoder ChildScoreboardRotarixImmunisation
 decodeChildScoreboardRotarixImmunisation =
     decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardHeight : Decoder ChildScoreboardHeight
+decodeChildScoreboardHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeChildScoreboardMeasurement
+
+
+decodeChildScoreboardMuac : Decoder ChildScoreboardMuac
+decodeChildScoreboardMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeChildScoreboardMeasurement
+
+
+decodeChildScoreboardNutrition : Decoder ChildScoreboardNutrition
+decodeChildScoreboardNutrition =
+    decodeChildScoreboardMeasurement decodeNutritionValue
+
+
+decodeChildScoreboardWeight : Decoder ChildScoreboardWeight
+decodeChildScoreboardWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
+        |> decodeChildScoreboardMeasurement
