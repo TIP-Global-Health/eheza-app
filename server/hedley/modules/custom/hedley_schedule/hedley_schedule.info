@@ -9,6 +9,7 @@ dependencies[] = features
 dependencies[] = hedley_activity
 dependencies[] = hedley_device
 dependencies[] = hedley_health_center
+dependencies[] = hedley_ncd
 dependencies[] = list
 dependencies[] = node
 dependencies[] = options

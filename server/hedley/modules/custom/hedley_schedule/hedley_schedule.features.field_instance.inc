@@ -2755,6 +2755,7 @@ Used to track location where pregnancies were completed.',
   // Exported field_instance: 'node-session-field_scheduled_date'.
   $field_instances['node-session-field_scheduled_date'] = array(
     'bundle' => 'session',
+    'default_value' => 'blank',
     'deleted' => 0,
     'description' => 'The dates the session was active.',
     'display' => array(
@@ -2782,7 +2783,7 @@ Used to track location where pregnancies were completed.',
     ),
     'entity_type' => 'node',
     'field_name' => 'field_scheduled_date',
-    'default_value' => 'blank',
+    'label' => 'Scheduled Date',
     'required' => 1,
     'settings' => array(
       'default_value' => 'blank',
