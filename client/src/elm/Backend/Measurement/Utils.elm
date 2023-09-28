@@ -3752,10 +3752,12 @@ receiveOptionToString value =
             "not-applicable"
 
 
-expectNCDAActivity : NominalDate -> Person -> Bool
-expectNCDAActivity currentDate person =
+expectNCDAActivity : NominalDate -> Bool -> Person -> Bool
+expectNCDAActivity currentDate isChw person =
     -- @todo: remove when NCDA is launched.
     ncdaEnabled
+        && -- Show only for nurses.
+           not isChw
         && -- Show for children that are younger than 2 years old.
            (ageInMonths currentDate person
                 |> Maybe.map (\ageMonths -> ageMonths < 24)
