@@ -1485,3 +1485,35 @@ type alias ChildScoreboardRotarixImmunisationId =
 
 type ChildScoreboardRotarixImmunisationUuidType
     = ChildScoreboardRotarixImmunisationUuidType
+
+
+type alias ChildScoreboardHeightId =
+    EntityUuid ChildScoreboardHeightUuidType
+
+
+type ChildScoreboardHeightUuidType
+    = ChildScoreboardHeightUuidType
+
+
+type alias ChildScoreboardMuacId =
+    EntityUuid ChildScoreboardMuacUuidType
+
+
+type ChildScoreboardMuacUuidType
+    = ChildScoreboardMuacUuidType
+
+
+type alias ChildScoreboardNutritionId =
+    EntityUuid ChildScoreboardNutritionUuidType
+
+
+type ChildScoreboardNutritionUuidType
+    = ChildScoreboardNutritionUuidType
+
+
+type alias ChildScoreboardWeightId =
+    EntityUuid ChildScoreboardWeightUuidType
+
+
+type ChildScoreboardWeightUuidType
+    = ChildScoreboardWeightUuidType
