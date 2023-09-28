@@ -23,6 +23,8 @@ import Date
 import Form exposing (..)
 import Form.Field
 import Form.Validate exposing (..)
+import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
+import GeoLocation.Utils exposing (getGeoInfo, getGeoLocation)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
 import Maybe.Extra exposing (isNothing, unwrap)
@@ -31,7 +33,6 @@ import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
-import Utils.GeoLocation exposing (GeoInfo, getGeoInfo, getGeoLocation)
 
 
 type alias PersonForm =
@@ -70,8 +71,8 @@ expectedAgeByForm currentDate form operation =
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-applyDefaultValuesForPerson : NominalDate -> Site -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
-applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPerson operation form =
+applyDefaultValuesForPerson : NominalDate -> Site -> ReverseGeoInfo -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
+applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation form =
     let
         defaultProvince =
             if isChw then
@@ -83,7 +84,7 @@ applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPers
 
         defaultProvinceId =
             defaultProvince
-                |> Maybe.andThen (getGeoLocation site Nothing)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo Nothing)
                 |> Maybe.map Tuple.first
 
         defaultDistrict =
@@ -96,7 +97,7 @@ applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPers
 
         defaultDistrictId =
             defaultDistrict
-                |> Maybe.andThen (getGeoLocation site defaultProvinceId)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultProvinceId)
                 |> Maybe.map Tuple.first
 
         defaultSector =
@@ -109,7 +110,7 @@ applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPers
 
         defaultSectorId =
             defaultSector
-                |> Maybe.andThen (getGeoLocation site defaultDistrictId)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultDistrictId)
                 |> Maybe.map Tuple.first
 
         defaultCell =
@@ -122,7 +123,7 @@ applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPers
 
         defaultCellId =
             defaultCell
-                |> Maybe.andThen (getGeoLocation site defaultSectorId)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultSectorId)
                 |> Maybe.map Tuple.first
 
         defaultVillage =
@@ -135,7 +136,7 @@ applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPers
 
         defaultVillageId =
             defaultVillage
-                |> Maybe.andThen (getGeoLocation site defaultCellId)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultCellId)
                 |> Maybe.map Tuple.first
 
         defaultUbudehe =

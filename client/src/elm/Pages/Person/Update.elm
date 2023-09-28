@@ -10,6 +10,8 @@ import Backend.Village.Utils exposing (getVillageById)
 import Date
 import Form
 import Form.Field
+import GeoLocation.Model exposing (ReverseGeoInfo)
+import GeoLocation.Utils exposing (getGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.Person.Model exposing (..)
@@ -17,8 +19,8 @@ import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Site -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate site selectedHealthCenter maybeVillageId isChw msg db model =
+update : NominalDate -> Site -> ReverseGeoInfo -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw msg db model =
     case msg of
         MsgForm operation initiator subMsg ->
             let
@@ -47,7 +49,7 @@ update currentDate site selectedHealthCenter maybeVillageId isChw msg db model =
                                         |> Maybe.andThen (getVillageById db)
 
                                 formWithDefaults =
-                                    applyDefaultValuesForPerson currentDate site maybeVillage isChw related operation model.form
+                                    applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw related operation model.form
                             in
                             case operation of
                                 CreatePerson _ ->
@@ -113,7 +115,7 @@ update currentDate site selectedHealthCenter maybeVillageId isChw msg db model =
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate site selectedHealthCenter maybeVillageId isChw (MsgForm operation initiator subMsg) db model
+            update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw (MsgForm operation initiator subMsg) db model
 
         ResetCreateForm ->
             ( Pages.Person.Model.emptyCreateModel site
@@ -141,7 +143,7 @@ update currentDate site selectedHealthCenter maybeVillageId isChw msg db model =
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation initiator
             in
-            update currentDate site selectedHealthCenter maybeVillageId isChw setFieldMsg db model
+            update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw setFieldMsg db model
 
         SetDateSelectorState state ->
             ( { model | dateSelectorPopupState = state }

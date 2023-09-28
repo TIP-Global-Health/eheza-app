@@ -235,6 +235,9 @@ update msg model =
 
         site =
             model.syncManager.syncInfoGeneral.site
+
+        reverseGeoInfo =
+            model.syncManager.reverseGeoInfo
     in
     case msg of
         MsgIndexedDb subMsg ->
@@ -291,6 +294,7 @@ update msg model =
                                 ( subModel, subCmd, appMsgs ) =
                                     Pages.Person.Update.update currentDate
                                         site
+                                        reverseGeoInfo
                                         model.healthCenterId
                                         model.villageId
                                         isChw
@@ -330,6 +334,7 @@ update msg model =
                                         |> Maybe.withDefault (Pages.Person.Model.emptyEditModel site)
                                         |> Pages.Person.Update.update currentDate
                                             site
+                                            reverseGeoInfo
                                             model.healthCenterId
                                             model.villageId
                                             isChw

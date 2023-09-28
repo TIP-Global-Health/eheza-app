@@ -44,6 +44,8 @@ import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
+import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
+import GeoLocation.Utils exposing (..)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
@@ -60,7 +62,6 @@ import Set
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (..)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -461,8 +462,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> Site -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate site maybeVillageId isChw operation initiator model db =
+viewCreateEditForm : Language -> NominalDate -> Site -> GeoInfo -> ReverseGeoInfo -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -479,19 +480,17 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
         -- new person with.
         -- When editing, this is the person that is being edited.
         maybeRelatedPerson =
-            personId
-                |> Maybe.andThen (\id -> Dict.get id db.people)
+            Maybe.andThen (\id -> Dict.get id db.people) personId
                 |> Maybe.andThen RemoteData.toMaybe
 
         maybeVillage =
-            maybeVillageId
-                |> Maybe.andThen (getVillageById db)
+            Maybe.andThen (getVillageById db) maybeVillageId
 
         today =
             currentDate
 
         personForm =
-            applyDefaultValuesForPerson currentDate site maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
+            applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
@@ -1064,9 +1063,6 @@ viewCreateEditForm language currentDate site maybeVillageId isChw operation init
 
         village =
             Form.getFieldAsString Backend.Person.Form.village personForm
-
-        geoInfo =
-            getGeoInfo site
 
         viewProvince =
             let
