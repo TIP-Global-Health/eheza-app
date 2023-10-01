@@ -91,16 +91,16 @@ expectActivity currentDate assembled activity =
             childBehindOnVaccinationByVaccinaitonHistory && childUpToDateByNCDAResponse
 
 
-activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> ChildScoreboardActivity -> Bool
-activityCompleted currentDate assembled db activity =
+activityCompleted : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> ChildScoreboardActivity -> Bool
+activityCompleted currentDate zscores assembled db activity =
     let
         notExpected activityToCheck =
             not <| expectActivity currentDate assembled activityToCheck
     in
     case activity of
         ChildScoreboardNutritionAssessment ->
-            -- @todo
             notExpected ChildScoreboardNutritionAssessment
+                || List.all (nutritionAssessmentTaskCompleted currentDate zscores assembled db) allNutritionAssessmentTasks
 
         ChildScoreboardNCDA ->
             notExpected ChildScoreboardNCDA

@@ -36,7 +36,7 @@ viewHeaderAndContent language currentDate zscores site db model assembled =
     let
         ( _, pendingActivities ) =
             List.filter (expectActivity currentDate assembled) allActivities
-                |> List.partition (activityCompleted currentDate assembled db)
+                |> List.partition (activityCompleted currentDate zscores assembled db)
 
         allowEndEncounter =
             List.isEmpty pendingActivities

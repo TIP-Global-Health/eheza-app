@@ -835,7 +835,12 @@ viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
                                 Dict.get id loggedInModel.childScoreboardEncounterPages
                                     |> Maybe.withDefault Pages.ChildScoreboard.Encounter.Model.emptyModel
                         in
-                        Pages.ChildScoreboard.Encounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.ChildScoreboard.Encounter.View.view model.language
+                            currentDate
+                            model.zscores
+                            id
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardEncounter id)
                             |> flexPageWrapper configured.config model
 

@@ -19,25 +19,26 @@ import Pages.Utils exposing (viewEncounterActionButton, viewPersonDetailsExtende
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
 
 
-view : Language -> NominalDate -> ChildScoreboardEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> ChildScoreboardEncounterId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores db model assembled =
     let
         header =
             viewHeader language assembled
 
         content =
-            viewContent language currentDate db model assembled
+            viewContent language currentDate zscores db model assembled
     in
     div [ class "page-encounter child-scoreboard" ]
         [ header
@@ -66,20 +67,20 @@ viewHeader language assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores db model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate db assembled model
+        :: viewMainPageContent language currentDate zscores db assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate db assembled model =
+viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate zscores db assembled model =
     let
         ( completedActivities, pendingActivities ) =
             List.filter (expectActivity currentDate assembled) allActivities
-                |> List.partition (activityCompleted currentDate assembled db)
+                |> List.partition (activityCompleted currentDate zscores assembled db)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
