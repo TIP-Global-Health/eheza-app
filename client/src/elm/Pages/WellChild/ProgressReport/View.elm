@@ -1677,6 +1677,7 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
         reportData.groupNutritionMeasurements
         reportData.individualNutritionMeasurementsWithDates
         reportData.individualWellChildMeasurementsWithDates
+        reportData.individualChildScoreboardMeasurementsWithDates
     ]
 
 
@@ -2608,8 +2609,9 @@ viewFillTheBlanksPane :
     -> ChildMeasurementList
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
     -> Html any
-viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates =
+viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasurements individualNutritionMeasurementsWithDates individualWellChildMeasurementsWithDates individualChildScoreboardMeasurementsWithDates =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
@@ -2740,7 +2742,7 @@ viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasur
                 |> distributeByAgeInMonths child
 
         allValuesSets =
-            nutritionValuesSets ++ wellChildValuesSets ++ groupsValuesSets
+            nutritionValuesSets ++ wellChildValuesSets ++ childScoreboardValuesSets ++ groupsValuesSets
 
         nutritionValuesSets =
             List.map
@@ -2755,6 +2757,13 @@ viewFillTheBlanksPane language currentDate zscores child db groupNutritionMeasur
                     generateIndividualValuesSet date measurements
                 )
                 individualWellChildMeasurementsWithDates
+
+        childScoreboardValuesSets =
+            List.map
+                (\( date, ( _, measurements ) ) ->
+                    generateIndividualValuesSet date measurements
+                )
+                individualChildScoreboardMeasurementsWithDates
 
         generateIndividualValuesSet date measurements =
             ( date
