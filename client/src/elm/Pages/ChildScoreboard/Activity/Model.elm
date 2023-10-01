@@ -3,31 +3,61 @@ module Pages.ChildScoreboard.Activity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import DateSelector.Model exposing (DateSelectorConfig)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
-        ( ImmunisationTask
+        ( HeightForm
+        , ImmunisationTask
+        , MuacForm
         , NCDAData
         , NCDAForm
         , NCDAStep
+        , NutritionForm
         , VaccinationForm
         , VaccinationFormViewMode
+        , WeightForm
+        , emptyHeightForm
+        , emptyMuacForm
         , emptyNCDAData
+        , emptyNutritionForm
         , emptyVaccinationForm
+        , emptyWeightForm
         )
 import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { ncdaData : NCDAData
+    { nutritionAssessmentData : NutritionAssessmentData
+    , ncdaData : NCDAData
     , immunisationData : ImmunisationData
     }
 
 
 emptyModel : Model
 emptyModel =
-    { ncdaData = emptyNCDAData
+    { nutritionAssessmentData = emptyNutritionAssessmentData
+    , ncdaData = emptyNCDAData
     , immunisationData = emptyImmunisationData
+    }
+
+
+type alias NutritionAssessmentData =
+    { heightForm : HeightForm
+    , muacForm : MuacForm
+    , nutritionForm : NutritionForm
+    , weightForm : WeightForm
+    , activeTask : Maybe NutritionAssessmentTask
+    }
+
+
+emptyNutritionAssessmentData : NutritionAssessmentData
+emptyNutritionAssessmentData =
+    { heightForm = emptyHeightForm
+    , muacForm = emptyMuacForm
+    , nutritionForm = emptyNutritionForm
+    , weightForm = emptyWeightForm
+    , activeTask = Nothing
     }
 
 
@@ -60,9 +90,26 @@ emptyImmunisationData =
     }
 
 
+type NutritionAssessmentTask
+    = TaskHeight
+    | TaskMuac
+    | TaskNutrition
+    | TaskWeight
+
+
 type Msg
     = NoOp
     | SetActivePage Page
+      -- NUTRITION ASSESMENT
+    | SetActiveNutritionAssessmentTask NutritionAssessmentTask
+    | SetHeight String
+    | SaveHeight PersonId (Maybe ( ChildScoreboardHeightId, ChildScoreboardHeight )) (Maybe NutritionAssessmentTask)
+    | SetMuac String
+    | SaveMuac PersonId (Maybe ( ChildScoreboardMuacId, ChildScoreboardMuac )) (Maybe NutritionAssessmentTask)
+    | SetNutritionSign ChildNutritionSign
+    | SaveNutrition PersonId (Maybe ( ChildScoreboardNutritionId, ChildScoreboardNutrition )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
+    | SetWeight String
+    | SaveWeight PersonId (Maybe ( ChildScoreboardWeightId, ChildScoreboardWeight )) (Maybe NutritionAssessmentTask)
       -- NCDA
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate

@@ -177,9 +177,9 @@ type Msg
     | SaveVitals PersonId (Maybe WellChildVitalsId) VitalsValue
     | HandleSavedVitals (WebData ())
     | SaveHeight PersonId (Maybe WellChildHeightId) HeightInCm
+    | HandleSavedHeight (WebData ())
     | SaveHeadCircumference PersonId (Maybe WellChildHeadCircumferenceId) HeadCircumferenceValue
     | HandleSavedHeadCircumference (WebData ())
-    | HandleSavedHeight (WebData ())
     | SaveMuac PersonId (Maybe WellChildMuacId) MuacInCm
     | HandleSavedMuac (WebData ())
     | SaveNutrition PersonId (Maybe WellChildNutritionId) NutritionValue

@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.ChildScoreboardEncounter.Model
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (AdministrationNote(..), WeightInGrm(..))
+import Backend.Measurement.Model exposing (AdministrationNote(..), ChildNutritionSign(..), WeightInGrm(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Date
@@ -16,15 +16,20 @@ import Measurement.Model exposing (VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
         ( ncdaFormWithDefault
+        , nutritionFormWithDefault
+        , toHeightValueWithDefault
+        , toMuacValueWithDefault
         , toNCDAValueWithDefault
+        , toNutritionValueWithDefault
         , toVaccinationValueWithDefault
+        , toWeightValueWithDefault
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         )
 import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, updateVaccinationFormByVaccineType)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (insertIntoSet)
+import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue)
 import RemoteData
 
 
@@ -53,6 +58,12 @@ update currentDate id db msg model =
         generateImmunisationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveImmunisationTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| ChildScoreboardEncounterPage id ]
+
+        generateNutritionAssessmentMsgs nextTask =
+            -- @todo:
+            -- Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ]) nextTask
+            --     |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
+            []
     in
     case msg of
         NoOp ->
@@ -66,6 +77,209 @@ update currentDate id db msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetActiveNutritionAssessmentTask task ->
+            let
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHeight string ->
+            let
+                updatedForm =
+                    model.nutritionAssessmentData.heightForm
+                        |> (\form ->
+                                { form | height = String.toFloat string, heightDirty = True }
+                           )
+
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | heightForm = updatedForm })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHeight personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNutritionAssessmentMsgs nextTask
+
+                appMsgs =
+                    model.nutritionAssessmentData.heightForm
+                        |> toHeightValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.ChildScoreboardEncounter.Model.SaveHeight personId measurementId
+                                >> Backend.Model.MsgChildScoreboardEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetMuac string ->
+            let
+                updatedForm =
+                    model.nutritionAssessmentData.muacForm
+                        |> (\form ->
+                                { form | muac = String.toFloat string, muacDirty = True }
+                           )
+
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | muacForm = updatedForm })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMuac personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNutritionAssessmentMsgs nextTask
+
+                appMsgs =
+                    model.nutritionAssessmentData.muacForm
+                        |> toMuacValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.ChildScoreboardEncounter.Model.SaveMuac personId measurementId
+                                >> Backend.Model.MsgChildScoreboardEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetNutritionSign sign ->
+            let
+                form =
+                    Dict.get id db.childScoreboardMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.nutrition
+                                >> getMeasurementValueFunc
+                                >> nutritionFormWithDefault model.nutritionAssessmentData.nutritionForm
+                            )
+                        |> Maybe.withDefault model.nutritionAssessmentData.nutritionForm
+
+                updatedForm =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NormalChildNutrition
+                        sign
+                        form
+
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | nutritionForm = updatedForm })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveNutrition personId saved assessment nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNutritionAssessmentMsgs nextTask
+
+                appMsgs =
+                    model.nutritionAssessmentData.nutritionForm
+                        |> (\form -> { form | assesment = Just assessment })
+                        |> toNutritionValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.ChildScoreboardEncounter.Model.SaveNutrition personId measurementId
+                                >> Backend.Model.MsgChildScoreboardEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetWeight string ->
+            let
+                updatedForm =
+                    model.nutritionAssessmentData.weightForm
+                        |> (\form ->
+                                { form | weight = String.toFloat string, weightDirty = True }
+                           )
+
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | weightForm = updatedForm })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveWeight personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNutritionAssessmentMsgs nextTask
+
+                appMsgs =
+                    model.nutritionAssessmentData.weightForm
+                        |> toWeightValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.ChildScoreboardEncounter.Model.SaveWeight personId measurementId
+                                >> Backend.Model.MsgChildScoreboardEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetUpdateANCVisits value ->
             let

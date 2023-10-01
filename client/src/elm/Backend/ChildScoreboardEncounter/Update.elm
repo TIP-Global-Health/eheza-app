@@ -42,6 +42,54 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveHeight personId valueId value ->
+            ( { model | saveHeight = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value childScoreboardHeightEndpoint HandleSavedHeight
+            , []
+            )
+
+        HandleSavedHeight data ->
+            ( { model | saveHeight = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveMuac personId valueId value ->
+            ( { model | saveMuac = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value childScoreboardMuacEndpoint HandleSavedMuac
+            , []
+            )
+
+        HandleSavedMuac data ->
+            ( { model | saveMuac = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveNutrition personId valueId value ->
+            ( { model | saveNutrition = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value childScoreboardNutritionEndpoint HandleSavedNutrition
+            , []
+            )
+
+        HandleSavedNutrition data ->
+            ( { model | saveNutrition = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveWeight personId valueId value ->
+            ( { model | saveWeight = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value childScoreboardWeightEndpoint HandleSavedWeight
+            , []
+            )
+
+        HandleSavedWeight data ->
+            ( { model | saveWeight = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
         SaveNCDA personId valueId value ->
             ( { model | saveNCDA = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value childScoreboardNCDAEndpoint HandleSavedNCDA

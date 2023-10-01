@@ -6,13 +6,16 @@ import Backend.Measurement.Model
     exposing
         ( ChildScoreboardMeasurements
         , NCDASign(..)
+        , NutritionAssessment(..)
         , VaccinationValue
         , VaccineDose(..)
         , WellChildVaccineType(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Date exposing (Unit(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -21,10 +24,40 @@ import Measurement.Model exposing (..)
 import Measurement.Utils
     exposing
         ( generateFutureVaccinationsData
+        , heightFormWithDefault
         , immunisationTaskToVaccineType
+        , muacFormWithDefault
+        , nutritionFormWithDefault
+        , weightFormWithDefault
         )
 import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
+import Pages.Utils exposing (taskCompleted)
+import ZScore.Model
+
+
+generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssessment
+generateNutritionAssessment currentDate zscores db assembled =
+    let
+        measurements =
+            assembled.measurements
+
+        muacValue =
+            getMeasurementValueFunc measurements.muac
+
+        nutritionValue =
+            getMeasurementValueFunc measurements.nutrition
+                |> Maybe.map .signs
+
+        weightValue =
+            Maybe.map
+                (Tuple.second
+                    >> .value
+                    >> weightValueFunc
+                )
+                measurements.weight
+    in
+    Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue False db
 
 
 expectActivity : NominalDate -> AssembledData -> ChildScoreboardActivity -> Bool
@@ -300,3 +333,105 @@ getMeasurementByVaccineTypeFunc vaccineType measurements =
         -- Vaccine type not in use.
         VaccineHPV ->
             Nothing
+
+
+allNutritionAssessmentTasks : List NutritionAssessmentTask
+allNutritionAssessmentTasks =
+    [ TaskHeight, TaskMuac, TaskWeight, TaskNutrition ]
+
+
+nutritionAssessmentTaskCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
+nutritionAssessmentTaskCompleted currentDate data db task =
+    let
+        measurements =
+            data.measurements
+
+        taskExpected =
+            expectNutritionAssessmentTask currentDate data db
+    in
+    case task of
+        TaskHeight ->
+            (not <| taskExpected TaskHeight) || isJust measurements.height
+
+        TaskMuac ->
+            (not <| taskExpected TaskMuac) || isJust measurements.muac
+
+        TaskNutrition ->
+            (not <| taskExpected TaskNutrition) || isJust measurements.nutrition
+
+        TaskWeight ->
+            (not <| taskExpected TaskWeight) || isJust measurements.weight
+
+
+expectNutritionAssessmentTask : NominalDate -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
+expectNutritionAssessmentTask currentDate data db task =
+    case task of
+        TaskHeight ->
+            True
+
+        -- Show for children that are at least 6 months old.
+        TaskMuac ->
+            ageInMonths currentDate data.person
+                |> Maybe.map (\ageMonths -> ageMonths > 5)
+                |> Maybe.withDefault False
+
+        TaskNutrition ->
+            -- @todo: if any nutrition measurement is off
+            True
+
+        TaskWeight ->
+            True
+
+
+mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryNutritionAssessmentTasksCompleted currentDate isChw data db =
+    List.filter (not << nutritionAssessmentTaskCompleted currentDate data db) allNutritionAssessmentTasks
+        |> List.isEmpty
+
+
+nutritionAssessmentTasksCompletedFromTotal : ChildScoreboardMeasurements -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
+nutritionAssessmentTasksCompletedFromTotal measurements data task =
+    case task of
+        TaskHeight ->
+            let
+                form =
+                    measurements.height
+                        |> getMeasurementValueFunc
+                        |> heightFormWithDefault data.heightForm
+            in
+            ( taskCompleted form.height
+            , 1
+            )
+
+        TaskMuac ->
+            let
+                form =
+                    measurements.muac
+                        |> getMeasurementValueFunc
+                        |> muacFormWithDefault data.muacForm
+            in
+            ( taskCompleted form.muac
+            , 1
+            )
+
+        TaskNutrition ->
+            let
+                form =
+                    measurements.nutrition
+                        |> getMeasurementValueFunc
+                        |> nutritionFormWithDefault data.nutritionForm
+            in
+            ( taskCompleted form.signs
+            , 1
+            )
+
+        TaskWeight ->
+            let
+                form =
+                    measurements.weight
+                        |> getMeasurementValueFunc
+                        |> weightFormWithDefault data.weightForm
+            in
+            ( taskCompleted form.weight
+            , 1
+            )

@@ -379,6 +379,18 @@ resolvePreviousMeasurementsSetForChild childId db =
         wellChildHeadCircumferences =
             resolveIndividualWellChildValues individualWellChildMeasurements .headCircumference (.headCircumference >> headCircumferenceValueFunc)
 
+        individualChildScoreboardMeasurements =
+            generateIndividualChildScoreboardMeasurementsForChild childId db
+
+        childScoreboardHeights =
+            resolveIndividualChildScoreboardValues individualChildScoreboardMeasurements .height getHeightValue
+
+        childScoreboardMuacs =
+            resolveIndividualChildScoreboardValues individualChildScoreboardMeasurements .muac muacValueFunc
+
+        childScoreboardWeights =
+            resolveIndividualChildScoreboardValues individualChildScoreboardMeasurements .weight weightValueFunc
+
         groupMeasurements =
             Dict.get childId db.childMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -410,9 +422,24 @@ resolvePreviousMeasurementsSetForChild childId db =
                     )
                 |> Maybe.withDefault []
     in
-    { heights = nutritionHeights ++ wellChildHeights ++ groupHeights |> List.sortWith sortTuplesByDateDesc
-    , muacs = nutritionMuacs ++ wellChildMuacs ++ groupMuacs |> List.sortWith sortTuplesByDateDesc
-    , weights = nutritionWeights ++ wellChildWeights ++ groupWeights |> List.sortWith sortTuplesByDateDesc
+    { heights =
+        nutritionHeights
+            ++ wellChildHeights
+            ++ childScoreboardHeights
+            ++ groupHeights
+            |> List.sortWith sortTuplesByDateDesc
+    , muacs =
+        nutritionMuacs
+            ++ wellChildMuacs
+            ++ childScoreboardMuacs
+            ++ groupMuacs
+            |> List.sortWith sortTuplesByDateDesc
+    , weights =
+        nutritionWeights
+            ++ wellChildWeights
+            ++ childScoreboardWeights
+            ++ groupWeights
+            |> List.sortWith sortTuplesByDateDesc
     , headCircumferences = wellChildHeadCircumferences
     }
 

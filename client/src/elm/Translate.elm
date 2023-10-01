@@ -91,6 +91,7 @@ import Pages.AcuteIllness.Activity.Types
         )
 import Pages.AcuteIllness.ProgressReport.Model exposing (AcuteIllnessStatus(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
+import Pages.ChildScoreboard.Activity.Model
 import Pages.Dashboard.Model as Dashboard
     exposing
         ( BeneficiariesTableLabels(..)
@@ -451,6 +452,7 @@ type TranslationId
     | ChildrenNationalId
     | ChildScoreboardActivityTitle ChildScoreboardActivity
     | ChildScorecard
+    | ChildScorecardNutritionAssessmentTask Pages.ChildScoreboard.Activity.Model.NutritionAssessmentTask
     | ChooseOne
     | CHWAction CHWAction
     | ChwActivity
@@ -3759,6 +3761,20 @@ translationSet trans =
             , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
             , kirundi = Just "Ikarata y'ikurikiranwa ry'umwana"
             }
+
+        ChildScorecardNutritionAssessmentTask task ->
+            case task of
+                Pages.ChildScoreboard.Activity.Model.TaskHeight ->
+                    translationSet (NutritionAssessmentTask Pages.WellChild.Activity.Types.TaskHeight)
+
+                Pages.ChildScoreboard.Activity.Model.TaskMuac ->
+                    translationSet (NutritionAssessmentTask Pages.WellChild.Activity.Types.TaskMuac)
+
+                Pages.ChildScoreboard.Activity.Model.TaskNutrition ->
+                    translationSet (NutritionAssessmentTask Pages.WellChild.Activity.Types.TaskNutrition)
+
+                Pages.ChildScoreboard.Activity.Model.TaskWeight ->
+                    translationSet (NutritionAssessmentTask TaskWeight)
 
         ChooseOne ->
             { english = "Choose one"

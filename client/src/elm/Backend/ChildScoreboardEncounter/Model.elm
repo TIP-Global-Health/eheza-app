@@ -28,6 +28,10 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeChildScoreboardEncounter : WebData ()
+    , saveHeight : WebData ()
+    , saveMuac : WebData ()
+    , saveNutrition : WebData ()
+    , saveWeight : WebData ()
     , saveNCDA : WebData ()
     , saveBCGImmunisation : WebData ()
     , saveDTPImmunisation : WebData ()
@@ -42,6 +46,10 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { closeChildScoreboardEncounter = NotAsked
+    , saveHeight = NotAsked
+    , saveMuac = NotAsked
+    , saveNutrition = NotAsked
+    , saveWeight = NotAsked
     , saveNCDA = NotAsked
     , saveBCGImmunisation = NotAsked
     , saveDTPImmunisation = NotAsked
@@ -56,6 +64,14 @@ emptyModel =
 type Msg
     = CloseChildScoreboardEncounter
     | HandleClosedChildScoreboardEncounter (WebData ())
+    | SaveHeight PersonId (Maybe ChildScoreboardHeightId) HeightInCm
+    | HandleSavedHeight (WebData ())
+    | SaveMuac PersonId (Maybe ChildScoreboardMuacId) MuacInCm
+    | HandleSavedMuac (WebData ())
+    | SaveNutrition PersonId (Maybe ChildScoreboardNutritionId) NutritionValue
+    | HandleSavedNutrition (WebData ())
+    | SaveWeight PersonId (Maybe ChildScoreboardWeightId) WeightInKg
+    | HandleSavedWeight (WebData ())
     | SaveNCDA PersonId (Maybe ChildScoreboardNCDAId) NCDAValue
     | HandleSavedNCDA (WebData ())
     | SaveBCGImmunisation PersonId (Maybe ChildScoreboardBCGImmunisationId) VaccinationValue

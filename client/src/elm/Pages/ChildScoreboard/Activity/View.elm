@@ -9,8 +9,10 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
+        , nutritionAssessmentForBackend
         , resolveNCDANeverFilled
         , resolveNCDANotFilledAfterAgeOfSixMonths
+        , resolvePreviousValuesSetForChild
         )
 import Date
 import EverySet
@@ -33,41 +35,57 @@ import Measurement.Utils
         ( expectVaccineDoseForPerson
         , getAllDosesForVaccine
         , getIntervalForVaccine
+        , heightFormWithDefault
         , immunisationTaskToVaccineType
         , initialVaccinationDateByBirthDate
+        , muacFormWithDefault
         , ncdaFormWithDefault
         , nextVaccinationDataForVaccine
+        , nutritionFormWithDefault
         , vaccinationFormWithDefault
         , vaccineDoseToComparable
         , wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm
         , wasInitialOpvAdministeredByVaccinationProgress
+        , weightFormWithDefault
         )
 import Measurement.View
 import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
+import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewWeightForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewLabel, viewPersonDetailsExtended, viewSaveAction)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
 
 
-view : Language -> NominalDate -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id activity db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site id activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site id activity db model assembled =
+viewHeaderAndContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> ChildScoreboardEncounterId
+    -> ChildScoreboardActivity
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewHeaderAndContent language currentDate zscores site id activity db model assembled =
     div [ class "page-activity child-scoreboard" ] <|
         [ viewHeader language id activity
-        , viewContent language currentDate site activity db model assembled
+        , viewContent language currentDate zscores site activity db model assembled
         ]
 
 
@@ -85,26 +103,194 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site activity db model assembled =
+viewContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> ChildScoreboardActivity
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate zscores site activity db model assembled =
     div [ class "ui unstackable items" ] <|
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-            :: viewActivity language currentDate site activity assembled db model
+            :: viewActivity language currentDate zscores site activity assembled db model
         )
 
 
-viewActivity : Language -> NominalDate -> Site -> ChildScoreboardActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate site activity assembled db model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate zscores site activity assembled db model =
     case activity of
         ChildScoreboardNutritionAssessment ->
-            --            viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
-            [ text "ChildScoreboardNutritionAssessment" ]
+            viewNutritionAssessmenContent language currentDate zscores assembled db model.nutritionAssessmentData
 
         ChildScoreboardNCDA ->
             viewNCDAContent language currentDate assembled db model.ncdaData
 
         ChildScoreboardVaccinationHistory ->
             viewImmunisationContent language currentDate site assembled db model.immunisationData
+
+
+viewNutritionAssessmenContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> AssembledData
+    -> ModelIndexedDb
+    -> NutritionAssessmentData
+    -> List (Html Msg)
+viewNutritionAssessmenContent language currentDate zscores assembled db data =
+    let
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectNutritionAssessmentTask currentDate assembled db) allNutritionAssessmentTasks
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        TaskHeight ->
+                            "height"
+
+                        TaskMuac ->
+                            "muac"
+
+                        TaskNutrition ->
+                            "nutrition"
+
+                        TaskWeight ->
+                            "weight"
+
+                isCompleted =
+                    nutritionAssessmentTaskCompleted currentDate assembled db task
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveNutritionAssessmentTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.ChildScorecardNutritionAssessmentTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal measurements data task )) tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        previousValuesSet =
+            resolvePreviousValuesSetForChild currentDate assembled.participant.person db
+
+        viewForm =
+            case activeTask of
+                Just TaskHeight ->
+                    measurements.height
+                        |> getMeasurementValueFunc
+                        |> heightFormWithDefault data.heightForm
+                        |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
+
+                Just TaskMuac ->
+                    measurements.muac
+                        |> getMeasurementValueFunc
+                        |> muacFormWithDefault data.muacForm
+                        |> viewMuacForm language currentDate assembled.person previousValuesSet.muac SetMuac
+
+                Just TaskNutrition ->
+                    measurements.nutrition
+                        |> getMeasurementValueFunc
+                        |> nutritionFormWithDefault data.nutritionForm
+                        |> viewNutritionForm language currentDate SetNutritionSign
+
+                Just TaskWeight ->
+                    let
+                        heightValue =
+                            assembled.measurements.height
+                                |> getMeasurementValueFunc
+
+                        showWeightForHeightZScore =
+                            False
+                    in
+                    measurements.weight
+                        |> getMeasurementValueFunc
+                        |> weightFormWithDefault data.weightForm
+                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        saveMsg =
+                            case task of
+                                TaskHeight ->
+                                    SaveHeight personId measurements.height nextTask
+
+                                TaskMuac ->
+                                    SaveMuac personId measurements.muac nextTask
+
+                                TaskNutrition ->
+                                    let
+                                        assessment =
+                                            generateNutritionAssessment currentDate zscores db assembled
+                                                |> nutritionAssessmentForBackend
+                                    in
+                                    SaveNutrition personId measurements.nutrition assessment nextTask
+
+                                TaskWeight ->
+                                    SaveWeight personId measurements.weight nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
 
 
 viewNCDAContent :
