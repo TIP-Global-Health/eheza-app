@@ -7,7 +7,7 @@ import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounte
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, diffYears)
 import Maybe.Extra exposing (isJust)
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
@@ -21,20 +21,22 @@ generateFullName first second =
 
 ageInYears : NominalDate -> Person -> Maybe Int
 ageInYears currentDate person =
-    person.birthDate
-        |> Maybe.map (\birthDate -> diffYears birthDate currentDate)
+    Maybe.map (\birthDate -> diffYears birthDate currentDate) person.birthDate
 
 
 ageInMonths : NominalDate -> Person -> Maybe Int
 ageInMonths currentDate person =
-    person.birthDate
-        |> Maybe.map (\birthDate -> diffMonths birthDate currentDate)
+    Maybe.map (\birthDate -> diffMonths birthDate currentDate) person.birthDate
+
+
+ageInDays : NominalDate -> Person -> Maybe Int
+ageInDays currentDate person =
+    Maybe.map (\birthDate -> diffDays birthDate currentDate) person.birthDate
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool
 isAdult currentDate maybeBirthDate =
-    maybeBirthDate
-        |> Maybe.map (\birthDate -> diffYears birthDate currentDate |> (<) 12)
+    Maybe.map (\birthDate -> diffYears birthDate currentDate |> (<) 12) maybeBirthDate
 
 
 isNewborn : NominalDate -> Person -> Maybe Bool

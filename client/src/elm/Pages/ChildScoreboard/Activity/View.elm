@@ -147,7 +147,7 @@ viewNutritionAssessmenContent language currentDate zscores assembled db data =
             assembled.measurements
 
         tasks =
-            List.filter (expectNutritionAssessmentTask currentDate assembled db) allNutritionAssessmentTasks
+            List.filter (expectNutritionAssessmentTask currentDate zscores assembled db) allNutritionAssessmentTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -169,7 +169,7 @@ viewNutritionAssessmenContent language currentDate zscores assembled db data =
                             "weight"
 
                 isCompleted =
-                    nutritionAssessmentTaskCompleted currentDate assembled db task
+                    nutritionAssessmentTaskCompleted currentDate zscores assembled db task
 
                 isActive =
                     activeTask == Just task

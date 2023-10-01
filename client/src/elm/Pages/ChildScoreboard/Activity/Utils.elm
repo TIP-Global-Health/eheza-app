@@ -5,17 +5,20 @@ import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(.
 import Backend.Measurement.Model
     exposing
         ( ChildScoreboardMeasurements
+        , ColorAlertIndication(..)
+        , HeightInCm(..)
         , NCDASign(..)
         , NutritionAssessment(..)
         , VaccinationValue
         , VaccineDose(..)
+        , WeightInKg(..)
         , WellChildVaccineType(..)
         )
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, weightValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils
+import Backend.NutritionEncounter.Utils exposing (calculateZScoreWeightForAge)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
+import Backend.Person.Utils exposing (ageInDays, ageInMonths)
 import Date exposing (Unit(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -30,10 +33,12 @@ import Measurement.Utils
         , nutritionFormWithDefault
         , weightFormWithDefault
         )
+import Measurement.View exposing (zScoreForHeightOrLength)
 import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (taskCompleted)
 import ZScore.Model
+import ZScore.Utils exposing (zScoreLengthHeightForAge)
 
 
 generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssessment
@@ -340,14 +345,14 @@ allNutritionAssessmentTasks =
     [ TaskHeight, TaskMuac, TaskWeight, TaskNutrition ]
 
 
-nutritionAssessmentTaskCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
-nutritionAssessmentTaskCompleted currentDate data db task =
+nutritionAssessmentTaskCompleted : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
+nutritionAssessmentTaskCompleted currentDate zscores assembled db task =
     let
         measurements =
-            data.measurements
+            assembled.measurements
 
         taskExpected =
-            expectNutritionAssessmentTask currentDate data db
+            expectNutritionAssessmentTask currentDate zscores assembled db
     in
     case task of
         TaskHeight ->
@@ -363,41 +368,85 @@ nutritionAssessmentTaskCompleted currentDate data db task =
             (not <| taskExpected TaskWeight) || isJust measurements.weight
 
 
-expectNutritionAssessmentTask : NominalDate -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
-expectNutritionAssessmentTask currentDate data db task =
+expectNutritionAssessmentTask : NominalDate -> ZScore.Model.Model -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
+expectNutritionAssessmentTask currentDate zscores assembled db task =
     case task of
         TaskHeight ->
             True
 
         -- Show for children that are at least 6 months old.
         TaskMuac ->
-            ageInMonths currentDate data.person
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
+        -- Any of other nutrition measurements is off.
         TaskNutrition ->
-            -- @todo: if any nutrition measurement is off
-            True
+            List.filter (expectNutritionAssessmentTask currentDate zscores assembled db)
+                [ TaskHeight, TaskMuac, TaskWeight ]
+                |> List.any (nutritionMeasurementIsOff currentDate zscores assembled)
 
         TaskWeight ->
             True
 
 
-mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryNutritionAssessmentTasksCompleted currentDate isChw data db =
-    List.filter (not << nutritionAssessmentTaskCompleted currentDate data db) allNutritionAssessmentTasks
-        |> List.isEmpty
+nutritionMeasurementIsOff : NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentTask -> Bool
+nutritionMeasurementIsOff currentDate zscores assembled task =
+    case task of
+        -- Height Z-score is bellow -2.
+        TaskHeight ->
+            Maybe.Extra.andThen2
+                (\ageInDays (HeightInCm height) ->
+                    zScoreLengthHeightForAge zscores ageInDays assembled.person.gender (ZScore.Model.Centimetres height)
+                )
+                (ageInDays currentDate assembled.person |> Maybe.map ZScore.Model.Days)
+                (getMeasurementValueFunc assembled.measurements.height)
+                |> Maybe.map (\score -> score < -2)
+                |> Maybe.withDefault False
+
+        -- MUAC is not green.
+        TaskMuac ->
+            getMeasurementValueFunc assembled.measurements.muac
+                |> Maybe.map (muacIndication >> (/=) ColorAlertGreen)
+                |> Maybe.withDefault False
+
+        TaskNutrition ->
+            -- We don't need to check if Nutrition is off or not, so we
+            -- set it to be ok.
+            False
+
+        -- Any of weight Z-scores is bellow -2.
+        TaskWeight ->
+            let
+                zScoreForAgeOff =
+                    Maybe.andThen (\(WeightInKg weight) -> calculateZScoreWeightForAge currentDate zscores assembled.person (Just weight))
+                        (getMeasurementValueFunc assembled.measurements.weight)
+                        |> Maybe.map (\score -> score < -2)
+                        |> Maybe.withDefault False
+
+                zScoreForHeightOff =
+                    Maybe.Extra.andThen3
+                        (\ageInDays (HeightInCm height) (WeightInKg weight) ->
+                            zScoreForHeightOrLength zscores ageInDays (ZScore.Model.Centimetres height) assembled.person.gender weight
+                        )
+                        (ageInDays currentDate assembled.person |> Maybe.map ZScore.Model.Days)
+                        (getMeasurementValueFunc assembled.measurements.height)
+                        (getMeasurementValueFunc assembled.measurements.weight)
+                        |> Maybe.map (\score -> score < -2)
+                        |> Maybe.withDefault False
+            in
+            zScoreForAgeOff || zScoreForHeightOff
 
 
 nutritionAssessmentTasksCompletedFromTotal : ChildScoreboardMeasurements -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
-nutritionAssessmentTasksCompletedFromTotal measurements data task =
+nutritionAssessmentTasksCompletedFromTotal measurements assembled task =
     case task of
         TaskHeight ->
             let
                 form =
                     measurements.height
                         |> getMeasurementValueFunc
-                        |> heightFormWithDefault data.heightForm
+                        |> heightFormWithDefault assembled.heightForm
             in
             ( taskCompleted form.height
             , 1
@@ -408,7 +457,7 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
                 form =
                     measurements.muac
                         |> getMeasurementValueFunc
-                        |> muacFormWithDefault data.muacForm
+                        |> muacFormWithDefault assembled.muacForm
             in
             ( taskCompleted form.muac
             , 1
@@ -419,7 +468,7 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
                 form =
                     measurements.nutrition
                         |> getMeasurementValueFunc
-                        |> nutritionFormWithDefault data.nutritionForm
+                        |> nutritionFormWithDefault assembled.nutritionForm
             in
             ( taskCompleted form.signs
             , 1
@@ -430,7 +479,7 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
                 form =
                     measurements.weight
                         |> getMeasurementValueFunc
-                        |> weightFormWithDefault data.weightForm
+                        |> weightFormWithDefault assembled.weightForm
             in
             ( taskCompleted form.weight
             , 1

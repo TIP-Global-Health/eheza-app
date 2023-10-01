@@ -25,6 +25,7 @@ import Backend.NutritionEncounter.Utils
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInDays)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -74,7 +75,7 @@ import Pages.Utils
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..))
+import ZScore.Model exposing (Centimetres(..), Days(..))
 import ZScore.Utils exposing (diffDays, viewZScore, zScoreLengthHeightForAge)
 
 
@@ -270,9 +271,8 @@ viewHeightForm language currentDate zscores person previousValue setHeightMsg fo
             Height
 
         maybeAgeInDays =
-            Maybe.map
-                (\birthDate -> diffDays birthDate currentDate)
-                person.birthDate
+            ageInDays currentDate person
+                |> Maybe.map Days
 
         zScoreText =
             form.height
@@ -597,9 +597,8 @@ viewWeightForm language currentDate zscores person heightValue previousValue sho
             Weight
 
         maybeAgeInDays =
-            Maybe.map
-                (\birthDate -> diffDays birthDate currentDate)
-                person.birthDate
+            ageInDays currentDate person
+                |> Maybe.map Days
 
         zScoreForAgeText =
             calculateZScoreWeightForAge currentDate zscores person form.weight
