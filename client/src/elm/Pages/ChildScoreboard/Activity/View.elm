@@ -56,6 +56,7 @@ import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewWeightForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewLabel, viewPersonDetailsExtended, viewSaveAction)
+import Restful.Endpoint exposing (toEntityUuid)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -201,25 +202,99 @@ viewNutritionAssessmenContent language currentDate zscores assembled db data =
         previousValuesSet =
             resolvePreviousValuesSetForChild currentDate assembled.participant.person db
 
-        viewForm =
+        ( viewForm, assembledAfterSave ) =
             case activeTask of
                 Just TaskHeight ->
-                    measurements.height
-                        |> getMeasurementValueFunc
-                        |> heightFormWithDefault data.heightForm
-                        |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
+                    let
+                        form =
+                            getMeasurementValueFunc measurements.height
+                                |> heightFormWithDefault data.heightForm
+
+                        -- We want to simulate value of height measurement after
+                        -- form value is saved, so we can apply expectNutritionAssessmentTask()
+                        -- to resolve offered tasks (with, or without Nutrition).
+                        heightAfterSave =
+                            Maybe.map
+                                (\height ->
+                                    case measurements.height of
+                                        Just ( id, measurement ) ->
+                                            -- If measurement already exists, we set form value.
+                                            Just ( id, { measurement | value = HeightInCm height } )
+
+                                        Nothing ->
+                                            -- Otherwise, we simulate the measurement data.
+                                            -- All we care about is value, so we can set dummy
+                                            -- for everything else.
+                                            Just
+                                                ( toEntityUuid "dummy"
+                                                , { dateMeasured = currentDate
+                                                  , nurse = Nothing
+                                                  , healthCenter = Nothing
+                                                  , participantId = assembled.participant.person
+                                                  , encounterId = Nothing
+                                                  , value = HeightInCm height
+                                                  }
+                                                )
+                                )
+                                form.height
+                                |> Maybe.withDefault measurements.height
+
+                        measurementsAfterSave =
+                            { measurements | height = heightAfterSave }
+                    in
+                    ( viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight form
+                    , { assembled | measurements = measurementsAfterSave }
+                    )
 
                 Just TaskMuac ->
-                    measurements.muac
-                        |> getMeasurementValueFunc
-                        |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate assembled.person previousValuesSet.muac SetMuac
+                    let
+                        form =
+                            getMeasurementValueFunc measurements.muac
+                                |> muacFormWithDefault data.muacForm
+
+                        -- We want to simulate value of height measurement after
+                        -- form value is saved, so we can apply expectNutritionAssessmentTask()
+                        -- to resolve offered tasks (with, or without Nutrition).
+                        muacAfterSave =
+                            Maybe.map
+                                (\muac ->
+                                    case measurements.muac of
+                                        Just ( id, measurement ) ->
+                                            -- If measurement already exists, we set form value.
+                                            Just ( id, { measurement | value = MuacInCm muac } )
+
+                                        Nothing ->
+                                            -- Otherwise, we simulate the measurement data.
+                                            -- All we care about is value, so we can set dummy
+                                            -- for everything else.
+                                            Just
+                                                ( toEntityUuid "dummy"
+                                                , { dateMeasured = currentDate
+                                                  , nurse = Nothing
+                                                  , healthCenter = Nothing
+                                                  , participantId = assembled.participant.person
+                                                  , encounterId = Nothing
+                                                  , value = MuacInCm muac
+                                                  }
+                                                )
+                                )
+                                form.muac
+                                |> Maybe.withDefault measurements.muac
+
+                        measurementsAfterSave =
+                            { measurements | muac = muacAfterSave }
+                    in
+                    ( viewMuacForm language currentDate assembled.person previousValuesSet.muac SetMuac form
+                    , { assembled | measurements = measurementsAfterSave }
+                    )
 
                 Just TaskNutrition ->
-                    measurements.nutrition
+                    ( measurements.nutrition
                         |> getMeasurementValueFunc
                         |> nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate SetNutritionSign
+                    , assembled
+                    )
 
                 Just TaskWeight ->
                     let
@@ -227,16 +302,62 @@ viewNutritionAssessmenContent language currentDate zscores assembled db data =
                             assembled.measurements.height
                                 |> getMeasurementValueFunc
 
+                        form =
+                            getMeasurementValueFunc measurements.weight
+                                |> weightFormWithDefault data.weightForm
+
                         showWeightForHeightZScore =
                             False
+
+                        -- We want to simulate value of height measurement after
+                        -- form value is saved, so we can apply expectNutritionAssessmentTask()
+                        -- to resolve offered tasks (with, or without Nutrition).
+                        weightAfterSave =
+                            Maybe.map
+                                (\weight ->
+                                    case measurements.weight of
+                                        Just ( id, measurement ) ->
+                                            -- If measurement already exists, we set form value.
+                                            Just ( id, { measurement | value = WeightInKg weight } )
+
+                                        Nothing ->
+                                            -- Otherwise, we simulate the measurement data.
+                                            -- All we care about is value, so we can set dummy
+                                            -- for everything else.
+                                            Just
+                                                ( toEntityUuid "dummy"
+                                                , { dateMeasured = currentDate
+                                                  , nurse = Nothing
+                                                  , healthCenter = Nothing
+                                                  , participantId = assembled.participant.person
+                                                  , encounterId = Nothing
+                                                  , value = WeightInKg weight
+                                                  }
+                                                )
+                                )
+                                form.weight
+                                |> Maybe.withDefault measurements.weight
+
+                        measurementsAfterSave =
+                            { measurements | weight = weightAfterSave }
                     in
-                    measurements.weight
-                        |> getMeasurementValueFunc
-                        |> weightFormWithDefault data.weightForm
-                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
+                    ( viewWeightForm language
+                        currentDate
+                        zscores
+                        assembled.person
+                        heightValue
+                        previousValuesSet.weight
+                        showWeightForHeightZScore
+                        SetWeight
+                        form
+                    , { assembled | measurements = measurementsAfterSave }
+                    )
 
                 Nothing ->
-                    []
+                    ( [], assembled )
+
+        tasksAfterSave =
+            List.filter (expectNutritionAssessmentTask currentDate zscores assembledAfterSave db) allNutritionAssessmentTasks
 
         nextTask =
             List.filter
@@ -244,7 +365,7 @@ viewNutritionAssessmenContent language currentDate zscores assembled db data =
                     (Just task /= activeTask)
                         && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
                 )
-                tasks
+                tasksAfterSave
                 |> List.head
 
         actions =

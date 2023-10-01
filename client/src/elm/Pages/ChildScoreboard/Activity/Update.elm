@@ -60,10 +60,8 @@ update currentDate id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| ChildScoreboardEncounterPage id ]
 
         generateNutritionAssessmentMsgs nextTask =
-            -- @todo:
-            -- Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ]) nextTask
-            --     |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
-            []
+            Maybe.map (\task -> [ SetActiveNutritionAssessmentTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| ChildScoreboardEncounterPage id ]
     in
     case msg of
         NoOp ->
