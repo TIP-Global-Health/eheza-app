@@ -1,5 +1,6 @@
 module Pages.ChildScoreboard.Encounter.View exposing (acuteIllnessEncounterPopup, view, viewEndEncounterButton)
 
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.ChildScoreboardActivity.Utils exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
@@ -137,7 +138,15 @@ viewMainPageContent language currentDate zscores db assembled model =
                 ]
 
         allowEndEncounter =
-            List.isEmpty pendingActivities
+            case pendingActivities of
+                [] ->
+                    True
+
+                [ ChildScoreboardNutritionAssessment ] ->
+                    True
+
+                _ ->
+                    False
 
         content =
             div [ class "ui full segment" ]
