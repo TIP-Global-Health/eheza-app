@@ -30,6 +30,9 @@ import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 expectActivity : NominalDate -> AssembledData -> ChildScoreboardActivity -> Bool
 expectActivity currentDate assembled activity =
     case activity of
+        ChildScoreboardNutritionAssessment ->
+            True
+
         ChildScoreboardNCDA ->
             True
 
@@ -57,6 +60,10 @@ activityCompleted currentDate assembled db activity =
             not <| expectActivity currentDate assembled activityToCheck
     in
     case activity of
+        ChildScoreboardNutritionAssessment ->
+            -- @todo
+            notExpected ChildScoreboardNutritionAssessment
+
         ChildScoreboardNCDA ->
             notExpected ChildScoreboardNCDA
                 || isJust assembled.measurements.ncda

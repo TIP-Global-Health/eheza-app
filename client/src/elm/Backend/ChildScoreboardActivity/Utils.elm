@@ -6,6 +6,9 @@ import Backend.ChildScoreboardActivity.Model exposing (..)
 activityToString : ChildScoreboardActivity -> String
 activityToString activity =
     case activity of
+        ChildScoreboardNutritionAssessment ->
+            "nutrition-assessment"
+
         ChildScoreboardNCDA ->
             "ncda"
 
@@ -18,6 +21,9 @@ activityToString activity =
 activityFromString : String -> Maybe ChildScoreboardActivity
 activityFromString s =
     case s of
+        "nutrition-assessment" ->
+            Just ChildScoreboardNutritionAssessment
+
         "ncda" ->
             Just ChildScoreboardNCDA
 
@@ -34,6 +40,9 @@ activityFromString s =
 getActivityIcon : ChildScoreboardActivity -> String
 getActivityIcon activity =
     case activity of
+        ChildScoreboardNutritionAssessment ->
+            "nutrition-assessment"
+
         ChildScoreboardNCDA ->
             "history"
 
@@ -43,6 +52,7 @@ getActivityIcon activity =
 
 allActivities : List ChildScoreboardActivity
 allActivities =
-    [ ChildScoreboardNCDA
+    [ ChildScoreboardNutritionAssessment
+    , ChildScoreboardNCDA
     , ChildScoreboardVaccinationHistory
     ]

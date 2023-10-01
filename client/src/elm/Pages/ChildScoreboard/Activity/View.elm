@@ -96,6 +96,10 @@ viewContent language currentDate site activity db model assembled =
 viewActivity : Language -> NominalDate -> Site -> ChildScoreboardActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewActivity language currentDate site activity assembled db model =
     case activity of
+        ChildScoreboardNutritionAssessment ->
+            --            viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
+            [ text "ChildScoreboardNutritionAssessment" ]
+
         ChildScoreboardNCDA ->
             viewNCDAContent language currentDate assembled db model.ncdaData
 

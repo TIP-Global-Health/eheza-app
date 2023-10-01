@@ -2,5 +2,6 @@ module Backend.ChildScoreboardActivity.Model exposing (..)
 
 
 type ChildScoreboardActivity
-    = ChildScoreboardNCDA
+    = ChildScoreboardNutritionAssessment
+    | ChildScoreboardNCDA
     | ChildScoreboardVaccinationHistory

@@ -968,6 +968,7 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoContactReason NoContactReason
     | NoMatchesFound
+    | NoneOfThese
     | NormalRange
     | NotApplicable
     | NoTreatmentAdministered
@@ -996,6 +997,7 @@ type TranslationId
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssessment NutritionAssessment
+    | NutritionAssessmentLabel
     | NutritionAssessmentTask NutritionAssessmentTask
     | NutritionBehavior
     | NutritionCaringOption CaringOption
@@ -3712,10 +3714,7 @@ translationSet trans =
                     translationSet Edema
 
                 NormalChildNutrition ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta bimenyetso"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
                 PoorAppetite ->
                     { english = "Poor Appetite"
@@ -3743,11 +3742,11 @@ translationSet trans =
 
         ChildScoreboardActivityTitle activity ->
             case activity of
+                ChildScoreboardNutritionAssessment ->
+                    translationSet NutritionAssessmentLabel
+
                 ChildScoreboardNCDA ->
-                    { english = "Child Scorecard"
-                    , kinyarwanda = Just "Ifishi y’Imikurire y’Umwana"
-                    , kirundi = Just "Ikarata y'ikurikiranwa ry'umwana"
-                    }
+                    translationSet ChildScorecard
 
                 ChildScoreboardVaccinationHistory ->
                     { english = "Vaccination History"
@@ -4069,10 +4068,7 @@ translationSet trans =
                     }
 
                 NoContributingFactorsSign ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta kimenyetso na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         ContributingFactorsQuestion ->
             { english = "Has patient or patient’s mother experienced any of the following"
@@ -4181,10 +4177,7 @@ translationSet trans =
                     }
 
                 NoDeliveryComplications ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         DeliveryComplicationsPresentQuestion ->
             { english = "Were there any complications with the delivery"
@@ -4450,10 +4443,7 @@ translationSet trans =
                     }
 
                 NoDangerSign ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta bimenyetso/nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         DangerSignsLabelForNurse ->
             { english = "Patient shows signs of"
@@ -5363,10 +5353,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.Activity.Types.NutritionAssessment ->
-                    { english = "Nutrition Assessment"
-                    , kinyarwanda = Just "Gusuzuma imirire"
-                    , kirundi = Just "Isuzuma ryo gufungura"
-                    }
+                    translationSet NutritionAssessmentLabel
 
                 CorePhysicalExam ->
                     { english = "Core Physical Exam"
@@ -5516,10 +5503,7 @@ translationSet trans =
                     }
 
                 NoFamilyPlanning ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro yahisemo"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
                 OralContraceptives ->
                     { english = "Oral contraceptives"
@@ -6638,10 +6622,7 @@ translationSet trans =
                     }
 
                 NoIllnessSymptoms ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         Immunisation ->
             { english = "Immunization"
@@ -9127,10 +9108,7 @@ translationSet trans =
                     }
 
                 NoWaterPreparationOption ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         MainWaterSourceQuestion ->
             { english = "What is the household's main source of water"
@@ -11505,6 +11483,12 @@ translationSet trans =
             , kirundi = Just "Nta nyishu yabonetse"
             }
 
+        NoneOfThese ->
+            { english = "None of these"
+            , kinyarwanda = Just "Nta kimenyetso na kimwe"
+            , kirundi = Just "Nta nimwe muri izi"
+            }
+
         NormalRange ->
             { english = "Normal Range"
             , kinyarwanda = Just "Ibimeze neza"
@@ -11958,6 +11942,12 @@ translationSet trans =
                     , kinyarwanda = Just "Ntabyo"
                     , kirundi = Just "Nta na kimwe"
                     }
+
+        NutritionAssessmentLabel ->
+            { english = "Nutrition Assessment"
+            , kinyarwanda = Just "Gusuzuma imirire"
+            , kirundi = Just "Isuzuma ryo gufungura"
+            }
 
         NutritionAssessmentTask task ->
             case task of
@@ -12876,10 +12866,7 @@ translationSet trans =
                     }
 
                 NoPostpartumChildDangerSigns ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta kimenyetso na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         PostpartumMotherDangerSign sign ->
             case sign of
@@ -12920,10 +12907,7 @@ translationSet trans =
                     }
 
                 NoPostpartumMotherDangerSigns ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta kimenyetso na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         Predecessor predecessor ->
             case predecessor of
@@ -15585,10 +15569,7 @@ translationSet trans =
                     }
 
                 NoOutsideCareMedicationForMalaria ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
                 OutsideCareMedicationPenecilin1 ->
                     { english = "Penicillin (2.4 million units)"
@@ -15621,10 +15602,7 @@ translationSet trans =
                     }
 
                 NoOutsideCareMedicationForSyphilis ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
                 OutsideCareMedicationMethyldopa2 ->
                     { english = "Methyldopa (250mg)"
@@ -15657,10 +15635,7 @@ translationSet trans =
                     }
 
                 NoOutsideCareMedicationForHypertension ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta ns kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
                 OutsideCareMedicationTDF3TC ->
                     { english = "TDF+3TC"
@@ -15675,10 +15650,7 @@ translationSet trans =
                     }
 
                 NoOutsideCareMedicationForHIV ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
                 OutsideCareMedicationIron1 ->
                     { english = "Iron (60mg)"
@@ -15699,10 +15671,7 @@ translationSet trans =
                     }
 
                 NoOutsideCareMedicationForAnemia ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
                 _ ->
                     { english = ""
@@ -15821,10 +15790,7 @@ translationSet trans =
                     }
 
                 NoPrenatalSymptoms ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         PrenatalSymptomQuestion value ->
             case value of
@@ -21084,10 +21050,7 @@ translationSet trans =
                     }
 
                 WellChildNutritionAssessment ->
-                    { english = "Nutrition Assessment"
-                    , kinyarwanda = Just "Gusuzuma imirire"
-                    , kirundi = Just "Isuzuma ryo gufungura"
-                    }
+                    translationSet NutritionAssessmentLabel
 
                 WellChildECD ->
                     { english = "ECD"
@@ -21648,10 +21611,7 @@ translationSet trans =
                     }
 
                 NoWellChildSymptoms ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta nimwe muri izi"
-                    }
+                    translationSet NoneOfThese
 
         WellChildVaccineLabel vaccineType ->
             case vaccineType of
