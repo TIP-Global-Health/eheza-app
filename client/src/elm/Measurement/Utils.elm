@@ -9,7 +9,8 @@ import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getWellChildEncountersForParticipant
+        ( getChildScoreboardEncountersForParticipant
+        , getWellChildEncountersForParticipant
         , resolveIndividualNutritionValues
         , resolveIndividualWellChildValues
         )
@@ -4503,7 +4504,6 @@ fromNCDAValue saved =
     , childReceivesDewormer = Maybe.map (.signs >> EverySet.member ChildReceivesDewormer) saved
     , childTakingDewormer = Maybe.map (.signs >> EverySet.member ChildTakingDewormer) saved
     , childReceivesECD = Maybe.map (.signs >> EverySet.member ChildReceivesECD) saved
-    , childWithAcuteMalnutrition = Maybe.map (.signs >> EverySet.member ChildWithAcuteMalnutrition) saved
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
@@ -4554,7 +4554,6 @@ ncdaFormWithDefault form saved =
                 , childReceivesDewormer = or form.childReceivesDewormer (EverySet.member ChildReceivesDewormer value.signs |> Just)
                 , childTakingDewormer = or form.childTakingDewormer (EverySet.member ChildTakingDewormer value.signs |> Just)
                 , childReceivesECD = or form.childReceivesECD (EverySet.member ChildReceivesECD value.signs |> Just)
-                , childWithAcuteMalnutrition = or form.childWithAcuteMalnutrition (EverySet.member ChildWithAcuteMalnutrition value.signs |> Just)
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
@@ -4600,7 +4599,6 @@ toNCDAValue form =
             , ifNullableTrue ChildReceivesDewormer form.childReceivesDewormer
             , ifNullableTrue ChildTakingDewormer form.childTakingDewormer
             , ifNullableTrue ChildReceivesECD form.childReceivesECD
-            , ifNullableTrue ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition
             , ifNullableTrue ChildWithDisability form.childWithDisability
             , ifNullableTrue OngeraMNP form.ongeraMNP
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
@@ -4954,14 +4952,23 @@ resolveChildANCPregnancyData childId db =
         |> Maybe.withDefault ( Nothing, EverySet.empty )
 
 
-childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool
-childDiagnosedWithMalnutrition childId db =
+resolveMostRecentMalnutritionAssessmentDate : PersonId -> ModelIndexedDb -> Maybe NominalDate
+resolveMostRecentMalnutritionAssessmentDate childId db =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map Dict.toList
                 |> Maybe.withDefault []
+
+        individualNutritionParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
 
         individualWellChildParticipantId =
             List.filter
@@ -4972,10 +4979,10 @@ childDiagnosedWithMalnutrition childId db =
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        individualNutritionParticipantId =
+        individualChildScoreboardParticipantId =
             List.filter
                 (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
                 )
                 individualParticipants
                 |> List.head
@@ -5014,6 +5021,20 @@ childDiagnosedWithMalnutrition childId db =
                 |> Maybe.withDefault []
                 |> List.map (Tuple.second >> Tuple.second)
 
+        individualChildScoreboardMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Backend.Measurement.Utils.generatePreviousMeasurements
+                        getChildScoreboardEncountersForParticipant
+                        .childScoreboardMeasurements
+                        Nothing
+                        participantId
+                        db
+                )
+                individualChildScoreboardParticipantId
+                |> Maybe.withDefault []
+                |> List.map (Tuple.second >> Tuple.second)
+
         groupNutritionAssessment =
             generateGroupNutritionAssessmentEntries groupNutritionMeasurements
 
@@ -5022,15 +5043,28 @@ childDiagnosedWithMalnutrition childId db =
 
         individuaWellChildAssessment =
             generateIndividualNutritionAssessmentEntries individualWellChildMeasurements
+
+        individuaChildScoreboardAssessment =
+            generateAssessmentEntriesFromNutrition individualChildScoreboardMeasurements
     in
     individualNutritionAssessment
         ++ groupNutritionAssessment
         ++ individuaWellChildAssessment
-        |> List.any
-            (\( _, assessments ) ->
-                List.member AssesmentAcuteMalnutritionModerate assessments
-                    || List.member AssesmentAcuteMalnutritionSevere assessments
+        ++ individuaChildScoreboardAssessment
+        |> List.filterMap
+            (\( date, assessments ) ->
+                if
+                    List.member AssesmentAcuteMalnutritionModerate assessments
+                        || List.member AssesmentAcuteMalnutritionSevere assessments
+                then
+                    Just date
+
+                else
+                    Nothing
             )
+        |> List.sortWith Date.compare
+        |> List.reverse
+        |> List.head
 
 
 resoloveLastScheduledImmunizationVisitDate : PersonId -> ModelIndexedDb -> Maybe NominalDate
@@ -5592,15 +5626,7 @@ generateIndividualNutritionAssessmentEntries :
 generateIndividualNutritionAssessmentEntries measurementList =
     let
         assessmentsFromNutrition =
-            List.map
-                (\measurements ->
-                    Maybe.map2 filterNutritionAssessmentsFromNutritionValue
-                        (getMeasurementDateMeasuredFunc measurements.nutrition)
-                        (getMeasurementValueFunc measurements.nutrition)
-                        |> Maybe.Extra.join
-                )
-                measurementList
-                |> Maybe.Extra.values
+            generateAssessmentEntriesFromNutrition measurementList
 
         assessmentsFromFollowUp =
             List.map
@@ -5616,6 +5642,31 @@ generateIndividualNutritionAssessmentEntries measurementList =
     mergeNutritionAssessmentEntries
         assessmentsFromNutrition
         assessmentsFromFollowUp
+
+
+generateAssessmentEntriesFromNutrition :
+    List
+        { c
+            | nutrition :
+                Maybe
+                    ( id1
+                    , { v1
+                        | dateMeasured : NominalDate
+                        , value : NutritionValue
+                      }
+                    )
+        }
+    -> List ( NominalDate, List NutritionAssessment )
+generateAssessmentEntriesFromNutrition measurementList =
+    List.map
+        (\measurements ->
+            Maybe.map2 filterNutritionAssessmentsFromNutritionValue
+                (getMeasurementDateMeasuredFunc measurements.nutrition)
+                (getMeasurementValueFunc measurements.nutrition)
+                |> Maybe.Extra.join
+        )
+        measurementList
+        |> Maybe.Extra.values
 
 
 filterNutritionAssessmentsFromNutritionValue : NominalDate -> NutritionValue -> Maybe ( NominalDate, List NutritionAssessment )

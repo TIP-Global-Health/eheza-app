@@ -3582,9 +3582,6 @@ ncdaSignFromString value =
         "child-receives-ecd" ->
             Just ChildReceivesECD
 
-        "child-with-acute-malnutrition" ->
-            Just ChildWithAcuteMalnutrition
-
         "child-with-disability" ->
             Just ChildWithDisability
 
@@ -3682,9 +3679,6 @@ ncdaSignToString value =
 
         ChildReceivesECD ->
             "child-receives-ecd"
-
-        ChildWithAcuteMalnutrition ->
-            "child-with-acute-malnutrition"
 
         ChildWithDisability ->
             "child-with-disability"

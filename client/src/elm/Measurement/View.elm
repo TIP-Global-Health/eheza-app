@@ -2883,23 +2883,6 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     , [ maybeToBoolTask form.conditionalFoodItems ]
                     )
 
-                ChildWithAcuteMalnutrition ->
-                    let
-                        updateFunc value form_ =
-                            { form_ | childWithAcuteMalnutrition = Just value, treatedForAcuteMalnutrition = Nothing }
-
-                        ( derivedInputs, derivedTasks ) =
-                            if form.childWithAcuteMalnutrition == Just True then
-                                inputsAndTasksForSign TreatedForAcuteMalnutrition
-
-                            else
-                                ( [], [] )
-                    in
-                    ( viewNCDAInput ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition updateFunc
-                        ++ derivedInputs
-                    , form.childWithAcuteMalnutrition :: derivedTasks
-                    )
-
                 TreatedForAcuteMalnutrition ->
                     let
                         updateFunc value form_ =
@@ -3145,12 +3128,15 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                     else
                         [ ChildReceivesFBF ]
 
-                childWithAcuteMalnutritionSign =
-                    if config.atHealthCenter || childDiagnosedWithMalnutrition personId db then
-                        []
+                treatedForAcuteMalnutritionSign =
+                    if
+                        not config.atHealthCenter
+                            && (resolveMostRecentMalnutritionAssessmentDate personId db == Just currentDate)
+                    then
+                        [ TreatedForAcuteMalnutrition ]
 
                     else
-                        [ ChildWithAcuteMalnutrition ]
+                        []
 
                 childGotDiarrheaSign =
                     if config.atHealthCenter then
@@ -3164,7 +3150,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         ++ [ BeneficiaryCashTransfer
                            , ConditionalFoodItems
                            ]
-                        ++ childWithAcuteMalnutritionSign
+                        ++ treatedForAcuteMalnutritionSign
                         ++ [ ChildWithDisability ]
                         ++ childGotDiarrheaSign
 

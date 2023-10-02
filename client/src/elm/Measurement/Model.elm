@@ -1068,7 +1068,6 @@ type alias NCDAForm =
     , beneficiaryCashTransfer : Maybe Bool
     , receivingCashTransfer : Maybe Bool
     , conditionalFoodItems : Maybe Bool
-    , childWithAcuteMalnutrition : Maybe Bool
     , treatedForAcuteMalnutrition : Maybe Bool
     , childWithDisability : Maybe Bool
     , receivingSupport : Maybe Bool
@@ -1117,7 +1116,6 @@ emptyNCDAForm =
     , beneficiaryCashTransfer = Nothing
     , receivingCashTransfer = Nothing
     , conditionalFoodItems = Nothing
-    , childWithAcuteMalnutrition = Nothing
     , treatedForAcuteMalnutrition = Nothing
     , childWithDisability = Nothing
     , receivingSupport = Nothing
