@@ -1543,7 +1543,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw model newModel)
+                                Maybe.map (generateNutritionAssessmentWellChildMsgs currentDate zscores isChw model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1579,6 +1579,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
                             extraMsgs =
                                 Maybe.map (generateNCDAssessmentMsgs currentDate language activePage newModel)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
+                processRevisionAndAssessChildScoreboard participantId encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateNutritionAssessmentChildScoreboardMsgs currentDate zscores model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -2814,6 +2830,46 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         extraMsgs =
                             Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate zscores newModel) data.encounterId
                                 |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardHeightRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessChildScoreboard data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardMuacRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessChildScoreboard data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardNutritionRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessChildScoreboard data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardWeightRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessChildScoreboard data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -6371,7 +6427,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
         |> Maybe.withDefault []
 
 
-generateNutritionAssessmentWellChildlMsgs :
+generateNutritionAssessmentWellChildMsgs :
     NominalDate
     -> ZScore.Model.Model
     -> Bool
@@ -6379,7 +6435,7 @@ generateNutritionAssessmentWellChildlMsgs :
     -> ModelIndexedDb
     -> WellChildEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after id =
+generateNutritionAssessmentWellChildMsgs currentDate zscores isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
@@ -6449,6 +6505,53 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after
         )
         (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData id before)
         (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
+
+
+generateNutritionAssessmentChildScoreboardMsgs :
+    NominalDate
+    -> ZScore.Model.Model
+    -> ModelIndexedDb
+    -> ModelIndexedDb
+    -> ChildScoreboardEncounterId
+    -> List App.Model.Msg
+generateNutritionAssessmentChildScoreboardMsgs currentDate zscores before after id =
+    Maybe.map2
+        (\assembledBefore assembledAfter ->
+            let
+                assessmentBefore =
+                    Pages.ChildScoreboard.Activity.Utils.generateNutritionAssessment currentDate zscores before assembledBefore
+                        |> nutritionAssessmentForBackend
+
+                assessmentForBackend =
+                    Pages.ChildScoreboard.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
+                        |> nutritionAssessmentForBackend
+
+                assessmentChanged =
+                    not (everySetsEqual assessmentBefore assessmentForBackend)
+            in
+            if assessmentChanged then
+                -- Update the assesment field on Nutrition measurement.
+                Maybe.map
+                    (\( measurementId, measurement ) ->
+                        let
+                            updatedValue =
+                                measurement.value
+                                    |> (\value -> { value | assesment = assessmentForBackend })
+                        in
+                        Backend.ChildScoreboardEncounter.Model.SaveNutrition assembledAfter.participant.person (Just measurementId) updatedValue
+                            |> Backend.Model.MsgChildScoreboardEncounter id
+                            |> App.Model.MsgIndexedDb
+                            |> List.singleton
+                    )
+                    assembledAfter.measurements.nutrition
+                    |> Maybe.withDefault []
+
+            else
+                []
+        )
+        (RemoteData.toMaybe <| Pages.ChildScoreboard.Encounter.Utils.generateAssembledData id before)
+        (RemoteData.toMaybe <| Pages.ChildScoreboard.Encounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 
 
