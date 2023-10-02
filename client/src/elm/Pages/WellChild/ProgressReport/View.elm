@@ -496,6 +496,7 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                                     reportData.groupNutritionMeasurements
                                     reportData.individualNutritionMeasurementsWithDates
                                     reportData.individualWellChildMeasurementsWithDates
+                                    reportData.individualChildScoreboardMeasurementsWithDates
                                     |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
 
                             else
@@ -1166,8 +1167,9 @@ viewGrowthPane :
     -> ChildMeasurementList
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     -> List ( NominalDate, ( WellChildEncounterId, WellChildMeasurements ) )
+    -> List ( NominalDate, ( ChildScoreboardEncounterId, ChildScoreboardMeasurements ) )
     -> Html any
-viewGrowthPane language currentDate zscores child historical nutritionMeasurements wellChildMeasurements =
+viewGrowthPane language currentDate zscores child historical nutritionMeasurements wellChildMeasurements childScoreboardMeasurements =
     let
         --
         -- GROUP CONTEXT
@@ -1234,11 +1236,15 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
             Dict.union
                 (valuesIndexedByEncounter .height nutritionMeasurements)
                 (valuesIndexedByEncounter .height wellChildMeasurements)
+                |> Dict.union
+                    (valuesIndexedByEncounter .height childScoreboardMeasurements)
 
         weightValuesByEncounter =
             Dict.union
                 (valuesIndexedByEncounter .weight nutritionMeasurements)
                 (valuesIndexedByEncounter .weight wellChildMeasurements)
+                |> Dict.union
+                    (valuesIndexedByEncounter .weight childScoreboardMeasurements)
 
         photoValuesByEncounter =
             Dict.union
@@ -1249,6 +1255,8 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
             Dict.union
                 (valuesIndexedByEncounter .nutrition nutritionMeasurements)
                 (valuesIndexedByEncounter .nutrition wellChildMeasurements)
+                |> Dict.union
+                    (valuesIndexedByEncounter .nutrition childScoreboardMeasurements)
 
         --
         -- COMMON CONTEXT
