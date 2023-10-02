@@ -8,8 +8,7 @@
 /**
  * Class HedleyRestfulChildScoreboardMuac.
  */
-class 
-HedleyRestfulChildScoreboardMuac extends HedleyRestfulChildScoreboardActivityBase {
+class HedleyRestfulChildScoreboardMuac extends HedleyRestfulChildScoreboardActivityBase {
 
   /**
    * {@inheritdoc}
