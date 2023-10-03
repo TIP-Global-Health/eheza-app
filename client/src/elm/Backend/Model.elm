@@ -656,7 +656,8 @@ type Revision
 ncdaEnabled : Bool
 ncdaEnabled =
     -- For now, NCDA feature is not launched.
-    False
+    -- @todo: Enabled for development. Disable when done.
+    True
 
 
 stockManagementEnabled : Bool
