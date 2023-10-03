@@ -31,13 +31,14 @@ import Backend.StockUpdate.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
 import Components.SendViaWhatsAppDialog.Decoder exposing (decodeReportType)
+import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
-import SyncManager.Utils exposing (siteFromString)
+import SyncManager.Utils exposing (siteFeaturesFromString, siteFromString)
 
 
 decodeIndexDbQueryTypeResult : Decoder IndexDbQueryTypeResult
@@ -292,6 +293,7 @@ decodeDownloadSyncResponseGeneral =
             |> optional "device_name" string ""
             |> optional "rollbar_token" string ""
             |> optional "site" decodeSite SiteRwanda
+            |> optional "features" decodeSiteFeatures EverySet.empty
         )
 
 
@@ -361,6 +363,12 @@ decodeSite =
         |> andThen (siteFromString >> succeed)
 
 
+decodeSiteFeatures : Decoder (EverySet SiteFeature)
+decodeSiteFeatures =
+    string
+        |> andThen (siteFeaturesFromString >> succeed)
+
+
 decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
 decodeDownloadSyncResponseAuthority =
     field "data"
@@ -370,6 +378,7 @@ decodeDownloadSyncResponseAuthority =
             |> hardcoded ""
             |> hardcoded ""
             |> hardcoded SiteUnknown
+            |> hardcoded EverySet.empty
         )
 
 
@@ -382,6 +391,7 @@ decodeDownloadSyncResponseAuthorityStats =
             |> hardcoded ""
             |> hardcoded ""
             |> hardcoded SiteUnknown
+            |> hardcoded EverySet.empty
         )
 
 

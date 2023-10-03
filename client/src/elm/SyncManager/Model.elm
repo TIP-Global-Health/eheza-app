@@ -27,6 +27,7 @@ import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Components.SendViaWhatsAppDialog.Model exposing (ReportType)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import Editable exposing (Editable)
+import EverySet exposing (EverySet)
 import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo, emptyGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (Value)
@@ -256,6 +257,7 @@ type alias SyncInfoGeneral =
     , status : SyncInfoStatus
     , rollbarToken : String
     , site : Site
+    , features : EverySet SiteFeature
     }
 
 
@@ -268,6 +270,7 @@ type alias SyncInfoGeneralForPort =
     , status : String
     , rollbarToken : String
     , site : String
+    , features : String
     }
 
 
@@ -408,6 +411,7 @@ type alias DownloadSyncResponse a =
     , deviceName : String
     , rollbarToken : String
     , site : Site
+    , features : EverySet SiteFeature
     }
 
 
@@ -679,6 +683,12 @@ type Site
     = SiteRwanda
     | SiteBurundi
     | SiteUnknown
+
+
+type SiteFeature
+    = FeatureNCDA
+    | FeatureReportToWhatsApp
+    | FeatureStockManagement
 
 
 type Msg
