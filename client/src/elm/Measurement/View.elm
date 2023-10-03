@@ -129,7 +129,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
-            viewNCDA language currentDate childId child (mapMeasurementData .ncda measurements) model.ncdaData db
+            viewNCDA language currentDate childId child measurements model.ncdaData db
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -3131,7 +3131,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                 treatedForAcuteMalnutritionSign =
                     if
                         not config.atHealthCenter
-                            && (resolveMostRecentMalnutritionAssessmentDate personId db == Just currentDate)
+                            && muacMeasurementIsOff config.muacValue
                     then
                         [ TreatedForAcuteMalnutrition ]
 
@@ -3470,12 +3470,15 @@ viewNCDA :
     -> NominalDate
     -> PersonId
     -> Person
-    -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
+    -> MeasurementData ChildMeasurements
     -> NCDAData
     -> ModelIndexedDb
     -> Html MsgChild
-viewNCDA language currentDate childId child measurement data db =
+viewNCDA language currentDate childId child measurements data db =
     let
+        measurement =
+            mapMeasurementData .ncda measurements
+
         existingId =
             Maybe.map Tuple.first measurement.current
 
@@ -3489,6 +3492,10 @@ viewNCDA language currentDate childId child measurement data db =
             { atHealthCenter = True
             , showTasksTray = False
             , behindOnVaccinations = Nothing
+            , muacValue =
+                mapMeasurementData .muac measurements
+                    |> .current
+                    |> getMeasurementValueFunc
             , pregnancySummary = getNewbornExamPregnancySummary childId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate childId child db

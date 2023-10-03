@@ -440,6 +440,7 @@ viewNCDAContent language currentDate assembled db data =
                     |> List.isEmpty
                     |> not
                     |> Just
+            , muacValue = getMeasurementValueFunc <| assembled.measurements.muac
             , pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db

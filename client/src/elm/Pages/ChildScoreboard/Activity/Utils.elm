@@ -30,6 +30,7 @@ import Measurement.Utils
         , heightFormWithDefault
         , immunisationTaskToVaccineType
         , muacFormWithDefault
+        , muacMeasurementIsOff
         , nutritionFormWithDefault
         , weightFormWithDefault
         )
@@ -407,8 +408,7 @@ nutritionMeasurementIsOff currentDate zscores assembled task =
         -- MUAC is not green.
         TaskMuac ->
             getMeasurementValueFunc assembled.measurements.muac
-                |> Maybe.map (muacIndication >> (/=) ColorAlertGreen)
-                |> Maybe.withDefault False
+                |> muacMeasurementIsOff
 
         TaskNutrition ->
             -- We don't need to check if Nutrition is off or not, so we

@@ -1217,6 +1217,10 @@ type alias NCDAContentConfig msg =
     -- If set to Nothing, it's resolved using Well Child data.
     , behindOnVaccinations : Maybe Bool
 
+    -- Muac value set at the encounter.
+    -- It's used to determine if child has Acute malnutriion.
+    , muacValue : Maybe MuacInCm
+
     -- Required data, which is resolved from previous encounters.
     , pregnancySummary : Maybe PregnancySummaryValue
     , ncdaNeverFilled : Bool

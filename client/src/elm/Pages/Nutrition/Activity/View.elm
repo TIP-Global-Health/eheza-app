@@ -684,6 +684,7 @@ viewNCDAContent language currentDate id assembled data db =
             { atHealthCenter = True
             , showTasksTray = True
             , behindOnVaccinations = Nothing
+            , muacValue = getMeasurementValueFunc <| assembled.measurements.muac
             , pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
