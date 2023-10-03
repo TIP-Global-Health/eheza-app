@@ -10348,7 +10348,7 @@ translationSet trans =
 
                 TakingOngeraMNP ->
                     { english = "Is Ongera-MNP being consumed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ongera intungamubiri ihabwa umwana nkuko bikwiriye"
                     , kirundi = Nothing
                     }
 
@@ -10456,7 +10456,7 @@ translationSet trans =
 
                 ChildTakingFBF ->
                     { english = "Is FBF being consumed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "FBF ihabwa umwana nkuko bikwiriye"
                     , kirundi = Nothing
                     }
 
@@ -10661,7 +10661,7 @@ translationSet trans =
 
                 Pages.WellChild.ProgressReport.Model.ConditionalFoodItems ->
                     { english = "Receipt of other support (e.g., food items or small livestock)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gufata Izindi nkunga z’ingoboka (ibiryo, amatungo)"
                     , kirundi = Nothing
                     }
 
