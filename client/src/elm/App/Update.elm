@@ -236,6 +236,9 @@ update msg model =
         site =
             model.syncManager.syncInfoGeneral.site
 
+        features =
+            model.syncManager.syncInfoGeneral.features
+
         reverseGeoInfo =
             model.syncManager.reverseGeoInfo
     in
@@ -251,6 +254,7 @@ update msg model =
                         currentDate
                         model.currentTime
                         model.zscores
+                        features
                         nurseId
                         model.healthCenterId
                         model.villageId

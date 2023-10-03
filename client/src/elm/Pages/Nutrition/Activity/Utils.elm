@@ -11,6 +11,7 @@ import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
@@ -18,6 +19,7 @@ import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpF
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (taskCompleted)
+import SyncManager.Model exposing (SiteFeature)
 import ZScore.Model
 
 
@@ -45,8 +47,8 @@ generateNutritionAssessment currentDate zscores db assembled =
     Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue True db
 
 
-expectActivity : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-expectActivity currentDate zscores isChw assembled db activity =
+expectActivity : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+expectActivity currentDate zscores features isChw assembled db activity =
     case activity of
         -- Show for children that are at least 6 months old.
         Muac ->
@@ -56,10 +58,10 @@ expectActivity currentDate zscores isChw assembled db activity =
 
         -- For nurses only, show if child is bellow age of 24 months.
         NCDA ->
-            expectNCDAActivity currentDate isChw assembled.person
+            expectNCDAActivity currentDate features isChw assembled.person
 
         NextSteps ->
-            if mandatoryActivitiesCompleted currentDate zscores assembled.person isChw assembled db then
+            if mandatoryActivitiesCompleted currentDate zscores features assembled.person isChw assembled db then
                 -- Any assesment require sending to HC.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
@@ -73,19 +75,19 @@ expectActivity currentDate zscores isChw assembled db activity =
             True
 
 
-activityCompleted : NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-activityCompleted currentDate zscores isChw assembled db activity =
+activityCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+activityCompleted currentDate zscores features isChw assembled db activity =
     let
         measurements =
             assembled.measurements
     in
     case activity of
         Height ->
-            (not <| expectActivity currentDate zscores isChw assembled db Height)
+            (not <| expectActivity currentDate zscores features isChw assembled db Height)
                 || isJust measurements.height
 
         Muac ->
-            (not <| expectActivity currentDate zscores isChw assembled db Muac)
+            (not <| expectActivity currentDate zscores features isChw assembled db Muac)
                 || isJust measurements.muac
 
         Nutrition ->
@@ -101,7 +103,7 @@ activityCompleted currentDate zscores isChw assembled db activity =
             isJust measurements.ncda
 
         NextSteps ->
-            (not <| expectActivity currentDate zscores isChw assembled db NextSteps)
+            (not <| expectActivity currentDate zscores features isChw assembled db NextSteps)
                 || (isJust measurements.sendToHC
                         && isJust measurements.healthEducation
                         && isJust measurements.contributingFactors
@@ -109,10 +111,10 @@ activityCompleted currentDate zscores isChw assembled db activity =
                    )
 
 
-mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryActivitiesCompleted currentDate zscores child isChw assembled db =
+mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db =
     allMandatoryActivities isChw
-        |> List.filter (not << activityCompleted currentDate zscores isChw assembled db)
+        |> List.filter (not << activityCompleted currentDate zscores features isChw assembled db)
         |> List.isEmpty
 
 

@@ -22,11 +22,12 @@ import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChildMeasurementData2, getChildren, getMotherMeasurementData2, getMyMother)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import LocalData
 import Maybe.Extra exposing (isJust)
 import Measurement.Utils exposing (expectParticipantConsent)
+import SyncManager.Model exposing (SiteFeature)
 import ZScore.Model
 
 
@@ -319,8 +320,17 @@ nextStepsActivities =
 Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectChildActivity : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> ChildActivity -> Bool
-expectChildActivity currentDate zscores offlineSession childId isChw db activity =
+expectChildActivity :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> OfflineSession
+    -> PersonId
+    -> Bool
+    -> ModelIndexedDb
+    -> ChildActivity
+    -> Bool
+expectChildActivity currentDate zscores features offlineSession childId isChw db activity =
     case activity of
         Muac ->
             Dict.get childId offlineSession.children
@@ -339,25 +349,25 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
             List.member offlineSession.session.clinicType [ Achi, Fbf ]
 
         ContributingFactors ->
-            mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db
+            mandatoryActivitiesCompleted currentDate zscores features offlineSession childId isChw db
                 && (generateNutritionAssessment currentDate zscores childId db offlineSession
                         |> List.isEmpty
                         |> not
                    )
 
         FollowUp ->
-            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
+            expectChildActivity currentDate zscores features offlineSession childId isChw db ContributingFactors
 
         Activity.Model.HealthEducation ->
-            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
+            expectChildActivity currentDate zscores features offlineSession childId isChw db ContributingFactors
 
         Activity.Model.SendToHC ->
-            expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
+            expectChildActivity currentDate zscores features offlineSession childId isChw db ContributingFactors
 
         Activity.Model.NCDA ->
             -- For nurses only, show if child is bellow age of 24 months.
             Dict.get childId offlineSession.children
-                |> Maybe.map (expectNCDAActivity currentDate isChw)
+                |> Maybe.map (expectNCDAActivity currentDate features isChw)
                 |> Maybe.withDefault False
 
         _ ->
@@ -365,19 +375,45 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
             True
 
 
-mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> Bool
-mandatoryActivitiesCompleted currentDate zscores offlineSession childId isChw db =
-    childActivitiesCompleted currentDate zscores offlineSession childId isChw db allMandatoryActivities
+mandatoryActivitiesCompleted :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> OfflineSession
+    -> PersonId
+    -> Bool
+    -> ModelIndexedDb
+    -> Bool
+mandatoryActivitiesCompleted currentDate zscores features offlineSession childId isChw db =
+    childActivitiesCompleted currentDate zscores features offlineSession childId isChw db allMandatoryActivities
 
 
-childActivitiesCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> List ChildActivity -> Bool
-childActivitiesCompleted currentDate zscores offlineSession childId isChw db activities =
-    List.all (childActivityCompleted currentDate zscores offlineSession childId isChw db) activities
+childActivitiesCompleted :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> OfflineSession
+    -> PersonId
+    -> Bool
+    -> ModelIndexedDb
+    -> List ChildActivity
+    -> Bool
+childActivitiesCompleted currentDate zscores features offlineSession childId isChw db activities =
+    List.all (childActivityCompleted currentDate zscores features offlineSession childId isChw db) activities
 
 
-childActivityCompleted : NominalDate -> ZScore.Model.Model -> OfflineSession -> PersonId -> Bool -> ModelIndexedDb -> ChildActivity -> Bool
-childActivityCompleted currentDate zscores offlineSession childId isChw db activity =
-    (not <| expectChildActivity currentDate zscores offlineSession childId isChw db activity)
+childActivityCompleted :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> OfflineSession
+    -> PersonId
+    -> Bool
+    -> ModelIndexedDb
+    -> ChildActivity
+    -> Bool
+childActivityCompleted currentDate zscores features offlineSession childId isChw db activity =
+    (not <| expectChildActivity currentDate zscores features offlineSession childId isChw db activity)
         || childHasCompletedActivity childId activity offlineSession
 
 
@@ -470,10 +506,19 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : NominalDate -> ZScore.Model.Model -> ChildActivity -> OfflineSession -> Bool -> ModelIndexedDb -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeChildActivity currentDate zscores activity session isChw db checkedIn =
+summarizeChildActivity :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> ChildActivity
+    -> OfflineSession
+    -> Bool
+    -> ModelIndexedDb
+    -> CheckedIn
+    -> CompletedAndPending (Dict PersonId Person)
+summarizeChildActivity currentDate zscores features activity session isChw db checkedIn =
     checkedIn.children
-        |> Dict.filter (\childId _ -> expectChildActivity currentDate zscores session childId isChw db activity)
+        |> Dict.filter (\childId _ -> expectChildActivity currentDate zscores features session childId isChw db activity)
         |> Dict.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -483,8 +528,17 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : NominalDate -> ZScore.Model.Model -> MotherActivity -> OfflineSession -> Bool -> ModelIndexedDb -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeMotherActivity currentDate zscores activity session isChw db checkedIn =
+summarizeMotherActivity :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> MotherActivity
+    -> OfflineSession
+    -> Bool
+    -> ModelIndexedDb
+    -> CheckedIn
+    -> CompletedAndPending (Dict PersonId Person)
+summarizeMotherActivity currentDate zscores features activity session isChw db checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
     checkedIn.mothers
@@ -532,10 +586,18 @@ getParticipantCountForActivity summary activity =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this child).
 -}
-summarizeChildParticipant : NominalDate -> ZScore.Model.Model -> PersonId -> OfflineSession -> Bool -> ModelIndexedDb -> CompletedAndPending (List ChildActivity)
-summarizeChildParticipant currentDate zscores id session isChw db =
+summarizeChildParticipant :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> PersonId
+    -> OfflineSession
+    -> Bool
+    -> ModelIndexedDb
+    -> CompletedAndPending (List ChildActivity)
+summarizeChildParticipant currentDate zscores features id session isChw db =
     getAllChildActivities session
-        |> List.filter (expectChildActivity currentDate zscores session id isChw db)
+        |> List.filter (expectChildActivity currentDate zscores features session id isChw db)
         |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -544,8 +606,16 @@ summarizeChildParticipant currentDate zscores id session isChw db =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this mother).
 -}
-summarizeMotherParticipant : NominalDate -> ZScore.Model.Model -> PersonId -> OfflineSession -> Bool -> ModelIndexedDb -> CompletedAndPending (List MotherActivity)
-summarizeMotherParticipant currentDate zscores id session isChw db =
+summarizeMotherParticipant :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> PersonId
+    -> OfflineSession
+    -> Bool
+    -> ModelIndexedDb
+    -> CompletedAndPending (List MotherActivity)
+summarizeMotherParticipant currentDate zscores features id session isChw db =
     getAllMotherActivities session
         |> List.filter (expectMotherActivity currentDate session id)
         |> List.partition (\activity -> motherHasCompletedActivity id activity session)

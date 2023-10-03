@@ -2,11 +2,12 @@ module Pages.PinCode.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, stockManagementEnabled)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
+import Backend.Utils exposing (stockManagementEnabled)
 import Date exposing (Unit(..))
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf)

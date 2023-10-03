@@ -13,7 +13,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
-import Backend.Model exposing (ModelIndexedDb, ncdaEnabled)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( generateIndividualChildScoreboardMeasurementsForChild
@@ -26,6 +26,7 @@ import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, getHealthCenterName, graduatingAgeInMonth)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.Utils exposing (ncdaEnabled)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)
@@ -96,7 +97,7 @@ import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionAc
 import Pages.WellChild.ProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (TranslationId, translate, translateText)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
@@ -114,8 +115,18 @@ import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightFo
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Site -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores site id isChw db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site features id isChw db model =
     let
         encounter =
             Dict.get id db.wellChildEncounters
@@ -147,7 +158,7 @@ view language currentDate zscores site id isChw db model =
                 (\assembled ->
                     let
                         ( _, pendingActivities ) =
-                            partitionActivities currentDate zscores isChw db assembled
+                            partitionActivities currentDate zscores features isChw db assembled
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
@@ -173,6 +184,7 @@ view language currentDate zscores site id isChw db model =
             currentDate
             zscores
             site
+            features
             isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
@@ -197,6 +209,7 @@ viewProgressReport :
     -> NominalDate
     -> ZScore.Model.Model
     -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
@@ -213,7 +226,7 @@ viewProgressReport :
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores site features isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
     let
         content =
             case activeTab of
@@ -240,7 +253,7 @@ viewProgressReport language currentDate zscores site isChw initiator mandatoryNu
 
         tabs =
             -- @todo: remove when NCDA is launched.
-            if ncdaEnabled then
+            if ncdaEnabled features then
                 viewTabs language setActiveTabMsg activeTab
 
             else

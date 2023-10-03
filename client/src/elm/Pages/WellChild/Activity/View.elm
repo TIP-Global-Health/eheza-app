@@ -17,7 +17,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
@@ -72,7 +72,7 @@ import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -85,28 +85,41 @@ view :
     -> NominalDate
     -> ZScore.Model.Model
     -> Site
+    -> EverySet SiteFeature
     -> WellChildEncounterId
     -> Bool
     -> WellChildActivity
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate zscores site id isChw activity db model =
+view language currentDate zscores site features id isChw activity db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores site id isChw activity db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores site features id isChw activity db model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores site id isChw activity db model assembled =
+viewHeaderAndContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> WellChildActivity
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewHeaderAndContent language currentDate zscores site features id isChw activity db model assembled =
     let
         header =
             viewHeader language id activity
 
         content =
-            viewContent language currentDate zscores site id isChw activity db model assembled
+            viewContent language currentDate zscores site features id isChw activity db model assembled
     in
     div [ class "page-activity well-child" ]
         [ header
@@ -133,10 +146,22 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores site id isChw activity db model assembled =
+viewContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> WellChildActivity
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate zscores site features id isChw activity db model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewActivity language currentDate zscores site id isChw activity assembled db model
+        :: viewActivity language currentDate zscores site features id isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -191,6 +216,7 @@ viewActivity :
     -> NominalDate
     -> ZScore.Model.Model
     -> Site
+    -> EverySet SiteFeature
     -> WellChildEncounterId
     -> Bool
     -> WellChildActivity
@@ -198,7 +224,7 @@ viewActivity :
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewActivity language currentDate zscores site id isChw activity assembled db model =
+viewActivity language currentDate zscores site features id isChw activity assembled db model =
     case activity of
         WellChildPregnancySummary ->
             viewPregnancySummaryForm language currentDate assembled model.pregnancySummaryForm
@@ -219,7 +245,7 @@ viewActivity language currentDate zscores site id isChw activity assembled db mo
             viewMedicationContent language currentDate isChw assembled model.medicationData
 
         WellChildNextSteps ->
-            viewNextStepsContent language currentDate zscores id isChw assembled db model.nextStepsData
+            viewNextStepsContent language currentDate zscores features id isChw assembled db model.nextStepsData
 
         WellChildPhoto ->
             viewPhotoContent language currentDate assembled model.photoForm
@@ -2121,19 +2147,20 @@ viewNextStepsContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> WellChildEncounterId
     -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> NextStepsData
     -> List (Html Msg)
-viewNextStepsContent language currentDate zscores id isChw assembled db data =
+viewNextStepsContent language currentDate zscores features id isChw assembled db data =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            List.filter (expectNextStepsTask currentDate zscores isChw assembled db) nextStepsTasks
+            List.filter (expectNextStepsTask currentDate zscores features isChw assembled db) nextStepsTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)

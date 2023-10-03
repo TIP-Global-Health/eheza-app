@@ -317,17 +317,20 @@ viewConfiguredModel model configured =
                     site =
                         model.syncManager.syncInfoGeneral.site
 
+                    features =
+                        model.syncManager.syncInfoGeneral.features
+
                     geoInfo =
                         model.syncManager.geoInfo
 
                     reverseGeoInfo =
                         model.syncManager.reverseGeoInfo
                 in
-                viewUserPage userPage deviceName site geoInfo reverseGeoInfo model configured
+                viewUserPage userPage deviceName site features geoInfo reverseGeoInfo model configured
 
 
-viewUserPage : UserPage -> Maybe String -> Site -> GeoInfo -> ReverseGeoInfo -> Model -> ConfiguredModel -> Html Msg
-viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
+viewUserPage : UserPage -> Maybe String -> Site -> EverySet SiteFeature -> GeoInfo -> ReverseGeoInfo -> Model -> ConfiguredModel -> Html Msg
+viewUserPage page deviceName site features geoInfo reverseGeoInfo model configured =
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
             let
@@ -562,6 +565,7 @@ viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
                             currentDate
                             model.zscores
                             site
+                            features
                             isChw
                             (Tuple.second loggedInModel.nurse)
                             sessionId
@@ -622,7 +626,7 @@ viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
                             |> flexPageWrapper configured.config model
 
                     IndividualEncounterTypesPage ->
-                        Pages.IndividualEncounterTypes.View.view model.language currentDate healthCenterId isChw model
+                        Pages.IndividualEncounterTypes.View.view model.language currentDate features healthCenterId isChw model
                             |> flexPageWrapper configured.config model
 
                     PregnancyOutcomePage initiator id ->
@@ -739,7 +743,14 @@ viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
                                 Dict.get id loggedInModel.wellChildEncounterPages
                                     |> Maybe.withDefault Pages.WellChild.Encounter.Model.emptyModel
                         in
-                        Pages.WellChild.Encounter.View.view model.language currentDate model.zscores id isChw model.indexedDb page_
+                        Pages.WellChild.Encounter.View.view model.language
+                            currentDate
+                            model.zscores
+                            features
+                            id
+                            isChw
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -753,6 +764,7 @@ viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
                             currentDate
                             model.zscores
                             site
+                            features
                             id
                             isChw
                             activity
@@ -767,7 +779,15 @@ viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
                                 Dict.get encounterId loggedInModel.wellChildProgressReportPages
                                     |> Maybe.withDefault Pages.WellChild.ProgressReport.Model.emptyModel
                         in
-                        Pages.WellChild.ProgressReport.View.view model.language currentDate model.zscores site encounterId isChw model.indexedDb page_
+                        Pages.WellChild.ProgressReport.View.view model.language
+                            currentDate
+                            model.zscores
+                            site
+                            features
+                            encounterId
+                            isChw
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageWellChildProgressReport encounterId)
                             |> flexPageWrapper configured.config model
 
@@ -889,6 +909,7 @@ viewUserPage page deviceName site geoInfo reverseGeoInfo model configured =
                             currentDate
                             model.zscores
                             site
+                            features
                             personId
                             isChw
                             initiator

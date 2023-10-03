@@ -10,11 +10,11 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
         )
-import Backend.Model exposing (sendViaWhatsAppEnabled)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import Backend.Utils exposing (sendViaWhatsAppEnabled)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)

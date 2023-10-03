@@ -34,15 +34,27 @@ import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate zscores site isChw nurse sessionId page model db =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> Nurse
+    -> SessionId
+    -> SessionPage
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
+view language currentDate zscores site features isChw nurse sessionId page model db =
     let
         sessionData =
             Dict.get sessionId db.sessions
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
-        (\session -> viewFoundSession language currentDate zscores site isChw nurse ( sessionId, session ) page model db)
+        (\session -> viewFoundSession language currentDate zscores features site isChw nurse ( sessionId, session ) page model db)
         (wrapError language sessionId)
         sessionData
 
@@ -68,8 +80,20 @@ wrapError language sessionId errorHtml =
         ]
 
 
-viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
-viewFoundSession language currentDate zscores site isChw nurse ( sessionId, session ) page model db =
+viewFoundSession :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> Site
+    -> Bool
+    -> Nurse
+    -> ( SessionId, Session )
+    -> SessionPage
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
+viewFoundSession language currentDate zscores site features isChw nurse ( sessionId, session ) page model db =
     let
         authorized =
             db.clinics
@@ -88,7 +112,7 @@ viewFoundSession language currentDate zscores site isChw nurse ( sessionId, sess
                     |> Maybe.withDefault NotAsked
         in
         viewWebData language
-            (viewEditableSession language currentDate zscores site isChw nurse sessionId page model db)
+            (viewEditableSession language currentDate zscores site features isChw nurse sessionId page model db)
             (wrapError language sessionId)
             editableSession
 
@@ -101,6 +125,7 @@ viewEditableSession :
     -> NominalDate
     -> ZScore.Model.Model
     -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> Nurse
     -> SessionId
@@ -109,7 +134,7 @@ viewEditableSession :
     -> ModelIndexedDb
     -> EditableSession
     -> Html Msg
-viewEditableSession language currentDate zscores site isChw nurse sessionId page model db session =
+viewEditableSession language currentDate zscores site features isChw nurse sessionId page model db session =
     case page of
         ActivitiesPage ->
             model.activitiesPage
@@ -142,13 +167,13 @@ viewEditableSession language currentDate zscores site isChw nurse sessionId page
         ProgressReportPage childId ->
             Dict.get childId model.progressReportPages
                 |> Maybe.withDefault Pages.ProgressReport.Model.emptyModel
-                |> Pages.ProgressReport.View.view language currentDate zscores site isChw childId ( sessionId, session ) db
+                |> Pages.ProgressReport.View.view language currentDate zscores site features isChw childId ( sessionId, session ) db
                 |> Html.map (MsgProgressReport childId)
 
         ChildPage childId ->
             Dict.get childId model.childPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewChild language currentDate zscores isChw childId ( sessionId, session ) model db
+                |> Pages.Participant.View.viewChild language currentDate zscores features isChw childId ( sessionId, session ) model db
                 |> Html.map (MsgChild childId)
 
         MotherPage motherId ->
