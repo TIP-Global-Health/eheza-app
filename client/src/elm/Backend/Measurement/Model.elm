@@ -277,6 +277,7 @@ type alias NCDAValue =
     { signs : EverySet NCDASign
     , birthWeight : Maybe WeightInGrm
     , ancVisitsDates : EverySet NominalDate
+    , receivesVitaminA : Maybe ReceiveOption
     }
 
 
@@ -289,7 +290,10 @@ type NCDASign
     | ChildGotDiarrhea
     | ChildReceivesFBF
     | ChildTakingFBF
-    | ChildReceivesVitaminA
+    | -- This option is not an actual sign, as we got dedicated field for it,
+      -- to support 'not applicable' value. We keep it though, to maintain
+      -- form display logic which is common for all signs.
+      ChildReceivesVitaminA
     | ChildTakingVitaminA
     | ChildReceivesDewormer
     | ChildTakingDewormer
@@ -312,6 +316,12 @@ type NCDASign
     | TakingOngeraMNP
     | TreatedForAcuteMalnutrition
     | NoNCDASigns
+
+
+type ReceiveOption
+    = OptionReceive
+    | OptionNotReceive
+    | OptionNotApplicable
 
 
 

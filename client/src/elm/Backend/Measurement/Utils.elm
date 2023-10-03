@@ -3566,6 +3566,7 @@ ncdaSignFromString value =
         "child-taking-fbf" ->
             Just ChildTakingFBF
 
+        -- Sign not set on backend anymore.
         "child-receives-vitamin-a" ->
             Just ChildReceivesVitaminA
 
@@ -3666,6 +3667,7 @@ ncdaSignToString value =
         ChildTakingFBF ->
             "child-taking-fbf"
 
+        -- Sign not set on backend anymore.
         ChildReceivesVitaminA ->
             "child-receives-vitamin-a"
 
@@ -3721,10 +3723,41 @@ ncdaSignToString value =
             "none"
 
 
-expectNCDAActivity : NominalDate -> Person -> Bool
-expectNCDAActivity currentDate person =
+receiveOptionFromString : String -> Maybe ReceiveOption
+receiveOptionFromString value =
+    case value of
+        "receive" ->
+            Just OptionReceive
+
+        "not-receive" ->
+            Just OptionNotReceive
+
+        "not-applicable" ->
+            Just OptionNotApplicable
+
+        _ ->
+            Nothing
+
+
+receiveOptionToString : ReceiveOption -> String
+receiveOptionToString value =
+    case value of
+        OptionReceive ->
+            "receive"
+
+        OptionNotReceive ->
+            "not-receive"
+
+        OptionNotApplicable ->
+            "not-applicable"
+
+
+expectNCDAActivity : NominalDate -> Bool -> Person -> Bool
+expectNCDAActivity currentDate isChw person =
     -- @todo: remove when NCDA is launched.
     ncdaEnabled
+        && -- Show only for nurses.
+           not isChw
         && -- Show for children that are younger than 2 years old.
            (ageInMonths currentDate person
                 |> Maybe.map (\ageMonths -> ageMonths < 24)

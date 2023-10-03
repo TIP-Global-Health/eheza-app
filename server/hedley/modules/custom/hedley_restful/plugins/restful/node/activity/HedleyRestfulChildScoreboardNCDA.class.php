@@ -15,6 +15,7 @@ class HedleyRestfulChildScoreboardNCDA extends HedleyRestfulChildScoreboardActiv
    */
   protected $fields = [
     'field_weight',
+    'field_receive_option',
   ];
 
   /**

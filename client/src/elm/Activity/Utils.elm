@@ -355,8 +355,9 @@ expectChildActivity currentDate zscores offlineSession childId isChw db activity
             expectChildActivity currentDate zscores offlineSession childId isChw db ContributingFactors
 
         Activity.Model.NCDA ->
+            -- For nurses only, show if child is bellow age of 24 months.
             Dict.get childId offlineSession.children
-                |> Maybe.map (expectNCDAActivity currentDate)
+                |> Maybe.map (expectNCDAActivity currentDate isChw)
                 |> Maybe.withDefault False
 
         _ ->

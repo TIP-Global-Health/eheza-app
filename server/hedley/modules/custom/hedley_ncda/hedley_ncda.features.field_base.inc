@@ -47,5 +47,32 @@ function hedley_ncda_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_receive_option'.
+  $field_bases['field_receive_option'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_receive_option',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'receive' => 'Receive',
+        'not-receive' => 'Not receive',
+        'not-applicable' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   return $field_bases;
 }

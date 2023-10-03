@@ -20,6 +20,7 @@ import Backend.Measurement.Utils
         , muacIndication
         , muacValueFunc
         , nutritionSignToString
+        , receiveOptionToString
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -2742,27 +2743,34 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
 
                 ChildReceivesVitaminA ->
                     let
-                        updateFunc value form_ =
-                            { form_ | childReceivesVitaminA = Just value, childTakingVitaminA = Nothing }
+                        childReceivesVitaminAInput =
+                            [ viewQuestionLabel language <| Translate.NCDASignQuestion ChildReceivesVitaminA
+                            , viewCheckBoxSelectInput language
+                                [ OptionReceive, OptionNotReceive ]
+                                [ OptionNotApplicable ]
+                                form.childReceivesVitaminA
+                                config.setChildReceivesVitaminAMsg
+                                Translate.ReceiveOption
+                            ]
 
                         ( derivedInputs, derivedTasks ) =
-                            if form.childReceivesVitaminA == Just True then
+                            if form.childReceivesVitaminA == Just OptionReceive then
                                 inputsAndTasksForSign ChildTakingVitaminA
 
                             else
                                 ( [], [] )
 
                         counseling =
-                            if form.childReceivesVitaminA == Just False then
+                            if form.childReceivesVitaminA == Just OptionNotReceive then
                                 [ viewCounselingLabel ChildReceivesVitaminA ]
 
                             else
                                 []
                     in
-                    ( viewNCDAInput ChildReceivesVitaminA form.childReceivesVitaminA updateFunc
+                    ( childReceivesVitaminAInput
                         ++ counseling
                         ++ derivedInputs
-                    , form.childReceivesVitaminA :: derivedTasks
+                    , maybeToBoolTask form.childReceivesVitaminA :: derivedTasks
                     )
 
                 ChildTakingVitaminA ->
@@ -3502,6 +3510,7 @@ viewNCDA language currentDate childId child measurement data db =
             , toggleANCVisitDateMsg = ToggleANCVisitDate
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
+            , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg =

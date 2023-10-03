@@ -246,6 +246,7 @@ type MsgChild
     | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetChildReceivesVitaminA ReceiveOption
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
 
@@ -1047,7 +1048,7 @@ type alias NCDAForm =
 
     -- Step 2.
     , childBehindOnVaccination : Maybe Bool
-    , childReceivesVitaminA : Maybe Bool
+    , childReceivesVitaminA : Maybe ReceiveOption
     , childTakingVitaminA : Maybe Bool
     , childReceivesDewormer : Maybe Bool
     , childTakingDewormer : Maybe Bool
@@ -1230,6 +1231,7 @@ type alias NCDAContentConfig msg =
     -- Other actions.
     , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
+    , setChildReceivesVitaminAMsg : ReceiveOption -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg

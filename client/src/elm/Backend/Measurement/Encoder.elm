@@ -4786,6 +4786,12 @@ encodeChildScoreboardNCDA =
 encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
 encodeNCDAValueWithType type_ value =
     let
+        receiveOption =
+            Maybe.map
+                (\option -> [ ( "receive_option", encodeReceiveOption option ) ])
+                value.receivesVitaminA
+                |> Maybe.withDefault []
+
         birthWeight =
             Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
                 value.birthWeight
@@ -4797,11 +4803,17 @@ encodeNCDAValueWithType type_ value =
     , ( "type", string type_ )
     ]
         ++ birthWeight
+        ++ receiveOption
 
 
 encodeNCDASign : NCDASign -> Value
 encodeNCDASign =
     ncdaSignToString >> string
+
+
+encodeReceiveOption : ReceiveOption -> Value
+encodeReceiveOption =
+    receiveOptionToString >> string
 
 
 encodeNCDLipidPanelTest : NCDLipidPanelTest -> List ( String, Value )

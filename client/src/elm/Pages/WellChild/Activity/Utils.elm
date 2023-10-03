@@ -145,7 +145,8 @@ expectActivity currentDate zscores isChw assembled db activity =
             True
 
         WellChildNCDA ->
-            expectNCDAActivity currentDate assembled.person
+            -- For nurses only, show if child is bellow age of 24 months.
+            expectNCDAActivity currentDate isChw assembled.person
 
 
 generateVaccinationProgress : Person -> List WellChildMeasurements -> VaccinationProgressDict
