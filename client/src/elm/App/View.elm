@@ -10,7 +10,7 @@ import Browser
 import Config.Model
 import Config.View
 import Error.View
-import EverySet
+import EverySet exposing (EverySet)
 import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
@@ -106,7 +106,7 @@ import Pages.WellChild.ProgressReport.View
 import Pages.Wellbeing.View
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.View
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
@@ -645,7 +645,14 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.nutritionEncounterPages
                                     |> Maybe.withDefault Pages.Nutrition.Encounter.Model.emptyModel
                         in
-                        Pages.Nutrition.Encounter.View.view model.language currentDate model.zscores id isChw model.indexedDb page_
+                        Pages.Nutrition.Encounter.View.view model.language
+                            currentDate
+                            model.zscores
+                            features
+                            id
+                            isChw
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -665,7 +672,15 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get encounterId loggedInModel.nutritionProgressReportPages
                                     |> Maybe.withDefault Pages.Nutrition.ProgressReport.Model.emptyModel
                         in
-                        Pages.Nutrition.ProgressReport.View.view model.language currentDate model.zscores site encounterId isChw model.indexedDb page_
+                        Pages.Nutrition.ProgressReport.View.view model.language
+                            currentDate
+                            model.zscores
+                            site
+                            features
+                            encounterId
+                            isChw
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionProgressReport encounterId)
                             |> flexPageWrapper configured.config model
 

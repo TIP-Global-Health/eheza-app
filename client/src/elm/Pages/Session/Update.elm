@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Maybe.Extra
@@ -24,11 +25,20 @@ import Pages.ProgressReport.Model
 import Pages.ProgressReport.Update
 import Pages.Session.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (SiteFeature)
 import ZScore.Model
 
 
-update : NominalDate -> ZScore.Model.Model -> SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate zscores sessionId db msg model =
+update :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> SessionId
+    -> ModelIndexedDb
+    -> Msg
+    -> Model
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate zscores features sessionId db msg model =
     let
         sessionData =
             Dict.get sessionId db.editableSessions
@@ -36,7 +46,7 @@ update currentDate zscores sessionId db msg model =
     in
     case sessionData of
         Success session ->
-            updateFoundSession currentDate zscores sessionId session db msg model
+            updateFoundSession currentDate zscores features sessionId session db msg model
 
         _ ->
             -- We're handling UI messages here, and the UI should only be shown if
@@ -48,8 +58,17 @@ update currentDate zscores sessionId db msg model =
 {-| We need the editableSession in order to pass on some needed data. But we
 don't modify it directly ... instead, we return messages to do so.
 -}
-updateFoundSession : NominalDate -> ZScore.Model.Model -> SessionId -> EditableSession -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-updateFoundSession currentDate zscores sessionId session db msg model =
+updateFoundSession :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> SessionId
+    -> EditableSession
+    -> ModelIndexedDb
+    -> Msg
+    -> Model
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+updateFoundSession currentDate zscores features sessionId session db msg model =
     case msg of
         MsgActivities subMsg ->
             let
@@ -71,7 +90,6 @@ updateFoundSession currentDate zscores sessionId session db msg model =
             , List.map (App.Model.MsgLoggedIn << App.Model.MsgPageSession sessionId) extraMsgs
             )
 
-        -- TODO: Figure out whether maybeChildId really needs to be a Maybe.
         MsgChildActivity activityType maybeChildId subMsg ->
             let
                 activityPage =
@@ -82,7 +100,15 @@ updateFoundSession currentDate zscores sessionId session db msg model =
                     Maybe.map (\childId -> getChildForm childId model session) maybeChildId
 
                 updateReturns =
-                    Pages.Activity.Update.updateChild currentDate zscores subMsg activityPage session activityType childForm db
+                    Pages.Activity.Update.updateChild currentDate
+                        zscores
+                        features
+                        subMsg
+                        activityPage
+                        session
+                        activityType
+                        childForm
+                        db
 
                 sessionMsgs =
                     maybeChildId
@@ -116,7 +142,6 @@ updateFoundSession currentDate zscores sessionId session db msg model =
             , redirectMsgs ++ sessionMsgs
             )
 
-        -- TODO: Figure out whether `maybeMotherId` must be a Maybe.
         MsgMotherActivity activityType maybeMotherId subMsg ->
             let
                 activityPage =

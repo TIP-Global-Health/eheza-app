@@ -8,6 +8,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isClosed)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -28,7 +29,7 @@ import Pages.ProgressReport.View
 import Pages.Session.Model exposing (..)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
@@ -54,7 +55,7 @@ view language currentDate zscores site features isChw nurse sessionId page model
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
-        (\session -> viewFoundSession language currentDate zscores features site isChw nurse ( sessionId, session ) page model db)
+        (\session -> viewFoundSession language currentDate zscores site features isChw nurse ( sessionId, session ) page model db)
         (wrapError language sessionId)
         sessionData
 
@@ -84,8 +85,8 @@ viewFoundSession :
     Language
     -> NominalDate
     -> ZScore.Model.Model
-    -> EverySet SiteFeature
     -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> Nurse
     -> ( SessionId, Session )
@@ -146,13 +147,22 @@ viewEditableSession language currentDate zscores site features isChw nurse sessi
                 ChildActivity activity ->
                     Dict.get activity model.childActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                        |> Pages.Activity.View.view childParticipant language currentDate zscores isChw activity ( sessionId, session ) model db
+                        |> Pages.Activity.View.view childParticipant
+                            language
+                            currentDate
+                            zscores
+                            features
+                            isChw
+                            activity
+                            ( sessionId, session )
+                            model
+                            db
                         |> (\( html, maybeChildId ) -> Html.map (MsgChildActivity activity maybeChildId) html)
 
                 MotherActivity activity ->
                     Dict.get activity model.motherActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                        |> Pages.Activity.View.view motherParticipant language currentDate zscores isChw activity ( sessionId, session ) model db
+                        |> Pages.Activity.View.view motherParticipant language currentDate zscores features isChw activity ( sessionId, session ) model db
                         |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)
 
         AttendancePage ->
@@ -179,7 +189,7 @@ viewEditableSession language currentDate zscores site features isChw nurse sessi
         MotherPage motherId ->
             Dict.get motherId model.motherPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewMother language currentDate zscores site isChw motherId ( sessionId, session ) model db
+                |> Pages.Participant.View.viewMother language currentDate zscores site features isChw motherId ( sessionId, session ) model db
                 |> Html.map (MsgMother motherId)
 
         NextStepsPage childId activity ->

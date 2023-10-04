@@ -25,6 +25,7 @@ import Backend.NutritionEncounter.Utils
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)

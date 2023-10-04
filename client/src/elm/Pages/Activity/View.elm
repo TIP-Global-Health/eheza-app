@@ -7,6 +7,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -19,6 +20,7 @@ import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
 import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 import ZScore.Model
@@ -45,6 +47,7 @@ view :
     -> Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> Bool
     -> activity
     -> ( SessionId, EditableSession )
@@ -52,7 +55,7 @@ view :
     -> ModelIndexedDb
     -> Model id
     -> ( Html (Msg id msg), Maybe id )
-view config language currentDate zscores isChw selectedActivity ( sessionId, session ) pages db model =
+view config language currentDate zscores features isChw selectedActivity ( sessionId, session ) pages db model =
     let
         participants =
             session.checkedIn
@@ -60,7 +63,7 @@ view config language currentDate zscores isChw selectedActivity ( sessionId, ses
                     { completed = Dict.empty
                     , pending = Dict.empty
                     }
-                    (config.summarizeParticipantsForActivity currentDate zscores selectedActivity session.offlineSession isChw db
+                    (config.summarizeParticipantsForActivity currentDate zscores features selectedActivity session.offlineSession isChw db
                         >> applyNameFilter
                     )
 
