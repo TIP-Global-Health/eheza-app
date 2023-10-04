@@ -366,11 +366,15 @@ const getSyncInfoGeneral = function() {
       storageArr.site = '';
     }
 
+    if (storageArr.features === undefined) {
+      storageArr.features = '';
+    }
+
     return storageArr;
   }
 
   // No sync info saved yet.
-  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '', site: '' };
+  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '', site: '', features: '' };
 };
 
 /**

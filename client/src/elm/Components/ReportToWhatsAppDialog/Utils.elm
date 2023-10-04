@@ -1,6 +1,6 @@
-module Components.SendViaWhatsAppDialog.Utils exposing (..)
+module Components.ReportToWhatsAppDialog.Utils exposing (..)
 
-import Components.SendViaWhatsAppDialog.Model exposing (..)
+import Components.ReportToWhatsAppDialog.Model exposing (..)
 import EverySet exposing (EverySet)
 import SyncManager.Model exposing (Site(..))
 

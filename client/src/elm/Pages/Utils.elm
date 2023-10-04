@@ -10,11 +10,11 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , MedicationNonAdministrationSign(..)
         )
-import Backend.Model exposing (sendViaWhatsAppEnabled)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import Backend.Utils exposing (reportToWhatsAppEnabled)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -26,7 +26,7 @@ import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
@@ -934,19 +934,18 @@ viewEncounterActionButton language label buttonColor allowAction action =
         ]
 
 
-viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg -> Html msg
-viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
+viewEndEncounterMenuForProgressReport : Language -> EverySet SiteFeature -> Bool -> (Bool -> msg) -> msg -> Html msg
+viewEndEncounterMenuForProgressReport language features allowEndEncounter setDialogStateMsg setReportToWhatsAppDialogStateMsg =
     let
-        ( actionsClass, endEncounterButtonColor, sendViaWhatsAppButton ) =
-            -- @todo: Remove when WhatsApp feature is launched.
-            if sendViaWhatsAppEnabled then
+        ( actionsClass, endEncounterButtonColor, reportToWhatsAppButton ) =
+            if reportToWhatsAppEnabled features then
                 ( "actions two"
                 , "velvet"
                 , button
                     [ class "ui fluid primary button"
-                    , onClick setSendViaWhatsAppDialogStateMsg
+                    , onClick setReportToWhatsAppDialogStateMsg
                     ]
-                    [ text <| translate language Translate.SendViaWhatsApp ]
+                    [ text <| translate language Translate.ReportToWhatsApp ]
                 )
 
             else
@@ -967,7 +966,7 @@ viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateM
     div [ class actionsClass ]
         [ button attributes
             [ text <| translate language Translate.EndEncounter ]
-        , sendViaWhatsAppButton
+        , reportToWhatsAppButton
         ]
 
 

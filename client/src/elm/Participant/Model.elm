@@ -15,11 +15,13 @@ import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Pages.Activity.Model
 import Pages.Session.Model
 import RemoteData exposing (WebData)
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language)
 import ZScore.Model
 
@@ -43,6 +45,7 @@ type alias Participant id value activity msg date =
     , summarizeActivitiesForParticipant :
         date
         -> ZScore.Model.Model
+        -> EverySet SiteFeature
         -> id
         -> OfflineSession
         -> Bool
@@ -51,6 +54,7 @@ type alias Participant id value activity msg date =
     , summarizeParticipantsForActivity :
         date
         -> ZScore.Model.Model
+        -> EverySet SiteFeature
         -> activity
         -> OfflineSession
         -> Bool

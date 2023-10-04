@@ -4,9 +4,6 @@ module Backend.Model exposing
     , MsgIndexedDb(..)
     , Revision(..)
     , emptyModelIndexedDb
-    , ncdaEnabled
-    , sendViaWhatsAppEnabled
-    , stockManagementEnabled
     )
 
 {-| The `Backend` hierarchy is for code that represents entities from the
@@ -647,25 +644,3 @@ type Revision
     | WellChildVitalsRevision WellChildVitalsId WellChildVitals
     | WellChildVitaminARevision WellChildVitaminAId WellChildVitaminA
     | WellChildWeightRevision WellChildWeightId WellChildWeight
-
-
-
--- FEATURES ON/OFF
-
-
-ncdaEnabled : Bool
-ncdaEnabled =
-    -- For now, NCDA feature is not launched.
-    -- @todo: Enabled for development. Disable when done.
-    True
-
-
-stockManagementEnabled : Bool
-stockManagementEnabled =
-    -- For now, Stock Management feature is not launched.
-    False
-
-
-sendViaWhatsAppEnabled : Bool
-sendViaWhatsAppEnabled =
-    False

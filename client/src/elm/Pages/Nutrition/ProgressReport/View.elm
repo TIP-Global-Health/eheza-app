@@ -3,6 +3,7 @@ module Pages.Nutrition.ProgressReport.View exposing (view)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Pages.Nutrition.Activity.Utils exposing (mandatoryActivitiesCompleted)
@@ -12,14 +13,24 @@ import Pages.Nutrition.ProgressReport.Model exposing (..)
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Site -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores site id isChw db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> NutritionEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site features id isChw db model =
     let
         encounter =
             Dict.get id db.nutritionEncounters
@@ -51,7 +62,7 @@ view language currentDate zscores site id isChw db model =
                 (\assembled ( _, child ) ->
                     let
                         ( _, pendingActivities ) =
-                            partitionActivities currentDate zscores isChw db assembled
+                            partitionActivities currentDate zscores features isChw db assembled
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
@@ -60,7 +71,7 @@ view language currentDate zscores site id isChw db model =
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryActivitiesCompleted currentDate zscores child isChw assembled db
+                    , mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db
                     )
                 )
                 assembledData
@@ -78,17 +89,18 @@ view language currentDate zscores site id isChw db model =
             currentDate
             zscores
             site
+            features
             isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
-            model.sendViaWhatsAppDialog
+            model.reportToWhatsAppDialog
             model.reportTab
             SetActivePage
             SetReportTab
             SetDiagnosisMode
-            MsgSendViaWhatsAppDialog
+            MsgReportToWhatsAppDialog
             componentsConfig
             model.components
             bottomActionData

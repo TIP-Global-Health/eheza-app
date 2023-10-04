@@ -21,6 +21,7 @@ import Backend.Model exposing (..)
 import EverySet exposing (EverySet)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
+import SyncManager.Model exposing (SiteFeature(..))
 
 
 sw : Restful.Endpoint.CrudOperations w e k v c p
@@ -242,3 +243,22 @@ everySetsEqual set1 set2 =
                 |> EverySet.size
     in
     (size1 == size2) && (size1 == sizeIntersect)
+
+
+
+-- FEATURES ON/OFF
+
+
+ncdaEnabled : EverySet SiteFeature -> Bool
+ncdaEnabled =
+    EverySet.member FeatureNCDA
+
+
+reportToWhatsAppEnabled : EverySet SiteFeature -> Bool
+reportToWhatsAppEnabled =
+    EverySet.member FeatureReportToWhatsApp
+
+
+stockManagementEnabled : EverySet SiteFeature -> Bool
+stockManagementEnabled =
+    EverySet.member FeatureStockManagement

@@ -2,7 +2,7 @@ module Pages.WellChild.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
-import Components.SendViaWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Model
 import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
 import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
@@ -12,8 +12,8 @@ type alias Model =
     { diagnosisMode : DiagnosisMode
     , activeTab : ReportTab
     , showEndEncounterDialog : Bool
-    , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
-    , components : Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
+    , reportToWhatsAppDialog : Components.ReportToWhatsAppDialog.Model.Model
+    , components : Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentWellChild)
     }
 
 
@@ -22,7 +22,7 @@ emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , activeTab = TabSPVReport
     , showEndEncounterDialog = False
-    , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , reportToWhatsAppDialog = Components.ReportToWhatsAppDialog.Model.emptyModel
     , components = Nothing
     }
 
@@ -110,6 +110,6 @@ type Msg
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
     | SetDiagnosisMode DiagnosisMode
-    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
-    | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)
+    | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
+    | SetReportComponents (Maybe Components.ReportToWhatsAppDialog.Model.ReportComponentsList)
     | SetActiveTab ReportTab

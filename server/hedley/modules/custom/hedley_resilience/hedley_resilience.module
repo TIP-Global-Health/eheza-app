@@ -69,6 +69,11 @@ function hedley_resilience_node_presave($node) {
     return;
   }
 
+  $resilience_enabled = variable_get('hedley_admin_feature_resilience_enabled', FALSE);
+  if ($resilience_enabled) {
+    return;
+  }
+
   $wrapper = entity_metadata_wrapper('node', $node);
   // For now, we want to keep the feature disabled.
   // Therefore, we force FALSE at program enabled field.

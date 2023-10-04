@@ -1,4 +1,4 @@
-module Components.SendViaWhatsAppDialog.Model exposing (..)
+module Components.ReportToWhatsAppDialog.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
