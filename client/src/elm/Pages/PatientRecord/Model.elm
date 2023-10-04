@@ -1,6 +1,6 @@
 module Pages.PatientRecord.Model exposing (..)
 
-import Components.SendViaWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Model
 import Pages.Page exposing (Page)
 import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 
@@ -9,7 +9,7 @@ type alias Model =
     { diagnosisMode : DiagnosisMode
     , viewMode : ViewMode
     , filter : PatientRecordFilter
-    , reportToWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , reportToWhatsAppDialog : Components.ReportToWhatsAppDialog.Model.Model
     , spvReportTab : ReportTab
     }
 
@@ -19,7 +19,7 @@ emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , viewMode = ViewPatientRecord
     , filter = FilterAcuteIllness
-    , reportToWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , reportToWhatsAppDialog = Components.ReportToWhatsAppDialog.Model.emptyModel
     , spvReportTab = TabSPVReport
     }
 
@@ -31,7 +31,7 @@ type Msg
     | SetSPVReportTab ReportTab
     | SetViewMode ViewMode
     | SetFilter PatientRecordFilter
-    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
+    | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
 
 
 type ViewMode

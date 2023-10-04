@@ -191,7 +191,7 @@ viewContentForChild language currentDate zscores site features childId child isC
         SetActivePage
         SetSPVReportTab
         SetDiagnosisMode
-        MsgSendViaWhatsAppDialog
+        MsgReportToWhatsAppDialog
         Nothing
         Nothing
         bottomActionData

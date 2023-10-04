@@ -1,7 +1,7 @@
 module Pages.NCD.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Components.SendViaWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Model
 import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
 import Pages.Report.Model exposing (DiagnosisMode(..), LabResultsMode)
@@ -12,8 +12,8 @@ type alias Model =
     , labResultsMode : Maybe LabResultsMode
     , labResultsHistoryOrigin : Maybe LabResultsMode
     , showEndEncounterDialog : Bool
-    , reportToWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
-    , components : Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentNCD)
+    , reportToWhatsAppDialog : Components.ReportToWhatsAppDialog.Model.Model
+    , components : Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentNCD)
     }
 
 
@@ -23,7 +23,7 @@ emptyModel =
     , labResultsMode = Nothing
     , labResultsHistoryOrigin = Nothing
     , showEndEncounterDialog = False
-    , reportToWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , reportToWhatsAppDialog = Components.ReportToWhatsAppDialog.Model.emptyModel
     , components = Nothing
     }
 
@@ -42,5 +42,5 @@ type Msg
     | SetDiagnosisMode DiagnosisMode
     | SetLabResultsMode (Maybe LabResultsMode)
     | SetEndEncounterDialogState Bool
-    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
-    | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)
+    | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
+    | SetReportComponents (Maybe Components.ReportToWhatsAppDialog.Model.ReportComponentsList)

@@ -3,8 +3,8 @@ module Pages.NCD.ProgressReport.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.NCDEncounter.Model
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.Update
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
 import Pages.NCD.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..))
@@ -51,10 +51,10 @@ update msg model =
         SetEndEncounterDialogState isOpen ->
             ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )
 
-        MsgSendViaWhatsAppDialog subMsg ->
+        MsgReportToWhatsAppDialog subMsg ->
             let
                 ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
-                    Components.SendViaWhatsAppDialog.Update.update subMsg model.reportToWhatsAppDialog
+                    Components.ReportToWhatsAppDialog.Update.update subMsg model.reportToWhatsAppDialog
             in
             ( { model | reportToWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
                 |> sequenceExtra update extraMsgs
@@ -65,7 +65,7 @@ update msg model =
                     Maybe.map
                         (\components ->
                             case components of
-                                Components.SendViaWhatsAppDialog.Model.NCD antenatalComponents ->
+                                Components.ReportToWhatsAppDialog.Model.NCD antenatalComponents ->
                                     { model | components = Just antenatalComponents }
 
                                 -- We should never get here.

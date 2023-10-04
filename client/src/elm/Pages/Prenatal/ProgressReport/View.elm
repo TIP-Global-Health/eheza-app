@@ -43,9 +43,9 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
 import Backend.Utils exposing (reportToWhatsAppEnabled)
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.Utils
-import Components.SendViaWhatsAppDialog.View
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Utils
+import Components.ReportToWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
@@ -150,13 +150,13 @@ viewContentAndHeader language currentDate site features isChw initiator model as
         [ viewHeader language assembled.id initiator model
         , viewContent language currentDate features isChw initiator model assembled
         , viewModal endEncounterDialog
-        , Html.map MsgSendViaWhatsAppDialog
-            (Components.SendViaWhatsAppDialog.View.view
+        , Html.map MsgReportToWhatsAppDialog
+            (Components.ReportToWhatsAppDialog.View.view
                 language
                 currentDate
                 site
                 ( assembled.participant.person, assembled.person )
-                Components.SendViaWhatsAppDialog.Model.ReportAntenatal
+                Components.ReportToWhatsAppDialog.Model.ReportAntenatal
                 componentsConfig
                 model.reportToWhatsAppDialog
             )
@@ -289,7 +289,7 @@ viewContent language currentDate features isChw initiator model assembled =
                                 (\_ ->
                                     generateLabsResultsPaneData currentDate assembled
                                         |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
-                                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalLabsResults)
+                                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalLabsResults)
                                 )
                                 model.components
                                 |> Maybe.withDefault (viewLabsPane language currentDate SetLabResultsMode)
@@ -310,11 +310,11 @@ viewContent language currentDate features isChw initiator model assembled =
                                                 , button
                                                     [ class "ui fluid primary button"
                                                     , onClick <|
-                                                        MsgSendViaWhatsAppDialog <|
-                                                            Components.SendViaWhatsAppDialog.Model.SetState <|
-                                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                                        MsgReportToWhatsAppDialog <|
+                                                            Components.ReportToWhatsAppDialog.Model.SetState <|
+                                                                Just Components.ReportToWhatsAppDialog.Model.Consent
                                                     ]
-                                                    [ text <| translate language Translate.SendViaWhatsApp ]
+                                                    [ text <| translate language Translate.ReportToWhatsApp ]
                                                 )
 
                                             else
@@ -351,9 +351,9 @@ viewContent language currentDate features isChw initiator model assembled =
                                         features
                                         allowEndEncounter
                                         (always <| SetActivePage PinCodePage)
-                                        (MsgSendViaWhatsAppDialog <|
-                                            Components.SendViaWhatsAppDialog.Model.SetState <|
-                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                        (MsgReportToWhatsAppDialog <|
+                                            Components.ReportToWhatsAppDialog.Model.SetState <|
+                                                Just Components.ReportToWhatsAppDialog.Model.Consent
                                         )
 
                                 InitiatorNewEncounter encounterId ->
@@ -369,21 +369,21 @@ viewContent language currentDate features isChw initiator model assembled =
                                     emptyNode
 
                         showComponent =
-                            Components.SendViaWhatsAppDialog.Utils.showComponent model.components
+                            Components.ReportToWhatsAppDialog.Utils.showComponent model.components
                     in
                     [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalRiskFactors)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalRiskFactors)
                     , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewChwActivityPane language currentDate isChw assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
                     , viewPatientProgressPane language currentDate isChw assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalPatientProgress)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalPatientProgress)
                     , labsPane
                     , viewProgressPhotosPane language currentDate isChw assembled
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentAntenatalProgressPhotos)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalProgressPhotos)
                     , -- Actions are hidden when viewing for sharing via WhatsApp.
                       showIf (isNothing model.components) actions
                     ]

@@ -8,8 +8,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicati
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, isChildUnderAgeOf5, isPersonAnAdult)
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.View
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -110,9 +110,9 @@ viewContent language currentDate site features id isChw initiator model assemble
                         features
                         allowEndEncounter
                         SetEndEncounterDialogState
-                        (MsgSendViaWhatsAppDialog <|
-                            Components.SendViaWhatsAppDialog.Model.SetState <|
-                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                        (MsgReportToWhatsAppDialog <|
+                            Components.ReportToWhatsAppDialog.Model.SetState <|
+                                Just Components.ReportToWhatsAppDialog.Model.Consent
                         )
 
                 _ ->
@@ -137,13 +137,13 @@ viewContent language currentDate site features id isChw initiator model assemble
               showIf (isNothing model.reportToWhatsAppDialog.state) endEncounterMenu
             ]
         , viewModal endEncounterDialog
-        , Html.map MsgSendViaWhatsAppDialog
-            (Components.SendViaWhatsAppDialog.View.view
+        , Html.map MsgReportToWhatsAppDialog
+            (Components.ReportToWhatsAppDialog.View.view
                 language
                 currentDate
                 site
                 ( assembled.participant.person, assembled.person )
-                Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness
+                Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness
                 Nothing
                 model.reportToWhatsAppDialog
             )

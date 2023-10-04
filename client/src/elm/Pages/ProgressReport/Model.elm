@@ -1,6 +1,6 @@
 module Pages.ProgressReport.Model exposing (..)
 
-import Components.SendViaWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Model
 import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
 import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
@@ -8,8 +8,8 @@ import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 
 type alias Model =
     { diagnosisMode : DiagnosisMode
-    , reportToWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
-    , components : Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
+    , reportToWhatsAppDialog : Components.ReportToWhatsAppDialog.Model.Model
+    , components : Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentWellChild)
     , reportTab : ReportTab
     }
 
@@ -17,7 +17,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
-    , reportToWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , reportToWhatsAppDialog = Components.ReportToWhatsAppDialog.Model.emptyModel
     , components = Nothing
     , reportTab = TabSPVReport
     }
@@ -27,6 +27,6 @@ type Msg
     = NoOp
     | SetActivePage Page
     | SetDiagnosisMode DiagnosisMode
-    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
-    | SetReportComponents (Maybe Components.SendViaWhatsAppDialog.Model.ReportComponentsList)
+    | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
+    | SetReportComponents (Maybe Components.ReportToWhatsAppDialog.Model.ReportComponentsList)
     | SetReportTab ReportTab

@@ -72,7 +72,7 @@ view language currentDate zscores site features isChw childId ( sessionId, sessi
             SetActivePage
             SetReportTab
             SetDiagnosisMode
-            MsgSendViaWhatsAppDialog
+            MsgReportToWhatsAppDialog
             componentsConfig
             model.components
             bottomActionData

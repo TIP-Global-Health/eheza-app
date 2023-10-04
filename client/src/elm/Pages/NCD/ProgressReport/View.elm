@@ -22,9 +22,9 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator)
 import Backend.Person.Model exposing (Person)
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.Utils
-import Components.SendViaWhatsAppDialog.View
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Utils
+import Components.ReportToWhatsAppDialog.View
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -246,10 +246,10 @@ viewContent language currentDate site features initiator db model assembled =
                                     Maybe.map
                                         (\state ->
                                             case state of
-                                                Components.SendViaWhatsAppDialog.Model.ConfirmationBeforeExecuting _ ->
+                                                Components.ReportToWhatsAppDialog.Model.ConfirmationBeforeExecuting _ ->
                                                     True
 
-                                                Components.SendViaWhatsAppDialog.Model.ExecutionResult _ ->
+                                                Components.ReportToWhatsAppDialog.Model.ExecutionResult _ ->
                                                     True
 
                                                 _ ->
@@ -261,7 +261,7 @@ viewContent language currentDate site features initiator db model assembled =
                                 patientProgressPane =
                                     if showPatientProgressPaneByWhatsAppDialog then
                                         viewPatientProgressPane language currentDate assembled
-                                            |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDPatientProgress)
+                                            |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDPatientProgress)
 
                                     else
                                         emptyNode
@@ -271,7 +271,7 @@ viewContent language currentDate site features initiator db model assembled =
                                         (\_ ->
                                             generateLabsResultsPaneData currentDate assembled
                                                 |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
-                                                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDLabsResults)
+                                                |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDLabsResults)
                                         )
                                         model.components
                                         |> Maybe.withDefault (viewLabsPane language currentDate SetLabResultsMode)
@@ -291,9 +291,9 @@ viewContent language currentDate site features initiator db model assembled =
                                                 features
                                                 allowEndEncounter
                                                 SetEndEncounterDialogState
-                                                (MsgSendViaWhatsAppDialog <|
-                                                    Components.SendViaWhatsAppDialog.Model.SetState <|
-                                                        Just Components.SendViaWhatsAppDialog.Model.Consent
+                                                (MsgReportToWhatsAppDialog <|
+                                                    Components.ReportToWhatsAppDialog.Model.SetState <|
+                                                        Just Components.ReportToWhatsAppDialog.Model.Consent
                                                 )
 
                                         Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage _ ->
@@ -301,20 +301,20 @@ viewContent language currentDate site features initiator db model assembled =
                                                 features
                                                 True
                                                 (always (SetActivePage <| UserPage GlobalCaseManagementPage))
-                                                (MsgSendViaWhatsAppDialog <|
-                                                    Components.SendViaWhatsAppDialog.Model.SetState <|
-                                                        Just Components.SendViaWhatsAppDialog.Model.Consent
+                                                (MsgReportToWhatsAppDialog <|
+                                                    Components.ReportToWhatsAppDialog.Model.SetState <|
+                                                        Just Components.ReportToWhatsAppDialog.Model.Consent
                                                 )
 
                                 showComponent =
-                                    Components.SendViaWhatsAppDialog.Utils.showComponent model.components
+                                    Components.ReportToWhatsAppDialog.Utils.showComponent model.components
                             in
                             [ viewRiskFactorsPane language currentDate assembled
-                                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDRiskFactors)
+                                |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDRiskFactors)
                             , viewAcuteIllnessPane language currentDate initiator acuteIllnesses model.diagnosisMode db
-                                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDActiveDiagnosis)
+                                |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDActiveDiagnosis)
                             , viewMedicalDiagnosisPane language currentDate assembled
-                                |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentNCDMedicalDiagnosis)
+                                |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDMedicalDiagnosis)
                             , patientProgressPane
                             , labsPane
                             , -- Actions are hidden when viewing for sharing via WhatsApp.
@@ -334,13 +334,13 @@ viewContent language currentDate site features initiator db model assembled =
     <|
         viewPersonInfoPane language currentDate assembled.person
             :: (derivedContent
-                    ++ [ Html.map MsgSendViaWhatsAppDialog
-                            (Components.SendViaWhatsAppDialog.View.view
+                    ++ [ Html.map MsgReportToWhatsAppDialog
+                            (Components.ReportToWhatsAppDialog.View.view
                                 language
                                 currentDate
                                 site
                                 ( assembled.participant.person, assembled.person )
-                                Components.SendViaWhatsAppDialog.Model.ReportNCD
+                                Components.ReportToWhatsAppDialog.Model.ReportNCD
                                 componentsConfig
                                 model.reportToWhatsAppDialog
                             )

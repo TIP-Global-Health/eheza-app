@@ -100,7 +100,7 @@ view language currentDate zscores site features id isChw db model =
             SetActivePage
             SetReportTab
             SetDiagnosisMode
-            MsgSendViaWhatsAppDialog
+            MsgReportToWhatsAppDialog
             componentsConfig
             model.components
             bottomActionData

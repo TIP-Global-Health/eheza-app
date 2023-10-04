@@ -935,7 +935,7 @@ viewEncounterActionButton language label buttonColor allowAction action =
 
 
 viewEndEncounterMenuForProgressReport : Language -> EverySet SiteFeature -> Bool -> (Bool -> msg) -> msg -> Html msg
-viewEndEncounterMenuForProgressReport language features allowEndEncounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
+viewEndEncounterMenuForProgressReport language features allowEndEncounter setDialogStateMsg setReportToWhatsAppDialogStateMsg =
     let
         ( actionsClass, endEncounterButtonColor, reportToWhatsAppButton ) =
             if reportToWhatsAppEnabled features then
@@ -943,9 +943,9 @@ viewEndEncounterMenuForProgressReport language features allowEndEncounter setDia
                 , "velvet"
                 , button
                     [ class "ui fluid primary button"
-                    , onClick setSendViaWhatsAppDialogStateMsg
+                    , onClick setReportToWhatsAppDialogStateMsg
                     ]
-                    [ text <| translate language Translate.SendViaWhatsApp ]
+                    [ text <| translate language Translate.ReportToWhatsApp ]
                 )
 
             else

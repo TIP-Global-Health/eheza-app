@@ -1,20 +1,20 @@
 module Pages.AcuteIllness.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Components.SendViaWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Model
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { showEndEncounterDialog : Bool
-    , reportToWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , reportToWhatsAppDialog : Components.ReportToWhatsAppDialog.Model.Model
     }
 
 
 emptyModel : Model
 emptyModel =
     { showEndEncounterDialog = False
-    , reportToWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , reportToWhatsAppDialog = Components.ReportToWhatsAppDialog.Model.emptyModel
     }
 
 
@@ -22,7 +22,7 @@ type Msg
     = CloseEncounter AcuteIllnessEncounterId
     | SetActivePage Page
     | SetEndEncounterDialogState Bool
-    | MsgSendViaWhatsAppDialog (Components.SendViaWhatsAppDialog.Model.Msg Msg)
+    | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
 
 
 type AcuteIllnessStatus

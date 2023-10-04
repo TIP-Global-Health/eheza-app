@@ -30,7 +30,7 @@ import Backend.Session.Decoder
 import Backend.StockUpdate.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
-import Components.SendViaWhatsAppDialog.Decoder exposing (decodeReportType)
+import Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate
