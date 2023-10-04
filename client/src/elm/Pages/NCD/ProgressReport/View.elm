@@ -58,7 +58,7 @@ import Pages.Utils
         , viewPersonDetailsExtended
         )
 import RemoteData
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
