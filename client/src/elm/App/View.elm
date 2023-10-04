@@ -374,7 +374,15 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get prenatalEncounterId loggedInModel.clinicalProgressReportPages
                                     |> Maybe.withDefault Pages.Prenatal.ProgressReport.Model.emptyModel
                         in
-                        Pages.Prenatal.ProgressReport.View.view model.language currentDate site prenatalEncounterId isChw initiator model.indexedDb page_
+                        Pages.Prenatal.ProgressReport.View.view model.language
+                            currentDate
+                            site
+                            features
+                            prenatalEncounterId
+                            isChw
+                            initiator
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageClinicalProgressReport prenatalEncounterId)
                             |> flexPageWrapper configured.config model
 
@@ -718,7 +726,15 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get encounterId loggedInModel.acuteIllnessProgressReportPages
                                     |> Maybe.withDefault Pages.AcuteIllness.ProgressReport.Model.emptyModel
                         in
-                        Pages.AcuteIllness.ProgressReport.View.view model.language currentDate site encounterId isChw initiator model.indexedDb page_
+                        Pages.AcuteIllness.ProgressReport.View.view model.language
+                            currentDate
+                            site
+                            features
+                            encounterId
+                            isChw
+                            initiator
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport encounterId)
                             |> flexPageWrapper configured.config model
 
@@ -860,7 +876,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get encounterId loggedInModel.ncdProgressReportPages
                                     |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
                         in
-                        Pages.NCD.ProgressReport.View.view model.language currentDate site encounterId initiator model.indexedDb page_
+                        Pages.NCD.ProgressReport.View.view model.language currentDate site features encounterId initiator model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDProgressReport encounterId)
                             |> flexPageWrapper configured.config model
 

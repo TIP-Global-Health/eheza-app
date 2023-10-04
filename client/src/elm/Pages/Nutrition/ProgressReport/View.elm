@@ -95,7 +95,7 @@ view language currentDate zscores site features id isChw db model =
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
-            model.sendViaWhatsAppDialog
+            model.reportToWhatsAppDialog
             model.reportTab
             SetActivePage
             SetReportTab

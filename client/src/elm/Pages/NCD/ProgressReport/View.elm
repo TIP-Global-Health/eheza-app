@@ -65,8 +65,17 @@ import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Site -> NCDEncounterId -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id initiator db model =
+view :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> NCDEncounterId
+    -> NCDProgressReportInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate site features id initiator db model =
     let
         assembled =
             generateAssembledData id db
@@ -75,7 +84,7 @@ view language currentDate site id initiator db model =
             viewHeader language initiator model
 
         content =
-            viewWebData language (viewContent language currentDate site initiator db model) identity assembled
+            viewWebData language (viewContent language currentDate site features initiator db model) identity assembled
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -174,8 +183,17 @@ viewHeader language initiator model =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> NCDProgressReportInitiator -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site initiator db model assembled =
+viewContent :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> NCDProgressReportInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate site features initiator db model assembled =
     let
         derivedContent =
             let
@@ -237,7 +255,7 @@ viewContent language currentDate site initiator db model assembled =
                                                 _ ->
                                                     False
                                         )
-                                        model.sendViaWhatsAppDialog.state
+                                        model.reportToWhatsAppDialog.state
                                         |> Maybe.withDefault True
 
                                 patientProgressPane =
@@ -270,6 +288,7 @@ viewContent language currentDate site initiator db model assembled =
                                                     List.isEmpty pendingActivities
                                             in
                                             viewEndEncounterMenuForProgressReport language
+                                                features
                                                 allowEndEncounter
                                                 SetEndEncounterDialogState
                                                 (MsgSendViaWhatsAppDialog <|
@@ -279,6 +298,7 @@ viewContent language currentDate site initiator db model assembled =
 
                                         Backend.NCDEncounter.Types.InitiatorRecurrentEncounterPage _ ->
                                             viewEndEncounterMenuForProgressReport language
+                                                features
                                                 True
                                                 (always (SetActivePage <| UserPage GlobalCaseManagementPage))
                                                 (MsgSendViaWhatsAppDialog <|
@@ -322,7 +342,7 @@ viewContent language currentDate site initiator db model assembled =
                                 ( assembled.participant.person, assembled.person )
                                 Components.SendViaWhatsAppDialog.Model.ReportNCD
                                 componentsConfig
-                                model.sendViaWhatsAppDialog
+                                model.reportToWhatsAppDialog
                             )
                        ]
                )

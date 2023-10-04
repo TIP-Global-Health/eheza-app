@@ -10,7 +10,7 @@ import Pages.Report.Model exposing (DiagnosisMode(..), ReportTab(..))
 type alias Model =
     { diagnosisMode : DiagnosisMode
     , showEndEncounterDialog : Bool
-    , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , reportToWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
     , components : Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
     , reportTab : ReportTab
     }
@@ -20,7 +20,7 @@ emptyModel : Model
 emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , showEndEncounterDialog = False
-    , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , reportToWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
     , components = Nothing
     , reportTab = TabSPVReport
     }

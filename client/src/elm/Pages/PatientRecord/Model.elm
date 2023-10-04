@@ -9,7 +9,7 @@ type alias Model =
     { diagnosisMode : DiagnosisMode
     , viewMode : ViewMode
     , filter : PatientRecordFilter
-    , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , reportToWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
     , spvReportTab : ReportTab
     }
 
@@ -19,7 +19,7 @@ emptyModel =
     { diagnosisMode = ModeActiveDiagnosis
     , viewMode = ViewPatientRecord
     , filter = FilterAcuteIllness
-    , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , reportToWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
     , spvReportTab = TabSPVReport
     }
 

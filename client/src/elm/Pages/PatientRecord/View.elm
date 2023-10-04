@@ -186,7 +186,7 @@ viewContentForChild language currentDate zscores site features childId child isC
         False
         db
         model.diagnosisMode
-        model.sendViaWhatsAppDialog
+        model.reportToWhatsAppDialog
         model.spvReportTab
         SetActivePage
         SetSPVReportTab

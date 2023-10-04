@@ -52,17 +52,37 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id isChw initiator db model =
+view :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> AcuteIllnessProgressReportInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate site features id isChw initiator db model =
     let
         assembled =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewContent language currentDate site id isChw initiator model) identity assembled
+    viewWebData language (viewContent language currentDate site features id isChw initiator model) identity assembled
 
 
-viewContent : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site id isChw initiator model assembled =
+viewContent :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> AcuteIllnessProgressReportInitiator
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate site features id isChw initiator model assembled =
     let
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -87,6 +107,7 @@ viewContent language currentDate site id isChw initiator model assembled =
                             allowEndingEcounter currentDate isChw assembled pendingActivities
                     in
                     viewEndEncounterMenuForProgressReport language
+                        features
                         allowEndEncounter
                         SetEndEncounterDialogState
                         (MsgSendViaWhatsAppDialog <|
@@ -113,7 +134,7 @@ viewContent language currentDate site id isChw initiator model assembled =
             , viewNextStepsPane language currentDate assembled
             , -- Actions are hidden when 'Share via WhatsApp' dialog is open,
               -- so they do not appear on generated screenshot.
-              showIf (isNothing model.sendViaWhatsAppDialog.state) endEncounterMenu
+              showIf (isNothing model.reportToWhatsAppDialog.state) endEncounterMenu
             ]
         , viewModal endEncounterDialog
         , Html.map MsgSendViaWhatsAppDialog
@@ -124,7 +145,7 @@ viewContent language currentDate site id isChw initiator model assembled =
                 ( assembled.participant.person, assembled.person )
                 Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness
                 Nothing
-                model.sendViaWhatsAppDialog
+                model.reportToWhatsAppDialog
             )
         ]
 

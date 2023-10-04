@@ -7,14 +7,14 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { showEndEncounterDialog : Bool
-    , sendViaWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
+    , reportToWhatsAppDialog : Components.SendViaWhatsAppDialog.Model.Model
     }
 
 
 emptyModel : Model
 emptyModel =
     { showEndEncounterDialog = False
-    , sendViaWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
+    , reportToWhatsAppDialog = Components.SendViaWhatsAppDialog.Model.emptyModel
     }
 
 

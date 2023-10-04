@@ -22,9 +22,9 @@ update msg model =
         MsgSendViaWhatsAppDialog subMsg ->
             let
                 ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
-                    Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
+                    Components.SendViaWhatsAppDialog.Update.update subMsg model.reportToWhatsAppDialog
             in
-            ( { model | sendViaWhatsAppDialog = dialogUpdated }
+            ( { model | reportToWhatsAppDialog = dialogUpdated }
             , cmd
             , appMsgs
             )

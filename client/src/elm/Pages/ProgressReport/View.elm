@@ -67,7 +67,7 @@ view language currentDate zscores site features isChw childId ( sessionId, sessi
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
-            model.sendViaWhatsAppDialog
+            model.reportToWhatsAppDialog
             model.reportTab
             SetActivePage
             SetReportTab

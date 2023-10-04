@@ -254,12 +254,11 @@ ncdaEnabled =
     EverySet.member FeatureNCDA
 
 
-stockManagementEnabled : Bool
+reportToWhatsAppEnabled : EverySet SiteFeature -> Bool
+reportToWhatsAppEnabled =
+    EverySet.member FeatureReportToWhatsApp
+
+
+stockManagementEnabled : EverySet SiteFeature -> Bool
 stockManagementEnabled =
-    -- For now, Stock Management feature is not launched.
-    False
-
-
-sendViaWhatsAppEnabled : Bool
-sendViaWhatsAppEnabled =
-    False
+    EverySet.member FeatureStockManagement
