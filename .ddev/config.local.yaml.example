@@ -1,6 +1,6 @@
 web_environment:
+  - EHEZA_SITE=rwanda
   # - EHEZA_INFRA_REPO_REMOTE=git@github.com:organization/project.git
-  # - EHEZA_SITE=rwanda
   # - GITHUB_USERNAME=
   # - GITHUB_ACCESS_TOKEN=
   # - PANTHEON_NAME=

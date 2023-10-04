@@ -39,7 +39,7 @@ Primary ports:
 
 1. https://ddev.readthedocs.io/en/latest/#installation . Minimum version: [v1.21.1](https://github.com/drud/ddev/releases/tag/v1.21.1)
 1. On Mac, for the sake of Elm compilation, please make sure that the VM/container has at least 16GB of available RAM, otherwise `elm make` might get killed by the OOM killer.
-1. cp .ddev/config.local.yaml.example .ddev/config.local.yaml
+1. `cp .ddev/config.local.yaml.example .ddev/config.local.yaml`. Note that by default, installation is performed for Rwanda site. If you wish to install for Burundi site, set `EHEZA_SITE=burundi` at `.ddev/local.config.yaml`.
 1. ddev restart
 1. `cp client/src/elm/LocalConfig.Example.elm client/src/elm/LocalConfig.elm`
 1. `ddev gulp`
