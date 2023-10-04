@@ -11,7 +11,7 @@ import Backend.Person.Utils exposing (ageInMonths, isChildUnderAgeOf5, isPersonA
 import Components.SendViaWhatsAppDialog.Model
 import Components.SendViaWhatsAppDialog.View
 import Date
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)

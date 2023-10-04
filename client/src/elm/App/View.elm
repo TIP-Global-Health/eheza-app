@@ -254,6 +254,10 @@ don't have one.
 -}
 viewConfiguredModel : Model -> ConfiguredModel -> Html Msg
 viewConfiguredModel model configured =
+    let
+        features =
+            model.syncManager.syncInfoGeneral.features
+    in
     if not model.serviceWorker.active then
         -- If our service worker is not active, then the only thing we allow
         -- is showing the status of the service worker. (Since we need the
@@ -294,6 +298,7 @@ viewConfiguredModel model configured =
             PinCodePage ->
                 Pages.PinCode.View.view model.language
                     model.currentTime
+                    features
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
@@ -316,9 +321,6 @@ viewConfiguredModel model configured =
                 let
                     site =
                         model.syncManager.syncInfoGeneral.site
-
-                    features =
-                        model.syncManager.syncInfoGeneral.features
 
                     geoInfo =
                         model.syncManager.geoInfo
@@ -1004,6 +1006,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
             else
                 Pages.PinCode.View.view model.language
                     model.currentTime
+                    features
                     model.activePage
                     (Success loggedInModel.nurse)
                     ( model.healthCenterId, model.villageId )
@@ -1016,6 +1019,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
         Nothing ->
             Pages.PinCode.View.view model.language
                 model.currentTime
+                features
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )

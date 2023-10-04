@@ -9,7 +9,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
 import Backend.Utils exposing (stockManagementEnabled)
 import Date exposing (Unit(..))
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
@@ -20,6 +20,7 @@ import Pages.MessagingCenter.Utils exposing (resolveNumberOfUnreadMessages)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (SiteFeature)
 import Time exposing (posixToMillis)
 import Time.Extra
 import Translate exposing (Language, translate)
@@ -29,6 +30,7 @@ import Utils.Html exposing (activityCard, activityCardWithCounter, spinner, view
 view :
     Language
     -> Time.Posix
+    -> EverySet SiteFeature
     -> Page
     -> WebData ( NurseId, Nurse )
     -> ( Maybe HealthCenterId, Maybe VillageId )
@@ -36,7 +38,7 @@ view :
     -> Model
     -> ModelIndexedDb
     -> Html Msg
-view language currentTime activePage nurseData ( healthCenterId, villageId ) deviceName model db =
+view language currentTime features activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
             case nurseData of
@@ -59,6 +61,7 @@ view language currentTime activePage nurseData ( healthCenterId, villageId ) dev
                     ( viewLoggedInHeader language nurse selectedAuthorizedLocation
                     , viewLoggedInContent language
                         currentTime
+                        features
                         nurseId
                         nurse
                         ( healthCenterId, villageId )
@@ -175,6 +178,7 @@ viewAnonymousContent language activePage nurseData model =
 viewLoggedInContent :
     Language
     -> Time.Posix
+    -> EverySet SiteFeature
     -> NurseId
     -> Nurse
     -> ( Maybe HealthCenterId, Maybe VillageId )
@@ -184,7 +188,7 @@ viewLoggedInContent :
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
+viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
     let
         logoutButton =
             button
@@ -293,8 +297,7 @@ viewLoggedInContent language currentTime nurseId nurse ( healthCenterId, village
                             []
                        )
                     ++ (if
-                            -- @todo: remove when Stock Management is launched.
-                            stockManagementEnabled
+                            stockManagementEnabled features
                                 && not isChw
                         then
                             [ MenuStockManagement ]
