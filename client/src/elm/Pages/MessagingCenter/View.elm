@@ -28,7 +28,8 @@ import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( customPopup
+        , taskCompleted
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewQuestionLabel
@@ -106,6 +107,8 @@ view language currentTime nurseId nurse db model =
     div [ class "page-activity messaging-center" ]
         [ header
         , content
+        , viewModal <|
+            surveyScoreDialog language model.surveyScoreDialogState
         ]
 
 
@@ -285,6 +288,26 @@ viewMonthlySurvey language currentDate nurseId form =
                 ]
             ]
         ]
+
+
+surveyScoreDialog :
+    Language
+    -> Maybe SurveyScoreDialogState
+    -> Maybe (Html Msg)
+surveyScoreDialog language =
+    Maybe.map
+        (\dialogState ->
+            case dialogState of
+                MonthlySurveyScore score ->
+                    let
+                        data =
+                            ( p [ class "score" ] [ text <| String.fromInt score ++ "/20" ]
+                            , p [ class "interpretation" ] [ text <| translate language <| Translate.MonthlySurveyScoreInterpretation score ]
+                            , SetSurveyScoreDialogState Nothing
+                            )
+                    in
+                    customPopup language False Translate.Continue "survey-score-popup blue" data
+        )
 
 
 viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg

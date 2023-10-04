@@ -1218,9 +1218,9 @@ customSaveButton language active msg label =
         [ text <| translate language label ]
 
 
-customPopup : Language -> Bool -> TranslationId -> ( Html msg, Html msg, msg ) -> Html msg
-customPopup language showWarning actionLabel ( topMessage, bottomMessage, action ) =
-    div [ class "ui active modal diagnosis-popup" ]
+customPopup : Language -> Bool -> TranslationId -> String -> ( Html msg, Html msg, msg ) -> Html msg
+customPopup language showWarning actionLabel extraClass ( topMessage, bottomMessage, action ) =
+    div [ class <| "ui active modal " ++ extraClass ]
         [ div [ class "content" ] <|
             [ div [ class "popup-heading-wrapper" ]
                 [ img [ src "assets/images/exclamation-red.png" ] []

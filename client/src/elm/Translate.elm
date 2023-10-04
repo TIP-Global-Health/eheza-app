@@ -897,6 +897,7 @@ type TranslationId
     | ModeratePreeclampsia
     | Month
     | MonthAbbrev
+    | MonthlySurveyScoreInterpretation Int
     | MonthSinglePlural Int
     | MonthsOfStock
     | MotherId
@@ -10061,6 +10062,25 @@ translationSet trans =
             , kinyarwanda = Just "am"
             , kirundi = Just "am"
             }
+
+        MonthlySurveyScoreInterpretation score ->
+            if score < 14 then
+                { english = "Low resilient copers"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else if score < 17 then
+                { english = "Medium resilient copers"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else
+                { english = "High resilient copers"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
 
         MonthSinglePlural value ->
             if value == 1 then
