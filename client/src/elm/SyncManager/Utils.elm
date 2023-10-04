@@ -27,8 +27,10 @@ import Backend.StockUpdate.Encoder
 import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
+import EverySet exposing (EverySet)
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
+import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
@@ -1771,6 +1773,50 @@ siteFromString str =
             SiteUnknown
 
 
+siteFeatureFromString : String -> Maybe SiteFeature
+siteFeatureFromString str =
+    case String.toLower str of
+        "ncda" ->
+            Just FeatureNCDA
+
+        "report_to_whatsapp" ->
+            Just FeatureReportToWhatsApp
+
+        "stock_management" ->
+            Just FeatureStockManagement
+
+        _ ->
+            Nothing
+
+
+siteFeatureToString : SiteFeature -> String
+siteFeatureToString feature =
+    case feature of
+        FeatureNCDA ->
+            "ncda"
+
+        FeatureReportToWhatsApp ->
+            "report_to_whatsapp"
+
+        FeatureStockManagement ->
+            "stock_management"
+
+
+siteFeaturesFromString : String -> EverySet SiteFeature
+siteFeaturesFromString str =
+    String.words str
+        |> List.map siteFeatureFromString
+        |> Maybe.Extra.values
+        |> EverySet.fromList
+
+
+siteFeaturesToString : EverySet SiteFeature -> String
+siteFeaturesToString =
+    EverySet.toList
+        >> List.map siteFeatureToString
+        >> String.join " "
+
+
 syncInfoGeneralForPort : SyncInfoGeneral -> SyncInfoGeneralForPort
 syncInfoGeneralForPort info =
     SyncInfoGeneralForPort
@@ -1782,6 +1828,7 @@ syncInfoGeneralForPort info =
         (syncInfoStatusToString info.status)
         info.rollbarToken
         (siteToString info.site)
+        (siteFeaturesToString info.features)
 
 
 syncInfoAuthorityForPort : SyncInfoAuthority -> SyncInfoAuthorityForPort
@@ -1807,6 +1854,7 @@ syncInfoGeneralFromPort info =
         (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
         info.rollbarToken
         (siteFromString info.site)
+        (siteFeaturesFromString info.features)
 
 
 syncInfoAuthorityFromPort : SyncInfoAuthorityForPort -> SyncInfoAuthority

@@ -34,15 +34,26 @@ import Pages.Utils
 import Pages.WellChild.ProgressReport.Model
 import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading)
 import RemoteData
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage)
 import Utils.NominalDate exposing (sortByDate, sortTuplesByDateDesc)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Site -> PersonId -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores site id isChw initiator db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> PersonId
+    -> Bool
+    -> PatientRecordInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site features id isChw initiator db model =
     Dict.get id db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -66,7 +77,7 @@ view language currentDate zscores site id isChw initiator db model =
 
                     ViewPatientRecord ->
                         if patientType == PatientChild then
-                            viewContentForChild language currentDate zscores site id person isChw initiator db model
+                            viewContentForChild language currentDate zscores site features id person isChw initiator db model
 
                         else
                             viewContentForOther language currentDate site isChw id person patientType initiator db model
@@ -138,8 +149,20 @@ viewStartEncounterPage language currentDate isChw personId person patientType in
         ]
 
 
-viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> Site -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewContentForChild language currentDate zscores site childId child isChw initiator db model =
+viewContentForChild :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> PersonId
+    -> Person
+    -> Bool
+    -> PatientRecordInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewContentForChild language currentDate zscores site features childId child isChw initiator db model =
     let
         wellChildReportInitiator =
             Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
@@ -157,17 +180,18 @@ viewContentForChild language currentDate zscores site childId child isChw initia
         currentDate
         zscores
         site
+        features
         isChw
         wellChildReportInitiator
         False
         db
         model.diagnosisMode
-        model.sendViaWhatsAppDialog
+        model.reportToWhatsAppDialog
         model.spvReportTab
         SetActivePage
         SetSPVReportTab
         SetDiagnosisMode
-        MsgSendViaWhatsAppDialog
+        MsgReportToWhatsAppDialog
         Nothing
         Nothing
         bottomActionData

@@ -3,10 +3,11 @@ module Backend.Measurement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Model exposing (ModelIndexedDb, ncdaEnabled)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Session.Model exposing (OfflineSession)
+import Backend.Utils exposing (ncdaEnabled)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -14,6 +15,7 @@ import LocalData
 import Maybe.Extra exposing (isJust)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid)
+import SyncManager.Model exposing (SiteFeature)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
@@ -3746,10 +3748,10 @@ receiveOptionToString value =
             "not-applicable"
 
 
-expectNCDAActivity : NominalDate -> Bool -> Person -> Bool
-expectNCDAActivity currentDate isChw person =
-    -- @todo: remove when NCDA is launched.
-    ncdaEnabled
+expectNCDAActivity : NominalDate -> EverySet SiteFeature -> Bool -> Person -> Bool
+expectNCDAActivity currentDate features isChw person =
+    -- NCDA feature enabled.
+    ncdaEnabled features
         && -- Show only for nurses.
            not isChw
         && -- Show for children that are younger than 2 years old.

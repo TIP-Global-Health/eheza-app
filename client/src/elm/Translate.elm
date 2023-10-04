@@ -59,7 +59,7 @@ import Backend.ResilienceSurvey.Model
         )
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
-import Components.SendViaWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Model
     exposing
         ( ReportComponentAntenatal(..)
         , ReportComponentNCD(..)
@@ -1464,22 +1464,22 @@ type TranslationId
     | SelectedHCNotSynced
     | SelectedHCSyncing
     | Send
-    | SendViaWhatsApp
-    | SendViaWhatsAppComponentsSelectionHeader Components.SendViaWhatsAppDialog.Model.ReportType
-    | SendViaWhatsAppConfirmationBeforeExecutingHeader
-    | SendViaWhatsAppConfirmationBeforeExecutingInstructions
-    | SendViaWhatsAppConfirmationBeforeExecutingQuestion
-    | SendViaWhatsAppConsentQuestion
-    | SendViaWhatsAppExecutionResultFailure
-    | SendViaWhatsAppExecutionResultSomethingWentWrong
-    | SendViaWhatsAppExecutionResultSuccess
-    | SendViaWhatsAppNoticeOfNonRespobsibility
-    | SendViaWhatsAppPhoneInputHeader
-    | SendViaWhatsAppPhoneVerificationHeader
-    | SendViaWhatsAppPhoneVerificationQuestion
-    | SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix
-    | SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix
-    | SendViaWhatsAppPhoneUpdateConfirmationMessasge
+    | ReportToWhatsApp
+    | ReportToWhatsAppComponentsSelectionHeader Components.ReportToWhatsAppDialog.Model.ReportType
+    | ReportToWhatsAppConfirmationBeforeExecutingHeader
+    | ReportToWhatsAppConfirmationBeforeExecutingInstructions
+    | ReportToWhatsAppConfirmationBeforeExecutingQuestion
+    | ReportToWhatsAppConsentQuestion
+    | ReportToWhatsAppExecutionResultFailure
+    | ReportToWhatsAppExecutionResultSomethingWentWrong
+    | ReportToWhatsAppExecutionResultSuccess
+    | ReportToWhatsAppNoticeOfNonRespobsibility
+    | ReportToWhatsAppPhoneInputHeader
+    | ReportToWhatsAppPhoneVerificationHeader
+    | ReportToWhatsAppPhoneVerificationQuestion
+    | ReportToWhatsAppPhoneUpdateAtProfileQuestionPrefix
+    | ReportToWhatsAppPhoneUpdateAtProfileQuestionSuffix
+    | ReportToWhatsAppPhoneUpdateConfirmationMessasge
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -19290,21 +19290,21 @@ translationSet trans =
             , kirundi = Just "Rungika"
             }
 
-        SendViaWhatsApp ->
+        ReportToWhatsApp ->
             { english = "Send via WhatsApp"
             , kinyarwanda = Nothing
             , kirundi = Just "Rungika ucishije kuri WhatsApp"
             }
 
-        SendViaWhatsAppComponentsSelectionHeader reportType ->
+        ReportToWhatsAppComponentsSelectionHeader reportType ->
             case reportType of
-                Components.SendViaWhatsAppDialog.Model.ReportWellChild ->
+                Components.ReportToWhatsAppDialog.Model.ReportWellChild ->
                     { english = "Please select which sections of the Standard Pediatric Visit Report you would like to send:"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Hitamwo ibice vy'ivyegeranyo bisanzwe vyo kuramutsa/vyo kugendera abana ushaka kurungika:"
                     }
 
-                Components.SendViaWhatsAppDialog.Model.ReportAntenatal ->
+                Components.ReportToWhatsAppDialog.Model.ReportAntenatal ->
                     { english = "Please select which sections of the Antenatal Report you would like to send:"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Hitamwo ibice vy'ivyegeranyo vy'abibungenze canke vy'imvyaro wipfuza kurungika:"
@@ -19312,97 +19312,97 @@ translationSet trans =
 
                 -- Not in use, because AcuteIllness does not allow
                 -- components selection.
-                Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness ->
+                Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness ->
                     { english = ""
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                Components.SendViaWhatsAppDialog.Model.ReportNCD ->
+                Components.ReportToWhatsAppDialog.Model.ReportNCD ->
                     { english = "Please select which sections of the NCD Report you would like to send:"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Hitamwo ibice vy'ivyegeranyo vy'ingwara zitandukira ushaka kurungika:"
                     }
 
-        SendViaWhatsAppConfirmationBeforeExecutingHeader ->
+        ReportToWhatsAppConfirmationBeforeExecutingHeader ->
             { english = "By pressing send you are releasing the selected documents to:"
             , kinyarwanda = Nothing
             , kirundi = Just "Ufyonze aho kurungika, uba urekuye inyandiko zatowe/zahiswemwo kuri:"
             }
 
-        SendViaWhatsAppConfirmationBeforeExecutingInstructions ->
+        ReportToWhatsAppConfirmationBeforeExecutingInstructions ->
             { english = "This action will take up to one minute to complete."
             , kinyarwanda = Nothing
             , kirundi = Just "Iki gikorwa kiraja gutwara umunota kugira gihere"
             }
 
-        SendViaWhatsAppConfirmationBeforeExecutingQuestion ->
+        ReportToWhatsAppConfirmationBeforeExecutingQuestion ->
             { english = "Would you like to send?"
             , kinyarwanda = Nothing
             , kirundi = Just "Wipfuza kurungika?"
             }
 
-        SendViaWhatsAppConsentQuestion ->
+        ReportToWhatsAppConsentQuestion ->
             { english = "Does the patient consent to having their medical records sent via WhatsApp?"
             , kinyarwanda = Nothing
             , kirundi = Just "Mbega umugwayi yaremeye kuronka ivyegeranyo vyo kwa muganga birungitswe kuri WhatsApp?"
             }
 
-        SendViaWhatsAppExecutionResultFailure ->
+        ReportToWhatsAppExecutionResultFailure ->
             { english = "Action Failed. Please try again. If problem persists, please contact system administrator."
             , kinyarwanda = Nothing
             , kirundi = Just "Igikorwa canse. Gerageza kandi. Mugihe ingorane ibandanije, gerageza uvugane n'uwujejwe ubwo buhinga/umukuru w'ubuhinga ( umuhinga mu ma porogarama ya mudasobwa)"
             }
 
-        SendViaWhatsAppExecutionResultSomethingWentWrong ->
+        ReportToWhatsAppExecutionResultSomethingWentWrong ->
             { english = "Something went wrong. Please contact system administrator."
             , kinyarwanda = Nothing
             , kirundi = Just "Hari ikintu kitagenze neza. Raba umuhinga/umurongozi w'ubu buryo bugezweho ( wiyi Sisiteme)"
             }
 
-        SendViaWhatsAppExecutionResultSuccess ->
+        ReportToWhatsAppExecutionResultSuccess ->
             { english = "Success. Report will be sent when device has internet conneciton."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
-        SendViaWhatsAppNoticeOfNonRespobsibility ->
+        ReportToWhatsAppNoticeOfNonRespobsibility ->
             { english = "Please note that the medical professional and E-Heza will not be liable for what happens to these medical reports once released."
             , kinyarwanda = Nothing
             , kirundi = Just "Menya neza ko umuvuzi hamwe na E-Heza batazobazwa na kimwe mu gihe ivyegeranyo vyo kwa muganga bizoba bimaze gusohoka"
             }
 
-        SendViaWhatsAppPhoneInputHeader ->
+        ReportToWhatsAppPhoneInputHeader ->
             { english = "Enter the correct phone number for the patient:"
             , kinyarwanda = Nothing
             , kirundi = Just "Injiza/andika inimero ya /umurongo wa terefone yo y'umugwayi"
             }
 
-        SendViaWhatsAppPhoneVerificationHeader ->
+        ReportToWhatsAppPhoneVerificationHeader ->
             { english = "The phone number we have on file for this patient is:"
             , kinyarwanda = Nothing
             , kirundi = Just "Inimero za terefone dufise mu nyandiko z'uyu mugwayi ni:"
             }
 
-        SendViaWhatsAppPhoneVerificationQuestion ->
+        ReportToWhatsAppPhoneVerificationQuestion ->
             { english = "Is this the correct number for the patient's WhatsApp?"
             , kinyarwanda = Nothing
             , kirundi = Just "Mbega iyi nimero ya WhatsApp y'umugwayi/umuvyeyi niyo"
             }
 
-        SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix ->
+        ReportToWhatsAppPhoneUpdateAtProfileQuestionPrefix ->
             { english = "Would you like to update the patient profile for"
             , kinyarwanda = Nothing
             , kirundi = Just "Mbega iyi nimero ya WhatsApp y'umugwayi/umuvyeyi niyo"
             }
 
-        SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix ->
+        ReportToWhatsAppPhoneUpdateAtProfileQuestionSuffix ->
             { english = "with the number"
             , kinyarwanda = Nothing
             , kirundi = Just "Hamwe n'igiharuro"
             }
 
-        SendViaWhatsAppPhoneUpdateConfirmationMessasge ->
+        ReportToWhatsAppPhoneUpdateConfirmationMessasge ->
             { english = "The patient record has been updated."
             , kinyarwanda = Nothing
             , kirundi = Just "Ivyanditswe vy'umugwayi vyavuguruwe/vyashizwe k'umunsi"

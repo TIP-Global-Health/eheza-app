@@ -78,7 +78,7 @@ import Backend.Village.Utils exposing (getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
@@ -128,7 +128,7 @@ import Pages.WellChild.Encounter.Model
 import Pages.WellChild.Encounter.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toCmd, toTask)
-import SyncManager.Model
+import SyncManager.Model exposing (SiteFeature)
 import Task
 import Time
 import Translate exposing (Language, translate)
@@ -140,6 +140,7 @@ updateIndexedDb :
     -> NominalDate
     -> Time.Posix
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> Maybe NurseId
     -> Maybe HealthCenterId
     -> Maybe VillageId
@@ -149,7 +150,7 @@ updateIndexedDb :
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime zscores features nurseId healthCenterId villageId isChw activePage syncManager msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -307,7 +308,20 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        activePage
+                        syncManager
+                    )
+                    extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -358,7 +372,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     (\editable ->
                         let
                             summaryByActivity =
-                                summarizeByActivity currentDate zscores editable.offlineSession editable.checkedIn isChw model
+                                summarizeByActivity currentDate zscores features editable.offlineSession editable.checkedIn isChw model
 
                             updatedEditable =
                                 { editable | summaryByActivity = summaryByActivity }
@@ -377,7 +391,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     (\editable ->
                         let
                             summaryByParticipant =
-                                summarizeByParticipant currentDate zscores editable.offlineSession editable.checkedIn isChw model
+                                summarizeByParticipant currentDate zscores features editable.offlineSession editable.checkedIn isChw model
 
                             updatedEditable =
                                 { editable | summaryByParticipant = summaryByParticipant }
@@ -1487,7 +1501,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw model newModel)
+                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1526,7 +1540,15 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         -- or not.
                                         -- Therefore, we will be examining the 'before' state, taking into consideration
                                         -- that triggering activity is completed.
-                                        generateNutritionAssessmentGroupMsgs currentDate zscores isChw participantId sessionId_ activePage updateFunc newModel
+                                        generateNutritionAssessmentGroupMsgs currentDate
+                                            zscores
+                                            features
+                                            isChw
+                                            participantId
+                                            sessionId_
+                                            activePage
+                                            updateFunc
+                                            newModel
                                 in
                                 ( withRecalc, extraMsgs )
                             )
@@ -3329,7 +3351,20 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        activePage
+                        syncManager
+                    )
+                    extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
@@ -3522,7 +3557,20 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
-                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        activePage
+                        syncManager
+                    )
+                    extraMsgs
 
         PatchPerson origin personId person ->
             ( { model | postPerson = Loading }
@@ -6157,12 +6205,13 @@ saveNCDLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
 generateNutritionAssessmentIndividualMsgs :
     NominalDate
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> Bool
     -> ModelIndexedDb
     -> ModelIndexedDb
     -> NutritionEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after id =
+generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
@@ -6170,6 +6219,7 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after
                     Pages.Nutrition.Activity.Utils.mandatoryActivitiesCompleted
                         currentDate
                         zscores
+                        features
                         assembledAfter.person
                         isChw
                         assembledAfter
@@ -6259,6 +6309,7 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after
 generateNutritionAssessmentGroupMsgs :
     NominalDate
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> Bool
     -> PersonId
     -> SessionId
@@ -6266,7 +6317,7 @@ generateNutritionAssessmentGroupMsgs :
     -> (ChildMeasurements -> ChildMeasurements)
     -> ModelIndexedDb
     -> List App.Model.Msg
-generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId activePage updateFunc db =
+generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId sessionId activePage updateFunc db =
     Dict.get sessionId db.editableSessions
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -6280,6 +6331,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                         Activity.Utils.mandatoryActivitiesCompleted
                             currentDate
                             zscores
+                            features
                             offlineSessionAfter
                             childId
                             isChw
@@ -6926,19 +6978,27 @@ makeEditableSession sessionId db =
 for our UI, when we're focused on participants. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByParticipant : NominalDate -> ZScore.Model.Model -> OfflineSession -> LocalData CheckedIn -> Bool -> ModelIndexedDb -> LocalData SummaryByParticipant
-summarizeByParticipant currentDate zscores session checkedIn_ isChw db =
+summarizeByParticipant :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> OfflineSession
+    -> LocalData CheckedIn
+    -> Bool
+    -> ModelIndexedDb
+    -> LocalData SummaryByParticipant
+summarizeByParticipant currentDate zscores features session checkedIn_ isChw db =
     LocalData.map
         (\checkedIn ->
             let
                 children =
                     Dict.map
-                        (\childId _ -> summarizeChildParticipant currentDate zscores childId session isChw db)
+                        (\childId _ -> summarizeChildParticipant currentDate zscores features childId session isChw db)
                         checkedIn.children
 
                 mothers =
                     Dict.map
-                        (\motherId _ -> summarizeMotherParticipant currentDate zscores motherId session isChw db)
+                        (\motherId _ -> summarizeMotherParticipant currentDate zscores features motherId session isChw db)
                         checkedIn.mothers
             in
             { children = children
@@ -6952,8 +7012,16 @@ summarizeByParticipant currentDate zscores session checkedIn_ isChw db =
 for our UI, when we're focused on activities. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByActivity : NominalDate -> ZScore.Model.Model -> OfflineSession -> LocalData CheckedIn -> Bool -> ModelIndexedDb -> LocalData SummaryByActivity
-summarizeByActivity currentDate zscores session checkedIn_ isChw db =
+summarizeByActivity :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> OfflineSession
+    -> LocalData CheckedIn
+    -> Bool
+    -> ModelIndexedDb
+    -> LocalData SummaryByActivity
+summarizeByActivity currentDate zscores features session checkedIn_ isChw db =
     LocalData.map
         (\checkedIn ->
             let
@@ -6962,7 +7030,7 @@ summarizeByActivity currentDate zscores session checkedIn_ isChw db =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeChildActivity currentDate zscores activity session isChw db checkedIn
+                                , summarizeChildActivity currentDate zscores features activity session isChw db checkedIn
                                 )
                             )
                         |> Dict.fromList
@@ -6972,7 +7040,7 @@ summarizeByActivity currentDate zscores session checkedIn_ isChw db =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeMotherActivity currentDate zscores activity session isChw db checkedIn
+                                , summarizeMotherActivity currentDate zscores features activity session isChw db checkedIn
                                 )
                             )
                         |> Dict.fromList

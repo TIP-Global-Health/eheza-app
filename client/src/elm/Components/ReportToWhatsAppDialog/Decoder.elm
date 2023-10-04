@@ -1,7 +1,7 @@
-module Components.SendViaWhatsAppDialog.Decoder exposing (..)
+module Components.ReportToWhatsAppDialog.Decoder exposing (..)
 
-import Components.SendViaWhatsAppDialog.Model exposing (ReportType)
-import Components.SendViaWhatsAppDialog.Utils exposing (reportTypeFromString)
+import Components.ReportToWhatsAppDialog.Model exposing (ReportType)
+import Components.ReportToWhatsAppDialog.Utils exposing (reportTypeFromString)
 import Json.Decode exposing (..)
 
 

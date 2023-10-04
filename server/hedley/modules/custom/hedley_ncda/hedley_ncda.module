@@ -13,9 +13,8 @@ define('HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA', 'hedley_ncda_calculate_ncda_data
  * Implements hook_menu().
  */
 function hedley_ncda_menu() {
-  // @todo: remove when NCDA is launched.
-  $aggregated_ncda_enabled = variable_get('hedley_aggregated_ncda_enabled', FALSE);
-  if (!$aggregated_ncda_enabled) {
+  $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
+  if (!$ncda_enabled) {
     return;
   }
 
@@ -65,9 +64,8 @@ function hedley_ncda_menu() {
  * Implements hook_node_insert().
  */
 function hedley_ncda_node_insert($node) {
-  // @todo: remove when NCDA is launched.
-  $aggregated_ncda_enabled = variable_get('hedley_aggregated_ncda_enabled', FALSE);
-  if (!$aggregated_ncda_enabled) {
+  $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
+  if (!$ncda_enabled) {
     return;
   }
 
@@ -83,9 +81,8 @@ function hedley_ncda_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_ncda_node_update($node) {
-  // @todo: remove when NCDA is launched.
-  $aggregated_ncda_enabled = variable_get('hedley_aggregated_ncda_enabled', FALSE);
-  if (!$aggregated_ncda_enabled) {
+  $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
+  if (!$ncda_enabled) {
     return;
   }
 

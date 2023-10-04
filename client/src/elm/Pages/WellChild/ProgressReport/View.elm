@@ -13,7 +13,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication, nutritionAssessmentToComparable)
-import Backend.Model exposing (ModelIndexedDb, ncdaEnabled)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
         ( generateIndividualChildScoreboardMeasurementsForChild
@@ -26,6 +26,7 @@ import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, getHealthCenterName, graduatingAgeInMonth)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.Utils exposing (ncdaEnabled)
 import Backend.WellChildEncounter.Model
     exposing
         ( EncounterWarning(..)
@@ -35,9 +36,9 @@ import Backend.WellChildEncounter.Model
         , headCircumferenceWarnings
         , pediatricCareMilestones
         )
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.Utils
-import Components.SendViaWhatsAppDialog.View
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Utils
+import Components.ReportToWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -96,7 +97,7 @@ import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionAc
 import Pages.WellChild.ProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (TranslationId, translate, translateText)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
@@ -114,8 +115,18 @@ import ZScore.Utils exposing (diffDays, zScoreLengthHeightForAge, zScoreWeightFo
 import ZScore.View
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Site -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores site id isChw db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site features id isChw db model =
     let
         encounter =
             Dict.get id db.wellChildEncounters
@@ -147,7 +158,7 @@ view language currentDate zscores site id isChw db model =
                 (\assembled ->
                     let
                         ( _, pendingActivities ) =
-                            partitionActivities currentDate zscores isChw db assembled
+                            partitionActivities currentDate zscores features isChw db assembled
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
@@ -173,17 +184,18 @@ view language currentDate zscores site id isChw db model =
             currentDate
             zscores
             site
+            features
             isChw
             initiator
             mandatoryNutritionAssessmentMeasurementsTaken
             db
             model.diagnosisMode
-            model.sendViaWhatsAppDialog
+            model.reportToWhatsAppDialog
             model.activeTab
             SetActivePage
             SetActiveTab
             SetDiagnosisMode
-            MsgSendViaWhatsAppDialog
+            MsgReportToWhatsAppDialog
             componentsConfig
             model.components
             bottomActionData
@@ -197,23 +209,24 @@ viewProgressReport :
     -> NominalDate
     -> ZScore.Model.Model
     -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
     -> ModelIndexedDb
     -> DiagnosisMode
-    -> Components.SendViaWhatsAppDialog.Model.Model
+    -> Components.ReportToWhatsAppDialog.Model.Model
     -> ReportTab
     -> (Page -> msg)
     -> (ReportTab -> msg)
     -> (DiagnosisMode -> msg)
-    -> (Components.SendViaWhatsAppDialog.Model.Msg msg -> msg)
-    -> Maybe (Components.SendViaWhatsAppDialog.Model.ReportComponentsConfig msg)
-    -> Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
+    -> (Components.ReportToWhatsAppDialog.Model.Msg msg -> msg)
+    -> Maybe (Components.ReportToWhatsAppDialog.Model.ReportComponentsConfig msg)
+    -> Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentWellChild)
     -> Maybe (BottomActionData msg)
     -> ( PersonId, Person )
     -> Html msg
-viewProgressReport language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
+viewProgressReport language currentDate zscores site features isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog activeTab setActivePageMsg setActiveTabMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents bottomActionData ( childId, child ) =
     let
         content =
             case activeTab of
@@ -227,10 +240,10 @@ viewProgressReport language currentDate zscores site isChw initiator mandatoryNu
                         mandatoryNutritionAssessmentMeasurementsTaken
                         db
                         diagnosisMode
-                        sendViaWhatsAppDialog
+                        reportToWhatsAppDialog
                         setActivePageMsg
                         setDiagnosisModeMsg
-                        msgSendViaWhatsAppDialogMsg
+                        msgReportToWhatsAppDialogMsg
                         componentsConfig
                         selectedComponents
                         ( childId, child )
@@ -239,8 +252,7 @@ viewProgressReport language currentDate zscores site isChw initiator mandatoryNu
                     viewNCDAScorecard language currentDate zscores site ( childId, child ) db
 
         tabs =
-            -- @todo: remove when NCDA is launched.
-            if ncdaEnabled then
+            if ncdaEnabled features then
                 viewTabs language setActiveTabMsg activeTab
 
             else
@@ -248,7 +260,7 @@ viewProgressReport language currentDate zscores site isChw initiator mandatoryNu
 
         actions =
             if isNothing selectedComponents then
-                viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData
+                viewActions language features initiator activeTab msgReportToWhatsAppDialogMsg bottomActionData
 
             else
                 -- Actions are hidden when viewing for sharing via WhatsApp.
@@ -440,15 +452,15 @@ viewContent :
     -> Bool
     -> ModelIndexedDb
     -> DiagnosisMode
-    -> Components.SendViaWhatsAppDialog.Model.Model
+    -> Components.ReportToWhatsAppDialog.Model.Model
     -> (Page -> msg)
     -> (DiagnosisMode -> msg)
-    -> (Components.SendViaWhatsAppDialog.Model.Msg msg -> msg)
-    -> Maybe (Components.SendViaWhatsAppDialog.Model.ReportComponentsConfig msg)
-    -> Maybe (EverySet Components.SendViaWhatsAppDialog.Model.ReportComponentWellChild)
+    -> (Components.ReportToWhatsAppDialog.Model.Msg msg -> msg)
+    -> Maybe (Components.ReportToWhatsAppDialog.Model.ReportComponentsConfig msg)
+    -> Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentWellChild)
     -> ( PersonId, Person )
     -> List (Html msg)
-viewContent language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode sendViaWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgSendViaWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
+viewContent language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
     let
         reportData =
             assembleProgresReportData childId db
@@ -475,16 +487,16 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                             Maybe.map
                                 (\state ->
                                     case state of
-                                        Components.SendViaWhatsAppDialog.Model.ConfirmationBeforeExecuting _ ->
+                                        Components.ReportToWhatsAppDialog.Model.ConfirmationBeforeExecuting _ ->
                                             True
 
-                                        Components.SendViaWhatsAppDialog.Model.ExecutionResult _ ->
+                                        Components.ReportToWhatsAppDialog.Model.ExecutionResult _ ->
                                             True
 
                                         _ ->
                                             False
                                 )
-                                sendViaWhatsAppDialog.state
+                                reportToWhatsAppDialog.state
                                 |> Maybe.withDefault True
 
                         growthPane =
@@ -497,7 +509,7 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                                     reportData.individualNutritionMeasurementsWithDates
                                     reportData.individualWellChildMeasurementsWithDates
                                     reportData.individualChildScoreboardMeasurementsWithDates
-                                    |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildGrowth)
+                                    |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentWellChildGrowth)
 
                             else
                                 emptyNode
@@ -507,32 +519,32 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                         child
                         vaccinationProgress
                         db
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildImmunizationHistory)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentWellChildImmunizationHistory)
                     , viewECDPane language
                         currentDate
                         child
                         reportData.wellChildEncounters
                         reportData.individualWellChildMeasurementsWithDates
                         db
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildECD)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentWellChildECD)
                     , growthPane
                     , viewNextAppointmentPane language
                         currentDate
                         child
                         individualWellChildMeasurements
                         db
-                        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildNextAppointment)
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentWellChildNextAppointment)
                     ]
 
                 ModeCompletedDiagnosis ->
                     []
 
-        showDiagnosisPaneForSendViaWhatsApp =
-            Maybe.map (EverySet.member Components.SendViaWhatsAppDialog.Model.ComponentWellChildActiveDiagnoses) selectedComponents
+        showDiagnosisPaneForReportToWhatsApp =
+            Maybe.map (EverySet.member Components.ReportToWhatsAppDialog.Model.ComponentWellChildActiveDiagnoses) selectedComponents
                 |> Maybe.withDefault False
 
         showComponent =
-            Components.SendViaWhatsAppDialog.Utils.showComponent selectedComponents
+            Components.ReportToWhatsAppDialog.Utils.showComponent selectedComponents
     in
     [ viewPersonInfoPane language currentDate child
     , viewDiagnosisPane language
@@ -550,32 +562,33 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
         diagnosisMode
         setActivePageMsg
         setDiagnosisModeMsg
-        showDiagnosisPaneForSendViaWhatsApp
+        showDiagnosisPaneForReportToWhatsApp
         reportData.maybeAssembled
-        |> showIf (showComponent Components.SendViaWhatsAppDialog.Model.ComponentWellChildActiveDiagnoses)
+        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentWellChildActiveDiagnoses)
     ]
         ++ derivedContent
-        ++ [ Html.map msgSendViaWhatsAppDialogMsg
-                (Components.SendViaWhatsAppDialog.View.view
+        ++ [ Html.map msgReportToWhatsAppDialogMsg
+                (Components.ReportToWhatsAppDialog.View.view
                     language
                     currentDate
                     site
                     ( childId, child )
-                    Components.SendViaWhatsAppDialog.Model.ReportWellChild
+                    Components.ReportToWhatsAppDialog.Model.ReportWellChild
                     componentsConfig
-                    sendViaWhatsAppDialog
+                    reportToWhatsAppDialog
                 )
            ]
 
 
 viewActions :
     Language
+    -> EverySet SiteFeature
     -> WellChildProgressReportInitiator
     -> ReportTab
-    -> (Components.SendViaWhatsAppDialog.Model.Msg msg -> msg)
+    -> (Components.ReportToWhatsAppDialog.Model.Msg msg -> msg)
     -> Maybe (BottomActionData msg)
     -> List (Html msg)
-viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActionData =
+viewActions language features initiator activeTab msgReportToWhatsAppDialogMsg bottomActionData =
     Maybe.map
         (\data ->
             let
@@ -588,12 +601,12 @@ viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActio
                             case activeTab of
                                 TabSPVReport ->
                                     viewEncounterActionButton language
-                                        Translate.SendViaWhatsApp
+                                        Translate.ReportToWhatsApp
                                         "velvet"
                                         True
-                                        (msgSendViaWhatsAppDialogMsg <|
-                                            Components.SendViaWhatsAppDialog.Model.SetState <|
-                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                        (msgReportToWhatsAppDialogMsg <|
+                                            Components.ReportToWhatsAppDialog.Model.SetState <|
+                                                Just Components.ReportToWhatsAppDialog.Model.Consent
                                         )
 
                                 TabNCDAScoreboard ->
@@ -603,11 +616,12 @@ viewActions language initiator activeTab msgSendViaWhatsAppDialogMsg bottomActio
                             case activeTab of
                                 TabSPVReport ->
                                     viewEndEncounterMenuForProgressReport language
+                                        features
                                         data.allowEndEncounter
                                         data.setEndEncounterDialogStateMsg
-                                        (msgSendViaWhatsAppDialogMsg <|
-                                            Components.SendViaWhatsAppDialog.Model.SetState <|
-                                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                                        (msgReportToWhatsAppDialogMsg <|
+                                            Components.ReportToWhatsAppDialog.Model.SetState <|
+                                                Just Components.ReportToWhatsAppDialog.Model.Consent
                                         )
 
                                 TabNCDAScoreboard ->
@@ -661,7 +675,7 @@ viewDiagnosisPane :
     -> Bool
     -> Maybe AssembledData
     -> Html msg
-viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg viewForSendViaWhatsApp maybeAssembled =
+viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken acuteIllnesses individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements individualNutritionMeasurements individualWellChildMeasurements db diagnosisMode setActivePageMsg setDiagnosisModeMsg viewForReportToWhatsApp maybeAssembled =
     let
         ( activeIllnesses, completedIllnesses ) =
             List.partition (Tuple.second >> isAcuteIllnessActive currentDate) acuteIllnesses
@@ -710,7 +724,7 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                 ]
 
         ( label, priorDiagniosisButton ) =
-            if viewForSendViaWhatsApp || diagnosisMode == ModeActiveDiagnosis then
+            if viewForReportToWhatsApp || diagnosisMode == ModeActiveDiagnosis then
                 ( Translate.ActiveDiagnosis
                 , div [ class "pane-action" ]
                     [ button
@@ -727,7 +741,7 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                 )
 
         ( selectedDiagnosisEntries, selectedAssessmentEntries, selectedWarningEntries ) =
-            if viewForSendViaWhatsApp || diagnosisMode == ModeActiveDiagnosis then
+            if viewForReportToWhatsApp || diagnosisMode == ModeActiveDiagnosis then
                 ( List.map (\( participantId, data ) -> ( ( participantId, StatusOngoing ), data )) activeIllnesses
                 , List.map (\( date, data ) -> ( date, ( data, StatusOngoing ) )) activeAssessmentEntries
                 , List.map (\( date, milestone, data ) -> ( date, ( milestone, data, StatusOngoing ) )) activeWarningEntries
@@ -778,7 +792,7 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
         , div [ class "pane-content" ] <|
             entriesHeading
                 :: viewEntries language entries
-        , priorDiagniosisButton |> showIf (not viewForSendViaWhatsApp)
+        , priorDiagniosisButton |> showIf (not viewForReportToWhatsApp)
         ]
 
 

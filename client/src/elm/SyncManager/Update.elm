@@ -810,6 +810,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                                 , status = status
                                                 , rollbarToken = data.rollbarToken
                                                 , site = data.site
+                                                , features = data.features
                                             }
                                        )
 

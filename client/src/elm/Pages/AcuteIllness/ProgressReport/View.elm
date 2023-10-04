@@ -8,10 +8,10 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndicati
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, isChildUnderAgeOf5, isPersonAnAdult)
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.View
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.View
 import Date
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
@@ -45,24 +45,44 @@ import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport)
 import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id isChw initiator db model =
+view :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> AcuteIllnessProgressReportInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate site features id isChw initiator db model =
     let
         assembled =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewContent language currentDate site id isChw initiator model) identity assembled
+    viewWebData language (viewContent language currentDate site features id isChw initiator model) identity assembled
 
 
-viewContent : Language -> NominalDate -> Site -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site id isChw initiator model assembled =
+viewContent :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> AcuteIllnessProgressReportInitiator
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate site features id isChw initiator model assembled =
     let
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -87,11 +107,12 @@ viewContent language currentDate site id isChw initiator model assembled =
                             allowEndingEcounter currentDate isChw assembled pendingActivities
                     in
                     viewEndEncounterMenuForProgressReport language
+                        features
                         allowEndEncounter
                         SetEndEncounterDialogState
-                        (MsgSendViaWhatsAppDialog <|
-                            Components.SendViaWhatsAppDialog.Model.SetState <|
-                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                        (MsgReportToWhatsAppDialog <|
+                            Components.ReportToWhatsAppDialog.Model.SetState <|
+                                Just Components.ReportToWhatsAppDialog.Model.Consent
                         )
 
                 _ ->
@@ -113,18 +134,18 @@ viewContent language currentDate site id isChw initiator model assembled =
             , viewNextStepsPane language currentDate assembled
             , -- Actions are hidden when 'Share via WhatsApp' dialog is open,
               -- so they do not appear on generated screenshot.
-              showIf (isNothing model.sendViaWhatsAppDialog.state) endEncounterMenu
+              showIf (isNothing model.reportToWhatsAppDialog.state) endEncounterMenu
             ]
         , viewModal endEncounterDialog
-        , Html.map MsgSendViaWhatsAppDialog
-            (Components.SendViaWhatsAppDialog.View.view
+        , Html.map MsgReportToWhatsAppDialog
+            (Components.ReportToWhatsAppDialog.View.view
                 language
                 currentDate
                 site
                 ( assembled.participant.person, assembled.person )
-                Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness
+                Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness
                 Nothing
-                model.sendViaWhatsAppDialog
+                model.reportToWhatsAppDialog
             )
         ]
 

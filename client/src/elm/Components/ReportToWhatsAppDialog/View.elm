@@ -1,9 +1,9 @@
-module Components.SendViaWhatsAppDialog.View exposing (view)
+module Components.ReportToWhatsAppDialog.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
-import Components.SendViaWhatsAppDialog.Model exposing (..)
-import Components.SendViaWhatsAppDialog.Utils exposing (..)
+import Components.ReportToWhatsAppDialog.Model exposing (..)
+import Components.ReportToWhatsAppDialog.Utils exposing (..)
 import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -88,8 +88,8 @@ viewConsent language currentDate person =
                 |> Maybe.withDefault (PhoneInput emptyPhoneData)
     in
     [ div [ class "content" ]
-        [ p [] [ text <| translate language Translate.SendViaWhatsAppConsentQuestion ]
-        , p [] [ text <| translate language Translate.SendViaWhatsAppNoticeOfNonRespobsibility ]
+        [ p [] [ text <| translate language Translate.ReportToWhatsAppConsentQuestion ]
+        , p [] [ text <| translate language Translate.ReportToWhatsAppNoticeOfNonRespobsibility ]
         ]
     , div [ class "actions" ]
         [ div [ class "two ui buttons" ]
@@ -119,9 +119,9 @@ viewPhoneVerification language currentDate allowComponentsSelection phoneNumber 
                 ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
-        [ p [] [ text <| translate language Translate.SendViaWhatsAppPhoneVerificationHeader ]
+        [ p [] [ text <| translate language Translate.ReportToWhatsAppPhoneVerificationHeader ]
         , p [] [ text phoneNumber ]
-        , p [] [ text <| translate language Translate.SendViaWhatsAppPhoneVerificationQuestion ]
+        , p [] [ text <| translate language Translate.ReportToWhatsAppPhoneVerificationQuestion ]
         ]
     , div [ class "actions" ]
         [ div [ class "two ui buttons" ]
@@ -170,7 +170,7 @@ viewPhoneInput language currentDate site data =
                 "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
     in
     [ div [ class "content" ]
-        [ p [] [ text <| translate language Translate.SendViaWhatsAppPhoneInputHeader ]
+        [ p [] [ text <| translate language Translate.ReportToWhatsAppPhoneInputHeader ]
         , div [ class "phone-inputs" ]
             [ select
                 [ onInput SetCountryCode
@@ -212,9 +212,9 @@ viewPhoneUpdateAtProfile language currentDate allowComponentsSelection personId 
                 ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
-        [ translateText language Translate.SendViaWhatsAppPhoneUpdateAtProfileQuestionPrefix
+        [ translateText language Translate.ReportToWhatsAppPhoneUpdateAtProfileQuestionPrefix
         , span [] [ text person.name ]
-        , translateText language Translate.SendViaWhatsAppPhoneUpdateAtProfileQuestionSuffix
+        , translateText language Translate.ReportToWhatsAppPhoneUpdateAtProfileQuestionSuffix
         , span [] [ text phoneNumber ]
         , text "?"
         ]
@@ -246,7 +246,7 @@ viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneN
                 ConfirmationBeforeExecuting phoneNumber
     in
     [ div [ class "content" ]
-        [ translateText language Translate.SendViaWhatsAppPhoneUpdateConfirmationMessasge ]
+        [ translateText language Translate.ReportToWhatsAppPhoneUpdateConfirmationMessasge ]
     , div [ class "actions" ]
         [ button
             [ class "ui primary fluid button"
@@ -465,7 +465,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                 |> Maybe.withDefault False
     in
     [ div [ class "content" ]
-        [ p [] [ translateText language <| Translate.SendViaWhatsAppComponentsSelectionHeader reportType ]
+        [ p [] [ translateText language <| Translate.ReportToWhatsAppComponentsSelectionHeader reportType ]
         , componentsSelectionInput
         ]
     , div [ class "actions" ]
@@ -510,10 +510,10 @@ viewConfirmationBeforeExecuting language currentDate site reportType personId ph
                     "00" ++ countryCodeToString localCountryCode ++ phoneNumber
     in
     [ div [ class "content" ]
-        [ p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingHeader ]
+        [ p [] [ text <| translate language Translate.ReportToWhatsAppConfirmationBeforeExecutingHeader ]
         , p [] [ text phoneNumber ]
-        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingInstructions ]
-        , p [] [ text <| translate language Translate.SendViaWhatsAppConfirmationBeforeExecutingQuestion ]
+        , p [] [ text <| translate language Translate.ReportToWhatsAppConfirmationBeforeExecutingInstructions ]
+        , p [] [ text <| translate language Translate.ReportToWhatsAppConfirmationBeforeExecutingQuestion ]
         ]
     , div [ class "actions" ]
         [ div [ class "two ui buttons" ]
@@ -540,14 +540,14 @@ viewExecutionResult language currentDate maybeResult clearComponentsMsg =
                 (\result ->
                     ( case result of
                         "success" ->
-                            Translate.SendViaWhatsAppExecutionResultSuccess
+                            Translate.ReportToWhatsAppExecutionResultSuccess
 
                         "failure" ->
-                            Translate.SendViaWhatsAppExecutionResultFailure
+                            Translate.ReportToWhatsAppExecutionResultFailure
 
                         -- We should never get here, since proper responses are set at app.js.
                         _ ->
-                            Translate.SendViaWhatsAppExecutionResultSomethingWentWrong
+                            Translate.ReportToWhatsAppExecutionResultSomethingWentWrong
                     , div [ class "actions" ]
                         [ button
                             [ class "ui primary fluid button"

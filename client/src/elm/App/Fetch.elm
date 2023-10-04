@@ -85,6 +85,9 @@ fetch model =
         let
             currentDate =
                 fromLocalDateTime model.currentTime
+
+            features =
+                model.syncManager.syncInfoGeneral.features
         in
         case model.activePage of
             DevicePage ->
@@ -233,7 +236,12 @@ fetch model =
                     |> List.map MsgIndexedDb
 
             UserPage (SessionPage sessionId sessionPage) ->
-                Pages.Session.Fetch.fetch currentDate model.zscores sessionId sessionPage model.indexedDb
+                Pages.Session.Fetch.fetch currentDate
+                    model.zscores
+                    features
+                    sessionId
+                    sessionPage
+                    model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (PrenatalEncounterPage id) ->

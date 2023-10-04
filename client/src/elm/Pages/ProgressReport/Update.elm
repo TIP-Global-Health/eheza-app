@@ -1,8 +1,8 @@
 module Pages.ProgressReport.Update exposing (update)
 
 import App.Model
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.Update
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
 import Pages.ProgressReport.Model exposing (..)
 
@@ -19,12 +19,12 @@ update msg model =
         SetDiagnosisMode mode ->
             ( { model | diagnosisMode = mode }, Cmd.none, [] )
 
-        MsgSendViaWhatsAppDialog subMsg ->
+        MsgReportToWhatsAppDialog subMsg ->
             let
                 ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
-                    Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
+                    Components.ReportToWhatsAppDialog.Update.update subMsg model.reportToWhatsAppDialog
             in
-            ( { model | sendViaWhatsAppDialog = dialogUpdated }
+            ( { model | reportToWhatsAppDialog = dialogUpdated }
             , cmd
             , appMsgs
             )
@@ -36,7 +36,7 @@ update msg model =
                     Maybe.map
                         (\components ->
                             case components of
-                                Components.SendViaWhatsAppDialog.Model.WellChild wellChildComponents ->
+                                Components.ReportToWhatsAppDialog.Model.WellChild wellChildComponents ->
                                     { model | components = Just wellChildComponents }
 
                                 -- We should never get here.

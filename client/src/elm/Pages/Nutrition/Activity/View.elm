@@ -26,6 +26,7 @@ import Backend.NutritionEncounter.Utils
         )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInDays)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)

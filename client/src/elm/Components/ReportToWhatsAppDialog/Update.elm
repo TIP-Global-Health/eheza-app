@@ -1,11 +1,11 @@
-module Components.SendViaWhatsAppDialog.Update exposing (update)
+module Components.ReportToWhatsAppDialog.Update exposing (update)
 
 import App.Model
 import App.Ports
 import Backend.Model
 import Backend.Person.Model exposing (PatchPersonInitator(..))
-import Components.SendViaWhatsAppDialog.Model exposing (..)
-import Components.SendViaWhatsAppDialog.Utils exposing (..)
+import Components.ReportToWhatsAppDialog.Model exposing (..)
+import Components.ReportToWhatsAppDialog.Utils exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 
 
