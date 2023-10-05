@@ -4809,7 +4809,7 @@ encodeNCDAValueWithType type_ value =
                 |> Maybe.withDefault []
 
         muac =
-            Maybe.map (\(MuacInCm muac) -> [ ( "weight", float muac ) ])
+            Maybe.map (\(MuacInCm muac) -> [ ( "muac", float muac ) ])
                 value.muac
                 |> Maybe.withDefault []
     in
