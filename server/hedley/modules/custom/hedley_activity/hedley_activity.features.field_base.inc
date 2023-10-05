@@ -1341,7 +1341,7 @@ function hedley_activity_field_default_field_bases() {
         'taken-supplements-per-guidance' => 'Taken Supplements per Guidance',
         'taking-ongera-mnp' => 'Taking Ongera-MNP',
         'treated-for-acute-malnutrition' => 'Treated for Acute Malnutrition',
-        'shows-enema-signs' => 'Shows Enema signs',
+        'shows-edema-signs' => 'Shows Edema signs',
       ),
       'allowed_values_function' => '',
     ),
