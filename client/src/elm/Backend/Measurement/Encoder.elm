@@ -4793,7 +4793,7 @@ encodeNCDAValueWithType type_ value =
                 |> Maybe.withDefault []
 
         birthWeight =
-            Maybe.map (\(WeightInGrm weight) -> [ ( "birth_weight", float weight ) ])
+            Maybe.map (\(WeightInGrm birthWeight_) -> [ ( "birth_weight", float birthWeight_ ) ])
                 value.birthWeight
                 |> Maybe.withDefault []
 
@@ -4804,12 +4804,12 @@ encodeNCDAValueWithType type_ value =
                 |> Maybe.withDefault []
 
         weight =
-            Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
+            Maybe.map (\(WeightInGrm weight_) -> [ ( "weight", float weight_ ) ])
                 value.weight
                 |> Maybe.withDefault []
 
         muac =
-            Maybe.map (\(MuacInCm muac) -> [ ( "muac", float muac ) ])
+            Maybe.map (\(MuacInCm muac_) -> [ ( "muac", float muac_ ) ])
                 value.muac
                 |> Maybe.withDefault []
     in
@@ -4833,6 +4833,11 @@ encodeNCDASign =
 encodeReceiveOption : ReceiveOption -> Value
 encodeReceiveOption =
     receiveOptionToString >> string
+
+
+encodeStuntingLevel : StuntingLevel -> Value
+encodeStuntingLevel =
+    stuntingLevelToString >> string
 
 
 encodeNCDLipidPanelTest : NCDLipidPanelTest -> List ( String, Value )
