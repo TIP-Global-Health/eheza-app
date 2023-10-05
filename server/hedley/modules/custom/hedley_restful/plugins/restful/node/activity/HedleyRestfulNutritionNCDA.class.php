@@ -14,8 +14,11 @@ class HedleyRestfulNutritionNCDA extends HedleyRestfulNutritionActivityBase {
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_weight',
+    'field_birth_weight',
     'field_receive_option',
+    'field_stunting_level',
+    'field_weight',
+    'field_muac',
   ];
 
   /**
