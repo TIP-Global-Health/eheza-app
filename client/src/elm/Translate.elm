@@ -10288,7 +10288,7 @@ translationSet trans =
                     }
 
                 ChildReceivesECD ->
-                    { english = "Provide counseling on the importance of brain stimulatio activities for the development of the child"
+                    { english = "Provide counseling on the importance of brain stimulation activities for the development of the child"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -10499,6 +10499,12 @@ translationSet trans =
                 ChildReceivesECD ->
                     { english = "Do you sing lullabies, poems, and read books to your child, or play games with your child"
                     , kinyarwanda = Just "Uririmbira umwana ibihozo, n'imivugo, ukamusomera ibitabo mukanakina"
+                    , kirundi = Nothing
+                    }
+
+                ShowsEdemaSigns ->
+                    { english = "Does the child show signs of Edema"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 

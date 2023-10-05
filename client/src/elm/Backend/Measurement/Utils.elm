@@ -3623,6 +3623,9 @@ ncdaSignFromString value =
         "none" ->
             Just NoNCDASigns
 
+        "shows-edema-signs" ->
+            Just ShowsEdemaSigns
+
         _ ->
             Nothing
 
@@ -3720,6 +3723,9 @@ ncdaSignToString value =
 
         TreatedForAcuteMalnutrition ->
             "treated-for-acute-malnutrition"
+
+        ShowsEdemaSigns ->
+            "shows-edema-signs"
 
         NoNCDASigns ->
             "none"

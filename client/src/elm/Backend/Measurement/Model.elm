@@ -318,6 +318,7 @@ type NCDASign
     | TakenSupplementsPerGuidance
     | TakingOngeraMNP
     | TreatedForAcuteMalnutrition
+    | ShowsEdemaSigns
     | NoNCDASigns
 
 
