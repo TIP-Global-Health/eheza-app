@@ -171,6 +171,24 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_birth_weight'.
+  $field_bases['field_birth_weight'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_birth_weight',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
   // Exported field_base: 'field_bmi'.
   $field_bases['field_bmi'] = array(
     'active' => 1,
@@ -1323,6 +1341,7 @@ function hedley_activity_field_default_field_bases() {
         'taken-supplements-per-guidance' => 'Taken Supplements per Guidance',
         'taking-ongera-mnp' => 'Taking Ongera-MNP',
         'treated-for-acute-malnutrition' => 'Treated for Acute Malnutrition',
+        'shows-enema-signs' => 'Shows Enema signs',
       ),
       'allowed_values_function' => '',
     ),
@@ -1941,6 +1960,33 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_stunting_level'.
+  $field_bases['field_stunting_level'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_stunting_level',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'green' => 'Green',
+        'yellow' => 'Yellow',
+        'red' => 'Red',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_syphilis_treatment'.

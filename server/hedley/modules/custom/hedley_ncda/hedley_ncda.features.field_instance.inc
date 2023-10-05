@@ -1876,7 +1876,53 @@ function hedley_ncda_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 13,
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-child_scoreboard_ncda-field_birth_weight'.
+  $field_instances['node-child_scoreboard_ncda-field_birth_weight'] = array(
+    'bundle' => 'child_scoreboard_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_birth_weight',
+    'label' => 'Birth Weight',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 8,
     ),
   );
 
@@ -1921,7 +1967,7 @@ function hedley_ncda_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 2,
+      'weight' => 4,
     ),
   );
 
@@ -1977,7 +2023,53 @@ function hedley_ncda_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-child_scoreboard_ncda-field_muac'.
+  $field_instances['node-child_scoreboard_ncda-field_muac'] = array(
+    'bundle' => 'child_scoreboard_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_muac',
+    'label' => 'MUAC',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
     ),
   );
 
@@ -2014,7 +2106,7 @@ function hedley_ncda_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 8,
+      'weight' => 7,
     ),
   );
 
@@ -2058,7 +2150,7 @@ function hedley_ncda_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -2102,7 +2194,7 @@ function hedley_ncda_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -2139,7 +2231,7 @@ function hedley_ncda_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 14,
+      'weight' => 10,
     ),
   );
 
@@ -2187,6 +2279,43 @@ function hedley_ncda_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-child_scoreboard_ncda-field_stunting_level'.
+  $field_instances['node-child_scoreboard_ncda-field_stunting_level'] = array(
+    'bundle' => 'child_scoreboard_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 13,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_stunting_level',
+    'label' => 'Stunting level',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-child_scoreboard_ncda-field_uuid'.
   $field_instances['node-child_scoreboard_ncda-field_uuid'] = array(
     'bundle' => 'child_scoreboard_ncda',
@@ -2223,7 +2352,7 @@ function hedley_ncda_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 4,
+      'weight' => 5,
     ),
   );
 
@@ -2269,7 +2398,7 @@ function hedley_ncda_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 10,
+      'weight' => 12,
     ),
   );
 
@@ -3500,15 +3629,18 @@ function hedley_ncda_field_default_field_instances() {
   t('Administered Doses');
   t('Administration Dates');
   t('Administration Note');
+  t('Birth Weight');
   t('Child Scoreboard Encounter');
   t('Date Measured');
   t('Individual Participant');
+  t('MUAC');
   t('NCDA Signs');
   t('Nurse');
   t('Person');
   t('Receives Vitamin A');
   t('Scheduled Date');
   t('Shards');
+  t('Stunting level');
   t('UUID');
   t('Weight');
 
