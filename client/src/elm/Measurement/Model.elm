@@ -1047,6 +1047,15 @@ type alias NCDAForm =
     , birthWeight : Maybe WeightInGrm
 
     -- Step 2.
+    , stuntingLevel : Maybe StuntingLevel
+    , stuntingLevelNotTaken : Maybe Bool
+    , weight : Maybe WeightInGrm
+    , weightNotTaken : Maybe Bool
+    , muac : Maybe MuacInCm
+    , muacNotTaken : Maybe Bool
+    , showsEdemaSigns : Maybe Bool
+
+    -- Step 3.
     , childBehindOnVaccination : Maybe Bool
     , childReceivesVitaminA : Maybe ReceiveOption
     , childTakingVitaminA : Maybe Bool
@@ -1056,13 +1065,13 @@ type alias NCDAForm =
     , takingOngeraMNP : Maybe Bool
     , childReceivesECD : Maybe Bool
 
-    -- Step 3.
+    -- Step 4.
     , fiveFoodGroups : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
     , mealsAtRecommendedTimes : Maybe Bool
 
-    -- Step 4.
+    -- Step 5.
     , childReceivesFBF : Maybe Bool
     , childTakingFBF : Maybe Bool
     , beneficiaryCashTransfer : Maybe Bool
@@ -1074,7 +1083,7 @@ type alias NCDAForm =
     , receivingSupport : Maybe Bool
     , childGotDiarrhea : Maybe Bool
 
-    -- Step 5.
+    -- Step 6.
     , hasCleanWater : Maybe Bool
     , hasHandwashingFacility : Maybe Bool
     , hasToilets : Maybe Bool
@@ -1096,6 +1105,15 @@ emptyNCDAForm =
     , birthWeight = Nothing
 
     -- Step 2.
+    , stuntingLevel = Nothing
+    , stuntingLevelNotTaken = Nothing
+    , weight = Nothing
+    , weightNotTaken = Nothing
+    , muac = Nothing
+    , muacNotTaken = Nothing
+    , showsEdemaSigns = Nothing
+
+    -- Step 3.
     , childBehindOnVaccination = Nothing
     , childReceivesVitaminA = Nothing
     , childTakingVitaminA = Nothing
@@ -1105,13 +1123,13 @@ emptyNCDAForm =
     , takingOngeraMNP = Nothing
     , childReceivesECD = Nothing
 
-    -- Step 3.
+    -- Step 4.
     , fiveFoodGroups = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
     , mealsAtRecommendedTimes = Nothing
 
-    -- Step 4.
+    -- Step 5.
     , childReceivesFBF = Nothing
     , childTakingFBF = Nothing
     , beneficiaryCashTransfer = Nothing
@@ -1123,7 +1141,7 @@ emptyNCDAForm =
     , receivingSupport = Nothing
     , childGotDiarrhea = Nothing
 
-    -- Step 5.
+    -- Step 6.
     , hasCleanWater = Nothing
     , hasHandwashingFacility = Nothing
     , hasToilets = Nothing

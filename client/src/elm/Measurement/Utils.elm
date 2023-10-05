@@ -4483,6 +4483,8 @@ fromNCDAValue saved =
                 ancVisitsDates
     in
     { step = Nothing
+    , updateANCVisits = updateANCVisits
+    , ancVisitsDates = ancVisitsDates
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
     , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
     , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member BreastfedForSixMonths) saved
@@ -4516,8 +4518,15 @@ fromNCDAValue saved =
     , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
-    , updateANCVisits = updateANCVisits
-    , ancVisitsDates = ancVisitsDates
+
+    -- Nutrition measurements.
+    , stuntingLevel = Maybe.andThen .stuntingLevel saved
+    , stuntingLevelNotTaken = Maybe.map (.stuntingLevel >> isNothing) saved
+    , weight = Maybe.andThen .weight saved
+    , weightNotTaken = Maybe.map (.weight >> isNothing) saved
+    , muac = Maybe.andThen .muac saved
+    , muacNotTaken = Maybe.map (.muac >> isNothing) saved
+    , showsEdemaSigns = Maybe.map (.signs >> EverySet.member ShowsEdemaSigns) saved
     }
 
 
@@ -4567,6 +4576,15 @@ ncdaFormWithDefault form saved =
                 , takingOngeraMNP = or form.takingOngeraMNP (EverySet.member TakingOngeraMNP value.signs |> Just)
                 , mealsAtRecommendedTimes = or form.mealsAtRecommendedTimes (EverySet.member MealsAtRecommendedTimes value.signs |> Just)
                 , birthWeight = or form.birthWeight value.birthWeight
+
+                -- Nutrition measurements.
+                , stuntingLevel = or form.stuntingLevel value.stuntingLevel
+                , stuntingLevelNotTaken = or form.stuntingLevelNotTaken (isNothing value.stuntingLevel |> Just)
+                , weight = or form.weight value.weight
+                , weightNotTaken = or form.weightNotTaken (isNothing value.weight |> Just)
+                , muac = or form.muac value.muac
+                , muacNotTaken = or form.muacNotTaken (isNothing value.muac |> Just)
+                , showsEdemaSigns = or form.showsEdemaSigns (EverySet.member ShowsEdemaSigns value.signs |> Just)
                 }
             )
 
@@ -4612,6 +4630,7 @@ toNCDAValue form =
             , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
             , ifNullableTrue TakingOngeraMNP form.takingOngeraMNP
             , ifNullableTrue MealsAtRecommendedTimes form.mealsAtRecommendedTimes
+            , ifNullableTrue ShowsEdemaSigns form.showsEdemaSigns
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
@@ -4623,6 +4642,9 @@ toNCDAValue form =
         |> andMap (Just form.birthWeight)
         |> andMap (Just ancVisitsDates)
         |> andMap (Just form.childReceivesVitaminA)
+        |> andMap (Just form.stuntingLevel)
+        |> andMap (Just form.weight)
+        |> andMap (Just form.muac)
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
