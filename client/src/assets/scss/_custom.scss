@@ -1333,9 +1333,11 @@ input::placeholder {
   }
 
   &.diagnosis-popup,
+  &.warning-popup,
   &.open-pregnancy-popup,
   &.danger-signs-popup,
-  &.trace-contact-popup {
+  &.trace-contact-popup,
+  &.survey-score-popup {
     border-top: 15px solid $color-red-alert;
     margin-left: -300px;
     width: 600px;
@@ -1534,7 +1536,8 @@ input::placeholder {
     }
   }
 
-  &.diagnosis-popup {
+  &.diagnosis-popup,
+  &.warning-popup {
 
     .bottom-message p {
       margin-bottom: 10px;
@@ -1542,6 +1545,13 @@ input::placeholder {
 
     ul {
       text-align: left;
+    }
+  }
+
+  &.survey-score-popup {
+
+    .content {
+      padding-top: 2rem;
     }
   }
 

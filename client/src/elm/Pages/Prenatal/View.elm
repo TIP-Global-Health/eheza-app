@@ -103,4 +103,4 @@ viewPauseEncounterButton language buttonColor enabled pauseAction =
 
 customWarningPopup : Language -> ( Html msg, Html msg, msg ) -> Html msg
 customWarningPopup language =
-    customPopup language True Translate.Continue
+    customPopup language True Translate.Continue "warning-popup"

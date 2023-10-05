@@ -857,6 +857,7 @@ identityPopup language displayed hideMsg =
             customPopup language
                 False
                 Translate.OK
+                "warning-popup"
                 ( p [] [ text <| translate language Translate.IdentityPopupHeader ]
                 , p [] [ text <| translate language Translate.IdentityPopupInstructions ]
                 , hideMsg
