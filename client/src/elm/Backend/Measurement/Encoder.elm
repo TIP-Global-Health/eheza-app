@@ -4793,8 +4793,24 @@ encodeNCDAValueWithType type_ value =
                 |> Maybe.withDefault []
 
         birthWeight =
-            Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
+            Maybe.map (\(WeightInGrm weight) -> [ ( "birth_weight", float weight ) ])
                 value.birthWeight
+                |> Maybe.withDefault []
+
+        stuntingLevel =
+            Maybe.map
+                (\option -> [ ( "stunting_level", encodeStuntingLevel option ) ])
+                value.stuntingLevel
+                |> Maybe.withDefault []
+
+        weight =
+            Maybe.map (\(WeightInGrm weight) -> [ ( "weight", float weight ) ])
+                value.weight
+                |> Maybe.withDefault []
+
+        muac =
+            Maybe.map (\(MuacInCm muac) -> [ ( "weight", float muac ) ])
+                value.muac
                 |> Maybe.withDefault []
     in
     [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
@@ -4804,6 +4820,9 @@ encodeNCDAValueWithType type_ value =
     ]
         ++ birthWeight
         ++ receiveOption
+        ++ stuntingLevel
+        ++ weight
+        ++ muac
 
 
 encodeNCDASign : NCDASign -> Value

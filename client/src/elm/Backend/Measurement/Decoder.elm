@@ -5150,9 +5150,12 @@ decodeNCDAValue : Decoder NCDAValue
 decodeNCDAValue =
     succeed NCDAValue
         |> required "ncda_signs" (decodeEverySet decodeNCDASign)
-        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> optional "birth_weight" (nullable (map WeightInGrm decodeFloat)) Nothing
         |> required "anc_visits_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> optional "receive_option" (nullable decodeReceiveOption) Nothing
+        |> optional "stunting_level" (nullable decodeStuntingLevel) Nothing
+        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> optional "muac" (nullable (map MuacInCm decodeFloat)) Nothing
 
 
 decodeNCDASign : Decoder NCDASign
@@ -5174,6 +5177,17 @@ decodeReceiveOption =
                 receiveOptionFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized ReceiveOption")
+            )
+
+
+decodeStuntingLevel : Decoder StuntingLevel
+decodeStuntingLevel =
+    string
+        |> andThen
+            (\s ->
+                stuntingLevelFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized StuntingLevel")
             )
 
 

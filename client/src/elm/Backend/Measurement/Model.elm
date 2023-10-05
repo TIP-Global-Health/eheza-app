@@ -278,6 +278,9 @@ type alias NCDAValue =
     , birthWeight : Maybe WeightInGrm
     , ancVisitsDates : EverySet NominalDate
     , receivesVitaminA : Maybe ReceiveOption
+    , stuntingLevel : Maybe StuntingLevel
+    , weight : Maybe WeightInGrm
+    , muac : Maybe MuacInCm
     }
 
 
@@ -322,6 +325,12 @@ type ReceiveOption
     = OptionReceive
     | OptionNotReceive
     | OptionNotApplicable
+
+
+type StuntingLevel
+    = LevelGreen
+    | LevelYellow
+    | LevelRed
 
 
 
