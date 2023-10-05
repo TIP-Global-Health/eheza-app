@@ -996,6 +996,7 @@ type TranslationId
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssessment NutritionAssessment
+    | NutritionAssessmentLabel
     | NutritionAssessmentTask NutritionAssessmentTask
     | NutritionBehavior
     | NutritionCaringOption CaringOption
@@ -5363,10 +5364,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.Activity.Types.NutritionAssessment ->
-                    { english = "Nutrition Assessment"
-                    , kinyarwanda = Just "Gusuzuma imirire"
-                    , kirundi = Just "Isuzuma ryo gufungura"
-                    }
+                    translationSet NutritionAssessmentLabel
 
                 CorePhysicalExam ->
                     { english = "Core Physical Exam"
@@ -10767,6 +10765,9 @@ translationSet trans =
                 NCDAStepAntenatalCare ->
                     translationSet ANCNewborn
 
+                NCDAStepNutritionAssessment ->
+                    translationSet NutritionAssessmentLabel
+
                 NCDAStepUniversalInterventions ->
                     translationSet UniversalInterventions
 
@@ -11964,6 +11965,12 @@ translationSet trans =
                     , kinyarwanda = Just "Ntabyo"
                     , kirundi = Just "Nta na kimwe"
                     }
+
+        NutritionAssessmentLabel ->
+            { english = "Nutrition Assessment"
+            , kinyarwanda = Just "Gusuzuma imirire"
+            , kirundi = Just "Isuzuma ryo gufungura"
+            }
 
         NutritionAssessmentTask task ->
             case task of
@@ -21090,10 +21097,7 @@ translationSet trans =
                     }
 
                 WellChildNutritionAssessment ->
-                    { english = "Nutrition Assessment"
-                    , kinyarwanda = Just "Gusuzuma imirire"
-                    , kirundi = Just "Isuzuma ryo gufungura"
-                    }
+                    translationSet NutritionAssessmentLabel
 
                 WellChildECD ->
                     { english = "ECD"

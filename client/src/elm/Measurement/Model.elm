@@ -1152,6 +1152,7 @@ emptyNCDAForm =
 
 type NCDAStep
     = NCDAStepAntenatalCare
+    | NCDAStepNutritionAssessment
     | NCDAStepUniversalInterventions
     | NCDAStepNutritionBehavior
     | NCDAStepTargetedInterventions

@@ -2305,7 +2305,7 @@ viewNCDAContent :
 viewNCDAContent language currentDate personId person config helperState form db =
     let
         steps =
-            resolveNCDASteps currentDate person config.ncdaNeverFilled
+            resolveNCDASteps currentDate person config.ncdaNeverFilled config.atHealthCenter
 
         currentStep =
             Maybe.Extra.or form.step (List.head steps)
@@ -2316,6 +2316,9 @@ viewNCDAContent language currentDate personId person config helperState form db 
                     case step of
                         NCDAStepAntenatalCare ->
                             "ncda-antenatal"
+
+                        NCDAStepNutritionAssessment ->
+                            "nutrition-assessment"
 
                         NCDAStepUniversalInterventions ->
                             "ncda-universal-intervention"
@@ -2442,11 +2445,36 @@ viewNCDAContent language currentDate personId person config helperState form db 
                         ( emptyNode
                         , case step of
                             NCDAStepAntenatalCare ->
+                                let
+                                    nextStep =
+                                        if expectNCDAStep currentDate person config.ncdaNeverFilled config.atHealthCenter NCDAStepNutritionAssessment then
+                                            NCDAStepNutritionAssessment
+
+                                        else
+                                            NCDAStepUniversalInterventions
+                                in
                                 div [ class "actions" ]
-                                    [ actionButton (config.setStepMsg NCDAStepUniversalInterventions) ]
+                                    [ actionButton (config.setStepMsg nextStep) ]
+
+                            NCDAStepNutritionAssessment ->
+                                if expectNCDAStep currentDate person config.ncdaNeverFilled config.atHealthCenter NCDAStepAntenatalCare then
+                                    div [ class "actions two" ]
+                                        [ backButton NCDAStepAntenatalCare
+                                        , actionButton (config.setStepMsg NCDAStepUniversalInterventions)
+                                        ]
+
+                                else
+                                    div [ class "actions" ]
+                                        [ actionButton (config.setStepMsg NCDAStepUniversalInterventions) ]
 
                             NCDAStepUniversalInterventions ->
-                                if expectNCDAStep currentDate person config.ncdaNeverFilled NCDAStepAntenatalCare then
+                                if expectNCDAStep currentDate person config.ncdaNeverFilled config.atHealthCenter NCDAStepNutritionAssessment then
+                                    div [ class "actions two" ]
+                                        [ backButton NCDAStepNutritionAssessment
+                                        , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
+                                        ]
+
+                                else if expectNCDAStep currentDate person config.ncdaNeverFilled config.atHealthCenter NCDAStepAntenatalCare then
                                     div [ class "actions two" ]
                                         [ backButton NCDAStepAntenatalCare
                                         , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
@@ -3099,6 +3127,10 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                 ++ signTasks
                 ++ newbornExamTasks
             )
+
+        NCDAStepNutritionAssessment ->
+            -- @todo
+            ( [], [] )
 
         NCDAStepUniversalInterventions ->
             let
