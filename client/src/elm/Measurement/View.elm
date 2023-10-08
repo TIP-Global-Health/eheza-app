@@ -26,12 +26,14 @@ import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getNewbornExamPregnancySummary
+        ( calculateZScoreWeightForAge
+        , getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
         , resolveNCDANeverFilled
         , resolveNCDANotFilledAfterAgeOfSixMonths
         )
 import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Date
@@ -129,7 +131,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
-            viewNCDA language currentDate childId child (mapMeasurementData .ncda measurements) model.ncdaData db
+            viewNCDA language currentDate zscores childId child (mapMeasurementData .ncda measurements) model.ncdaData db
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -2295,6 +2297,7 @@ viewTreatmentWithDosage language sign =
 viewNCDAContent :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
@@ -2302,7 +2305,7 @@ viewNCDAContent :
     -> NCDAForm
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate personId person config helperState form db =
+viewNCDAContent language currentDate zscores personId person config helperState form db =
     let
         steps =
             resolveNCDASteps currentDate person config.ncdaNeverFilled config.atHealthCenter
@@ -2366,6 +2369,7 @@ viewNCDAContent language currentDate personId person config helperState form db 
                     ( step
                     , ncdaFormInputsAndTasks language
                         currentDate
+                        zscores
                         personId
                         person
                         config
@@ -2521,6 +2525,7 @@ viewNCDAContent language currentDate personId person config helperState form db 
 ncdaFormInputsAndTasks :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
@@ -2528,7 +2533,7 @@ ncdaFormInputsAndTasks :
     -> NCDAStep
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate personId person config form currentStep db =
+ncdaFormInputsAndTasks language currentDate zscores personId person config form currentStep db =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -2566,7 +2571,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | takenSupplementsPerGuidance = Just value }
                     in
                     ( viewNCDAInput TakenSupplementsPerGuidance form.takenSupplementsPerGuidance updateFunc
-                    , [ maybeToBoolTask form.takenSupplementsPerGuidance ]
+                    , [ form.takenSupplementsPerGuidance ]
                     )
 
                 ChildBehindOnVaccination ->
@@ -2605,8 +2610,13 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                         ( [], [] )
 
                 ShowsEdemaSigns ->
-                    --@todo
-                    ( [], [] )
+                    let
+                        updateFunc value form_ =
+                            { form_ | showsEdemaSigns = Just value }
+                    in
+                    ( viewNCDAInput ShowsEdemaSigns form.showsEdemaSigns updateFunc
+                    , [ form.showsEdemaSigns ]
+                    )
 
                 OngeraMNP ->
                     let
@@ -2642,7 +2652,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | takingOngeraMNP = Just value }
                     in
                     ( viewNCDAInput TakingOngeraMNP form.takingOngeraMNP updateFunc
-                    , [ maybeToBoolTask form.takingOngeraMNP ]
+                    , [ form.takingOngeraMNP ]
                     )
 
                 FiveFoodGroups ->
@@ -2689,7 +2699,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput BreastfedForSixMonths form.breastfedForSixMonths updateFunc ++ counseling
-                    , [ maybeToBoolTask form.breastfedForSixMonths ]
+                    , [ form.breastfedForSixMonths ]
                     )
 
                 AppropriateComplementaryFeeding ->
@@ -2705,7 +2715,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput AppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc ++ counseling
-                    , [ maybeToBoolTask form.appropriateComplementaryFeeding ]
+                    , [ form.appropriateComplementaryFeeding ]
                     )
 
                 MealsAtRecommendedTimes ->
@@ -2736,7 +2746,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             Nothing
                       ]
                         ++ counseling
-                    , [ maybeToBoolTask form.mealsAtRecommendedTimes ]
+                    , [ form.mealsAtRecommendedTimes ]
                     )
 
                 ChildReceivesFBF ->
@@ -2770,7 +2780,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | childTakingFBF = Just value }
                     in
                     ( viewNCDAInput ChildTakingFBF form.childTakingFBF updateFunc
-                    , [ maybeToBoolTask form.childTakingFBF ]
+                    , [ form.childTakingFBF ]
                     )
 
                 ChildReceivesVitaminA ->
@@ -2811,7 +2821,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | childTakingVitaminA = Just value }
                     in
                     ( viewNCDAInput ChildTakingVitaminA form.childTakingVitaminA updateFunc
-                    , [ maybeToBoolTask form.childTakingVitaminA ]
+                    , [ form.childTakingVitaminA ]
                     )
 
                 ChildReceivesDewormer ->
@@ -2845,7 +2855,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | childTakingDewormer = Just value }
                     in
                     ( viewNCDAInput ChildTakingDewormer form.childTakingDewormer updateFunc
-                    , [ maybeToBoolTask form.childTakingDewormer ]
+                    , [ form.childTakingDewormer ]
                     )
 
                 ChildReceivesECD ->
@@ -2896,7 +2906,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | receivingCashTransfer = Just value }
                     in
                     ( viewNCDAInput ReceivingCashTransfer form.receivingCashTransfer updateFunc
-                    , [ maybeToBoolTask form.receivingCashTransfer ]
+                    , [ form.receivingCashTransfer ]
                     )
 
                 ConditionalFoodItems ->
@@ -2912,7 +2922,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput ConditionalFoodItems form.conditionalFoodItems updateFunc ++ counseling
-                    , [ maybeToBoolTask form.conditionalFoodItems ]
+                    , [ form.conditionalFoodItems ]
                     )
 
                 ChildWithAcuteMalnutrition ->
@@ -2945,7 +2955,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc ++ counseling
-                    , [ maybeToBoolTask form.treatedForAcuteMalnutrition ]
+                    , [ form.treatedForAcuteMalnutrition ]
                     )
 
                 ChildWithDisability ->
@@ -2978,7 +2988,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput ReceivingSupport form.receivingSupport updateFunc ++ counseling
-                    , [ maybeToBoolTask form.receivingSupport ]
+                    , [ form.receivingSupport ]
                     )
 
                 ChildGotDiarrhea ->
@@ -2987,7 +2997,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | childGotDiarrhea = Just value }
                     in
                     ( viewNCDAInput ChildGotDiarrhea form.childGotDiarrhea updateFunc
-                    , [ maybeToBoolTask form.childGotDiarrhea ]
+                    , [ form.childGotDiarrhea ]
                     )
 
                 HasCleanWater ->
@@ -3003,7 +3013,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput HasCleanWater form.hasCleanWater updateFunc ++ counseling
-                    , [ maybeToBoolTask form.hasCleanWater ]
+                    , [ form.hasCleanWater ]
                     )
 
                 HasHandwashingFacility ->
@@ -3019,7 +3029,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput HasHandwashingFacility form.hasHandwashingFacility updateFunc ++ counseling
-                    , [ maybeToBoolTask form.hasHandwashingFacility ]
+                    , [ form.hasHandwashingFacility ]
                     )
 
                 HasToilets ->
@@ -3035,7 +3045,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput HasToilets form.hasToilets updateFunc ++ counseling
-                    , [ maybeToBoolTask form.hasToilets ]
+                    , [ form.hasToilets ]
                     )
 
                 HasKitchenGarden ->
@@ -3051,7 +3061,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput HasKitchenGarden form.hasKitchenGarden updateFunc ++ counseling
-                    , [ maybeToBoolTask form.hasKitchenGarden ]
+                    , [ form.hasKitchenGarden ]
                     )
 
                 InsecticideTreatedBednets ->
@@ -3067,7 +3077,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                                 []
                     in
                     ( viewNCDAInput InsecticideTreatedBednets form.insecticideTreatedBednets updateFunc ++ counseling
-                    , [ maybeToBoolTask form.insecticideTreatedBednets ]
+                    , [ form.insecticideTreatedBednets ]
                     )
 
                 BornWithBirthDefect ->
@@ -3076,7 +3086,7 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
                             { form_ | bornWithBirthDefect = Just value }
                     in
                     ( viewNCDAInput BornWithBirthDefect form.bornWithBirthDefect updateFunc
-                    , [ maybeToBoolTask form.bornWithBirthDefect ]
+                    , [ form.bornWithBirthDefect ]
                     )
 
                 NoNCDASigns ->
@@ -3129,8 +3139,81 @@ ncdaFormInputsAndTasks language currentDate personId person config form currentS
             )
 
         NCDAStepNutritionAssessment ->
-            -- @todo
-            ( [], [] )
+            let
+                weightAsFloat =
+                    Maybe.map (\(WeightInGrm weight) -> weight)
+                        form.weight
+
+                ( muacInput, muacTask ) =
+                    ageInMonths currentDate person
+                        |> Maybe.map
+                            (\ageMonths ->
+                                if ageMonths >= 6 then
+                                    let
+                                        muacAsFloat =
+                                            Maybe.map (\(MuacInCm muac) -> muac)
+                                                form.muac
+                                    in
+                                    ( [ viewLabel language Translate.MUAC
+                                      , viewMeasurementInput
+                                            language
+                                            muacAsFloat
+                                            config.setMuacMsg
+                                            "muac"
+                                            Translate.CentimeterShorthand
+                                      ]
+                                    , [ maybeToBoolTask form.muac ]
+                                    )
+
+                                else
+                                    ( [], [] )
+                            )
+                        |> Maybe.withDefault ( [], [] )
+
+                lengthIsOff =
+                    Maybe.map ((/=) LevelGreen)
+                        form.stuntingLevel
+                        |> Maybe.withDefault False
+
+                weightIsOff =
+                    Maybe.andThen (\weight -> calculateZScoreWeightForAge currentDate zscores person (Just weight))
+                        weightAsFloat
+                        |> Maybe.map (\score -> score < -2)
+                        |> Maybe.withDefault False
+
+                muacIsOff =
+                    muacMeasurementIsOff form.muac
+
+                ( edemaInput, edemaTask ) =
+                    if lengthIsOff || weightIsOff || muacIsOff then
+                        inputsAndTasksForSign ShowsEdemaSigns
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewLabel language Translate.StuntingLevelLabel
+              , viewCheckBoxSelectInput language
+                    [ LevelGreen, LevelYellow ]
+                    [ LevelRed ]
+                    form.stuntingLevel
+                    config.setStuntingLevelMsg
+                    Translate.StuntingLevel
+              , viewLabel language Translate.Weight
+              , viewMeasurementInput
+                    language
+                    weightAsFloat
+                    config.setWeightMsg
+                    "weight"
+                    Translate.KilogramShorthand
+              ]
+                ++ muacInput
+                ++ edemaInput
+            , [ maybeToBoolTask form.stuntingLevel
+              , maybeToBoolTask form.weight
+              ]
+                ++ muacTask
+                ++ edemaTask
+            )
 
         NCDAStepUniversalInterventions ->
             let
@@ -3518,13 +3601,14 @@ mealsAtRecommendedTimesHelperDialog language action =
 viewNCDA :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> PersonId
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
     -> NCDAData
     -> ModelIndexedDb
     -> Html MsgChild
-viewNCDA language currentDate childId child measurement data db =
+viewNCDA language currentDate zscores childId child measurement data db =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -3547,6 +3631,9 @@ viewNCDA language currentDate childId child measurement data db =
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+            , setStuntingLevelMsg = SetStuntingLevel
+            , setWeightMsg = SetWeight
+            , setMuacMsg = SetMuac
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg =
@@ -3558,6 +3645,7 @@ viewNCDA language currentDate childId child measurement data db =
     in
     viewNCDAContent language
         currentDate
+        zscores
         childId
         child
         config

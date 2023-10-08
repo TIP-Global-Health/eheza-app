@@ -5925,3 +5925,10 @@ generateVaccinationProgressForChildScoreboard measurements =
     , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
     ]
         |> Dict.fromList
+
+
+muacMeasurementIsOff : Maybe MuacInCm -> Bool
+muacMeasurementIsOff =
+    -- MUAC is not green.
+    Maybe.map (muacIndication >> (/=) ColorAlertGreen)
+        >> Maybe.withDefault False

@@ -247,6 +247,9 @@ type MsgChild
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetChildReceivesVitaminA ReceiveOption
+    | SetStuntingLevel StuntingLevel
+    | SetWeight String
+    | SetMuac String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
 
@@ -1251,6 +1254,9 @@ type alias NCDAContentConfig msg =
     , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
     , setChildReceivesVitaminAMsg : ReceiveOption -> msg
+    , setStuntingLevelMsg : StuntingLevel -> msg
+    , setWeightMsg : String -> msg
+    , setMuacMsg : String -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg

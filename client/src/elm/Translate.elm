@@ -464,6 +464,9 @@ type TranslationId
     | Colline
     | CollineSub
     | ColorAlertIndication ColorAlertIndication
+    | ColorGreen
+    | ColorRed
+    | ColorYellow
     | Commune
     | CompleteFacilityReferralForm ReferralFacility
     | Contacted114
@@ -1517,6 +1520,8 @@ type TranslationId
     | StockManagementSupplierQuestion
     | StockSupplier StockSupplier
     | StockSupplierAbbrev StockSupplier
+    | StuntingLevelLabel
+    | StuntingLevel StuntingLevel
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
     | SuccessiveAbortions
@@ -3910,22 +3915,31 @@ translationSet trans =
         ColorAlertIndication indication ->
             case indication of
                 ColorAlertRed ->
-                    { english = "Red"
-                    , kinyarwanda = Just "Umutuku"
-                    , kirundi = Just "Gitukura"
-                    }
+                    translationSet ColorRed
 
                 ColorAlertYellow ->
-                    { english = "Yellow"
-                    , kinyarwanda = Just "Umuhondo"
-                    , kirundi = Just "Ibara risa n'umutoto uhishiye"
-                    }
+                    translationSet ColorYellow
 
                 ColorAlertGreen ->
-                    { english = "Green"
-                    , kinyarwanda = Just "Icyatsi"
-                    , kirundi = Just "Icatsi kibisi"
-                    }
+                    translationSet ColorGreen
+
+        ColorGreen ->
+            { english = "Green"
+            , kinyarwanda = Just "Icyatsi"
+            , kirundi = Just "Icatsi kibisi"
+            }
+
+        ColorRed ->
+            { english = "Red"
+            , kinyarwanda = Just "Umutuku"
+            , kirundi = Just "Gitukura"
+            }
+
+        ColorYellow ->
+            { english = "Yellow"
+            , kinyarwanda = Just "Umuhondo"
+            , kirundi = Just "Ibara risa n'umutoto uhishiye"
+            }
 
         Commune ->
             { english = "Commune"
@@ -19804,6 +19818,23 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+        StuntingLevelLabel ->
+            { english = "Level of stunting using child length mat"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        StuntingLevel value ->
+            case value of
+                LevelGreen ->
+                    translationSet ColorGreen
+
+                LevelYellow ->
+                    translationSet ColorYellow
+
+                LevelRed ->
+                    translationSet ColorRed
 
         SubsequentEncounter ->
             { english = "Subsequent Encounter"

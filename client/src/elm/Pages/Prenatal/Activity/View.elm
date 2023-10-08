@@ -3350,7 +3350,7 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                     (SetNutritionAssessmentMeasurement heightUpdateFunc)
                     "height"
                     Translate.CentimeterShorthand
-                , viewPreviousMeasurement language Nothing Translate.EmptyString
+                , viewPreviousMeasurement language heightPreviousValue Translate.EmptyString
                 , div [ class "separator" ] []
                 ]
 
