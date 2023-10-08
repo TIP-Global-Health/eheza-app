@@ -2320,14 +2320,14 @@ viewNCDAContent language currentDate zscores personId person config helperState 
                         NCDAStepAntenatalCare ->
                             "ncda-antenatal"
 
-                        NCDAStepNutritionAssessment ->
-                            "nutrition-assessment"
-
                         NCDAStepUniversalInterventions ->
                             "ncda-universal-intervention"
 
                         NCDAStepNutritionBehavior ->
                             "ncda-nutrition-behavior"
+
+                        NCDAStepNutritionAssessment ->
+                            "nutrition-assessment"
 
                         NCDAStepTargetedInterventions ->
                             "ncda-targeted-intervention"
@@ -2438,73 +2438,49 @@ viewNCDAContent language currentDate zscores personId person config helperState 
                         )
 
                     else
-                        let
-                            backButton backStep =
-                                button
-                                    [ class "ui fluid primary button"
-                                    , onClick <| config.setStepMsg backStep
-                                    ]
-                                    [ text <| ("< " ++ translate language Translate.Back) ]
-                        in
                         ( emptyNode
-                        , case step of
-                            NCDAStepAntenatalCare ->
-                                let
-                                    nextStep =
-                                        if expectNCDAStep currentDate person config.ncdaNeverFilled config.atHealthCenter NCDAStepNutritionAssessment then
-                                            NCDAStepNutritionAssessment
+                        , List.Extra.elemIndex step steps
+                            |> Maybe.map
+                                (\stepIndex ->
+                                    let
+                                        backButton backStep =
+                                            button
+                                                [ class "ui fluid primary button"
+                                                , onClick <| config.setStepMsg backStep
+                                                ]
+                                                [ text <| ("< " ++ translate language Translate.Back) ]
 
-                                        else
-                                            NCDAStepUniversalInterventions
-                                in
-                                div [ class "actions" ]
-                                    [ actionButton (config.setStepMsg nextStep) ]
+                                        totalSteps =
+                                            List.length steps
 
-                            NCDAStepNutritionAssessment ->
-                                if expectNCDAStep currentDate person config.ncdaNeverFilled config.atHealthCenter NCDAStepAntenatalCare then
-                                    div [ class "actions two" ]
-                                        [ backButton NCDAStepAntenatalCare
-                                        , actionButton (config.setStepMsg NCDAStepUniversalInterventions)
-                                        ]
+                                        previousStep =
+                                            List.Extra.getAt (stepIndex - 1) steps
 
-                                else
-                                    div [ class "actions" ]
-                                        [ actionButton (config.setStepMsg NCDAStepUniversalInterventions) ]
+                                        nextStep =
+                                            List.Extra.getAt (stepIndex + 1) steps
+                                    in
+                                    case ( previousStep, nextStep ) of
+                                        ( Nothing, Just next ) ->
+                                            div [ class "actions" ]
+                                                [ actionButton (config.setStepMsg next) ]
 
-                            NCDAStepUniversalInterventions ->
-                                if expectNCDAStep currentDate person config.ncdaNeverFilled config.atHealthCenter NCDAStepNutritionAssessment then
-                                    div [ class "actions two" ]
-                                        [ backButton NCDAStepNutritionAssessment
-                                        , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
-                                        ]
+                                        ( Just prev, Just next ) ->
+                                            div [ class "actions two" ]
+                                                [ backButton prev
+                                                , actionButton (config.setStepMsg next)
+                                                ]
 
-                                else if expectNCDAStep currentDate person config.ncdaNeverFilled config.atHealthCenter NCDAStepAntenatalCare then
-                                    div [ class "actions two" ]
-                                        [ backButton NCDAStepAntenatalCare
-                                        , actionButton (config.setStepMsg NCDAStepNutritionBehavior)
-                                        ]
+                                        ( Just prev, Nothing ) ->
+                                            div [ class "actions two" ]
+                                                [ backButton prev
+                                                , actionButton config.saveMsg
+                                                ]
 
-                                else
-                                    div [ class "actions" ]
-                                        [ actionButton (config.setStepMsg NCDAStepNutritionBehavior) ]
-
-                            NCDAStepNutritionBehavior ->
-                                div [ class "actions two" ]
-                                    [ backButton NCDAStepUniversalInterventions
-                                    , actionButton (config.setStepMsg NCDAStepTargetedInterventions)
-                                    ]
-
-                            NCDAStepTargetedInterventions ->
-                                div [ class "actions two" ]
-                                    [ backButton NCDAStepNutritionBehavior
-                                    , actionButton (config.setStepMsg NCDAStepInfrastructureEnvironment)
-                                    ]
-
-                            NCDAStepInfrastructureEnvironment ->
-                                div [ class "actions two" ]
-                                    [ backButton NCDAStepTargetedInterventions
-                                    , actionButton config.saveMsg
-                                    ]
+                                        ( Nothing, Nothing ) ->
+                                            div [ class "actions" ]
+                                                [ actionButton config.saveMsg ]
+                                )
+                            |> Maybe.withDefault emptyNode
                         )
                 )
                 currentStep

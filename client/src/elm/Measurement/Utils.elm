@@ -5173,9 +5173,9 @@ expectNCDAStep currentDate person ncdaNeverFilled atHealthCenter task =
 ncdaSteps : List NCDAStep
 ncdaSteps =
     [ NCDAStepAntenatalCare
-    , NCDAStepNutritionAssessment
     , NCDAStepUniversalInterventions
     , NCDAStepNutritionBehavior
+    , NCDAStepNutritionAssessment
     , NCDAStepTargetedInterventions
     , NCDAStepInfrastructureEnvironment
     ]
