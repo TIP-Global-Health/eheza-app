@@ -10413,15 +10413,9 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                ChildWithAcuteMalnutrition ->
-                    { english = "Please check MUAC. Does the child have acute malnutrition"
-                    , kinyarwanda = Just "Pima ikizigira cy'akaboko. Umwana afite imirire mibi ihutiyeho"
-                    , kirundi = Nothing
-                    }
-
                 TreatedForAcuteMalnutrition ->
-                    { english = "Is the child being treated"
-                    , kinyarwanda = Just "Umwana ari kuvurwa"
+                    { english = "Is the child being treated for Acute Malnutrition"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 

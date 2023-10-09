@@ -4505,7 +4505,6 @@ fromNCDAValue saved =
     , childReceivesDewormer = Maybe.map (.signs >> EverySet.member ChildReceivesDewormer) saved
     , childTakingDewormer = Maybe.map (.signs >> EverySet.member ChildTakingDewormer) saved
     , childReceivesECD = Maybe.map (.signs >> EverySet.member ChildReceivesECD) saved
-    , childWithAcuteMalnutrition = Maybe.map (.signs >> EverySet.member ChildWithAcuteMalnutrition) saved
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
@@ -4563,7 +4562,6 @@ ncdaFormWithDefault form saved =
                 , childReceivesDewormer = or form.childReceivesDewormer (EverySet.member ChildReceivesDewormer value.signs |> Just)
                 , childTakingDewormer = or form.childTakingDewormer (EverySet.member ChildTakingDewormer value.signs |> Just)
                 , childReceivesECD = or form.childReceivesECD (EverySet.member ChildReceivesECD value.signs |> Just)
-                , childWithAcuteMalnutrition = or form.childWithAcuteMalnutrition (EverySet.member ChildWithAcuteMalnutrition value.signs |> Just)
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
@@ -4618,7 +4616,6 @@ toNCDAValue form =
             , ifNullableTrue ChildReceivesDewormer form.childReceivesDewormer
             , ifNullableTrue ChildTakingDewormer form.childTakingDewormer
             , ifNullableTrue ChildReceivesECD form.childReceivesECD
-            , ifNullableTrue ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition
             , ifNullableTrue ChildWithDisability form.childWithDisability
             , ifNullableTrue OngeraMNP form.ongeraMNP
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets

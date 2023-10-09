@@ -2901,23 +2901,6 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                     , [ form.conditionalFoodItems ]
                     )
 
-                ChildWithAcuteMalnutrition ->
-                    let
-                        updateFunc value form_ =
-                            { form_ | childWithAcuteMalnutrition = Just value, treatedForAcuteMalnutrition = Nothing }
-
-                        ( derivedInputs, derivedTasks ) =
-                            if form.childWithAcuteMalnutrition == Just True then
-                                inputsAndTasksForSign TreatedForAcuteMalnutrition
-
-                            else
-                                ( [], [] )
-                    in
-                    ( viewNCDAInput ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition updateFunc
-                        ++ derivedInputs
-                    , form.childWithAcuteMalnutrition :: derivedTasks
-                    )
-
                 TreatedForAcuteMalnutrition ->
                     let
                         updateFunc value form_ =
@@ -3364,12 +3347,12 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                     else
                         [ ChildReceivesFBF ]
 
-                childWithAcuteMalnutritionSign =
-                    if config.atHealthCenter || childDiagnosedWithMalnutrition personId db then
-                        []
+                treatedForAcuteMalnutritionSign =
+                    if not config.atHealthCenter && muacMeasurementIsOff form.muac then
+                        [ TreatedForAcuteMalnutrition ]
 
                     else
-                        [ ChildWithAcuteMalnutrition ]
+                        []
 
                 childGotDiarrheaSign =
                     if config.atHealthCenter then
@@ -3383,7 +3366,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                         ++ [ BeneficiaryCashTransfer
                            , ConditionalFoodItems
                            ]
-                        ++ childWithAcuteMalnutritionSign
+                        ++ treatedForAcuteMalnutritionSign
                         ++ [ ChildWithDisability ]
                         ++ childGotDiarrheaSign
 

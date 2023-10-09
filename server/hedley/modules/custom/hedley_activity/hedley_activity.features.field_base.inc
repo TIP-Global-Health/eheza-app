@@ -1330,7 +1330,6 @@ function hedley_activity_field_default_field_bases() {
         'child-receives-dewormer' => 'Child receives dewormer',
         'child-taking-dewormer' => 'Child Taking dewormer',
         'child-receives-ecd' => 'Child receives ECD',
-        'child-with-acute-malnutrition' => 'Child with Acute Malnutrition',
         'child-with-disability' => 'Child with Disability',
         'insecticide-treated-bednets' => 'Insecticide Treated Bednets',
         'meals-at-recommended-times' => 'Meals at recommended times',

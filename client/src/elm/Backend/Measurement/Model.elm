@@ -301,7 +301,6 @@ type NCDASign
     | ChildReceivesDewormer
     | ChildTakingDewormer
     | ChildReceivesECD
-    | ChildWithAcuteMalnutrition
     | ChildWithDisability
     | ConditionalFoodItems
     | FiveFoodGroups
