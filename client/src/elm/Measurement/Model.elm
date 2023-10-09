@@ -1052,7 +1052,7 @@ type alias NCDAForm =
     -- Step 2.
     , stuntingLevel : Maybe StuntingLevel
     , stuntingLevelNotTaken : Maybe Bool
-    , weight : Maybe WeightInGrm
+    , weight : Maybe WeightInKg
     , weightNotTaken : Maybe Bool
     , muac : Maybe MuacInCm
     , muacNotTaken : Maybe Bool

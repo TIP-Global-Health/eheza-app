@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , MotherMeasurements
         , MuacInCm(..)
         , WeightInGrm(..)
+        , WeightInKg(..)
         )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet
@@ -386,7 +387,7 @@ updateChild msg model =
                     model.ncdaData.form
                         |> (\form ->
                                 { form
-                                    | weight = String.toFloat string |> Maybe.map WeightInGrm
+                                    | weight = String.toFloat string |> Maybe.map WeightInKg
                                 }
                            )
 

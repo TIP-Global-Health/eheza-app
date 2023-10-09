@@ -3149,7 +3149,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                     )
 
                 weightAsFloat =
-                    Maybe.map (\(WeightInGrm weight) -> weight)
+                    Maybe.map (\(WeightInKg weight) -> weight)
                         form.weight
 
                 ( weightInput, weightTask ) =

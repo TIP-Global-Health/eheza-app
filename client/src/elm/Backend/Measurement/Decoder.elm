@@ -5154,7 +5154,7 @@ decodeNCDAValue =
         |> required "anc_visits_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
         |> optional "receive_option" (nullable decodeReceiveOption) Nothing
         |> optional "stunting_level" (nullable decodeStuntingLevel) Nothing
-        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> optional "weight" (nullable (map WeightInKg decodeFloat)) Nothing
         |> optional "muac" (nullable (map MuacInCm decodeFloat)) Nothing
 
 

@@ -1786,7 +1786,7 @@ update currentDate isChw id db msg model =
                     model.ncdaData.form
                         |> (\form ->
                                 { form
-                                    | weight = String.toFloat string |> Maybe.map WeightInGrm
+                                    | weight = String.toFloat string |> Maybe.map WeightInKg
                                 }
                            )
 

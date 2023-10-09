@@ -10,6 +10,7 @@ import Backend.Measurement.Model
         , ImageUrl(..)
         , MuacInCm(..)
         , WeightInGrm(..)
+        , WeightInKg(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -380,7 +381,7 @@ update currentDate id db msg model =
                     model.ncdaData.form
                         |> (\form ->
                                 { form
-                                    | weight = String.toFloat string |> Maybe.map WeightInGrm
+                                    | weight = String.toFloat string |> Maybe.map WeightInKg
                                 }
                            )
 

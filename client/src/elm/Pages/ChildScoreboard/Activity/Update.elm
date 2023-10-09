@@ -4,7 +4,13 @@ import App.Model
 import AssocList as Dict
 import Backend.ChildScoreboardEncounter.Model
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (AdministrationNote(..), MuacInCm(..), WeightInGrm(..))
+import Backend.Measurement.Model
+    exposing
+        ( AdministrationNote(..)
+        , MuacInCm(..)
+        , WeightInGrm(..)
+        , WeightInKg(..)
+        )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Date
@@ -188,7 +194,7 @@ update currentDate id db msg model =
                     model.ncdaData.form
                         |> (\form ->
                                 { form
-                                    | weight = String.toFloat string |> Maybe.map WeightInGrm
+                                    | weight = String.toFloat string |> Maybe.map WeightInKg
                                 }
                            )
 

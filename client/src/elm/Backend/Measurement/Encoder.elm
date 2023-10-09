@@ -4804,7 +4804,7 @@ encodeNCDAValueWithType type_ value =
                 |> Maybe.withDefault []
 
         weight =
-            Maybe.map (\(WeightInGrm weight_) -> [ ( "weight", float weight_ ) ])
+            Maybe.map (\(WeightInKg weight_) -> [ ( "weight", float weight_ ) ])
                 value.weight
                 |> Maybe.withDefault []
 

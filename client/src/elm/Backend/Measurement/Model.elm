@@ -279,7 +279,7 @@ type alias NCDAValue =
     , ancVisitsDates : EverySet NominalDate
     , receivesVitaminA : Maybe ReceiveOption
     , stuntingLevel : Maybe StuntingLevel
-    , weight : Maybe WeightInGrm
+    , weight : Maybe WeightInKg
     , muac : Maybe MuacInCm
     }
 
