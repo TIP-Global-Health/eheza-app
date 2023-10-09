@@ -2913,7 +2913,9 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                             else
                                 []
                     in
-                    ( viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc ++ counseling
+                    ( viewCustomLabel language Translate.ChildHasMalnutritionPhrase "." "label"
+                        :: viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc
+                        ++ counseling
                     , [ form.treatedForAcuteMalnutrition ]
                     )
 
