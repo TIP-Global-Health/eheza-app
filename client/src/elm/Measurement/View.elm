@@ -3116,9 +3116,107 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
 
         NCDAStepNutritionAssessment ->
             let
+                ( stuntingLevelInput, stuntingLevelTask ) =
+                    let
+                        measurementNotTakenChecked =
+                            form.stuntingLevelNotTaken == Just True
+
+                        measurementNotTakenUpdateFunc value form_ =
+                            { form_ | stuntingLevelNotTaken = Just value, stuntingLevel = Nothing }
+
+                        measurementNotTakenValueWhenChecked =
+                            Maybe.map not form.stuntingLevelNotTaken
+                                |> Maybe.withDefault True
+
+                        inputSection =
+                            if measurementNotTakenChecked then
+                                []
+
+                            else
+                                [ viewCheckBoxSelectInput language
+                                    [ LevelGreen, LevelYellow ]
+                                    [ LevelRed ]
+                                    form.stuntingLevel
+                                    config.setStuntingLevelMsg
+                                    Translate.StuntingLevel
+                                ]
+
+                        notTakenCheckbox =
+                            [ div
+                                [ class "ui checkbox activity skip-step"
+                                , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
+                                ]
+                                [ input
+                                    [ type_ "checkbox"
+                                    , checked measurementNotTakenChecked
+                                    , classList [ ( "checked", measurementNotTakenChecked ) ]
+                                    ]
+                                    []
+                                , label [] [ text <| translate language Translate.MeasurementNotTaken ]
+                                ]
+                            ]
+                    in
+                    ( viewLabel language Translate.StuntingLevelLabel :: inputSection ++ notTakenCheckbox
+                    , [ if measurementNotTakenChecked then
+                            form.stuntingLevelNotTaken
+
+                        else
+                            maybeToBoolTask form.stuntingLevel
+                      ]
+                    )
+
                 weightAsFloat =
                     Maybe.map (\(WeightInGrm weight) -> weight)
                         form.weight
+
+                ( weightInput, weightTask ) =
+                    let
+                        measurementNotTakenChecked =
+                            form.weightNotTaken == Just True
+
+                        measurementNotTakenUpdateFunc value form_ =
+                            { form_ | weightNotTaken = Just value, weight = Nothing }
+
+                        measurementNotTakenValueWhenChecked =
+                            Maybe.map not form.weightNotTaken
+                                |> Maybe.withDefault True
+
+                        inputSection =
+                            if measurementNotTakenChecked then
+                                []
+
+                            else
+                                [ viewMeasurementInput
+                                    language
+                                    weightAsFloat
+                                    config.setWeightMsg
+                                    "weight"
+                                    Translate.KilogramShorthand
+                                ]
+
+                        notTakenCheckbox =
+                            [ div
+                                [ class "ui checkbox activity skip-step"
+                                , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
+                                ]
+                                [ input
+                                    [ type_ "checkbox"
+                                    , checked measurementNotTakenChecked
+                                    , classList [ ( "checked", measurementNotTakenChecked ) ]
+                                    ]
+                                    []
+                                , label [] [ text <| translate language Translate.MeasurementNotTaken ]
+                                ]
+                            ]
+                    in
+                    ( viewLabel language Translate.Weight :: inputSection ++ notTakenCheckbox
+                    , [ if measurementNotTakenChecked then
+                            form.weightNotTaken
+
+                        else
+                            maybeToBoolTask form.weight
+                      ]
+                    )
 
                 ( muacInput, muacTask ) =
                     ageInMonths currentDate person
@@ -3129,16 +3227,52 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                                         muacAsFloat =
                                             Maybe.map (\(MuacInCm muac) -> muac)
                                                 form.muac
+
+                                        measurementNotTakenChecked =
+                                            form.muacNotTaken == Just True
+
+                                        measurementNotTakenUpdateFunc value form_ =
+                                            { form_ | muacNotTaken = Just value, muac = Nothing }
+
+                                        measurementNotTakenValueWhenChecked =
+                                            Maybe.map not form.muacNotTaken
+                                                |> Maybe.withDefault True
+
+                                        inputSection =
+                                            if measurementNotTakenChecked then
+                                                []
+
+                                            else
+                                                [ viewMeasurementInput
+                                                    language
+                                                    muacAsFloat
+                                                    config.setMuacMsg
+                                                    "muac"
+                                                    Translate.CentimeterShorthand
+                                                ]
+
+                                        notTakenCheckbox =
+                                            [ div
+                                                [ class "ui checkbox activity skip-step"
+                                                , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
+                                                ]
+                                                [ input
+                                                    [ type_ "checkbox"
+                                                    , checked measurementNotTakenChecked
+                                                    , classList [ ( "checked", measurementNotTakenChecked ) ]
+                                                    ]
+                                                    []
+                                                , label [] [ text <| translate language Translate.MeasurementNotTaken ]
+                                                ]
+                                            ]
                                     in
-                                    ( [ viewLabel language Translate.MUAC
-                                      , viewMeasurementInput
-                                            language
-                                            muacAsFloat
-                                            config.setMuacMsg
-                                            "muac"
-                                            Translate.CentimeterShorthand
+                                    ( viewLabel language Translate.MUAC :: inputSection ++ notTakenCheckbox
+                                    , [ if measurementNotTakenChecked then
+                                            form.muacNotTaken
+
+                                        else
+                                            maybeToBoolTask form.muac
                                       ]
-                                    , [ maybeToBoolTask form.muac ]
                                     )
 
                                 else
@@ -3167,26 +3301,16 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                     else
                         ( [], [] )
             in
-            ( [ viewLabel language Translate.StuntingLevelLabel
-              , viewCheckBoxSelectInput language
-                    [ LevelGreen, LevelYellow ]
-                    [ LevelRed ]
-                    form.stuntingLevel
-                    config.setStuntingLevelMsg
-                    Translate.StuntingLevel
-              , viewLabel language Translate.Weight
-              , viewMeasurementInput
-                    language
-                    weightAsFloat
-                    config.setWeightMsg
-                    "weight"
-                    Translate.KilogramShorthand
-              ]
-                ++ muacInput
-                ++ edemaInput
-            , [ maybeToBoolTask form.stuntingLevel
-              , maybeToBoolTask form.weight
-              ]
+            ( List.filter (List.isEmpty >> not)
+                [ stuntingLevelInput
+                , weightInput
+                , muacInput
+                , edemaInput
+                ]
+                |> List.intersperse [ div [ class "separator" ] [] ]
+                |> List.concat
+            , stuntingLevelTask
+                ++ weightTask
                 ++ muacTask
                 ++ edemaTask
             )

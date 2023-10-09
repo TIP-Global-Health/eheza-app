@@ -2055,9 +2055,20 @@ div.page-activity.child-scoreboard {
         margin-bottom: 5px;
       }
 
-      .form-input,
-      .checkbox-select-input {
+      .form-input {
         margin-bottom: 30px;
+      }
+
+      .skip-step {
+        margin-bottom: 30px;
+        margin-top: 20px;
+      }
+
+      .separator {
+        color: $color-light-gray;
+        margin: 30px 0;
+        width: 100%;
+        border: 1px solid;
       }
     }
   }

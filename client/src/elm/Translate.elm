@@ -849,6 +849,7 @@ type TranslationId
     | MaritalStatus MaritalStatus
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
+    | MeasurementNotTaken
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -9282,6 +9283,12 @@ translationSet trans =
             { english = "Select the best treatment option for the patient below"
             , kinyarwanda = Just "Hitamo umuti ukurikira ukwiye kuvura umurwayi"
             , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
+            }
+
+        MeasurementNotTaken ->
+            { english = "Unable to take measurements, skip this step"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         MedicationCausingHypertension medication ->
