@@ -2233,28 +2233,9 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
 
         -- Generate final malnutrition data.
         malnutritionTreatmentsByAgeInMonths =
-            case ( malnutritionTreatmentsByAgeInMonthsWithDate, malnutritionTreatmentsByAgeInMonthsWithDateBeforeFirstDiagnosis ) of
-                ( Just treatmentsDict, Just treatmentsByChwDict ) ->
-                    Dict.merge
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        -- In case we got both values for months, we give preference to
-                        -- the one with more recent date.
-                        (\key value chwValue ->
-                            if Date.compare (Tuple.first value) (Tuple.first chwValue) == GT then
-                                Dict.insert key (Tuple.second value)
-
-                            else
-                                Dict.insert key (Tuple.second chwValue)
-                        )
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        treatmentsDict
-                        treatmentsByChwDict
-                        Dict.empty
-                        |> Just
-
-                _ ->
-                    Maybe.Extra.or malnutritionTreatmentsByAgeInMonthsWithDate malnutritionTreatmentsByAgeInMonthsWithDateBeforeFirstDiagnosis
-                        |> Maybe.map (Dict.map (\_ value -> Tuple.second value))
+            mergeValuesByAgeInMonthsWithDateDicts
+                malnutritionTreatmentsByAgeInMonthsWithDate
+                malnutritionTreatmentsByAgeInMonthsWithDateBeforeFirstDiagnosis
 
         groupMalnutritionTreatmentData =
             let
@@ -2666,28 +2647,9 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
                 |> Maybe.withDefault emptyNCDAValuesForChild
 
         heightsByAgeInMonths =
-            case ( heightsByAgeInMonthsWithDateFromNutrition, heightsByAgeInMonthsWithDateFromNCDA ) of
-                ( Just fromNutrition, Just fromNCDA ) ->
-                    Dict.merge
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        -- In case we got both values for month, we give preference to
-                        -- the one with more recent date.
-                        (\key value1 value2 ->
-                            if Date.compare (Tuple.first value1) (Tuple.first value2) == GT then
-                                Dict.insert key (Tuple.second value1)
-
-                            else
-                                Dict.insert key (Tuple.second value2)
-                        )
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        fromNutrition
-                        fromNCDA
-                        Dict.empty
-                        |> Just
-
-                _ ->
-                    Maybe.Extra.or heightsByAgeInMonthsWithDateFromNutrition heightsByAgeInMonthsWithDateFromNCDA
-                        |> Maybe.map (Dict.map (\_ value -> Tuple.second value))
+            mergeValuesByAgeInMonthsWithDateDicts
+                heightsByAgeInMonthsWithDateFromNutrition
+                heightsByAgeInMonthsWithDateFromNCDA
 
         heightsByAgeInMonthsWithDateFromNutrition =
             Maybe.map
@@ -2728,28 +2690,9 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
                 |> distributeByAgeInMonthsWithDate child
 
         weightsByAgeInMonths =
-            case ( weightsByAgeInMonthsWithDateFromNutrition, weightsByAgeInMonthsWithDateFromNCDA ) of
-                ( Just fromNutrition, Just fromNCDA ) ->
-                    Dict.merge
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        -- In case we got both values for month, we give preference to
-                        -- the one with more recent date.
-                        (\key value1 value2 ->
-                            if Date.compare (Tuple.first value1) (Tuple.first value2) == GT then
-                                Dict.insert key (Tuple.second value1)
-
-                            else
-                                Dict.insert key (Tuple.second value2)
-                        )
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        fromNutrition
-                        fromNCDA
-                        Dict.empty
-                        |> Just
-
-                _ ->
-                    Maybe.Extra.or weightsByAgeInMonthsWithDateFromNutrition weightsByAgeInMonthsWithDateFromNCDA
-                        |> Maybe.map (Dict.map (\_ value -> Tuple.second value))
+            mergeValuesByAgeInMonthsWithDateDicts
+                weightsByAgeInMonthsWithDateFromNutrition
+                weightsByAgeInMonthsWithDateFromNCDA
 
         weightsByAgeInMonthsWithDateFromNutrition =
             Maybe.map
@@ -2798,28 +2741,9 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
                 NCDACellValueC
 
         muacsByAgeInMonths =
-            case ( muacsByAgeInMonthsWithDateFromNutrition, muacsByAgeInMonthsWithDateFromNCDA ) of
-                ( Just fromNutrition, Just fromNCDA ) ->
-                    Dict.merge
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        -- In case we got both values for month, we give preference to
-                        -- the one with more recent date.
-                        (\key value1 value2 ->
-                            if Date.compare (Tuple.first value1) (Tuple.first value2) == GT then
-                                Dict.insert key (Tuple.second value1)
-
-                            else
-                                Dict.insert key (Tuple.second value2)
-                        )
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        fromNutrition
-                        fromNCDA
-                        Dict.empty
-                        |> Just
-
-                _ ->
-                    Maybe.Extra.or muacsByAgeInMonthsWithDateFromNutrition muacsByAgeInMonthsWithDateFromNCDA
-                        |> Maybe.map (Dict.map (\_ value -> Tuple.second value))
+            mergeValuesByAgeInMonthsWithDateDicts
+                muacsByAgeInMonthsWithDateFromNutrition
+                muacsByAgeInMonthsWithDateFromNCDA
 
         muacsByAgeInMonthsWithDateFromNutrition =
             List.filterMap
@@ -2870,28 +2794,9 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
                 |> distributeByAgeInMonthsWithDate child
 
         nutritionsByAgeInMonths =
-            case ( nutritionsByAgeInMonthsWithDateFromNutrition, nutritionsByAgeInMonthsWithDateFromNCDA ) of
-                ( Just fromNutrition, Just fromNCDA ) ->
-                    Dict.merge
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        -- In case we got both values for month, we give preference to
-                        -- the one with more recent date.
-                        (\key value1 value2 ->
-                            if Date.compare (Tuple.first value1) (Tuple.first value2) == GT then
-                                Dict.insert key (Tuple.second value1)
-
-                            else
-                                Dict.insert key (Tuple.second value2)
-                        )
-                        (\key value -> Dict.insert key (Tuple.second value))
-                        fromNutrition
-                        fromNCDA
-                        Dict.empty
-                        |> Just
-
-                _ ->
-                    Maybe.Extra.or nutritionsByAgeInMonthsWithDateFromNutrition nutritionsByAgeInMonthsWithDateFromNCDA
-                        |> Maybe.map (Dict.map (\_ value -> Tuple.second value))
+            mergeValuesByAgeInMonthsWithDateDicts
+                nutritionsByAgeInMonthsWithDateFromNutrition
+                nutritionsByAgeInMonthsWithDateFromNCDA
 
         nutritionsByAgeInMonthsWithDateFromNutrition =
             List.filterMap
@@ -3200,3 +3105,29 @@ generateValues currentDate child valuesByAgeInMonths resolutionFunc =
 emptyNCDAValuesForChild : List NCDACellValue
 emptyNCDAValuesForChild =
     List.repeat 25 NCDACellValueEmpty
+
+
+mergeValuesByAgeInMonthsWithDateDicts : Maybe (Dict Int ( NominalDate, a )) -> Maybe (Dict Int ( NominalDate, a )) -> Maybe (Dict Int a)
+mergeValuesByAgeInMonthsWithDateDicts dict1 dict2 =
+    case ( dict1, dict2 ) of
+        ( Just dict1_, Just dict2_ ) ->
+            Dict.merge
+                (\key value -> Dict.insert key (Tuple.second value))
+                -- In case we got both values for months, we give preference to
+                -- the one with more recent date.
+                (\key value1 value2 ->
+                    if Date.compare (Tuple.first value1) (Tuple.first value2) == GT then
+                        Dict.insert key (Tuple.second value1)
+
+                    else
+                        Dict.insert key (Tuple.second value2)
+                )
+                (\key value -> Dict.insert key (Tuple.second value))
+                dict1_
+                dict2_
+                Dict.empty
+                |> Just
+
+        _ ->
+            Maybe.Extra.or dict1 dict2
+                |> Maybe.map (Dict.map (\_ value -> Tuple.second value))
