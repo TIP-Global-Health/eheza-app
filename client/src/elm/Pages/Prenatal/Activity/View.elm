@@ -2606,6 +2606,16 @@ viewSpecialityCareContent language currentDate assembled data =
                 , text <| translate language Translate.SpecialityCareHeaderSuffix
                 , text "."
                 ]
+
+        action =
+            let
+                personId =
+                    assembled.participant.person
+
+                saveMsg =
+                    SaveSpecialityCare personId assembled.measurements.specialityCare
+            in
+            viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -2614,9 +2624,7 @@ viewSpecialityCareContent language currentDate assembled data =
                 arvSection
                     ++ ncdSection
             ]
-        , viewSaveAction language
-            (SaveSpecialityCare assembled.participant.person assembled.measurements.specialityCare)
-            (tasksCompleted /= totalTasks)
+        , action
         ]
     ]
 
