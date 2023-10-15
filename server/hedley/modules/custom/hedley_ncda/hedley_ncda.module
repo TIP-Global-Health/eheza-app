@@ -683,13 +683,14 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
 
   $malnutrition_treatment_by_questionnaires = [];
   foreach ($ncdas as $ncda) {
-    $items = field_get_items('node', $ncda, 'field_ncda_signs');
-    if (!$items) {
+    $date_measured = hedley_ncda_get_date_measured($ncda);
+    if (!$date_measured) {
       continue;
     }
 
-    $date_measured = hedley_ncda_get_date_measured($ncda);
-    if (!$date_measured) {
+    // Process NCDA signs field items.
+    $items = field_get_items('node', $ncda, 'field_ncda_signs');
+    if (!$items) {
       continue;
     }
 
@@ -699,11 +700,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
           $data['ncda']['pane1']['row2'] = TRUE;
           break;
 
-        case 'child-taking-vitamin-a':
-          $data['ncda']['pane2']['row2'][] = $date_measured;
-          break;
-
-        case 'child-taking-dewormer':
+        case 'child-receives-dewormer':
           $data['ncda']['pane2']['row3'][] = $date_measured;
           break;
 
@@ -770,6 +767,19 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
         case 'has-kitchen-garden':
           $data['ncda']['pane5']['row5'][] = $date_measured;
           break;
+      }
+    }
+
+    // Process Receives Vitamin A field items.
+    $items = field_get_items('node', $ncda, 'field_receive_option');
+    if (!$items) {
+      continue;
+    }
+
+    foreach ($items as $item) {
+      if($item['value'] == 'receive') {
+        $data['ncda']['pane2']['row2'][] = $date_measured;
+        break;
       }
     }
   }
