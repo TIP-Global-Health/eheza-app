@@ -251,7 +251,7 @@ viewActivity language currentDate zscores site features id isChw activity assemb
             viewPhotoContent language currentDate assembled model.photoForm
 
         WellChildNCDA ->
-            viewNCDAContent language currentDate assembled model.ncdaData db
+            viewNCDAContent language currentDate zscores assembled model.ncdaData db
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -2434,11 +2434,12 @@ viewPhotoContent language currentDate assembled form =
 viewNCDAContent :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> AssembledData
     -> NCDAData
     -> ModelIndexedDb
     -> List (Html Msg)
-viewNCDAContent language currentDate assembled data db =
+viewNCDAContent language currentDate zscores assembled data db =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -2459,6 +2460,9 @@ viewNCDAContent language currentDate assembled data db =
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+            , setStuntingLevelMsg = SetStuntingLevel
+            , setWeightMsg = SetWeightForNCDA
+            , setMuacMsg = SetMuacForNCDA
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
@@ -2466,6 +2470,7 @@ viewNCDAContent language currentDate assembled data db =
     in
     Measurement.View.viewNCDAContent language
         currentDate
+        zscores
         personId
         assembled.person
         config

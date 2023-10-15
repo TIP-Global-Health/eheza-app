@@ -3584,9 +3584,6 @@ ncdaSignFromString value =
         "child-receives-ecd" ->
             Just ChildReceivesECD
 
-        "child-with-acute-malnutrition" ->
-            Just ChildWithAcuteMalnutrition
-
         "child-with-disability" ->
             Just ChildWithDisability
 
@@ -3622,6 +3619,9 @@ ncdaSignFromString value =
 
         "none" ->
             Just NoNCDASigns
+
+        "shows-edema-signs" ->
+            Just ShowsEdemaSigns
 
         _ ->
             Nothing
@@ -3685,9 +3685,6 @@ ncdaSignToString value =
         ChildReceivesECD ->
             "child-receives-ecd"
 
-        ChildWithAcuteMalnutrition ->
-            "child-with-acute-malnutrition"
-
         ChildWithDisability ->
             "child-with-disability"
 
@@ -3721,6 +3718,9 @@ ncdaSignToString value =
         TreatedForAcuteMalnutrition ->
             "treated-for-acute-malnutrition"
 
+        ShowsEdemaSigns ->
+            "shows-edema-signs"
+
         NoNCDASigns ->
             "none"
 
@@ -3752,6 +3752,35 @@ receiveOptionToString value =
 
         OptionNotApplicable ->
             "not-applicable"
+
+
+stuntingLevelFromString : String -> Maybe StuntingLevel
+stuntingLevelFromString value =
+    case value of
+        "green" ->
+            Just LevelGreen
+
+        "yellow" ->
+            Just LevelYellow
+
+        "red" ->
+            Just LevelRed
+
+        _ ->
+            Nothing
+
+
+stuntingLevelToString : StuntingLevel -> String
+stuntingLevelToString value =
+    case value of
+        LevelGreen ->
+            "green"
+
+        LevelYellow ->
+            "yellow"
+
+        LevelRed ->
+            "red"
 
 
 expectNCDAActivity : NominalDate -> EverySet SiteFeature -> Bool -> Person -> Bool

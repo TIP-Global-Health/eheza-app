@@ -52,22 +52,23 @@ import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewLabel, viewPersonD
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
 
 
-view : Language -> NominalDate -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id activity db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site id activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site id activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardEncounterId -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores site id activity db model assembled =
     div [ class "page-activity child-scoreboard" ] <|
         [ viewHeader language id activity
-        , viewContent language currentDate site activity db model assembled
+        , viewContent language currentDate zscores site activity db model assembled
         ]
 
 
@@ -85,19 +86,19 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site activity db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores site activity db model assembled =
     div [ class "ui unstackable items" ] <|
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-            :: viewActivity language currentDate site activity assembled db model
+            :: viewActivity language currentDate zscores site activity assembled db model
         )
 
 
-viewActivity : Language -> NominalDate -> Site -> ChildScoreboardActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate site activity assembled db model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate zscores site activity assembled db model =
     case activity of
         ChildScoreboardNCDA ->
-            viewNCDAContent language currentDate assembled db model.ncdaData
+            viewNCDAContent language currentDate zscores assembled db model.ncdaData
 
         ChildScoreboardVaccinationHistory ->
             viewImmunisationContent language currentDate site assembled db model.immunisationData
@@ -106,11 +107,12 @@ viewActivity language currentDate site activity assembled db model =
 viewNCDAContent :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> AssembledData
     -> ModelIndexedDb
     -> NCDAData
     -> List (Html Msg)
-viewNCDAContent language currentDate assembled db data =
+viewNCDAContent language currentDate zscores assembled db data =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -137,6 +139,9 @@ viewNCDAContent language currentDate assembled db data =
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+            , setStuntingLevelMsg = SetStuntingLevel
+            , setWeightMsg = SetWeight
+            , setMuacMsg = SetMuac
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
@@ -144,6 +149,7 @@ viewNCDAContent language currentDate assembled db data =
     in
     Measurement.View.viewNCDAContent language
         currentDate
+        zscores
         personId
         assembled.person
         config

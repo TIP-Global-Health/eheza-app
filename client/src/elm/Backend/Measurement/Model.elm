@@ -278,6 +278,9 @@ type alias NCDAValue =
     , birthWeight : Maybe WeightInGrm
     , ancVisitsDates : EverySet NominalDate
     , receivesVitaminA : Maybe ReceiveOption
+    , stuntingLevel : Maybe StuntingLevel
+    , weight : Maybe WeightInKg
+    , muac : Maybe MuacInCm
     }
 
 
@@ -298,7 +301,6 @@ type NCDASign
     | ChildReceivesDewormer
     | ChildTakingDewormer
     | ChildReceivesECD
-    | ChildWithAcuteMalnutrition
     | ChildWithDisability
     | ConditionalFoodItems
     | FiveFoodGroups
@@ -315,6 +317,7 @@ type NCDASign
     | TakenSupplementsPerGuidance
     | TakingOngeraMNP
     | TreatedForAcuteMalnutrition
+    | ShowsEdemaSigns
     | NoNCDASigns
 
 
@@ -322,6 +325,12 @@ type ReceiveOption
     = OptionReceive
     | OptionNotReceive
     | OptionNotApplicable
+
+
+type StuntingLevel
+    = LevelGreen
+    | LevelYellow
+    | LevelRed
 
 
 

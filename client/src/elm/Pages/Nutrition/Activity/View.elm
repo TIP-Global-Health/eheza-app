@@ -211,7 +211,7 @@ viewActivity language currentDate zscores id activity isChw assembled db model =
             viewWeightContent language currentDate zscores assembled model.weightData previousValuesSet.weight
 
         NCDA ->
-            viewNCDAContent language currentDate id assembled model.ncdaData db
+            viewNCDAContent language currentDate zscores id assembled model.ncdaData db
 
         NextSteps ->
             viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
@@ -668,12 +668,13 @@ viewWeightForm language currentDate zscores person heightValue previousValue sho
 viewNCDAContent :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
     -> NutritionEncounterId
     -> AssembledData
     -> NCDAData
     -> ModelIndexedDb
     -> List (Html Msg)
-viewNCDAContent language currentDate id assembled data db =
+viewNCDAContent language currentDate zscores id assembled data db =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -694,6 +695,9 @@ viewNCDAContent language currentDate id assembled data db =
             , setBoolInputMsg = SetNCDABoolInput
             , setBirthWeightMsg = SetBirthWeight
             , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+            , setStuntingLevelMsg = SetStuntingLevel
+            , setWeightMsg = SetWeightForNCDA
+            , setMuacMsg = SetMuacForNCDA
             , setStepMsg = SetNCDAFormStep
             , setHelperStateMsg = SetNCDAHelperState
             , saveMsg = SaveNCDA personId assembled.measurements.ncda
@@ -701,6 +705,7 @@ viewNCDAContent language currentDate id assembled data db =
     in
     Measurement.View.viewNCDAContent language
         currentDate
+        zscores
         personId
         assembled.person
         config

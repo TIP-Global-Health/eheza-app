@@ -247,6 +247,9 @@ type MsgChild
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetChildReceivesVitaminA ReceiveOption
+    | SetStuntingLevel StuntingLevel
+    | SetWeight String
+    | SetMuac String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
 
@@ -1047,6 +1050,15 @@ type alias NCDAForm =
     , birthWeight : Maybe WeightInGrm
 
     -- Step 2.
+    , stuntingLevel : Maybe StuntingLevel
+    , stuntingLevelNotTaken : Maybe Bool
+    , weight : Maybe WeightInKg
+    , weightNotTaken : Maybe Bool
+    , muac : Maybe MuacInCm
+    , muacNotTaken : Maybe Bool
+    , showsEdemaSigns : Maybe Bool
+
+    -- Step 3.
     , childBehindOnVaccination : Maybe Bool
     , childReceivesVitaminA : Maybe ReceiveOption
     , childTakingVitaminA : Maybe Bool
@@ -1056,25 +1068,24 @@ type alias NCDAForm =
     , takingOngeraMNP : Maybe Bool
     , childReceivesECD : Maybe Bool
 
-    -- Step 3.
+    -- Step 4.
     , fiveFoodGroups : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
     , mealsAtRecommendedTimes : Maybe Bool
 
-    -- Step 4.
+    -- Step 5.
     , childReceivesFBF : Maybe Bool
     , childTakingFBF : Maybe Bool
     , beneficiaryCashTransfer : Maybe Bool
     , receivingCashTransfer : Maybe Bool
     , conditionalFoodItems : Maybe Bool
-    , childWithAcuteMalnutrition : Maybe Bool
     , treatedForAcuteMalnutrition : Maybe Bool
     , childWithDisability : Maybe Bool
     , receivingSupport : Maybe Bool
     , childGotDiarrhea : Maybe Bool
 
-    -- Step 5.
+    -- Step 6.
     , hasCleanWater : Maybe Bool
     , hasHandwashingFacility : Maybe Bool
     , hasToilets : Maybe Bool
@@ -1096,6 +1107,15 @@ emptyNCDAForm =
     , birthWeight = Nothing
 
     -- Step 2.
+    , stuntingLevel = Nothing
+    , stuntingLevelNotTaken = Nothing
+    , weight = Nothing
+    , weightNotTaken = Nothing
+    , muac = Nothing
+    , muacNotTaken = Nothing
+    , showsEdemaSigns = Nothing
+
+    -- Step 3.
     , childBehindOnVaccination = Nothing
     , childReceivesVitaminA = Nothing
     , childTakingVitaminA = Nothing
@@ -1105,25 +1125,24 @@ emptyNCDAForm =
     , takingOngeraMNP = Nothing
     , childReceivesECD = Nothing
 
-    -- Step 3.
+    -- Step 4.
     , fiveFoodGroups = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
     , mealsAtRecommendedTimes = Nothing
 
-    -- Step 4.
+    -- Step 5.
     , childReceivesFBF = Nothing
     , childTakingFBF = Nothing
     , beneficiaryCashTransfer = Nothing
     , receivingCashTransfer = Nothing
     , conditionalFoodItems = Nothing
-    , childWithAcuteMalnutrition = Nothing
     , treatedForAcuteMalnutrition = Nothing
     , childWithDisability = Nothing
     , receivingSupport = Nothing
     , childGotDiarrhea = Nothing
 
-    -- Step 5.
+    -- Step 6.
     , hasCleanWater = Nothing
     , hasHandwashingFacility = Nothing
     , hasToilets = Nothing
@@ -1134,6 +1153,7 @@ emptyNCDAForm =
 
 type NCDAStep
     = NCDAStepAntenatalCare
+    | NCDAStepNutritionAssessment
     | NCDAStepUniversalInterventions
     | NCDAStepNutritionBehavior
     | NCDAStepTargetedInterventions
@@ -1232,6 +1252,9 @@ type alias NCDAContentConfig msg =
     , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
     , setBirthWeightMsg : String -> msg
     , setChildReceivesVitaminAMsg : ReceiveOption -> msg
+    , setStuntingLevelMsg : StuntingLevel -> msg
+    , setWeightMsg : String -> msg
+    , setMuacMsg : String -> msg
     , setStepMsg : NCDAStep -> msg
     , setHelperStateMsg : Maybe NCDASign -> msg
     , saveMsg : msg

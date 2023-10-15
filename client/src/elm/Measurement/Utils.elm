@@ -4483,6 +4483,8 @@ fromNCDAValue saved =
                 ancVisitsDates
     in
     { step = Nothing
+    , updateANCVisits = updateANCVisits
+    , ancVisitsDates = ancVisitsDates
     , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
     , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
     , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member BreastfedForSixMonths) saved
@@ -4503,7 +4505,6 @@ fromNCDAValue saved =
     , childReceivesDewormer = Maybe.map (.signs >> EverySet.member ChildReceivesDewormer) saved
     , childTakingDewormer = Maybe.map (.signs >> EverySet.member ChildTakingDewormer) saved
     , childReceivesECD = Maybe.map (.signs >> EverySet.member ChildReceivesECD) saved
-    , childWithAcuteMalnutrition = Maybe.map (.signs >> EverySet.member ChildWithAcuteMalnutrition) saved
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
     , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
@@ -4516,8 +4517,15 @@ fromNCDAValue saved =
     , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
     , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
-    , updateANCVisits = updateANCVisits
-    , ancVisitsDates = ancVisitsDates
+
+    -- Nutrition measurements.
+    , stuntingLevel = Maybe.andThen .stuntingLevel saved
+    , stuntingLevelNotTaken = Maybe.map (.stuntingLevel >> isNothing) saved
+    , weight = Maybe.andThen .weight saved
+    , weightNotTaken = Maybe.map (.weight >> isNothing) saved
+    , muac = Maybe.andThen .muac saved
+    , muacNotTaken = Maybe.map (.muac >> isNothing) saved
+    , showsEdemaSigns = Maybe.map (.signs >> EverySet.member ShowsEdemaSigns) saved
     }
 
 
@@ -4554,7 +4562,6 @@ ncdaFormWithDefault form saved =
                 , childReceivesDewormer = or form.childReceivesDewormer (EverySet.member ChildReceivesDewormer value.signs |> Just)
                 , childTakingDewormer = or form.childTakingDewormer (EverySet.member ChildTakingDewormer value.signs |> Just)
                 , childReceivesECD = or form.childReceivesECD (EverySet.member ChildReceivesECD value.signs |> Just)
-                , childWithAcuteMalnutrition = or form.childWithAcuteMalnutrition (EverySet.member ChildWithAcuteMalnutrition value.signs |> Just)
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
                 , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
@@ -4567,6 +4574,15 @@ ncdaFormWithDefault form saved =
                 , takingOngeraMNP = or form.takingOngeraMNP (EverySet.member TakingOngeraMNP value.signs |> Just)
                 , mealsAtRecommendedTimes = or form.mealsAtRecommendedTimes (EverySet.member MealsAtRecommendedTimes value.signs |> Just)
                 , birthWeight = or form.birthWeight value.birthWeight
+
+                -- Nutrition measurements.
+                , stuntingLevel = or form.stuntingLevel value.stuntingLevel
+                , stuntingLevelNotTaken = or form.stuntingLevelNotTaken (isNothing value.stuntingLevel |> Just)
+                , weight = or form.weight value.weight
+                , weightNotTaken = or form.weightNotTaken (isNothing value.weight |> Just)
+                , muac = or form.muac value.muac
+                , muacNotTaken = or form.muacNotTaken (isNothing value.muac |> Just)
+                , showsEdemaSigns = or form.showsEdemaSigns (EverySet.member ShowsEdemaSigns value.signs |> Just)
                 }
             )
 
@@ -4600,7 +4616,6 @@ toNCDAValue form =
             , ifNullableTrue ChildReceivesDewormer form.childReceivesDewormer
             , ifNullableTrue ChildTakingDewormer form.childTakingDewormer
             , ifNullableTrue ChildReceivesECD form.childReceivesECD
-            , ifNullableTrue ChildWithAcuteMalnutrition form.childWithAcuteMalnutrition
             , ifNullableTrue ChildWithDisability form.childWithDisability
             , ifNullableTrue OngeraMNP form.ongeraMNP
             , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
@@ -4612,6 +4627,7 @@ toNCDAValue form =
             , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
             , ifNullableTrue TakingOngeraMNP form.takingOngeraMNP
             , ifNullableTrue MealsAtRecommendedTimes form.mealsAtRecommendedTimes
+            , ifNullableTrue ShowsEdemaSigns form.showsEdemaSigns
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
@@ -4623,6 +4639,9 @@ toNCDAValue form =
         |> andMap (Just form.birthWeight)
         |> andMap (Just ancVisitsDates)
         |> andMap (Just form.childReceivesVitaminA)
+        |> andMap (Just form.stuntingLevel)
+        |> andMap (Just form.weight)
+        |> andMap (Just form.muac)
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
@@ -5121,19 +5140,22 @@ behindOnVaccinationsByWellChild currentDate childId db =
         |> Maybe.withDefault False
 
 
-resolveNCDASteps : NominalDate -> Person -> Bool -> List NCDAStep
-resolveNCDASteps currentDate person ncdaNeverFilled =
-    List.filter (expectNCDAStep currentDate person ncdaNeverFilled) ncdaSteps
+resolveNCDASteps : NominalDate -> Person -> Bool -> Bool -> List NCDAStep
+resolveNCDASteps currentDate person ncdaNeverFilled atHealthCenter =
+    List.filter (expectNCDAStep currentDate person ncdaNeverFilled atHealthCenter) ncdaSteps
 
 
-expectNCDAStep : NominalDate -> Person -> Bool -> NCDAStep -> Bool
-expectNCDAStep currentDate person ncdaNeverFilled task =
+expectNCDAStep : NominalDate -> Person -> Bool -> Bool -> NCDAStep -> Bool
+expectNCDAStep currentDate person ncdaNeverFilled atHealthCenter task =
     case task of
         -- If NCDA was filled before, for sure it included answers to
         -- needed questions. Since questions at this step are to be asked
         -- only once, we know it can be skipped.
         NCDAStepAntenatalCare ->
             ncdaNeverFilled
+
+        NCDAStepNutritionAssessment ->
+            not atHealthCenter
 
         NCDAStepNutritionBehavior ->
             ageInMonths currentDate person
@@ -5150,6 +5172,7 @@ ncdaSteps =
     [ NCDAStepAntenatalCare
     , NCDAStepUniversalInterventions
     , NCDAStepNutritionBehavior
+    , NCDAStepNutritionAssessment
     , NCDAStepTargetedInterventions
     , NCDAStepInfrastructureEnvironment
     ]
@@ -5899,3 +5922,10 @@ generateVaccinationProgressForChildScoreboard measurements =
     , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
     ]
         |> Dict.fromList
+
+
+muacMeasurementIsOff : Maybe MuacInCm -> Bool
+muacMeasurementIsOff =
+    -- MUAC is not green.
+    Maybe.map (muacIndication >> (/=) ColorAlertGreen)
+        >> Maybe.withDefault False

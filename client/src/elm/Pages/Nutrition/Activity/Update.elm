@@ -3,7 +3,15 @@ module Pages.Nutrition.Activity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), ContributingFactorsSign(..), ImageUrl(..), WeightInGrm(..))
+import Backend.Measurement.Model
+    exposing
+        ( ChildNutritionSign(..)
+        , ContributingFactorsSign(..)
+        , ImageUrl(..)
+        , MuacInCm(..)
+        , WeightInGrm(..)
+        , WeightInKg(..)
+        )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
@@ -340,6 +348,59 @@ update currentDate id db msg model =
                                 { form
                                     | childReceivesVitaminA = Just value
                                     , childTakingVitaminA = Nothing
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetStuntingLevel value ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | stuntingLevel = Just value })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetWeightForNCDA string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | weight = String.toFloat string |> Maybe.map WeightInKg
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMuacForNCDA string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | muac = String.toFloat string |> Maybe.map MuacInCm
                                 }
                            )
 

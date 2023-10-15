@@ -69,6 +69,9 @@ type Msg
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
     | SetChildReceivesVitaminA ReceiveOption
+    | SetStuntingLevel StuntingLevel
+    | SetWeight String
+    | SetMuac String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA ))

@@ -1765,6 +1765,59 @@ update currentDate isChw id db msg model =
             , []
             )
 
+        SetStuntingLevel value ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | stuntingLevel = Just value })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetWeightForNCDA string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | weight = String.toFloat string |> Maybe.map WeightInKg
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMuacForNCDA string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | muac = String.toFloat string |> Maybe.map MuacInCm
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetNCDAFormStep step ->
             let
                 updatedForm =

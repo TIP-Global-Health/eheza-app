@@ -464,6 +464,9 @@ type TranslationId
     | Colline
     | CollineSub
     | ColorAlertIndication ColorAlertIndication
+    | ColorGreen
+    | ColorRed
+    | ColorYellow
     | Commune
     | CompleteFacilityReferralForm ReferralFacility
     | Contacted114
@@ -846,6 +849,7 @@ type TranslationId
     | MaritalStatus MaritalStatus
     | MastitisRecommendedTreatmentHeader Bool
     | MastitisRecommendedTreatmentHelper
+    | MeasurementNotTaken
     | MedicationCausingHypertension MedicationCausingHypertension
     | MedicationCausingHypertensionQuestion
     | MedicalCondition MedicalCondition
@@ -997,6 +1001,7 @@ type TranslationId
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssessment NutritionAssessment
+    | NutritionAssessmentLabel
     | NutritionAssessmentTask NutritionAssessmentTask
     | NutritionBehavior
     | NutritionCaringOption CaringOption
@@ -1517,6 +1522,8 @@ type TranslationId
     | StockManagementSupplierQuestion
     | StockSupplier StockSupplier
     | StockSupplierAbbrev StockSupplier
+    | StuntingLevelLabel
+    | StuntingLevel StuntingLevel
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
     | SuccessiveAbortions
@@ -3910,22 +3917,31 @@ translationSet trans =
         ColorAlertIndication indication ->
             case indication of
                 ColorAlertRed ->
-                    { english = "Red"
-                    , kinyarwanda = Just "Umutuku"
-                    , kirundi = Just "Gitukura"
-                    }
+                    translationSet ColorRed
 
                 ColorAlertYellow ->
-                    { english = "Yellow"
-                    , kinyarwanda = Just "Umuhondo"
-                    , kirundi = Just "Ibara risa n'umutoto uhishiye"
-                    }
+                    translationSet ColorYellow
 
                 ColorAlertGreen ->
-                    { english = "Green"
-                    , kinyarwanda = Just "Icyatsi"
-                    , kirundi = Just "Icatsi kibisi"
-                    }
+                    translationSet ColorGreen
+
+        ColorGreen ->
+            { english = "Green"
+            , kinyarwanda = Just "Icyatsi"
+            , kirundi = Just "Icatsi kibisi"
+            }
+
+        ColorRed ->
+            { english = "Red"
+            , kinyarwanda = Just "Umutuku"
+            , kirundi = Just "Gitukura"
+            }
+
+        ColorYellow ->
+            { english = "Yellow"
+            , kinyarwanda = Just "Umuhondo"
+            , kirundi = Just "Ibara risa n'umutoto uhishiye"
+            }
 
         Commune ->
             { english = "Commune"
@@ -5364,10 +5380,7 @@ translationSet trans =
                     }
 
                 Pages.Prenatal.Activity.Types.NutritionAssessment ->
-                    { english = "Nutrition Assessment"
-                    , kinyarwanda = Just "Gusuzuma imirire"
-                    , kirundi = Just "Isuzuma ryo gufungura"
-                    }
+                    translationSet NutritionAssessmentLabel
 
                 CorePhysicalExam ->
                     { english = "Core Physical Exam"
@@ -9273,6 +9286,12 @@ translationSet trans =
             , kirundi = Just "Hitamo uburyo bwiza bwo kuvura umurwayi hepfo"
             }
 
+        MeasurementNotTaken ->
+            { english = "Unable to take measurements, skip this step"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         MedicationCausingHypertension medication ->
             case medication of
                 MedicationOestrogens ->
@@ -10308,7 +10327,7 @@ translationSet trans =
                     }
 
                 ChildReceivesECD ->
-                    { english = "Provide counseling on the importance of brain stimulatio activities for the development of the child"
+                    { english = "Provide counseling on the importance of brain stimulation activities for the development of the child"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -10414,15 +10433,9 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                ChildWithAcuteMalnutrition ->
-                    { english = "Please check MUAC. Does the child have acute malnutrition"
-                    , kinyarwanda = Just "Pima ikizigira cy'akaboko. Umwana afite imirire mibi ihutiyeho"
-                    , kirundi = Nothing
-                    }
-
                 TreatedForAcuteMalnutrition ->
-                    { english = "Is the child being treated"
-                    , kinyarwanda = Just "Umwana ari kuvurwa"
+                    { english = "According to nutrition measurements, this child has acute malnutrition. Is the child being treated"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
@@ -10519,6 +10532,12 @@ translationSet trans =
                 ChildReceivesECD ->
                     { english = "Do you sing lullabies, poems, and read books to your child, or play games with your child"
                     , kinyarwanda = Just "Uririmbira umwana ibihozo, n'imivugo, ukamusomera ibitabo mukanakina"
+                    , kirundi = Nothing
+                    }
+
+                ShowsEdemaSigns ->
+                    { english = "Does the child show signs of Edema"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
@@ -10780,6 +10799,9 @@ translationSet trans =
             case step of
                 NCDAStepAntenatalCare ->
                     translationSet ANCNewborn
+
+                NCDAStepNutritionAssessment ->
+                    translationSet NutritionAssessmentLabel
 
                 NCDAStepUniversalInterventions ->
                     translationSet UniversalInterventions
@@ -11978,6 +12000,12 @@ translationSet trans =
                     , kinyarwanda = Just "Ntabyo"
                     , kirundi = Just "Nta na kimwe"
                     }
+
+        NutritionAssessmentLabel ->
+            { english = "Nutrition Assessment"
+            , kinyarwanda = Just "Gusuzuma imirire"
+            , kirundi = Just "Isuzuma ryo gufungura"
+            }
 
         NutritionAssessmentTask task ->
             case task of
@@ -19812,6 +19840,23 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+        StuntingLevelLabel ->
+            { english = "Level of stunting using child length mat"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        StuntingLevel value ->
+            case value of
+                LevelGreen ->
+                    translationSet ColorGreen
+
+                LevelYellow ->
+                    translationSet ColorYellow
+
+                LevelRed ->
+                    translationSet ColorRed
+
         SubsequentEncounter ->
             { english = "Subsequent Encounter"
             , kinyarwanda = Just "Igikorwa gikurikiyeho"
@@ -21104,10 +21149,7 @@ translationSet trans =
                     }
 
                 WellChildNutritionAssessment ->
-                    { english = "Nutrition Assessment"
-                    , kinyarwanda = Just "Gusuzuma imirire"
-                    , kirundi = Just "Isuzuma ryo gufungura"
-                    }
+                    translationSet NutritionAssessmentLabel
 
                 WellChildECD ->
                     { english = "ECD"
