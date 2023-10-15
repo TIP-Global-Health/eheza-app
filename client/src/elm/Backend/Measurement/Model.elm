@@ -297,9 +297,7 @@ type NCDASign
       -- to support 'not applicable' value. We keep it though, to maintain
       -- form display logic which is common for all signs.
       ChildReceivesVitaminA
-    | ChildTakingVitaminA
     | ChildReceivesDewormer
-    | ChildTakingDewormer
     | ChildReceivesECD
     | ChildWithDisability
     | ConditionalFoodItems

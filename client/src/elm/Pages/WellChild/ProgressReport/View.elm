@@ -2500,13 +2500,13 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
             generateValues currentDate
                 child
                 chwQuestionnairesByAgeInMonthsEliminatingVitaminANotApplicable
-                (.signs >> EverySet.member ChildTakingVitaminA)
+                (.receivesVitaminA >> (==) (Just OptionReceive))
                 |> List.indexedMap
                     -- Vitamin A should not be administered before age of 6 months.
                     (postProcessMedicineRawValue 6)
 
         dewormerValues =
-            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildTakingDewormer)
+            generateValues currentDate child questionnairesByAgeInMonths (.signs >> EverySet.member ChildReceivesDewormer)
                 |> List.indexedMap
                     -- Dewormer should not be administered before age of 12 months.
                     (postProcessMedicineRawValue 12)

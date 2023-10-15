@@ -4501,9 +4501,7 @@ fromNCDAValue saved =
     , childReceivesFBF = Maybe.map (.signs >> EverySet.member ChildReceivesFBF) saved
     , childTakingFBF = Maybe.map (.signs >> EverySet.member ChildTakingFBF) saved
     , childReceivesVitaminA = Maybe.andThen .receivesVitaminA saved
-    , childTakingVitaminA = Maybe.map (.signs >> EverySet.member ChildTakingVitaminA) saved
     , childReceivesDewormer = Maybe.map (.signs >> EverySet.member ChildReceivesDewormer) saved
-    , childTakingDewormer = Maybe.map (.signs >> EverySet.member ChildTakingDewormer) saved
     , childReceivesECD = Maybe.map (.signs >> EverySet.member ChildReceivesECD) saved
     , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
     , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
@@ -4558,9 +4556,7 @@ ncdaFormWithDefault form saved =
                 , childReceivesFBF = or form.childReceivesFBF (EverySet.member ChildReceivesFBF value.signs |> Just)
                 , childTakingFBF = or form.childTakingFBF (EverySet.member ChildTakingFBF value.signs |> Just)
                 , childReceivesVitaminA = or form.childReceivesVitaminA value.receivesVitaminA
-                , childTakingVitaminA = or form.childTakingVitaminA (EverySet.member ChildTakingVitaminA value.signs |> Just)
                 , childReceivesDewormer = or form.childReceivesDewormer (EverySet.member ChildReceivesDewormer value.signs |> Just)
-                , childTakingDewormer = or form.childTakingDewormer (EverySet.member ChildTakingDewormer value.signs |> Just)
                 , childReceivesECD = or form.childReceivesECD (EverySet.member ChildReceivesECD value.signs |> Just)
                 , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
                 , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
@@ -4612,9 +4608,7 @@ toNCDAValue form =
             , ifNullableTrue ChildGotDiarrhea form.childGotDiarrhea
             , ifNullableTrue ChildReceivesFBF form.childReceivesFBF
             , ifNullableTrue ChildTakingFBF form.childTakingFBF
-            , ifNullableTrue ChildTakingVitaminA form.childTakingVitaminA
             , ifNullableTrue ChildReceivesDewormer form.childReceivesDewormer
-            , ifNullableTrue ChildTakingDewormer form.childTakingDewormer
             , ifNullableTrue ChildReceivesECD form.childReceivesECD
             , ifNullableTrue ChildWithDisability form.childWithDisability
             , ifNullableTrue OngeraMNP form.ongeraMNP
