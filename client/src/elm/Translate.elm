@@ -9295,7 +9295,7 @@ translationSet trans =
 
         MeasurementNotTaken ->
             { english = "Unable to take measurements, skip this step"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibipimo ntibyafashwe, komeza ku bikurikira"
             , kirundi = Nothing
             }
 
@@ -10436,7 +10436,7 @@ translationSet trans =
 
                 Backend.Measurement.Model.ConditionalFoodItems ->
                     { english = "Receipt of other support (e.g., food items or small livestock)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Izindi nkunga z’ingoboka (ibiryo, amatungo)"
                     , kirundi = Nothing
                     }
 
@@ -10746,7 +10746,7 @@ translationSet trans =
         NCDAFillTheBlanksItemLabel item ->
             case item of
                 HeightToAge ->
-                    { english = "Level of stuning using child length mat"
+                    { english = "Level of stunting using child length mat"
                     , kinyarwanda = Just "Ikigero cyo kugwingira hakoreshejwe agasambi"
                     , kirundi = Nothing
                     }
@@ -19837,7 +19837,7 @@ translationSet trans =
 
         StuntingLevelLabel ->
             { english = "Level of stunting using child length mat"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ikigero cyo kugwingira hakoreshejwe agasambi"
             , kirundi = Nothing
             }
 
