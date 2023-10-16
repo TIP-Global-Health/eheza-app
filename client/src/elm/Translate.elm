@@ -442,6 +442,7 @@ type TranslationId
     | CheckAllThatApply
     | CheckIn
     | ChildCleanQuestion
+    | ChildHasMalnutritionPhrase
     | ChildHmisNumber
     | ChildIdentification
     | ChildNutritionSignLabel ChildNutritionSign
@@ -3679,6 +3680,12 @@ translationSet trans =
             { english = "Is the sick child clean"
             , kinyarwanda = Just "Ese umwana urwaye afite isuku"
             , kirundi = Just "Mbega umwana agwaye arafise isuku"
+            }
+
+        ChildHasMalnutritionPhrase ->
+            { english = "According to nutrition measurements, this child has acute malnutrition"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         ChildHmisNumber ->
@@ -10434,7 +10441,7 @@ translationSet trans =
                     }
 
                 TreatedForAcuteMalnutrition ->
-                    { english = "According to nutrition measurements, this child has acute malnutrition. Is the child being treated"
+                    { english = "Is the child being treated"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
