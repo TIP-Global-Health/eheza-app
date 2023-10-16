@@ -3122,7 +3122,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
 
         NCDAStepNutritionBehavior ->
             let
-                breasdtfeedingSign =
+                breastfeedingSign =
                     if config.ncdaNotFilledAfterAgeOfSixMonths then
                         [ BreastfedForSixMonths ]
 
@@ -3130,7 +3130,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                         []
 
                 signs =
-                    FiveFoodGroups :: breasdtfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
+                    FiveFoodGroups :: breastfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
 
                 inputsAndTasks =
                     List.map inputsAndTasksForSign signs
