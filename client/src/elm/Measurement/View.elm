@@ -3099,6 +3099,46 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                 ++ newbornExamTasks
             )
 
+        NCDAStepUniversalInterventions ->
+            let
+                signs =
+                    if config.atHealthCenter then
+                        [ OngeraMNP ]
+
+                    else
+                        [ ChildBehindOnVaccination
+                        , ChildReceivesVitaminA
+                        , ChildReceivesDewormer
+                        , OngeraMNP
+                        , ChildReceivesECD
+                        ]
+
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign signs
+            in
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
+            )
+
+        NCDAStepNutritionBehavior ->
+            let
+                breastfeedingSign =
+                    if config.ncdaNotFilledAfterAgeOfSixMonths then
+                        [ BreastfedForSixMonths ]
+
+                    else
+                        []
+
+                signs =
+                    FiveFoodGroups :: breastfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
+
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign signs
+            in
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
+            )
+
         NCDAStepNutritionAssessment ->
             let
                 ( stuntingLevelInput, stuntingLevelTask ) =
@@ -3228,12 +3268,21 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                                                 []
 
                                             else
-                                                [ viewMeasurementInput
-                                                    language
-                                                    muacAsFloat
-                                                    config.setMuacMsg
-                                                    "muac"
-                                                    Translate.CentimeterShorthand
+                                                [ div [ class "ui grid" ]
+                                                    [ div [ class "eleven wide column" ]
+                                                        [ viewMeasurementInput
+                                                            language
+                                                            muacAsFloat
+                                                            config.setMuacMsg
+                                                            "muac"
+                                                            Translate.CentimeterShorthand
+                                                        ]
+                                                    , div
+                                                        [ class "five wide column" ]
+                                                        [ showMaybe <|
+                                                            Maybe.map (muacIndication >> viewColorAlertIndication language) form.muac
+                                                        ]
+                                                    ]
                                                 ]
 
                                         notTakenCheckbox =
@@ -3298,46 +3347,6 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                 ++ weightTask
                 ++ muacTask
                 ++ edemaTask
-            )
-
-        NCDAStepUniversalInterventions ->
-            let
-                signs =
-                    if config.atHealthCenter then
-                        [ OngeraMNP ]
-
-                    else
-                        [ ChildBehindOnVaccination
-                        , ChildReceivesVitaminA
-                        , ChildReceivesDewormer
-                        , OngeraMNP
-                        , ChildReceivesECD
-                        ]
-
-                inputsAndTasks =
-                    List.map inputsAndTasksForSign signs
-            in
-            ( List.concatMap Tuple.first inputsAndTasks
-            , List.concatMap Tuple.second inputsAndTasks
-            )
-
-        NCDAStepNutritionBehavior ->
-            let
-                breasdtfeedingSign =
-                    if config.ncdaNotFilledAfterAgeOfSixMonths then
-                        [ BreastfedForSixMonths ]
-
-                    else
-                        []
-
-                signs =
-                    FiveFoodGroups :: breasdtfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
-
-                inputsAndTasks =
-                    List.map inputsAndTasksForSign signs
-            in
-            ( List.concatMap Tuple.first inputsAndTasks
-            , List.concatMap Tuple.second inputsAndTasks
             )
 
         NCDAStepTargetedInterventions ->
