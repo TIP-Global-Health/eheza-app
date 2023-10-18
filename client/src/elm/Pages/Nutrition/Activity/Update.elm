@@ -344,12 +344,7 @@ update currentDate id db msg model =
             let
                 updatedForm =
                     model.ncdaData.form
-                        |> (\form ->
-                                { form
-                                    | childReceivesVitaminA = Just value
-                                    , childTakingVitaminA = Nothing
-                                }
-                           )
+                        |> (\form -> { form | childReceivesVitaminA = Just value })
 
                 updatedData =
                     model.ncdaData

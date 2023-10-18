@@ -490,8 +490,8 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
   // we try to resolve from NCDA questionnaires.
   if (empty($birth_weight)) {
     foreach ($ncdas as $ncda) {
-      if (!empty($ncda->field_weight) && !empty($ncda->field_weight[LANGUAGE_NONE][0]['value'])) {
-        $birth_weight = $ncda->field_weight[LANGUAGE_NONE][0]['value'];
+      if (!empty($ncda->field_birth_weight) && !empty($ncda->field_weight[LANGUAGE_NONE][0]['value'])) {
+        $birth_weight = $ncda->field_birth_weight[LANGUAGE_NONE][0]['value'];
       }
       break;
     }
@@ -681,15 +681,15 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
     $data['ncda']['pane1']['row1'] = [];
   }
 
-  $malnutrition_treatment_by_questionnaires = [];
   foreach ($ncdas as $ncda) {
-    $items = field_get_items('node', $ncda, 'field_ncda_signs');
-    if (!$items) {
+    $date_measured = hedley_ncda_get_date_measured($ncda);
+    if (!$date_measured) {
       continue;
     }
 
-    $date_measured = hedley_ncda_get_date_measured($ncda);
-    if (!$date_measured) {
+    // Process NCDA signs field items.
+    $items = field_get_items('node', $ncda, 'field_ncda_signs');
+    if (!$items) {
       continue;
     }
 
@@ -699,11 +699,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
           $data['ncda']['pane1']['row2'] = TRUE;
           break;
 
-        case 'child-taking-vitamin-a':
-          $data['ncda']['pane2']['row2'][] = $date_measured;
-          break;
-
-        case 'child-taking-dewormer':
+        case 'child-receives-dewormer':
           $data['ncda']['pane2']['row3'][] = $date_measured;
           break;
 
@@ -736,7 +732,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
           break;
 
         case 'treated-for-acute-malnutrition':
-          $malnutrition_treatment_by_questionnaires[] = $date_measured;
+          $data['ncda']['pane4']['row2'][] = $date_measured;
           break;
 
         case 'receiving-support':
@@ -772,9 +768,24 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
           break;
       }
     }
+
+    // Process Receives Vitamin A field items.
+    $items = field_get_items('node', $ncda, 'field_receive_option');
+    if (!$items) {
+      continue;
+    }
+
+    foreach ($items as $item) {
+      if ($item['value'] == 'receive') {
+        $data['ncda']['pane2']['row2'][] = $date_measured;
+        break;
+      }
+    }
   }
 
-  // Malnutrition assessments are recorded on nutrition measurements.
+  // In addition to malnutrition treatment we resolve from questioner,
+  // we also look at nutrition assessments made at different types of nutrition
+  // encounters.
   // We know that patient got treatment for malnutrition, if there's
   // malnutrition assessment on nutrition measurement, and patient was sent
   // to HC on same date.
@@ -807,9 +818,6 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
 
   // Second step is to check when malnutrition assessments were made, and
   // check if patient was referred to HC on those dates.
-  // Also, we store the date of first malnutrition diagnosis, to be able
-  // to filter the data we get from questionnaires.
-  $first_diagnosis_date = FALSE;
   foreach ($nutritions as $nutrition) {
     $items = field_get_items('node', $nutrition, 'field_nutrition_assesment');
     if (!$items) {
@@ -823,41 +831,11 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
 
     foreach ($items as $item) {
       if (in_array($item['value'], ['malnutrition-moderate', 'malnutrition-severe'])) {
-        $timestamp = DateTime::createFromFormat('yy-m-d', $date_measured)->getTimestamp();
-        if (!$first_diagnosis_date) {
-          $first_diagnosis_date = $timestamp;
-        }
-        elseif ($timestamp < $first_diagnosis_date) {
-          $first_diagnosis_date = $timestamp;
-        }
-
         $type = hedley_ncda_bundle_to_encounter_type($nutrition);
         if (in_array($date_measured, $referrals_to_hc[$type])) {
           $data['ncda']['pane4']['row2'][] = $date_measured;
           break;
         }
-      }
-    }
-  }
-
-  // Per requirements, treatment question appears only at Child Scorecard
-  // encounter, and only in case Malnutrition was not diagnosed previously
-  // (at any of different types of Nutrition encounters).
-  // Therefore, we need to analyze only those questionnaires that
-  // were filled before the first diagnosis of Malnutrition.
-  // Hence, third step is to add treatment dates taken from questionnaires
-  // data, as long as they were recorded before first diagnosis date.
-  if (!$first_diagnosis_date) {
-    // No diagnosis was made, so naturally, no treatment was given.
-    // Therefore, we're left with treatment data from questionnaires, which
-    // can be set as is.
-    $data['ncda']['pane4']['row2'] = $malnutrition_treatment_by_questionnaires;
-  }
-  else {
-    foreach ($malnutrition_treatment_by_questionnaires as $date_measured) {
-      $timestamp = DateTime::createFromFormat('yy-m-d', $date_measured)->getTimestamp();
-      if ($timestamp < $first_diagnosis_date) {
-        $data['ncda']['pane4']['row2'][] = $date_measured;
       }
     }
   }

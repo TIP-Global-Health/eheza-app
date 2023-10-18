@@ -10518,21 +10518,9 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                ChildTakingVitaminA ->
-                    { english = "Is the Vitamin A being consumed"
-                    , kinyarwanda = Just "Vitamini yayifashe neza"
-                    , kirundi = Nothing
-                    }
-
                 ChildReceivesDewormer ->
                     { english = "Did the child receive deworming medication in the last six months"
                     , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cy’inzoka"
-                    , kirundi = Nothing
-                    }
-
-                ChildTakingDewormer ->
-                    { english = "Is the deworming medication being consumed"
-                    , kinyarwanda = Just "Ikinini cy'inzoka yagifashe neza"
                     , kirundi = Nothing
                     }
 

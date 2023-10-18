@@ -2771,13 +2771,6 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                                 Translate.ReceiveOption
                             ]
 
-                        ( derivedInputs, derivedTasks ) =
-                            if form.childReceivesVitaminA == Just OptionReceive then
-                                inputsAndTasksForSign ChildTakingVitaminA
-
-                            else
-                                ( [], [] )
-
                         counseling =
                             if form.childReceivesVitaminA == Just OptionNotReceive then
                                 [ viewCounselingLabel ChildReceivesVitaminA ]
@@ -2787,30 +2780,13 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                     in
                     ( childReceivesVitaminAInput
                         ++ counseling
-                        ++ derivedInputs
-                    , maybeToBoolTask form.childReceivesVitaminA :: derivedTasks
-                    )
-
-                ChildTakingVitaminA ->
-                    let
-                        updateFunc value form_ =
-                            { form_ | childTakingVitaminA = Just value }
-                    in
-                    ( viewNCDAInput ChildTakingVitaminA form.childTakingVitaminA updateFunc
-                    , [ form.childTakingVitaminA ]
+                    , [ maybeToBoolTask form.childReceivesVitaminA ]
                     )
 
                 ChildReceivesDewormer ->
                     let
                         updateFunc value form_ =
-                            { form_ | childReceivesDewormer = Just value, childTakingDewormer = Nothing }
-
-                        ( derivedInputs, derivedTasks ) =
-                            if form.childReceivesDewormer == Just True then
-                                inputsAndTasksForSign ChildTakingDewormer
-
-                            else
-                                ( [], [] )
+                            { form_ | childReceivesDewormer = Just value }
 
                         counseling =
                             if form.childReceivesDewormer == Just False then
@@ -2821,17 +2797,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                     in
                     ( viewNCDAInput ChildReceivesDewormer form.childReceivesDewormer updateFunc
                         ++ counseling
-                        ++ derivedInputs
-                    , form.childReceivesDewormer :: derivedTasks
-                    )
-
-                ChildTakingDewormer ->
-                    let
-                        updateFunc value form_ =
-                            { form_ | childTakingDewormer = Just value }
-                    in
-                    ( viewNCDAInput ChildTakingDewormer form.childTakingDewormer updateFunc
-                    , [ form.childTakingDewormer ]
+                    , [ form.childReceivesDewormer ]
                     )
 
                 ChildReceivesECD ->
