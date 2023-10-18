@@ -3280,26 +3280,8 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                             )
                         |> Maybe.withDefault ( [], [] )
 
-                lengthIsOff =
-                    Maybe.map ((/=) LevelGreen)
-                        form.stuntingLevel
-                        |> Maybe.withDefault False
-
-                weightIsOff =
-                    Maybe.andThen (\weight -> calculateZScoreWeightForAge currentDate zscores person (Just weight))
-                        weightAsFloat
-                        |> Maybe.map (\score -> score < -2)
-                        |> Maybe.withDefault False
-
-                muacIsOff =
-                    muacMeasurementIsOff form.muac
-
                 ( edemaInput, edemaTask ) =
-                    if lengthIsOff || weightIsOff || muacIsOff then
-                        inputsAndTasksForSign ShowsEdemaSigns
-
-                    else
-                        ( [], [] )
+                    inputsAndTasksForSign ShowsEdemaSigns
             in
             ( List.filter (List.isEmpty >> not)
                 [ stuntingLevelInput
