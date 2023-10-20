@@ -1619,6 +1619,7 @@ type TranslationId
     | UnitGramsPerDeciliter
     | UnitInternationalUnitsPerLiter
     | UnitMilliGramsPerDeciliter
+    | UnitMillimeter
     | UnitMillimolesPerLiter
     | UnitOfMeasurement UnitOfMeasurement
     | UniversalInterventions
@@ -20799,6 +20800,12 @@ translationSet trans =
 
         UnitMilliGramsPerDeciliter ->
             { english = "mg/dL"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UnitMillimeter ->
+            { english = "mm"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
