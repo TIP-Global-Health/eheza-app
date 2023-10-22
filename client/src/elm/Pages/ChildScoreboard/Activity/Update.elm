@@ -30,12 +30,13 @@ import Measurement.Utils
 import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (getFormByVaccineTypeFunc, getMeasurementByVaccineTypeFunc, updateVaccinationFormByVaccineType)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (insertIntoSet)
+import Pages.Utils exposing (insertIntoSet, setMuacValueForSite)
 import RemoteData
+import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> ChildScoreboardEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id db msg model =
+update : NominalDate -> Site -> ChildScoreboardEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate site id db msg model =
     let
         ncdaForm =
             Dict.get id db.childScoreboardMeasurements
@@ -208,7 +209,7 @@ update currentDate id db msg model =
                     model.ncdaData.form
                         |> (\form ->
                                 { form
-                                    | muac = String.toFloat string |> Maybe.map MuacInCm
+                                    | muac = setMuacValueForSite site string |> Maybe.map MuacInCm
                                 }
                            )
 
@@ -514,7 +515,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveDTPImmunisation personId saved nextTask ->
             let
@@ -542,7 +543,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveIPVImmunisation personId saved nextTask ->
             let
@@ -570,7 +571,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveMRImmunisation personId saved nextTask ->
             let
@@ -598,7 +599,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveOPVImmunisation personId saved nextTask ->
             let
@@ -626,7 +627,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SavePCV13Immunisation personId saved nextTask ->
             let
@@ -654,7 +655,7 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs
 
         SaveRotarixImmunisation personId saved nextTask ->
             let
@@ -682,4 +683,4 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate id db) extraMsgs
+                |> sequenceExtra (update currentDate site id db) extraMsgs

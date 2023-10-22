@@ -412,13 +412,13 @@ viewMuacForm language currentDate site person previousValue setMuacMsg form =
         constraints =
             getInputConstraintsMuac
 
-        unitTransId =
+        ( currentValue, unitTransId ) =
             case site of
                 SiteBurundi ->
-                    Translate.UnitMillimeter
+                    ( Maybe.map ((*) 10) form.muac, Translate.UnitMillimeter )
 
                 _ ->
-                    Translate.UnitCentimeter
+                    ( form.muac, Translate.UnitCentimeter )
     in
     [ div [ class "ui form muac" ]
         [ viewLabel language <| Translate.NutritionActivityTitle activity
@@ -428,7 +428,7 @@ viewMuacForm language currentDate site person previousValue setMuacMsg form =
             [ div [ class "eleven wide column" ]
                 [ viewMeasurementInput
                     language
-                    form.muac
+                    currentValue
                     setMuacMsg
                     "muac"
                     unitTransId
