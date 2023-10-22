@@ -434,7 +434,6 @@ type TranslationId
     | CaseManagement
     | CaseManagementFilterLabel CaseManagementFilter
     | CaseManagementPaneHeader CaseManagementFilter
-    | CentimeterShorthand
     | Celsius
     | CelsiusAbbrev
     | Cell
@@ -1618,6 +1617,7 @@ type TranslationId
     | UnitCopiesPerMM3
     | UnitGramsPerDeciliter
     | UnitInternationalUnitsPerLiter
+    | UnitCentimeter
     | UnitMilliGramsPerDeciliter
     | UnitMillimeter
     | UnitMillimolesPerLiter
@@ -3643,12 +3643,6 @@ translationSet trans =
                     , kinyarwanda = Just "Ibizamini bikorerwa ufite indwara zitandura"
                     , kirundi = Just "Ibipimo vy'ingwara zitandukira"
                     }
-
-        CentimeterShorthand ->
-            { english = "cm"
-            , kinyarwanda = Just "cm"
-            , kirundi = Just "cm"
-            }
 
         Celsius ->
             { english = "Celsius"
@@ -20796,6 +20790,12 @@ translationSet trans =
             { english = "IU/L"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        UnitCentimeter ->
+            { english = "cm"
+            , kinyarwanda = Just "cm"
+            , kirundi = Just "cm"
             }
 
         UnitMilliGramsPerDeciliter ->

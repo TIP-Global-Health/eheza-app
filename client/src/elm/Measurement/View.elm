@@ -164,7 +164,7 @@ heightFormConfig =
     , zScoreForAge = Just <| \model age gender height -> zScoreLengthHeightForAge model age gender (Centimetres height)
     , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsHeight
-    , unit = Translate.CentimeterShorthand
+    , unit = Translate.UnitCentimeter
     , inputValue = .height
     , storedValue = .value >> getHeightValue
     , dateMeasured = .dateMeasured
@@ -183,7 +183,7 @@ muacFormConfig =
     , zScoreForAge = Nothing
     , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsMuac
-    , unit = Translate.CentimeterShorthand
+    , unit = Translate.UnitCentimeter
     , inputValue = .muac
     , storedValue = .value >> muacValueFunc
     , dateMeasured = .dateMeasured
@@ -3241,7 +3241,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                                                             muacAsFloat
                                                             config.setMuacMsg
                                                             "muac"
-                                                            Translate.CentimeterShorthand
+                                                            Translate.UnitCentimeter
                                                         ]
                                                     , div
                                                         [ class "five wide column" ]

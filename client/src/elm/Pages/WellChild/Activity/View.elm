@@ -351,7 +351,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                     )
                                 )
                                 "birth-length"
-                                Translate.CentimeterShorthand
+                                Translate.UnitCentimeter
                           ]
                         , [ maybeToBoolTask form.birthLength ]
                         )
@@ -991,7 +991,7 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
                             form.headCircumference
                             SetHeadCircumference
                             "head-circumference"
-                            Translate.CentimeterShorthand
+                            Translate.UnitCentimeter
                         ]
                     , div
                         [ class "five wide column" ]
@@ -999,7 +999,7 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
                             Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zscore
                         ]
                     ]
-                , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+                , viewPreviousMeasurement language previousValue Translate.UnitCentimeter
                 , div [ class "ui large header z-score age" ]
                     [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
                     , span [ class "sub header" ]

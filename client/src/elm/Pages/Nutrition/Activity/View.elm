@@ -336,17 +336,17 @@ viewHeightForm language currentDate zscores person previousValue setHeightMsg fo
                     form.height
                     setHeightMsg
                     "height"
-                    Translate.CentimeterShorthand
+                    Translate.UnitCentimeter
                 ]
             , div
                 [ class "five wide column" ]
                 [ showMaybe <|
-                    Maybe.map2 (viewMeasurementFloatDiff language Translate.CentimeterShorthand)
+                    Maybe.map2 (viewMeasurementFloatDiff language Translate.UnitCentimeter)
                         form.height
                         previousValue
                 ]
             ]
-        , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+        , viewPreviousMeasurement language previousValue Translate.UnitCentimeter
         ]
     , div [ class "ui large header z-score age" ]
         [ text <| translate language Translate.ZScoreHeightForAge
@@ -411,6 +411,14 @@ viewMuacForm language currentDate site person previousValue setMuacMsg form =
 
         constraints =
             getInputConstraintsMuac
+
+        unitTransId =
+            case site of
+                SiteBurundi ->
+                    Translate.UnitMillimeter
+
+                _ ->
+                    Translate.UnitCentimeter
     in
     [ div [ class "ui form muac" ]
         [ viewLabel language <| Translate.NutritionActivityTitle activity
@@ -423,7 +431,7 @@ viewMuacForm language currentDate site person previousValue setMuacMsg form =
                     form.muac
                     setMuacMsg
                     "muac"
-                    Translate.CentimeterShorthand
+                    unitTransId
                 ]
             , div
                 [ class "five wide column" ]
@@ -431,7 +439,7 @@ viewMuacForm language currentDate site person previousValue setMuacMsg form =
                     Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
                 ]
             ]
-        , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+        , viewPreviousMeasurement language previousValue unitTransId
         ]
     ]
 
