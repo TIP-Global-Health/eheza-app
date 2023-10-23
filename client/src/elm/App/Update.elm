@@ -415,7 +415,13 @@ update msg model =
                                     data.sessionPages
                                         |> Dict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
-                                        |> Pages.Session.Update.update currentDate model.zscores features sessionId model.indexedDb subMsg
+                                        |> Pages.Session.Update.update currentDate
+                                            model.zscores
+                                            site
+                                            features
+                                            sessionId
+                                            model.indexedDb
+                                            subMsg
                             in
                             ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd

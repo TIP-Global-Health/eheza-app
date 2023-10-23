@@ -57,6 +57,7 @@ import Pages.Utils
 import Pages.WellChild.Encounter.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
@@ -81,11 +82,18 @@ getInputConstraintsHeight =
     }
 
 
-getInputConstraintsMuac : FloatInputConstraints
-getInputConstraintsMuac =
-    { minVal = 5
-    , maxVal = 99
-    }
+getInputConstraintsMuac : Site -> FloatInputConstraints
+getInputConstraintsMuac site =
+    case site of
+        SiteBurundi ->
+            { minVal = 50
+            , maxVal = 999
+            }
+
+        _ ->
+            { minVal = 5
+            , maxVal = 99
+            }
 
 
 getInputConstraintsWeight : FloatInputConstraints
@@ -97,19 +105,27 @@ getInputConstraintsWeight =
 
 {-| Initialize (or reset) a form with the given data.
 -}
-fromChildMeasurementData : MeasurementData ChildMeasurements -> ModelChild
-fromChildMeasurementData data =
+fromChildMeasurementData : Site -> MeasurementData ChildMeasurements -> ModelChild
+fromChildMeasurementData site data =
     let
         fromData measuremntFunc mappingFunc =
             mapMeasurementData measuremntFunc data
                 |> currentValue
                 |> Maybe.map mappingFunc
+
+        muacFromFloatFunc =
+            case site of
+                SiteBurundi ->
+                    (*) 10 >> String.fromFloat
+
+                _ ->
+                    String.fromFloat
     in
     { height =
         fromData .height (.value >> getHeightValue >> String.fromFloat)
             |> Maybe.withDefault ""
     , muac =
-        fromData .muac (.value >> muacValueFunc >> String.fromFloat)
+        fromData .muac (.value >> muacValueFunc >> muacFromFloatFunc)
             |> Maybe.withDefault ""
     , nutrition =
         fromData .nutrition .value
@@ -207,8 +223,8 @@ getMotherForm motherId pages session =
                     )
 
 
-getChildForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
-getChildForm childId pages session =
+getChildForm : Site -> PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
+getChildForm site childId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromChildMeasurementData` would get calculated every time
     case Dict.get childId pages.childForms of
@@ -219,7 +235,7 @@ getChildForm childId pages session =
             getChildMeasurementData childId session
                 |> LocalData.unwrap
                     emptyModelChild
-                    (fromChildMeasurementData
+                    (fromChildMeasurementData site
                         >> (\form ->
                                 -- We need some special logic for the counseling
                                 -- session, to fill in the correct kind of session.

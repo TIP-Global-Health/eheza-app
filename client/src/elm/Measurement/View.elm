@@ -72,6 +72,7 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
@@ -86,6 +87,7 @@ child when we enter something.
 viewChild :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> ( PersonId, Person )
     -> ChildActivity
@@ -96,7 +98,7 @@ viewChild :
     -> ModelChild
     -> PreviousValuesSet
     -> Html MsgChild
-viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
+viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
     case activity of
         ChildFbf ->
             viewChildFbf language currentDate child session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
@@ -108,7 +110,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
 
         Muac ->
-            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
+            viewMuac site language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
             viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
@@ -147,7 +149,7 @@ type alias FloatFormConfig id value =
     , constraints : FloatInputConstraints
     , unit : TranslationId
     , inputValue : ModelChild -> String
-    , storedValue : value -> Float
+    , toFloatValue : String -> Maybe Float
     , dateMeasured : value -> NominalDate
     , viewIndication : Maybe (Language -> Float -> Html MsgChild)
     , updateMsg : String -> MsgChild
@@ -166,7 +168,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Translate.UnitCentimeter
     , inputValue = .height
-    , storedValue = .value >> getHeightValue
+    , toFloatValue = String.toFloat
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -174,18 +176,31 @@ heightFormConfig =
     }
 
 
-muacFormConfig : FloatFormConfig MuacId Muac
-muacFormConfig =
+muacFormConfig : Site -> FloatFormConfig MuacId Muac
+muacFormConfig site =
+    let
+        ( toFloatValue, unit ) =
+            case site of
+                SiteBurundi ->
+                    ( String.toFloat >> Maybe.map ((*) 0.1 >> Round.roundNum 1)
+                    , Translate.UnitMillimeter
+                    )
+
+                _ ->
+                    ( String.toFloat
+                    , Translate.UnitCentimeter
+                    )
+    in
     { blockName = "muac"
     , activity = ChildActivity Muac
     , placeholderText = Translate.PlaceholderEnterMUAC
     , zScoreLabelForAge = Translate.ZScoreMuacForAge
     , zScoreForAge = Nothing
     , zScoreForHeightOrLength = Nothing
-    , constraints = getInputConstraintsMuac
-    , unit = Translate.UnitCentimeter
+    , constraints = getInputConstraintsMuac site
+    , unit = unit
     , inputValue = .muac
-    , storedValue = .value >> muacValueFunc
+    , toFloatValue = toFloatValue
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
@@ -204,7 +219,7 @@ weightFormConfig =
     , constraints = getInputConstraintsWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
-    , storedValue = .value >> weightValueFunc
+    , toFloatValue = String.toFloat
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
@@ -231,9 +246,9 @@ viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewMuac =
-    viewFloatForm muacFormConfig
+viewMuac : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac site =
+    viewFloatForm (muacFormConfig site)
 
 
 viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
@@ -261,8 +276,7 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- successfully at the moment ... in which case we won't bother
         -- with the various interpretations yet. (Or allow saving).
         floatValue =
-            inputValue
-                |> String.toFloat
+            config.toFloatValue inputValue
 
         -- What is the most recent measurement we've saved, either locally or
         -- to the backend (we don't care at the moment which). If this is a new
@@ -403,7 +417,7 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
                                 previousValue
-                                floatValue
+                                (String.toFloat inputValue)
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
                                 config.viewIndication

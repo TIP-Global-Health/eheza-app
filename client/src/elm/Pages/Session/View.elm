@@ -151,6 +151,7 @@ viewEditableSession language currentDate zscores site features isChw nurse sessi
                             language
                             currentDate
                             zscores
+                            site
                             features
                             isChw
                             activity
@@ -162,7 +163,17 @@ viewEditableSession language currentDate zscores site features isChw nurse sessi
                 MotherActivity activity ->
                     Dict.get activity model.motherActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                        |> Pages.Activity.View.view motherParticipant language currentDate zscores features isChw activity ( sessionId, session ) model db
+                        |> Pages.Activity.View.view motherParticipant
+                            language
+                            currentDate
+                            zscores
+                            site
+                            features
+                            isChw
+                            activity
+                            ( sessionId, session )
+                            model
+                            db
                         |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)
 
         AttendancePage ->
@@ -183,7 +194,7 @@ viewEditableSession language currentDate zscores site features isChw nurse sessi
         ChildPage childId ->
             Dict.get childId model.childPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewChild language currentDate zscores features isChw childId ( sessionId, session ) model db
+                |> Pages.Participant.View.viewChild language currentDate zscores site features isChw childId ( sessionId, session ) model db
                 |> Html.map (MsgChild childId)
 
         MotherPage motherId ->

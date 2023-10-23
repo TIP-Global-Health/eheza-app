@@ -25,20 +25,21 @@ import Pages.ProgressReport.Model
 import Pages.ProgressReport.Update
 import Pages.Session.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import ZScore.Model
 
 
 update :
     NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> EverySet SiteFeature
     -> SessionId
     -> ModelIndexedDb
     -> Msg
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate zscores features sessionId db msg model =
+update currentDate zscores site features sessionId db msg model =
     let
         sessionData =
             Dict.get sessionId db.editableSessions
@@ -46,7 +47,7 @@ update currentDate zscores features sessionId db msg model =
     in
     case sessionData of
         Success session ->
-            updateFoundSession currentDate zscores features sessionId session db msg model
+            updateFoundSession currentDate zscores site features sessionId session db msg model
 
         _ ->
             -- We're handling UI messages here, and the UI should only be shown if
@@ -61,6 +62,7 @@ don't modify it directly ... instead, we return messages to do so.
 updateFoundSession :
     NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> EverySet SiteFeature
     -> SessionId
     -> EditableSession
@@ -68,7 +70,7 @@ updateFoundSession :
     -> Msg
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-updateFoundSession currentDate zscores features sessionId session db msg model =
+updateFoundSession currentDate zscores site features sessionId session db msg model =
     case msg of
         MsgActivities subMsg ->
             let
@@ -97,7 +99,7 @@ updateFoundSession currentDate zscores features sessionId session db msg model =
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
                 childForm =
-                    Maybe.map (\childId -> getChildForm childId model session) maybeChildId
+                    Maybe.map (\childId -> getChildForm site childId model session) maybeChildId
 
                 updateReturns =
                     Pages.Activity.Update.updateChild currentDate
@@ -195,7 +197,7 @@ updateFoundSession currentDate zscores features sessionId session db msg model =
         MsgChild childId subMsg ->
             let
                 childForm =
-                    getChildForm childId model session
+                    getChildForm site childId model session
 
                 childPage =
                     Dict.get childId model.childPages

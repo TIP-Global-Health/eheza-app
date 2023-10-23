@@ -371,7 +371,7 @@ viewMuacContent language currentDate site assembled data previousValue =
             taskCompleted form.muac
 
         constraints =
-            getInputConstraintsMuac
+            getInputConstraintsMuac site
 
         disabled =
             (tasksCompleted /= totalTasks)
@@ -410,7 +410,7 @@ viewMuacForm language currentDate site person previousValue setMuacMsg form =
             Muac
 
         constraints =
-            getInputConstraintsMuac
+            getInputConstraintsMuac site
 
         ( currentValue, unitTransId ) =
             case site of
