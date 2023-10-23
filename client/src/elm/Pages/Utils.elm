@@ -1297,6 +1297,8 @@ setMuacValueForSite : Site -> String -> Maybe Float
 setMuacValueForSite site s =
     case site of
         SiteBurundi ->
+            -- At Burundi, value is entered as mm, but we need to store it
+            -- as cm. Therefore, we multiply by 0.1.
             String.toFloat s
                 |> Maybe.map ((*) 0.1 >> Round.roundNum 1)
 

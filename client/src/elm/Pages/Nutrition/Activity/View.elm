@@ -415,7 +415,11 @@ viewMuacForm language currentDate site person previousValue setMuacMsg form =
         ( currentValue, unitTransId ) =
             case site of
                 SiteBurundi ->
-                    ( Maybe.map ((*) 10) form.muac, Translate.UnitMillimeter )
+                    ( -- Value is stored in cm, but for Burundi, we need to
+                      -- view it as mm. Therefore, multiplying by 10.
+                      Maybe.map ((*) 10) form.muac
+                    , Translate.UnitMillimeter
+                    )
 
                 _ ->
                     ( form.muac, Translate.UnitCentimeter )
