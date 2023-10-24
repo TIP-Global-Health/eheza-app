@@ -373,10 +373,19 @@ viewMuacContent language currentDate site assembled data previousValue =
         constraints =
             getInputConstraintsMuac site
 
+        currentValue =
+            case site of
+                SiteBurundi ->
+                    -- Value is stored in cm, but for Burundi, we need to
+                    -- view it as mm. Therefore, multiplying by 10.
+                    Maybe.map ((*) 10) form.muac
+
+                _ ->
+                    form.muac
+
         disabled =
             (tasksCompleted /= totalTasks)
-                || (form.muac
-                        |> Maybe.map (withinConstraints constraints >> not)
+                || (Maybe.map (withinConstraints constraints >> not) currentValue
                         |> Maybe.withDefault True
                    )
     in

@@ -149,7 +149,7 @@ type alias FloatFormConfig id value =
     , constraints : FloatInputConstraints
     , unit : TranslationId
     , inputValue : ModelChild -> String
-    , toFloatValue : String -> Maybe Float
+    , toBackendValue : String -> Maybe Float
     , dateMeasured : value -> NominalDate
     , viewIndication : Maybe (Language -> Float -> Html MsgChild)
     , updateMsg : String -> MsgChild
@@ -168,7 +168,7 @@ heightFormConfig =
     , constraints = getInputConstraintsHeight
     , unit = Translate.UnitCentimeter
     , inputValue = .height
-    , toFloatValue = String.toFloat
+    , toBackendValue = String.toFloat
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -179,7 +179,7 @@ heightFormConfig =
 muacFormConfig : Site -> FloatFormConfig MuacId Muac
 muacFormConfig site =
     let
-        ( toFloatValue, unit ) =
+        ( toBackendValue, unit ) =
             case site of
                 SiteBurundi ->
                     ( String.toFloat >> Maybe.map ((*) 0.1 >> Round.roundNum 1)
@@ -200,7 +200,7 @@ muacFormConfig site =
     , constraints = getInputConstraintsMuac site
     , unit = unit
     , inputValue = .muac
-    , toFloatValue = toFloatValue
+    , toBackendValue = toBackendValue
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
@@ -219,7 +219,7 @@ weightFormConfig =
     , constraints = getInputConstraintsWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
-    , toFloatValue = String.toFloat
+    , toBackendValue = String.toFloat
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
@@ -258,6 +258,9 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         inputValue =
             config.inputValue model
 
+        inputAsFloat =
+            String.toFloat inputValue
+
         -- Our input is a string, which may or may not be a valid float,
         -- since we want to let users enter things like "." to start with
         -- without clobbering what they type.
@@ -275,8 +278,8 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- `Nothing` if our input value doesn't convert to a string
         -- successfully at the moment ... in which case we won't bother
         -- with the various interpretations yet. (Or allow saving).
-        floatValue =
-            config.toFloatValue inputValue
+        backendValue =
+            config.toBackendValue inputValue
 
         -- What is the most recent measurement we've saved, either locally or
         -- to the backend (we don't care at the moment which). If this is a new
@@ -314,15 +317,15 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                     (\zScoreForAge ->
                         let
                             zScoreText =
-                                floatValue
-                                    |> Maybe.andThen
-                                        (\val ->
-                                            Maybe.andThen
-                                                (\ageInDays ->
-                                                    zScoreForAge zscores ageInDays child.gender val
-                                                )
-                                                maybeAgeInDays
-                                        )
+                                Maybe.andThen
+                                    (\val ->
+                                        Maybe.andThen
+                                            (\ageInDays ->
+                                                zScoreForAge zscores ageInDays child.gender val
+                                            )
+                                            maybeAgeInDays
+                                    )
+                                    backendValue
                                     |> Maybe.map viewZScore
                                     |> Maybe.withDefault (translate language Translate.NotAvailable)
                         in
@@ -365,7 +368,7 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                                                             )
                                                             maybeAgeInDays
                                                     )
-                                                    floatValue
+                                                    backendValue
                                             )
                                         |> Maybe.map viewZScore
                                         |> Maybe.withDefault (translate language Translate.NotAvailable)
@@ -381,15 +384,16 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                         )
 
         saveMsg =
-            floatValue
-                |> Maybe.andThen
-                    (\value ->
-                        if not <| withinConstraints config.constraints value then
-                            Nothing
+            Maybe.Extra.andThen2
+                (\asFloat forBackend ->
+                    if not <| withinConstraints config.constraints asFloat then
+                        Nothing
 
-                        else
-                            config.saveMsg (Maybe.map Tuple.first measurements.current) value |> Just
-                    )
+                    else
+                        config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
+                )
+                inputAsFloat
+                backendValue
     in
     div
         [ class <| "ui full segment " ++ config.blockName ]
@@ -417,11 +421,11 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
                                 previousValue
-                                (String.toFloat inputValue)
+                                inputAsFloat
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
                                 config.viewIndication
-                                floatValue
+                                backendValue
                         ]
                     ]
                 , previousValue
