@@ -182,7 +182,9 @@ muacFormConfig site =
         ( toBackendValue, unit ) =
             case site of
                 SiteBurundi ->
-                    ( String.toFloat >> Maybe.map ((*) 0.1 >> Round.roundNum 1)
+                    ( -- At Burundi, value is entered as mm, but we need to store it
+                      -- as cm. Therefore, we multiply by 0.1.
+                      String.toFloat >> Maybe.map ((*) 0.1 >> Round.roundNum 1)
                     , Translate.UnitMillimeter
                     )
 

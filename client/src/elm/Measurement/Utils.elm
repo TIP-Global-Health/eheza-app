@@ -116,6 +116,8 @@ fromChildMeasurementData site data =
         muacFromFloatFunc =
             case site of
                 SiteBurundi ->
+                    -- Value is stored in cm, but for Burundi, we need to
+                    -- view it as mm. Therefore, multiplying by 10.
                     (*) 10 >> String.fromFloat
 
                 _ ->
