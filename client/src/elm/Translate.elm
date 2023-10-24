@@ -6337,12 +6337,6 @@ translationSet trans =
                 Negative ->
                     translationSet NegativeLabel
 
-                NegativeDiscordantCouple ->
-                    { english = "Negative - discordant couple"
-                    , kinyarwanda = Just "Nta bwandu afite ariko abana n'ubufite"
-                    , kirundi = Just "Umugwayi ata mugera wa Sida afise ariko mugenziwe ayifise"
-                    }
-
                 Positive ->
                     { english = "Positive"
                     , kinyarwanda = Just "Afite ubwandu"
