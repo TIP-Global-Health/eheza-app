@@ -956,7 +956,7 @@ type TranslationId
     | NCDRiskFactor NCDRiskFactor
     | NCDSocialHistoryFoodQuestion
     | NCDSocialHistoryFoodQuestionInstructions
-    | NCDSocialHistorySignQuestion NCDSocialHistorySign
+    | NCDSocialHistorySignQuestion Site NCDSocialHistorySign
     | Neck
     | NeckCPESign NeckCPESign
     | NegativeLabel
@@ -11317,7 +11317,7 @@ translationSet trans =
             , kirundi = Just "Muraraba umurwi ukwiye kuvy'ukuri"
             }
 
-        NCDSocialHistorySignQuestion sign ->
+        NCDSocialHistorySignQuestion site sign ->
             case sign of
                 SignDrinkAlcohol ->
                     { english = "Do you drink any alcoholic beverages"
@@ -11332,10 +11332,18 @@ translationSet trans =
                     }
 
                 SignConsumeSalt ->
-                    { english = "Do you add salt to your food"
-                    , kinyarwanda = Just "Ujya wongera umunyu mu biryo"
-                    , kirundi = Just "Mbega urongera umunyu mu bifungugwa"
-                    }
+                    case site of
+                        SiteBurundi ->
+                            { english = "Do you add salt to your food after it is served"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        _ ->
+                            { english = "Do you add salt to your food"
+                            , kinyarwanda = Just "Ujya wongera umunyu mu biryo"
+                            , kirundi = Nothing
+                            }
 
                 SignDifficult4TimesAYear ->
                     { english = "Would it be difficult for you to come to the health center 4 times a year"
