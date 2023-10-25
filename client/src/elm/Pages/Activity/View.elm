@@ -20,7 +20,7 @@ import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
 import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 import ZScore.Model
@@ -47,6 +47,7 @@ view :
     -> Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> EverySet SiteFeature
     -> Bool
     -> activity
@@ -55,7 +56,7 @@ view :
     -> ModelIndexedDb
     -> Model id
     -> ( Html (Msg id msg), Maybe id )
-view config language currentDate zscores features isChw selectedActivity ( sessionId, session ) pages db model =
+view config language currentDate zscores site features isChw selectedActivity ( sessionId, session ) pages db model =
     let
         participants =
             session.checkedIn
@@ -194,7 +195,7 @@ view config language currentDate zscores features isChw selectedActivity ( sessi
                     -- This is a convenience for the way the code was structured ... ideally,
                     -- we'd build a `viewMeasurements` on top of smaller capabilities of the
                     -- `Participant` config, but this is faster for now.
-                    config.viewMeasurements language currentDate zscores isChw db id selectedActivity pages session
+                    config.viewMeasurements language currentDate site zscores isChw db id selectedActivity pages session
 
                 Nothing ->
                     emptyNode

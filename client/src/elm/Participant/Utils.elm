@@ -49,5 +49,5 @@ motherParticipant =
     , tagActivity = MotherActivity
     , toChildId = always Nothing
     , toMotherId = Just
-    , viewMeasurements = \language date _ _ _ -> viewMotherMeasurements language date
+    , viewMeasurements = \language date site _ _ _ -> viewMotherMeasurements language date site
     }

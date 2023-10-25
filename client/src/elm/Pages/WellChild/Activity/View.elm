@@ -233,7 +233,7 @@ viewActivity language currentDate zscores site features id isChw activity assemb
             viewDangerSignsContent language currentDate assembled model.dangerSignsData
 
         WellChildNutritionAssessment ->
-            viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
+            viewNutritionAssessmenContent language currentDate site zscores id isChw assembled db model.nutritionAssessmentData
 
         WellChildImmunisation ->
             viewImmunisationContent language currentDate site isChw assembled db model.immunisationData
@@ -351,7 +351,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                     )
                                 )
                                 "birth-length"
-                                Translate.CentimeterShorthand
+                                Translate.UnitCentimeter
                           ]
                         , [ maybeToBoolTask form.birthLength ]
                         )
@@ -756,6 +756,7 @@ viewSymptomsReviewForm language currentDate person form =
 viewNutritionAssessmenContent :
     Language
     -> NominalDate
+    -> Site
     -> ZScore.Model.Model
     -> WellChildEncounterId
     -> Bool
@@ -763,7 +764,7 @@ viewNutritionAssessmenContent :
     -> ModelIndexedDb
     -> NutritionAssessmentData
     -> List (Html Msg)
-viewNutritionAssessmenContent language currentDate zscores id isChw assembled db data =
+viewNutritionAssessmenContent language currentDate site zscores id isChw assembled db data =
     let
         measurements =
             assembled.measurements
@@ -880,7 +881,7 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                     measurements.muac
                         |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate assembled.person previousValuesSet.muac SetMuac
+                        |> viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
                     measurements.nutrition
@@ -990,7 +991,7 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
                             form.headCircumference
                             SetHeadCircumference
                             "head-circumference"
-                            Translate.CentimeterShorthand
+                            Translate.UnitCentimeter
                         ]
                     , div
                         [ class "five wide column" ]
@@ -998,7 +999,7 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
                             Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zscore
                         ]
                     ]
-                , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+                , viewPreviousMeasurement language previousValue Translate.UnitCentimeter
                 , div [ class "ui large header z-score age" ]
                     [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
                     , span [ class "sub header" ]

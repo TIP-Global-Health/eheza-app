@@ -672,7 +672,15 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.nutritionActivityPages
                                     |> Maybe.withDefault Pages.Nutrition.Activity.Model.emptyModel
                         in
-                        Pages.Nutrition.Activity.View.view model.language currentDate model.zscores id activity isChw model.indexedDb page_
+                        Pages.Nutrition.Activity.View.view model.language
+                            currentDate
+                            model.zscores
+                            site
+                            id
+                            activity
+                            isChw
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
                             |> flexPageWrapper configured.config model
 

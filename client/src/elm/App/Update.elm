@@ -415,7 +415,13 @@ update msg model =
                                     data.sessionPages
                                         |> Dict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
-                                        |> Pages.Session.Update.update currentDate model.zscores features sessionId model.indexedDb subMsg
+                                        |> Pages.Session.Update.update currentDate
+                                            model.zscores
+                                            site
+                                            features
+                                            sessionId
+                                            model.indexedDb
+                                            subMsg
                             in
                             ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
@@ -589,7 +595,7 @@ update msg model =
                                     data.nutritionActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.Nutrition.Activity.Model.emptyModel
-                                        |> Pages.Nutrition.Activity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Pages.Nutrition.Activity.Update.update currentDate site id model.indexedDb subMsg
                             in
                             ( { data | nutritionActivityPages = Dict.insert ( id, activity ) subModel data.nutritionActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNutritionActivity id activity) subCmd
@@ -633,7 +639,7 @@ update msg model =
                                     data.wellChildActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.WellChild.Activity.Model.emptyModel
-                                        |> Pages.WellChild.Activity.Update.update currentDate isChw id model.indexedDb subMsg
+                                        |> Pages.WellChild.Activity.Update.update currentDate site isChw id model.indexedDb subMsg
                             in
                             ( { data | wellChildActivityPages = Dict.insert ( id, activity ) subModel data.wellChildActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageWellChildActivity id activity) subCmd
@@ -672,7 +678,7 @@ update msg model =
                                     data.childScoreboardActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.ChildScoreboard.Activity.Model.emptyModel
-                                        |> Pages.ChildScoreboard.Activity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Pages.ChildScoreboard.Activity.Update.update currentDate site id model.indexedDb subMsg
                             in
                             ( { data | childScoreboardActivityPages = Dict.insert ( id, activity ) subModel data.childScoreboardActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity) subCmd

@@ -41,7 +41,7 @@ import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (nonAdministrationReasonToSign, setMultiSelectInputValue)
+import Pages.Utils exposing (nonAdministrationReasonToSign, setMuacValueForSite, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
@@ -497,7 +497,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     model.physicalExamData.muacForm
 
                 updatedForm =
-                    { form | muac = String.toFloat string, muacDirty = True }
+                    { form | muac = setMuacValueForSite site string, muacDirty = True }
 
                 updatedData =
                     model.physicalExamData

@@ -1332,7 +1332,7 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
                                                         |> .height
                                                         |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
                                             in
-                                            [ text <| String.fromFloat height ++ translate language Translate.CentimeterShorthand ]
+                                            [ text <| String.fromFloat height ++ translate language Translate.UnitCentimeter ]
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]
@@ -1435,7 +1435,7 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
                                                     [ text <|
                                                         String.fromFloat
                                                             (getHeightValue heightInCm)
-                                                            ++ translate language Translate.CentimeterShorthand
+                                                            ++ translate language Translate.UnitCentimeter
                                                     ]
                                                 )
                                         )

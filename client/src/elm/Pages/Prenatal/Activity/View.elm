@@ -3357,7 +3357,7 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                     form.height
                     (SetNutritionAssessmentMeasurement heightUpdateFunc)
                     "height"
-                    Translate.CentimeterShorthand
+                    Translate.UnitCentimeter
                 , viewPreviousMeasurement language heightPreviousValue Translate.EmptyString
                 , div [ class "separator" ] []
                 ]
@@ -3412,8 +3412,8 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                     form.muac
                     (SetNutritionAssessmentMeasurement muacUpdateFunc)
                     "muac"
-                    Translate.CentimeterShorthand
-               , viewPreviousMeasurement language muacPreviousValue Translate.CentimeterShorthand
+                    Translate.UnitCentimeter
+               , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
                ]
 
 
@@ -3468,8 +3468,8 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                                 form.fundalHeight
                                 (SetObstetricalExamFloatMeasurement fundalHeightUpdateFunc)
                                 "fundal-height"
-                                Translate.CentimeterShorthand
-                          , viewPreviousMeasurement language fundalHeightPreviousValue Translate.CentimeterShorthand
+                                Translate.UnitCentimeter
+                          , viewPreviousMeasurement language fundalHeightPreviousValue Translate.UnitCentimeter
                           ]
                         , [ maybeToBoolTask form.fundalHeight ]
                         )

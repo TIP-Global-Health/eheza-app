@@ -406,7 +406,7 @@ viewActivity language currentDate site geoInfo id isChw activity db assembled mo
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id isChw assembled model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
@@ -620,12 +620,13 @@ viewSymptomsGIForm language currentDate measurements form =
 viewAcuteIllnessPhysicalExam :
     Language
     -> NominalDate
+    -> Site
     -> AcuteIllnessEncounterId
     -> Bool
     -> AssembledData
     -> PhysicalExamData
     -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id isChw assembled data =
+viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
     let
         person =
             assembled.person
@@ -728,7 +729,7 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled data =
                     measurements.muac
                         |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate assembled.person previousValue SetMuac
+                        |> viewMuacForm language currentDate site assembled.person previousValue SetMuac
 
                 Just PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
