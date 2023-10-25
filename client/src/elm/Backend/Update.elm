@@ -4104,6 +4104,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        ChildScoreboardDTPStandaloneImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dtpStandaloneImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         ChildScoreboardIPVImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
@@ -5303,6 +5311,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildDTPStandaloneImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dtpStandaloneImmunisation = Just ( uuid, data ) })
                 model
             , recalc
             )
