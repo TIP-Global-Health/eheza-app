@@ -505,6 +505,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityChildScoreboardDTPImmunisation identifier ->
             getIdentifier identifier "child_scoreboard_dtp_iz"
 
+        BackendAuthorityChildScoreboardDTPStandaloneImmunisation identifier ->
+            getIdentifier identifier "child_scoreboard_dtp_sa_iz"
+
         BackendAuthorityChildScoreboardIPVImmunisation identifier ->
             getIdentifier identifier "child_scoreboard_ipv_iz"
 
@@ -877,6 +880,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildDTPImmunisation identifier ->
             getIdentifier identifier "well_child_dtp_immunisation"
 
+        BackendAuthorityWellChildDTPStandaloneImmunisation identifier ->
+            getIdentifier identifier "well_child_dtp_sa_immunisation"
+
         BackendAuthorityWellChildECD identifier ->
             getIdentifier identifier "well_child_ecd"
 
@@ -1197,6 +1203,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityChildScoreboardDTPImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeChildScoreboardDTPImmunisation identifier
+
+        BackendAuthorityChildScoreboardDTPStandaloneImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardDTPStandaloneImmunisation identifier
 
         BackendAuthorityChildScoreboardIPVImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeChildScoreboardIPVImmunisation identifier
@@ -1570,6 +1579,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildDTPImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildDTPImmunisation identifier
 
+        BackendAuthorityWellChildDTPStandaloneImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildDTPStandaloneImmunisation identifier
+
         BackendAuthorityWellChildECD identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildECD identifier
 
@@ -1935,6 +1947,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityChildScoreboardDTPImmunisation identifier ->
             ChildScoreboardDTPImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardDTPStandaloneImmunisation identifier ->
+            ChildScoreboardDTPStandaloneImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityChildScoreboardIPVImmunisation identifier ->
             ChildScoreboardIPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2307,6 +2322,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildDTPImmunisation identifier ->
             WellChildDTPImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildDTPStandaloneImmunisation identifier ->
+            WellChildDTPStandaloneImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildECD identifier ->
             WellChildECDRevision (toEntityUuid identifier.uuid) identifier.entity
