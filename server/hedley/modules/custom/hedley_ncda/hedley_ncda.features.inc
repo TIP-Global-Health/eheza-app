@@ -30,7 +30,16 @@ function hedley_ncda_node_info() {
     'child_scoreboard_dtp_iz' => array(
       'name' => t('Child Scoreboard DTP Immunisation'),
       'base' => 'node_content',
-      'description' => '',
+      'description' => t('Stands for PTP-HepB-Hib immunisation, also called Pentavalent.
+Protects against five potential killers – Diptheria, Tetanus, Pertusis, Hib, and Hepatitis B.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'child_scoreboard_dtp_sa_iz' => array(
+      'name' => t('Child Scoreboard DTP (standalone) Immunisation'),
+      'base' => 'node_content',
+      'description' => t('Protects against three potential killers – Diptheria, Tetanus and Pertusis.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',
