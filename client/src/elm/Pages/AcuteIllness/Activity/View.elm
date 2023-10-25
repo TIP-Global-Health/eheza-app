@@ -72,7 +72,7 @@ import Pages.Utils
         , viewTextInput
         )
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
@@ -3382,11 +3382,24 @@ viewCreateContactForm language currentDate site geoInfo db data =
                     emptyNode
 
         demographicFields =
+            let
+                firstNameInput =
+                    Pages.Person.View.viewTextInput language Translate.FirstName Backend.Person.Form.firstName False data
+
+                secondNameInput =
+                    Pages.Person.View.viewTextInput language Translate.SecondName Backend.Person.Form.secondName True data
+
+                nameInputs =
+                    case site of
+                        SiteBurundi ->
+                            [ secondNameInput, firstNameInput ]
+
+                        _ ->
+                            [ firstNameInput, secondNameInput ]
+            in
             List.map (Html.map RegisterContactMsgForm) <|
-                [ Pages.Person.View.viewTextInput language Translate.FirstName Backend.Person.Form.firstName False data
-                , Pages.Person.View.viewTextInput language Translate.SecondName Backend.Person.Form.secondName True data
-                , genderInput
-                ]
+                nameInputs
+                    ++ [ genderInput ]
 
         genderInput =
             let

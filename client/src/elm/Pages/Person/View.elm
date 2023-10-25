@@ -962,13 +962,30 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
         hmisNumberInput =
             viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
+        firstNameInput =
+            viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
+
+        secondNameInput =
+            viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
+
+        nationalIdNumberInput =
+            viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+
         demographicFields =
             viewPhoto
                 :: (List.map (Html.map (MsgForm operation initiator)) <|
-                        [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
-                        , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
-                        , viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-                        ]
+                        case site of
+                            SiteBurundi ->
+                                [ secondNameInput
+                                , firstNameInput
+                                , nationalIdNumberInput
+                                ]
+
+                            _ ->
+                                [ firstNameInput
+                                , secondNameInput
+                                , nationalIdNumberInput
+                                ]
                    )
                 ++ [ birthDateInput ]
                 ++ (List.map (Html.map (MsgForm operation initiator)) <|
