@@ -98,7 +98,7 @@ viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildSco
 viewActivity language currentDate zscores site activity assembled db model =
     case activity of
         ChildScoreboardNCDA ->
-            viewNCDAContent language currentDate zscores assembled db model.ncdaData
+            viewNCDAContent language currentDate zscores site assembled db model.ncdaData
 
         ChildScoreboardVaccinationHistory ->
             viewImmunisationContent language currentDate site assembled db model.immunisationData
@@ -127,6 +127,7 @@ viewNCDAContent language currentDate zscores site assembled db data =
             , showTasksTray = True
             , behindOnVaccinations =
                 generateSuggestedVaccinations currentDate
+                    site
                     assembled.person
                     assembled.vaccinationHistory
                     |> List.isEmpty

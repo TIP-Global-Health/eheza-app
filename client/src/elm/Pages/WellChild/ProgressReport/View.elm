@@ -158,7 +158,7 @@ view language currentDate zscores site features id isChw db model =
                 (\assembled ->
                     let
                         ( _, pendingActivities ) =
-                            partitionActivities currentDate zscores features isChw db assembled
+                            partitionActivities currentDate zscores site features isChw db assembled
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog

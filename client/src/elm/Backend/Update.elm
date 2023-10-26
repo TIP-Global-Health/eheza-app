@@ -128,7 +128,7 @@ import Pages.WellChild.Encounter.Model
 import Pages.WellChild.Encounter.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toCmd, toTask)
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Task
 import Time
 import Translate exposing (Language, translate)
@@ -140,6 +140,7 @@ updateIndexedDb :
     -> NominalDate
     -> Time.Posix
     -> ZScore.Model.Model
+    -> Site
     -> EverySet SiteFeature
     -> Maybe NurseId
     -> Maybe HealthCenterId
@@ -150,7 +151,7 @@ updateIndexedDb :
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime zscores features nurseId healthCenterId villageId isChw activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime zscores site features nurseId healthCenterId villageId isChw activePage syncManager msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -313,6 +314,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                         currentDate
                         currentTime
                         zscores
+                        site
                         features
                         nurseId
                         healthCenterId
@@ -1584,7 +1586,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw activePage updateAssesment originData newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -2736,7 +2738,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2750,7 +2752,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2764,7 +2766,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2778,7 +2780,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2792,7 +2794,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2806,7 +2808,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2820,7 +2822,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2834,7 +2836,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
-                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate newModel) data.encounterId
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -3300,6 +3302,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                         currentDate
                         currentTime
                         zscores
+                        site
                         features
                         nurseId
                         healthCenterId
@@ -3506,6 +3509,7 @@ updateIndexedDb language currentDate currentTime zscores features nurseId health
                         currentDate
                         currentTime
                         zscores
+                        site
                         features
                         nurseId
                         healthCenterId
@@ -5533,6 +5537,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
 generatePrenatalAssessmentMsgs :
     NominalDate
     -> Language
+    -> Site
     -> Bool
     -> Page
     -> Bool
@@ -5540,13 +5545,14 @@ generatePrenatalAssessmentMsgs :
     -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language isChw activePage updateAssesment originData after id =
+generatePrenatalAssessmentMsgs currentDate language site isChw activePage updateAssesment originData after id =
     Maybe.map
         (\assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
                     Pages.Prenatal.Activity.Utils.mandatoryActivitiesForAssessmentCompleted
                         currentDate
+                        site
                         assembledAfter
 
                 initialEncounterNextStepsMsg =
@@ -6711,14 +6717,14 @@ generateWellChildDangerSignsAlertMsgs currentDate maybeId =
         |> Maybe.withDefault []
 
 
-generateChildScoreboardAssesmentCompletedMsgs : NominalDate -> ModelIndexedDb -> ChildScoreboardEncounterId -> List App.Model.Msg
-generateChildScoreboardAssesmentCompletedMsgs currentDate after id =
+generateChildScoreboardAssesmentCompletedMsgs : NominalDate -> Site -> ModelIndexedDb -> ChildScoreboardEncounterId -> List App.Model.Msg
+generateChildScoreboardAssesmentCompletedMsgs currentDate site after id =
     Pages.ChildScoreboard.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
                 if
-                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate assembled after)
+                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate site assembled after)
                         Backend.ChildScoreboardActivity.Utils.allActivities
                 then
                     [ App.Model.SetActivePage (UserPage (ChildScoreboardReportPage id)) ]
