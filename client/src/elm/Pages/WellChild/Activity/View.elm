@@ -1452,6 +1452,7 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     , firstDoseExpectedFrom =
                         initialVaccinationDateByBirthDate birthDate
                             initialOpvAdministered
+                            assembled.vaccinationProgress
                             ( vaccineType, VaccineDoseFirst )
                     , suggestDoseToday = True
                     }
@@ -1477,7 +1478,13 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     else
                         getAllDosesForVaccine initialOpvAdministered vaccineType
                             |> List.filter
-                                (\dose -> expectVaccineDoseForPerson currentDate assembled.person initialOpvAdministered ( vaccineType, dose ))
+                                (\dose ->
+                                    expectVaccineDoseForPerson currentDate
+                                        assembled.person
+                                        initialOpvAdministered
+                                        assembled.vaccinationProgress
+                                        ( vaccineType, dose )
+                                )
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory

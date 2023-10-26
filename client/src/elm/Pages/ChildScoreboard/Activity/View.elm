@@ -130,6 +130,7 @@ viewNCDAContent language currentDate zscores site assembled db data =
                     site
                     assembled.person
                     assembled.vaccinationHistory
+                    assembled.vaccinationProgress
                     |> List.isEmpty
                     |> not
                     |> Just
@@ -527,6 +528,7 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                     , firstDoseExpectedFrom =
                         initialVaccinationDateByBirthDate birthDate
                             initialOpvAdministered
+                            assembled.vaccinationProgress
                             ( vaccineType, VaccineDoseFirst )
                     , suggestDoseToday = False
                     }
@@ -548,7 +550,13 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                 expectedDoses =
                     getAllDosesForVaccine initialOpvAdministered vaccineType
                         |> List.filter
-                            (\dose -> expectVaccineDoseForPerson currentDate assembled.person initialOpvAdministered ( vaccineType, dose ))
+                            (\dose ->
+                                expectVaccineDoseForPerson currentDate
+                                    assembled.person
+                                    initialOpvAdministered
+                                    assembled.vaccinationProgress
+                                    ( vaccineType, dose )
+                            )
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory

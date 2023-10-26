@@ -133,6 +133,7 @@ expectActivity currentDate zscores site features isChw assembled db activity =
                 isChw
                 assembled.person
                 assembled.vaccinationHistory
+                assembled.vaccinationProgress
                 |> List.isEmpty
                 |> not
 

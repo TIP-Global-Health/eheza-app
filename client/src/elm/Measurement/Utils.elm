@@ -5144,7 +5144,12 @@ behindOnVaccinationsByWellChild currentDate site childId db =
     in
     Maybe.map
         (\assembled ->
-            generateSuggestedVaccinations currentDate site False assembled.person assembled.vaccinationHistory
+            generateSuggestedVaccinations currentDate
+                site
+                False
+                assembled.person
+                assembled.vaccinationHistory
+                assembled.vaccinationProgress
                 |> List.isEmpty
                 |> not
         )
@@ -5196,8 +5201,9 @@ generateSuggestedVaccinations :
     -> Bool
     -> Person
     -> VaccinationProgressDict
+    -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate site isChw person vaccinationHistory =
+generateSuggestedVaccinations currentDate site isChw person vaccinationHistory vaccinationProgress =
     if isChw then
         [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
 
@@ -5207,7 +5213,7 @@ generateSuggestedVaccinations currentDate site isChw person vaccinationHistory =
                 wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
         in
         allVaccineTypes site
-            |> List.filter (expectVaccineForPerson currentDate person initialOpvAdministered)
+            |> List.filter (expectVaccineForPerson currentDate person initialOpvAdministered vaccinationProgress)
             |> List.filterMap
                 (\vaccineType ->
                     let
@@ -5268,7 +5274,14 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
                                 -- we offer first dose for today.
                                 let
                                     initialDate =
-                                        Maybe.map (\birthDate -> initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst )) person.birthDate
+                                        Maybe.map
+                                            (\birthDate ->
+                                                initialVaccinationDateByBirthDate birthDate
+                                                    initialOpvAdministered
+                                                    vaccinationProgress
+                                                    ( vaccineType, VaccineDoseFirst )
+                                            )
+                                            person.birthDate
                                             |> Maybe.withDefault currentDate
 
                                     vaccinationDate =
@@ -5288,9 +5301,9 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
 
 {-| Check if the first dose of vaccine may be administered to the person on the limit date.
 -}
-expectVaccineForPerson : NominalDate -> Person -> Bool -> WellChildVaccineType -> Bool
-expectVaccineForPerson limitDate person initialOpvAdministered vaccineType =
-    expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType, VaccineDoseFirst )
+expectVaccineForPerson : NominalDate -> Person -> Bool -> VaccinationProgressDict -> WellChildVaccineType -> Bool
+expectVaccineForPerson limitDate person initialOpvAdministered vaccinationProgress vaccineType =
+    expectVaccineDoseForPerson limitDate person initialOpvAdministered vaccinationProgress ( vaccineType, VaccineDoseFirst )
 
 
 {-| Check if a dose of vaccine may be administered to a person on the limit date.
@@ -5298,14 +5311,14 @@ For example, to check if the dose of vaccine may be administered today, we set
 limit date to current date. If we want to check in one year, we set the limit date
 to current date + 1 year.
 -}
-expectVaccineDoseForPerson : NominalDate -> Person -> Bool -> ( WellChildVaccineType, VaccineDose ) -> Bool
-expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType, vaccineDose ) =
+expectVaccineDoseForPerson : NominalDate -> Person -> Bool -> VaccinationProgressDict -> ( WellChildVaccineType, VaccineDose ) -> Bool
+expectVaccineDoseForPerson limitDate person initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
     person.birthDate
         |> Maybe.map
             (\birthDate ->
                 let
                     expectedDate =
-                        initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, vaccineDose )
+                        initialVaccinationDateByBirthDate birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose )
 
                     compared =
                         Date.compare expectedDate limitDate
@@ -5322,8 +5335,8 @@ expectVaccineDoseForPerson limitDate person initialOpvAdministered ( vaccineType
         |> Maybe.withDefault False
 
 
-initialVaccinationDateByBirthDate : NominalDate -> Bool -> ( WellChildVaccineType, VaccineDose ) -> NominalDate
-initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, vaccineDose ) =
+initialVaccinationDateByBirthDate : NominalDate -> Bool -> VaccinationProgressDict -> ( WellChildVaccineType, VaccineDose ) -> NominalDate
+initialVaccinationDateByBirthDate birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
     let
         dosesInterval =
             vaccineDoseToComparable vaccineDose - 1
@@ -5356,7 +5369,29 @@ initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineDTPStandalone ->
-            Date.add Months 18 birthDate
+            -- All 3 dosed of DTP were given and it has
+            -- passed at least 28 days since third dose, and, child
+            -- is at last 18 months old.
+            Dict.get VaccineOPV vaccinationProgress
+                |> Maybe.andThen (Dict.get VaccineDoseThird)
+                |> Maybe.map
+                    (\thirdDoseDate ->
+                        let
+                            fourWeeksAfterThirdDTPDose =
+                                Date.add Days 28 thirdDoseDate
+
+                            dateWhen18MonthsOld =
+                                Date.add Months 18 birthDate
+                        in
+                        if Date.compare fourWeeksAfterThirdDTPDose dateWhen18MonthsOld == GT then
+                            fourWeeksAfterThirdDTPDose
+
+                        else
+                            dateWhen18MonthsOld
+                    )
+                |> Maybe.withDefault
+                    -- In other words, never.
+                    (Date.add Years 999 birthDate)
 
         VaccinePCV13 ->
             Date.add Weeks 6 birthDate

@@ -41,6 +41,7 @@ expectActivity currentDate site assembled activity =
                         site
                         assembled.person
                         assembled.vaccinationHistory
+                        assembled.vaccinationProgress
                         |> List.isEmpty
                         |> not
 
@@ -182,9 +183,10 @@ generateSuggestedVaccinations :
     -> Site
     -> Person
     -> VaccinationProgressDict
+    -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate site person vaccinationHistory =
-    Measurement.Utils.generateSuggestedVaccinations currentDate site False person vaccinationHistory
+generateSuggestedVaccinations currentDate site person vaccinationHistory vaccinationProgress =
+    Measurement.Utils.generateSuggestedVaccinations currentDate site False person vaccinationHistory vaccinationProgress
 
 
 generateVaccinationProgress : List ChildScoreboardMeasurements -> VaccinationProgressDict
