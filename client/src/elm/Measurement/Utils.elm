@@ -5369,8 +5369,8 @@ initialVaccinationDateByBirthDate birthDate initialOpvAdministered vaccinationPr
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineDTPStandalone ->
-            -- All 3 dosed of DTP were given and it has
-            -- passed at least 28 days since third dose, and, child
+            -- All 3 dosed of DTP were given, it has passed
+            -- at least 28 days since third dose, and, child
             -- is at last 18 months old.
             Dict.get VaccineOPV vaccinationProgress
                 |> Maybe.andThen (Dict.get VaccineDoseThird)
