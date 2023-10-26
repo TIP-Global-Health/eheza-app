@@ -242,6 +242,7 @@ emptyHeadCircumferenceForm =
 type alias ImmunisationData =
     { bcgForm : WellChildVaccinationForm
     , dtpForm : WellChildVaccinationForm
+    , dtpStandaloneForm : WellChildVaccinationForm
     , hpvForm : WellChildVaccinationForm
     , ipvForm : WellChildVaccinationForm
     , mrForm : WellChildVaccinationForm
@@ -260,6 +261,7 @@ emptyImmunisationData : ImmunisationData
 emptyImmunisationData =
     { bcgForm = emptyVaccinationForm
     , dtpForm = emptyVaccinationForm
+    , dtpStandaloneForm = emptyVaccinationForm
     , hpvForm = emptyVaccinationForm
     , ipvForm = emptyVaccinationForm
     , mrForm = emptyVaccinationForm

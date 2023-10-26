@@ -515,6 +515,7 @@ viewContent language currentDate zscores site isChw initiator mandatoryNutrition
                     in
                     [ viewVaccinationHistoryPane language
                         currentDate
+                        site
                         child
                         vaccinationProgress
                         db
@@ -987,12 +988,12 @@ viewWarningEntry language ( date, ( milestone, warning, status ) ) =
     )
 
 
-viewVaccinationHistoryPane : Language -> NominalDate -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
-viewVaccinationHistoryPane language currentDate child vaccinationProgress db =
+viewVaccinationHistoryPane : Language -> NominalDate -> Site -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
+viewVaccinationHistoryPane language currentDate site child vaccinationProgress db =
     div [ class "pane vaccination-history" ] <|
         [ viewPaneHeading language Translate.ImmunizationHistory
         , div [ class "pane-content" ] <|
-            viewVaccinationOverview language currentDate child vaccinationProgress db
+            viewVaccinationOverview language currentDate site child vaccinationProgress db
         ]
 
 
@@ -1666,6 +1667,7 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
     , viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires
     , viewUniversalInterventionsPane language
         currentDate
+        site
         child
         db
         nurseQuestionnairesByAgeInMonths
@@ -2406,13 +2408,14 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
 viewUniversalInterventionsPane :
     Language
     -> NominalDate
+    -> Site
     -> Person
     -> ModelIndexedDb
     -> Maybe (Dict Int NCDAValue)
     -> Maybe (Dict Int ( NominalDate, NCDAValue ))
     -> VaccinationProgressDict
     -> Html any
-viewUniversalInterventionsPane language currentDate child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate vaccinationProgress =
+viewUniversalInterventionsPane language currentDate site child db nurseQuestionnairesByAgeInMonths chwQuestionnairesByAgeInMonthsWithDate vaccinationProgress =
     let
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
@@ -2446,7 +2449,7 @@ viewUniversalInterventionsPane language currentDate child db nurseQuestionnaires
                                             vaccinationProgress
 
                                     futureVaccinations =
-                                        generateFutureVaccinationsData currentDate child False vaccinationProgressOnReferrenceDate
+                                        generateFutureVaccinationsData currentDate site child False vaccinationProgressOnReferrenceDate
 
                                     closestDateForVaccination =
                                         List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations

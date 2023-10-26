@@ -108,11 +108,12 @@ viewNCDAContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> AssembledData
     -> ModelIndexedDb
     -> NCDAData
     -> List (Html Msg)
-viewNCDAContent language currentDate zscores assembled db data =
+viewNCDAContent language currentDate zscores site assembled db data =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -150,6 +151,7 @@ viewNCDAContent language currentDate zscores assembled db data =
     Measurement.View.viewNCDAContent language
         currentDate
         zscores
+        site
         personId
         assembled.person
         config
@@ -172,7 +174,7 @@ viewImmunisationContent language currentDate site assembled db data =
             assembled.measurements
 
         tasks =
-            List.filter (expectImmunisationTask currentDate assembled.person assembled.vaccinationHistory) immunisationTasks
+            List.filter (expectImmunisationTask currentDate site assembled.person assembled.vaccinationHistory) immunisationTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -282,6 +284,11 @@ viewImmunisationContent language currentDate site assembled db data =
                                         measurements.dtpImmunisation
                                             |> getMeasurementValueFunc
                                             |> vaccinationFormWithDefault data.dtpForm
+
+                                    VaccineDTPStandalone ->
+                                        measurements.dtpStandaloneImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.dtpStandaloneForm
 
                                     VaccineIPV ->
                                         measurements.ipvImmunisation
@@ -420,6 +427,11 @@ immunisationTasksCompletedFromTotal language currentDate assembled data task =
                             assembled.measurements.dtpImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.dtpForm
+
+                        VaccineDTPStandalone ->
+                            assembled.measurements.dtpStandaloneImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.dtpStandaloneForm
 
                         VaccineIPV ->
                             assembled.measurements.ipvImmunisation

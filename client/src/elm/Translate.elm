@@ -20972,6 +20972,12 @@ translationSet trans =
                             , kirundi = Just "Urucanco rwa DTC (Diphtérie-Tétanos-Coqueluche)- HepB - Hib"
                             }
 
+                        VaccineDTPStandalone ->
+                            { english = "DTP Vaccine"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
                         VaccinePCV13 ->
                             { english = "Pneumoccocal Vaccine (PCV 13)"
                             , kinyarwanda = Just "Urukingo rw'umusonga"
@@ -21316,6 +21322,12 @@ translationSet trans =
                     , kirundi = Just "Gukingira umwana ko yandura Tetanusi, Kokerishe, Ingwara y'Igitigu (Hépatite B), Ingorane zo guhema nabi hamwe n'ubushuhe bita Diphtérie."
                     }
 
+                VaccineDTPStandalone ->
+                    { english = "Prevents the child from getting lockjaw (Tetanus), whooping cough (Pertussis), breathing problems and fever (Diptheria)."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 VaccineHPV ->
                     { english = "HPV prevents certain types of cancer from developing in your child."
                     , kinyarwanda = Just "Rurinda umwana kurwara zimwe muri kanseri"
@@ -21374,6 +21386,12 @@ translationSet trans =
                     , kirundi = Just "Hari idoze 3 vy'urucanco rwa DTC-HepB-Hib: indwi 6, indwi 10 hamwe n'indwi 14"
                     }
 
+                VaccineDTPStandalone ->
+                    { english = "This is the 4-th dose of DTP - 18 months."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 VaccineHPV ->
                     { english = "There are 2 doses of HPV - at 12 years and 12.5 years."
                     , kinyarwanda = Just "Umwana ahabwa urukingo rw'inkondo y'umura inshuro 2 - ku myaka 12 n'imyaka 12.5."
@@ -21424,6 +21442,12 @@ translationSet trans =
                     , kirundi = Just "Urucanco rwa DTC (Diphtérie-Tétanos-Coqueluche)- HepB - Hib"
                     }
 
+                VaccineDTPStandalone ->
+                    { english = "Diptheria, Tetanus and Pertussis"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 VaccineHPV ->
                     { english = "Human Papillomavirus (HPV)"
                     , kinyarwanda = Just "Urukingo rw'Inkondo y'Umura"
@@ -21472,6 +21496,12 @@ translationSet trans =
                     { english = "DTP - HepB - Hib History"
                     , kinyarwanda = Just "Amakuru kuri DTP - HepB - Hib"
                     , kirundi = Just "Akahise ka DTC - HepB - Hib"
+                    }
+
+                VaccineDTPStandalone ->
+                    { english = "DTP History"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 VaccineHPV ->
@@ -21726,6 +21756,12 @@ translationSet trans =
                     }
 
                 VaccineDTP ->
+                    { english = "DTP - HepB - Hib"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                VaccineDTPStandalone ->
                     { english = "DTP - HepB - Hib"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing

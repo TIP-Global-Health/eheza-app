@@ -25,10 +25,11 @@ import Measurement.Utils
         )
 import Pages.ChildScoreboard.Activity.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
+import SyncManager.Model exposing (Site)
 
 
-expectActivity : NominalDate -> AssembledData -> ChildScoreboardActivity -> Bool
-expectActivity currentDate assembled activity =
+expectActivity : NominalDate -> Site -> AssembledData -> ChildScoreboardActivity -> Bool
+expectActivity currentDate site assembled activity =
     case activity of
         ChildScoreboardNCDA ->
             True
@@ -37,6 +38,7 @@ expectActivity currentDate assembled activity =
             let
                 childBehindOnVaccinationByVaccinaitonHistory =
                     generateSuggestedVaccinations currentDate
+                        site
                         assembled.person
                         assembled.vaccinationHistory
                         |> List.isEmpty
@@ -50,11 +52,11 @@ expectActivity currentDate assembled activity =
             childBehindOnVaccinationByVaccinaitonHistory && childUpToDateByNCDAResponse
 
 
-activityCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> ChildScoreboardActivity -> Bool
-activityCompleted currentDate assembled db activity =
+activityCompleted : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> ChildScoreboardActivity -> Bool
+activityCompleted currentDate site assembled db activity =
     let
         notExpected activityToCheck =
-            not <| expectActivity currentDate assembled activityToCheck
+            not <| expectActivity currentDate site assembled activityToCheck
     in
     case activity of
         ChildScoreboardNCDA ->
@@ -63,17 +65,17 @@ activityCompleted currentDate assembled db activity =
 
         ChildScoreboardVaccinationHistory ->
             notExpected ChildScoreboardVaccinationHistory
-                || List.all (immunisationTaskCompleted currentDate assembled db) immunisationTasks
+                || List.all (immunisationTaskCompleted currentDate site assembled db) immunisationTasks
 
 
-immunisationTaskCompleted : NominalDate -> AssembledData -> ModelIndexedDb -> Measurement.Model.ImmunisationTask -> Bool
-immunisationTaskCompleted currentDate assembled db task =
+immunisationTaskCompleted : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Measurement.Model.ImmunisationTask -> Bool
+immunisationTaskCompleted currentDate site assembled db task =
     let
         measurements =
             assembled.measurements
 
         taskExpected =
-            expectImmunisationTask currentDate assembled.person assembled.vaccinationHistory
+            expectImmunisationTask currentDate site assembled.person assembled.vaccinationHistory
     in
     case task of
         TaskBCG ->
@@ -106,11 +108,11 @@ immunisationTaskCompleted currentDate assembled db task =
             not <| taskExpected TaskOverview
 
 
-expectImmunisationTask : NominalDate -> Person -> VaccinationProgressDict -> ImmunisationTask -> Bool
-expectImmunisationTask currentDate person vaccinationHistory task =
+expectImmunisationTask : NominalDate -> Site -> Person -> VaccinationProgressDict -> ImmunisationTask -> Bool
+expectImmunisationTask currentDate site person vaccinationHistory task =
     let
         futureVaccinations =
-            generateFutureVaccinationsData currentDate person False vaccinationHistory
+            generateFutureVaccinationsData currentDate site person False vaccinationHistory
                 |> Dict.fromList
 
         ageInWeeks =
@@ -177,11 +179,12 @@ expectImmunisationTask currentDate person vaccinationHistory task =
 
 generateSuggestedVaccinations :
     NominalDate
+    -> Site
     -> Person
     -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate person vaccinationHistory =
-    Measurement.Utils.generateSuggestedVaccinations currentDate False person vaccinationHistory
+generateSuggestedVaccinations currentDate site person vaccinationHistory =
+    Measurement.Utils.generateSuggestedVaccinations currentDate site False person vaccinationHistory
 
 
 generateVaccinationProgress : List ChildScoreboardMeasurements -> VaccinationProgressDict
@@ -209,6 +212,9 @@ getFormByVaccineTypeFunc vaccineType =
 
         VaccineDTP ->
             .dtpForm
+
+        VaccineDTPStandalone ->
+            .dtpStandaloneForm
 
         VaccineIPV ->
             .ipvForm
@@ -239,6 +245,9 @@ updateVaccinationFormByVaccineType vaccineType form data =
         VaccineDTP ->
             { data | dtpForm = form }
 
+        VaccineDTPStandalone ->
+            { data | dtpStandaloneForm = form }
+
         VaccineIPV ->
             { data | ipvForm = form }
 
@@ -268,6 +277,10 @@ getMeasurementByVaccineTypeFunc vaccineType measurements =
 
         VaccineDTP ->
             measurements.dtpImmunisation
+                |> getMeasurementValueFunc
+
+        VaccineDTPStandalone ->
+            measurements.dtpStandaloneImmunisation
                 |> getMeasurementValueFunc
 
         VaccineIPV ->

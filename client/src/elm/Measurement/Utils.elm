@@ -5108,8 +5108,8 @@ resoloveLastScheduledImmunizationVisitDate childId db =
            List.head
 
 
-behindOnVaccinationsByWellChild : NominalDate -> PersonId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByWellChild currentDate childId db =
+behindOnVaccinationsByWellChild : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
+behindOnVaccinationsByWellChild currentDate site childId db =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -5144,7 +5144,7 @@ behindOnVaccinationsByWellChild currentDate childId db =
     in
     Maybe.map
         (\assembled ->
-            generateSuggestedVaccinations currentDate False assembled.person assembled.vaccinationHistory
+            generateSuggestedVaccinations currentDate site False assembled.person assembled.vaccinationHistory
                 |> List.isEmpty
                 |> not
         )
@@ -5192,11 +5192,12 @@ ncdaSteps =
 
 generateSuggestedVaccinations :
     NominalDate
+    -> Site
     -> Bool
     -> Person
     -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate isChw person vaccinationHistory =
+generateSuggestedVaccinations currentDate site isChw person vaccinationHistory =
     if isChw then
         [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
 
@@ -5205,7 +5206,8 @@ generateSuggestedVaccinations currentDate isChw person vaccinationHistory =
             initialOpvAdministered =
                 wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
         in
-        List.filter (expectVaccineForPerson currentDate person initialOpvAdministered) allVaccineTypes
+        allVaccineTypes site
+            |> List.filter (expectVaccineForPerson currentDate person initialOpvAdministered)
             |> List.filterMap
                 (\vaccineType ->
                     let
@@ -5242,16 +5244,17 @@ If there's no need for future vaccination, Nothing is returned.
 -}
 generateFutureVaccinationsData :
     NominalDate
+    -> Site
     -> Person
     -> Bool
     -> VaccinationProgressDict
     -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate person scheduleFirstDoseForToday vaccinationProgress =
+generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday vaccinationProgress =
     let
         initialOpvAdministered =
             wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
     in
-    allVaccineTypesForPerson person
+    allVaccineTypesForPerson site person
         |> List.map
             (\vaccineType ->
                 let
@@ -5351,6 +5354,9 @@ initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType
         VaccineDTP ->
             Date.add Weeks 6 birthDate
                 |> Date.add unit (dosesInterval * interval)
+
+        VaccineDTPStandalone ->
+            Date.add Months 18 birthDate
 
         VaccinePCV13 ->
             Date.add Weeks 6 birthDate
@@ -5478,6 +5484,9 @@ getLastDoseForVaccine initialOpvAdministered vaccineType =
         VaccineDTP ->
             VaccineDoseThird
 
+        VaccineDTPStandalone ->
+            VaccineDoseFirst
+
         VaccinePCV13 ->
             VaccineDoseThird
 
@@ -5506,6 +5515,9 @@ getIntervalForVaccine vaccineType =
         VaccineDTP ->
             ( 4, Weeks )
 
+        VaccineDTPStandalone ->
+            ( 0, Days )
+
         VaccinePCV13 ->
             ( 4, Weeks )
 
@@ -5522,31 +5534,43 @@ getIntervalForVaccine vaccineType =
             ( 6, Months )
 
 
-allVaccineTypesForPerson : Person -> List WellChildVaccineType
-allVaccineTypesForPerson person =
-    List.filter
-        (\vaccineType ->
-            case vaccineType of
-                VaccineHPV ->
-                    person.gender == Female
+allVaccineTypesForPerson : Site -> Person -> List WellChildVaccineType
+allVaccineTypesForPerson site person =
+    allVaccineTypes site
+        |> List.filter
+            (\vaccineType ->
+                case vaccineType of
+                    VaccineHPV ->
+                        person.gender == Female
 
-                _ ->
-                    True
-        )
-        allVaccineTypes
+                    _ ->
+                        True
+            )
 
 
-allVaccineTypes : List WellChildVaccineType
-allVaccineTypes =
-    [ VaccineBCG
-    , VaccineOPV
-    , VaccineDTP
-    , VaccinePCV13
-    , VaccineRotarix
-    , VaccineIPV
-    , VaccineMR
-    , VaccineHPV
-    ]
+allVaccineTypes : Site -> List WellChildVaccineType
+allVaccineTypes site =
+    case site of
+        SiteBurundi ->
+            [ VaccineBCG
+            , VaccineOPV
+            , VaccineDTP
+            , VaccineDTPStandalone
+            , VaccinePCV13
+            , VaccineRotarix
+            , VaccineMR
+            ]
+
+        _ ->
+            [ VaccineBCG
+            , VaccineOPV
+            , VaccineDTP
+            , VaccinePCV13
+            , VaccineRotarix
+            , VaccineIPV
+            , VaccineMR
+            , VaccineHPV
+            ]
 
 
 allVaccineDoses : List VaccineDose

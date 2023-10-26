@@ -60,12 +60,13 @@ import Pages.Utils
         , viewLabel
         , viewQuestionLabel
         )
+import SyncManager.Model exposing (Site)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 
 
-expectActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
-expectActivity currentDate assembled activity =
+expectActivity : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
+expectActivity currentDate site assembled activity =
     case assembled.encounter.encounterType of
         -- Note that for nurse it's always used after
         -- Pages.Prenatal.Encounter.Utils.getAllActivities, which supplies
@@ -103,7 +104,7 @@ expectActivity currentDate assembled activity =
                     expectPrenatalPhoto currentDate assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
                         && (resolveNextStepsTasks currentDate assembled
                                 |> List.isEmpty
                                 |> not
@@ -182,7 +183,7 @@ expectActivity currentDate assembled activity =
                         specialityCareSections
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
                         && (resolveNextStepsTasks currentDate assembled
                                 |> List.isEmpty
                                 |> not
@@ -206,11 +207,11 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate assembled DangerSigns
+                    activityCompleted currentDate site assembled DangerSigns
                         && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
 
                 -- Activities that do not participate at CHW encounter 1.
                 _ ->
@@ -222,15 +223,15 @@ expectActivity currentDate assembled activity =
                     True
 
                 BirthPlan ->
-                    activityCompleted currentDate assembled DangerSigns
+                    activityCompleted currentDate site assembled DangerSigns
                         && noDangerSigns assembled
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate assembled DangerSigns
+                    activityCompleted currentDate site assembled DangerSigns
                         && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
 
                 -- Activities that do not participate at CHW encounter 2.
                 _ ->
@@ -242,11 +243,11 @@ expectActivity currentDate assembled activity =
                     True
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    activityCompleted currentDate assembled DangerSigns
+                    activityCompleted currentDate site assembled DangerSigns
                         && noDangerSigns assembled
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
 
                 -- Activities that do not participate at CHW encounter 3.
                 _ ->
@@ -261,15 +262,15 @@ expectActivity currentDate assembled activity =
                     True
 
                 NextSteps ->
-                    mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                    mandatoryActivitiesForNextStepsCompleted currentDate site assembled
 
                 -- Activities that do not participate at CHW Postpartum encounter.
                 _ ->
                     False
 
 
-activityCompleted : NominalDate -> AssembledData -> PrenatalActivity -> Bool
-activityCompleted currentDate assembled activity =
+activityCompleted : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
+activityCompleted currentDate site assembled activity =
     case activity of
         PregnancyDating ->
             isJust assembled.measurements.lastMenstrualPeriod
@@ -338,7 +339,7 @@ activityCompleted currentDate assembled activity =
             isJust assembled.measurements.mentalHealth
 
         PrenatalImmunisation ->
-            (not <| expectActivity currentDate assembled PrenatalImmunisation)
+            (not <| expectActivity currentDate site assembled PrenatalImmunisation)
                 || List.all (immunisationTaskCompleted currentDate assembled) immunisationTasks
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
@@ -1149,21 +1150,21 @@ symptomRecordedPreviously assembled symptom =
         |> not
 
 
-mandatoryActivitiesForAssessmentCompleted : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesForAssessmentCompleted currentDate assembled =
+mandatoryActivitiesForAssessmentCompleted : NominalDate -> Site -> AssembledData -> Bool
+mandatoryActivitiesForAssessmentCompleted currentDate site assembled =
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            activityCompleted currentDate assembled DangerSigns
+            activityCompleted currentDate site assembled DangerSigns
 
         NursePostpartumEncounter ->
             True
 
         _ ->
-            mandatoryActivitiesForNextStepsCompleted currentDate assembled
+            mandatoryActivitiesForNextStepsCompleted currentDate site assembled
 
 
-mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
-mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> Site -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate site assembled =
     let
         mandatoryActivitiesForNurseCompleted =
             -- All activities that will appear at
@@ -1176,8 +1177,8 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
                 |> EverySet.remove PrenatalPhoto
                 |> EverySet.remove NextSteps
                 |> EverySet.toList
-                |> List.filter (expectActivity currentDate assembled)
-                |> List.all (activityCompleted currentDate assembled)
+                |> List.filter (expectActivity currentDate site assembled)
+                |> List.all (activityCompleted currentDate site assembled)
     in
     case assembled.encounter.encounterType of
         NurseEncounter ->
@@ -1196,49 +1197,49 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         ChwFirstEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    ((not <| expectActivity currentDate assembled PregnancyDating)
-                        || activityCompleted currentDate assembled PregnancyDating
+                    ((not <| expectActivity currentDate site assembled PregnancyDating)
+                        || activityCompleted currentDate site assembled PregnancyDating
                     )
-                        && ((not <| expectActivity currentDate assembled Laboratory)
-                                || activityCompleted currentDate assembled Laboratory
+                        && ((not <| expectActivity currentDate site assembled Laboratory)
+                                || activityCompleted currentDate site assembled Laboratory
                            )
-                        && activityCompleted currentDate assembled DangerSigns
+                        && activityCompleted currentDate site assembled DangerSigns
             in
             if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate site assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwSecondEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    activityCompleted currentDate assembled DangerSigns
+                    activityCompleted currentDate site assembled DangerSigns
             in
             if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate assembled BirthPlan
-                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate site assembled BirthPlan
+                    && activityCompleted currentDate site assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwThirdPlusEncounter ->
             let
                 commonMandatoryActivitiesCompleted =
-                    activityCompleted currentDate assembled DangerSigns
+                    activityCompleted currentDate site assembled DangerSigns
             in
             if dangerSignsPresent assembled then
                 commonMandatoryActivitiesCompleted
 
             else
                 commonMandatoryActivitiesCompleted
-                    && activityCompleted currentDate assembled Backend.PrenatalActivity.Model.HealthEducation
+                    && activityCompleted currentDate site assembled Backend.PrenatalActivity.Model.HealthEducation
 
         ChwPostpartumEncounter ->
-            activityCompleted currentDate assembled PregnancyOutcome
-                && activityCompleted currentDate assembled DangerSigns
+            activityCompleted currentDate site assembled PregnancyOutcome
+                && activityCompleted currentDate site assembled DangerSigns
 
 
 expectPrenatalPhoto : NominalDate -> AssembledData -> Bool

@@ -34,6 +34,7 @@ emptyModel =
 type alias ImmunisationData =
     { bcgForm : ChildScoreboardVaccinationForm
     , dtpForm : ChildScoreboardVaccinationForm
+    , dtpStandaloneForm : ChildScoreboardVaccinationForm
     , ipvForm : ChildScoreboardVaccinationForm
     , mrForm : ChildScoreboardVaccinationForm
     , opvForm : ChildScoreboardVaccinationForm
@@ -51,6 +52,7 @@ emptyImmunisationData : ImmunisationData
 emptyImmunisationData =
     { bcgForm = emptyVaccinationForm
     , dtpForm = emptyVaccinationForm
+    , dtpStandaloneForm = emptyVaccinationForm
     , ipvForm = emptyVaccinationForm
     , mrForm = emptyVaccinationForm
     , opvForm = emptyVaccinationForm
