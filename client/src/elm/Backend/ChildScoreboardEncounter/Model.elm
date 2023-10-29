@@ -31,6 +31,7 @@ type alias Model =
     , saveNCDA : WebData ()
     , saveBCGImmunisation : WebData ()
     , saveDTPImmunisation : WebData ()
+    , saveDTPStandaloneImmunisation : WebData ()
     , saveIPVImmunisation : WebData ()
     , saveMRImmunisation : WebData ()
     , saveOPVImmunisation : WebData ()
@@ -45,6 +46,7 @@ emptyModel =
     , saveNCDA = NotAsked
     , saveBCGImmunisation = NotAsked
     , saveDTPImmunisation = NotAsked
+    , saveDTPStandaloneImmunisation = NotAsked
     , saveIPVImmunisation = NotAsked
     , saveMRImmunisation = NotAsked
     , saveOPVImmunisation = NotAsked
@@ -62,6 +64,8 @@ type Msg
     | HandleSavedBCGImmunisation (WebData ())
     | SaveDTPImmunisation PersonId (Maybe ChildScoreboardDTPImmunisationId) VaccinationValue
     | HandleSavedDTPImmunisation (WebData ())
+    | SaveDTPStandaloneImmunisation PersonId (Maybe ChildScoreboardDTPStandaloneImmunisationId) VaccinationValue
+    | HandleSavedDTPStandaloneImmunisation (WebData ())
     | SaveIPVImmunisation PersonId (Maybe ChildScoreboardIPVImmunisationId) VaccinationValue
     | HandleSavedIPVImmunisation (WebData ())
     | SaveMRImmunisation PersonId (Maybe ChildScoreboardMRImmunisationId) VaccinationValue

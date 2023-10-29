@@ -5465,6 +5465,9 @@ immunisationTaskToVaccineType task =
         TaskDTP ->
             Just VaccineDTP
 
+        TaskDTPStandalone ->
+            Just VaccineDTPStandalone
+
         TaskHPV ->
             Just VaccineHPV
 

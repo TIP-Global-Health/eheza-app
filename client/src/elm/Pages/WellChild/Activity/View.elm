@@ -1064,6 +1064,11 @@ viewImmunisationContent language currentDate site isChw assembled db data =
                             , isJust measurements.dtpImmunisation
                             )
 
+                        TaskDTPStandalone ->
+                            ( "dtp-vaccine"
+                            , isJust measurements.dtpStandaloneImmunisation
+                            )
+
                         TaskHPV ->
                             ( "hpv-vaccine"
                             , isJust measurements.hpvImmunisation
@@ -1114,7 +1119,7 @@ viewImmunisationContent language currentDate site isChw assembled db data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.WellChildImmunisationTask task)
+                    , text <| translate language (Translate.WellChildImmunisationTask site task)
                     ]
                 ]
 
@@ -1214,6 +1219,9 @@ viewImmunisationContent language currentDate site isChw assembled db data =
 
                                     TaskDTP ->
                                         SaveDTPImmunisation personId measurements.dtpImmunisation nextTask
+
+                                    TaskDTPStandalone ->
+                                        SaveDTPStandaloneImmunisation personId measurements.dtpStandaloneImmunisation nextTask
 
                                     TaskHPV ->
                                         SaveHPVImmunisation personId measurements.hpvImmunisation nextTask

@@ -85,6 +85,9 @@ immunisationTaskCompleted currentDate site assembled db task =
         TaskDTP ->
             (not <| taskExpected TaskDTP) || isJust measurements.dtpImmunisation
 
+        TaskDTPStandalone ->
+            (not <| taskExpected TaskDTPStandalone) || isJust measurements.dtpStandaloneImmunisation
+
         TaskIPV ->
             (not <| taskExpected TaskIPV) || isJust measurements.ipvImmunisation
 
@@ -199,6 +202,7 @@ immunisationTasks =
     [ TaskBCG
     , TaskOPV
     , TaskDTP
+    , TaskDTPStandalone
     , TaskPCV13
     , TaskRotarix
     , TaskIPV

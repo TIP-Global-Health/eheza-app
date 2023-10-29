@@ -1666,7 +1666,7 @@ type TranslationId
     | WellChildImmunisationDosage Site WellChildVaccineType
     | WellChildImmunisationHeader WellChildVaccineType
     | WellChildImmunizationHistory Site WellChildVaccineType
-    | WellChildImmunisationTask Measurement.Model.ImmunisationTask
+    | WellChildImmunisationTask Site Measurement.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
@@ -21564,7 +21564,7 @@ translationSet trans =
                     , kirundi = Just "Akahise ka Rotrarix"
                     }
 
-        WellChildImmunisationTask task ->
+        WellChildImmunisationTask site task ->
             case task of
                 Measurement.Model.TaskBCG ->
                     { english = "BCG"
@@ -21573,7 +21573,21 @@ translationSet trans =
                     }
 
                 Measurement.Model.TaskDTP ->
-                    { english = "DTP - HepB - Hib"
+                    case site of
+                        SiteBurundi ->
+                            { english = "Pentavalent"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        _ ->
+                            { english = "DTP - HepB - Hib"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                Measurement.Model.TaskDTPStandalone ->
+                    { english = "DTP "
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

@@ -2774,6 +2774,20 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , extraMsgs
                     )
 
+                [ ChildScoreboardDTPStandaloneImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ ChildScoreboardIPVImmunisationRevision _ data ] ->
                     let
                         ( newModel, _ ) =

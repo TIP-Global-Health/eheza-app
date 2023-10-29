@@ -637,6 +637,9 @@ immunisationTaskCompleted currentDate site isChw data db task =
         TaskDTP ->
             (not <| taskExpected TaskDTP) || isJust measurements.dtpImmunisation
 
+        TaskDTPStandalone ->
+            (not <| taskExpected TaskDTPStandalone) || isJust measurements.dtpStandaloneImmunisation
+
         TaskHPV ->
             (not <| taskExpected TaskHPV) || isJust measurements.hpvImmunisation
 

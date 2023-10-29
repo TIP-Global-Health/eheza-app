@@ -89,6 +89,7 @@ type Msg
     | DeleteVaccinationUpdateDate WellChildVaccineType VaccineDose NominalDate
     | SaveBCGImmunisation PersonId (Maybe ( ChildScoreboardBCGImmunisationId, ChildScoreboardBCGImmunisation )) (Maybe ImmunisationTask)
     | SaveDTPImmunisation PersonId (Maybe ( ChildScoreboardDTPImmunisationId, ChildScoreboardDTPImmunisation )) (Maybe ImmunisationTask)
+    | SaveDTPStandaloneImmunisation PersonId (Maybe ( ChildScoreboardDTPStandaloneImmunisationId, ChildScoreboardDTPStandaloneImmunisation )) (Maybe ImmunisationTask)
     | SaveIPVImmunisation PersonId (Maybe ( ChildScoreboardIPVImmunisationId, ChildScoreboardIPVImmunisation )) (Maybe ImmunisationTask)
     | SaveMRImmunisation PersonId (Maybe ( ChildScoreboardMRImmunisationId, ChildScoreboardMRImmunisation )) (Maybe ImmunisationTask)
     | SaveOPVImmunisation PersonId (Maybe ( ChildScoreboardOPVImmunisationId, ChildScoreboardOPVImmunisation )) (Maybe ImmunisationTask)
