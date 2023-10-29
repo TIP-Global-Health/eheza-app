@@ -1119,7 +1119,7 @@ viewImmunisationContent language currentDate site isChw assembled db data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, immunisationTasksCompletedFromTotal language currentDate isChw assembled data task )) tasks
+            List.map (\task -> ( task, immunisationTasksCompletedFromTotal language currentDate site isChw assembled data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -1269,8 +1269,16 @@ viewImmunisationContent language currentDate site isChw assembled db data =
     ]
 
 
-immunisationTasksCompletedFromTotal : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationData -> Measurement.Model.ImmunisationTask -> ( Int, Int )
-immunisationTasksCompletedFromTotal language currentDate isChw assembled data task =
+immunisationTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> Site
+    -> Bool
+    -> AssembledData
+    -> ImmunisationData
+    -> Measurement.Model.ImmunisationTask
+    -> ( Int, Int )
+immunisationTasksCompletedFromTotal language currentDate site isChw assembled data task =
     Maybe.map
         (\vaccineType ->
             let
@@ -1322,7 +1330,7 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
                                 |> vaccinationFormWithDefault data.rotarixForm
 
                 ( _, tasksActive, tasksCompleted ) =
-                    vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form
+                    vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
             in
             ( tasksActive, tasksCompleted )
         )
@@ -1334,7 +1342,7 @@ viewVaccinationForm : Language -> NominalDate -> Site -> Bool -> AssembledData -
 viewVaccinationForm language currentDate site isChw assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
-            vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form
+            vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
     in
     div [ class "ui form vaccination" ] <|
         [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
@@ -1425,12 +1433,13 @@ viewVaccinationOverview language currentDate site child vaccinationProgress db =
 vaccinationFormDynamicContentAndTasks :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> AssembledData
     -> WellChildVaccineType
     -> WellChildVaccinationForm
     -> ( List (Html Msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form =
+vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form =
     Maybe.map
         (\birthDate ->
             let
@@ -1509,7 +1518,12 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                         form.administrationDates
                         |> Maybe.withDefault []
             in
-            Measurement.Utils.vaccinationFormDynamicContentAndTasks language currentDate config (WellChildVaccine vaccineType) form
+            Measurement.Utils.vaccinationFormDynamicContentAndTasks language
+                currentDate
+                site
+                config
+                (WellChildVaccine vaccineType)
+                form
         )
         assembled.person.birthDate
         |> Maybe.withDefault ( [], 0, 1 )

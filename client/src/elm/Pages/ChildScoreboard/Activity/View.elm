@@ -257,6 +257,7 @@ viewImmunisationContent language currentDate site assembled db data =
                     ( task
                     , immunisationTasksCompletedFromTotal language
                         currentDate
+                        site
                         assembled
                         data
                         task

@@ -5486,8 +5486,15 @@ getIntervalForVaccine vaccineType lastDoseAdministered =
                     ( 99, Years )
 
 
-immunisationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> ImmunisationData -> Pages.Prenatal.Activity.Types.ImmunisationTask -> ( Int, Int )
-immunisationTasksCompletedFromTotal language currentDate assembled data task =
+immunisationTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> ImmunisationData
+    -> Pages.Prenatal.Activity.Types.ImmunisationTask
+    -> ( Int, Int )
+immunisationTasksCompletedFromTotal language currentDate site assembled data task =
     let
         vaccineType =
             immunisationTaskToVaccineType task
@@ -5500,7 +5507,7 @@ immunisationTasksCompletedFromTotal language currentDate assembled data task =
                         |> vaccinationFormWithDefault data.tetanusForm
 
         ( _, tasksActive, tasksCompleted ) =
-            vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form
+            vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
     in
     ( tasksActive, tasksCompleted )
 
@@ -5508,11 +5515,12 @@ immunisationTasksCompletedFromTotal language currentDate assembled data task =
 vaccinationFormDynamicContentAndTasks :
     Language
     -> NominalDate
+    -> Site
     -> AssembledData
     -> PrenatalVaccineType
     -> PrenatalVaccinationForm
     -> ( List (Html Msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form =
+vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form =
     Maybe.map2
         (\birthDate lmpDate ->
             let
@@ -5564,7 +5572,12 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                         form.administrationDates
                         |> Maybe.withDefault []
             in
-            Measurement.Utils.vaccinationFormDynamicContentAndTasks language currentDate config (PrenatalVaccine vaccineType) form
+            Measurement.Utils.vaccinationFormDynamicContentAndTasks language
+                currentDate
+                site
+                config
+                (PrenatalVaccine vaccineType)
+                form
         )
         assembled.person.birthDate
         assembled.globalLmpDate
