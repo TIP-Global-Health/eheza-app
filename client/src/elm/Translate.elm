@@ -1638,7 +1638,7 @@ type TranslationId
     | VaccineDoseAdministeredPreviouslyWellChildQuestion String
     | VaccineDoseAdministeredTodayPrenatalQuestion String
     | VaccineDoseAdministeredTodayWellChildQuestion String
-    | VaccineType VaccineType
+    | VaccineType Site VaccineType
     | VaginalExamination
     | VaginalExamSign VaginalExamSign
     | ValidationErrors
@@ -1663,14 +1663,14 @@ type TranslationId
     | WellChildMacrocephalyWarning
     | WellChildMicrocephalyWarning
     | WellChildImmunisationDescription Site WellChildVaccineType
-    | WellChildImmunisationDosage WellChildVaccineType
+    | WellChildImmunisationDosage Site WellChildVaccineType
     | WellChildImmunisationHeader WellChildVaccineType
-    | WellChildImmunizationHistory WellChildVaccineType
+    | WellChildImmunizationHistory Site WellChildVaccineType
     | WellChildImmunisationTask Measurement.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
     | WellChildSymptom WellChildSymptom
-    | WellChildVaccineLabel WellChildVaccineType
+    | WellChildVaccineLabel Site WellChildVaccineType
     | WhatDoYouWantToDo
     | WhatType
     | WhatWasTheirResponse
@@ -20950,7 +20950,7 @@ translationSet trans =
             , kirundi = Just <| "Mbega umwana araronka urucanco " ++ vaccineType ++ " uno munsi"
             }
 
-        VaccineType vaccineType ->
+        VaccineType site vaccineType ->
             case vaccineType of
                 WellChildVaccine wellChildVaccineType ->
                     case wellChildVaccineType of
@@ -20967,10 +20967,18 @@ translationSet trans =
                             }
 
                         VaccineDTP ->
-                            { english = "DTP - HepB - Hib Vaccine"
-                            , kinyarwanda = Just "Urukingo rwa Kokorishi, Agakwega (Tetanosi), Akaniga,indwara zifata imyanya y'ubuhumekero, Umwijima wo mu bwoko bwa B"
-                            , kirundi = Just "Urucanco rwa DTC (Diphtérie-Tétanos-Coqueluche)- HepB - Hib"
-                            }
+                            case site of
+                                SiteBurundi ->
+                                    { english = "Pentavalent Vaccine"
+                                    , kinyarwanda = Nothing
+                                    , kirundi = Just "Urucanco rwa DTC (Diphtérie-Tétanos-Coqueluche)- HepB - Hib"
+                                    }
+
+                                _ ->
+                                    { english = "DTP - HepB - Hib Vaccine"
+                                    , kinyarwanda = Just "Urukingo rwa Kokorishi, Agakwega (Tetanosi), Akaniga,indwara zifata imyanya y'ubuhumekero, Umwijima wo mu bwoko bwa B"
+                                    , kirundi = Nothing
+                                    }
 
                         VaccineDTPStandalone ->
                             { english = "DTP Vaccine"
@@ -21372,7 +21380,7 @@ translationSet trans =
                             , kirundi = Just "Rurakinga ugucibwamwo/uguhitwa bitewe na Rotavirus."
                             }
 
-        WellChildImmunisationDosage task ->
+        WellChildImmunisationDosage site task ->
             case task of
                 VaccineBCG ->
                     { english = "There is one dose of BCG and it is given at birth."
@@ -21381,10 +21389,18 @@ translationSet trans =
                     }
 
                 VaccineDTP ->
-                    { english = "There are 3 doses of DTP-HepB-Hib - 6 weeks, 10 weeks, and 14 weeks."
-                    , kinyarwanda = Just "Umwana ahabwa inshuro eshatu inkingo zikurikira:(urukingo rw'agakwega, Hepatite yo mubwoko bwa B, nigihuka) yujuje ibyumweru 6, ibyumweru 10, no ku byumweru 14."
-                    , kirundi = Just "Hari idoze 3 vy'urucanco rwa DTC-HepB-Hib: indwi 6, indwi 10 hamwe n'indwi 14"
-                    }
+                    case site of
+                        SiteBurundi ->
+                            { english = "There are 3 doses of Pentavalent - 6 weeks, 10 weeks, and 14 weeks."
+                            , kinyarwanda = Nothing
+                            , kirundi = Just "Hari idoze 3 vy'urucanco rwa DTC-HepB-Hib: indwi 6, indwi 10 hamwe n'indwi 14"
+                            }
+
+                        _ ->
+                            { english = "There are 3 doses of DTP-HepB-Hib - 6 weeks, 10 weeks, and 14 weeks."
+                            , kinyarwanda = Just "Umwana ahabwa inshuro eshatu inkingo zikurikira:(urukingo rw'agakwega, Hepatite yo mubwoko bwa B, nigihuka) yujuje ibyumweru 6, ibyumweru 10, no ku byumweru 14."
+                            , kirundi = Nothing
+                            }
 
                 VaccineDTPStandalone ->
                     { english = "This is the 4-th dose of DTP - 18 months."
@@ -21484,7 +21500,7 @@ translationSet trans =
                     , kirundi = Just "Urucanco rwa rotavirus (Rotarix)"
                     }
 
-        WellChildImmunizationHistory task ->
+        WellChildImmunizationHistory site task ->
             case task of
                 VaccineBCG ->
                     { english = "BCG History"
@@ -21493,10 +21509,18 @@ translationSet trans =
                     }
 
                 VaccineDTP ->
-                    { english = "DTP - HepB - Hib History"
-                    , kinyarwanda = Just "Amakuru kuri DTP - HepB - Hib"
-                    , kirundi = Just "Akahise ka DTC - HepB - Hib"
-                    }
+                    case site of
+                        SiteBurundi ->
+                            { english = "Pentavalent History"
+                            , kinyarwanda = Nothing
+                            , kirundi = Just "Akahise ka DTC - HepB - Hib"
+                            }
+
+                        _ ->
+                            { english = "DTP - HepB - Hib History"
+                            , kinyarwanda = Just "Amakuru kuri DTP - HepB - Hib"
+                            , kirundi = Nothing
+                            }
 
                 VaccineDTPStandalone ->
                     { english = "DTP History"
@@ -21747,7 +21771,7 @@ translationSet trans =
                     , kirundi = Just "Nta nimwe muri izi"
                     }
 
-        WellChildVaccineLabel vaccineType ->
+        WellChildVaccineLabel site vaccineType ->
             case vaccineType of
                 VaccineBCG ->
                     { english = "BCG"
@@ -21756,10 +21780,18 @@ translationSet trans =
                     }
 
                 VaccineDTP ->
-                    { english = "DTP - HepB - Hib"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    case site of
+                        SiteBurundi ->
+                            { english = "Pentavalent"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        _ ->
+                            { english = "DTP - HepB - Hib"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
 
                 VaccineDTPStandalone ->
                     { english = "DTP - HepB - Hib"

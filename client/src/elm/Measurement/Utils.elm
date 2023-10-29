@@ -855,11 +855,12 @@ wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form =
 vaccinationFormDynamicContentAndTasks :
     Language
     -> NominalDate
+    -> Site
     -> VaccinationFormDynamicContentAndTasksConfig msg
     -> VaccineType
     -> VaccinationForm msg
     -> ( List (Html msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate config vaccineType form =
+vaccinationFormDynamicContentAndTasks language currentDate site config vaccineType form =
     let
         expectedDoses =
             config.expectedDoses
@@ -1007,7 +1008,7 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
                                             WellChildVaccine type_ ->
                                                 let
                                                     label =
-                                                        Translate.WellChildVaccineLabel type_
+                                                        Translate.WellChildVaccineLabel site type_
                                                             |> translate language
                                                 in
                                                 ( Translate.VaccineDoseAdministeredPreviouslyWellChildQuestion label

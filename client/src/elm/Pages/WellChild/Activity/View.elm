@@ -1343,10 +1343,10 @@ viewVaccinationForm language currentDate site isChw assembled vaccineType form =
                 [ i [ class "icon-open-book" ] []
                 , div []
                     [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription site vaccineType ]
-                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
+                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage site vaccineType ]
                     ]
                 ]
-            , viewLabel language (Translate.WellChildImmunizationHistory vaccineType)
+            , viewLabel language (Translate.WellChildImmunizationHistory site vaccineType)
             ]
                 ++ contentByViewMode
         ]
@@ -1408,7 +1408,7 @@ viewVaccinationOverview language currentDate site child vaccinationProgress db =
                         |> Maybe.withDefault ( StatusCompleted, "completed" )
             in
             div [ class "entry vaccination" ]
-                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType (WellChildVaccine vaccineType) ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType site (WellChildVaccine vaccineType) ]
                 , Dict.values doses
                     |> List.sortWith Date.compare
                     |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
