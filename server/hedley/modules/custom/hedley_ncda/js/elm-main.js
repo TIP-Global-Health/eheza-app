@@ -5776,25 +5776,25 @@ var $author$project$Backend$Types$BackendReturn = F4(
 var $author$project$Backend$Menu$Model$MenuData = function (site) {
 	return {site: site};
 };
-var $author$project$Backend$Menu$Model$SiteBurundi = {$: 'SiteBurundi'};
-var $author$project$Backend$Menu$Model$SiteRwanda = {$: 'SiteRwanda'};
-var $author$project$Backend$Menu$Model$SiteUnknown = {$: 'SiteUnknown'};
+var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
+var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
+var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
 var $elm$core$String$toLower = _String_toLower;
-var $author$project$Backend$Menu$Decoder$siteFromString = function (str) {
+var $author$project$Backend$Decoder$siteFromString = function (str) {
 	var _v0 = $elm$core$String$toLower(str);
 	switch (_v0) {
 		case 'rwanda':
-			return $author$project$Backend$Menu$Model$SiteRwanda;
+			return $author$project$App$Types$SiteRwanda;
 		case 'burundi':
-			return $author$project$Backend$Menu$Model$SiteBurundi;
+			return $author$project$App$Types$SiteBurundi;
 		default:
-			return $author$project$Backend$Menu$Model$SiteUnknown;
+			return $author$project$App$Types$SiteUnknown;
 	}
 };
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Backend$Menu$Decoder$decodeSite = A2(
+var $author$project$Backend$Decoder$decodeSite = A2(
 	$elm$json$Json$Decode$andThen,
-	A2($elm$core$Basics$composeR, $author$project$Backend$Menu$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
+	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
 	$elm$json$Json$Decode$string);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
@@ -5807,7 +5807,7 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 var $author$project$Backend$Menu$Decoder$decodeMenuData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'site',
-	$author$project$Backend$Menu$Decoder$decodeSite,
+	$author$project$Backend$Decoder$decodeSite,
 	$elm$json$Json$Decode$succeed($author$project$Backend$Menu$Model$MenuData));
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Backend$Menu$Update$update = F3(
@@ -5821,9 +5821,9 @@ var $author$project$Backend$Menu$Update$update = F3(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$Scoreboard$Model$ScoreboardData = F3(
-	function (entityName, entityType, records) {
-		return {entityName: entityName, entityType: entityType, records: records};
+var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
+	function (site, entityName, entityType, records) {
+		return {entityName: entityName, entityType: entityType, records: records, site: site};
 	});
 var $author$project$Backend$Scoreboard$Model$PatientData = F5(
 	function (birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
@@ -7464,7 +7464,11 @@ var $author$project$Backend$Scoreboard$Decoder$decodeScoreboardData = function (
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 				'entity_name',
 				$elm$json$Json$Decode$string,
-				$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData))));
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'site',
+					$author$project$Backend$Decoder$decodeSite,
+					$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$ScoreboardData)))));
 };
 var $author$project$Backend$Scoreboard$Update$update = F3(
 	function (currentDate, msg, model) {
@@ -29586,26 +29590,31 @@ var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = _List_fromArray(
 	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
 var $justinmimbs$date$Date$Weeks = {$: 'Weeks'};
 var $justinmimbs$date$Date$Years = {$: 'Years'};
-var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = function (vaccineType) {
-	switch (vaccineType.$) {
-		case 'VaccineBCG':
-			return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
-		case 'VaccineOPV':
-			return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
-		case 'VaccineDTP':
-			return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
-		case 'VaccineDTPStandalone':
-			return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
-		case 'VaccinePCV13':
-			return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
-		case 'VaccineRotarix':
-			return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
-		case 'VaccineIPV':
-			return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
-		default:
-			return _Utils_Tuple2(6, $justinmimbs$date$Date$Months);
-	}
-};
+var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = F2(
+	function (site, vaccineType) {
+		switch (vaccineType.$) {
+			case 'VaccineBCG':
+				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
+			case 'VaccineOPV':
+				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+			case 'VaccineDTP':
+				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+			case 'VaccineDTPStandalone':
+				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
+			case 'VaccinePCV13':
+				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+			case 'VaccineRotarix':
+				return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+			case 'VaccineIPV':
+				return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
+			default:
+				if (site.$ === 'SiteBurundi') {
+					return _Utils_Tuple2(9, $justinmimbs$date$Date$Months);
+				} else {
+					return _Utils_Tuple2(6, $justinmimbs$date$Date$Months);
+				}
+		}
+	});
 var $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable = function (dose) {
 	switch (dose.$) {
 		case 'VaccineDoseFirst':
@@ -29620,12 +29629,12 @@ var $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable = function 
 			return 5;
 	}
 };
-var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F4(
-	function (birthDate, initialOpvAdministered, vaccinationProgress, _v0) {
+var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F5(
+	function (site, birthDate, initialOpvAdministered, vaccinationProgress, _v0) {
 		var vaccineType = _v0.a;
 		var vaccineDose = _v0.b;
 		var dosesInterval = $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable(vaccineDose) - 1;
-		var _v1 = $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine(vaccineType);
+		var _v1 = A2($author$project$Pages$Scoreboard$Utils$getIntervalForVaccine, site, vaccineType);
 		var interval = _v1.a;
 		var unit = _v1.b;
 		switch (vaccineType.$) {
@@ -29743,14 +29752,14 @@ var $author$project$Pages$Scoreboard$Utils$getNextVaccineDose = function (dose) 
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine = F4(
-	function (vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered) {
+var $author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine = F5(
+	function (site, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered) {
 		return _Utils_eq(
 			A2($author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine, initialOpvAdministered, vaccineType),
 			lastDoseAdministered) ? $elm$core$Maybe$Nothing : A2(
 			$elm$core$Maybe$map,
 			function (dose) {
-				var _v0 = $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine(vaccineType);
+				var _v0 = A2($author$project$Pages$Scoreboard$Utils$getIntervalForVaccine, site, vaccineType);
 				var interval = _v0.a;
 				var unit = _v0.b;
 				return _Utils_Tuple2(
@@ -29774,8 +29783,8 @@ var $author$project$Pages$Scoreboard$Utils$wasInitialOpvAdministeredByVaccinatio
 					$pzp1997$assoc_list$AssocList$get($author$project$Backend$Scoreboard$Model$VaccineDoseFirst),
 					A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineOPV, vaccinationProgress))));
 	});
-var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F2(
-	function (birthDate, vaccinationProgress) {
+var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F3(
+	function (site, birthDate, vaccinationProgress) {
 		var initialOpvAdministered = A2($author$project$Pages$Scoreboard$Utils$wasInitialOpvAdministeredByVaccinationProgress, birthDate, vaccinationProgress);
 		return A2(
 			$elm$core$List$map,
@@ -29786,10 +29795,11 @@ var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F2(
 						var _v1 = _v0.a;
 						var lastDoseAdministered = _v1.a;
 						var lastDoseDate = _v1.b;
-						return A4($author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered);
+						return A5($author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine, site, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered);
 					} else {
-						var vaccinationDate = A4(
+						var vaccinationDate = A5(
 							$author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate,
+							site,
 							birthDate,
 							initialOpvAdministered,
 							vaccinationProgress,
@@ -29817,8 +29827,8 @@ var $pzp1997$assoc_list$AssocList$map = F2(
 				},
 				alist));
 	});
-var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F7(
-	function (language, currentDate, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
+var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
+	function (language, currentDate, site, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {
 		var resolveLastDayForMonthX = F2(
 			function (monthX, childBirthDate) {
 				return A3(
@@ -29899,7 +29909,7 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F7(
 																	dosesDict);
 															}),
 														record.ncda.universalIntervention.row1);
-													var futureVaccinations = A2($author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData, record.birthDate, vaccinationProgressOnReferrenceDate);
+													var futureVaccinations = A3($author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData, site, record.birthDate, vaccinationProgressOnReferrenceDate);
 													var closestDateForVaccination = $elm$core$List$head(
 														A2(
 															$elm$core$List$sortWith,
@@ -30256,7 +30266,7 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 					A7($author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
 					A7($author$project$Pages$Scoreboard$View$viewStuntingPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
 					A7($author$project$Pages$Scoreboard$View$viewANCNewbornPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
-					A7($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
+					A8($author$project$Pages$Scoreboard$View$viewUniversalInterventionPane, language, currentDate, data.site, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
 					A7($author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
 					A7($author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data),
 					A7($author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane, language, currentDate, model.yearSelectorGap, monthsGap, childrenUnder2, model.viewMode, data)

@@ -1,5 +1,6 @@
 module Pages.Scoreboard.Utils exposing (generateFutureVaccinationsData, valuesByViewMode, viewPercentage)
 
+import App.Types exposing (Site(..))
 import AssocList as Dict
 import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (vaccineDoseToComparable)
@@ -13,10 +14,11 @@ import Round
 If there's no need for future vaccination, Nothing is returned.
 -}
 generateFutureVaccinationsData :
-    NominalDate
+    Site
+    -> NominalDate
     -> VaccinationProgressDict
     -> List ( VaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData birthDate vaccinationProgress =
+generateFutureVaccinationsData site birthDate vaccinationProgress =
     let
         initialOpvAdministered =
             wasInitialOpvAdministeredByVaccinationProgress birthDate vaccinationProgress
@@ -27,12 +29,13 @@ generateFutureVaccinationsData birthDate vaccinationProgress =
                 nextVaccinationData =
                     case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
                         Just ( lastDoseAdministered, lastDoseDate ) ->
-                            nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+                            nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
 
                         Nothing ->
                             let
                                 vaccinationDate =
-                                    initialVaccinationDateByBirthDate birthDate
+                                    initialVaccinationDateByBirthDate site
+                                        birthDate
                                         initialOpvAdministered
                                         vaccinationProgress
                                         ( vaccineType, VaccineDoseFirst )
@@ -68,8 +71,8 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : VaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
+nextVaccinationDataForVaccine : Site -> VaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
         Nothing
 
@@ -79,7 +82,7 @@ nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate la
                 (\dose ->
                     let
                         ( interval, unit ) =
-                            getIntervalForVaccine vaccineType
+                            getIntervalForVaccine site vaccineType
                     in
                     ( dose, Date.add unit interval lastDoseDate )
                 )
@@ -136,8 +139,8 @@ getNextVaccineDose dose =
             Nothing
 
 
-getIntervalForVaccine : VaccineType -> ( Int, Unit )
-getIntervalForVaccine vaccineType =
+getIntervalForVaccine : Site -> VaccineType -> ( Int, Unit )
+getIntervalForVaccine site vaccineType =
     case vaccineType of
         VaccineBCG ->
             ( 0, Days )
@@ -161,17 +164,22 @@ getIntervalForVaccine vaccineType =
             ( 0, Days )
 
         VaccineMR ->
-            ( 6, Months )
+            case site of
+                SiteBurundi ->
+                    ( 9, Months )
+
+                _ ->
+                    ( 6, Months )
 
 
-initialVaccinationDateByBirthDate : NominalDate -> Bool -> VaccinationProgressDict -> ( VaccineType, VaccineDose ) -> NominalDate
-initialVaccinationDateByBirthDate birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
+initialVaccinationDateByBirthDate : Site -> NominalDate -> Bool -> VaccinationProgressDict -> ( VaccineType, VaccineDose ) -> NominalDate
+initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
     let
         dosesInterval =
             vaccineDoseToComparable vaccineDose - 1
 
         ( interval, unit ) =
-            getIntervalForVaccine vaccineType
+            getIntervalForVaccine site vaccineType
     in
     case vaccineType of
         VaccineBCG ->

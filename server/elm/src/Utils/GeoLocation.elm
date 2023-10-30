@@ -1,8 +1,8 @@
 module Utils.GeoLocation exposing (..)
 
+import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (EntityId, fromEntityId, toEntityId)
-import Backend.Menu.Model exposing (Site(..))
 import Translate exposing (TranslationId)
 
 

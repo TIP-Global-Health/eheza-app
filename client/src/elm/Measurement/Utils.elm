@@ -5214,14 +5214,14 @@ generateSuggestedVaccinations currentDate site isChw person vaccinationHistory v
                 wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
         in
         allVaccineTypes site
-            |> List.filter (expectVaccineForPerson currentDate person initialOpvAdministered vaccinationProgress)
+            |> List.filter (expectVaccineForPerson currentDate site person initialOpvAdministered vaccinationProgress)
             |> List.filterMap
                 (\vaccineType ->
                     let
                         suggestedDose =
                             case latestVaccinationDataForVaccine vaccinationHistory vaccineType of
                                 Just ( lastDoseAdministered, lastDoseDate ) ->
-                                    nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
+                                    nextDoseForVaccine currentDate site lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
 
                                 Nothing ->
                                     Just VaccineDoseFirst
@@ -5268,7 +5268,11 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
                     nextVaccinationData =
                         case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
                             Just ( lastDoseAdministered, lastDoseDate ) ->
-                                nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+                                nextVaccinationDataForVaccine site
+                                    vaccineType
+                                    initialOpvAdministered
+                                    lastDoseDate
+                                    lastDoseAdministered
 
                             Nothing ->
                                 -- There were no vaccination so far, so
@@ -5277,7 +5281,8 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
                                     initialDate =
                                         Maybe.map
                                             (\birthDate ->
-                                                initialVaccinationDateByBirthDate birthDate
+                                                initialVaccinationDateByBirthDate site
+                                                    birthDate
                                                     initialOpvAdministered
                                                     vaccinationProgress
                                                     ( vaccineType, VaccineDoseFirst )
@@ -5302,9 +5307,9 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
 
 {-| Check if the first dose of vaccine may be administered to the person on the limit date.
 -}
-expectVaccineForPerson : NominalDate -> Person -> Bool -> VaccinationProgressDict -> WellChildVaccineType -> Bool
-expectVaccineForPerson limitDate person initialOpvAdministered vaccinationProgress vaccineType =
-    expectVaccineDoseForPerson limitDate person initialOpvAdministered vaccinationProgress ( vaccineType, VaccineDoseFirst )
+expectVaccineForPerson : NominalDate -> Site -> Person -> Bool -> VaccinationProgressDict -> WellChildVaccineType -> Bool
+expectVaccineForPerson limitDate site person initialOpvAdministered vaccinationProgress vaccineType =
+    expectVaccineDoseForPerson limitDate site person initialOpvAdministered vaccinationProgress ( vaccineType, VaccineDoseFirst )
 
 
 {-| Check if a dose of vaccine may be administered to a person on the limit date.
@@ -5312,14 +5317,18 @@ For example, to check if the dose of vaccine may be administered today, we set
 limit date to current date. If we want to check in one year, we set the limit date
 to current date + 1 year.
 -}
-expectVaccineDoseForPerson : NominalDate -> Person -> Bool -> VaccinationProgressDict -> ( WellChildVaccineType, VaccineDose ) -> Bool
-expectVaccineDoseForPerson limitDate person initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
+expectVaccineDoseForPerson : NominalDate -> Site -> Person -> Bool -> VaccinationProgressDict -> ( WellChildVaccineType, VaccineDose ) -> Bool
+expectVaccineDoseForPerson limitDate site person initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
     person.birthDate
         |> Maybe.map
             (\birthDate ->
                 let
                     expectedDate =
-                        initialVaccinationDateByBirthDate birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose )
+                        initialVaccinationDateByBirthDate site
+                            birthDate
+                            initialOpvAdministered
+                            vaccinationProgress
+                            ( vaccineType, vaccineDose )
 
                     compared =
                         Date.compare expectedDate limitDate
@@ -5336,14 +5345,20 @@ expectVaccineDoseForPerson limitDate person initialOpvAdministered vaccinationPr
         |> Maybe.withDefault False
 
 
-initialVaccinationDateByBirthDate : NominalDate -> Bool -> VaccinationProgressDict -> ( WellChildVaccineType, VaccineDose ) -> NominalDate
-initialVaccinationDateByBirthDate birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
+initialVaccinationDateByBirthDate :
+    Site
+    -> NominalDate
+    -> Bool
+    -> VaccinationProgressDict
+    -> ( WellChildVaccineType, VaccineDose )
+    -> NominalDate
+initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
     let
         dosesInterval =
             vaccineDoseToComparable vaccineDose - 1
 
         ( interval, unit ) =
-            getIntervalForVaccine vaccineType
+            getIntervalForVaccine site vaccineType
     in
     case vaccineType of
         VaccineBCG ->
@@ -5426,8 +5441,8 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
+nextVaccinationDataForVaccine : Site -> WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
         Nothing
 
@@ -5437,15 +5452,15 @@ nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate la
                 (\dose ->
                     let
                         ( interval, unit ) =
-                            getIntervalForVaccine vaccineType
+                            getIntervalForVaccine site vaccineType
                     in
                     ( dose, Date.add unit interval lastDoseDate )
                 )
 
 
-nextDoseForVaccine : NominalDate -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
-nextDoseForVaccine currentDate lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
-    nextVaccinationDataForVaccine vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+nextDoseForVaccine : NominalDate -> Site -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
+nextDoseForVaccine currentDate site lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
+    nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
         |> Maybe.andThen
             (\( dose, dueDate ) ->
                 if Date.compare dueDate currentDate == GT then
@@ -5542,8 +5557,8 @@ getLastDoseForVaccine initialOpvAdministered vaccineType =
             VaccineDoseSecond
 
 
-getIntervalForVaccine : WellChildVaccineType -> ( Int, Unit )
-getIntervalForVaccine vaccineType =
+getIntervalForVaccine : Site -> WellChildVaccineType -> ( Int, Unit )
+getIntervalForVaccine site vaccineType =
     case vaccineType of
         VaccineBCG ->
             ( 0, Days )
@@ -5567,7 +5582,12 @@ getIntervalForVaccine vaccineType =
             ( 0, Days )
 
         VaccineMR ->
-            ( 6, Months )
+            case site of
+                SiteBurundi ->
+                    ( 9, Months )
+
+                _ ->
+                    ( 6, Months )
 
         VaccineHPV ->
             ( 6, Months )

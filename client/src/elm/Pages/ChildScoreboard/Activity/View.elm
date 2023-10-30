@@ -535,10 +535,11 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                     , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
                     , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
                     , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine vaccineType initialOpvAdministered
-                    , getIntervalForVaccine = always (getIntervalForVaccine vaccineType)
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site vaccineType initialOpvAdministered
+                    , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
                     , firstDoseExpectedFrom =
-                        initialVaccinationDateByBirthDate birthDate
+                        initialVaccinationDateByBirthDate site
+                            birthDate
                             initialOpvAdministered
                             assembled.vaccinationProgress
                             ( vaccineType, VaccineDoseFirst )
@@ -564,6 +565,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                         |> List.filter
                             (\dose ->
                                 expectVaccineDoseForPerson currentDate
+                                    site
                                     assembled.person
                                     initialOpvAdministered
                                     assembled.vaccinationProgress
