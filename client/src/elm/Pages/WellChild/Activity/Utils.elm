@@ -748,6 +748,7 @@ immunisationVaccinationTasks =
     [ TaskBCG
     , TaskOPV
     , TaskDTP
+    , TaskDTPStandalone
     , TaskPCV13
     , TaskRotarix
     , TaskIPV
