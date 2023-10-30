@@ -32,7 +32,10 @@ generateFutureVaccinationsData birthDate vaccinationProgress =
                         Nothing ->
                             let
                                 vaccinationDate =
-                                    initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, VaccineDoseFirst )
+                                    initialVaccinationDateByBirthDate birthDate
+                                        initialOpvAdministered
+                                        vaccinationProgress
+                                        ( vaccineType, VaccineDoseFirst )
                             in
                             Just ( VaccineDoseFirst, vaccinationDate )
             in
@@ -98,6 +101,9 @@ getLastDoseForVaccine initialOpvAdministered vaccineType =
         VaccineDTP ->
             VaccineDoseThird
 
+        VaccineDTPStandalone ->
+            VaccineDoseFirst
+
         VaccinePCV13 ->
             VaccineDoseThird
 
@@ -142,6 +148,9 @@ getIntervalForVaccine vaccineType =
         VaccineDTP ->
             ( 4, Weeks )
 
+        VaccineDTPStandalone ->
+            ( 0, Days )
+
         VaccinePCV13 ->
             ( 4, Weeks )
 
@@ -155,8 +164,8 @@ getIntervalForVaccine vaccineType =
             ( 6, Months )
 
 
-initialVaccinationDateByBirthDate : NominalDate -> Bool -> ( VaccineType, VaccineDose ) -> NominalDate
-initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType, vaccineDose ) =
+initialVaccinationDateByBirthDate : NominalDate -> Bool -> VaccinationProgressDict -> ( VaccineType, VaccineDose ) -> NominalDate
+initialVaccinationDateByBirthDate birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
     let
         dosesInterval =
             vaccineDoseToComparable vaccineDose - 1
@@ -188,6 +197,31 @@ initialVaccinationDateByBirthDate birthDate initialOpvAdministered ( vaccineType
             Date.add Weeks 6 birthDate
                 |> Date.add unit (dosesInterval * interval)
 
+        VaccineDTPStandalone ->
+            -- All 3 dosed of DTP were given, it has passed
+            -- at least 28 days since third dose, and, child
+            -- is at last 18 months old.
+            Dict.get VaccineOPV vaccinationProgress
+                |> Maybe.andThen (Dict.get VaccineDoseThird)
+                |> Maybe.map
+                    (\thirdDoseDate ->
+                        let
+                            fourWeeksAfterThirdDTPDose =
+                                Date.add Days 28 thirdDoseDate
+
+                            dateWhen18MonthsOld =
+                                Date.add Months 18 birthDate
+                        in
+                        if Date.compare fourWeeksAfterThirdDTPDose dateWhen18MonthsOld == GT then
+                            fourWeeksAfterThirdDTPDose
+
+                        else
+                            dateWhen18MonthsOld
+                    )
+                |> Maybe.withDefault
+                    -- In other words, never.
+                    (Date.add Years 999 birthDate)
+
         VaccinePCV13 ->
             Date.add Weeks 6 birthDate
                 |> Date.add unit (dosesInterval * interval)
@@ -210,6 +244,7 @@ allVaccineTypes =
     [ VaccineBCG
     , VaccineOPV
     , VaccineDTP
+    , VaccineDTPStandalone
     , VaccinePCV13
     , VaccineRotarix
     , VaccineIPV

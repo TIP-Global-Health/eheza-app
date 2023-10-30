@@ -7012,9 +7012,9 @@ var $author$project$Backend$Scoreboard$Model$UniversalInterventionData = F5(
 	function (row1, row2, row3, row4, row5) {
 		return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 	});
-var $author$project$Backend$Scoreboard$Model$RawVaccinationData = F7(
-	function (bcg, opv, dtp, pcv13, rotarix, ipv, mr) {
-		return {bcg: bcg, dtp: dtp, ipv: ipv, mr: mr, opv: opv, pcv13: pcv13, rotarix: rotarix};
+var $author$project$Backend$Scoreboard$Model$RawVaccinationData = F8(
+	function (bcg, opv, dtp, dtpStandalone, pcv13, rotarix, ipv, mr) {
+		return {bcg: bcg, dtp: dtp, dtpStandalone: dtpStandalone, ipv: ipv, mr: mr, opv: opv, pcv13: pcv13, rotarix: rotarix};
 	});
 var $Gizra$elm_all_set$EverySet$EverySet = function (a) {
 	return {$: 'EverySet', a: a};
@@ -7036,6 +7036,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeUniqueDates = A2(
 	$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
 var $author$project$Backend$Scoreboard$Model$VaccineBCG = {$: 'VaccineBCG'};
 var $author$project$Backend$Scoreboard$Model$VaccineDTP = {$: 'VaccineDTP'};
+var $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone = {$: 'VaccineDTPStandalone'};
 var $author$project$Backend$Scoreboard$Model$VaccineIPV = {$: 'VaccineIPV'};
 var $author$project$Backend$Scoreboard$Model$VaccineMR = {$: 'VaccineMR'};
 var $author$project$Backend$Scoreboard$Model$VaccineOPV = {$: 'VaccineOPV'};
@@ -7121,6 +7122,9 @@ var $author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationPr
 				$author$project$Backend$Scoreboard$Model$VaccineDTP,
 				generateVaccinationProgressForVaccine(data.dtp)),
 				_Utils_Tuple2(
+				$author$project$Backend$Scoreboard$Model$VaccineDTPStandalone,
+				generateVaccinationProgressForVaccine(data.dtpStandalone)),
+				_Utils_Tuple2(
 				$author$project$Backend$Scoreboard$Model$VaccinePCV13,
 				generateVaccinationProgressForVaccine(data.pcv13)),
 				_Utils_Tuple2(
@@ -7155,17 +7159,21 @@ var $author$project$Backend$Scoreboard$Decoder$decodeVaccinationProgressDict = A
 					$author$project$Backend$Scoreboard$Decoder$decodeUniqueDates,
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'dtp',
+						'dtp_sa',
 						$author$project$Backend$Scoreboard$Decoder$decodeUniqueDates,
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'opv',
+							'dtp',
 							$author$project$Backend$Scoreboard$Decoder$decodeUniqueDates,
 							A3(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'bcg',
+								'opv',
 								$author$project$Backend$Scoreboard$Decoder$decodeUniqueDates,
-								$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RawVaccinationData)))))))));
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+									'bcg',
+									$author$project$Backend$Scoreboard$Decoder$decodeUniqueDates,
+									$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$RawVaccinationData))))))))));
 var $author$project$Backend$Scoreboard$Decoder$decodeUniversalInterventionData = function (currentDate) {
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -29575,8 +29583,9 @@ var $justinmimbs$date$Date$floor = F2(
 		}
 	});
 var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = _List_fromArray(
-	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
+	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
 var $justinmimbs$date$Date$Weeks = {$: 'Weeks'};
+var $justinmimbs$date$Date$Years = {$: 'Years'};
 var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = function (vaccineType) {
 	switch (vaccineType.$) {
 		case 'VaccineBCG':
@@ -29585,6 +29594,8 @@ var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = function (vac
 			return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
 		case 'VaccineDTP':
 			return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
+		case 'VaccineDTPStandalone':
+			return _Utils_Tuple2(0, $justinmimbs$date$Date$Days);
 		case 'VaccinePCV13':
 			return _Utils_Tuple2(4, $justinmimbs$date$Date$Weeks);
 		case 'VaccineRotarix':
@@ -29609,8 +29620,8 @@ var $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable = function 
 			return 5;
 	}
 };
-var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F3(
-	function (birthDate, initialOpvAdministered, _v0) {
+var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F4(
+	function (birthDate, initialOpvAdministered, vaccinationProgress, _v0) {
 		var vaccineType = _v0.a;
 		var vaccineDose = _v0.b;
 		var dosesInterval = $author$project$Backend$Scoreboard$Utils$vaccineDoseToComparable(vaccineDose) - 1;
@@ -29640,6 +29651,23 @@ var $author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate = F
 					unit,
 					dosesInterval * interval,
 					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Weeks, 6, birthDate));
+			case 'VaccineDTPStandalone':
+				return A2(
+					$elm$core$Maybe$withDefault,
+					A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, 999, birthDate),
+					A2(
+						$elm$core$Maybe$map,
+						function (thirdDoseDate) {
+							var fourWeeksAfterThirdDTPDose = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 28, thirdDoseDate);
+							var dateWhen18MonthsOld = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 18, birthDate);
+							return _Utils_eq(
+								A2($justinmimbs$date$Date$compare, fourWeeksAfterThirdDTPDose, dateWhen18MonthsOld),
+								$elm$core$Basics$GT) ? fourWeeksAfterThirdDTPDose : dateWhen18MonthsOld;
+						},
+						A2(
+							$elm$core$Maybe$andThen,
+							$pzp1997$assoc_list$AssocList$get($author$project$Backend$Scoreboard$Model$VaccineDoseThird),
+							A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Scoreboard$Model$VaccineOPV, vaccinationProgress))));
 			case 'VaccinePCV13':
 				return A3(
 					$justinmimbs$date$Date$add,
@@ -29689,6 +29717,8 @@ var $author$project$Pages$Scoreboard$Utils$getLastDoseForVaccine = F2(
 				return initialOpvAdministered ? $author$project$Backend$Scoreboard$Model$VaccineDoseFourth : $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
 			case 'VaccineDTP':
 				return $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
+			case 'VaccineDTPStandalone':
+				return $author$project$Backend$Scoreboard$Model$VaccineDoseFirst;
 			case 'VaccinePCV13':
 				return $author$project$Backend$Scoreboard$Model$VaccineDoseThird;
 			case 'VaccineRotarix':
@@ -29758,10 +29788,11 @@ var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F2(
 						var lastDoseDate = _v1.b;
 						return A4($author$project$Pages$Scoreboard$Utils$nextVaccinationDataForVaccine, vaccineType, initialOpvAdministered, lastDoseDate, lastDoseAdministered);
 					} else {
-						var vaccinationDate = A3(
+						var vaccinationDate = A4(
 							$author$project$Pages$Scoreboard$Utils$initialVaccinationDateByBirthDate,
 							birthDate,
 							initialOpvAdministered,
+							vaccinationProgress,
 							_Utils_Tuple2(vaccineType, $author$project$Backend$Scoreboard$Model$VaccineDoseFirst));
 						return $elm$core$Maybe$Just(
 							_Utils_Tuple2($author$project$Backend$Scoreboard$Model$VaccineDoseFirst, vaccinationDate));

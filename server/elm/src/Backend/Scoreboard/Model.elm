@@ -113,6 +113,7 @@ type alias RawVaccinationData =
     { bcg : EverySet NominalDate
     , opv : EverySet NominalDate
     , dtp : EverySet NominalDate
+    , dtpStandalone : EverySet NominalDate
     , pcv13 : EverySet NominalDate
     , rotarix : EverySet NominalDate
     , ipv : EverySet NominalDate
@@ -124,6 +125,7 @@ type VaccineType
     = VaccineBCG
     | VaccineOPV
     | VaccineDTP
+    | VaccineDTPStandalone
     | VaccinePCV13
     | VaccineRotarix
     | VaccineIPV
