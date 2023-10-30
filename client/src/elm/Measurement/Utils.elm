@@ -5589,18 +5589,8 @@ allVaccineTypesForPerson site person =
 
 allVaccineTypes : Site -> List WellChildVaccineType
 allVaccineTypes site =
-    case site of
-        SiteBurundi ->
-            [ VaccineBCG
-            , VaccineOPV
-            , VaccineDTP
-            , VaccineDTPStandalone
-            , VaccinePCV13
-            , VaccineRotarix
-            , VaccineMR
-            ]
-
-        _ ->
+    let
+        common =
             [ VaccineBCG
             , VaccineOPV
             , VaccineDTP
@@ -5608,8 +5598,14 @@ allVaccineTypes site =
             , VaccineRotarix
             , VaccineIPV
             , VaccineMR
-            , VaccineHPV
             ]
+    in
+    case site of
+        SiteBurundi ->
+            common ++ [ VaccineDTPStandalone ]
+
+        _ ->
+            common ++ [ VaccineHPV ]
 
 
 allVaccineDoses : List VaccineDose
