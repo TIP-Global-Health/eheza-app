@@ -21421,10 +21421,18 @@ translationSet trans =
                     }
 
                 VaccineMR ->
-                    { english = "There are 2 doses of Measles-Rubella - at 9 months and 15 months."
-                    , kinyarwanda = Just "Umwana ahabwa urukingo rw'Iseru na Rubeyole inshuro 2: Afite Amezi 9, n'amezi 15."
-                    , kirundi = Just "Hari idoze 2 vy'urucanco rw'Agasama-ku mezi 9 hamwe no ku mezi 15"
-                    }
+                    case site of
+                        SiteBurundi ->
+                            { english = "There are 2 doses of Measles-Rubella - at 9 months and 18 months."
+                            , kinyarwanda = Nothing
+                            , kirundi = Just "Hari idoze 2 vy'urucanco rw'Agasama-ku mezi 9 hamwe no ku mezi 18"
+                            }
+
+                        _ ->
+                            { english = "There are 2 doses of Measles-Rubella - at 9 months and 15 months."
+                            , kinyarwanda = Just "Umwana ahabwa urukingo rw'Iseru na Rubeyole inshuro 2: Afite Amezi 9, n'amezi 15."
+                            , kirundi = Nothing
+                            }
 
                 VaccineOPV ->
                     { english = "There are 4 doses of OPV - at birth, 6 weeks, 10 weeks, and 14 weeks."
