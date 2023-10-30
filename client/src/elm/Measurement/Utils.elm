@@ -5913,6 +5913,10 @@ generateVaccinationProgressForWellChild person measurements =
             List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
                 measurements
 
+        dtpStandaloneImmunisations =
+            List.filterMap (.dtpStandaloneImmunisation >> getMeasurementValueFunc)
+                measurements
+
         ipvImmunisations =
             List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
                 measurements
@@ -5948,6 +5952,7 @@ generateVaccinationProgressForWellChild person measurements =
     [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
     , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
     , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
+    , ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImmunisations )
     , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
     , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
     , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
@@ -5966,6 +5971,10 @@ generateVaccinationProgressForChildScoreboard measurements =
 
         dtpImmunisations =
             List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
+                measurements
+
+        dtpStandaloneImmunisations =
+            List.filterMap (.dtpStandaloneImmunisation >> getMeasurementValueFunc)
                 measurements
 
         ipvImmunisations =
@@ -5991,6 +6000,7 @@ generateVaccinationProgressForChildScoreboard measurements =
     [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
     , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
     , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
+    , ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImmunisations )
     , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
     , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
     , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
