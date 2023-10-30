@@ -26,7 +26,7 @@ view : Language -> NominalDate -> Site -> ChildScoreboardEncounterId -> ModelInd
 view language currentDate site id db model =
     let
         assembled =
-            generateAssembledData id db
+            generateAssembledData site id db
     in
     viewWebData language (viewHeaderAndContent language currentDate site db model) identity assembled
 

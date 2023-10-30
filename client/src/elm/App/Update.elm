@@ -500,7 +500,12 @@ update msg model =
                                     data.wellChildEncounterPages
                                         |> Dict.get id
                                         |> Maybe.withDefault Pages.WellChild.Encounter.Model.emptyModel
-                                        |> Pages.WellChild.Encounter.Update.update currentDate model.zscores isChw model.indexedDb subMsg
+                                        |> Pages.WellChild.Encounter.Update.update currentDate
+                                            model.zscores
+                                            site
+                                            isChw
+                                            model.indexedDb
+                                            subMsg
                             in
                             ( { data | wellChildEncounterPages = Dict.insert id subModel data.wellChildEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageWellChildEncounter id) subCmd

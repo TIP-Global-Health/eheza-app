@@ -5138,7 +5138,7 @@ behindOnVaccinationsByWellChild currentDate site childId db =
         maybeAssembled =
             Maybe.andThen
                 (\id ->
-                    generateAssembledDataForWellChild id db
+                    generateAssembledDataForWellChild site id db
                         |> RemoteData.toMaybe
                 )
                 lastWellChildEncounterId
@@ -5800,8 +5800,8 @@ mergeNutritionAssessmentEntries list1 list2 =
         |> Dict.toList
 
 
-generateAssembledDataForWellChild : WellChildEncounterId -> ModelIndexedDb -> WebData Pages.WellChild.Encounter.Model.AssembledData
-generateAssembledDataForWellChild id db =
+generateAssembledDataForWellChild : Site -> WellChildEncounterId -> ModelIndexedDb -> WebData Pages.WellChild.Encounter.Model.AssembledData
+generateAssembledDataForWellChild site id db =
     let
         encounter =
             Dict.get id db.wellChildEncounters
@@ -5854,15 +5854,15 @@ generateAssembledDataForWellChild id db =
         (\assembled ->
             let
                 ( vaccinationHistory, vaccinationProgress ) =
-                    generateVaccinationProgressDictsForWellChild assembled db
+                    generateVaccinationProgressDictsForWellChild site assembled db
             in
             { assembled | vaccinationHistory = vaccinationHistory, vaccinationProgress = vaccinationProgress }
         )
         assembledWithEmptyVaccinationDicts
 
 
-generateVaccinationProgressDictsForWellChild : Pages.WellChild.Encounter.Model.AssembledData -> ModelIndexedDb -> ( VaccinationProgressDict, VaccinationProgressDict )
-generateVaccinationProgressDictsForWellChild assembled db =
+generateVaccinationProgressDictsForWellChild : Site -> Pages.WellChild.Encounter.Model.AssembledData -> ModelIndexedDb -> ( VaccinationProgressDict, VaccinationProgressDict )
+generateVaccinationProgressDictsForWellChild site assembled db =
     let
         previousMeasurements =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
@@ -5885,17 +5885,17 @@ generateVaccinationProgressDictsForWellChild assembled db =
                         |> List.head
                         |> Maybe.map Tuple.first
             in
-            Maybe.map (generateVaccinationProgressDictByChildScoreboard db)
+            Maybe.map (generateVaccinationProgressDictByChildScoreboard site db)
                 individualChildScoreboardParticipantId
                 |> Maybe.withDefault Dict.empty
 
         vaccinationHistory =
-            generateVaccinationProgressForWellChild assembled.person previousMeasurements
+            generateVaccinationProgressForWellChild site assembled.person previousMeasurements
 
         vaccinationProgress =
             assembled.measurements
                 :: previousMeasurements
-                |> generateVaccinationProgressForWellChild assembled.person
+                |> generateVaccinationProgressForWellChild site assembled.person
     in
     ( mergeVaccinationProgressDicts
         vaccinationHistory
@@ -5906,8 +5906,8 @@ generateVaccinationProgressDictsForWellChild assembled db =
     )
 
 
-generateVaccinationProgressDictByChildScoreboard : ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
-generateVaccinationProgressDictByChildScoreboard db participantId =
+generateVaccinationProgressDictByChildScoreboard : Site -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
+generateVaccinationProgressDictByChildScoreboard site db participantId =
     Backend.Measurement.Utils.generatePreviousMeasurements
         Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
         .childScoreboardMeasurements
@@ -5915,11 +5915,11 @@ generateVaccinationProgressDictByChildScoreboard db participantId =
         participantId
         db
         |> getPreviousMeasurements
-        |> generateVaccinationProgressForChildScoreboard
+        |> generateVaccinationProgressForChildScoreboard site
 
 
-generateVaccinationProgressForWellChild : Person -> List WellChildMeasurements -> VaccinationProgressDict
-generateVaccinationProgressForWellChild person measurements =
+generateVaccinationProgressForWellChild : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
+generateVaccinationProgressForWellChild site person measurements =
     let
         bcgImmunisations =
             List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
@@ -5964,6 +5964,9 @@ generateVaccinationProgressForWellChild person measurements =
 
             else
                 []
+
+        vaccineTypesForSite =
+            allVaccineTypes site
     in
     [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
     , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
@@ -5975,11 +5978,15 @@ generateVaccinationProgressForWellChild person measurements =
     , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
     ]
         ++ hpvProgress
+        |> List.filter
+            (\( vaccineType, _ ) ->
+                List.member vaccineType vaccineTypesForSite
+            )
         |> Dict.fromList
 
 
-generateVaccinationProgressForChildScoreboard : List ChildScoreboardMeasurements -> VaccinationProgressDict
-generateVaccinationProgressForChildScoreboard measurements =
+generateVaccinationProgressForChildScoreboard : Site -> List ChildScoreboardMeasurements -> VaccinationProgressDict
+generateVaccinationProgressForChildScoreboard site measurements =
     let
         bcgImmunisations =
             List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
@@ -6012,6 +6019,9 @@ generateVaccinationProgressForChildScoreboard measurements =
         rotarixImmunisations =
             List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
                 measurements
+
+        vaccineTypesForSite =
+            allVaccineTypes site
     in
     [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
     , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
@@ -6022,6 +6032,10 @@ generateVaccinationProgressForChildScoreboard measurements =
     , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
     , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
     ]
+        |> List.filter
+            (\( vaccineType, _ ) ->
+                List.member vaccineType vaccineTypesForSite
+            )
         |> Dict.fromList
 
 

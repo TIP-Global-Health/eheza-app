@@ -170,7 +170,7 @@ expectActivity currentDate zscores site features isChw assembled db activity =
             expectNCDAActivity currentDate features isChw assembled.person
 
 
-generateVaccinationProgress : Person -> List WellChildMeasurements -> VaccinationProgressDict
+generateVaccinationProgress : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
 generateVaccinationProgress =
     Measurement.Utils.generateVaccinationProgressForWellChild
 

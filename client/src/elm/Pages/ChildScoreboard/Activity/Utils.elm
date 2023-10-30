@@ -192,7 +192,7 @@ generateSuggestedVaccinations currentDate site person vaccinationHistory vaccina
     Measurement.Utils.generateSuggestedVaccinations currentDate site False person vaccinationHistory vaccinationProgress
 
 
-generateVaccinationProgress : List ChildScoreboardMeasurements -> VaccinationProgressDict
+generateVaccinationProgress : Site -> List ChildScoreboardMeasurements -> VaccinationProgressDict
 generateVaccinationProgress =
     Measurement.Utils.generateVaccinationProgressForChildScoreboard
 

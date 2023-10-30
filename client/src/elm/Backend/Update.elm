@@ -1567,7 +1567,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw model newModel)
+                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1762,7 +1762,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         encounterId
                             |> Maybe.andThen
                                 (\id ->
-                                    Pages.WellChild.Encounter.Utils.generateAssembledData id after
+                                    Pages.WellChild.Encounter.Utils.generateAssembledData site id after
                                         |> RemoteData.toMaybe
                                         |> Maybe.map
                                             (\assembledAfter ->
@@ -6430,12 +6430,13 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
 generateNutritionAssessmentWellChildlMsgs :
     NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> Bool
     -> ModelIndexedDb
     -> ModelIndexedDb
     -> WellChildEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after id =
+generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
@@ -6503,8 +6504,8 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after
                 else
                     []
         )
-        (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData id before)
-        (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData id after)
+        (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData site id before)
+        (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData site id after)
         |> Maybe.withDefault []
 
 
@@ -6733,7 +6734,7 @@ generateWellChildDangerSignsAlertMsgs currentDate maybeId =
 
 generateChildScoreboardAssesmentCompletedMsgs : NominalDate -> Site -> ModelIndexedDb -> ChildScoreboardEncounterId -> List App.Model.Msg
 generateChildScoreboardAssesmentCompletedMsgs currentDate site after id =
-    Pages.ChildScoreboard.Encounter.Utils.generateAssembledData id after
+    Pages.ChildScoreboard.Encounter.Utils.generateAssembledData site id after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->

@@ -13,11 +13,12 @@ import Pages.WellChild.Activity.Utils
 import Pages.WellChild.Encounter.Model exposing (..)
 import Pages.WellChild.Encounter.Utils
 import RemoteData
+import SyncManager.Model exposing (Site)
 import ZScore.Model
 
 
-update : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate zscores isChw db msg model =
+update : NominalDate -> ZScore.Model.Model -> Site -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate zscores site isChw db msg model =
     case msg of
         CloseEncounter id ->
             ( model
@@ -58,7 +59,7 @@ update currentDate zscores isChw db msg model =
             , Cmd.none
             , markEncounterAsAITriggerMsg
             )
-                |> sequenceExtra (update currentDate zscores isChw db) extraMsgs
+                |> sequenceExtra (update currentDate zscores site isChw db) extraMsgs
 
         NavigateToActivity encounterId activity ->
             let
@@ -68,7 +69,7 @@ update currentDate zscores isChw db msg model =
                 -- View Assessment popup when navigating to Next Steps activity.
                 appMsgs =
                     if activity == WellChildNextSteps then
-                        Pages.WellChild.Encounter.Utils.generateAssembledData encounterId db
+                        Pages.WellChild.Encounter.Utils.generateAssembledData site encounterId db
                             |> RemoteData.toMaybe
                             |> Maybe.map
                                 (\assembled ->
@@ -110,4 +111,4 @@ update currentDate zscores isChw db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate zscores isChw db) extraMsgs
+                |> sequenceExtra (update currentDate zscores site isChw db) extraMsgs

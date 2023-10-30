@@ -36,7 +36,7 @@ view :
 view language currentDate zscores site features id isChw db model =
     let
         assembled =
-            generateAssembledData id db
+            generateAssembledData site id db
     in
     viewWebData language (viewHeaderAndContent language currentDate zscores site features id isChw db model) identity assembled
 

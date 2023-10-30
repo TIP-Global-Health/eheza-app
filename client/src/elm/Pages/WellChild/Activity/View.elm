@@ -95,7 +95,7 @@ view :
 view language currentDate zscores site features id isChw activity db model =
     let
         data =
-            generateAssembledData id db
+            generateAssembledData site id db
     in
     viewWebData language (viewHeaderAndContent language currentDate zscores site features id isChw activity db model) identity data
 

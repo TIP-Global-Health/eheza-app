@@ -150,7 +150,7 @@ view language currentDate zscores site features id isChw db model =
                     )
 
         assembledData =
-            generateAssembledData id db
+            generateAssembledData site id db
                 |> RemoteData.toMaybe
 
         ( bottomActionData, mandatoryNutritionAssessmentMeasurementsTaken ) =
@@ -345,7 +345,7 @@ viewTabs language setActiveTabMsg activeTab =
         |> div [ class "ui segment tabs" ]
 
 
-assembleProgresReportData childId db =
+assembleProgresReportData site childId db =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -373,7 +373,7 @@ assembleProgresReportData childId db =
         maybeAssembled =
             Maybe.andThen
                 (\id ->
-                    generateAssembledData id db
+                    generateAssembledData site id db
                         |> RemoteData.toMaybe
                 )
                 lastWellChildEncounterId
@@ -463,7 +463,7 @@ viewContent :
 viewContent language currentDate zscores site isChw initiator mandatoryNutritionAssessmentMeasurementsTaken db diagnosisMode reportToWhatsAppDialog setActivePageMsg setDiagnosisModeMsg msgReportToWhatsAppDialogMsg componentsConfig selectedComponents ( childId, child ) =
     let
         reportData =
-            assembleProgresReportData childId db
+            assembleProgresReportData site childId db
 
         individualWellChildMeasurements =
             getPreviousMeasurements reportData.individualWellChildMeasurementsWithDates
@@ -1615,7 +1615,7 @@ viewNCDAScorecard :
 viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
     let
         reportData =
-            assembleProgresReportData childId db
+            assembleProgresReportData site childId db
 
         groupNCDAs =
             Dict.values reportData.groupNutritionMeasurements.ncda
@@ -1658,7 +1658,7 @@ viewNCDAScorecard language currentDate zscores site ( childId, child ) db =
         vaccinationProgressDict =
             Maybe.Extra.or
                 (Maybe.map .vaccinationProgress reportData.maybeAssembled)
-                (Maybe.map (generateVaccinationProgressDictByChildScoreboard db)
+                (Maybe.map (generateVaccinationProgressDictByChildScoreboard site db)
                     reportData.individualChildScoreboardParticipantId
                 )
                 |> Maybe.withDefault Dict.empty
