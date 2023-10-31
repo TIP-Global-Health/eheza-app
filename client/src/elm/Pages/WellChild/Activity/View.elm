@@ -242,7 +242,7 @@ viewActivity language currentDate zscores site features id isChw activity assemb
             viewECDForm language currentDate assembled model.ecdForm
 
         WellChildMedication ->
-            viewMedicationContent language currentDate isChw assembled model.medicationData
+            viewMedicationContent language currentDate site isChw assembled model.medicationData
 
         WellChildNextSteps ->
             viewNextStepsContent language currentDate zscores site features id isChw assembled db model.nextStepsData
@@ -1970,18 +1970,19 @@ ecdFormInputsAndTasks language currentDate assembled ecdForm =
 viewMedicationContent :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> AssembledData
     -> MedicationData
     -> List (Html Msg)
-viewMedicationContent language currentDate isChw assembled data =
+viewMedicationContent language currentDate site isChw assembled data =
     let
         measurements =
             assembled.measurements
 
         tasks =
             medicationTasks
-                |> List.filter (expectMedicationTask currentDate isChw assembled)
+                |> List.filter (expectMedicationTask currentDate site isChw assembled)
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
