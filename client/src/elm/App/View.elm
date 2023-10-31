@@ -848,7 +848,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.ncdActivityPages
                                     |> Maybe.withDefault Pages.NCD.Activity.Model.emptyModel
                         in
-                        Pages.NCD.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.NCD.Activity.View.view model.language currentDate site id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDActivity id activity)
                             |> flexPageWrapper configured.config model
 
