@@ -1345,26 +1345,53 @@ toAdministrationNote form =
             )
 
 
-resolveAlbendazoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveAlbendazoleDosageAndIcon currentDate person =
-    Just ( "400 mg", "icon-pills" )
+resolveAlbendazoleDosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveAlbendazoleDosageAndIcon currentDate site person =
+    case site of
+        SiteBurundi ->
+            ageInMonths currentDate person
+                |> Maybe.map
+                    (\ageMonths ->
+                        if ageMonths < 24 then
+                            ( "200 mg", "icon-pills" )
+
+                        else
+                            ( "400 mg", "icon-pills" )
+                    )
+
+        _ ->
+            Just ( "400 mg", "icon-pills" )
 
 
-resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveMebendezoleDosageAndIcon currentDate person =
-    Just ( "500 mg", "icon-pills" )
+resolveMebendezoleDosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveMebendezoleDosageAndIcon currentDate site person =
+    case site of
+        SiteBurundi ->
+            Nothing
+
+        _ ->
+            Just ( "500 mg", "icon-pills" )
 
 
-resolveVitaminADosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveVitaminADosageAndIcon currentDate person =
+resolveVitaminADosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveVitaminADosageAndIcon currentDate site person =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
-                if ageMonths <= 12 then
-                    ( "100,000 IU", "icon-capsule blue" )
+                case site of
+                    SiteBurundi ->
+                        if ageMonths < 12 then
+                            ( "100,000 IU", "icon-capsule blue" )
 
-                else
-                    ( "200,000 IU", "icon-capsule red" )
+                        else
+                            ( "200,000 IU", "icon-capsule red" )
+
+                    _ ->
+                        if ageMonths < 18 then
+                            ( "100,000 IU", "icon-capsule blue" )
+
+                        else
+                            ( "200,000 IU", "icon-capsule red" )
             )
 
 

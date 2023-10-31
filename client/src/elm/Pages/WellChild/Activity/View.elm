@@ -2050,7 +2050,7 @@ viewMedicationContent language currentDate site isChw assembled data =
                     measurements.albendazole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.albendazoleForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Just TaskMebendezole ->
                     let
@@ -2065,7 +2065,7 @@ viewMedicationContent language currentDate site isChw assembled data =
                     measurements.mebendezole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Just TaskVitaminA ->
                     let
@@ -2080,7 +2080,7 @@ viewMedicationContent language currentDate site isChw assembled data =
                     measurements.vitaminA
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Nothing ->
                     []
@@ -2136,16 +2136,23 @@ type alias MedicationAdministrationFormConfig =
     { medication : MedicationDistributionSign
     , setMedicationAdministeredMsg : Bool -> Msg
     , setReasonForNonAdministration : AdministrationNote -> Msg
-    , resolveDosageAndIconFunc : NominalDate -> Person -> Maybe ( String, String )
+    , resolveDosageAndIconFunc : NominalDate -> Site -> Person -> Maybe ( String, String )
     , helper : TranslationId
     }
 
 
-viewMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationFormConfig -> MedicationAdministrationForm -> List (Html Msg)
-viewMedicationAdministrationForm language currentDate assembled config form =
+viewMedicationAdministrationForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> MedicationAdministrationFormConfig
+    -> MedicationAdministrationForm
+    -> List (Html Msg)
+viewMedicationAdministrationForm language currentDate site assembled config form =
     let
         instructions =
-            config.resolveDosageAndIconFunc currentDate assembled.person
+            config.resolveDosageAndIconFunc currentDate site assembled.person
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
