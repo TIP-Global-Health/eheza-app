@@ -20981,7 +20981,7 @@ translationSet trans =
                                     }
 
                         VaccineDTPStandalone ->
-                            { english = "DTP Vaccine"
+                            { english = "DTP Vaccine (4-th dose)"
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
                             }

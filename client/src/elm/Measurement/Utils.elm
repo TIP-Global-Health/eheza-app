@@ -5921,39 +5921,55 @@ generateVaccinationProgressDictByChildScoreboard site db participantId =
 generateVaccinationProgressForWellChild : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
 generateVaccinationProgressForWellChild site person measurements =
     let
-        bcgImmunisations =
+        bcgImmunisationsProgress =
             List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        dtpImmunisations =
+        dtpImmunisationsProgress =
             List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        dtpStandaloneImmunisations =
-            List.filterMap (.dtpStandaloneImmunisation >> getMeasurementValueFunc)
-                measurements
+        dtpStandaloneEntry =
+            -- This entry shall appear after 3 doses of DTP were given.
+            if isJust <| Dict.get VaccineDoseThird dtpImmunisationsProgress then
+                let
+                    dtpStandaloneImmunisations =
+                        List.filterMap (.dtpStandaloneImmunisation >> getMeasurementValueFunc)
+                            measurements
+                in
+                [ ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImmunisations ) ]
 
-        ipvImmunisations =
+            else
+                []
+
+        ipvImmunisationsProgress =
             List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        mrImmunisations =
+        mrImmunisationsProgress =
             List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        opvImmunisations =
+        opvImmunisationsProgress =
             List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        pcv13Immunisations =
+        pcv13ImmunisationsProgress =
             List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        rotarixImmunisations =
+        rotarixImmunisationsProgress =
             List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        hpvProgress =
+        hpvEntry =
             if person.gender == Female then
                 let
                     hpvImmunisations =
@@ -5968,16 +5984,16 @@ generateVaccinationProgressForWellChild site person measurements =
         vaccineTypesForSite =
             allVaccineTypes site
     in
-    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
-    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
-    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
-    , ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImmunisations )
-    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
-    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
-    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
-    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
+    [ ( VaccineBCG, bcgImmunisationsProgress )
+    , ( VaccineOPV, opvImmunisationsProgress )
+    , ( VaccineDTP, dtpImmunisationsProgress )
+    , ( VaccinePCV13, pcv13ImmunisationsProgress )
+    , ( VaccineRotarix, rotarixImmunisationsProgress )
+    , ( VaccineIPV, ipvImmunisationsProgress )
+    , ( VaccineMR, mrImmunisationsProgress )
     ]
-        ++ hpvProgress
+        ++ dtpStandaloneEntry
+        ++ hpvEntry
         |> List.filter
             (\( vaccineType, _ ) ->
                 List.member vaccineType vaccineTypesForSite
@@ -5988,50 +6004,66 @@ generateVaccinationProgressForWellChild site person measurements =
 generateVaccinationProgressForChildScoreboard : Site -> List ChildScoreboardMeasurements -> VaccinationProgressDict
 generateVaccinationProgressForChildScoreboard site measurements =
     let
-        bcgImmunisations =
+        bcgImmunisationsProgress =
             List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        dtpImmunisations =
+        dtpImmunisationsProgress =
             List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        dtpStandaloneImmunisations =
-            List.filterMap (.dtpStandaloneImmunisation >> getMeasurementValueFunc)
-                measurements
+        -- This entry shall appear after 3 doses of DTP were given.
+        dtpStandaloneEntry =
+            if isJust <| Dict.get VaccineDoseThird dtpImmunisationsProgress then
+                let
+                    dtpStandaloneImmunisations =
+                        List.filterMap (.dtpStandaloneImmunisation >> getMeasurementValueFunc)
+                            measurements
+                in
+                [ ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImmunisations ) ]
 
-        ipvImmunisations =
+            else
+                []
+
+        ipvImmunisationsProgress =
             List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        mrImmunisations =
+        mrImmunisationsProgress =
             List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        opvImmunisations =
+        opvImmunisationsProgress =
             List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        pcv13Immunisations =
+        pcv13ImmunisationsProgress =
             List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
-        rotarixImmunisations =
+        rotarixImmunisationsProgress =
             List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
                 measurements
+                |> generateVaccinationProgressForVaccine
 
         vaccineTypesForSite =
             allVaccineTypes site
     in
-    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImmunisations )
-    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImmunisations )
-    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImmunisations )
-    , ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImmunisations )
-    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13Immunisations )
-    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImmunisations )
-    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImmunisations )
-    , ( VaccineMR, generateVaccinationProgressForVaccine mrImmunisations )
+    [ ( VaccineBCG, bcgImmunisationsProgress )
+    , ( VaccineOPV, opvImmunisationsProgress )
+    , ( VaccineDTP, dtpImmunisationsProgress )
+    , ( VaccinePCV13, pcv13ImmunisationsProgress )
+    , ( VaccineRotarix, rotarixImmunisationsProgress )
+    , ( VaccineIPV, ipvImmunisationsProgress )
+    , ( VaccineMR, mrImmunisationsProgress )
     ]
+        ++ dtpStandaloneEntry
         |> List.filter
             (\( vaccineType, _ ) ->
                 List.member vaccineType vaccineTypesForSite
