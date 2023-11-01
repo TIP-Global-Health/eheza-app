@@ -19,7 +19,7 @@ import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskAnyCom
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
-import SyncManager.Model exposing (Site, SiteFeature)
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import ZScore.Model
 
 
@@ -83,7 +83,7 @@ activityCompleted currentDate zscores site features isChw assembled db activity 
 
         WellChildMedication ->
             (not <| activityExpected WellChildMedication)
-                || List.all (medicationTaskCompleted currentDate isChw assembled) medicationTasks
+                || List.all (medicationTaskCompleted currentDate site isChw assembled) medicationTasks
 
         WellChildImmunisation ->
             (not <| activityExpected WellChildImmunisation)
@@ -152,7 +152,7 @@ expectActivity currentDate zscores site features isChw assembled db activity =
 
             else
                 medicationTasks
-                    |> List.filter (expectMedicationTask currentDate isChw assembled)
+                    |> List.filter (expectMedicationTask currentDate site isChw assembled)
                     |> List.isEmpty
                     |> not
 
@@ -1142,14 +1142,14 @@ ecdSignsFrom4Years =
     ]
 
 
-medicationTaskCompleted : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
-medicationTaskCompleted currentDate isChw assembled task =
+medicationTaskCompleted : NominalDate -> Site -> Bool -> AssembledData -> MedicationTask -> Bool
+medicationTaskCompleted currentDate site isChw assembled task =
     let
         measurements =
             assembled.measurements
 
         taskExpected =
-            expectMedicationTask currentDate isChw assembled
+            expectMedicationTask currentDate site isChw assembled
     in
     case task of
         TaskAlbendazole ->
@@ -1162,12 +1162,12 @@ medicationTaskCompleted currentDate isChw assembled task =
             (not <| taskExpected TaskVitaminA) || isJust measurements.vitaminA
 
 
-expectMedicationTask : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
-expectMedicationTask currentDate isChw assembled task =
+expectMedicationTask : NominalDate -> Site -> Bool -> AssembledData -> MedicationTask -> Bool
+expectMedicationTask currentDate site isChw assembled task =
     let
         nextAdmnistrationData =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
-                |> nextMedicationAdmnistrationData currentDate assembled.person
+                |> nextMedicationAdmnistrationData currentDate site assembled.person
     in
     Dict.get task nextAdmnistrationData
         |> Maybe.map
@@ -1181,9 +1181,9 @@ expectMedicationTask currentDate isChw assembled task =
         |> Maybe.withDefault False
 
 
-nextMedicationAdmnistrationData : NominalDate -> Person -> List WellChildMeasurements -> Dict MedicationTask NominalDate
-nextMedicationAdmnistrationData currentDate person measurements =
-    List.filter (expectMedicationByAge currentDate person) medicationTasks
+nextMedicationAdmnistrationData : NominalDate -> Site -> Person -> List WellChildMeasurements -> Dict MedicationTask NominalDate
+nextMedicationAdmnistrationData currentDate site person measurements =
+    List.filter (expectMedicationByAge currentDate site person) medicationTasks
         |> List.map
             (\medication ->
                 case medication of
@@ -1208,23 +1208,39 @@ nextMedicationAdmnistrationData currentDate person measurements =
         |> Dict.fromList
 
 
-expectMedicationByAge : NominalDate -> Person -> MedicationTask -> Bool
-expectMedicationByAge currentDate person task =
+expectMedicationByAge : NominalDate -> Site -> Person -> MedicationTask -> Bool
+expectMedicationByAge currentDate site person task =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
-                case task of
-                    -- 6 years to 12 years.
-                    TaskAlbendazole ->
-                        ageMonths >= (6 * 12) && ageMonths < (12 * 12)
+                case site of
+                    SiteBurundi ->
+                        case task of
+                            -- 6 months to 12 years.
+                            TaskAlbendazole ->
+                                ageMonths >= 6 && ageMonths < (12 * 12)
 
-                    -- 1 year to 6 years.
-                    TaskMebendezole ->
-                        ageMonths >= 12 && ageMonths < (6 * 12)
+                            -- Never.
+                            TaskMebendezole ->
+                                False
 
-                    -- 6 months to 6 years.
-                    TaskVitaminA ->
-                        ageMonths >= 6 && ageMonths < (6 * 12)
+                            -- 6 months to 6 years.
+                            TaskVitaminA ->
+                                ageMonths >= 6 && ageMonths < (6 * 6)
+
+                    _ ->
+                        case task of
+                            -- 6 years to 12 years.
+                            TaskAlbendazole ->
+                                ageMonths >= (6 * 12) && ageMonths < (12 * 12)
+
+                            -- 1 year to 6 years.
+                            TaskMebendezole ->
+                                ageMonths >= 12 && ageMonths < (6 * 12)
+
+                            -- 6 months to 6 years.
+                            TaskVitaminA ->
+                                ageMonths >= 6 && ageMonths < (6 * 12)
             )
         |> Maybe.withDefault False
 
@@ -1329,26 +1345,53 @@ toAdministrationNote form =
             )
 
 
-resolveAlbendazoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveAlbendazoleDosageAndIcon currentDate person =
-    Just ( "400 mg", "icon-pills" )
+resolveAlbendazoleDosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveAlbendazoleDosageAndIcon currentDate site person =
+    case site of
+        SiteBurundi ->
+            ageInMonths currentDate person
+                |> Maybe.map
+                    (\ageMonths ->
+                        if ageMonths < 24 then
+                            ( "200 mg", "icon-pills" )
+
+                        else
+                            ( "400 mg", "icon-pills" )
+                    )
+
+        _ ->
+            Just ( "400 mg", "icon-pills" )
 
 
-resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveMebendezoleDosageAndIcon currentDate person =
-    Just ( "500 mg", "icon-pills" )
+resolveMebendezoleDosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveMebendezoleDosageAndIcon currentDate site person =
+    case site of
+        SiteBurundi ->
+            Nothing
+
+        _ ->
+            Just ( "500 mg", "icon-pills" )
 
 
-resolveVitaminADosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveVitaminADosageAndIcon currentDate person =
+resolveVitaminADosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveVitaminADosageAndIcon currentDate site person =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
-                if ageMonths <= 12 then
-                    ( "100,000 IU", "icon-capsule blue" )
+                case site of
+                    SiteBurundi ->
+                        if ageMonths < 12 then
+                            ( "100,000 IU", "icon-capsule blue" )
 
-                else
-                    ( "200,000 IU", "icon-capsule red" )
+                        else
+                            ( "200,000 IU", "icon-capsule red" )
+
+                    _ ->
+                        if ageMonths < 18 then
+                            ( "100,000 IU", "icon-capsule blue" )
+
+                        else
+                            ( "200,000 IU", "icon-capsule red" )
             )
 
 
@@ -1563,7 +1606,7 @@ generateNextVisitDates currentDate site assembled db =
             generateNextDateForECDVisit currentDate assembled db
 
         nextVisitDateForMedication =
-            generateNextDateForMedicationVisit currentDate assembled db
+            generateNextDateForMedicationVisit currentDate site assembled db
     in
     ( generateNextDateForImmunisationVisit currentDate site assembled db
     , Maybe.Extra.values [ nextVisitDateForECD, nextVisitDateForMedication ]
@@ -1639,8 +1682,8 @@ generateNextDateForECDVisit currentDate assembled db =
             )
 
 
-generateNextDateForMedicationVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateNextDateForMedicationVisit currentDate assembled db =
+generateNextDateForMedicationVisit : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextDateForMedicationVisit currentDate site assembled db =
     assembled.person.birthDate
         |> Maybe.andThen
             (\birthDate ->
@@ -1648,7 +1691,7 @@ generateNextDateForMedicationVisit currentDate assembled db =
                     ageMonths =
                         Date.diff Months birthDate currentDate
                 in
-                -- When younder than 6 months, set visit date to
+                -- When younger than 6 months, set visit date to
                 -- age of 6 months.
                 if ageMonths < 6 then
                     Just <| Date.add Months 6 birthDate
@@ -1659,7 +1702,7 @@ generateNextDateForMedicationVisit currentDate assembled db =
                             assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
 
                         nextDate =
-                            nextMedicationAdmnistrationData currentDate assembled.person measurements
+                            nextMedicationAdmnistrationData currentDate site assembled.person measurements
                                 |> Dict.values
                                 |> List.sortWith Date.compare
                                 |> List.reverse

@@ -242,7 +242,7 @@ viewActivity language currentDate zscores site features id isChw activity assemb
             viewECDForm language currentDate assembled model.ecdForm
 
         WellChildMedication ->
-            viewMedicationContent language currentDate isChw assembled model.medicationData
+            viewMedicationContent language currentDate site isChw assembled model.medicationData
 
         WellChildNextSteps ->
             viewNextStepsContent language currentDate zscores site features id isChw assembled db model.nextStepsData
@@ -1970,18 +1970,19 @@ ecdFormInputsAndTasks language currentDate assembled ecdForm =
 viewMedicationContent :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> AssembledData
     -> MedicationData
     -> List (Html Msg)
-viewMedicationContent language currentDate isChw assembled data =
+viewMedicationContent language currentDate site isChw assembled data =
     let
         measurements =
             assembled.measurements
 
         tasks =
             medicationTasks
-                |> List.filter (expectMedicationTask currentDate isChw assembled)
+                |> List.filter (expectMedicationTask currentDate site isChw assembled)
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -2049,7 +2050,7 @@ viewMedicationContent language currentDate isChw assembled data =
                     measurements.albendazole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.albendazoleForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Just TaskMebendezole ->
                     let
@@ -2064,7 +2065,7 @@ viewMedicationContent language currentDate isChw assembled data =
                     measurements.mebendezole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Just TaskVitaminA ->
                     let
@@ -2079,7 +2080,7 @@ viewMedicationContent language currentDate isChw assembled data =
                     measurements.vitaminA
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Nothing ->
                     []
@@ -2135,16 +2136,23 @@ type alias MedicationAdministrationFormConfig =
     { medication : MedicationDistributionSign
     , setMedicationAdministeredMsg : Bool -> Msg
     , setReasonForNonAdministration : AdministrationNote -> Msg
-    , resolveDosageAndIconFunc : NominalDate -> Person -> Maybe ( String, String )
+    , resolveDosageAndIconFunc : NominalDate -> Site -> Person -> Maybe ( String, String )
     , helper : TranslationId
     }
 
 
-viewMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationFormConfig -> MedicationAdministrationForm -> List (Html Msg)
-viewMedicationAdministrationForm language currentDate assembled config form =
+viewMedicationAdministrationForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> MedicationAdministrationFormConfig
+    -> MedicationAdministrationForm
+    -> List (Html Msg)
+viewMedicationAdministrationForm language currentDate site assembled config form =
     let
         instructions =
-            config.resolveDosageAndIconFunc currentDate assembled.person
+            config.resolveDosageAndIconFunc currentDate site assembled.person
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
