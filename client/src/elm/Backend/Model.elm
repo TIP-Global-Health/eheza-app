@@ -489,6 +489,7 @@ type Revision
     | ChildScoreboardEncounterRevision ChildScoreboardEncounterId ChildScoreboardEncounter
     | ChildScoreboardBCGImmunisationRevision ChildScoreboardBCGImmunisationId ChildScoreboardBCGImmunisation
     | ChildScoreboardDTPImmunisationRevision ChildScoreboardDTPImmunisationId ChildScoreboardDTPImmunisation
+    | ChildScoreboardDTPStandaloneImmunisationRevision ChildScoreboardDTPStandaloneImmunisationId ChildScoreboardDTPStandaloneImmunisation
     | ChildScoreboardIPVImmunisationRevision ChildScoreboardIPVImmunisationId ChildScoreboardIPVImmunisation
     | ChildScoreboardMRImmunisationRevision ChildScoreboardMRImmunisationId ChildScoreboardMRImmunisation
     | ChildScoreboardNCDARevision ChildScoreboardNCDAId ChildScoreboardNCDA
@@ -620,6 +621,7 @@ type Revision
     | WellChildBCGImmunisationRevision WellChildBCGImmunisationId WellChildBCGImmunisation
     | WellChildContributingFactorsRevision WellChildContributingFactorsId WellChildContributingFactors
     | WellChildDTPImmunisationRevision WellChildDTPImmunisationId WellChildDTPImmunisation
+    | WellChildDTPStandaloneImmunisationRevision WellChildDTPStandaloneImmunisationId WellChildDTPStandaloneImmunisation
     | WellChildECDRevision WellChildECDId WellChildECD
     | WellChildEncounterRevision WellChildEncounterId WellChildEncounter
     | WellChildFollowUpRevision WellChildFollowUpId WellChildFollowUp

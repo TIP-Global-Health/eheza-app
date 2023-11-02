@@ -1,6 +1,6 @@
 module Pages.Scoreboard.View exposing (view)
 
-import App.Types exposing (Language)
+import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Model exposing (ScoreboardData)
@@ -101,7 +101,7 @@ viewScoreboardData language currentDate data model =
         , viewAcuteMalnutritionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewStuntingPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewANCNewbornPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
-        , viewUniversalInterventionPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
+        , viewUniversalInterventionPane language currentDate data.site model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewNutritionBehaviorPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
@@ -476,8 +476,8 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
         ]
 
 
-viewUniversalInterventionPane : Language -> NominalDate -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
-viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap childrenUnder2 viewMode data =
+viewUniversalInterventionPane : Language -> NominalDate -> Site -> Int -> Dict Int Int -> List Int -> ViewMode -> ScoreboardData -> Html any
+viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGap childrenUnder2 viewMode data =
     let
         rows =
             List.map2
@@ -541,7 +541,7 @@ viewUniversalInterventionPane language currentDate yearSelectorGap monthsGap chi
                                                                 record.ncda.universalIntervention.row1
 
                                                         futureVaccinations =
-                                                            generateFutureVaccinationsData record.birthDate vaccinationProgressOnReferrenceDate
+                                                            generateFutureVaccinationsData site record.birthDate vaccinationProgressOnReferrenceDate
 
                                                         closestDateForVaccination =
                                                             List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations

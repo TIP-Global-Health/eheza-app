@@ -148,7 +148,7 @@ viewContentAndHeader language currentDate site features isChw initiator model as
     in
     div [ class "page-report clinical" ] <|
         [ viewHeader language assembled.id initiator model
-        , viewContent language currentDate features isChw initiator model assembled
+        , viewContent language currentDate site features isChw initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
@@ -243,13 +243,14 @@ viewHeader language id initiator model =
 viewContent :
     Language
     -> NominalDate
+    -> Site
     -> EverySet SiteFeature
     -> Bool
     -> PrenatalProgressReportInitiator
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate features isChw initiator model assembled =
+viewContent language currentDate site features isChw initiator model assembled =
     let
         derivedContent =
             let
@@ -300,8 +301,8 @@ viewContent language currentDate features isChw initiator model assembled =
                                     let
                                         ( completedActivities, pendingActivities ) =
                                             getAllActivities assembled
-                                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate assembled)
-                                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate assembled)
+                                                |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
+                                                |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site assembled)
 
                                         ( actionsClass, actionButtonColor, reportToWhatsAppButton ) =
                                             if reportToWhatsAppEnabled features then

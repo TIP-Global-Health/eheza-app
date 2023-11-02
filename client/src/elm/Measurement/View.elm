@@ -133,7 +133,7 @@ viewChild language currentDate site isChw ( childId, child ) activity measuremen
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
-            viewNCDA language currentDate zscores childId child (mapMeasurementData .ncda measurements) model.ncdaData db
+            viewNCDA language currentDate zscores site childId child (mapMeasurementData .ncda measurements) model.ncdaData db
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -2318,6 +2318,7 @@ viewNCDAContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
@@ -2325,7 +2326,7 @@ viewNCDAContent :
     -> NCDAForm
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate zscores personId person config helperState form db =
+viewNCDAContent language currentDate zscores site personId person config helperState form db =
     let
         steps =
             resolveNCDASteps currentDate person config.ncdaNeverFilled config.atHealthCenter
@@ -2390,6 +2391,7 @@ viewNCDAContent language currentDate zscores personId person config helperState 
                     , ncdaFormInputsAndTasks language
                         currentDate
                         zscores
+                        site
                         personId
                         person
                         config
@@ -2522,6 +2524,7 @@ ncdaFormInputsAndTasks :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
@@ -2529,7 +2532,7 @@ ncdaFormInputsAndTasks :
     -> NCDAStep
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate zscores personId person config form currentStep db =
+ncdaFormInputsAndTasks language currentDate zscores site personId person config form currentStep db =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -2573,7 +2576,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                 ChildBehindOnVaccination ->
                     let
                         childBehindOnVaccinations =
-                            Maybe.withDefault (behindOnVaccinationsByWellChild currentDate personId db)
+                            Maybe.withDefault (behindOnVaccinationsByWellChild currentDate site personId db)
                                 config.behindOnVaccinations
                     in
                     if childBehindOnVaccinations then
@@ -3664,13 +3667,14 @@ viewNCDA :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> PersonId
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
     -> NCDAData
     -> ModelIndexedDb
     -> Html MsgChild
-viewNCDA language currentDate zscores childId child measurement data db =
+viewNCDA language currentDate zscores site childId child measurement data db =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -3708,6 +3712,7 @@ viewNCDA language currentDate zscores childId child measurement data db =
     viewNCDAContent language
         currentDate
         zscores
+        site
         childId
         child
         config

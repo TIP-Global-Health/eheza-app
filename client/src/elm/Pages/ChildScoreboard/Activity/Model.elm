@@ -34,6 +34,7 @@ emptyModel =
 type alias ImmunisationData =
     { bcgForm : ChildScoreboardVaccinationForm
     , dtpForm : ChildScoreboardVaccinationForm
+    , dtpStandaloneForm : ChildScoreboardVaccinationForm
     , ipvForm : ChildScoreboardVaccinationForm
     , mrForm : ChildScoreboardVaccinationForm
     , opvForm : ChildScoreboardVaccinationForm
@@ -51,6 +52,7 @@ emptyImmunisationData : ImmunisationData
 emptyImmunisationData =
     { bcgForm = emptyVaccinationForm
     , dtpForm = emptyVaccinationForm
+    , dtpStandaloneForm = emptyVaccinationForm
     , ipvForm = emptyVaccinationForm
     , mrForm = emptyVaccinationForm
     , opvForm = emptyVaccinationForm
@@ -87,6 +89,7 @@ type Msg
     | DeleteVaccinationUpdateDate WellChildVaccineType VaccineDose NominalDate
     | SaveBCGImmunisation PersonId (Maybe ( ChildScoreboardBCGImmunisationId, ChildScoreboardBCGImmunisation )) (Maybe ImmunisationTask)
     | SaveDTPImmunisation PersonId (Maybe ( ChildScoreboardDTPImmunisationId, ChildScoreboardDTPImmunisation )) (Maybe ImmunisationTask)
+    | SaveDTPStandaloneImmunisation PersonId (Maybe ( ChildScoreboardDTPStandaloneImmunisationId, ChildScoreboardDTPStandaloneImmunisation )) (Maybe ImmunisationTask)
     | SaveIPVImmunisation PersonId (Maybe ( ChildScoreboardIPVImmunisationId, ChildScoreboardIPVImmunisation )) (Maybe ImmunisationTask)
     | SaveMRImmunisation PersonId (Maybe ( ChildScoreboardMRImmunisationId, ChildScoreboardMRImmunisation )) (Maybe ImmunisationTask)
     | SaveOPVImmunisation PersonId (Maybe ( ChildScoreboardOPVImmunisationId, ChildScoreboardOPVImmunisation )) (Maybe ImmunisationTask)

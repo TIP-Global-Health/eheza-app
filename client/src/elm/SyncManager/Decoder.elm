@@ -518,6 +518,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeChildScoreboardDTPImmunisation
                             BackendAuthorityChildScoreboardDTPImmunisation
 
+                    "child_scoreboard_dtp_sa_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardDTPStandaloneImmunisation
+                            BackendAuthorityChildScoreboardDTPStandaloneImmunisation
+
                     "child_scoreboard_ipv_iz" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeChildScoreboardIPVImmunisation
@@ -1135,6 +1140,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildDTPImmunisation
                             BackendAuthorityWellChildDTPImmunisation
+
+                    "well_child_dtp_sa_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildDTPStandaloneImmunisation
+                            BackendAuthorityWellChildDTPStandaloneImmunisation
 
                     "well_child_ecd" ->
                         doDecode

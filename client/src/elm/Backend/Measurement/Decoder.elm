@@ -240,6 +240,7 @@ decodeWellChildMeasurements =
         |> optional "well_child_next_visit" (decodeHead decodeWellChildNextVisit) Nothing
         |> optional "well_child_bcg_immunisation" (decodeHead decodeWellChildBCGImmunisation) Nothing
         |> optional "well_child_dtp_immunisation" (decodeHead decodeWellChildDTPImmunisation) Nothing
+        |> optional "well_child_dtp_sa_immunisation" (decodeHead decodeWellChildDTPStandaloneImmunisation) Nothing
         |> optional "well_child_hpv_immunisation" (decodeHead decodeWellChildHPVImmunisation) Nothing
         |> optional "well_child_ipv_immunisation" (decodeHead decodeWellChildIPVImmunisation) Nothing
         |> optional "well_child_mr_immunisation" (decodeHead decodeWellChildMRImmunisation) Nothing
@@ -282,6 +283,7 @@ decodeChildScoreboardMeasurements =
         |> optional "child_scoreboard_ncda" (decodeHead decodeChildScoreboardNCDA) Nothing
         |> optional "child_scoreboard_bcg_iz" (decodeHead decodeChildScoreboardBCGImmunisation) Nothing
         |> optional "child_scoreboard_dtp_iz" (decodeHead decodeChildScoreboardDTPImmunisation) Nothing
+        |> optional "child_scoreboard_dtp_sa_iz" (decodeHead decodeChildScoreboardDTPStandaloneImmunisation) Nothing
         |> optional "child_scoreboard_ipv_iz" (decodeHead decodeChildScoreboardIPVImmunisation) Nothing
         |> optional "child_scoreboard_mr_iz" (decodeHead decodeChildScoreboardMRImmunisation) Nothing
         |> optional "child_scoreboard_opv_iz" (decodeHead decodeChildScoreboardOPVImmunisation) Nothing
@@ -4670,6 +4672,11 @@ decodeWellChildDTPImmunisation =
     decodeWellChildMeasurement decodeVaccinationValue
 
 
+decodeWellChildDTPStandaloneImmunisation : Decoder WellChildDTPStandaloneImmunisation
+decodeWellChildDTPStandaloneImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
 decodeWellChildHPVImmunisation : Decoder WellChildHPVImmunisation
 decodeWellChildHPVImmunisation =
     decodeWellChildMeasurement decodeVaccinationValue
@@ -5270,6 +5277,11 @@ decodeChildScoreboardBCGImmunisation =
 
 decodeChildScoreboardDTPImmunisation : Decoder ChildScoreboardDTPImmunisation
 decodeChildScoreboardDTPImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardDTPStandaloneImmunisation : Decoder ChildScoreboardDTPStandaloneImmunisation
+decodeChildScoreboardDTPStandaloneImmunisation =
     decodeChildScoreboardMeasurement decodeVaccinationValue
 
 

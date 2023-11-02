@@ -1,5 +1,6 @@
 module Backend.Scoreboard.Model exposing (..)
 
+import App.Types exposing (Site)
 import AssocList as Dict exposing (Dict)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -7,7 +8,8 @@ import Json.Encode exposing (Value)
 
 
 type alias ScoreboardData =
-    { entityName : String
+    { site : Site
+    , entityName : String
     , entityType : SelectedEntity
     , records : List PatientData
     }
@@ -113,6 +115,7 @@ type alias RawVaccinationData =
     { bcg : EverySet NominalDate
     , opv : EverySet NominalDate
     , dtp : EverySet NominalDate
+    , dtpStandalone : EverySet NominalDate
     , pcv13 : EverySet NominalDate
     , rotarix : EverySet NominalDate
     , ipv : EverySet NominalDate
@@ -124,6 +127,7 @@ type VaccineType
     = VaccineBCG
     | VaccineOPV
     | VaccineDTP
+    | VaccineDTPStandalone
     | VaccinePCV13
     | VaccineRotarix
     | VaccineIPV

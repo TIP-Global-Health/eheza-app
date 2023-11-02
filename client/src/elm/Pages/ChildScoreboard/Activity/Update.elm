@@ -545,6 +545,34 @@ update currentDate site id db msg model =
             )
                 |> sequenceExtra (update currentDate site id db) extraMsgs
 
+        SaveDTPStandaloneImmunisation personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask
+
+                appMsgs =
+                    model.immunisationData.dtpForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.ChildScoreboardEncounter.Model.SaveDTPStandaloneImmunisation personId measurementId
+                                >> Backend.Model.MsgChildScoreboardEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site id db) extraMsgs
+
         SaveIPVImmunisation personId saved nextTask ->
             let
                 measurementId =

@@ -2295,6 +2295,7 @@ type WellChildVaccineType
     = VaccineBCG
     | VaccineOPV
     | VaccineDTP
+    | VaccineDTPStandalone
     | VaccinePCV13
     | VaccineRotarix
     | VaccineIPV
@@ -2394,6 +2395,10 @@ type alias WellChildBCGImmunisation =
 
 
 type alias WellChildDTPImmunisation =
+    WellChildMeasurement VaccinationValue
+
+
+type alias WellChildDTPStandaloneImmunisation =
     WellChildMeasurement VaccinationValue
 
 
@@ -2782,6 +2787,10 @@ type alias ChildScoreboardDTPImmunisation =
     ChildScoreboardMeasurement VaccinationValue
 
 
+type alias ChildScoreboardDTPStandaloneImmunisation =
+    ChildScoreboardMeasurement VaccinationValue
+
+
 type alias ChildScoreboardIPVImmunisation =
     ChildScoreboardMeasurement VaccinationValue
 
@@ -3111,6 +3120,7 @@ type alias WellChildMeasurements =
     , nextVisit : Maybe ( WellChildNextVisitId, WellChildNextVisit )
     , bcgImmunisation : Maybe ( WellChildBCGImmunisationId, WellChildBCGImmunisation )
     , dtpImmunisation : Maybe ( WellChildDTPImmunisationId, WellChildDTPImmunisation )
+    , dtpStandaloneImmunisation : Maybe ( WellChildDTPStandaloneImmunisationId, WellChildDTPStandaloneImmunisation )
     , hpvImmunisation : Maybe ( WellChildHPVImmunisationId, WellChildHPVImmunisation )
     , ipvImmunisation : Maybe ( WellChildIPVImmunisationId, WellChildIPVImmunisation )
     , mrImmunisation : Maybe ( WellChildMRImmunisationId, WellChildMRImmunisation )
@@ -3153,6 +3163,7 @@ type alias ChildScoreboardMeasurements =
     { ncda : Maybe ( ChildScoreboardNCDAId, ChildScoreboardNCDA )
     , bcgImmunisation : Maybe ( ChildScoreboardBCGImmunisationId, ChildScoreboardBCGImmunisation )
     , dtpImmunisation : Maybe ( ChildScoreboardDTPImmunisationId, ChildScoreboardDTPImmunisation )
+    , dtpStandaloneImmunisation : Maybe ( ChildScoreboardDTPStandaloneImmunisationId, ChildScoreboardDTPStandaloneImmunisation )
     , ipvImmunisation : Maybe ( ChildScoreboardIPVImmunisationId, ChildScoreboardIPVImmunisation )
     , mrImmunisation : Maybe ( ChildScoreboardMRImmunisationId, ChildScoreboardMRImmunisation )
     , opvImmunisation : Maybe ( ChildScoreboardOPVImmunisationId, ChildScoreboardOPVImmunisation )

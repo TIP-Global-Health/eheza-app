@@ -26,7 +26,7 @@ view : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardE
 view language currentDate zscores site id db model =
     let
         assembled =
-            generateAssembledData id db
+            generateAssembledData site id db
     in
     viewWebData language (viewHeaderAndContent language currentDate zscores site db model) identity assembled
 
@@ -35,8 +35,8 @@ viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> 
 viewHeaderAndContent language currentDate zscores site db model assembled =
     let
         ( _, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled) allActivities
-                |> List.partition (activityCompleted currentDate assembled db)
+            List.filter (expectActivity currentDate site assembled) allActivities
+                |> List.partition (activityCompleted currentDate site assembled db)
 
         allowEndEncounter =
             List.isEmpty pendingActivities

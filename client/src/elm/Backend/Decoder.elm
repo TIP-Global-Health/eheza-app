@@ -96,6 +96,9 @@ decodeRevision =
                     "child_scoreboard_dtp_iz" ->
                         decodeWithUuid ChildScoreboardDTPImmunisationRevision decodeChildScoreboardDTPImmunisation
 
+                    "child_scoreboard_dtp_sa_iz" ->
+                        decodeWithUuid ChildScoreboardDTPStandaloneImmunisationRevision decodeChildScoreboardDTPStandaloneImmunisation
+
                     "child_scoreboard_ipv_iz" ->
                         decodeWithUuid ChildScoreboardIPVImmunisationRevision decodeChildScoreboardIPVImmunisation
 
@@ -491,6 +494,9 @@ decodeRevision =
 
                     "well_child_dtp_immunisation" ->
                         decodeWithUuid WellChildDTPImmunisationRevision decodeWellChildDTPImmunisation
+
+                    "well_child_dtp_sa_immunisation" ->
+                        decodeWithUuid WellChildDTPStandaloneImmunisationRevision decodeWellChildDTPStandaloneImmunisation
 
                     "well_child_ecd" ->
                         decodeWithUuid WellChildECDRevision decodeWellChildECD

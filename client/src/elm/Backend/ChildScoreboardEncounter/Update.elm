@@ -78,6 +78,18 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveDTPStandaloneImmunisation personId valueId value ->
+            ( { model | saveDTPStandaloneImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value childScoreboardDTPStandaloneImmunisationEndpoint HandleSavedDTPStandaloneImmunisation
+            , []
+            )
+
+        HandleSavedDTPStandaloneImmunisation data ->
+            ( { model | saveDTPStandaloneImmunisation = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
         SaveIPVImmunisation personId valueId value ->
             ( { model | saveIPVImmunisation = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value childScoreboardIPVImmunisationEndpoint HandleSavedIPVImmunisation

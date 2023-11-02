@@ -377,6 +377,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityChildScoreboardDTPImmunisation identifier ->
                 viewMeasurement identifier "Child Scoreboard DTP Immunisation"
 
+            BackendAuthorityChildScoreboardDTPStandaloneImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard DTP standalone Immunisation"
+
             BackendAuthorityChildScoreboardIPVImmunisation identifier ->
                 viewMeasurement identifier "Child Scoreboard IPV Immunisation"
 
@@ -748,6 +751,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWellChildDTPImmunisation identifier ->
                 viewMeasurement identifier "Well Child DTP Immunisation"
+
+            BackendAuthorityWellChildDTPStandaloneImmunisation identifier ->
+                viewMeasurement identifier "Well Child DTP standalone Immunisation"
 
             BackendAuthorityWellChildECD identifier ->
                 viewMeasurement identifier "Well Child ECD"

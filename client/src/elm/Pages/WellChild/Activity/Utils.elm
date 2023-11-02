@@ -19,7 +19,7 @@ import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskAnyCom
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import ZScore.Model
 
 
@@ -47,14 +47,23 @@ generateNutritionAssessment currentDate zscores db assembled =
     Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue False db
 
 
-activityCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-activityCompleted currentDate zscores features isChw assembled db activity =
+activityCompleted :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> WellChildActivity
+    -> Bool
+activityCompleted currentDate zscores site features isChw assembled db activity =
     let
         measurements =
             assembled.measurements
 
         activityExpected =
-            expectActivity currentDate zscores features isChw assembled db
+            expectActivity currentDate zscores site features isChw assembled db
     in
     case activity of
         WellChildPregnancySummary ->
@@ -74,14 +83,14 @@ activityCompleted currentDate zscores features isChw assembled db activity =
 
         WellChildMedication ->
             (not <| activityExpected WellChildMedication)
-                || List.all (medicationTaskCompleted currentDate isChw assembled) medicationTasks
+                || List.all (medicationTaskCompleted currentDate site isChw assembled) medicationTasks
 
         WellChildImmunisation ->
             (not <| activityExpected WellChildImmunisation)
-                || List.all (immunisationTaskCompleted currentDate isChw assembled db) immunisationVaccinationTasks
+                || List.all (immunisationTaskCompleted currentDate site isChw assembled db) immunisationVaccinationTasks
 
         WellChildNextSteps ->
-            List.all (nextStepsTaskCompleted currentDate zscores features isChw assembled db) nextStepsTasks
+            List.all (nextStepsTaskCompleted currentDate zscores site features isChw assembled db) nextStepsTasks
 
         WellChildPhoto ->
             (not <| activityExpected WellChildPhoto) || isJust measurements.photo
@@ -90,8 +99,17 @@ activityCompleted currentDate zscores features isChw assembled db activity =
             (not <| activityExpected WellChildNCDA) || isJust measurements.ncda
 
 
-expectActivity : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> WellChildActivity -> Bool
-expectActivity currentDate zscores features isChw assembled db activity =
+expectActivity :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> WellChildActivity
+    -> Bool
+expectActivity currentDate zscores site features isChw assembled db activity =
     case activity of
         WellChildPregnancySummary ->
             if isChw then
@@ -111,9 +129,11 @@ expectActivity currentDate zscores features isChw assembled db activity =
 
         WellChildImmunisation ->
             generateSuggestedVaccinations currentDate
+                site
                 isChw
                 assembled.person
                 assembled.vaccinationHistory
+                assembled.vaccinationProgress
                 |> List.isEmpty
                 |> not
 
@@ -132,13 +152,13 @@ expectActivity currentDate zscores features isChw assembled db activity =
 
             else
                 medicationTasks
-                    |> List.filter (expectMedicationTask currentDate isChw assembled)
+                    |> List.filter (expectMedicationTask currentDate site isChw assembled)
                     |> List.isEmpty
                     |> not
 
         WellChildNextSteps ->
             nextStepsTasks
-                |> List.filter (expectNextStepsTask currentDate zscores features isChw assembled db)
+                |> List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db)
                 |> List.isEmpty
                 |> not
 
@@ -150,7 +170,7 @@ expectActivity currentDate zscores features isChw assembled db activity =
             expectNCDAActivity currentDate features isChw assembled.person
 
 
-generateVaccinationProgress : Person -> List WellChildMeasurements -> VaccinationProgressDict
+generateVaccinationProgress : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
 generateVaccinationProgress =
     Measurement.Utils.generateVaccinationProgressForWellChild
 
@@ -601,14 +621,14 @@ dangerSignsTasksCompletedFromTotal measurements data task =
             )
 
 
-immunisationTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Measurement.Model.ImmunisationTask -> Bool
-immunisationTaskCompleted currentDate isChw data db task =
+immunisationTaskCompleted : NominalDate -> Site -> Bool -> AssembledData -> ModelIndexedDb -> Measurement.Model.ImmunisationTask -> Bool
+immunisationTaskCompleted currentDate site isChw data db task =
     let
         measurements =
             data.measurements
 
         taskExpected =
-            expectImmunisationTask currentDate isChw data
+            expectImmunisationTask currentDate site isChw data
     in
     case task of
         TaskBCG ->
@@ -616,6 +636,9 @@ immunisationTaskCompleted currentDate isChw data db task =
 
         TaskDTP ->
             (not <| taskExpected TaskDTP) || isJust measurements.dtpImmunisation
+
+        TaskDTPStandalone ->
+            (not <| taskExpected TaskDTPStandalone) || isJust measurements.dtpStandaloneImmunisation
 
         TaskHPV ->
             (not <| taskExpected TaskHPV) || isJust measurements.hpvImmunisation
@@ -639,8 +662,8 @@ immunisationTaskCompleted currentDate isChw data db task =
             not <| taskExpected TaskOverview
 
 
-expectImmunisationTask : NominalDate -> Bool -> AssembledData -> Measurement.Model.ImmunisationTask -> Bool
-expectImmunisationTask currentDate isChw assembled task =
+expectImmunisationTask : NominalDate -> Site -> Bool -> AssembledData -> Measurement.Model.ImmunisationTask -> Bool
+expectImmunisationTask currentDate site isChw assembled task =
     if isChw then
         case task of
             TaskBCG ->
@@ -655,7 +678,7 @@ expectImmunisationTask currentDate isChw assembled task =
     else
         let
             futureVaccinations =
-                generateFutureVaccinationsData currentDate assembled.person False assembled.vaccinationHistory
+                generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationHistory
                     |> Dict.fromList
 
             ageInWeeks =
@@ -725,6 +748,7 @@ immunisationVaccinationTasks =
     [ TaskBCG
     , TaskOPV
     , TaskDTP
+    , TaskDTPStandalone
     , TaskPCV13
     , TaskRotarix
     , TaskIPV
@@ -746,6 +770,9 @@ getFormByVaccineTypeFunc vaccineType =
 
         VaccineDTP ->
             .dtpForm
+
+        VaccineDTPStandalone ->
+            .dtpStandaloneForm
 
         VaccineHPV ->
             .hpvForm
@@ -775,6 +802,9 @@ updateVaccinationFormByVaccineType vaccineType form data =
         VaccineDTP ->
             { data | dtpForm = form }
 
+        VaccineDTPStandalone ->
+            { data | dtpStandaloneForm = form }
+
         VaccineHPV ->
             { data | hpvForm = form }
 
@@ -803,6 +833,10 @@ getMeasurementByVaccineTypeFunc vaccineType measurements =
 
         VaccineDTP ->
             measurements.dtpImmunisation
+                |> getMeasurementValueFunc
+
+        VaccineDTPStandalone ->
+            measurements.dtpStandaloneImmunisation
                 |> getMeasurementValueFunc
 
         VaccineHPV ->
@@ -1108,14 +1142,14 @@ ecdSignsFrom4Years =
     ]
 
 
-medicationTaskCompleted : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
-medicationTaskCompleted currentDate isChw assembled task =
+medicationTaskCompleted : NominalDate -> Site -> Bool -> AssembledData -> MedicationTask -> Bool
+medicationTaskCompleted currentDate site isChw assembled task =
     let
         measurements =
             assembled.measurements
 
         taskExpected =
-            expectMedicationTask currentDate isChw assembled
+            expectMedicationTask currentDate site isChw assembled
     in
     case task of
         TaskAlbendazole ->
@@ -1128,12 +1162,12 @@ medicationTaskCompleted currentDate isChw assembled task =
             (not <| taskExpected TaskVitaminA) || isJust measurements.vitaminA
 
 
-expectMedicationTask : NominalDate -> Bool -> AssembledData -> MedicationTask -> Bool
-expectMedicationTask currentDate isChw assembled task =
+expectMedicationTask : NominalDate -> Site -> Bool -> AssembledData -> MedicationTask -> Bool
+expectMedicationTask currentDate site isChw assembled task =
     let
         nextAdmnistrationData =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
-                |> nextMedicationAdmnistrationData currentDate assembled.person
+                |> nextMedicationAdmnistrationData currentDate site assembled.person
     in
     Dict.get task nextAdmnistrationData
         |> Maybe.map
@@ -1147,9 +1181,9 @@ expectMedicationTask currentDate isChw assembled task =
         |> Maybe.withDefault False
 
 
-nextMedicationAdmnistrationData : NominalDate -> Person -> List WellChildMeasurements -> Dict MedicationTask NominalDate
-nextMedicationAdmnistrationData currentDate person measurements =
-    List.filter (expectMedicationByAge currentDate person) medicationTasks
+nextMedicationAdmnistrationData : NominalDate -> Site -> Person -> List WellChildMeasurements -> Dict MedicationTask NominalDate
+nextMedicationAdmnistrationData currentDate site person measurements =
+    List.filter (expectMedicationByAge currentDate site person) medicationTasks
         |> List.map
             (\medication ->
                 case medication of
@@ -1174,23 +1208,39 @@ nextMedicationAdmnistrationData currentDate person measurements =
         |> Dict.fromList
 
 
-expectMedicationByAge : NominalDate -> Person -> MedicationTask -> Bool
-expectMedicationByAge currentDate person task =
+expectMedicationByAge : NominalDate -> Site -> Person -> MedicationTask -> Bool
+expectMedicationByAge currentDate site person task =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
-                case task of
-                    -- 6 years to 12 years.
-                    TaskAlbendazole ->
-                        ageMonths >= (6 * 12) && ageMonths < (12 * 12)
+                case site of
+                    SiteBurundi ->
+                        case task of
+                            -- 6 months to 12 years.
+                            TaskAlbendazole ->
+                                ageMonths >= 6 && ageMonths < (12 * 12)
 
-                    -- 1 year to 6 years.
-                    TaskMebendezole ->
-                        ageMonths >= 12 && ageMonths < (6 * 12)
+                            -- Never.
+                            TaskMebendezole ->
+                                False
 
-                    -- 6 months to 6 years.
-                    TaskVitaminA ->
-                        ageMonths >= 6 && ageMonths < (6 * 12)
+                            -- 6 months to 6 years.
+                            TaskVitaminA ->
+                                ageMonths >= 6 && ageMonths < (6 * 6)
+
+                    _ ->
+                        case task of
+                            -- 6 years to 12 years.
+                            TaskAlbendazole ->
+                                ageMonths >= (6 * 12) && ageMonths < (12 * 12)
+
+                            -- 1 year to 6 years.
+                            TaskMebendezole ->
+                                ageMonths >= 12 && ageMonths < (6 * 12)
+
+                            -- 6 months to 6 years.
+                            TaskVitaminA ->
+                                ageMonths >= 6 && ageMonths < (6 * 12)
             )
         |> Maybe.withDefault False
 
@@ -1295,37 +1345,73 @@ toAdministrationNote form =
             )
 
 
-resolveAlbendazoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveAlbendazoleDosageAndIcon currentDate person =
-    Just ( "400 mg", "icon-pills" )
+resolveAlbendazoleDosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveAlbendazoleDosageAndIcon currentDate site person =
+    case site of
+        SiteBurundi ->
+            ageInMonths currentDate person
+                |> Maybe.map
+                    (\ageMonths ->
+                        if ageMonths < 24 then
+                            ( "200 mg", "icon-pills" )
+
+                        else
+                            ( "400 mg", "icon-pills" )
+                    )
+
+        _ ->
+            Just ( "400 mg", "icon-pills" )
 
 
-resolveMebendezoleDosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveMebendezoleDosageAndIcon currentDate person =
-    Just ( "500 mg", "icon-pills" )
+resolveMebendezoleDosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveMebendezoleDosageAndIcon currentDate site person =
+    case site of
+        SiteBurundi ->
+            Nothing
+
+        _ ->
+            Just ( "500 mg", "icon-pills" )
 
 
-resolveVitaminADosageAndIcon : NominalDate -> Person -> Maybe ( String, String )
-resolveVitaminADosageAndIcon currentDate person =
+resolveVitaminADosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
+resolveVitaminADosageAndIcon currentDate site person =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
-                if ageMonths <= 12 then
-                    ( "100,000 IU", "icon-capsule blue" )
+                case site of
+                    SiteBurundi ->
+                        if ageMonths < 12 then
+                            ( "100,000 IU", "icon-capsule blue" )
 
-                else
-                    ( "200,000 IU", "icon-capsule red" )
+                        else
+                            ( "200,000 IU", "icon-capsule red" )
+
+                    _ ->
+                        if ageMonths < 18 then
+                            ( "100,000 IU", "icon-capsule blue" )
+
+                        else
+                            ( "200,000 IU", "icon-capsule red" )
             )
 
 
-nextStepsTaskCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChild.Activity.Types.NextStepsTask -> Bool
-nextStepsTaskCompleted currentDate zscores features isChw data db task =
+nextStepsTaskCompleted :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Pages.WellChild.Activity.Types.NextStepsTask
+    -> Bool
+nextStepsTaskCompleted currentDate zscores site features isChw data db task =
     let
         measurements =
             data.measurements
 
         taskExpected =
-            expectNextStepsTask currentDate zscores features isChw data db
+            expectNextStepsTask currentDate zscores site features isChw data db
     in
     case task of
         TaskContributingFactors ->
@@ -1345,8 +1431,8 @@ nextStepsTaskCompleted currentDate zscores features isChw data db task =
                 || isJust measurements.nextVisit
 
 
-expectNextStepsTask : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChild.Activity.Types.NextStepsTask -> Bool
-expectNextStepsTask currentDate zscores features isChw assembled db task =
+expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Site -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChild.Activity.Types.NextStepsTask -> Bool
+expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
             if mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db then
@@ -1359,36 +1445,36 @@ expectNextStepsTask currentDate zscores features isChw assembled db task =
                 False
 
         TaskHealthEducation ->
-            expectNextStepsTask currentDate zscores features isChw assembled db TaskContributingFactors
+            expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
                 || -- At newborn exam, CHW should provide Health Education,
                    -- if newborn was not vaccinated at birth.
                    (isChw
-                        && activityCompleted currentDate zscores features isChw assembled db WellChildImmunisation
+                        && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
                         && (not <| newbornVaccinatedAtBirth assembled.measurements)
                    )
 
         TaskFollowUp ->
-            expectNextStepsTask currentDate zscores features isChw assembled db TaskContributingFactors
+            expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
 
         TaskSendToHC ->
-            expectNextStepsTask currentDate zscores features isChw assembled db TaskContributingFactors
+            expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
                 || -- At newborn exam, CHW should send patient to HC,
                    -- if newborn was not vaccinated at birth.
                    (isChw
-                        && activityCompleted currentDate zscores features isChw assembled db WellChildImmunisation
+                        && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
                         && (not <| newbornVaccinatedAtBirth assembled.measurements)
                    )
 
         TaskNextVisit ->
             not isChw
                 -- Activity that triggers Nutrition Assessment next steps is completed.
-                && activityCompleted currentDate zscores features isChw assembled db WellChildNutritionAssessment
+                && activityCompleted currentDate zscores site features isChw assembled db WellChildNutritionAssessment
                 -- Activities that affect determinating next visit date are
                 -- either completed, or not shown at current visit.
-                && activityCompleted currentDate zscores features isChw assembled db WellChildImmunisation
-                && activityCompleted currentDate zscores features isChw assembled db WellChildECD
-                && activityCompleted currentDate zscores features isChw assembled db WellChildMedication
-                && nextVisitRequired currentDate isChw assembled db
+                && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
+                && activityCompleted currentDate zscores site features isChw assembled db WellChildECD
+                && activityCompleted currentDate zscores site features isChw assembled db WellChildMedication
+                && nextVisitRequired currentDate site isChw assembled db
 
 
 newbornVaccinatedAtBirth : WellChildMeasurements -> Bool
@@ -1504,25 +1590,25 @@ nextStepsTasks =
     [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp, TaskNextVisit ]
 
 
-nextVisitRequired : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-nextVisitRequired currentDate isChw assembled db =
+nextVisitRequired : NominalDate -> Site -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+nextVisitRequired currentDate site isChw assembled db =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-            generateNextVisitDates currentDate assembled db
+            generateNextVisitDates currentDate site assembled db
     in
     isJust nextDateForImmunisationVisit || isJust nextDateForPediatricVisit
 
 
-generateNextVisitDates : NominalDate -> AssembledData -> ModelIndexedDb -> ( Maybe NominalDate, Maybe NominalDate )
-generateNextVisitDates currentDate assembled db =
+generateNextVisitDates : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> ( Maybe NominalDate, Maybe NominalDate )
+generateNextVisitDates currentDate site assembled db =
     let
         nextVisitDateForECD =
             generateNextDateForECDVisit currentDate assembled db
 
         nextVisitDateForMedication =
-            generateNextDateForMedicationVisit currentDate assembled db
+            generateNextDateForMedicationVisit currentDate site assembled db
     in
-    ( generateNextDateForImmunisationVisit currentDate assembled db
+    ( generateNextDateForImmunisationVisit currentDate site assembled db
     , Maybe.Extra.values [ nextVisitDateForECD, nextVisitDateForMedication ]
         |> List.sortWith Date.compare
         |> List.head
@@ -1596,8 +1682,8 @@ generateNextDateForECDVisit currentDate assembled db =
             )
 
 
-generateNextDateForMedicationVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateNextDateForMedicationVisit currentDate assembled db =
+generateNextDateForMedicationVisit : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextDateForMedicationVisit currentDate site assembled db =
     assembled.person.birthDate
         |> Maybe.andThen
             (\birthDate ->
@@ -1605,7 +1691,7 @@ generateNextDateForMedicationVisit currentDate assembled db =
                     ageMonths =
                         Date.diff Months birthDate currentDate
                 in
-                -- When younder than 6 months, set visit date to
+                -- When younger than 6 months, set visit date to
                 -- age of 6 months.
                 if ageMonths < 6 then
                     Just <| Date.add Months 6 birthDate
@@ -1616,7 +1702,7 @@ generateNextDateForMedicationVisit currentDate assembled db =
                             assembled.measurements :: getPreviousMeasurements assembled.previousMeasurementsWithDates
 
                         nextDate =
-                            nextMedicationAdmnistrationData currentDate assembled.person measurements
+                            nextMedicationAdmnistrationData currentDate site assembled.person measurements
                                 |> Dict.values
                                 |> List.sortWith Date.compare
                                 |> List.reverse
@@ -1641,11 +1727,11 @@ generateNextDateForMedicationVisit currentDate assembled db =
             )
 
 
-generateNextDateForImmunisationVisit : NominalDate -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateNextDateForImmunisationVisit currentDate assembled db =
+generateNextDateForImmunisationVisit : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateNextDateForImmunisationVisit currentDate site assembled db =
     let
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate assembled.person True assembled.vaccinationProgress
+            generateFutureVaccinationsData currentDate site assembled.person True assembled.vaccinationProgress
 
         -- If there're only 6 months interval vaccines (which are given at older age),
         -- we'll suggested most recent date.

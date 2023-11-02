@@ -905,6 +905,12 @@ wellChildDTPImmunisationEndpoint =
         |> withValueEncoder (object << encodeWellChildDTPImmunisation)
 
 
+wellChildDTPStandaloneImmunisationEndpoint : ReadWriteEndPoint Error WellChildDTPStandaloneImmunisationId WellChildDTPStandaloneImmunisation WellChildDTPStandaloneImmunisation ()
+wellChildDTPStandaloneImmunisationEndpoint =
+    swEndpoint "nodes/well_child_dtp_sa_immunisation" decodeWellChildDTPStandaloneImmunisation
+        |> withValueEncoder (object << encodeWellChildDTPStandaloneImmunisation)
+
+
 wellChildHPVImmunisationEndpoint : ReadWriteEndPoint Error WellChildHPVImmunisationId WellChildHPVImmunisation WellChildHPVImmunisation ()
 wellChildHPVImmunisationEndpoint =
     swEndpoint "nodes/well_child_hpv_immunisation" decodeWellChildHPVImmunisation
@@ -1298,6 +1304,12 @@ childScoreboardDTPImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboard
 childScoreboardDTPImmunisationEndpoint =
     swEndpoint "nodes/child_scoreboard_dtp_iz" decodeChildScoreboardDTPImmunisation
         |> withValueEncoder (object << encodeChildScoreboardDTPImmunisation)
+
+
+childScoreboardDTPStandaloneImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardDTPStandaloneImmunisationId ChildScoreboardDTPStandaloneImmunisation ChildScoreboardDTPStandaloneImmunisation ()
+childScoreboardDTPStandaloneImmunisationEndpoint =
+    swEndpoint "nodes/child_scoreboard_dtp_sa_iz" decodeChildScoreboardDTPStandaloneImmunisation
+        |> withValueEncoder (object << encodeChildScoreboardDTPStandaloneImmunisation)
 
 
 childScoreboardIPVImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreboardIPVImmunisationId ChildScoreboardIPVImmunisation ChildScoreboardIPVImmunisation ()
