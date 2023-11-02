@@ -8,6 +8,7 @@ import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -112,17 +113,10 @@ expectActivity :
 expectActivity currentDate zscores site features isChw assembled db activity =
     case activity of
         WellChildPregnancySummary ->
-            if isChw then
-                ageInMonths currentDate assembled.person
-                    |> Maybe.map
-                        (\ageMonths -> ageMonths < 2)
-                    |> Maybe.withDefault False
-
-            else
-                False
+            assembled.encounter.encounterType == NewbornExam
 
         WellChildDangerSigns ->
-            not isChw
+            assembled.encounter.encounterType /= NewbornExam
 
         WellChildNutritionAssessment ->
             True
@@ -138,27 +132,22 @@ expectActivity currentDate zscores site features isChw assembled db activity =
                 |> not
 
         WellChildECD ->
-            if isChw then
-                False
-
-            else
-                generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
-                    |> List.isEmpty
-                    |> not
+            (assembled.encounter.encounterType == PediatricCare)
+                && (generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
+                        |> List.isEmpty
+                        |> not
+                   )
 
         WellChildMedication ->
-            if isChw then
-                False
-
-            else
-                medicationTasks
-                    |> List.filter (expectMedicationTask currentDate site isChw assembled)
-                    |> List.isEmpty
-                    |> not
+            (assembled.encounter.encounterType == PediatricCare)
+                && (List.filter (expectMedicationTask currentDate site isChw assembled) medicationTasks
+                        |> List.isEmpty
+                        |> not
+                   )
 
         WellChildNextSteps ->
-            nextStepsTasks
-                |> List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db)
+            -- @todo: Logic for SPV for CHW
+            List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db) nextStepsTasks
                 |> List.isEmpty
                 |> not
 
@@ -167,7 +156,8 @@ expectActivity currentDate zscores site features isChw assembled db activity =
 
         WellChildNCDA ->
             -- For nurses only, show if child is bellow age of 24 months.
-            expectNCDAActivity currentDate features isChw assembled.person
+            (assembled.encounter.encounterType == PediatricCare)
+                && expectNCDAActivity currentDate features isChw assembled.person
 
 
 generateVaccinationProgress : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
