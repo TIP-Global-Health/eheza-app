@@ -111,25 +111,26 @@ import Pages.Utils
         , viewYellowAlertForSelect
         )
 import Round
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw activity db model =
+view : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id isChw activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site id isChw activity db model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity assembled
-        , viewContent language currentDate isChw activity db model assembled
+        , viewContent language currentDate site isChw activity db model assembled
         , viewModal <|
             warningPopup language currentDate isChw assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
@@ -163,11 +164,11 @@ viewHeader language id activity assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate isChw activity db model assembled =
+viewContent : Language -> NominalDate -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site isChw activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate isChw activity assembled db model
+            ++ viewActivity language currentDate site isChw activity assembled db model
 
 
 warningPopup :
@@ -281,8 +282,8 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
         state
 
 
-viewActivity : Language -> NominalDate -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate isChw activity assembled db model =
+viewActivity : Language -> NominalDate -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate site isChw activity assembled db model =
     case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
@@ -332,7 +333,7 @@ viewActivity language currentDate isChw activity assembled db model =
             viewMentalHealthContent language currentDate assembled model.mentalHealthData
 
         PrenatalImmunisation ->
-            viewImmunisationContent language currentDate assembled model.immunisationData
+            viewImmunisationContent language currentDate site assembled model.immunisationData
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
             viewBreastfeedingContent language currentDate assembled model.breastfeedingData
@@ -2412,10 +2413,11 @@ viewTreatmentReviewContent language currentDate assembled data =
 viewImmunisationContent :
     Language
     -> NominalDate
+    -> Site
     -> AssembledData
     -> ImmunisationData
     -> List (Html Msg)
-viewImmunisationContent language currentDate assembled data =
+viewImmunisationContent language currentDate site assembled data =
     let
         measurements =
             assembled.measurements
@@ -2459,7 +2461,18 @@ viewImmunisationContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, immunisationTasksCompletedFromTotal language currentDate assembled data task )) tasks
+            List.map
+                (\task ->
+                    ( task
+                    , immunisationTasksCompletedFromTotal language
+                        currentDate
+                        site
+                        assembled
+                        data
+                        task
+                    )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -2479,7 +2492,7 @@ viewImmunisationContent language currentDate assembled data =
                                             |> getMeasurementValueFunc
                                             |> vaccinationFormWithDefault data.tetanusForm
                         in
-                        ( viewVaccinationForm language currentDate assembled vaccineType vaccinationForm
+                        ( viewVaccinationForm language currentDate site assembled vaccineType vaccinationForm
                         , False
                         , vaccinationForm.viewMode == ViewModeInitial
                         )
@@ -2629,11 +2642,18 @@ viewSpecialityCareContent language currentDate assembled data =
     ]
 
 
-viewVaccinationForm : Language -> NominalDate -> AssembledData -> PrenatalVaccineType -> PrenatalVaccinationForm -> Html Msg
-viewVaccinationForm language currentDate assembled vaccineType form =
+viewVaccinationForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> PrenatalVaccineType
+    -> PrenatalVaccinationForm
+    -> Html Msg
+viewVaccinationForm language currentDate site assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
-            vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form
+            vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
     in
     div [ class "ui form vaccination" ] <|
         [ h2 [] [ text <| translate language <| Translate.PrenatalImmunisationHeader vaccineType ]
@@ -3357,7 +3377,7 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                     form.height
                     (SetNutritionAssessmentMeasurement heightUpdateFunc)
                     "height"
-                    Translate.CentimeterShorthand
+                    Translate.UnitCentimeter
                 , viewPreviousMeasurement language heightPreviousValue Translate.EmptyString
                 , div [ class "separator" ] []
                 ]
@@ -3412,8 +3432,8 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                     form.muac
                     (SetNutritionAssessmentMeasurement muacUpdateFunc)
                     "muac"
-                    Translate.CentimeterShorthand
-               , viewPreviousMeasurement language muacPreviousValue Translate.CentimeterShorthand
+                    Translate.UnitCentimeter
+               , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
                ]
 
 
@@ -3468,8 +3488,8 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                                 form.fundalHeight
                                 (SetObstetricalExamFloatMeasurement fundalHeightUpdateFunc)
                                 "fundal-height"
-                                Translate.CentimeterShorthand
-                          , viewPreviousMeasurement language fundalHeightPreviousValue Translate.CentimeterShorthand
+                                Translate.UnitCentimeter
+                          , viewPreviousMeasurement language fundalHeightPreviousValue Translate.UnitCentimeter
                           ]
                         , [ maybeToBoolTask form.fundalHeight ]
                         )

@@ -72,6 +72,7 @@ import Pages.Utils
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
@@ -86,6 +87,7 @@ child when we enter something.
 viewChild :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> ( PersonId, Person )
     -> ChildActivity
@@ -96,7 +98,7 @@ viewChild :
     -> ModelChild
     -> PreviousValuesSet
     -> Html MsgChild
-viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
+viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
     case activity of
         ChildFbf ->
             viewChildFbf language currentDate child session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
@@ -108,7 +110,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
 
         Muac ->
-            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
+            viewMuac site language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
             viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
@@ -131,7 +133,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
-            viewNCDA language currentDate zscores childId child (mapMeasurementData .ncda measurements) model.ncdaData db
+            viewNCDA language currentDate zscores site childId child (mapMeasurementData .ncda measurements) model.ncdaData db
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -147,7 +149,7 @@ type alias FloatFormConfig id value =
     , constraints : FloatInputConstraints
     , unit : TranslationId
     , inputValue : ModelChild -> String
-    , storedValue : value -> Float
+    , toBackendValue : String -> Maybe Float
     , dateMeasured : value -> NominalDate
     , viewIndication : Maybe (Language -> Float -> Html MsgChild)
     , updateMsg : String -> MsgChild
@@ -164,9 +166,9 @@ heightFormConfig =
     , zScoreForAge = Just <| \model age gender height -> zScoreLengthHeightForAge model age gender (Centimetres height)
     , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsHeight
-    , unit = Translate.CentimeterShorthand
+    , unit = Translate.UnitCentimeter
     , inputValue = .height
-    , storedValue = .value >> getHeightValue
+    , toBackendValue = String.toFloat
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -174,18 +176,33 @@ heightFormConfig =
     }
 
 
-muacFormConfig : FloatFormConfig MuacId Muac
-muacFormConfig =
+muacFormConfig : Site -> FloatFormConfig MuacId Muac
+muacFormConfig site =
+    let
+        ( toBackendValue, unit ) =
+            case site of
+                SiteBurundi ->
+                    ( -- At Burundi, value is entered as mm, but we need to store it
+                      -- as cm. Therefore, we multiply by 0.1.
+                      String.toFloat >> Maybe.map ((*) 0.1 >> Round.roundNum 1)
+                    , Translate.UnitMillimeter
+                    )
+
+                _ ->
+                    ( String.toFloat
+                    , Translate.UnitCentimeter
+                    )
+    in
     { blockName = "muac"
     , activity = ChildActivity Muac
     , placeholderText = Translate.PlaceholderEnterMUAC
     , zScoreLabelForAge = Translate.ZScoreMuacForAge
     , zScoreForAge = Nothing
     , zScoreForHeightOrLength = Nothing
-    , constraints = getInputConstraintsMuac
-    , unit = Translate.CentimeterShorthand
+    , constraints = getInputConstraintsMuac site
+    , unit = unit
     , inputValue = .muac
-    , storedValue = .value >> muacValueFunc
+    , toBackendValue = toBackendValue
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
@@ -204,7 +221,7 @@ weightFormConfig =
     , constraints = getInputConstraintsWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
-    , storedValue = .value >> weightValueFunc
+    , toBackendValue = String.toFloat
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
@@ -231,9 +248,9 @@ viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewMuac =
-    viewFloatForm muacFormConfig
+viewMuac : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac site =
+    viewFloatForm (muacFormConfig site)
 
 
 viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
@@ -242,6 +259,9 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- What is the string input value from the form?
         inputValue =
             config.inputValue model
+
+        inputAsFloat =
+            String.toFloat inputValue
 
         -- Our input is a string, which may or may not be a valid float,
         -- since we want to let users enter things like "." to start with
@@ -260,9 +280,8 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- `Nothing` if our input value doesn't convert to a string
         -- successfully at the moment ... in which case we won't bother
         -- with the various interpretations yet. (Or allow saving).
-        floatValue =
-            inputValue
-                |> String.toFloat
+        backendValue =
+            config.toBackendValue inputValue
 
         -- What is the most recent measurement we've saved, either locally or
         -- to the backend (we don't care at the moment which). If this is a new
@@ -300,15 +319,15 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                     (\zScoreForAge ->
                         let
                             zScoreText =
-                                floatValue
-                                    |> Maybe.andThen
-                                        (\val ->
-                                            Maybe.andThen
-                                                (\ageInDays ->
-                                                    zScoreForAge zscores ageInDays child.gender val
-                                                )
-                                                maybeAgeInDays
-                                        )
+                                Maybe.andThen
+                                    (\val ->
+                                        Maybe.andThen
+                                            (\ageInDays ->
+                                                zScoreForAge zscores ageInDays child.gender val
+                                            )
+                                            maybeAgeInDays
+                                    )
+                                    backendValue
                                     |> Maybe.map viewZScore
                                     |> Maybe.withDefault (translate language Translate.NotAvailable)
                         in
@@ -351,7 +370,7 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                                                             )
                                                             maybeAgeInDays
                                                     )
-                                                    floatValue
+                                                    backendValue
                                             )
                                         |> Maybe.map viewZScore
                                         |> Maybe.withDefault (translate language Translate.NotAvailable)
@@ -367,15 +386,16 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                         )
 
         saveMsg =
-            floatValue
-                |> Maybe.andThen
-                    (\value ->
-                        if not <| withinConstraints config.constraints value then
-                            Nothing
+            Maybe.Extra.andThen2
+                (\asFloat forBackend ->
+                    if not <| withinConstraints config.constraints asFloat then
+                        Nothing
 
-                        else
-                            config.saveMsg (Maybe.map Tuple.first measurements.current) value |> Just
-                    )
+                    else
+                        config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
+                )
+                inputAsFloat
+                backendValue
     in
     div
         [ class <| "ui full segment " ++ config.blockName ]
@@ -403,11 +423,11 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
                                 previousValue
-                                floatValue
+                                inputAsFloat
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
                                 config.viewIndication
-                                floatValue
+                                backendValue
                         ]
                     ]
                 , previousValue
@@ -2298,6 +2318,7 @@ viewNCDAContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
@@ -2305,7 +2326,7 @@ viewNCDAContent :
     -> NCDAForm
     -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate zscores personId person config helperState form db =
+viewNCDAContent language currentDate zscores site personId person config helperState form db =
     let
         steps =
             resolveNCDASteps currentDate person config.ncdaNeverFilled config.atHealthCenter
@@ -2370,6 +2391,7 @@ viewNCDAContent language currentDate zscores personId person config helperState 
                     , ncdaFormInputsAndTasks language
                         currentDate
                         zscores
+                        site
                         personId
                         person
                         config
@@ -2502,6 +2524,7 @@ ncdaFormInputsAndTasks :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> PersonId
     -> Person
     -> NCDAContentConfig msg
@@ -2509,7 +2532,7 @@ ncdaFormInputsAndTasks :
     -> NCDAStep
     -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate zscores personId person config form currentStep db =
+ncdaFormInputsAndTasks language currentDate zscores site personId person config form currentStep db =
     let
         inputsAndTasksForSign sign =
             case sign of
@@ -2553,7 +2576,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                 ChildBehindOnVaccination ->
                     let
                         childBehindOnVaccinations =
-                            Maybe.withDefault (behindOnVaccinationsByWellChild currentDate personId db)
+                            Maybe.withDefault (behindOnVaccinationsByWellChild currentDate site personId db)
                                 config.behindOnVaccinations
                     in
                     if childBehindOnVaccinations then
@@ -3088,7 +3111,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
 
         NCDAStepNutritionBehavior ->
             let
-                breasdtfeedingSign =
+                breastfeedingSign =
                     if config.ncdaNotFilledAfterAgeOfSixMonths then
                         [ BreastfedForSixMonths ]
 
@@ -3096,7 +3119,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                         []
 
                 signs =
-                    FiveFoodGroups :: breasdtfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
+                    FiveFoodGroups :: breastfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
 
                 inputsAndTasks =
                     List.map inputsAndTasksForSign signs
@@ -3241,7 +3264,7 @@ ncdaFormInputsAndTasks language currentDate zscores personId person config form 
                                                             muacAsFloat
                                                             config.setMuacMsg
                                                             "muac"
-                                                            Translate.CentimeterShorthand
+                                                            Translate.UnitCentimeter
                                                         ]
                                                     , div
                                                         [ class "five wide column" ]
@@ -3644,13 +3667,14 @@ viewNCDA :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> PersonId
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
     -> NCDAData
     -> ModelIndexedDb
     -> Html MsgChild
-viewNCDA language currentDate zscores childId child measurement data db =
+viewNCDA language currentDate zscores site childId child measurement data db =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -3688,6 +3712,7 @@ viewNCDA language currentDate zscores childId child measurement data db =
     viewNCDAContent language
         currentDate
         zscores
+        site
         childId
         child
         config

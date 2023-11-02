@@ -1269,6 +1269,7 @@ type alias VaccinationProgressDict =
 type ImmunisationTask
     = TaskBCG
     | TaskDTP
+    | TaskDTPStandalone
     | TaskHPV
     | TaskIPV
     | TaskMR

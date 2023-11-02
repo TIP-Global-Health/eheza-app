@@ -21,14 +21,15 @@ import Measurement.Model
         )
 import Measurement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (insertIntoSet, setMultiSelectInputValue)
+import Pages.Utils exposing (insertIntoSet, setMuacValueForSite, setMultiSelectInputValue)
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Bool -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate isChw id db msg model =
+update : NominalDate -> Site -> Bool -> WellChildEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate site isChw id db msg model =
     let
         pregnancySummaryForm =
             resolveFormWithDefaults .pregnancySummary pregnancySummaryFormWithDefault model.pregnancySummaryForm
@@ -257,7 +258,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetVitalsIntInput formUpdateFunc value ->
             let
@@ -321,7 +322,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetActiveNutritionAssessmentTask task ->
             let
@@ -377,7 +378,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetHeadCircumference string ->
             let
@@ -435,7 +436,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         PreSaveHeadCircumference personId maybeZscore saved nextTask ->
             let
@@ -484,7 +485,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , setEncounterWarningMsg
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SaveHeadCircumference personId saved nextTask_ ->
             let
@@ -512,14 +513,14 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetMuac string ->
             let
                 updatedForm =
                     model.nutritionAssessmentData.muacForm
                         |> (\form ->
-                                { form | muac = String.toFloat string, muacDirty = True }
+                                { form | muac = setMuacValueForSite site string, muacDirty = True }
                            )
 
                 updatedData =
@@ -557,7 +558,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetNutritionSign sign ->
             let
@@ -615,7 +616,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetWeight string ->
             let
@@ -660,7 +661,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetActiveImmunisationTask task ->
             let
@@ -903,7 +904,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SaveDTPImmunisation personId saved nextTask_ ->
             let
@@ -931,7 +932,35 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
+
+        SaveDTPStandaloneImmunisation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateImmunisationMsgs nextTask_
+
+                appMsgs =
+                    model.immunisationData.dtpForm
+                        |> toVaccinationValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveDTPStandaloneImmunisation personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SaveHPVImmunisation personId saved nextTask_ ->
             let
@@ -959,7 +988,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SaveIPVImmunisation personId saved nextTask_ ->
             let
@@ -987,7 +1016,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SaveMRImmunisation personId saved nextTask_ ->
             let
@@ -1015,7 +1044,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SaveOPVImmunisation personId saved nextTask_ ->
             let
@@ -1043,7 +1072,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SavePCV13Immunisation personId saved nextTask_ ->
             let
@@ -1071,7 +1100,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SaveRotarixImmunisation personId saved nextTask_ ->
             let
@@ -1099,7 +1128,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetECDBoolInput formUpdateFunc value ->
             let
@@ -1204,7 +1233,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetMebendezoleAdministered value ->
             let
@@ -1262,7 +1291,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetVitaminAAdministered value ->
             let
@@ -1320,7 +1349,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetActiveNextStepsTask task ->
             let
@@ -1444,7 +1473,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetProvidedEducationForDiagnosis value ->
             let
@@ -1506,7 +1535,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetContributingFactorsSign sign ->
             let
@@ -1563,7 +1592,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -1609,7 +1638,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         SaveNextVisit personId saved nextDateForImmunisationVisit nextDateForPediatricVisit nextTask_ ->
             let
@@ -1638,7 +1667,7 @@ update currentDate isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate isChw id db) extraMsgs
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
         DropZoneComplete result ->
             let
@@ -1800,7 +1829,7 @@ update currentDate isChw id db msg model =
                     model.ncdaData.form
                         |> (\form ->
                                 { form
-                                    | muac = String.toFloat string |> Maybe.map MuacInCm
+                                    | muac = setMuacValueForSite site string |> Maybe.map MuacInCm
                                 }
                            )
 

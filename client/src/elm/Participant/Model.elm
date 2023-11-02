@@ -21,7 +21,7 @@ import Html exposing (Html)
 import Pages.Activity.Model
 import Pages.Session.Model
 import RemoteData exposing (WebData)
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language)
 import ZScore.Model
 
@@ -67,6 +67,7 @@ type alias Participant id value activity msg date =
     , viewMeasurements :
         Language
         -> NominalDate
+        -> Site
         -> ZScore.Model.Model
         -> Bool
         -> ModelIndexedDb

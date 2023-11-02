@@ -4247,6 +4247,11 @@ encodeWellChildDTPImmunisation =
     encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_dtp_immunisation")
 
 
+encodeWellChildDTPStandaloneImmunisation : WellChildDTPStandaloneImmunisation -> List ( String, Value )
+encodeWellChildDTPStandaloneImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_dtp_sa_immunisation")
+
+
 encodeWellChildHPVImmunisation : WellChildHPVImmunisation -> List ( String, Value )
 encodeWellChildHPVImmunisation =
     encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_hpv_immunisation")
@@ -4922,6 +4927,11 @@ encodeChildScoreboardBCGImmunisation =
 encodeChildScoreboardDTPImmunisation : ChildScoreboardDTPImmunisation -> List ( String, Value )
 encodeChildScoreboardDTPImmunisation =
     encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_dtp_iz")
+
+
+encodeChildScoreboardDTPStandaloneImmunisation : ChildScoreboardDTPStandaloneImmunisation -> List ( String, Value )
+encodeChildScoreboardDTPStandaloneImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_dtp_sa_iz")
 
 
 encodeChildScoreboardIPVImmunisation : ChildScoreboardIPVImmunisation -> List ( String, Value )

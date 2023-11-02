@@ -1,6 +1,7 @@
 module Backend.Scoreboard.Decoder exposing (decodeScoreboardData)
 
 import AssocList as Dict
+import Backend.Decoder exposing (decodeSite)
 import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (..)
 import Date
@@ -14,6 +15,7 @@ import Maybe.Extra exposing (isNothing)
 decodeScoreboardData : NominalDate -> Decoder ScoreboardData
 decodeScoreboardData currentDate =
     succeed ScoreboardData
+        |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
         |> required "results" (list (decodePatientData currentDate))
@@ -167,6 +169,7 @@ decodeVaccinationProgressDict =
         |> required "bcg" decodeUniqueDates
         |> required "opv" decodeUniqueDates
         |> required "dtp" decodeUniqueDates
+        |> required "dtp_sa" decodeUniqueDates
         |> required "pcv13" decodeUniqueDates
         |> required "rotarix" decodeUniqueDates
         |> required "ipv" decodeUniqueDates
@@ -197,6 +200,7 @@ rawVaccinationDataToVaccinationProgressDict data =
     [ ( VaccineBCG, generateVaccinationProgressForVaccine data.bcg )
     , ( VaccineOPV, generateVaccinationProgressForVaccine data.opv )
     , ( VaccineDTP, generateVaccinationProgressForVaccine data.dtp )
+    , ( VaccineDTPStandalone, generateVaccinationProgressForVaccine data.dtpStandalone )
     , ( VaccinePCV13, generateVaccinationProgressForVaccine data.pcv13 )
     , ( VaccineRotarix, generateVaccinationProgressForVaccine data.rotarix )
     , ( VaccineIPV, generateVaccinationProgressForVaccine data.ipv )

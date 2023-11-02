@@ -951,6 +951,14 @@ type WellChildDTPImmunisationUuidType
     = WellChildDTPImmunisationUuidType
 
 
+type alias WellChildDTPStandaloneImmunisationId =
+    EntityUuid WellChildDTPStandaloneImmunisationUuidType
+
+
+type WellChildDTPStandaloneImmunisationUuidType
+    = WellChildDTPStandaloneImmunisationUuidType
+
+
 type alias WellChildHPVImmunisationId =
     EntityUuid WellChildHPVImmunisationUuidType
 
@@ -1445,6 +1453,14 @@ type alias ChildScoreboardDTPImmunisationId =
 
 type ChildScoreboardDTPImmunisationUuidType
     = ChildScoreboardDTPImmunisationUuidType
+
+
+type alias ChildScoreboardDTPStandaloneImmunisationId =
+    EntityUuid ChildScoreboardDTPStandaloneImmunisationUuidType
+
+
+type ChildScoreboardDTPStandaloneImmunisationUuidType
+    = ChildScoreboardDTPStandaloneImmunisationUuidType
 
 
 type alias ChildScoreboardIPVImmunisationId =

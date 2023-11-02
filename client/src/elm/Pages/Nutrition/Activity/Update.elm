@@ -21,12 +21,13 @@ import Maybe.Extra exposing (unwrap)
 import Measurement.Utils exposing (..)
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (setMultiSelectInputValue)
+import Pages.Utils exposing (setMuacValueForSite, setMultiSelectInputValue)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate id db msg model =
+update : NominalDate -> Site -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate site id db msg model =
     let
         ncdaForm =
             Dict.get id db.nutritionMeasurements
@@ -99,7 +100,7 @@ update currentDate id db msg model =
                         updatedForm =
                             model.muacData.form
                                 |> (\form ->
-                                        { form | muac = String.toFloat string, muacDirty = True }
+                                        { form | muac = setMuacValueForSite site string, muacDirty = True }
                                    )
                     in
                     model.muacData
@@ -395,7 +396,7 @@ update currentDate id db msg model =
                     model.ncdaData.form
                         |> (\form ->
                                 { form
-                                    | muac = String.toFloat string |> Maybe.map MuacInCm
+                                    | muac = setMuacValueForSite site string |> Maybe.map MuacInCm
                                 }
                            )
 

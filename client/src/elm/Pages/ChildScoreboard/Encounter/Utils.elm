@@ -6,10 +6,11 @@ import Backend.Model exposing (ModelIndexedDb)
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Utils exposing (generatePreviousMeasurements, generateVaccinationProgressDicts)
 import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (Site)
 
 
-generateAssembledData : ChildScoreboardEncounterId -> ModelIndexedDb -> WebData AssembledData
-generateAssembledData id db =
+generateAssembledData : Site -> ChildScoreboardEncounterId -> ModelIndexedDb -> WebData AssembledData
+generateAssembledData site id db =
     let
         encounter =
             Dict.get id db.childScoreboardEncounters
@@ -54,7 +55,7 @@ generateAssembledData id db =
         (\assembled ->
             let
                 ( vaccinationHistory, vaccinationProgress ) =
-                    generateVaccinationProgressDicts assembled db
+                    generateVaccinationProgressDicts site assembled db
             in
             { assembled | vaccinationHistory = vaccinationHistory, vaccinationProgress = vaccinationProgress }
         )

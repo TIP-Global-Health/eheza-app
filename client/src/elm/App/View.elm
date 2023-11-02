@@ -591,7 +591,13 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.prenatalEncounterPages
                                     |> Maybe.withDefault Pages.Prenatal.Encounter.Model.emptyModel
                         in
-                        Pages.Prenatal.Encounter.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.Prenatal.Encounter.View.view model.language
+                            currentDate
+                            site
+                            id
+                            isChw
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -601,7 +607,14 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.prenatalActivityPages
                                     |> Maybe.withDefault Pages.Prenatal.Activity.Model.emptyModel
                         in
-                        Pages.Prenatal.Activity.View.view model.language currentDate id isChw activity model.indexedDb page_
+                        Pages.Prenatal.Activity.View.view model.language
+                            currentDate
+                            site
+                            id
+                            isChw
+                            activity
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
                             |> flexPageWrapper configured.config model
 
@@ -672,7 +685,15 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.nutritionActivityPages
                                     |> Maybe.withDefault Pages.Nutrition.Activity.Model.emptyModel
                         in
-                        Pages.Nutrition.Activity.View.view model.language currentDate model.zscores id activity isChw model.indexedDb page_
+                        Pages.Nutrition.Activity.View.view model.language
+                            currentDate
+                            model.zscores
+                            site
+                            id
+                            activity
+                            isChw
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
                             |> flexPageWrapper configured.config model
 
@@ -779,6 +800,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         Pages.WellChild.Encounter.View.view model.language
                             currentDate
                             model.zscores
+                            site
                             features
                             id
                             isChw
@@ -840,7 +862,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.ncdActivityPages
                                     |> Maybe.withDefault Pages.NCD.Activity.Model.emptyModel
                         in
-                        Pages.NCD.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.NCD.Activity.View.view model.language currentDate site id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNCDActivity id activity)
                             |> flexPageWrapper configured.config model
 
@@ -888,7 +910,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.childScoreboardEncounterPages
                                     |> Maybe.withDefault Pages.ChildScoreboard.Encounter.Model.emptyModel
                         in
-                        Pages.ChildScoreboard.Encounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.ChildScoreboard.Encounter.View.view model.language currentDate site id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardEncounter id)
                             |> flexPageWrapper configured.config model
 

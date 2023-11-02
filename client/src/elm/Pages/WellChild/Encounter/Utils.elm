@@ -8,9 +8,10 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Utils
 import Pages.WellChild.Encounter.Model exposing (..)
 import RemoteData exposing (WebData)
+import SyncManager.Model exposing (Site)
 
 
-generateAssembledData : WellChildEncounterId -> ModelIndexedDb -> WebData AssembledData
+generateAssembledData : Site -> WellChildEncounterId -> ModelIndexedDb -> WebData AssembledData
 generateAssembledData =
     Measurement.Utils.generateAssembledDataForWellChild
 

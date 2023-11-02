@@ -26,7 +26,8 @@ import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model exposing (SiteFeature)
+import Round
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
@@ -1290,3 +1291,16 @@ viewBySyncStatus language healthCenterId syncInfoAuthorities contentForView =
             )
         |> Maybe.withDefault
             (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
+
+
+setMuacValueForSite : Site -> String -> Maybe Float
+setMuacValueForSite site s =
+    case site of
+        SiteBurundi ->
+            -- At Burundi, value is entered as mm, but we need to store it
+            -- as cm. Therefore, we multiply by 0.1.
+            String.toFloat s
+                |> Maybe.map ((*) 0.1 >> Round.roundNum 1)
+
+        _ ->
+            String.toFloat s

@@ -59,7 +59,7 @@ view : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildScoreboardE
 view language currentDate zscores site id activity db model =
     let
         assembled =
-            generateAssembledData id db
+            generateAssembledData site id db
     in
     viewWebData language (viewHeaderAndContent language currentDate zscores site id activity db model) identity assembled
 
@@ -98,7 +98,7 @@ viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> ChildSco
 viewActivity language currentDate zscores site activity assembled db model =
     case activity of
         ChildScoreboardNCDA ->
-            viewNCDAContent language currentDate zscores assembled db model.ncdaData
+            viewNCDAContent language currentDate zscores site assembled db model.ncdaData
 
         ChildScoreboardVaccinationHistory ->
             viewImmunisationContent language currentDate site assembled db model.immunisationData
@@ -108,11 +108,12 @@ viewNCDAContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> AssembledData
     -> ModelIndexedDb
     -> NCDAData
     -> List (Html Msg)
-viewNCDAContent language currentDate zscores assembled db data =
+viewNCDAContent language currentDate zscores site assembled db data =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
@@ -126,8 +127,10 @@ viewNCDAContent language currentDate zscores assembled db data =
             , showTasksTray = True
             , behindOnVaccinations =
                 generateSuggestedVaccinations currentDate
+                    site
                     assembled.person
                     assembled.vaccinationHistory
+                    assembled.vaccinationProgress
                     |> List.isEmpty
                     |> not
                     |> Just
@@ -150,6 +153,7 @@ viewNCDAContent language currentDate zscores assembled db data =
     Measurement.View.viewNCDAContent language
         currentDate
         zscores
+        site
         personId
         assembled.person
         config
@@ -172,7 +176,7 @@ viewImmunisationContent language currentDate site assembled db data =
             assembled.measurements
 
         tasks =
-            List.filter (expectImmunisationTask currentDate assembled.person assembled.vaccinationHistory) immunisationTasks
+            List.filter (expectImmunisationTask currentDate site assembled.person assembled.vaccinationHistory) immunisationTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -189,6 +193,11 @@ viewImmunisationContent language currentDate site assembled db data =
                         TaskDTP ->
                             ( "dtp-vaccine"
                             , isJust measurements.dtpImmunisation
+                            )
+
+                        TaskDTPStandalone ->
+                            ( "dtp-vaccine"
+                            , isJust measurements.dtpStandaloneImmunisation
                             )
 
                         TaskIPV ->
@@ -243,7 +252,7 @@ viewImmunisationContent language currentDate site assembled db data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.WellChildImmunisationTask task)
+                    , text <| translate language (Translate.WellChildImmunisationTask site task)
                     ]
                 ]
 
@@ -253,6 +262,7 @@ viewImmunisationContent language currentDate site assembled db data =
                     ( task
                     , immunisationTasksCompletedFromTotal language
                         currentDate
+                        site
                         assembled
                         data
                         task
@@ -282,6 +292,11 @@ viewImmunisationContent language currentDate site assembled db data =
                                         measurements.dtpImmunisation
                                             |> getMeasurementValueFunc
                                             |> vaccinationFormWithDefault data.dtpForm
+
+                                    VaccineDTPStandalone ->
+                                        measurements.dtpStandaloneImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.dtpStandaloneForm
 
                                     VaccineIPV ->
                                         measurements.ipvImmunisation
@@ -344,6 +359,9 @@ viewImmunisationContent language currentDate site assembled db data =
                                     TaskDTP ->
                                         SaveDTPImmunisation personId measurements.dtpImmunisation nextTask
 
+                                    TaskDTPStandalone ->
+                                        SaveDTPStandaloneImmunisation personId measurements.dtpStandaloneImmunisation nextTask
+
                                     TaskIPV ->
                                         SaveIPVImmunisation personId measurements.ipvImmunisation nextTask
 
@@ -401,11 +419,12 @@ viewImmunisationContent language currentDate site assembled db data =
 immunisationTasksCompletedFromTotal :
     Language
     -> NominalDate
+    -> Site
     -> AssembledData
     -> ImmunisationData
     -> Measurement.Model.ImmunisationTask
     -> ( Int, Int )
-immunisationTasksCompletedFromTotal language currentDate assembled data task =
+immunisationTasksCompletedFromTotal language currentDate site assembled data task =
     Maybe.map
         (\vaccineType ->
             let
@@ -420,6 +439,11 @@ immunisationTasksCompletedFromTotal language currentDate assembled data task =
                             assembled.measurements.dtpImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.dtpForm
+
+                        VaccineDTPStandalone ->
+                            assembled.measurements.dtpStandaloneImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.dtpStandaloneForm
 
                         VaccineIPV ->
                             assembled.measurements.ipvImmunisation
@@ -453,6 +477,7 @@ immunisationTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasksActive, tasksCompleted ) =
                     vaccinationFormDynamicContentAndTasks language
                         currentDate
+                        site
                         assembled
                         vaccineType
                         form
@@ -467,7 +492,7 @@ viewVaccinationForm : Language -> NominalDate -> Site -> AssembledData -> WellCh
 viewVaccinationForm language currentDate site assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
-            vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form
+            vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
     in
     div [ class "ui form vaccination" ] <|
         [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
@@ -476,10 +501,10 @@ viewVaccinationForm language currentDate site assembled vaccineType form =
                 [ i [ class "icon-open-book" ] []
                 , div []
                     [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription site vaccineType ]
-                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
+                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage site vaccineType ]
                     ]
                 ]
-            , viewLabel language (Translate.WellChildImmunizationHistory vaccineType)
+            , viewLabel language (Translate.WellChildImmunizationHistory site vaccineType)
             ]
                 ++ contentByViewMode
         ]
@@ -488,11 +513,12 @@ viewVaccinationForm language currentDate site assembled vaccineType form =
 vaccinationFormDynamicContentAndTasks :
     Language
     -> NominalDate
+    -> Site
     -> AssembledData
     -> WellChildVaccineType
     -> ChildScoreboardVaccinationForm
     -> ( List (Html Msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType form =
+vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form =
     Maybe.map
         (\birthDate ->
             let
@@ -509,11 +535,13 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                     , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
                     , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
                     , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine vaccineType initialOpvAdministered
-                    , getIntervalForVaccine = always (getIntervalForVaccine vaccineType)
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site vaccineType initialOpvAdministered
+                    , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
                     , firstDoseExpectedFrom =
-                        initialVaccinationDateByBirthDate birthDate
+                        initialVaccinationDateByBirthDate site
+                            birthDate
                             initialOpvAdministered
+                            assembled.vaccinationProgress
                             ( vaccineType, VaccineDoseFirst )
                     , suggestDoseToday = False
                     }
@@ -535,7 +563,14 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                 expectedDoses =
                     getAllDosesForVaccine initialOpvAdministered vaccineType
                         |> List.filter
-                            (\dose -> expectVaccineDoseForPerson currentDate assembled.person initialOpvAdministered ( vaccineType, dose ))
+                            (\dose ->
+                                expectVaccineDoseForPerson currentDate
+                                    site
+                                    assembled.person
+                                    initialOpvAdministered
+                                    assembled.vaccinationProgress
+                                    ( vaccineType, dose )
+                            )
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory
@@ -560,7 +595,7 @@ vaccinationFormDynamicContentAndTasks language currentDate assembled vaccineType
                         form.administrationDates
                         |> Maybe.withDefault []
             in
-            Measurement.Utils.vaccinationFormDynamicContentAndTasks language currentDate config (WellChildVaccine vaccineType) form
+            Measurement.Utils.vaccinationFormDynamicContentAndTasks language currentDate site config (WellChildVaccine vaccineType) form
         )
         assembled.person.birthDate
         |> Maybe.withDefault ( [], 0, 1 )

@@ -1,12 +1,7 @@
 module Backend.Menu.Model exposing (..)
 
+import App.Types exposing (Site)
 import Json.Encode exposing (Value)
-
-
-type Site
-    = SiteRwanda
-    | SiteBurundi
-    | SiteUnknown
 
 
 type alias MenuData =

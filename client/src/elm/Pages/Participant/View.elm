@@ -45,6 +45,7 @@ viewChild :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> EverySet SiteFeature
     -> Bool
     -> PersonId
@@ -53,13 +54,13 @@ viewChild :
     -> ModelIndexedDb
     -> Model ChildActivity
     -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewChild language currentDate zscores features isChw childId ( sessionId, session ) pages db model =
+viewChild language currentDate zscores site features isChw childId ( sessionId, session ) pages db model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate zscores features isChw ( childId, child ) ( sessionId, session ) pages db model
+            viewFoundChild language currentDate zscores site features isChw ( childId, child ) ( sessionId, session ) pages db model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -78,6 +79,7 @@ viewFoundChild :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> EverySet SiteFeature
     -> Bool
     -> ( PersonId, Person )
@@ -86,7 +88,7 @@ viewFoundChild :
     -> ModelIndexedDb
     -> Model ChildActivity
     -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewFoundChild language currentDate zscores features isChw ( childId, child ) ( sessionId, session ) pages db model =
+viewFoundChild language currentDate zscores site features isChw ( childId, child ) ( sessionId, session ) pages db model =
     let
         maybeMother =
             getMyMother childId session.offlineSession
@@ -196,14 +198,14 @@ viewFoundChild language currentDate zscores features isChw ( childId, child ) ( 
                     Just activity ->
                         let
                             form =
-                                getChildForm childId pages session
+                                getChildForm site childId pages session
                         in
                         getChildMeasurementData childId session
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
                                     [ resolvePreviousValuesSetForChild currentDate childId db
-                                        |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
+                                        |> Measurement.View.viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"
                                     ]

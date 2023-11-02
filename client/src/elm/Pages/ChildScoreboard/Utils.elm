@@ -14,6 +14,7 @@ import Pages.ChildScoreboard.Activity.Utils
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.WellChild.Activity.Utils
 import RemoteData
+import SyncManager.Model exposing (Site)
 
 
 generatePreviousMeasurements :
@@ -25,8 +26,8 @@ generatePreviousMeasurements =
     Backend.Measurement.Utils.generatePreviousMeasurements getChildScoreboardEncountersForParticipant .childScoreboardMeasurements
 
 
-generateVaccinationProgressDicts : AssembledData -> ModelIndexedDb -> ( VaccinationProgressDict, VaccinationProgressDict )
-generateVaccinationProgressDicts assembled db =
+generateVaccinationProgressDicts : Site -> AssembledData -> ModelIndexedDb -> ( VaccinationProgressDict, VaccinationProgressDict )
+generateVaccinationProgressDicts site assembled db =
     let
         previousMeasurements =
             getPreviousMeasurements assembled.previousMeasurementsWithDates
@@ -58,18 +59,18 @@ generateVaccinationProgressDicts assembled db =
                         participantId
                         db
                         |> getPreviousMeasurements
-                        |> Pages.WellChild.Activity.Utils.generateVaccinationProgress assembled.person
+                        |> Pages.WellChild.Activity.Utils.generateVaccinationProgress site assembled.person
                 )
                 individualWellChildParticipantId
                 |> Maybe.withDefault Dict.empty
 
         vaccinationHistory =
-            Pages.ChildScoreboard.Activity.Utils.generateVaccinationProgress previousMeasurements
+            Pages.ChildScoreboard.Activity.Utils.generateVaccinationProgress site previousMeasurements
 
         vaccinationProgress =
             assembled.measurements
                 :: previousMeasurements
-                |> Pages.ChildScoreboard.Activity.Utils.generateVaccinationProgress
+                |> Pages.ChildScoreboard.Activity.Utils.generateVaccinationProgress site
     in
     ( mergeVaccinationProgressDicts
         vaccinationHistory
