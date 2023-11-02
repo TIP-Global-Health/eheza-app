@@ -43,7 +43,7 @@ class RoboFile extends Tasks {
 
     if ($result->getMessage()) {
       $this->yell($result->getMessage());
-      // throw new Exception('The GitHub working directory is dirty. Please commit any pending changes or add to .gitignore.');
+      throw new Exception('The GitHub working directory is dirty. Please commit any pending changes or add to .gitignore.');
     }
 
     $result = $this
