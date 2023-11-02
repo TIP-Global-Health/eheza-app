@@ -85,7 +85,7 @@ projects[module_filter][subdir] = "contrib"
 projects[module_filter][version] = 2.2
 
 projects[og][subdir] = "contrib"
-projects[og][version] = 2.x
+projects[og][version] = 2.11
 
 projects[prepopulate][subdir] = "contrib"
 projects[prepopulate][version] = 2.1
