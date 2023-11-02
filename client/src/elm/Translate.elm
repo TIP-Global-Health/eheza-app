@@ -6943,9 +6943,9 @@ translationSet trans =
 
                 WellChildEncounter ->
                     if isChw then
-                        { english = "Newborn Exam"
-                        , kinyarwanda = Just "Isuzuma ry'uruhinja"
-                        , kirundi = Just "Ugupimo uruyoya"
+                        { english = "Well Child Visit"
+                        , kinyarwanda = Nothing
+                        , kirundi = Nothing
                         }
 
                     else
