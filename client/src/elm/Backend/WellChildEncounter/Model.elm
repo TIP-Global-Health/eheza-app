@@ -32,6 +32,7 @@ emptyWellChildEncounter participant startDate encounterType shard =
 
 type WellChildEncounterType
     = PediatricCare
+    | PediatricCareChw
     | NewbornExam
 
 

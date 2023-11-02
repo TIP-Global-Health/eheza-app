@@ -439,6 +439,7 @@ function hedley_well_child_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'pediatric-care' => 'Pediatric Care',
+        'pediatric-care-chw' => 'Pediatric Care for CHW',
         'newborn-exam' => 'Newborn Exam',
       ),
       'allowed_values_function' => '',
