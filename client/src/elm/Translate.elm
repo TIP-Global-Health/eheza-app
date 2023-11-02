@@ -317,6 +317,7 @@ type TranslationId
     | ActivitiesHelp Activity
     | ActivitiesLabel Activity
     | ActivitiesTitle Activity
+    | Activity
     | ActivitityTitleAchi
     | ActivitiesToComplete Int
     | ActivitityLabelAchi
@@ -440,6 +441,8 @@ type TranslationId
     | ChartPhrase ChartPhrase
     | CheckAllThatApply
     | CheckIn
+    | Child0to5
+    | Child6to24
     | ChildCleanQuestion
     | ChildHasMalnutritionPhrase
     | ChildHmisNumber
@@ -1084,6 +1087,7 @@ type TranslationId
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | Predecessor Predecessor
     | PreeclampsiaPreviousPregnancy
+    | Pregnancy
     | PregnancyConclusion
     | PregnancyStart
     | PregnancySummarySignQuestion PregnancySummarySign
@@ -2750,6 +2754,12 @@ translationSet trans =
                 ChildActivity Activity.Model.NCDA ->
                     translationSet ChildScorecard
 
+        Activity ->
+            { english = "Activity"
+            , kinyarwanda = Just "Igikorwa"
+            , kirundi = Nothing
+            }
+
         ActivitityTitleAchi ->
             { english = "Aheza Child"
             , kinyarwanda = Just "Aheza igenewe umwana"
@@ -3669,6 +3679,18 @@ translationSet trans =
             { english = "Check in:"
             , kinyarwanda = Just "Kureba abaje"
             , kirundi = Just "Kwinjira"
+            }
+
+        Child0to5 ->
+            { english = "Child (0-5)"
+            , kinyarwanda = Just "Umwa(0-5)"
+            , kirundi = Just "Umwana (0-5)"
+            }
+
+        Child6to24 ->
+            { english = "Child (6-24)"
+            , kinyarwanda = Just "Umwana (6-24)"
+            , kirundi = Just "Umwnana (6-24)"
             }
 
         ChildCleanQuestion ->
@@ -13007,6 +13029,12 @@ translationSet trans =
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
             , kirundi = Just "Umuvyeyi yaragize umuvuduko w'amaraso udasanwze igihe c'imbanyi iheruka"
+            }
+
+        Pregnancy ->
+            { english = "Pregnancy (1-9)"
+            , kinyarwanda = Just "Gutwita (1-9)"
+            , kirundi = Nothing
             }
 
         PregnancyConclusion ->
