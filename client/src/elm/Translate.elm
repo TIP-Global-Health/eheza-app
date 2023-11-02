@@ -10311,26 +10311,26 @@ translationSet trans =
                     }
 
                 ChildReceivesFBF ->
-                    { english = "Provides counseling on the importance of FBF and advise them to go to the Health center to recieve them"
-                    , kinyarwanda = Nothing
+                    { english = "Provides counseling on the importance of FBF and if they haven't received it advise them to go to the Health center to recieve them"
+                    , kinyarwanda = Just "Niba ari umugenerwabikorwa wacikanywe, gira inama umubyeyi cg undi urera umwana kugana ikigo nderabuzima gufata Shisha Kibondo"
                     , kirundi = Nothing
                     }
 
                 ChildReceivesVitaminA ->
                     { english = "Provide counseling on the importance of Vitamin A and advise them not to miss it again"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gira inama umubyeyi ku kamaro ko gufata ikinini cya vitamini A unamugire inama yo kutongera gucikanwa"
                     , kirundi = Nothing
                     }
 
                 ChildReceivesDewormer ->
                     { english = "Provide counseling on the importance of deworming medication and advise them not to miss it again"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gira inama umubyeyi ku kamaro ko gufata ikinini cy’inzoka ku mikurire myiza y’umwana unamugire inama yo kutongera gucikanwa"
                     , kirundi = Nothing
                     }
 
                 ChildReceivesECD ->
                     { english = "Provide counseling on the importance of brain stimulation activities for the development of the child"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gira inama umubyeyi cyangwa urera umwana ku kamaro ko gukangura ubwonko bw’umwana umushishikarize kubikora unamwereka uko bikorwa kandi"
                     , kirundi = Nothing
                     }
 
@@ -10419,7 +10419,7 @@ translationSet trans =
 
                 BeneficiaryCashTransfer ->
                     { english = "Is the mother or the child beneficiary of cash transfer e.g. NSDS, VUP"
-                    , kinyarwanda = Just "Umubyeyi cg umwana ni abagenerwa bikorwa b'amafaranga y’inkunga (e.g. VUP, NSDS"
+                    , kinyarwanda = Just "Umubyeyi cg umwana ni abagenerwa bikorwa b'amafaranga y’inkunga (e.g. VUP, NSDS)"
                     , kirundi = Nothing
                     }
 
@@ -10430,8 +10430,8 @@ translationSet trans =
                     }
 
                 Backend.Measurement.Model.ConditionalFoodItems ->
-                    { english = "Receipt of other support (e.g., food items or small livestock)"
-                    , kinyarwanda = Just "Izindi nkunga z’ingoboka (ibiryo, amatungo)"
+                    { english = "Receipt of other support (e.g., food items or small livestock,...)"
+                    , kinyarwanda = Just "Izindi nkunga z’ingoboka (urugero: ibiryo, amatungo,...)"
                     , kirundi = Nothing
                     }
 
@@ -10527,7 +10527,7 @@ translationSet trans =
 
                 ShowsEdemaSigns ->
                     { english = "Does the child show signs of Edema"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana agaragaza ibimenyetso b’ububyimbe"
                     , kirundi = Nothing
                     }
 
