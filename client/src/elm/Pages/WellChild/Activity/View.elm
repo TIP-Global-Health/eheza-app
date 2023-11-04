@@ -15,6 +15,7 @@ import Backend.NutritionEncounter.Utils
         )
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
@@ -770,7 +771,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
             assembled.measurements
 
         tasks =
-            resolveNutritionAssessmentTasks isChw
+            resolveNutritionAssessmentTasks assembled
                 |> List.filter (expectNutritionAssessmentTask currentDate isChw assembled db)
 
         activeTask =
@@ -896,7 +897,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                                 |> getMeasurementValueFunc
 
                         showWeightForHeightZScore =
-                            not isChw
+                            assembled.encounter.encounterType /= NewbornExam
                     in
                     measurements.weight
                         |> getMeasurementValueFunc
@@ -1490,20 +1491,21 @@ vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled 
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =
-                    if isChw then
-                        [ VaccineDoseFirst ]
+                    case assembled.encounter.encounterType of
+                        NewbornExam ->
+                            [ VaccineDoseFirst ]
 
-                    else
-                        getAllDosesForVaccine initialOpvAdministered vaccineType
-                            |> List.filter
-                                (\dose ->
-                                    expectVaccineDoseForPerson currentDate
-                                        site
-                                        assembled.person
-                                        initialOpvAdministered
-                                        assembled.vaccinationProgress
-                                        ( vaccineType, dose )
-                                )
+                        _ ->
+                            getAllDosesForVaccine initialOpvAdministered vaccineType
+                                |> List.filter
+                                    (\dose ->
+                                        expectVaccineDoseForPerson currentDate
+                                            site
+                                            assembled.person
+                                            initialOpvAdministered
+                                            assembled.vaccinationProgress
+                                            ( vaccineType, dose )
+                                    )
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory
