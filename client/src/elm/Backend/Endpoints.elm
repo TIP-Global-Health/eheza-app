@@ -1340,3 +1340,27 @@ childScoreboardRotarixImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreb
 childScoreboardRotarixImmunisationEndpoint =
     swEndpoint "nodes/child_scoreboard_rotarix_iz" decodeChildScoreboardRotarixImmunisation
         |> withValueEncoder (object << encodeChildScoreboardRotarixImmunisation)
+
+
+wellChildFeedingEndpoint : ReadWriteEndPoint Error WellChildFeedingId WellChildFeeding WellChildFeeding ()
+wellChildFeedingEndpoint =
+    swEndpoint "nodes/well_child_feeding" decodeWellChildFeeding
+        |> withValueEncoder (object << encodeWellChildFeeding)
+
+
+wellChildHygieneEndpoint : ReadWriteEndPoint Error WellChildHygieneId WellChildHygiene WellChildHygiene ()
+wellChildHygieneEndpoint =
+    swEndpoint "nodes/well_child_hygiene" decodeWellChildHygiene
+        |> withValueEncoder (object << encodeWellChildHygiene)
+
+
+wellChildFoodSecurityEndpoint : ReadWriteEndPoint Error WellChildFoodSecurityId WellChildFoodSecurity WellChildFoodSecurity ()
+wellChildFoodSecurityEndpoint =
+    swEndpoint "nodes/well_child_food_security" decodeWellChildFoodSecurity
+        |> withValueEncoder (object << encodeWellChildFoodSecurity)
+
+
+wellChildCaringEndpoint : ReadWriteEndPoint Error WellChildCaringId WellChildCaring WellChildCaring ()
+wellChildCaringEndpoint =
+    swEndpoint "nodes/well_child_caring" decodeWellChildCaring
+        |> withValueEncoder (object << encodeWellChildCaring)
