@@ -5317,6 +5317,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildCaringRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | caring = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildContributingFactorsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -5364,6 +5372,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildFeedingRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildFollowUpRevision uuid data ->
             let
                 modelWithMappedFollowUp =
@@ -5376,6 +5392,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
                 modelWithMappedFollowUp
+            , recalc
+            )
+
+        WellChildFoodSecurityRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | foodSecurity = Just ( uuid, data ) })
+                model
             , recalc
             )
 
@@ -5399,6 +5423,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | height = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildHygieneRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hygiene = Just ( uuid, data ) })
                 model
             , recalc
             )
