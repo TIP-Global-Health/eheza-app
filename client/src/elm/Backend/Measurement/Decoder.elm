@@ -248,6 +248,10 @@ decodeWellChildMeasurements =
         |> optional "well_child_pcv13_immunisation" (decodeHead decodeWellChildPCV13Immunisation) Nothing
         |> optional "well_child_rotarix_immunisation" (decodeHead decodeWellChildRotarixImmunisation) Nothing
         |> optional "well_child_ncda" (decodeHead decodeWellChildNCDA) Nothing
+        |> optional "well_child_feeding" (decodeHead decodeWellChildFeeding) Nothing
+        |> optional "well_child_hygiene" (decodeHead decodeWellChildHygiene) Nothing
+        |> optional "well_child_food_security" (decodeHead decodeWellChildFoodSecurity) Nothing
+        |> optional "well_child_caring" (decodeHead decodeWellChildCaring) Nothing
 
 
 decodeNCDMeasurements : Decoder NCDMeasurements
@@ -2375,11 +2379,11 @@ decodeAcuteIllnessFollowUpValue =
 
 decodeNutritionFeeding : Decoder NutritionFeeding
 decodeNutritionFeeding =
-    decodeHomeVisitMeasurement decodeFeedingValue
+    decodeHomeVisitMeasurement decodeNutritionFeedingValue
 
 
-decodeFeedingValue : Decoder NutritionFeedingValue
-decodeFeedingValue =
+decodeNutritionFeedingValue : Decoder NutritionFeedingValue
+decodeNutritionFeedingValue =
     succeed NutritionFeedingValue
         |> required "nutrition_feeding_signs" (decodeEverySet decodeNutritionFeedingSign)
         |> required "supplement_type" decodeNutritionSupplementType
@@ -2556,11 +2560,11 @@ decodeWaterPreparationOption =
 
 decodeNutritionFoodSecurity : Decoder NutritionFoodSecurity
 decodeNutritionFoodSecurity =
-    decodeHomeVisitMeasurement decodeFoodSecurityValue
+    decodeHomeVisitMeasurement decodeNutritionFoodSecurityValue
 
 
-decodeFoodSecurityValue : Decoder NutritionFoodSecurityValue
-decodeFoodSecurityValue =
+decodeNutritionFoodSecurityValue : Decoder NutritionFoodSecurityValue
+decodeNutritionFoodSecurityValue =
     succeed NutritionFoodSecurityValue
         |> required "food_security_signs" (decodeEverySet decodeNutritionFoodSecuritySign)
         |> required "main_income_source" decodeMainIncomeSource
@@ -5308,3 +5312,23 @@ decodeChildScoreboardPCV13Immunisation =
 decodeChildScoreboardRotarixImmunisation : Decoder ChildScoreboardRotarixImmunisation
 decodeChildScoreboardRotarixImmunisation =
     decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeWellChildFeeding : Decoder WellChildFeeding
+decodeWellChildFeeding =
+    decodeWellChildMeasurement decodeNutritionFeedingValue
+
+
+decodeWellChildHygiene : Decoder WellChildHygiene
+decodeWellChildHygiene =
+    decodeWellChildMeasurement decodeNutritionHygieneValue
+
+
+decodeWellChildFoodSecurity : Decoder WellChildFoodSecurity
+decodeWellChildFoodSecurity =
+    decodeWellChildMeasurement decodeNutritionFoodSecurityValue
+
+
+decodeWellChildCaring : Decoder WellChildCaring
+decodeWellChildCaring =
+    decodeWellChildMeasurement decodeNutritionCaringValue

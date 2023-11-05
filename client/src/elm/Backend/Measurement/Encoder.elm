@@ -4957,3 +4957,23 @@ encodeChildScoreboardPCV13Immunisation =
 encodeChildScoreboardRotarixImmunisation : ChildScoreboardRotarixImmunisation -> List ( String, Value )
 encodeChildScoreboardRotarixImmunisation =
     encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_rotarix_iz")
+
+
+encodeWellChildFeeding : WellChildFeeding -> List ( String, Value )
+encodeWellChildFeeding =
+    encodeWellChildMeasurement encodeNutritionFeedingValue
+
+
+encodeWellChildHygiene : WellChildHygiene -> List ( String, Value )
+encodeWellChildHygiene =
+    encodeWellChildMeasurement encodeNutritionHygieneValue
+
+
+encodeWellChildCaring : WellChildCaring -> List ( String, Value )
+encodeWellChildCaring =
+    encodeWellChildMeasurement encodeNutritionCaringValue
+
+
+encodeWellChildFoodSecurity : WellChildFoodSecurity -> List ( String, Value )
+encodeWellChildFoodSecurity =
+    encodeWellChildMeasurement encodeNutritionFoodSecurityValue
