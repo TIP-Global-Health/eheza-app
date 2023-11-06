@@ -2579,16 +2579,16 @@ viewHomeVisitContent language currentDate site assembled data db =
                 iconClass =
                     case task of
                         TaskFeeding ->
-                            "home-visit-feeding"
+                            "feeding"
 
                         TaskCaring ->
-                            "home-visit-caring"
+                            "caring"
 
                         TaskHygiene ->
-                            "home-visit-hygiene"
+                            "hygiene"
 
                         TaskFoodSecurity ->
-                            "home-visit-food-security"
+                            "food-security"
 
                 isActive =
                     activeTask == Just task

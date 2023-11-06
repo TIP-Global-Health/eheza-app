@@ -573,6 +573,11 @@ h3.ui.header {
   background-size: 128px 128px;
 }
 
+.icon-task-home-visit {
+  background-image: url(#{$img-path}icon-house-white.svg);
+  background-size: 92px 92px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -1776,6 +1781,62 @@ input::placeholder {
     }
   }
 
+}
+
+.icon-feeding {
+  .active &:after {
+    background-image: url(#{$img-path}icon-feeding-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-feeding-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-feeding-gray.svg);
+  }
+}
+
+.icon-caring {
+  .active &:after {
+    background-image: url(#{$img-path}icon-caring-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-caring-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-caring-gray.svg);
+  }
+}
+
+.icon-hygiene {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hygiene-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hygiene-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hygiene-gray.svg);
+  }
+}
+
+.icon-food-security {
+  .active &:after {
+    background-image: url(#{$img-path}icon-food-security-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-food-security-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-food-security-gray.svg);
+  }
 }
 
 .icon-height {

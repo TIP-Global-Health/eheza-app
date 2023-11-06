@@ -110,7 +110,7 @@ getActivityIcon activity =
             "history"
 
         WellChildHomeVisit ->
-            "well-child-home-visit"
+            "home-visit"
 
 
 getAllActivities : List WellChildActivity
