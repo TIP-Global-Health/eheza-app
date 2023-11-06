@@ -2568,6 +2568,9 @@ viewHomeVisitContent language currentDate site assembled data db =
         measurements =
             assembled.measurements
 
+        _ =
+            Debug.log "" assembled.measurements
+
         tasks =
             [ TaskFeeding, TaskCaring, TaskHygiene, TaskFoodSecurity ]
 

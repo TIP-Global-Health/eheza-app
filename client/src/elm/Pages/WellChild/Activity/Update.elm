@@ -102,7 +102,7 @@ update currentDate site isChw id db msg model =
 
         generateHomeVisitMsgs nextTask =
             Maybe.map (\task -> [ SetActiveHomeVisitTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildProgressReportPage id ]
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
