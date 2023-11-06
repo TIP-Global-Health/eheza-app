@@ -8,6 +8,27 @@
  * profiles/hedley/modules/custom/hedley_admin/scripts/generate-acute-illness-completion-report.php.
  */
 
+class Patient {
+  $person_id;
+  $birth_date;
+  $bcg_dose = 0;
+  $dtp_dose = 0;
+  $mr_dose = 0;
+  $opv_dose = 0;
+  $pcv13_dose = 0;
+  $rotarix_dose = 0;
+  $hpv_dose = 0;
+  $albendazol_date = null;
+  $vitamin_a_dose = null;
+
+}
+
+
+
+
+
+
+
 require_once __DIR__ . '/report_common.inc';
 $start_date = drush_get_option('start_date', FALSE);
 $end_date = drush_get_option('end_date', FALSE);
