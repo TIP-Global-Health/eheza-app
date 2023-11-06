@@ -99,6 +99,14 @@ activityCompleted currentDate zscores site features isChw assembled db activity 
         WellChildNCDA ->
             (not <| activityExpected WellChildNCDA) || isJust measurements.ncda
 
+        WellChildHomeVisit ->
+            (not <| activityExpected WellChildHomeVisit)
+                || (isJust measurements.caring
+                        && isJust measurements.feeding
+                        && isJust measurements.hygiene
+                        && isJust measurements.foodSecurity
+                   )
+
 
 expectActivity :
     NominalDate
@@ -158,6 +166,9 @@ expectActivity currentDate zscores site features isChw assembled db activity =
             -- For nurses only, show if child is bellow age of 24 months.
             (assembled.encounter.encounterType == PediatricCare)
                 && expectNCDAActivity currentDate features isChw assembled.person
+
+        WellChildHomeVisit ->
+            assembled.encounter.encounterType == PediatricCareChw
 
 
 generateVaccinationProgress : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
@@ -1424,7 +1435,16 @@ nextStepsTaskCompleted currentDate zscores site features isChw data db task =
                 || isJust measurements.nextVisit
 
 
-expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Site -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChild.Activity.Types.NextStepsTask -> Bool
+expectNextStepsTask :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Pages.WellChild.Activity.Types.NextStepsTask
+    -> Bool
 expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->

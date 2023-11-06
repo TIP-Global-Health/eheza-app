@@ -108,6 +108,23 @@ type Msg
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( WellChildNCDAId, WellChildNCDA ))
+      -- HOME VISIT
+    | SetActiveHomeVisitTask Pages.WellChild.Activity.Types.HomeVisitTask
+    | SetFeedingBoolInput (Bool -> NutritionFeedingForm -> NutritionFeedingForm) Bool
+    | SetNutritionSupplementType NutritionSupplementType
+    | SetSachetsPerDay String
+    | SaveFeeding PersonId (Maybe ( WellChildFeedingId, WellChildFeeding )) (Maybe Pages.WellChild.Activity.Types.HomeVisitTask)
+    | SetHygieneBoolInput (Bool -> NutritionHygieneForm -> NutritionHygieneForm) Bool
+    | SetMainWaterSource MainWaterSource
+    | SaveHygiene PersonId (Maybe ( WellChildHygieneId, WellChildHygiene )) (Maybe Pages.WellChild.Activity.Types.HomeVisitTask)
+    | SetFoodSecurityBoolInput (Bool -> NutritionFoodSecurityForm -> NutritionFoodSecurityForm) Bool
+    | SetMainIncomeSource MainIncomeSource
+    | SetWaterPreparationOption WaterPreparationOption
+    | SaveFoodSecurity PersonId (Maybe ( WellChildFoodSecurityId, WellChildFoodSecurity )) (Maybe Pages.WellChild.Activity.Types.HomeVisitTask)
+    | SetParentsAliveAndHealthy Bool
+    | SetChildClean Bool
+    | SetNutritionCaringOption CaringOption
+    | SaveNutritionCaring PersonId (Maybe ( WellChildCaringId, WellChildCaring )) (Maybe Pages.WellChild.Activity.Types.HomeVisitTask)
 
 
 type alias Model =
@@ -120,6 +137,7 @@ type alias Model =
     , nextStepsData : NextStepsData
     , photoForm : PhotoForm
     , ncdaData : NCDAData
+    , homeVisitData : HomeVisitData
     , warningPopupState : Maybe WarningPopupType
     }
 
@@ -135,6 +153,7 @@ emptyModel =
     , nextStepsData = emptyNextStepsData
     , photoForm = emptyPhotoForm
     , ncdaData = emptyNCDAData
+    , homeVisitData = emptyHomeVisitData
     , warningPopupState = Nothing
     }
 
@@ -427,3 +446,22 @@ type alias NextVisitForm =
 emptyNextVisitForm : NextVisitForm
 emptyNextVisitForm =
     NextVisitForm Nothing Nothing
+
+
+type alias HomeVisitData =
+    { feedingForm : NutritionFeedingForm
+    , hygieneForm : NutritionHygieneForm
+    , foodSecurityForm : NutritionFoodSecurityForm
+    , caringForm : NutritionCaringForm
+    , activeTask : Maybe Pages.WellChild.Activity.Types.HomeVisitTask
+    }
+
+
+emptyHomeVisitData : HomeVisitData
+emptyHomeVisitData =
+    { feedingForm = emptyNutritionFeedingForm
+    , hygieneForm = emptyNutritionHygieneForm
+    , foodSecurityForm = emptyNutritionFoodSecurityForm
+    , caringForm = emptyNutritionCaringForm
+    , activeTask = Nothing
+    }

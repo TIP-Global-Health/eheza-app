@@ -130,7 +130,13 @@ import Pages.Report.Model
         )
 import Pages.StockManagement.Model exposing (CorrectionEntryType(..), StockManagementMenu(..))
 import Pages.TraceContact.Model exposing (NoContactReason(..))
-import Pages.WellChild.Activity.Types exposing (NextStepsTask(..), NutritionAssessmentTask(..), VaccinationStatus(..))
+import Pages.WellChild.Activity.Types
+    exposing
+        ( HomeVisitTask(..)
+        , NextStepsTask(..)
+        , NutritionAssessmentTask(..)
+        , VaccinationStatus(..)
+        )
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Pages.WellChild.ProgressReport.Model
     exposing
@@ -431,6 +437,7 @@ type TranslationId
     | CardiacDisease
     | CaregiverAccompanyQuestion
     | CaregiverMessage
+    | Caring
     | CaseManagement
     | CaseManagementFilterLabel CaseManagementFilter
     | CaseManagementPaneHeader CaseManagementFilter
@@ -604,6 +611,7 @@ type TranslationId
     | FatherOrChiefName
     | FavoriteToggle Bool
     | FbfDistribution ClinicType
+    | Feeding
     | FetalHeartRate
     | FetalMovement
     | FetalPresentationLabel
@@ -614,6 +622,7 @@ type TranslationId
     | FirstName
     | FiveVisits
     | FoodGroup FoodGroup
+    | FoodSecurity
     | FollowPostpartumProtocols
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
@@ -686,8 +695,10 @@ type TranslationId
     | HowManyDoses
     | HaveAnyOfTheFollowingQuestion
     | HttpError Http.Error
+    | HomeVisit
     | HoursSinglePlural Int
     | HowManyPerWeek
+    | Hygiene
     | Hypertension
     | HypertensionAndPregnantHeader
     | HypertensionBeforePregnancy
@@ -1666,6 +1677,7 @@ type TranslationId
     | WellChildImmunisationDosage Site WellChildVaccineType
     | WellChildImmunisationHeader WellChildVaccineType
     | WellChildImmunizationHistory Site WellChildVaccineType
+    | WellChildHomeVisitTask Pages.WellChild.Activity.Types.HomeVisitTask
     | WellChildImmunisationTask Site Measurement.Model.ImmunisationTask
     | WellChildMedicationTask Pages.WellChild.Activity.Types.MedicationTask
     | WellChildNextStepsTask Bool Pages.WellChild.Activity.Types.NextStepsTask
@@ -3560,6 +3572,12 @@ translationSet trans =
             { english = "This person is a caregiver. There are no activities to complete."
             , kinyarwanda = Just "Uyu ni umurezi w'umwana. Nta bikorwa usabwa kumukorera."
             , kirundi = Nothing
+            }
+
+        Caring ->
+            { english = "Caring"
+            , kinyarwanda = Just "Kwita ku mwana"
+            , kirundi = Just "Ukwita ku mwana"
             }
 
         Cell ->
@@ -5581,6 +5599,12 @@ translationSet trans =
                     , kirundi = Just "Itangwa rya FBF"
                     }
 
+        Feeding ->
+            { english = "Feeding"
+            , kinyarwanda = Just "Kugaburira umwana"
+            , kirundi = Just "Kugaburira umwana"
+            }
+
         FatherOrChiefId ->
             { english = "Father or Chief of Family ID"
             , kinyarwanda = Just "Indangamuntu y'Umukuru w'Umuryango"
@@ -5705,6 +5729,12 @@ translationSet trans =
                     , kinyarwanda = Just "Ibyubakumubiri"
                     , kirundi = Just "Indemamubiri"
                     }
+
+        FoodSecurity ->
+            { english = "Food Security"
+            , kinyarwanda = Just "Kwihaza ku biribwa"
+            , kirundi = Just "Umutekano mu mfunguro"
+            }
 
         FollowPostpartumProtocols ->
             { english = "Follow Postpartum Protocols"
@@ -6397,29 +6427,17 @@ translationSet trans =
 
         HomeVisitActivityTitle activity ->
             case activity of
-                Feeding ->
-                    { english = "Feeding"
-                    , kinyarwanda = Just "Kugaburira umwana"
-                    , kirundi = Just "Kugaburira umwana"
-                    }
+                Backend.HomeVisitActivity.Model.Feeding ->
+                    translationSet Feeding
 
-                Caring ->
-                    { english = "Caring"
-                    , kinyarwanda = Just "Kwita ku mwana"
-                    , kirundi = Just "Ukwita ku mwana"
-                    }
+                Backend.HomeVisitActivity.Model.Caring ->
+                    translationSet Caring
 
-                Hygiene ->
-                    { english = "Hygiene"
-                    , kinyarwanda = Just "Isuku"
-                    , kirundi = Just "Isuku"
-                    }
+                Backend.HomeVisitActivity.Model.Hygiene ->
+                    translationSet Hygiene
 
-                FoodSecurity ->
-                    { english = "Food Security"
-                    , kinyarwanda = Just "Kwihaza ku biribwa"
-                    , kirundi = Just "Umutekano mu mfunguro"
-                    }
+                Backend.HomeVisitActivity.Model.FoodSecurity ->
+                    translationSet FoodSecurity
 
         HowManyDoses ->
             { english = "How many doses"
@@ -6436,6 +6454,12 @@ translationSet trans =
         HttpError error ->
             translateHttpError error
 
+        HomeVisit ->
+            { english = "Home Visit"
+            , kinyarwanda = Just "Gusura Umurwayi"
+            , kirundi = Just "Kugendera muhira"
+            }
+
         HoursSinglePlural value ->
             if value == 1 then
                 { english = "1 Hour"
@@ -6448,6 +6472,12 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 , kirundi = Just <| "Amasaha " ++ String.fromInt value
                 }
+
+        Hygiene ->
+            { english = "Hygiene"
+            , kinyarwanda = Just "Isuku"
+            , kirundi = Just "Isuku"
+            }
 
         HowManyPerWeek ->
             { english = "How many per week"
@@ -6918,10 +6948,7 @@ translationSet trans =
                     translationSet ChildScorecard
 
                 HomeVisitEncounter ->
-                    { english = "Home Visit"
-                    , kinyarwanda = Just "Gusura Umurwayi"
-                    , kirundi = Just "Kugendera muhira"
-                    }
+                    translationSet HomeVisit
 
                 InmmunizationEncounter ->
                     { english = "Inmmunization"
@@ -21214,6 +21241,9 @@ translationSet trans =
                 WellChildNCDA ->
                     translationSet ChildScorecard
 
+                WellChildHomeVisit ->
+                    translationSet HomeVisit
+
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChild.Activity.Types.TaskSymptomsReview ->
@@ -21579,6 +21609,20 @@ translationSet trans =
                     , kinyarwanda = Just "Amakuru k'Urukingo rw'impiswi"
                     , kirundi = Just "Akahise ka Rotrarix"
                     }
+
+        WellChildHomeVisitTask task ->
+            case task of
+                TaskFeeding ->
+                    translationSet Feeding
+
+                TaskCaring ->
+                    translationSet Caring
+
+                TaskHygiene ->
+                    translationSet Hygiene
+
+                TaskFoodSecurity ->
+                    translationSet FoodSecurity
 
         WellChildImmunisationTask site task ->
             case task of
