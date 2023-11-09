@@ -3683,7 +3683,7 @@ translationSet trans =
 
         Child0to5 ->
             { english = "Child (0-5)"
-            , kinyarwanda = Just "Umwa(0-5)"
+            , kinyarwanda = Just "Umwa (0-5)"
             , kirundi = Just "Umwana (0-5)"
             }
 
