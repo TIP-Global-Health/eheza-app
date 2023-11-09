@@ -1972,7 +1972,7 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
     div [ class "pane anc-newborn" ]
         [ viewPaneHeading language Translate.ANCNewborn
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDAANCNewbornItemLabel RegularCheckups)
                 pregnancyValuesForRegularPrenatalVisits
@@ -2072,7 +2072,7 @@ viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQu
     div [ class "pane nutrition-behavior" ]
         [ viewPaneHeading language Translate.NutritionBehavior
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDANutritionBehaviorItemLabel Pages.WellChild.ProgressReport.Model.BreastfedSixMonths)
                 pregnancyValues
@@ -2126,7 +2126,7 @@ viewInfrastructureEnvironmentWashPane language currentDate child allQuestionnair
     div [ class "pane infrastructure-environment-wash" ]
         [ viewPaneHeading language Translate.InfrastructureEnvironmentWash
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDAInfrastructureEnvironmentWashItemLabel Pages.WellChild.ProgressReport.Model.HasToilets)
                 pregnancyValues
@@ -2370,7 +2370,7 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
     div [ class "pane targeted-interventions" ]
         [ viewPaneHeading language Translate.TargetedInterventions
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDATargetedInterventionsItemLabel FBFGiven)
                 pregnancyValues
@@ -2568,7 +2568,7 @@ viewUniversalInterventionsPane language currentDate site child db nurseQuestionn
     div [ class "pane universal-interventions" ]
         [ viewPaneHeading language Translate.UniversalInterventions
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDAUniversalInterventionsItemLabel Immunization)
                 pregnancyValues
@@ -2928,7 +2928,7 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
     div [ class "pane fill-the-blanks" ]
         [ viewPaneHeading language Translate.FillTheBlanks
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDAFillTheBlanksItemLabel HeightToAge)
                 pregnancyValues
@@ -2953,12 +2953,12 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
         ]
 
 
-viewTableHeader : Html any
-viewTableHeader =
+viewTableHeader : Language -> Html any
+viewTableHeader language =
     div [ class "table-header" ]
-        [ div [ class "activity" ] [ text "Activity" ]
+        [ div [ class "activity" ] [ text <| translate language Translate.Activity ]
         , div [ class "flex-column pregnancy" ]
-            [ div [ class "column-heading" ] [ text "Pregnancy (1-9)" ]
+            [ div [ class "column-heading" ] [ text <| translate language Translate.Pregnancy ]
             , List.repeat 9 ""
                 |> List.indexedMap
                     (\index _ ->
@@ -2967,7 +2967,7 @@ viewTableHeader =
                 |> div [ class "months" ]
             ]
         , div [ class "flex-column 0-5" ]
-            [ div [ class "column-heading" ] [ text "Child (0-5)" ]
+            [ div [ class "column-heading" ] [ text <| translate language Translate.Child0to5 ]
             , List.repeat 6 ""
                 |> List.indexedMap
                     (\index _ ->
@@ -2976,7 +2976,7 @@ viewTableHeader =
                 |> div [ class "months" ]
             ]
         , div [ class "flex-column 6-24" ]
-            [ div [ class "column-heading" ] [ text "Child (6-24 months)" ]
+            [ div [ class "column-heading" ] [ text <| translate language Translate.Child6to24 ]
             , List.repeat 19 ""
                 |> List.indexedMap
                     (\index _ ->
