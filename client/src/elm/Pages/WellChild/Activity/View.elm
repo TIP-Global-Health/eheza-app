@@ -1473,7 +1473,10 @@ vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled 
                             initialOpvAdministered
                             assembled.vaccinationProgress
                             ( vaccineType, VaccineDoseFirst )
-                    , suggestDoseToday = True
+
+                    -- Only nurses at HC can administer vaccinations.
+                    --CHWs only record previous vaccinations given by nurses.
+                    , suggestDoseToday = assembled.encounter.encounterType == PediatricCare
                     }
 
                 initialOpvAdministeredByForm =
