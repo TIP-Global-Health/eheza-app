@@ -667,84 +667,29 @@ immunisationTaskCompleted currentDate site isChw data db task =
 
 expectImmunisationTask : NominalDate -> Site -> Bool -> AssembledData -> Measurement.Model.ImmunisationTask -> Bool
 expectImmunisationTask currentDate site isChw assembled task =
-    case assembled.encounter.encounterType of
-        NewbornExam ->
-            case task of
-                TaskBCG ->
-                    True
+    let
+        futureVaccinations =
+            generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationHistory
+                |> Dict.fromList
 
-                TaskOPV ->
-                    True
+        ageInWeeks =
+            Maybe.map
+                (\birthDate ->
+                    Date.diff Weeks birthDate currentDate
+                )
+                assembled.person.birthDate
 
-                _ ->
-                    False
-
-        _ ->
-            let
-                futureVaccinations =
-                    generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationHistory
-                        |> Dict.fromList
-
-                ageInWeeks =
-                    Maybe.map
-                        (\birthDate ->
-                            Date.diff Weeks birthDate currentDate
-                        )
-                        assembled.person.birthDate
-
-                isTaskExpected vaccineType =
-                    Dict.get vaccineType futureVaccinations
-                        |> Maybe.Extra.join
-                        |> Maybe.map
-                            (\( dose, date ) ->
-                                let
-                                    defaultCondition =
-                                        not <| Date.compare date currentDate == GT
-                                in
-                                if vaccineType == VaccineOPV then
-                                    case dose of
-                                        VaccineDoseFirst ->
-                                            Maybe.map
-                                                (\ageWeeks ->
-                                                    -- First dose of OPV vaccine is given within first 2
-                                                    -- weeks from birth, or, starting from 6 weeks after birth.
-                                                    -- In latter case, there're only 3 doses, and not 4.
-                                                    if ageWeeks >= 2 && ageWeeks <= 5 then
-                                                        False
-
-                                                    else
-                                                        defaultCondition
-                                                )
-                                                ageInWeeks
-                                                |> Maybe.withDefault False
-
-                                        VaccineDoseSecond ->
-                                            Maybe.map
-                                                (\ageWeeks ->
-                                                    -- Second dose of OPV vaccine is given starting from
-                                                    -- 6 weeks after birth.
-                                                    if ageWeeks < 6 then
-                                                        False
-
-                                                    else
-                                                        defaultCondition
-                                                )
-                                                ageInWeeks
-                                                |> Maybe.withDefault False
-
-                                        _ ->
-                                            defaultCondition
-
-                                else
-                                    defaultCondition
-                            )
-                        |> Maybe.withDefault False
-            in
-            immunisationTaskToVaccineType task
-                |> Maybe.map isTaskExpected
-                -- Only task that is not converted to vaccine type
-                -- is 'Overview', which we allways show.
-                |> Maybe.withDefault True
+        isTaskExpected vaccineType =
+            Dict.get vaccineType futureVaccinations
+                |> Maybe.Extra.join
+                |> Maybe.map (\( dose, date ) -> not <| Date.compare date currentDate == GT)
+                |> Maybe.withDefault False
+    in
+    immunisationTaskToVaccineType task
+        |> Maybe.map isTaskExpected
+        -- Only task that is not converted to vaccine type
+        -- is 'Overview', which we always show.
+        |> Maybe.withDefault True
 
 
 immunisationVaccinationTasks : List ImmunisationTask
