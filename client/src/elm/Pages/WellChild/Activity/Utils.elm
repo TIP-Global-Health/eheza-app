@@ -296,7 +296,7 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
             data.measurements
 
         taskExpected =
-            expectNutritionAssessmentTask currentDate isChw data db
+            expectNutritionAssessmentTask currentDate data
     in
     case task of
         TaskHeight ->
@@ -315,18 +315,18 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
             (not <| taskExpected TaskWeight) || isJust measurements.weight
 
 
-expectNutritionAssessmentTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
-expectNutritionAssessmentTask currentDate isChw data db task =
+expectNutritionAssessmentTask : NominalDate -> AssembledData -> NutritionAssessmentTask -> Bool
+expectNutritionAssessmentTask currentDate assembled task =
     case task of
         -- Show for children that are up to 3 years old.
         TaskHeadCircumference ->
-            ageInMonths currentDate data.person
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths < 36)
                 |> Maybe.withDefault False
 
         -- Show for children that are at least 6 month old.
         TaskMuac ->
-            ageInMonths currentDate data.person
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
@@ -337,9 +337,21 @@ expectNutritionAssessmentTask currentDate isChw data db task =
 
 mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
 mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db =
-    resolveNutritionAssessmentTasks assembled
+    resolveMandatoryNutritionAssessmentTasks currentDate assembled
         |> List.filter (not << nutritionAssessmentTaskCompleted currentDate isChw assembled db)
         |> List.isEmpty
+
+
+resolveMandatoryNutritionAssessmentTasks : NominalDate -> AssembledData -> List NutritionAssessmentTask
+resolveMandatoryNutritionAssessmentTasks currentDate assembled =
+    List.filter (expectNutritionAssessmentTask currentDate assembled) <|
+        case assembled.encounter.encounterType of
+            PediatricCare ->
+                [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+
+            _ ->
+                -- Height is optional for CHW.
+                [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask

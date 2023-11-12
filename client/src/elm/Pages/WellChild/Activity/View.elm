@@ -772,7 +772,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
 
         tasks =
             resolveNutritionAssessmentTasks assembled
-                |> List.filter (expectNutritionAssessmentTask currentDate isChw assembled db)
+                |> List.filter (expectNutritionAssessmentTask currentDate assembled)
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1475,7 +1475,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled 
                             ( vaccineType, VaccineDoseFirst )
 
                     -- Only nurses at HC can administer vaccinations.
-                    --CHWs only record previous vaccinations given by nurses.
+                    -- CHWs only record previous vaccinations given by nurses.
                     , suggestDoseToday = assembled.encounter.encounterType == PediatricCare
                     }
 
