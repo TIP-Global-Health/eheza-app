@@ -6443,9 +6443,7 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before 
                 mandatoryActivitiesCompleted =
                     Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                         currentDate
-                        isChw
                         assembledAfter
-                        after
             in
             if not mandatoryActivitiesCompleted then
                 -- Assement is done only when all mandatory measurements were recorded.

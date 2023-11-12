@@ -77,7 +77,7 @@ activityCompleted currentDate zscores site features isChw assembled db activity 
 
         WellChildNutritionAssessment ->
             resolveNutritionAssessmentTasks assembled
-                |> List.all (nutritionAssessmentTaskCompleted currentDate isChw assembled db)
+                |> List.all (nutritionAssessmentTaskCompleted currentDate assembled)
 
         WellChildECD ->
             (not <| activityExpected WellChildECD) || isJust measurements.ecd
@@ -289,14 +289,14 @@ listNotEmptyWithException exception list =
         list /= [ exception ]
 
 
-nutritionAssessmentTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
-nutritionAssessmentTaskCompleted currentDate isChw data db task =
+nutritionAssessmentTaskCompleted : NominalDate -> AssembledData -> NutritionAssessmentTask -> Bool
+nutritionAssessmentTaskCompleted currentDate assembled task =
     let
         measurements =
-            data.measurements
+            assembled.measurements
 
         taskExpected =
-            expectNutritionAssessmentTask currentDate data
+            expectNutritionAssessmentTask currentDate assembled
     in
     case task of
         TaskHeight ->
@@ -335,10 +335,10 @@ expectNutritionAssessmentTask currentDate assembled task =
             True
 
 
-mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db =
+mandatoryNutritionAssessmentTasksCompleted : NominalDate -> AssembledData -> Bool
+mandatoryNutritionAssessmentTasksCompleted currentDate assembled =
     resolveMandatoryNutritionAssessmentTasks currentDate assembled
-        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate isChw assembled db)
+        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate assembled)
         |> List.isEmpty
 
 
@@ -363,7 +363,6 @@ resolveNutritionAssessmentTasks assembled =
             [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
         _ ->
-            -- @todo: do we need height at SPV for CHW?
             [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
@@ -1440,7 +1439,7 @@ expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Site -> EverySet Site
 expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
-            if mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db then
+            if mandatoryNutritionAssessmentTasksCompleted currentDate assembled then
                 -- Any assesment require Next Steps tasks.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty

@@ -2,10 +2,12 @@ module Pages.WellChild.Encounter.Utils exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..))
+import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Utils
+import Pages.WellChild.Activity.Utils exposing (mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChild.Encounter.Model exposing (..)
 import RemoteData exposing (WebData)
 import SyncManager.Model exposing (Site)
@@ -127,3 +129,23 @@ pediatricCareMilestoneToComparable milestone =
 
         Milestone4Years ->
             10
+
+
+allowEndingEcounter : NominalDate -> List WellChildActivity -> AssembledData -> Bool
+allowEndingEcounter currentDate pendingActivities assembled =
+    List.filter ((/=) WellChildPhoto) pendingActivities
+        |> (\pending ->
+                case pendingActivities of
+                    [] ->
+                        True
+
+                    [ WellChildNutritionAssessment ] ->
+                        if assembled.encounter.encounterType == PediatricCare then
+                            False
+
+                        else
+                            mandatoryNutritionAssessmentTasksCompleted currentDate assembled
+
+                    _ ->
+                        False
+           )
