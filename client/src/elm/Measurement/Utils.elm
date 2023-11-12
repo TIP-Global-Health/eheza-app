@@ -5147,7 +5147,6 @@ behindOnVaccinationsByWellChild currentDate site childId db =
         (\assembled ->
             generateSuggestedVaccinations currentDate
                 site
-                False
                 assembled.person
                 assembled.vaccinationHistory
                 assembled.vaccinationProgress
@@ -5199,41 +5198,36 @@ ncdaSteps =
 generateSuggestedVaccinations :
     NominalDate
     -> Site
-    -> Bool
     -> Person
     -> VaccinationProgressDict
     -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate site isChw person vaccinationHistory vaccinationProgress =
-    if isChw then
-        [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
+generateSuggestedVaccinations currentDate site person vaccinationHistory vaccinationProgress =
+    let
+        initialOpvAdministered =
+            wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
+    in
+    allVaccineTypes site
+        |> List.filter (expectVaccineForPerson currentDate site person initialOpvAdministered vaccinationProgress)
+        |> List.filterMap
+            (\vaccineType ->
+                let
+                    suggestedDose =
+                        case latestVaccinationDataForVaccine vaccinationHistory vaccineType of
+                            Just ( lastDoseAdministered, lastDoseDate ) ->
+                                nextDoseForVaccine currentDate
+                                    site
+                                    person
+                                    lastDoseDate
+                                    initialOpvAdministered
+                                    lastDoseAdministered
+                                    vaccineType
 
-    else
-        let
-            initialOpvAdministered =
-                wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
-        in
-        allVaccineTypes site
-            |> List.filter (expectVaccineForPerson currentDate site person initialOpvAdministered vaccinationProgress)
-            |> List.filterMap
-                (\vaccineType ->
-                    let
-                        suggestedDose =
-                            case latestVaccinationDataForVaccine vaccinationHistory vaccineType of
-                                Just ( lastDoseAdministered, lastDoseDate ) ->
-                                    nextDoseForVaccine currentDate
-                                        site
-                                        person
-                                        lastDoseDate
-                                        initialOpvAdministered
-                                        lastDoseAdministered
-                                        vaccineType
-
-                                Nothing ->
-                                    Just VaccineDoseFirst
-                    in
-                    Maybe.map (\nextDose -> ( vaccineType, nextDose )) suggestedDose
-                )
+                            Nothing ->
+                                Just VaccineDoseFirst
+                in
+                Maybe.map (\nextDose -> ( vaccineType, nextDose )) suggestedDose
+            )
 
 
 wasInitialOpvAdministeredByVaccinationProgress : Person -> VaccinationProgressDict -> Bool

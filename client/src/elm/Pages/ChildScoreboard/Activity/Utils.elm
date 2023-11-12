@@ -147,7 +147,7 @@ generateSuggestedVaccinations :
     -> VaccinationProgressDict
     -> List ( WellChildVaccineType, VaccineDose )
 generateSuggestedVaccinations currentDate site person vaccinationHistory vaccinationProgress =
-    Measurement.Utils.generateSuggestedVaccinations currentDate site False person vaccinationHistory vaccinationProgress
+    Measurement.Utils.generateSuggestedVaccinations currentDate site person vaccinationHistory vaccinationProgress
 
 
 generateVaccinationProgress : Site -> List ChildScoreboardMeasurements -> VaccinationProgressDict
