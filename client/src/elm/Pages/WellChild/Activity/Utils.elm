@@ -77,7 +77,7 @@ activityCompleted currentDate zscores site features isChw assembled db activity 
 
         WellChildNutritionAssessment ->
             resolveNutritionAssessmentTasks assembled
-                |> List.all (nutritionAssessmentTaskCompleted currentDate isChw assembled db)
+                |> List.all (nutritionAssessmentTaskCompleted currentDate assembled)
 
         WellChildECD ->
             (not <| activityExpected WellChildECD) || isJust measurements.ecd
@@ -300,14 +300,14 @@ listNotEmptyWithException exception list =
         list /= [ exception ]
 
 
-nutritionAssessmentTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
-nutritionAssessmentTaskCompleted currentDate isChw data db task =
+nutritionAssessmentTaskCompleted : NominalDate -> AssembledData -> NutritionAssessmentTask -> Bool
+nutritionAssessmentTaskCompleted currentDate assembled task =
     let
         measurements =
-            data.measurements
+            assembled.measurements
 
         taskExpected =
-            expectNutritionAssessmentTask currentDate isChw data db
+            expectNutritionAssessmentTask currentDate assembled
     in
     case task of
         TaskHeight ->
@@ -326,18 +326,18 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
             (not <| taskExpected TaskWeight) || isJust measurements.weight
 
 
-expectNutritionAssessmentTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
-expectNutritionAssessmentTask currentDate isChw data db task =
+expectNutritionAssessmentTask : NominalDate -> AssembledData -> NutritionAssessmentTask -> Bool
+expectNutritionAssessmentTask currentDate assembled task =
     case task of
         -- Show for children that are up to 3 years old.
         TaskHeadCircumference ->
-            ageInMonths currentDate data.person
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths < 36)
                 |> Maybe.withDefault False
 
         -- Show for children that are at least 6 month old.
         TaskMuac ->
-            ageInMonths currentDate data.person
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
@@ -346,11 +346,23 @@ expectNutritionAssessmentTask currentDate isChw data db task =
             True
 
 
-mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db =
-    resolveNutritionAssessmentTasks assembled
-        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate isChw assembled db)
+mandatoryNutritionAssessmentTasksCompleted : NominalDate -> AssembledData -> Bool
+mandatoryNutritionAssessmentTasksCompleted currentDate assembled =
+    resolveMandatoryNutritionAssessmentTasks currentDate assembled
+        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate assembled)
         |> List.isEmpty
+
+
+resolveMandatoryNutritionAssessmentTasks : NominalDate -> AssembledData -> List NutritionAssessmentTask
+resolveMandatoryNutritionAssessmentTasks currentDate assembled =
+    List.filter (expectNutritionAssessmentTask currentDate assembled) <|
+        case assembled.encounter.encounterType of
+            PediatricCare ->
+                [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+
+            _ ->
+                -- Height is optional for CHW.
+                [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask
@@ -362,7 +374,6 @@ resolveNutritionAssessmentTasks assembled =
             [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
         _ ->
-            -- @todo: do we need height at SPV for CHW?
             [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
@@ -1448,7 +1459,7 @@ expectNextStepsTask :
 expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
-            if mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db then
+            if mandatoryNutritionAssessmentTasksCompleted currentDate assembled then
                 -- Any assesment require Next Steps tasks.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
