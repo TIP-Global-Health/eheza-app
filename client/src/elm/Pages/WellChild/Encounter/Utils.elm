@@ -135,7 +135,7 @@ allowEndingEcounter : NominalDate -> List WellChildActivity -> AssembledData -> 
 allowEndingEcounter currentDate pendingActivities assembled =
     List.filter ((/=) WellChildPhoto) pendingActivities
         |> (\pending ->
-                case pendingActivities of
+                case pending of
                     [] ->
                         True
 
