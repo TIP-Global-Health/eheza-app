@@ -5221,7 +5221,13 @@ generateSuggestedVaccinations currentDate site isChw person vaccinationHistory v
                         suggestedDose =
                             case latestVaccinationDataForVaccine vaccinationHistory vaccineType of
                                 Just ( lastDoseAdministered, lastDoseDate ) ->
-                                    nextDoseForVaccine currentDate site lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
+                                    nextDoseForVaccine currentDate
+                                        site
+                                        person
+                                        lastDoseDate
+                                        initialOpvAdministered
+                                        lastDoseAdministered
+                                        vaccineType
 
                                 Nothing ->
                                     Just VaccineDoseFirst
@@ -5269,6 +5275,7 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
                         case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
                             Just ( lastDoseAdministered, lastDoseDate ) ->
                                 nextVaccinationDataForVaccine site
+                                    person
                                     vaccineType
                                     initialOpvAdministered
                                     lastDoseDate
@@ -5441,26 +5448,51 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : Site -> WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
-    if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
-        Nothing
+nextVaccinationDataForVaccine : Site -> Person -> WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine site person vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
+    Maybe.andThen
+        (\birthDate ->
+            if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
+                Nothing
 
-    else
-        getNextVaccineDose lastDoseAdministered
-            |> Maybe.map
-                (\dose ->
-                    let
-                        ( interval, unit ) =
-                            getIntervalForVaccine site vaccineType
-                    in
-                    ( dose, Date.add unit interval lastDoseDate )
-                )
+            else
+                getNextVaccineDose lastDoseAdministered
+                    |> Maybe.map
+                        (\dose ->
+                            let
+                                ( interval, unit ) =
+                                    getIntervalForVaccine site vaccineType
+                            in
+                            if
+                                -- Initial OPV dose is supposed to be given before child turns 2 weeks old.
+                                -- Second dose of OPV is given at 6 weeks, so it's not straight forward by interval.
+                                vaccineType == VaccineOPV && initialOpvAdministered && dose == VaccineDoseSecond
+                            then
+                                let
+                                    ageOfSixWeeks =
+                                        Date.add Weeks 6 birthDate
+
+                                    secondDoseByInterval =
+                                        Date.add unit interval lastDoseDate
+                                in
+                                ( dose
+                                , if Date.compare ageOfSixWeeks secondDoseByInterval == GT then
+                                    ageOfSixWeeks
+
+                                  else
+                                    secondDoseByInterval
+                                )
+
+                            else
+                                ( dose, Date.add unit interval lastDoseDate )
+                        )
+        )
+        person.birthDate
 
 
-nextDoseForVaccine : NominalDate -> Site -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
-nextDoseForVaccine currentDate site lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
-    nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+nextDoseForVaccine : NominalDate -> Site -> Person -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
+nextDoseForVaccine currentDate site person lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
+    nextVaccinationDataForVaccine site person vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
         |> Maybe.andThen
             (\( dose, dueDate ) ->
                 if Date.compare dueDate currentDate == GT then

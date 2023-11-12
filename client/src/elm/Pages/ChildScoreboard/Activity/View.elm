@@ -535,7 +535,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                     , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
                     , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
                     , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site vaccineType initialOpvAdministered
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site assembled.person vaccineType initialOpvAdministered
                     , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
                     , firstDoseExpectedFrom =
                         initialVaccinationDateByBirthDate site
