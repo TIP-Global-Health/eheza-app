@@ -1404,7 +1404,7 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
             if mandatoryNutritionAssessmentTasksCompleted currentDate assembled then
-                -- Any assesment require Next Steps tasks.
+                -- Any assesment requires Next Steps tasks.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
                     |> not
@@ -1415,10 +1415,10 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
         TaskHealthEducation ->
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
                 || -- At newborn exam, CHW should provide Health Education,
-                   -- if newborn was not vaccinated at birth.
-                   (isChw
+                   -- if newborn vaccinatons were not administered.
+                   ((assembled.encounter.encounterType == NewbornExam)
                         && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
-                        && (not <| newbornVaccinatedAtBirth assembled.measurements)
+                        && (not <| newbornVaccinationsAdministered assembled)
                    )
 
         TaskFollowUp ->
@@ -1427,10 +1427,10 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
         TaskSendToHC ->
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
                 || -- At newborn exam, CHW should send patient to HC,
-                   -- if newborn was not vaccinated at birth.
-                   (isChw
+                   -- if newborn vaccinatons were not administered.
+                   ((assembled.encounter.encounterType == NewbornExam)
                         && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
-                        && (not <| newbornVaccinatedAtBirth assembled.measurements)
+                        && (not <| newbornVaccinationsAdministered assembled)
                    )
 
         TaskNextVisit ->
@@ -1445,14 +1445,21 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
                 && nextVisitRequired currentDate site isChw assembled db
 
 
-newbornVaccinatedAtBirth : WellChildMeasurements -> Bool
-newbornVaccinatedAtBirth measurements =
-    List.all ((==) (Just AdministeredToday))
-        [ getMeasurementValueFunc measurements.bcgImmunisation
-            |> Maybe.map .administrationNote
-        , getMeasurementValueFunc measurements.opvImmunisation
-            |> Maybe.map .administrationNote
-        ]
+newbornVaccinationsAdministered : AssembledData -> Bool
+newbornVaccinationsAdministered assembled =
+    let
+        -- Dict WellChildVaccineType (Dict VaccineDose NominalDate)
+        firstBCGAdministered =
+            Dict.get VaccineBCG assembled.vaccinationProgress
+                |> Maybe.andThen (Dict.get VaccineDoseFirst)
+                |> isJust
+
+        firstOPVAdministered =
+            Dict.get VaccineOPV assembled.vaccinationProgress
+                |> Maybe.andThen (Dict.get VaccineDoseFirst)
+                |> isJust
+    in
+    firstBCGAdministered && firstOPVAdministered
 
 
 nextStepsTasksCompletedFromTotal : Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChild.Activity.Types.NextStepsTask -> ( Int, Int )
