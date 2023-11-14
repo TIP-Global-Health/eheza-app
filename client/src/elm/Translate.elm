@@ -6807,9 +6807,9 @@ translationSet trans =
 
                 WellChildEncounter ->
                     if isChw then
-                        { english = "Newborn Exam"
-                        , kinyarwanda = Just "Isuzuma ry'uruhinja"
-                        , kirundi = Just "Ugupimo uruyoya"
+                        { english = "Well Child Visit"
+                        , kinyarwanda = Nothing
+                        , kirundi = Nothing
                         }
 
                     else
@@ -6864,8 +6864,8 @@ translationSet trans =
 
                 WellChildEncounter ->
                     if isChw then
-                        { english = "Select Newborn Exam Visit"
-                        , kinyarwanda = Just "Hitamo isuzuma ry'Uruhinja"
+                        { english = "Select Well Child Visit"
+                        , kinyarwanda = Nothing
                         , kirundi = Nothing
                         }
 
@@ -6965,9 +6965,9 @@ translationSet trans =
 
                 WellChildEncounter ->
                     if isChw then
-                        { english = "Newborn Exam"
-                        , kinyarwanda = Just "Isuzuma ry'uruhinja"
-                        , kirundi = Just "Ugupimo uruyoya"
+                        { english = "Well Child Visit"
+                        , kinyarwanda = Nothing
+                        , kirundi = Nothing
                         }
 
                     else

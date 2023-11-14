@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -84,11 +84,18 @@ update currentDate site isChw id db msg model =
         generateImmunisationMsgs nextTask =
             let
                 defaultMsg =
-                    if isChw then
-                        SetActivePage <| UserPage <| WellChildEncounterPage id
+                    Dict.get id db.wellChildEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\encounter ->
+                                case encounter.encounterType of
+                                    NewbornExam ->
+                                        SetActivePage <| UserPage <| WellChildEncounterPage id
 
-                    else
-                        SetActiveImmunisationTask TaskOverview
+                                    _ ->
+                                        SetActiveImmunisationTask TaskOverview
+                            )
+                        |> Maybe.withDefault (SetActivePage <| UserPage <| WellChildEncounterPage id)
             in
             Maybe.map (\task -> [ SetActiveImmunisationTask task ]) nextTask
                 |> Maybe.withDefault [ defaultMsg ]

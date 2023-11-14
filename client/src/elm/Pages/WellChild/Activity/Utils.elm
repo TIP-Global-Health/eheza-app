@@ -8,6 +8,7 @@ import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -75,8 +76,8 @@ activityCompleted currentDate zscores site features isChw assembled db activity 
                 || (isJust measurements.symptomsReview && isJust measurements.vitals)
 
         WellChildNutritionAssessment ->
-            resolveNutritionAssessmentTasks isChw
-                |> List.all (nutritionAssessmentTaskCompleted currentDate isChw assembled db)
+            resolveNutritionAssessmentTasks assembled
+                |> List.all (nutritionAssessmentTaskCompleted currentDate assembled)
 
         WellChildECD ->
             (not <| activityExpected WellChildECD) || isJust measurements.ecd
@@ -112,17 +113,10 @@ expectActivity :
 expectActivity currentDate zscores site features isChw assembled db activity =
     case activity of
         WellChildPregnancySummary ->
-            if isChw then
-                ageInMonths currentDate assembled.person
-                    |> Maybe.map
-                        (\ageMonths -> ageMonths < 2)
-                    |> Maybe.withDefault False
-
-            else
-                False
+            assembled.encounter.encounterType == NewbornExam
 
         WellChildDangerSigns ->
-            not isChw
+            assembled.encounter.encounterType /= NewbornExam
 
         WellChildNutritionAssessment ->
             True
@@ -136,27 +130,22 @@ expectActivity currentDate zscores site features isChw assembled db activity =
                 assembled.vaccinationProgress
 
         WellChildECD ->
-            if isChw then
-                False
-
-            else
-                generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
-                    |> List.isEmpty
-                    |> not
+            (assembled.encounter.encounterType == PediatricCare)
+                && (generateRemianingECDSignsBeforeCurrentEncounter currentDate assembled
+                        |> List.isEmpty
+                        |> not
+                   )
 
         WellChildMedication ->
-            if isChw then
-                False
-
-            else
-                medicationTasks
-                    |> List.filter (expectMedicationTask currentDate site isChw assembled)
-                    |> List.isEmpty
-                    |> not
+            (assembled.encounter.encounterType == PediatricCare)
+                && (List.filter (expectMedicationTask currentDate site isChw assembled) medicationTasks
+                        |> List.isEmpty
+                        |> not
+                   )
 
         WellChildNextSteps ->
-            nextStepsTasks
-                |> List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db)
+            -- @todo: Logic for SPV for CHW
+            List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db) nextStepsTasks
                 |> List.isEmpty
                 |> not
 
@@ -165,7 +154,8 @@ expectActivity currentDate zscores site features isChw assembled db activity =
 
         WellChildNCDA ->
             -- For nurses only, show if child is bellow age of 24 months.
-            expectNCDAActivity currentDate features isChw assembled.person
+            (assembled.encounter.encounterType == PediatricCare)
+                && expectNCDAActivity currentDate features isChw assembled.person
 
 
 generateVaccinationProgress : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
@@ -297,14 +287,14 @@ listNotEmptyWithException exception list =
         list /= [ exception ]
 
 
-nutritionAssessmentTaskCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
-nutritionAssessmentTaskCompleted currentDate isChw data db task =
+nutritionAssessmentTaskCompleted : NominalDate -> AssembledData -> NutritionAssessmentTask -> Bool
+nutritionAssessmentTaskCompleted currentDate assembled task =
     let
         measurements =
-            data.measurements
+            assembled.measurements
 
         taskExpected =
-            expectNutritionAssessmentTask currentDate isChw data db
+            expectNutritionAssessmentTask currentDate assembled
     in
     case task of
         TaskHeight ->
@@ -323,18 +313,18 @@ nutritionAssessmentTaskCompleted currentDate isChw data db task =
             (not <| taskExpected TaskWeight) || isJust measurements.weight
 
 
-expectNutritionAssessmentTask : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NutritionAssessmentTask -> Bool
-expectNutritionAssessmentTask currentDate isChw data db task =
+expectNutritionAssessmentTask : NominalDate -> AssembledData -> NutritionAssessmentTask -> Bool
+expectNutritionAssessmentTask currentDate assembled task =
     case task of
         -- Show for children that are up to 3 years old.
         TaskHeadCircumference ->
-            ageInMonths currentDate data.person
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths < 36)
                 |> Maybe.withDefault False
 
         -- Show for children that are at least 6 month old.
         TaskMuac ->
-            ageInMonths currentDate data.person
+            ageInMonths currentDate assembled.person
                 |> Maybe.map (\ageMonths -> ageMonths > 5)
                 |> Maybe.withDefault False
 
@@ -343,22 +333,35 @@ expectNutritionAssessmentTask currentDate isChw data db task =
             True
 
 
-mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryNutritionAssessmentTasksCompleted currentDate isChw data db =
-    resolveNutritionAssessmentTasks isChw
-        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate isChw data db)
+mandatoryNutritionAssessmentTasksCompleted : NominalDate -> AssembledData -> Bool
+mandatoryNutritionAssessmentTasksCompleted currentDate assembled =
+    resolveMandatoryNutritionAssessmentTasks currentDate assembled
+        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate assembled)
         |> List.isEmpty
 
 
-resolveNutritionAssessmentTasks : Bool -> List NutritionAssessmentTask
-resolveNutritionAssessmentTasks isChw =
-    if isChw then
-        -- Height and Muac are not here, because Newbor Exam
-        -- is done for children that are less than 2 months old.
-        [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
+resolveMandatoryNutritionAssessmentTasks : NominalDate -> AssembledData -> List NutritionAssessmentTask
+resolveMandatoryNutritionAssessmentTasks currentDate assembled =
+    List.filter (expectNutritionAssessmentTask currentDate assembled) <|
+        case assembled.encounter.encounterType of
+            PediatricCare ->
+                [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
-    else
-        [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+            _ ->
+                -- Height is optional for CHW.
+                [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+
+
+resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask
+resolveNutritionAssessmentTasks assembled =
+    case assembled.encounter.encounterType of
+        NewbornExam ->
+            -- Height and Muac are not here, because Newbor Exam
+            -- is done for children that are less than 2 months old.
+            [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
+
+        _ ->
+            [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
@@ -662,83 +665,29 @@ immunisationTaskCompleted currentDate site isChw data db task =
 
 expectImmunisationTask : NominalDate -> Site -> Bool -> AssembledData -> Measurement.Model.ImmunisationTask -> Bool
 expectImmunisationTask currentDate site isChw assembled task =
-    if isChw then
-        case task of
-            TaskBCG ->
-                True
+    let
+        futureVaccinations =
+            generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationHistory
+                |> Dict.fromList
 
-            TaskOPV ->
-                True
+        ageInWeeks =
+            Maybe.map
+                (\birthDate ->
+                    Date.diff Weeks birthDate currentDate
+                )
+                assembled.person.birthDate
 
-            _ ->
-                False
-
-    else
-        let
-            futureVaccinations =
-                generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationHistory
-                    |> Dict.fromList
-
-            ageInWeeks =
-                Maybe.map
-                    (\birthDate ->
-                        Date.diff Weeks birthDate currentDate
-                    )
-                    assembled.person.birthDate
-
-            isTaskExpected vaccineType =
-                Dict.get vaccineType futureVaccinations
-                    |> Maybe.Extra.join
-                    |> Maybe.map
-                        (\( dose, date ) ->
-                            let
-                                defaultCondition =
-                                    not <| Date.compare date currentDate == GT
-                            in
-                            if vaccineType == VaccineOPV then
-                                case dose of
-                                    VaccineDoseFirst ->
-                                        Maybe.map
-                                            (\ageWeeks ->
-                                                -- First dose of OPV vaccine is given within first 2
-                                                -- weeks from birth, or, starting from 6 weeks after birth.
-                                                -- In latter case, there're only 3 doses, and not 4.
-                                                if ageWeeks >= 2 && ageWeeks <= 5 then
-                                                    False
-
-                                                else
-                                                    defaultCondition
-                                            )
-                                            ageInWeeks
-                                            |> Maybe.withDefault False
-
-                                    VaccineDoseSecond ->
-                                        Maybe.map
-                                            (\ageWeeks ->
-                                                -- Second dose of OPV vaccine is given starting from
-                                                -- 6 weeks after birth.
-                                                if ageWeeks < 6 then
-                                                    False
-
-                                                else
-                                                    defaultCondition
-                                            )
-                                            ageInWeeks
-                                            |> Maybe.withDefault False
-
-                                    _ ->
-                                        defaultCondition
-
-                            else
-                                defaultCondition
-                        )
-                    |> Maybe.withDefault False
-        in
-        immunisationTaskToVaccineType task
-            |> Maybe.map isTaskExpected
-            -- Only task that is not converted to vaccine type
-            -- is 'Overview', which we allways show.
-            |> Maybe.withDefault True
+        isTaskExpected vaccineType =
+            Dict.get vaccineType futureVaccinations
+                |> Maybe.Extra.join
+                |> Maybe.map (\( dose, date ) -> not <| Date.compare date currentDate == GT)
+                |> Maybe.withDefault False
+    in
+    immunisationTaskToVaccineType task
+        |> Maybe.map isTaskExpected
+        -- Only task that is not converted to vaccine type
+        -- is 'Overview', which we always show.
+        |> Maybe.withDefault True
 
 
 immunisationVaccinationTasks : List ImmunisationTask
@@ -1433,7 +1382,7 @@ expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Site -> EverySet Site
 expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
-            if mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db then
+            if mandatoryNutritionAssessmentTasksCompleted currentDate assembled then
                 -- Any assesment require Next Steps tasks.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty

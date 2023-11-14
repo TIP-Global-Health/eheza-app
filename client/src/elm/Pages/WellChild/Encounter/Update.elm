@@ -77,9 +77,7 @@ update currentDate zscores site isChw db msg model =
                                         mandatoryActivitiesCompleted =
                                             Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                                                 currentDate
-                                                isChw
                                                 assembled
-                                                db
                                     in
                                     if not mandatoryActivitiesCompleted then
                                         -- Assement is done only when all mandatory measurements were recorded.
