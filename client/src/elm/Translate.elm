@@ -10255,7 +10255,7 @@ translationSet trans =
                     }
 
                 FiveFoodGroups ->
-                    { english = "Provide counseling on how the mother can combine different food items based on the one they have in their area"
+                    { english = "Provide counseling on how the mother can combine different food items based on the ones they have in their area"
                     , kinyarwanda = Just "Gira inama umubyeyi uko yavanga amako atandukanye y'ibiribwa biboneka aho mutuye"
                     , kirundi = Nothing
                     }
@@ -10422,7 +10422,7 @@ translationSet trans =
                     }
 
                 FiveFoodGroups ->
-                    { english = "Does the child receive food items from the 5 food groups in the last 24 hours"
+                    { english = "Did the child receive food items from the 5 food groups in the last 24 hours"
                     , kinyarwanda = Just "Umwana yahawe amafunguro yo mu moko atanu kuva ejo hashize"
                     , kirundi = Nothing
                     }
