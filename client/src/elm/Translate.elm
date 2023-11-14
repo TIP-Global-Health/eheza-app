@@ -10333,7 +10333,7 @@ translationSet trans =
                     }
 
                 ChildReceivesFBF ->
-                    { english = "Provides counseling on the importance of FBF and if they haven't received it advise them to go to the Health center to recieve them"
+                    { english = "Provide counseling on the importance of FBF and if they haven't received it advise them to go to the Health center to recieve them"
                     , kinyarwanda = Just "Niba ari umugenerwabikorwa wacikanywe, gira inama umubyeyi cg undi urera umwana kugana ikigo nderabuzima gufata Shisha Kibondo"
                     , kirundi = Nothing
                     }
