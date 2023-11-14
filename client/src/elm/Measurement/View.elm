@@ -2574,12 +2574,7 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                     )
 
                 ChildBehindOnVaccination ->
-                    let
-                        childBehindOnVaccinations =
-                            Maybe.withDefault (behindOnVaccinationsByWellChild currentDate site personId db)
-                                config.behindOnVaccinations
-                    in
-                    if childBehindOnVaccinations then
+                    if isBehindOnVaccinationsByProgress currentDate site (not config.atHealthCenter) personId db then
                         let
                             updateFunc value form_ =
                                 { form_ | childBehindOnVaccination = Just value }
@@ -3688,7 +3683,6 @@ viewNCDA language currentDate zscores site childId child measurement data db =
         config =
             { atHealthCenter = True
             , showTasksTray = False
-            , behindOnVaccinations = Nothing
             , pregnancySummary = getNewbornExamPregnancySummary childId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate childId child db
