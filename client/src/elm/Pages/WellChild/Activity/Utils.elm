@@ -151,7 +151,6 @@ expectActivity currentDate zscores site features isChw assembled db activity =
                    )
 
         WellChildNextSteps ->
-            -- @todo: Logic for SPV for CHW
             List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db) nextStepsTasks
                 |> List.isEmpty
                 |> not
