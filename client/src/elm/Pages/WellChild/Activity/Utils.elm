@@ -130,13 +130,11 @@ expectActivity currentDate zscores site features isChw assembled db activity =
             True
 
         WellChildImmunisation ->
-            generateSuggestedVaccinations currentDate
+            behindOnVaccinationsByHistory currentDate
                 site
                 assembled.person
                 assembled.vaccinationHistory
                 assembled.vaccinationProgress
-                |> List.isEmpty
-                |> not
 
         WellChildECD ->
             (assembled.encounter.encounterType == PediatricCare)

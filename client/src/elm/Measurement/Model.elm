@@ -1231,10 +1231,6 @@ type alias NCDAContentConfig msg =
     -- Indications if display of tasks tray is required or not.
     , showTasksTray : Bool
 
-    -- This allows setting desired value from invoking module.
-    -- If set to Nothing, it's resolved using Well Child data.
-    , behindOnVaccinations : Maybe Bool
-
     -- Required data, which is resolved from previous encounters.
     , pregnancySummary : Maybe PregnancySummaryValue
     , ncdaNeverFilled : Bool
