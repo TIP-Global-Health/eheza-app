@@ -1412,11 +1412,9 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
 
         TaskHealthEducation ->
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
-                || -- At newborn exam, CHW should provide Health Education,
-                   -- if newborn vaccinatons were not administered.
-                   ((assembled.encounter.encounterType == NewbornExam)
-                        && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
-                        && (not <| newbornVaccinationsAdministered assembled)
+                || -- CHW should send patient to HC, if child is behind on vaccinatons.
+                   ((assembled.encounter.encounterType /= PediatricCare)
+                        && isBehindOnVaccinationsByProgress currentDate site assembled.participant.person db
                    )
 
         TaskFollowUp ->
@@ -1424,40 +1422,19 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
 
         TaskSendToHC ->
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
-                || -- At newborn exam, CHW should send patient to HC,
-                   -- if newborn vaccinatons were not administered.
-                   ((assembled.encounter.encounterType == NewbornExam)
-                        && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
-                        && (not <| newbornVaccinationsAdministered assembled)
+                || -- CHW should send patient to HC, if child is behind on vaccinatons.
+                   ((assembled.encounter.encounterType /= PediatricCare)
+                        && isBehindOnVaccinationsByProgress currentDate site assembled.participant.person db
                    )
 
         TaskNextVisit ->
-            not isChw
-                -- Activity that triggers Nutrition Assessment next steps is completed.
-                && activityCompleted currentDate zscores site features isChw assembled db WellChildNutritionAssessment
+            activityCompleted currentDate zscores site features isChw assembled db WellChildNutritionAssessment
                 -- Activities that affect determinating next visit date are
                 -- either completed, or not shown at current visit.
                 && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
                 && activityCompleted currentDate zscores site features isChw assembled db WellChildECD
                 && activityCompleted currentDate zscores site features isChw assembled db WellChildMedication
-                && nextVisitRequired currentDate site isChw assembled db
-
-
-newbornVaccinationsAdministered : AssembledData -> Bool
-newbornVaccinationsAdministered assembled =
-    let
-        -- Dict WellChildVaccineType (Dict VaccineDose NominalDate)
-        firstBCGAdministered =
-            Dict.get VaccineBCG assembled.vaccinationProgress
-                |> Maybe.andThen (Dict.get VaccineDoseFirst)
-                |> isJust
-
-        firstOPVAdministered =
-            Dict.get VaccineOPV assembled.vaccinationProgress
-                |> Maybe.andThen (Dict.get VaccineDoseFirst)
-                |> isJust
-    in
-    firstBCGAdministered && firstOPVAdministered
+                && nextVisitRequired currentDate site assembled db
 
 
 nextStepsTasksCompletedFromTotal : Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChild.Activity.Types.NextStepsTask -> ( Int, Int )
@@ -1563,8 +1540,8 @@ nextStepsTasks =
     [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp, TaskNextVisit ]
 
 
-nextVisitRequired : NominalDate -> Site -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-nextVisitRequired currentDate site isChw assembled db =
+nextVisitRequired : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Bool
+nextVisitRequired currentDate site assembled db =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
             generateNextVisitDates currentDate site assembled db

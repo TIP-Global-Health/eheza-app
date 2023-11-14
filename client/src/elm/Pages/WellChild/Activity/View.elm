@@ -250,7 +250,7 @@ viewActivity language currentDate zscores site features id isChw activity assemb
             viewMedicationContent language currentDate site isChw assembled model.medicationData
 
         WellChildNextSteps ->
-            viewNextStepsContent language currentDate zscores site features id isChw assembled db model.nextStepsData
+            viewNextStepsContent language currentDate zscores site features id assembled db model.nextStepsData
 
         WellChildPhoto ->
             viewPhotoContent language currentDate assembled model.photoForm
@@ -2219,13 +2219,15 @@ viewNextStepsContent :
     -> Site
     -> EverySet SiteFeature
     -> WellChildEncounterId
-    -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> NextStepsData
     -> List (Html Msg)
-viewNextStepsContent language currentDate zscores site features id isChw assembled db data =
+viewNextStepsContent language currentDate zscores site features id assembled db data =
     let
+        isChw =
+            assembled.encounter.encounterType /= PediatricCare
+
         measurements =
             assembled.measurements
 
@@ -2347,7 +2349,7 @@ viewNextStepsContent language currentDate zscores site features id isChw assembl
                         |> List.singleton
 
                 Just TaskNextVisit ->
-                    viewNextVisitForm language currentDate site isChw assembled db nextVisitForm
+                    viewNextVisitForm language currentDate site assembled db nextVisitForm
                         |> List.singleton
 
                 Nothing ->
@@ -2419,9 +2421,12 @@ viewNextStepsContent language currentDate zscores site features id isChw assembl
     ]
 
 
-viewNextVisitForm : Language -> NominalDate -> Site -> Bool -> AssembledData -> ModelIndexedDb -> NextVisitForm -> Html Msg
-viewNextVisitForm language currentDate site isChw assembled db form =
+viewNextVisitForm : Language -> NominalDate -> Site -> AssembledData -> ModelIndexedDb -> NextVisitForm -> Html Msg
+viewNextVisitForm language currentDate site assembled db form =
     let
+        isChw =
+            assembled.encounter.encounterType /= PediatricCare
+
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
             resolveNextVisitDates currentDate site isChw assembled db form
 
@@ -2436,8 +2441,8 @@ viewNextVisitForm language currentDate site isChw assembled db form =
                 |> Maybe.withDefault []
     in
     div [ class "ui form next-visit" ] <|
-        viewSection nextDateForImmunisationVisit Translate.NextImmunisationVisit
-            ++ viewSection nextDateForPediatricVisit Translate.NextPediatricVisit
+        viewSection nextDateForImmunisationVisit (Translate.NextImmunisationVisit isChw)
+            ++ viewSection nextDateForPediatricVisit (Translate.NextPediatricVisit isChw)
 
 
 {-| We use saved values. If not found, fallback to logcal generation of next visit dates.

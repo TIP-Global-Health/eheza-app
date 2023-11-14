@@ -973,8 +973,8 @@ type TranslationId
     | Never
     | NextAppointment
     | NextDue
-    | NextImmunisationVisit
-    | NextPediatricVisit
+    | NextImmunisationVisit Bool
+    | NextPediatricVisit Bool
     | NextSteps
     | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
     | No
@@ -11432,17 +11432,31 @@ translationSet trans =
             , kirundi = Just "Ikiringo kizokurikira"
             }
 
-        NextImmunisationVisit ->
-            { english = "Next immunization visit"
-            , kinyarwanda = Just "Ikingira rikurikira"
-            , kirundi = Just "Urugendo kubw'urucanco ruzokurikira umunsi ruzobako"
-            }
+        NextImmunisationVisit isChw ->
+            if isChw then
+                { english = "Next immunization visit at the health center"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
 
-        NextPediatricVisit ->
-            { english = "Next pediatric visit"
-            , kinyarwanda = Just "Isura ry'umwana rikurikira"
-            , kirundi = Just "Urugendo ruzokurikira rw'abana"
-            }
+            else
+                { english = "Next immunization visit"
+                , kinyarwanda = Just "Ikingira rikurikira"
+                , kirundi = Just "Urugendo kubw'urucanco ruzokurikira umunsi ruzobako"
+                }
+
+        NextPediatricVisit isChw ->
+            if isChw then
+                { english = "Next pediatric visit at the health center"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else
+                { english = "Next pediatric visit"
+                , kinyarwanda = Just "Isura ry'umwana rikurikira"
+                , kirundi = Just "Urugendo ruzokurikira rw'abana"
+                }
 
         NextSteps ->
             { english = "Next Steps"
