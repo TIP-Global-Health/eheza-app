@@ -130,6 +130,7 @@ expectActivity currentDate zscores site features isChw assembled db activity =
         WellChildImmunisation ->
             behindOnVaccinationsByHistory currentDate
                 site
+                isChw
                 assembled.person
                 assembled.vaccinationHistory
                 assembled.vaccinationProgress

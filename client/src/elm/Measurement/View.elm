@@ -2574,7 +2574,7 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                     )
 
                 ChildBehindOnVaccination ->
-                    if isBehindOnVaccinationsByProgress currentDate site personId db then
+                    if isBehindOnVaccinationsByProgress currentDate site (not config.atHealthCenter) personId db then
                         let
                             updateFunc value form_ =
                                 { form_ | childBehindOnVaccination = Just value }

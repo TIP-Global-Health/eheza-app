@@ -40,6 +40,7 @@ expectActivity currentDate site assembled activity =
                 childBehindOnVaccinationByVaccinaitonHistory =
                     behindOnVaccinationsByHistory currentDate
                         site
+                        False
                         assembled.person
                         assembled.vaccinationHistory
                         assembled.vaccinationProgress

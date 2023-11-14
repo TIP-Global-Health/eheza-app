@@ -5111,8 +5111,8 @@ resoloveLastScheduledImmunizationVisitDate childId db =
            List.head
 
 
-isBehindOnVaccinationsByProgress : NominalDate -> Site -> PersonId -> ModelIndexedDb -> Bool
-isBehindOnVaccinationsByProgress currentDate site childId db =
+isBehindOnVaccinationsByProgress : NominalDate -> Site -> Bool -> PersonId -> ModelIndexedDb -> Bool
+isBehindOnVaccinationsByProgress currentDate site isChw childId db =
     let
         individualParticipants =
             Dict.get childId db.individualParticipantsByPerson
@@ -5130,7 +5130,7 @@ isBehindOnVaccinationsByProgress currentDate site childId db =
                 |> Maybe.map Tuple.first
     in
     if isJust individualWellChildParticipantId then
-        behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChildParticipantId db
+        behindOnVaccinationsByProgressFromWellChild currentDate site isChw individualWellChildParticipantId db
 
     else
         let
@@ -5143,11 +5143,17 @@ isBehindOnVaccinationsByProgress currentDate site childId db =
                     |> List.head
                     |> Maybe.map Tuple.first
         in
-        behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChildScoreboardParticipantId db
+        behindOnVaccinationsByProgressFromChildScoreboard currentDate site isChw individualChildScoreboardParticipantId db
 
 
-behindOnVaccinationsByProgressFromWellChild : NominalDate -> Site -> Maybe IndividualEncounterParticipantId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChildParticipantId db =
+behindOnVaccinationsByProgressFromWellChild :
+    NominalDate
+    -> Site
+    -> Bool
+    -> Maybe IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> Bool
+behindOnVaccinationsByProgressFromWellChild currentDate site isChw individualWellChildParticipantId db =
     let
         lastWellChildEncounterId =
             Maybe.andThen
@@ -5169,6 +5175,7 @@ behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChild
         (\assembled ->
             behindOnVaccinationsByProgress currentDate
                 site
+                isChw
                 assembled.person
                 assembled.vaccinationProgress
         )
@@ -5176,8 +5183,14 @@ behindOnVaccinationsByProgressFromWellChild currentDate site individualWellChild
         |> Maybe.withDefault False
 
 
-behindOnVaccinationsByProgressFromChildScoreboard : NominalDate -> Site -> Maybe IndividualEncounterParticipantId -> ModelIndexedDb -> Bool
-behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChildScoreboardParticipantId db =
+behindOnVaccinationsByProgressFromChildScoreboard :
+    NominalDate
+    -> Site
+    -> Bool
+    -> Maybe IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> Bool
+behindOnVaccinationsByProgressFromChildScoreboard currentDate site isChw individualChildScoreboardParticipantId db =
     let
         lastChildScoreboardEncounterId =
             Maybe.andThen
@@ -5199,6 +5212,7 @@ behindOnVaccinationsByProgressFromChildScoreboard currentDate site individualChi
         (\assembled ->
             behindOnVaccinationsByProgress currentDate
                 site
+                isChw
                 assembled.person
                 assembled.vaccinationProgress
         )
@@ -5213,13 +5227,15 @@ may have been recorded.)
 behindOnVaccinationsByHistory :
     NominalDate
     -> Site
+    -> Bool
     -> Person
     -> VaccinationProgressDict
     -> VaccinationProgressDict
     -> Bool
-behindOnVaccinationsByHistory currentDate site person vaccinationHistory vaccinationProgress =
+behindOnVaccinationsByHistory currentDate site isChw person vaccinationHistory vaccinationProgress =
     generateSuggestedVaccinations currentDate
         site
+        isChw
         person
         vaccinationHistory
         vaccinationProgress
@@ -5233,12 +5249,14 @@ current encounter, so we know the state at current moment.
 behindOnVaccinationsByProgress :
     NominalDate
     -> Site
+    -> Bool
     -> Person
     -> VaccinationProgressDict
     -> Bool
-behindOnVaccinationsByProgress currentDate site person vaccinationProgress =
+behindOnVaccinationsByProgress currentDate site isChw person vaccinationProgress =
     generateSuggestedVaccinations currentDate
         site
+        isChw
         person
         vaccinationProgress
         vaccinationProgress
