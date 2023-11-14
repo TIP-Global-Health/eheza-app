@@ -20,7 +20,8 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
 import Measurement.Utils
     exposing
-        ( generateFutureVaccinationsData
+        ( behindOnVaccinationsByHistory
+        , generateFutureVaccinationsData
         , immunisationTaskToVaccineType
         )
 import Pages.ChildScoreboard.Activity.Model exposing (..)
@@ -37,13 +38,11 @@ expectActivity currentDate site assembled activity =
         ChildScoreboardVaccinationHistory ->
             let
                 childBehindOnVaccinationByVaccinaitonHistory =
-                    generateSuggestedVaccinations currentDate
+                    behindOnVaccinationsByHistory currentDate
                         site
                         assembled.person
                         assembled.vaccinationHistory
                         assembled.vaccinationProgress
-                        |> List.isEmpty
-                        |> not
 
                 childUpToDateByNCDAResponse =
                     getMeasurementValueFunc assembled.measurements.ncda
@@ -177,19 +176,8 @@ expectImmunisationTask currentDate site person vaccinationHistory task =
     immunisationTaskToVaccineType task
         |> Maybe.map isTaskExpected
         -- Only task that is not converted to vaccine type
-        -- is 'Overview', which we allways show.
+        -- is 'Overview', which we always show.
         |> Maybe.withDefault True
-
-
-generateSuggestedVaccinations :
-    NominalDate
-    -> Site
-    -> Person
-    -> VaccinationProgressDict
-    -> VaccinationProgressDict
-    -> List ( WellChildVaccineType, VaccineDose )
-generateSuggestedVaccinations currentDate site person vaccinationHistory vaccinationProgress =
-    Measurement.Utils.generateSuggestedVaccinations currentDate site False person vaccinationHistory vaccinationProgress
 
 
 generateVaccinationProgress : Site -> List ChildScoreboardMeasurements -> VaccinationProgressDict

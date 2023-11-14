@@ -125,15 +125,6 @@ viewNCDAContent language currentDate zscores site assembled db data =
         config =
             { atHealthCenter = False
             , showTasksTray = True
-            , behindOnVaccinations =
-                generateSuggestedVaccinations currentDate
-                    site
-                    assembled.person
-                    assembled.vaccinationHistory
-                    assembled.vaccinationProgress
-                    |> List.isEmpty
-                    |> not
-                    |> Just
             , pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
