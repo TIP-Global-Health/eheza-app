@@ -41,6 +41,10 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( birthWeightInputsAndTasks
+        , nutritionCaringInputsAndTasks
+        , nutritionFeedingInputsAndTasks
+        , nutritionFoodSecurityInputsAndTasks
+        , nutritionHygieneInputsAndTasks
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
@@ -246,13 +250,16 @@ viewActivity language currentDate zscores site features id isChw activity assemb
             viewMedicationContent language currentDate site isChw assembled model.medicationData
 
         WellChildNextSteps ->
-            viewNextStepsContent language currentDate zscores site features id isChw assembled db model.nextStepsData
+            viewNextStepsContent language currentDate zscores site features id assembled db model.nextStepsData
 
         WellChildPhoto ->
             viewPhotoContent language currentDate assembled model.photoForm
 
         WellChildNCDA ->
             viewNCDAContent language currentDate zscores site assembled model.ncdaData db
+
+        WellChildHomeVisit ->
+            viewHomeVisitContent language currentDate site assembled model.homeVisitData db
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -1465,7 +1472,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled 
                     , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
                     , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
                     , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site vaccineType initialOpvAdministered
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site assembled.person vaccineType initialOpvAdministered
                     , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
                     , firstDoseExpectedFrom =
                         initialVaccinationDateByBirthDate site
@@ -2212,13 +2219,15 @@ viewNextStepsContent :
     -> Site
     -> EverySet SiteFeature
     -> WellChildEncounterId
-    -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> NextStepsData
     -> List (Html Msg)
-viewNextStepsContent language currentDate zscores site features id isChw assembled db data =
+viewNextStepsContent language currentDate zscores site features id assembled db data =
     let
+        isChw =
+            assembled.encounter.encounterType /= PediatricCare
+
         measurements =
             assembled.measurements
 
@@ -2340,7 +2349,7 @@ viewNextStepsContent language currentDate zscores site features id isChw assembl
                         |> List.singleton
 
                 Just TaskNextVisit ->
-                    viewNextVisitForm language currentDate site isChw assembled db nextVisitForm
+                    viewNextVisitForm language currentDate site assembled db nextVisitForm
                         |> List.singleton
 
                 Nothing ->
@@ -2412,9 +2421,12 @@ viewNextStepsContent language currentDate zscores site features id isChw assembl
     ]
 
 
-viewNextVisitForm : Language -> NominalDate -> Site -> Bool -> AssembledData -> ModelIndexedDb -> NextVisitForm -> Html Msg
-viewNextVisitForm language currentDate site isChw assembled db form =
+viewNextVisitForm : Language -> NominalDate -> Site -> AssembledData -> ModelIndexedDb -> NextVisitForm -> Html Msg
+viewNextVisitForm language currentDate site assembled db form =
     let
+        isChw =
+            assembled.encounter.encounterType /= PediatricCare
+
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
             resolveNextVisitDates currentDate site isChw assembled db form
 
@@ -2429,8 +2441,8 @@ viewNextVisitForm language currentDate site isChw assembled db form =
                 |> Maybe.withDefault []
     in
     div [ class "ui form next-visit" ] <|
-        viewSection nextDateForImmunisationVisit Translate.NextImmunisationVisit
-            ++ viewSection nextDateForPediatricVisit Translate.NextPediatricVisit
+        viewSection nextDateForImmunisationVisit (Translate.NextImmunisationVisit isChw)
+            ++ viewSection nextDateForPediatricVisit (Translate.NextPediatricVisit isChw)
 
 
 {-| We use saved values. If not found, fallback to logcal generation of next visit dates.
@@ -2548,3 +2560,197 @@ viewNCDAContent language currentDate zscores site assembled data db =
         data.helperState
         form
         db
+
+
+viewHomeVisitContent :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> HomeVisitData
+    -> ModelIndexedDb
+    -> List (Html Msg)
+viewHomeVisitContent language currentDate site assembled data db =
+    let
+        measurements =
+            assembled.measurements
+
+        _ =
+            Debug.log "" assembled.measurements
+
+        tasks =
+            [ TaskFeeding, TaskCaring, TaskHygiene, TaskFoodSecurity ]
+
+        activeTask =
+            Maybe.Extra.or data.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        TaskFeeding ->
+                            "feeding"
+
+                        TaskCaring ->
+                            "caring"
+
+                        TaskHygiene ->
+                            "hygiene"
+
+                        TaskFoodSecurity ->
+                            "food-security"
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    isTaskCompleted tasksCompletedFromTotalDict task
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
+                        ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveHomeVisitTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.WellChildHomeVisitTask task)
+                    ]
+                ]
+
+        inputsAndTasksDict =
+            List.map
+                (\task ->
+                    let
+                        inputsAndTasks =
+                            case task of
+                                TaskFeeding ->
+                                    assembled.measurements.feeding
+                                        |> getMeasurementValueFunc
+                                        |> nutritionFeedingFormWithDefault data.feedingForm
+                                        |> nutritionFeedingInputsAndTasks language
+                                            currentDate
+                                            assembled.participant.person
+                                            SetFeedingBoolInput
+                                            SetNutritionSupplementType
+                                            SetSachetsPerDay
+                                            db
+
+                                TaskCaring ->
+                                    assembled.measurements.caring
+                                        |> getMeasurementValueFunc
+                                        |> nutritionCaringFormWithDefault data.caringForm
+                                        |> nutritionCaringInputsAndTasks language
+                                            currentDate
+                                            SetParentsAliveAndHealthy
+                                            SetNutritionCaringOption
+                                            SetChildClean
+
+                                TaskHygiene ->
+                                    assembled.measurements.hygiene
+                                        |> getMeasurementValueFunc
+                                        |> nutritionHygieneFormWithDefault data.hygieneForm
+                                        |> nutritionHygieneInputsAndTasks language
+                                            currentDate
+                                            SetHygieneBoolInput
+                                            SetMainWaterSource
+                                            SetWaterPreparationOption
+
+                                TaskFoodSecurity ->
+                                    assembled.measurements.foodSecurity
+                                        |> getMeasurementValueFunc
+                                        |> nutritionFoodSecurityFormWithDefault data.foodSecurityForm
+                                        |> nutritionFoodSecurityInputsAndTasks language
+                                            currentDate
+                                            SetFoodSecurityBoolInput
+                                            SetMainIncomeSource
+                    in
+                    ( task, inputsAndTasks )
+                )
+                tasks
+                |> Dict.fromList
+
+        tasksCompletedFromTotalDict =
+            Dict.map
+                (\_ ( _, tasks_ ) ->
+                    ( List.map taskCompleted tasks_
+                        |> List.sum
+                    , List.length tasks_
+                    )
+                )
+                inputsAndTasksDict
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.map
+                (\task ->
+                    let
+                        html =
+                            Dict.get task inputsAndTasksDict
+                                |> Maybe.map Tuple.first
+                                |> Maybe.withDefault []
+
+                        ( completed, total ) =
+                            Dict.get task tasksCompletedFromTotalDict
+                                |> Maybe.withDefault ( 0, 0 )
+                    in
+                    ( html, completed, total )
+                )
+                activeTask
+                |> Maybe.withDefault ( [], 0, 0 )
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        saveMsg =
+                            case task of
+                                TaskFeeding ->
+                                    SaveFeeding personId measurements.feeding nextTask
+
+                                TaskCaring ->
+                                    SaveNutritionCaring personId measurements.caring nextTask
+
+                                TaskHygiene ->
+                                    SaveHygiene personId measurements.hygiene nextTask
+
+                                TaskFoodSecurity ->
+                                    SaveFoodSecurity personId measurements.foodSecurity nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]

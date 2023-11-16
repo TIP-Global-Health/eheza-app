@@ -2366,6 +2366,14 @@ div.page-activity.well-child {
         }
       }
     }
+
+    .form-input.select {
+        background: $color-white;
+        border: 2px solid $color-light-gray;
+        color: $color-text;
+        padding: 5px;
+        width: 50%;
+    }
   }
 }
 

@@ -257,6 +257,5 @@ partitionActivities :
     -> AssembledData
     -> ( List WellChildActivity, List WellChildActivity )
 partitionActivities currentDate zscores site features isChw db assembled =
-    getAllActivities isChw
-        |> List.filter (expectActivity currentDate zscores site features isChw assembled db)
+    List.filter (expectActivity currentDate zscores site features isChw assembled db) getAllActivities
         |> List.partition (activityCompleted currentDate zscores site features isChw assembled db)

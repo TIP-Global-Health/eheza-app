@@ -1131,6 +1131,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildBCGImmunisation
                             BackendAuthorityWellChildBCGImmunisation
 
+                    "well_child_caring" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildCaring
+                            BackendAuthorityWellChildCaring
+
                     "well_child_contributing_factors" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildContributingFactors
@@ -1156,10 +1161,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.WellChildEncounter.Decoder.decodeWellChildEncounter
                             BackendAuthorityWellChildEncounter
 
+                    "well_child_feeding" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildFeeding
+                            BackendAuthorityWellChildFeeding
+
                     "well_child_follow_up" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildFollowUp
                             BackendAuthorityWellChildFollowUp
+
+                    "well_child_food_security" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildFoodSecurity
+                            BackendAuthorityWellChildFoodSecurity
 
                     "well_child_head_circumference" ->
                         doDecode
@@ -1175,6 +1190,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildHeight
                             BackendAuthorityWellChildHeight
+
+                    "well_child_hygiene" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHygiene
+                            BackendAuthorityWellChildHygiene
 
                     "well_child_hpv_immunisation" ->
                         doDecode

@@ -619,15 +619,19 @@ type Revision
     | WeightRevision WeightId Weight
     | WellChildAlbendazoleRevision WellChildAlbendazoleId WellChildAlbendazole
     | WellChildBCGImmunisationRevision WellChildBCGImmunisationId WellChildBCGImmunisation
+    | WellChildCaringRevision WellChildCaringId WellChildCaring
     | WellChildContributingFactorsRevision WellChildContributingFactorsId WellChildContributingFactors
     | WellChildDTPImmunisationRevision WellChildDTPImmunisationId WellChildDTPImmunisation
     | WellChildDTPStandaloneImmunisationRevision WellChildDTPStandaloneImmunisationId WellChildDTPStandaloneImmunisation
     | WellChildECDRevision WellChildECDId WellChildECD
     | WellChildEncounterRevision WellChildEncounterId WellChildEncounter
+    | WellChildFeedingRevision WellChildFeedingId WellChildFeeding
     | WellChildFollowUpRevision WellChildFollowUpId WellChildFollowUp
+    | WellChildFoodSecurityRevision WellChildFoodSecurityId WellChildFoodSecurity
     | WellChildHeadCircumferenceRevision WellChildHeadCircumferenceId WellChildHeadCircumference
     | WellChildHealthEducationRevision WellChildHealthEducationId WellChildHealthEducation
     | WellChildHeightRevision WellChildHeightId WellChildHeight
+    | WellChildHygieneRevision WellChildHygieneId WellChildHygiene
     | WellChildHPVImmunisationRevision WellChildHPVImmunisationId WellChildHPVImmunisation
     | WellChildIPVImmunisationRevision WellChildIPVImmunisationId WellChildIPVImmunisation
     | WellChildMebendezoleRevision WellChildMebendezoleId WellChildMebendezole

@@ -29,6 +29,7 @@ import Backend.NutritionEncounter.Utils
         ( calculateZScoreWeightForAge
         , getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
+        , resolveAllWeightMeasurementsForChild
         , resolveNCDANeverFilled
         , resolveNCDANotFilledAfterAgeOfSixMonths
         )
@@ -2574,7 +2575,7 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                     )
 
                 ChildBehindOnVaccination ->
-                    if isBehindOnVaccinationsByProgress currentDate site (not config.atHealthCenter) personId db then
+                    if isBehindOnVaccinationsByProgress currentDate site personId db then
                         let
                             updateFunc value form_ =
                                 { form_ | childBehindOnVaccination = Just value }
@@ -3714,3 +3715,377 @@ viewNCDA language currentDate zscores site childId child measurement data db =
         form
         db
         |> div [ class "form-content ncda" ]
+
+
+nutritionFeedingInputsAndTasks :
+    Language
+    -> NominalDate
+    -> PersonId
+    -> ((Bool -> NutritionFeedingForm -> NutritionFeedingForm) -> Bool -> msg)
+    -> (NutritionSupplementType -> msg)
+    -> (String -> msg)
+    -> ModelIndexedDb
+    -> NutritionFeedingForm
+    -> ( List (Html msg), List (Maybe Bool) )
+nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg setNutritionSupplementTypeMsg setSachetsPerDayMsg db form =
+    let
+        ( receiveSupplementInputs, receiveSupplementTasks ) =
+            let
+                ( derivedReceiveSupplementInputs, derivedReceiveSupplementTasks ) =
+                    if form.receiveSupplement == Just True then
+                        let
+                            rationPresentAtHomeUpdateFunc value form_ =
+                                { form_ | rationPresentAtHome = Just value }
+
+                            enoughTillNextSessionUpdateFunc value form_ =
+                                { form_ | enoughTillNextSession = Just value }
+
+                            supplementSharedUpdateFunc value form_ =
+                                { form_ | supplementShared = Just value }
+                        in
+                        ( [ viewQuestionLabel language Translate.WhatType
+                          , viewCheckBoxSelectInput language
+                                [ FortifiedPorridge, Rutf, Ongera, TherapeuticMilk ]
+                                []
+                                form.supplementType
+                                setNutritionSupplementTypeMsg
+                                Translate.NutritionSupplementType
+                          , viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion RationPresentAtHome
+                          , viewBoolInput language
+                                form.rationPresentAtHome
+                                (setBoolInputMsg rationPresentAtHomeUpdateFunc)
+                                "ration-present-at-home"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion EnoughTillNextSession
+                          , viewBoolInput language
+                                form.enoughTillNextSession
+                                (setBoolInputMsg enoughTillNextSessionUpdateFunc)
+                                "enough-till-next-section"
+                                Nothing
+                          , viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion SupplementShared
+                          , viewBoolInput language
+                                form.supplementShared
+                                (setBoolInputMsg supplementSharedUpdateFunc)
+                                "enough-till-next-section"
+                                (Just ( Translate.Shared, Translate.OnlySickChild ))
+                          ]
+                        , [ if form.supplementType == Just NoNutritionSupplementType then
+                                Nothing
+
+                            else
+                                maybeToBoolTask form.supplementType
+                          , form.rationPresentAtHome
+                          , form.enoughTillNextSession
+                          , form.supplementShared
+                          ]
+                        )
+
+                    else
+                        ( [], [] )
+
+                receiveSupplementUpdateFunc value form_ =
+                    { form_
+                        | receiveSupplement = Just value
+                        , supplementType = Nothing
+                        , rationPresentAtHome = Nothing
+                        , enoughTillNextSession = Nothing
+                        , supplementShared = Nothing
+                    }
+            in
+            ( [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion ReceiveSupplement
+              , viewBoolInput language
+                    form.receiveSupplement
+                    (setBoolInputMsg receiveSupplementUpdateFunc)
+                    "receive-supplement"
+                    Nothing
+              ]
+                ++ derivedReceiveSupplementInputs
+            , [ form.receiveSupplement ] ++ derivedReceiveSupplementTasks
+            )
+
+        ( ( sachetsPerDayInput, sachetsPerDayTask ), ( eatenWithWaterInput, eatenWithWaterTask ) ) =
+            if form.receiveSupplement == Just True && form.supplementType == Just Rutf then
+                let
+                    sachetsPerDayHelper =
+                        resolveAllWeightMeasurementsForChild personId db
+                            |> List.head
+                            |> Maybe.map
+                                (\( _, weight ) ->
+                                    let
+                                        recommendation =
+                                            if weight < 4 then
+                                                1.5
+
+                                            else if weight < 5.5 then
+                                                2
+
+                                            else if weight < 7 then
+                                                2.5
+
+                                            else if weight < 8.5 then
+                                                3
+
+                                            else if weight < 9.5 then
+                                                3.5
+
+                                            else if weight < 10.5 then
+                                                4
+
+                                            else if weight < 12 then
+                                                4.5
+
+                                            else
+                                                5
+                                    in
+                                    viewCustomLabel language (Translate.SachetsPerDayHelper weight recommendation) "." "helper"
+                                )
+                            |> Maybe.withDefault emptyNode
+
+                    options =
+                        List.repeat 20 0.5
+                            |> List.indexedMap (\index number -> toFloat index * number)
+
+                    eatenWithWaterUpdateFunc value form_ =
+                        { form_ | eatenWithWater = Just value }
+                in
+                ( ( [ viewQuestionLabel language Translate.SachetsPerDayQuestion
+                    , sachetsPerDayHelper
+                    , viewCustomSelectListInput form.sachetsPerDay
+                        options
+                        String.fromFloat
+                        setSachetsPerDayMsg
+                        String.fromFloat
+                        "form-input select"
+                        True
+                    ]
+                  , [ maybeToBoolTask form.sachetsPerDay ]
+                  )
+                , ( [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion EatenWithWater
+                    , viewBoolInput language
+                        form.eatenWithWater
+                        (setBoolInputMsg eatenWithWaterUpdateFunc)
+                        "enough-till-next-section"
+                        Nothing
+                    ]
+                  , [ form.eatenWithWater ]
+                  )
+                )
+
+            else
+                ( ( [], [] ), ( [], [] ) )
+
+        encouragedToEatInput =
+            let
+                encouragedToEatUpdateFunc value form_ =
+                    { form_ | encouragedToEat = Just value }
+            in
+            [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion EncouragedToEat
+            , viewBoolInput language
+                form.encouragedToEat
+                (setBoolInputMsg encouragedToEatUpdateFunc)
+                "enough-till-next-section"
+                Nothing
+            ]
+
+        refusingToEatInput =
+            let
+                refusingToEatUpdateFunc value form_ =
+                    { form_ | refusingToEat = Just value }
+            in
+            [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion RefusingToEat
+            , viewBoolInput language
+                form.refusingToEat
+                (setBoolInputMsg refusingToEatUpdateFunc)
+                "enough-till-next-section"
+                Nothing
+            ]
+
+        breastfeedingInput =
+            let
+                breastfeedingUpdateFunc value form_ =
+                    { form_ | breastfeeding = Just value }
+            in
+            [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion FeedingSignBreastfeeding
+            , viewBoolInput language
+                form.breastfeeding
+                (setBoolInputMsg breastfeedingUpdateFunc)
+                "enough-till-next-section"
+                Nothing
+            ]
+
+        cleanWaterAvailableInput =
+            let
+                cleanWaterAvailableUpdateFunc value form_ =
+                    { form_ | cleanWaterAvailable = Just value }
+            in
+            [ viewQuestionLabel language <| Translate.NutritionFeedingSignQuestion CleanWaterAvailable
+            , viewBoolInput language
+                form.cleanWaterAvailable
+                (setBoolInputMsg cleanWaterAvailableUpdateFunc)
+                "enough-till-next-section"
+                Nothing
+            ]
+    in
+    ( receiveSupplementInputs
+        ++ sachetsPerDayInput
+        ++ encouragedToEatInput
+        ++ refusingToEatInput
+        ++ breastfeedingInput
+        ++ cleanWaterAvailableInput
+    , receiveSupplementTasks
+        ++ sachetsPerDayTask
+        ++ [ form.encouragedToEat
+           , form.refusingToEat
+           , form.breastfeeding
+           , form.cleanWaterAvailable
+           ]
+    )
+
+
+nutritionCaringInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (CaringOption -> msg)
+    -> (Bool -> msg)
+    -> NutritionCaringForm
+    -> ( List (Html msg), List (Maybe Bool) )
+nutritionCaringInputsAndTasks language currentDate setParentsAliveAndHealthyMsg setNutritionCaringOptionMsg setChildCleanMsg form =
+    ( [ viewQuestionLabel language Translate.ParentsAliveAndHealthyQuestion
+      , viewBoolInput
+            language
+            form.parentHealth
+            setParentsAliveAndHealthyMsg
+            "parents-health"
+            Nothing
+      , viewQuestionLabel language Translate.WhoCaresForTheChildDuringTheDay
+      , viewCheckBoxSelectInput language
+            [ CaredByParent
+            , CaredByGrandparent
+            , CaredBySibling
+            , CaredByNeighbor
+            , CaredByHouseHelper
+            , CaredByDaycare
+            ]
+            []
+            form.caringOption
+            setNutritionCaringOptionMsg
+            Translate.NutritionCaringOption
+      , viewQuestionLabel language Translate.ChildCleanQuestion
+      , viewBoolInput
+            language
+            form.childClean
+            setChildCleanMsg
+            "child-clean"
+            Nothing
+      ]
+    , [ form.parentHealth, maybeToBoolTask form.caringOption, form.childClean ]
+    )
+
+
+nutritionHygieneInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ((Bool -> NutritionHygieneForm -> NutritionHygieneForm) -> Bool -> msg)
+    -> (MainWaterSource -> msg)
+    -> (WaterPreparationOption -> msg)
+    -> NutritionHygieneForm
+    -> ( List (Html msg), List (Maybe Bool) )
+nutritionHygieneInputsAndTasks language currentDate setHygieneBoolInputMsg setMainWaterSourceMsg setWaterPreparationOptionMsg form =
+    let
+        soapInTheHouseUpdateFunc value form_ =
+            { form_ | soapInTheHouse = Just value }
+
+        washHandsBeforeFeedingUpdateFunc value form_ =
+            { form_ | washHandsBeforeFeeding = Just value }
+
+        foodCoveredUpdateFunc value form_ =
+            { form_ | foodCovered = Just value }
+    in
+    ( [ viewQuestionLabel language Translate.MainWaterSourceQuestion
+      , viewCheckBoxSelectInput language
+            [ PipedWaterToHome
+            , PublicWaterTap
+            , RainWaterCollectionSystem
+            , NaturalSourceFlowingWater
+            , NaturalSourceStandingWater
+            , BottledWater
+            ]
+            []
+            form.mainWaterSource
+            setMainWaterSourceMsg
+            Translate.MainWaterSource
+      , viewQuestionLabel language Translate.MainWaterPreparationQuestion
+      , viewCheckBoxSelectInput language
+            [ Boiled
+            , PurificationSolution
+            , Filtered
+            , Bottled
+            , NoWaterPreparationOption
+            ]
+            []
+            form.waterPreparationOption
+            setWaterPreparationOptionMsg
+            Translate.MainWaterPreparationOption
+      , viewQuestionLabel language <| Translate.NutritionHygieneSignQuestion SoapInTheHouse
+      , viewBoolInput language
+            form.soapInTheHouse
+            (setHygieneBoolInputMsg soapInTheHouseUpdateFunc)
+            "soap-in-the-house"
+            Nothing
+      , viewQuestionLabel language <| Translate.NutritionHygieneSignQuestion WashHandsBeforeFeeding
+      , viewBoolInput language
+            form.washHandsBeforeFeeding
+            (setHygieneBoolInputMsg washHandsBeforeFeedingUpdateFunc)
+            "wash-hands-before-feeding"
+            Nothing
+      , viewQuestionLabel language <| Translate.NutritionHygieneSignQuestion FoodCovered
+      , viewBoolInput language
+            form.foodCovered
+            (setHygieneBoolInputMsg foodCoveredUpdateFunc)
+            "food-covered"
+            Nothing
+      ]
+    , [ maybeToBoolTask form.mainWaterSource
+      , maybeToBoolTask form.waterPreparationOption
+      , form.soapInTheHouse
+      , form.washHandsBeforeFeeding
+      , form.foodCovered
+      ]
+    )
+
+
+nutritionFoodSecurityInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ((Bool -> NutritionFoodSecurityForm -> NutritionFoodSecurityForm) -> Bool -> msg)
+    -> (MainIncomeSource -> msg)
+    -> NutritionFoodSecurityForm
+    -> ( List (Html msg), List (Maybe Bool) )
+nutritionFoodSecurityInputsAndTasks language currentDate setFoodSecurityBoolInputMsg setMainIncomeSourceMsg form =
+    let
+        householdGotFoodUpdateFunc value form_ =
+            { form_ | householdGotFood = Just value }
+    in
+    ( [ viewQuestionLabel language Translate.MainIncomeSourceQuestion
+      , viewCheckBoxSelectInput language
+            [ HomeBasedAgriculture
+            , CommercialAgriculture
+            , PublicEmployee
+            , PrivateBusinessEmpployee
+            ]
+            []
+            form.mainIncomeSource
+            setMainIncomeSourceMsg
+            Translate.MainIncomeSource
+      , viewQuestionLabel language <| Translate.NutritionFoodSecuritySignQuestion HouseholdGotFood
+      , viewBoolInput language
+            form.householdGotFood
+            (setFoodSecurityBoolInputMsg householdGotFoodUpdateFunc)
+            "household-got-fFood"
+            Nothing
+      ]
+    , [ maybeToBoolTask form.mainIncomeSource
+      , form.householdGotFood
+      ]
+    )

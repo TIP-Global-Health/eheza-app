@@ -99,6 +99,14 @@ activityCompleted currentDate zscores site features isChw assembled db activity 
         WellChildNCDA ->
             (not <| activityExpected WellChildNCDA) || isJust measurements.ncda
 
+        WellChildHomeVisit ->
+            (not <| activityExpected WellChildHomeVisit)
+                || (isJust measurements.caring
+                        && isJust measurements.feeding
+                        && isJust measurements.hygiene
+                        && isJust measurements.foodSecurity
+                   )
+
 
 expectActivity :
     NominalDate
@@ -124,7 +132,6 @@ expectActivity currentDate zscores site features isChw assembled db activity =
         WellChildImmunisation ->
             behindOnVaccinationsByHistory currentDate
                 site
-                isChw
                 assembled.person
                 assembled.vaccinationHistory
                 assembled.vaccinationProgress
@@ -144,7 +151,6 @@ expectActivity currentDate zscores site features isChw assembled db activity =
                    )
 
         WellChildNextSteps ->
-            -- @todo: Logic for SPV for CHW
             List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db) nextStepsTasks
                 |> List.isEmpty
                 |> not
@@ -156,6 +162,9 @@ expectActivity currentDate zscores site features isChw assembled db activity =
             -- For nurses only, show if child is bellow age of 24 months.
             (assembled.encounter.encounterType == PediatricCare)
                 && expectNCDAActivity currentDate features isChw assembled.person
+
+        WellChildHomeVisit ->
+            assembled.encounter.encounterType == PediatricCareChw
 
 
 generateVaccinationProgress : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
@@ -1378,12 +1387,21 @@ nextStepsTaskCompleted currentDate zscores site features isChw data db task =
                 || isJust measurements.nextVisit
 
 
-expectNextStepsTask : NominalDate -> ZScore.Model.Model -> Site -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> Pages.WellChild.Activity.Types.NextStepsTask -> Bool
+expectNextStepsTask :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Pages.WellChild.Activity.Types.NextStepsTask
+    -> Bool
 expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
             if mandatoryNutritionAssessmentTasksCompleted currentDate assembled then
-                -- Any assesment require Next Steps tasks.
+                -- Any assesment requires Next Steps tasks.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
                     |> not
@@ -1393,11 +1411,9 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
 
         TaskHealthEducation ->
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
-                || -- At newborn exam, CHW should provide Health Education,
-                   -- if newborn was not vaccinated at birth.
-                   (isChw
-                        && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
-                        && (not <| newbornVaccinatedAtBirth assembled.measurements)
+                || -- CHW should send patient to HC, if child is behind on vaccinatons.
+                   ((assembled.encounter.encounterType /= PediatricCare)
+                        && isBehindOnVaccinationsByProgress currentDate site assembled.participant.person db
                    )
 
         TaskFollowUp ->
@@ -1405,33 +1421,19 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
 
         TaskSendToHC ->
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
-                || -- At newborn exam, CHW should send patient to HC,
-                   -- if newborn was not vaccinated at birth.
-                   (isChw
-                        && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
-                        && (not <| newbornVaccinatedAtBirth assembled.measurements)
+                || -- CHW should send patient to HC, if child is behind on vaccinatons.
+                   ((assembled.encounter.encounterType /= PediatricCare)
+                        && isBehindOnVaccinationsByProgress currentDate site assembled.participant.person db
                    )
 
         TaskNextVisit ->
-            not isChw
-                -- Activity that triggers Nutrition Assessment next steps is completed.
-                && activityCompleted currentDate zscores site features isChw assembled db WellChildNutritionAssessment
+            activityCompleted currentDate zscores site features isChw assembled db WellChildNutritionAssessment
                 -- Activities that affect determinating next visit date are
                 -- either completed, or not shown at current visit.
                 && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
                 && activityCompleted currentDate zscores site features isChw assembled db WellChildECD
                 && activityCompleted currentDate zscores site features isChw assembled db WellChildMedication
-                && nextVisitRequired currentDate site isChw assembled db
-
-
-newbornVaccinatedAtBirth : WellChildMeasurements -> Bool
-newbornVaccinatedAtBirth measurements =
-    List.all ((==) (Just AdministeredToday))
-        [ getMeasurementValueFunc measurements.bcgImmunisation
-            |> Maybe.map .administrationNote
-        , getMeasurementValueFunc measurements.opvImmunisation
-            |> Maybe.map .administrationNote
-        ]
+                && nextVisitRequired currentDate site assembled db
 
 
 nextStepsTasksCompletedFromTotal : Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChild.Activity.Types.NextStepsTask -> ( Int, Int )
@@ -1537,8 +1539,8 @@ nextStepsTasks =
     [ TaskContributingFactors, TaskHealthEducation, TaskSendToHC, TaskFollowUp, TaskNextVisit ]
 
 
-nextVisitRequired : NominalDate -> Site -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-nextVisitRequired currentDate site isChw assembled db =
+nextVisitRequired : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Bool
+nextVisitRequired currentDate site assembled db =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
             generateNextVisitDates currentDate site assembled db
