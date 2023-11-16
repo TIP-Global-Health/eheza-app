@@ -1,6 +1,5 @@
 module Pages.Prenatal.Encounter.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
-import Backend.Entities exposing (..)
 import Pages.Page exposing (Page)
 
 

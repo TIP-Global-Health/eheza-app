@@ -1,7 +1,5 @@
 module Pages.WellChild.Activity.Types exposing (..)
 
-import Backend.Measurement.Model exposing (VaccineDose)
-
 
 type VaccinationStatus
     = StatusBehind
@@ -20,18 +18,6 @@ type NutritionAssessmentTask
     | TaskMuac
     | TaskNutrition
     | TaskWeight
-
-
-type ImmunisationTask
-    = TaskBCG
-    | TaskDTP
-    | TaskHPV
-    | TaskIPV
-    | TaskMR
-    | TaskOPV
-    | TaskPCV13
-    | TaskRotarix
-    | TaskOverview
 
 
 type MedicationTask

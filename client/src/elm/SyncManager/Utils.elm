@@ -2,6 +2,7 @@ module SyncManager.Utils exposing (..)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import Backend.AcuteIllnessEncounter.Encoder
+import Backend.ChildScoreboardEncounter.Encoder
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder
@@ -26,8 +27,10 @@ import Backend.StockUpdate.Encoder
 import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
+import EverySet exposing (EverySet)
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
+import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import RemoteData
 import Restful.Endpoint exposing (toEntityUuid)
@@ -84,7 +87,7 @@ determineSyncStatus activePage model =
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
-                                    Just data ->
+                                    Just _ ->
                                         -- We still have data. Reset errors counter to 0, since last upload was succesfull.
                                         ( SyncUploadPhoto 0 webData, syncInfoAuthorities )
 
@@ -97,21 +100,31 @@ determineSyncStatus activePage model =
                                     handleNonNetworkError reason =
                                         if errorsCount > fileUploadFailureThreshold then
                                             -- Threshold exceeded - report an incident and stop current sync cycle.
-                                            ( SyncReportIncident (FileUploadIncident reason), syncInfoAuthorities )
+                                            SyncReportIncident (FileUploadIncident reason)
 
                                         else
                                             -- Threshold not exceeded - increase counter and try uploading again.
-                                            ( SyncUploadPhoto (errorsCount + 1) webData, syncInfoAuthorities )
+                                            SyncUploadPhoto (errorsCount + 1) webData
                                 in
                                 case error of
                                     NetworkError _ ->
-                                        noChange
+                                        let
+                                            handleNetworkError =
+                                                if errorsCount > fileUploadFailureThreshold then
+                                                    -- Threshold exceeded, as there's no internet connection - stop current sync cycle.
+                                                    SyncIdle
+
+                                                else
+                                                    -- Threshold not exceeded - increase counter and try uploading again.
+                                                    SyncUploadPhoto (errorsCount + 1) webData
+                                        in
+                                        ( handleNetworkError, syncInfoAuthorities )
 
                                     BadJson reason ->
-                                        handleNonNetworkError reason
+                                        ( handleNonNetworkError reason, syncInfoAuthorities )
 
                                     UploadError reason ->
-                                        handleNonNetworkError reason
+                                        ( handleNonNetworkError reason, syncInfoAuthorities )
 
                             _ ->
                                 noChange
@@ -120,7 +133,7 @@ determineSyncStatus activePage model =
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of
-                                    Just data ->
+                                    Just _ ->
                                         -- We still have data. Reset errors counter to 0, since last upload was succesfull.
                                         ( SyncUploadScreenshot 0 webData, syncInfoAuthorities )
 
@@ -133,21 +146,31 @@ determineSyncStatus activePage model =
                                     handleNonNetworkError reason =
                                         if errorsCount > fileUploadFailureThreshold then
                                             -- Threshold exceeded - report an incident and stop current sync cycle.
-                                            ( SyncReportIncident (FileUploadIncident reason), syncInfoAuthorities )
+                                            SyncReportIncident (FileUploadIncident reason)
 
                                         else
                                             -- Threshold not exceeded - increase counter and try uploading again.
-                                            ( SyncUploadScreenshot (errorsCount + 1) webData, syncInfoAuthorities )
+                                            SyncUploadScreenshot (errorsCount + 1) webData
                                 in
                                 case error of
                                     NetworkError _ ->
-                                        noChange
+                                        let
+                                            handleNetworkError =
+                                                if errorsCount > fileUploadFailureThreshold then
+                                                    -- Threshold exceeded, as there's no internet connection - stop current sync cycle.
+                                                    SyncIdle
+
+                                                else
+                                                    -- Threshold not exceeded - increase counter and try uploading again.
+                                                    SyncUploadScreenshot (errorsCount + 1) webData
+                                        in
+                                        ( handleNetworkError, syncInfoAuthorities )
 
                                     BadJson reason ->
-                                        handleNonNetworkError reason
+                                        ( handleNonNetworkError reason, syncInfoAuthorities )
 
                                     UploadError reason ->
-                                        handleNonNetworkError reason
+                                        ( handleNonNetworkError reason, syncInfoAuthorities )
 
                             _ ->
                                 noChange
@@ -304,13 +327,14 @@ determineDownloadPhotosStatus model =
     in
     if syncCycleRotate then
         let
-            currentStatus =
-                model.downloadPhotosStatus
-
             statusUpdated =
                 case model.syncStatus of
                     SyncIdle ->
                         -- Cases are ordered by the cycle order.
+                        let
+                            currentStatus =
+                                model.downloadPhotosStatus
+                        in
                         case currentStatus of
                             DownloadPhotosIdle ->
                                 DownloadPhotosInProcess model.downloadPhotosMode
@@ -469,11 +493,41 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityCall114 identifier ->
             getIdentifier identifier "call_114"
 
-        BackendAuthorityClinic identifier ->
-            getIdentifier identifier "clinic"
-
         BackendAuthorityChildFbf identifier ->
             getIdentifier identifier "child_fbf"
+
+        BackendAuthorityChildScoreboardEncounter identifier ->
+            getIdentifier identifier "child_scoreboard_encounter"
+
+        BackendAuthorityChildScoreboardBCGImmunisation identifier ->
+            getIdentifier identifier "child_scoreboard_bcg_iz"
+
+        BackendAuthorityChildScoreboardDTPImmunisation identifier ->
+            getIdentifier identifier "child_scoreboard_dtp_iz"
+
+        BackendAuthorityChildScoreboardDTPStandaloneImmunisation identifier ->
+            getIdentifier identifier "child_scoreboard_dtp_sa_iz"
+
+        BackendAuthorityChildScoreboardIPVImmunisation identifier ->
+            getIdentifier identifier "child_scoreboard_ipv_iz"
+
+        BackendAuthorityChildScoreboardMRImmunisation identifier ->
+            getIdentifier identifier "child_scoreboard_mr_iz"
+
+        BackendAuthorityChildScoreboardNCDA identifier ->
+            getIdentifier identifier "child_scoreboard_ncda"
+
+        BackendAuthorityChildScoreboardOPVImmunisation identifier ->
+            getIdentifier identifier "child_scoreboard_opv_iz"
+
+        BackendAuthorityChildScoreboardPCV13Immunisation identifier ->
+            getIdentifier identifier "child_scoreboard_pcv13_iz"
+
+        BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
+            getIdentifier identifier "child_scoreboard_rotarix_iz"
+
+        BackendAuthorityClinic identifier ->
+            getIdentifier identifier "clinic"
 
         BackendAuthorityContributingFactors identifier ->
             getIdentifier identifier "contributing_factors"
@@ -826,6 +880,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildDTPImmunisation identifier ->
             getIdentifier identifier "well_child_dtp_immunisation"
 
+        BackendAuthorityWellChildDTPStandaloneImmunisation identifier ->
+            getIdentifier identifier "well_child_dtp_sa_immunisation"
+
         BackendAuthorityWellChildECD identifier ->
             getIdentifier identifier "well_child_ecd"
 
@@ -964,19 +1021,6 @@ getSyncSpeedForSubscriptions model =
 
             else
                 syncCycle
-
-        checkWebDataForPhotos webData =
-            case webData of
-                RemoteData.Failure error ->
-                    if Utils.WebData.isNetworkError error then
-                        -- It's a network error, so slow things down.
-                        checkWebData webData
-
-                    else
-                        syncCycle
-
-                _ ->
-                    syncCycle
     in
     case model.syncStatus of
         SyncIdle ->
@@ -1148,11 +1192,41 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityCall114 identifier ->
             encode Backend.Measurement.Encoder.encodeCall114 identifier
 
-        BackendAuthorityClinic identifier ->
-            encode Backend.Clinic.Encoder.encodeClinic identifier
-
         BackendAuthorityChildFbf identifier ->
             encode Backend.Measurement.Encoder.encodeChildFbf identifier
+
+        BackendAuthorityChildScoreboardEncounter identifier ->
+            encode Backend.ChildScoreboardEncounter.Encoder.encodeChildScoreboardEncounter identifier
+
+        BackendAuthorityChildScoreboardBCGImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardBCGImmunisation identifier
+
+        BackendAuthorityChildScoreboardDTPImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardDTPImmunisation identifier
+
+        BackendAuthorityChildScoreboardDTPStandaloneImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardDTPStandaloneImmunisation identifier
+
+        BackendAuthorityChildScoreboardIPVImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardIPVImmunisation identifier
+
+        BackendAuthorityChildScoreboardMRImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardMRImmunisation identifier
+
+        BackendAuthorityChildScoreboardNCDA identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardNCDA identifier
+
+        BackendAuthorityChildScoreboardOPVImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardOPVImmunisation identifier
+
+        BackendAuthorityChildScoreboardPCV13Immunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardPCV13Immunisation identifier
+
+        BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeChildScoreboardRotarixImmunisation identifier
+
+        BackendAuthorityClinic identifier ->
+            encode Backend.Clinic.Encoder.encodeClinic identifier
 
         BackendAuthorityContributingFactors identifier ->
             encode Backend.Measurement.Encoder.encodeContributingFactors identifier
@@ -1505,6 +1579,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildDTPImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildDTPImmunisation identifier
 
+        BackendAuthorityWellChildDTPStandaloneImmunisation identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildDTPStandaloneImmunisation identifier
+
         BackendAuthorityWellChildECD identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildECD identifier
 
@@ -1658,6 +1735,76 @@ syncInfoStatusFromString status =
             Nothing
 
 
+siteToString : Site -> String
+siteToString site =
+    case site of
+        SiteRwanda ->
+            "rwanda"
+
+        SiteBurundi ->
+            "burundi"
+
+        SiteUnknown ->
+            ""
+
+
+siteFromString : String -> Site
+siteFromString str =
+    case String.toLower str of
+        "rwanda" ->
+            SiteRwanda
+
+        "burundi" ->
+            SiteBurundi
+
+        _ ->
+            SiteUnknown
+
+
+siteFeatureFromString : String -> Maybe SiteFeature
+siteFeatureFromString str =
+    case String.toLower str of
+        "ncda" ->
+            Just FeatureNCDA
+
+        "report_to_whatsapp" ->
+            Just FeatureReportToWhatsApp
+
+        "stock_management" ->
+            Just FeatureStockManagement
+
+        _ ->
+            Nothing
+
+
+siteFeatureToString : SiteFeature -> String
+siteFeatureToString feature =
+    case feature of
+        FeatureNCDA ->
+            "ncda"
+
+        FeatureReportToWhatsApp ->
+            "report_to_whatsapp"
+
+        FeatureStockManagement ->
+            "stock_management"
+
+
+siteFeaturesFromString : String -> EverySet SiteFeature
+siteFeaturesFromString str =
+    String.words str
+        |> List.map siteFeatureFromString
+        |> Maybe.Extra.values
+        |> EverySet.fromList
+
+
+siteFeaturesToString : EverySet SiteFeature -> String
+siteFeaturesToString =
+    EverySet.toList
+        >> List.map siteFeatureToString
+        >> String.join " "
+
+
 syncInfoGeneralForPort : SyncInfoGeneral -> SyncInfoGeneralForPort
 syncInfoGeneralForPort info =
     SyncInfoGeneralForPort
@@ -1668,6 +1815,8 @@ syncInfoGeneralForPort info =
         info.deviceName
         (syncInfoStatusToString info.status)
         info.rollbarToken
+        (siteToString info.site)
+        (siteFeaturesToString info.features)
 
 
 syncInfoAuthorityForPort : SyncInfoAuthority -> SyncInfoAuthorityForPort
@@ -1692,6 +1841,8 @@ syncInfoGeneralFromPort info =
         info.deviceName
         (syncInfoStatusFromString info.status |> Maybe.withDefault NotAvailable)
         info.rollbarToken
+        (siteFromString info.site)
+        (siteFeaturesFromString info.features)
 
 
 syncInfoAuthorityFromPort : SyncInfoAuthorityForPort -> SyncInfoAuthority
@@ -1785,11 +1936,41 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityCall114 identifier ->
             Call114Revision (toEntityUuid identifier.uuid) identifier.entity
 
-        BackendAuthorityClinic identifier ->
-            ClinicRevision (toEntityUuid identifier.uuid) identifier.entity
-
         BackendAuthorityChildFbf identifier ->
             ChildFbfRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardEncounter identifier ->
+            ChildScoreboardEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardBCGImmunisation identifier ->
+            ChildScoreboardBCGImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardDTPImmunisation identifier ->
+            ChildScoreboardDTPImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardDTPStandaloneImmunisation identifier ->
+            ChildScoreboardDTPStandaloneImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardIPVImmunisation identifier ->
+            ChildScoreboardIPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardMRImmunisation identifier ->
+            ChildScoreboardMRImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardNCDA identifier ->
+            ChildScoreboardNCDARevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardOPVImmunisation identifier ->
+            ChildScoreboardOPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardPCV13Immunisation identifier ->
+            ChildScoreboardPCV13ImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
+            ChildScoreboardRotarixImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityClinic identifier ->
+            ClinicRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityContributingFactors identifier ->
             ContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2141,6 +2322,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildDTPImmunisation identifier ->
             WellChildDTPImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildDTPStandaloneImmunisation identifier ->
+            WellChildDTPStandaloneImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildECD identifier ->
             WellChildECDRevision (toEntityUuid identifier.uuid) identifier.entity

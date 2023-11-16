@@ -81,7 +81,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -388,9 +388,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -771,9 +771,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1080,9 +1080,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1475,7 +1475,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1782,9 +1782,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2392,9 +2392,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2740,7 +2740,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3093,7 +3093,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date concluded',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3149,7 +3149,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3532,7 +3532,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3847,6 +3847,108 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-group_ncda-field_anc_visits_dates'.
+  $field_instances['node-group_ncda-field_anc_visits_dates'] = array(
+    'bundle' => 'group_ncda',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_anc_visits_dates',
+    'label' => 'ANC visits dates',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'blank',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_birth_weight'.
+  $field_instances['node-group_ncda-field_birth_weight'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_birth_weight',
+    'label' => 'Birth Weight',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-group_ncda-field_date_measured'.
   $field_instances['node-group_ncda-field_date_measured'] = array(
     'bundle' => 'group_ncda',
@@ -3880,7 +3982,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3899,7 +4001,53 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_muac'.
+  $field_instances['node-group_ncda-field_muac'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_muac',
+    'label' => 'MUAC',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
     ),
   );
 
@@ -3936,7 +4084,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 8,
+      'weight' => 7,
     ),
   );
 
@@ -3980,7 +4128,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -4024,7 +4172,44 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_receive_option'.
+  $field_instances['node-group_ncda-field_receive_option'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_receive_option',
+    'label' => 'Receives Vitamin A',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
     ),
   );
 
@@ -4068,7 +4253,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -4112,7 +4297,44 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-group_ncda-field_stunting_level'.
+  $field_instances['node-group_ncda-field_stunting_level'] = array(
+    'bundle' => 'group_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 13,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_stunting_level',
+    'label' => 'Stunting level',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
     ),
   );
 
@@ -4184,7 +4406,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_weight',
-    'label' => 'Birth Weight',
+    'label' => 'Weight',
     'required' => 0,
     'settings' => array(
       'max' => '',
@@ -4198,7 +4420,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 10,
+      'weight' => 12,
     ),
   );
 
@@ -4235,7 +4457,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4625,7 +4847,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4986,9 +5208,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5378,7 +5600,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5435,7 +5657,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Last Menstrual Period',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5746,7 +5968,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6090,9 +6312,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6547,9 +6769,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6948,7 +7170,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -7309,7 +7531,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -7655,7 +7877,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -8019,7 +8241,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -8304,6 +8526,108 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-nutrition_ncda-field_anc_visits_dates'.
+  $field_instances['node-nutrition_ncda-field_anc_visits_dates'] = array(
+    'bundle' => 'nutrition_ncda',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_anc_visits_dates',
+    'label' => 'ANC visits dates',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'blank',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_birth_weight'.
+  $field_instances['node-nutrition_ncda-field_birth_weight'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_birth_weight',
+    'label' => 'Birth Weight',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-nutrition_ncda-field_date_measured'.
   $field_instances['node-nutrition_ncda-field_date_measured'] = array(
     'bundle' => 'nutrition_ncda',
@@ -8337,7 +8661,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -8356,7 +8680,53 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_muac'.
+  $field_instances['node-nutrition_ncda-field_muac'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_muac',
+    'label' => 'MUAC',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
     ),
   );
 
@@ -8393,7 +8763,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 9,
+      'weight' => 7,
     ),
   );
 
@@ -8437,7 +8807,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -8481,7 +8851,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -8525,7 +8895,44 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_receive_option'.
+  $field_instances['node-nutrition_ncda-field_receive_option'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_receive_option',
+    'label' => 'Receives Vitamin A',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
     ),
   );
 
@@ -8569,7 +8976,44 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_ncda-field_stunting_level'.
+  $field_instances['node-nutrition_ncda-field_stunting_level'] = array(
+    'bundle' => 'nutrition_ncda',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 13,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_stunting_level',
+    'label' => 'Stunting level',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
     ),
   );
 
@@ -8641,7 +9085,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_weight',
-    'label' => 'Birth Weight',
+    'label' => 'Weight',
     'required' => 0,
     'settings' => array(
       'max' => '',
@@ -8655,7 +9099,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 11,
+      'weight' => 12,
     ),
   );
 
@@ -8690,9 +9134,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9040,7 +9484,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9408,7 +9852,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9947,7 +10391,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -10536,7 +10980,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -10958,9 +11402,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -11479,7 +11923,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -11799,9 +12243,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -12110,9 +12554,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -12424,7 +12868,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -12771,9 +13215,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -13182,9 +13626,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -13504,9 +13948,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -13854,9 +14298,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -14246,9 +14690,9 @@ function hedley_activity_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -14793,7 +15237,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -15218,6 +15662,7 @@ function hedley_activity_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('ANC visits dates');
   t('Abdomen');
   t('Abortions');
   t('Anemia Treatment');
@@ -15299,6 +15744,7 @@ function hedley_activity_field_default_field_instances() {
   t('Previous Delivery Period');
   t('Reason For Not Providing Education');
   t('Reason for Not Sending to HC');
+  t('Receives Vitamin A');
   t('Refers to the date-entry session which this measurement was taken in.');
   t('Represents the date which on which the measurement took place. This is distinct from the date which data entry was scheduled (though that would be the default). It is also distinct from the creation date of the node, since that could be different from the date the measurement took place.');
   t('Resources');
@@ -15308,6 +15754,7 @@ function hedley_activity_field_default_field_instances() {
   t('Social History');
   t('Stillbirths PreTerm');
   t('Stillbirths at Term');
+  t('Stunting level');
   t('Syphilis Treatment');
   t('Sys');
   t('Term Pregnancy');

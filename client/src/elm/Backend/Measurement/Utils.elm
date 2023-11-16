@@ -1,18 +1,22 @@
-module Backend.Measurement.Utils exposing (administrationNoteFromString, administrationNoteToString, avoidingGuidanceReasonFromString, avoidingGuidanceReasonToString, bilirubinValueFromString, bilirubinValueToString, bloodGroupFromString, bloodGroupToString, bloodSmearResultFromString, bloodSmearResultToString, breastfeedingSignFromString, breastfeedingSignToString, covidIsolationPeriod, currentValue, currentValues, diabetesBySugarCount, diabetesByUrineGlucose, expectNCDAActivity, foodGroupFromString, foodGroupToString, getCurrentReasonForNonReferral, getHeightValue, getMeasurementDateMeasuredFunc, getMeasurementValueFunc, glucoseValueFromString, glucoseValueToString, guExamSignFromString, guExamSignToString, haemoglobinValueFromString, haemoglobinValueToString, headCircumferenceIndication, headCircumferenceValueFunc, illnessSymptomFromString, illnessSymptomToString, ketoneValueFromString, ketoneValueToString, labExpirationPeriod, laboratoryTestFromString, laboratoryTestToString, leukocytesValueFromString, leukocytesValueToString, lmpDateNotConfidentReasonFromString, lmpDateNotConfidentReasonToString, mapChildMeasurementsAtOfflineSession, mapMeasurementData, medicalConditionFromString, medicalConditionToString, medicationCausingHypertensionFromString, medicationCausingHypertensionToString, medicationTreatingDiabetesFromString, medicationTreatingDiabetesToString, medicationTreatingHypertensionFromString, medicationTreatingHypertensionToString, muacIndication, muacValueFunc, ncdDangerSignFromString, ncdDangerSignToString, ncdFamilyHistorySignFromString, ncdFamilyHistorySignToString, ncdGroup1SymptomFromString, ncdGroup1SymptomToString, ncdGroup2SymptomFromString, ncdGroup2SymptomToString, ncdPainSymptomFromString, ncdPainSymptomToString, ncdSocialHistorySignFromString, ncdSocialHistorySignToString, ncdaSignFromString, ncdaSignToString, nitriteValueFromString, nitriteValueToString, nonReferralReasonToSign, nutritionAssessmentFromString, nutritionAssessmentToComparable, nutritionAssessmentToString, nutritionSignToString, outsideCareMedicationFromString, outsideCareMedicationToString, outsideCareSignFromString, outsideCareSignToString, phValueFromString, phValueToString, postpartumChildDangerSignFromString, postpartumChildDangerSignToString, postpartumHealingProblemFromString, postpartumHealingProblemToString, postpartumMotherDangerSignFromString, postpartumMotherDangerSignToString, predecessorFromString, predecessorToString, pregnancyTestResultFromString, pregnancyTestResultToString, prenatalFlankPainSignFromString, prenatalFlankPainSignToString, prenatalHIVSignFromString, prenatalHIVSignToString, prenatalMentalHealthQuestionFromString, prenatalMentalHealthQuestionOptionFromString, prenatalMentalHealthQuestionOptionToString, prenatalMentalHealthQuestionToString, prenatalSymptomFromString, prenatalSymptomQuestionFromString, prenatalSymptomQuestionToString, prenatalSymptomToString, proteinValueFromString, proteinValueToString, reasonForNonReferralFromString, reasonForNonReferralToString, recommendedTreatmentMeasurementTaken, recommendedTreatmentSignFromString, recommendedTreatmentSignToString, referralToFacilityCompleted, rhesusFromString, rhesusToString, splitChildMeasurements, splitMotherMeasurements, symptomsGISignFromString, symptomsGISignToString, symptomsGeneralSignFromString, symptomsGeneralSignToString, symptomsRespiratorySignFromString, symptomsRespiratorySignToString, testResultFromString, testResultToString, unitOfMeasurementFromString, unitOfMeasurementToString, urobilinogenValueFromString, urobilinogenValueToString, vaccineDoseFromString, vaccineDoseToString, vaginalExamSignFromString, vaginalExamSignToString, weightValueFunc)
+module Backend.Measurement.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Model exposing (ncdaEnabled)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.Session.Model exposing (OfflineSession)
+import Backend.Utils exposing (ncdaEnabled)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Maybe.Extra exposing (isJust)
+import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid)
+import SyncManager.Model exposing (SiteFeature)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
@@ -3522,135 +3526,257 @@ unitOfMeasurementFromString value =
             Nothing
 
 
-ncdaSignToString : NCDASign -> String
-ncdaSignToString value =
-    case value of
-        NCDABornWithBirthDefect ->
-            "born-with-birth-defect"
-
-        NCDABreastfedForSixMonths ->
-            "breastfed-for-six-months"
-
-        NCDAAppropriateComplementaryFeeding ->
-            "appropriate-complementary-feeding"
-
-        NCDAOngeraMNP ->
-            "ongera-mnp"
-
-        NCDAFiveFoodGroups ->
-            "five-food-groups"
-
-        NCDAMealFrequency6to8Months ->
-            "meal-frequency-6to8m"
-
-        NCDAMealFrequency9to11Months ->
-            "meal-frequency-9to11m"
-
-        NCDAMealFrequency12MonthsOrMore ->
-            "meal-frequency-12+m"
-
-        NCDASupportChildWithDisability ->
-            "support-child-with-disability"
-
-        NCDAConditionalCashTransfer ->
-            "conditional-cash-transfer"
-
-        NCDAConditionalFoodItems ->
-            "conditional-food-items"
-
-        NCDAHasCleanWater ->
-            "has-clean-water"
-
-        NCDAHasHandwashingFacility ->
-            "has-handwashing-facility"
-
-        NCDAHasToilets ->
-            "has-toilets"
-
-        NCDAHasKitchenGarden ->
-            "has-kitchen-garden"
-
-        NCDARegularPrenatalVisits ->
-            "regular-prenatal-visits"
-
-        NCDAIronSupplementsDuringPregnancy ->
-            "ron-supplements-during-pregnancy"
-
-        NCDAInsecticideTreatedBednetsDuringPregnancy ->
-            "insecticide-treated-bednets-during-pregnancy"
-
-        NoNCDASigns ->
-            "none"
-
-
 ncdaSignFromString : String -> Maybe NCDASign
 ncdaSignFromString value =
     case value of
+        "appropriate-complementary-feeding" ->
+            Just AppropriateComplementaryFeeding
+
         "born-with-birth-defect" ->
-            Just NCDABornWithBirthDefect
+            Just BornWithBirthDefect
 
         "breastfed-for-six-months" ->
-            Just NCDABreastfedForSixMonths
-
-        "appropriate-complementary-feeding" ->
-            Just NCDAAppropriateComplementaryFeeding
-
-        "ongera-mnp" ->
-            Just NCDAOngeraMNP
-
-        "five-food-groups" ->
-            Just NCDAFiveFoodGroups
-
-        "meal-frequency-6to8m" ->
-            Just NCDAMealFrequency6to8Months
-
-        "meal-frequency-9to11m" ->
-            Just NCDAMealFrequency9to11Months
-
-        "meal-frequency-12+m" ->
-            Just NCDAMealFrequency12MonthsOrMore
-
-        "support-child-with-disability" ->
-            Just NCDASupportChildWithDisability
-
-        "conditional-cash-transfer" ->
-            Just NCDAConditionalCashTransfer
+            Just BreastfedForSixMonths
 
         "conditional-food-items" ->
-            Just NCDAConditionalFoodItems
+            Just ConditionalFoodItems
+
+        "five-food-groups" ->
+            Just FiveFoodGroups
 
         "has-clean-water" ->
-            Just NCDAHasCleanWater
+            Just HasCleanWater
 
         "has-handwashing-facility" ->
-            Just NCDAHasHandwashingFacility
+            Just HasHandwashingFacility
 
         "has-toilets" ->
-            Just NCDAHasToilets
+            Just HasToilets
 
         "has-kitchen-garden" ->
-            Just NCDAHasKitchenGarden
+            Just HasKitchenGarden
 
-        "regular-prenatal-visits" ->
-            Just NCDARegularPrenatalVisits
+        "beneficiary-cash-transfer" ->
+            Just BeneficiaryCashTransfer
 
-        "ron-supplements-during-pregnancy" ->
-            Just NCDAIronSupplementsDuringPregnancy
+        "child-got-diarrhea" ->
+            Just ChildGotDiarrhea
 
-        "insecticide-treated-bednets-during-pregnancy" ->
-            Just NCDAInsecticideTreatedBednetsDuringPregnancy
+        "child-receives-fbf" ->
+            Just ChildReceivesFBF
+
+        "child-taking-fbf" ->
+            Just ChildTakingFBF
+
+        -- Sign not set on backend anymore.
+        "child-receives-vitamin-a" ->
+            Just ChildReceivesVitaminA
+
+        "child-receives-dewormer" ->
+            Just ChildReceivesDewormer
+
+        "child-receives-ecd" ->
+            Just ChildReceivesECD
+
+        "child-with-disability" ->
+            Just ChildWithDisability
+
+        "ongera-mnp" ->
+            Just OngeraMNP
+
+        "insecticide-treated-bednets" ->
+            Just InsecticideTreatedBednets
+
+        "meals-at-recommended-times" ->
+            Just MealsAtRecommendedTimes
+
+        "child-behind-on-vaccination" ->
+            Just ChildBehindOnVaccination
+
+        "receiving-cash-transfer" ->
+            Just ReceivingCashTransfer
+
+        "receiving-support" ->
+            Just ReceivingSupport
+
+        "supplements-during-pregnancy" ->
+            Just SupplementsDuringPregnancy
+
+        "taken-supplements-per-guidance" ->
+            Just TakenSupplementsPerGuidance
+
+        "taking-ongera-mnp" ->
+            Just TakingOngeraMNP
+
+        "treated-for-acute-malnutrition" ->
+            Just TreatedForAcuteMalnutrition
 
         "none" ->
             Just NoNCDASigns
+
+        "shows-edema-signs" ->
+            Just ShowsEdemaSigns
 
         _ ->
             Nothing
 
 
-expectNCDAActivity : NominalDate -> Person -> Bool
-expectNCDAActivity currentDate person =
-    -- @todo: remove when NCDA is launched.
-    ncdaEnabled
+ncdaSignToString : NCDASign -> String
+ncdaSignToString value =
+    case value of
+        AppropriateComplementaryFeeding ->
+            "appropriate-complementary-feeding"
+
+        BornWithBirthDefect ->
+            "born-with-birth-defect"
+
+        BreastfedForSixMonths ->
+            "breastfed-for-six-months"
+
+        ConditionalFoodItems ->
+            "conditional-food-items"
+
+        FiveFoodGroups ->
+            "five-food-groups"
+
+        HasCleanWater ->
+            "has-clean-water"
+
+        HasHandwashingFacility ->
+            "has-handwashing-facility"
+
+        HasToilets ->
+            "has-toilets"
+
+        HasKitchenGarden ->
+            "has-kitchen-garden"
+
+        BeneficiaryCashTransfer ->
+            "beneficiary-cash-transfer"
+
+        ChildGotDiarrhea ->
+            "child-got-diarrhea"
+
+        ChildReceivesFBF ->
+            "child-receives-fbf"
+
+        ChildTakingFBF ->
+            "child-taking-fbf"
+
+        -- Sign not set on backend anymore.
+        ChildReceivesVitaminA ->
+            "child-receives-vitamin-a"
+
+        ChildReceivesDewormer ->
+            "child-receives-dewormer"
+
+        ChildReceivesECD ->
+            "child-receives-ecd"
+
+        ChildWithDisability ->
+            "child-with-disability"
+
+        OngeraMNP ->
+            "ongera-mnp"
+
+        InsecticideTreatedBednets ->
+            "insecticide-treated-bednets"
+
+        MealsAtRecommendedTimes ->
+            "meals-at-recommended-times"
+
+        ChildBehindOnVaccination ->
+            "child-behind-on-vaccination"
+
+        ReceivingCashTransfer ->
+            "receiving-cash-transfer"
+
+        ReceivingSupport ->
+            "receiving-support"
+
+        SupplementsDuringPregnancy ->
+            "supplements-during-pregnancy"
+
+        TakenSupplementsPerGuidance ->
+            "taken-supplements-per-guidance"
+
+        TakingOngeraMNP ->
+            "taking-ongera-mnp"
+
+        TreatedForAcuteMalnutrition ->
+            "treated-for-acute-malnutrition"
+
+        ShowsEdemaSigns ->
+            "shows-edema-signs"
+
+        NoNCDASigns ->
+            "none"
+
+
+receiveOptionFromString : String -> Maybe ReceiveOption
+receiveOptionFromString value =
+    case value of
+        "receive" ->
+            Just OptionReceive
+
+        "not-receive" ->
+            Just OptionNotReceive
+
+        "not-applicable" ->
+            Just OptionNotApplicable
+
+        _ ->
+            Nothing
+
+
+receiveOptionToString : ReceiveOption -> String
+receiveOptionToString value =
+    case value of
+        OptionReceive ->
+            "receive"
+
+        OptionNotReceive ->
+            "not-receive"
+
+        OptionNotApplicable ->
+            "not-applicable"
+
+
+stuntingLevelFromString : String -> Maybe StuntingLevel
+stuntingLevelFromString value =
+    case value of
+        "green" ->
+            Just LevelGreen
+
+        "yellow" ->
+            Just LevelYellow
+
+        "red" ->
+            Just LevelRed
+
+        _ ->
+            Nothing
+
+
+stuntingLevelToString : StuntingLevel -> String
+stuntingLevelToString value =
+    case value of
+        LevelGreen ->
+            "green"
+
+        LevelYellow ->
+            "yellow"
+
+        LevelRed ->
+            "red"
+
+
+expectNCDAActivity : NominalDate -> EverySet SiteFeature -> Bool -> Person -> Bool
+expectNCDAActivity currentDate features isChw person =
+    -- NCDA feature enabled.
+    ncdaEnabled features
+        && -- Show only for nurses.
+           not isChw
         && -- Show for children that are younger than 2 years old.
            (ageInMonths currentDate person
                 |> Maybe.map (\ageMonths -> ageMonths < 24)
@@ -3726,3 +3852,30 @@ bloodSmearResultFromString value =
 
         _ ->
             Nothing
+
+
+generatePreviousMeasurements :
+    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
+    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
+    -> Maybe encounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( encounterId, measurements ) )
+generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantId db =
+    encountersByParticipantFunc db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if currentEncounterId == Just encounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId (measurementsByEncouterFunc db) of
+                        Just (Success data) ->
+                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                        _ ->
+                            Nothing
+            )
+        -- Most recent date to least recent date.
+        |> List.sortWith sortTuplesByDateDesc

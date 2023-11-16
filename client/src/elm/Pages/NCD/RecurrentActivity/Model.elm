@@ -2,9 +2,6 @@ module Pages.NCD.RecurrentActivity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Date exposing (Date)
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
         ( CreatinineResultForm
@@ -25,8 +22,7 @@ import Pages.Page exposing (Page)
 
 
 type Msg
-    = NoOp
-    | SetActivePage Page
+    = SetActivePage Page
       -- Lab Results msgs
     | SetActiveLabResultsTask LaboratoryTask
     | SetProtein String

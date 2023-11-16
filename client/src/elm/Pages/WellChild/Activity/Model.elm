@@ -1,6 +1,5 @@
 module Pages.WellChild.Activity.Model exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
@@ -10,13 +9,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 import Pages.WellChild.Activity.Types exposing (..)
-import Pages.WellChild.Encounter.Model exposing (VaccinationProgressDict)
 
 
 type Msg
     = SetActivePage Page
     | SetWarningPopupState (Maybe WarningPopupType)
-    | NoOp
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
     | SetExpectedDateConcludedSelectorState (Maybe (DateSelectorConfig Msg))
@@ -59,6 +56,7 @@ type Msg
     | DeleteVaccinationUpdateDate WellChildVaccineType VaccineDose NominalDate
     | SaveBCGImmunisation PersonId (Maybe ( WellChildBCGImmunisationId, WellChildBCGImmunisation )) (Maybe ImmunisationTask)
     | SaveDTPImmunisation PersonId (Maybe ( WellChildDTPImmunisationId, WellChildDTPImmunisation )) (Maybe ImmunisationTask)
+    | SaveDTPStandaloneImmunisation PersonId (Maybe ( WellChildDTPStandaloneImmunisationId, WellChildDTPStandaloneImmunisation )) (Maybe ImmunisationTask)
     | SaveHPVImmunisation PersonId (Maybe ( WellChildHPVImmunisationId, WellChildHPVImmunisation )) (Maybe ImmunisationTask)
     | SaveIPVImmunisation PersonId (Maybe ( WellChildIPVImmunisationId, WellChildIPVImmunisation )) (Maybe ImmunisationTask)
     | SaveMRImmunisation PersonId (Maybe ( WellChildMRImmunisationId, WellChildMRImmunisation )) (Maybe ImmunisationTask)
@@ -99,8 +97,14 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
       -- NCDA
+    | SetUpdateANCVisits Bool
+    | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetChildReceivesVitaminA ReceiveOption
+    | SetStuntingLevel StuntingLevel
+    | SetWeightForNCDA String
+    | SetMuacForNCDA String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( WellChildNCDAId, WellChildNCDA ))
@@ -239,6 +243,7 @@ emptyHeadCircumferenceForm =
 type alias ImmunisationData =
     { bcgForm : WellChildVaccinationForm
     , dtpForm : WellChildVaccinationForm
+    , dtpStandaloneForm : WellChildVaccinationForm
     , hpvForm : WellChildVaccinationForm
     , ipvForm : WellChildVaccinationForm
     , mrForm : WellChildVaccinationForm
@@ -257,6 +262,7 @@ emptyImmunisationData : ImmunisationData
 emptyImmunisationData =
     { bcgForm = emptyVaccinationForm
     , dtpForm = emptyVaccinationForm
+    , dtpStandaloneForm = emptyVaccinationForm
     , hpvForm = emptyVaccinationForm
     , ipvForm = emptyVaccinationForm
     , mrForm = emptyVaccinationForm

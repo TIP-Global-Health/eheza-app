@@ -3,27 +3,29 @@ module Measurement.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( calculateZScoreWeightForAge
-        , muacModerate
-        , muacSevere
+        ( getChildScoreboardEncountersForParticipant
+        , getWellChildEncountersForParticipant
         , resolveIndividualNutritionValues
         , resolveIndividualWellChildValues
-        , zScoreWeightForAgeModerate
-        , zScoreWeightForAgeSevere
         )
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2)
 import Date exposing (Unit(..))
 import DateSelector.Model exposing (DateSelectorConfig)
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -31,6 +33,7 @@ import List.Extra
 import LocalData
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (..)
+import Pages.ChildScoreboard.Encounter.Model
 import Pages.Session.Model
 import Pages.Utils
     exposing
@@ -53,9 +56,12 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSelectListInput
         )
+import Pages.WellChild.Encounter.Model
+import RemoteData exposing (RemoteData(..), WebData)
 import Round
-import Translate exposing (Language, TranslationId, translate)
-import Translate.Model exposing (Language(..))
+import SyncManager.Model exposing (Site(..))
+import Translate exposing (TranslationId, translate)
+import Translate.Model exposing (Language)
 import Utils.Html exposing (viewModal)
 
 
@@ -78,11 +84,18 @@ getInputConstraintsHeight =
     }
 
 
-getInputConstraintsMuac : FloatInputConstraints
-getInputConstraintsMuac =
-    { minVal = 5
-    , maxVal = 99
-    }
+getInputConstraintsMuac : Site -> FloatInputConstraints
+getInputConstraintsMuac site =
+    case site of
+        SiteBurundi ->
+            { minVal = 50
+            , maxVal = 999
+            }
+
+        _ ->
+            { minVal = 5
+            , maxVal = 99
+            }
 
 
 getInputConstraintsWeight : FloatInputConstraints
@@ -94,19 +107,29 @@ getInputConstraintsWeight =
 
 {-| Initialize (or reset) a form with the given data.
 -}
-fromChildMeasurementData : MeasurementData ChildMeasurements -> ModelChild
-fromChildMeasurementData data =
+fromChildMeasurementData : Site -> MeasurementData ChildMeasurements -> ModelChild
+fromChildMeasurementData site data =
     let
         fromData measuremntFunc mappingFunc =
             mapMeasurementData measuremntFunc data
                 |> currentValue
                 |> Maybe.map mappingFunc
+
+        muacFromFloatFunc =
+            case site of
+                SiteBurundi ->
+                    -- Value is stored in cm, but for Burundi, we need to
+                    -- view it as mm. Therefore, multiplying by 10.
+                    (*) 10 >> String.fromFloat
+
+                _ ->
+                    String.fromFloat
     in
     { height =
         fromData .height (.value >> getHeightValue >> String.fromFloat)
             |> Maybe.withDefault ""
     , muac =
-        fromData .muac (.value >> muacValueFunc >> String.fromFloat)
+        fromData .muac (.value >> muacValueFunc >> muacFromFloatFunc)
             |> Maybe.withDefault ""
     , nutrition =
         fromData .nutrition .value
@@ -204,8 +227,8 @@ getMotherForm motherId pages session =
                     )
 
 
-getChildForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
-getChildForm childId pages session =
+getChildForm : Site -> PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
+getChildForm site childId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromChildMeasurementData` would get calculated every time
     case Dict.get childId pages.childForms of
@@ -216,7 +239,7 @@ getChildForm childId pages session =
             getChildMeasurementData childId session
                 |> LocalData.unwrap
                     emptyModelChild
-                    (fromChildMeasurementData
+                    (fromChildMeasurementData site
                         >> (\form ->
                                 -- We need some special logic for the counseling
                                 -- session, to fill in the correct kind of session.
@@ -805,18 +828,42 @@ vaccineDoseToComparable dose =
             5
 
 
+wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm : NominalDate -> VaccinationForm msg -> Bool
+wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form =
+    Maybe.map2
+        (\administeredDoses administrationDates ->
+            if EverySet.member VaccineDoseFirst administeredDoses then
+                let
+                    firstDoseAdminstrationDate =
+                        EverySet.toList administrationDates
+                            |> List.sortWith Date.compare
+                            |> List.head
+                in
+                Maybe.map
+                    (\adminstrationDate ->
+                        Date.diff Days birthDate adminstrationDate < 14
+                    )
+                    firstDoseAdminstrationDate
+                    |> Maybe.withDefault False
+
+            else
+                False
+        )
+        form.administeredDoses
+        form.administrationDates
+        |> Maybe.withDefault False
+
+
 vaccinationFormDynamicContentAndTasks :
     Language
     -> NominalDate
+    -> Site
     -> VaccinationFormDynamicContentAndTasksConfig msg
     -> VaccineType
     -> VaccinationForm msg
     -> ( List (Html msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate config vaccineType form =
+vaccinationFormDynamicContentAndTasks language currentDate site config vaccineType form =
     let
-        birthDate =
-            config.birthDate
-
         expectedDoses =
             config.expectedDoses
 
@@ -838,14 +885,14 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
                 expectedDoses
 
         lastDoseData =
-            List.filter (\( dose, date ) -> date /= currentDate)
+            List.filter (\( _, date ) -> date /= currentDate)
                 allDosesGivenData
                 |> List.reverse
                 |> List.head
 
         doseGivenToday =
             List.filter
-                (\( dose, date ) ->
+                (\( _, date ) ->
                     date == currentDate
                 )
                 dosesFromCurrentEncounterData
@@ -856,10 +903,6 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
             case form.viewMode of
                 ViewModeInitial ->
                     let
-                        updatePreviousVaccines =
-                            (form.updatePreviousVaccines == Just True)
-                                && (form.administrationNote /= Just AdministeredToday)
-
                         noDoseGivenToday =
                             List.filter
                                 (\( _, date ) ->
@@ -870,7 +913,7 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
 
                         doseAllowedForDeletion =
                             List.filter
-                                (\( dose, date ) ->
+                                (\( _, date ) ->
                                     date /= currentDate
                                 )
                                 dosesFromCurrentEncounterData
@@ -967,7 +1010,7 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
                                             WellChildVaccine type_ ->
                                                 let
                                                     label =
-                                                        Translate.WellChildVaccineLabel type_
+                                                        Translate.WellChildVaccineLabel site type_
                                                             |> translate language
                                                 in
                                                 ( Translate.VaccineDoseAdministeredPreviouslyWellChildQuestion label
@@ -1012,7 +1055,7 @@ vaccinationFormDynamicContentAndTasks language currentDate config vaccineType fo
                                                 )
 
                                         ( todaysDoseInputs, todaysDoseTasksCompleted, todaysDoseTasksActive ) =
-                                            if form.updatePreviousVaccines == Just False then
+                                            if form.updatePreviousVaccines == Just False && config.suggestDoseToday then
                                                 let
                                                     ( whyNotIpnut, whyNotTaskCompleted, whyNotTaskActive ) =
                                                         if form.willReceiveVaccineToday == Just False then
@@ -1398,7 +1441,7 @@ outsideCareFormInputsAndTasksDiagnoses language config form =
                         Nothing
                   ]
                     ++ newDiagnosisSection
-                , [ form.givenNewDiagnosis ] ++ newDiagnosisTasks
+                , form.givenNewDiagnosis :: newDiagnosisTasks
                 )
 
             else
@@ -1423,7 +1466,7 @@ outsideCareFormInputsAndTasksDiagnoses language config form =
             Nothing
       ]
         ++ givenNewDiagnosisSection
-    , [ form.seenAtAnotherFacility ] ++ givenNewDiagnosisTasks
+    , form.seenAtAnotherFacility :: givenNewDiagnosisTasks
     )
 
 
@@ -1619,7 +1662,7 @@ hivTestFormWithDefault form saved =
             (\value ->
                 let
                     knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+                        value.executionNote == TestNoteKnownAsPositive
 
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
@@ -1910,7 +1953,7 @@ pregnancyTestFormWithDefault form saved =
             (\value ->
                 let
                     knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+                        value.executionNote == TestNoteKnownAsPositive
 
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
@@ -1962,7 +2005,7 @@ nonRDTFormWithDefault form saved =
             (\value ->
                 let
                     knownAsPositiveValue =
-                        List.member value.executionNote [ TestNoteKnownAsPositive ]
+                        value.executionNote == TestNoteKnownAsPositive
 
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
@@ -2172,9 +2215,8 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
                 )
     in
     ( div [ class "ui form laboratory hiv" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHIVTest) "" "label header"
-        ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHIVTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2244,8 +2286,8 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory malaria" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskMalariaTest) "" "label header" ]
-            ++ rdtInputs
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskMalariaTest) "" "label header"
+            :: rdtInputs
             ++ bloodSmearInputs
     , rdtTasksCompleted + bloodSmearTasksCompleted
     , rdtTasksTotal + bloodSmearTasksTotal
@@ -2272,8 +2314,8 @@ viewPregnancyTestForm language currentDate configInitial configPerformed form =
                 prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskPregnancyTest form
     in
     ( div [ class "ui form laboratory malaria" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPregnancyTest) "" "label header" ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPregnancyTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2293,8 +2335,8 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
             prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed TaskPartnerHIVTest form
     in
     ( div [ class "ui form laboratory partner-hiv" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPartnerHIVTest) "" "label header" ]
-            ++ inputs
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPartnerHIVTest) "" "label header"
+            :: inputs
     , tasksCompleted
     , tasksTotal
     )
@@ -2327,28 +2369,29 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
                     ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
                         contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed task form
 
-                    setTestResultMsg =
-                        case task of
-                            TaskHIVTest ->
-                                Just configInitial.setHIVTestResultMsg
-
-                            TaskMalariaTest ->
-                                Just configInitial.setMalariaTestResultMsg
-
-                            TaskPregnancyTest ->
-                                Just configInitial.setPregnancyTestResultMsg
-
-                            TaskPartnerHIVTest ->
-                                Just configInitial.setPartnerHIVTestResultMsg
-
-                            _ ->
-                                Nothing
-
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
                             ( [], 0, 0 )
 
                         else
+                            let
+                                setTestResultMsg =
+                                    case task of
+                                        TaskHIVTest ->
+                                            Just configInitial.setHIVTestResultMsg
+
+                                        TaskMalariaTest ->
+                                            Just configInitial.setMalariaTestResultMsg
+
+                                        TaskPregnancyTest ->
+                                            Just configInitial.setPregnancyTestResultMsg
+
+                                        TaskPartnerHIVTest ->
+                                            Just configInitial.setPartnerHIVTestResultMsg
+
+                                        _ ->
+                                            Nothing
+                            in
                             Maybe.map
                                 (\setResultMsg ->
                                     ( [ viewLabel language <| Translate.LaboratoryTaskResult task
@@ -2428,9 +2471,8 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
                 ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
-        ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2512,9 +2554,8 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
             ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
-        ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskRandomBloodSugarTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2542,9 +2583,8 @@ viewNonRDTFormCheckKnownAsPositive language currentDate configInitial configPerf
                 nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
     in
     ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
-        ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2565,9 +2605,8 @@ viewNonRDTForm language currentDate configInitial configPerformed task form =
             nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
     in
     ( div [ class "ui form laboratory non-rdt" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
-        ]
-            ++ inputs
+        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
+            :: inputs
     , tasksCompleted
     , tasksTotal
     )
@@ -2708,8 +2747,8 @@ viewHbA1cTestForm language currentDate configInitial configPerformed previousTes
             ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory hba1c" ] <|
-        [ viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header" ]
-            ++ initialSection
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header"
+            :: initialSection
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
@@ -2969,7 +3008,7 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                 \value form_ ->
                     let
                         ( executionNote, executionDate ) =
-                            if value == True then
+                            if value then
                                 ( Just TestNoteRunToday, Just currentDate )
 
                             else
@@ -4456,26 +4495,56 @@ viewSelectInput language labelTransId formValue valueTransId valueToStringFunc v
 
 fromNCDAValue : Maybe NCDAValue -> NCDAForm
 fromNCDAValue saved =
+    let
+        ancVisitsDates =
+            Maybe.map .ancVisitsDates saved
+
+        updateANCVisits =
+            Maybe.map (EverySet.isEmpty >> not)
+                ancVisitsDates
+    in
     { step = Nothing
-    , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member NCDABornWithBirthDefect) saved
-    , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member NCDABreastfedForSixMonths) saved
-    , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member NCDAAppropriateComplementaryFeeding) saved
-    , ongeraMNP = Maybe.map (.signs >> EverySet.member NCDAOngeraMNP) saved
-    , fiveFoodGroups = Maybe.map (.signs >> EverySet.member NCDAFiveFoodGroups) saved
-    , mealFrequency6to8Months = Maybe.map (.signs >> EverySet.member NCDAMealFrequency6to8Months) saved
-    , mealFrequency9to11Months = Maybe.map (.signs >> EverySet.member NCDAMealFrequency9to11Months) saved
-    , mealFrequency12MonthsOrMore = Maybe.map (.signs >> EverySet.member NCDAMealFrequency12MonthsOrMore) saved
-    , supportChildWithDisability = Maybe.map (.signs >> EverySet.member NCDASupportChildWithDisability) saved
-    , conditionalCashTransfer = Maybe.map (.signs >> EverySet.member NCDAConditionalCashTransfer) saved
-    , conditionalFoodItems = Maybe.map (.signs >> EverySet.member NCDAConditionalFoodItems) saved
-    , hasCleanWater = Maybe.map (.signs >> EverySet.member NCDAHasCleanWater) saved
-    , hasHandwashingFacility = Maybe.map (.signs >> EverySet.member NCDAHasHandwashingFacility) saved
-    , hasToilets = Maybe.map (.signs >> EverySet.member NCDAHasToilets) saved
-    , hasKitchenGarden = Maybe.map (.signs >> EverySet.member NCDAHasKitchenGarden) saved
-    , regularPrenatalVisits = Maybe.map (.signs >> EverySet.member NCDARegularPrenatalVisits) saved
-    , ironSupplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member NCDAIronSupplementsDuringPregnancy) saved
-    , insecticideTreatedBednetsDuringPregnancy = Maybe.map (.signs >> EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy) saved
+    , updateANCVisits = updateANCVisits
+    , ancVisitsDates = ancVisitsDates
+    , appropriateComplementaryFeeding = Maybe.map (.signs >> EverySet.member AppropriateComplementaryFeeding) saved
+    , bornWithBirthDefect = Maybe.map (.signs >> EverySet.member BornWithBirthDefect) saved
+    , breastfedForSixMonths = Maybe.map (.signs >> EverySet.member BreastfedForSixMonths) saved
+    , conditionalFoodItems = Maybe.map (.signs >> EverySet.member ConditionalFoodItems) saved
+    , fiveFoodGroups = Maybe.map (.signs >> EverySet.member FiveFoodGroups) saved
+    , hasCleanWater = Maybe.map (.signs >> EverySet.member HasCleanWater) saved
+    , hasHandwashingFacility = Maybe.map (.signs >> EverySet.member HasHandwashingFacility) saved
+    , hasToilets = Maybe.map (.signs >> EverySet.member HasToilets) saved
+    , hasKitchenGarden = Maybe.map (.signs >> EverySet.member HasKitchenGarden) saved
+
+    -- New:
+    , beneficiaryCashTransfer = Maybe.map (.signs >> EverySet.member BeneficiaryCashTransfer) saved
+    , childGotDiarrhea = Maybe.map (.signs >> EverySet.member ChildGotDiarrhea) saved
+    , childReceivesFBF = Maybe.map (.signs >> EverySet.member ChildReceivesFBF) saved
+    , childTakingFBF = Maybe.map (.signs >> EverySet.member ChildTakingFBF) saved
+    , childReceivesVitaminA = Maybe.andThen .receivesVitaminA saved
+    , childReceivesDewormer = Maybe.map (.signs >> EverySet.member ChildReceivesDewormer) saved
+    , childReceivesECD = Maybe.map (.signs >> EverySet.member ChildReceivesECD) saved
+    , childWithDisability = Maybe.map (.signs >> EverySet.member ChildWithDisability) saved
+    , ongeraMNP = Maybe.map (.signs >> EverySet.member OngeraMNP) saved
+    , insecticideTreatedBednets = Maybe.map (.signs >> EverySet.member InsecticideTreatedBednets) saved
+    , childBehindOnVaccination = Maybe.map (.signs >> EverySet.member ChildBehindOnVaccination) saved
+    , receivingCashTransfer = Maybe.map (.signs >> EverySet.member ReceivingCashTransfer) saved
+    , receivingSupport = Maybe.map (.signs >> EverySet.member ReceivingSupport) saved
+    , supplementsDuringPregnancy = Maybe.map (.signs >> EverySet.member SupplementsDuringPregnancy) saved
+    , takenSupplementsPerGuidance = Maybe.map (.signs >> EverySet.member TakenSupplementsPerGuidance) saved
+    , treatedForAcuteMalnutrition = Maybe.map (.signs >> EverySet.member TreatedForAcuteMalnutrition) saved
+    , takingOngeraMNP = Maybe.map (.signs >> EverySet.member TakingOngeraMNP) saved
+    , mealsAtRecommendedTimes = Maybe.map (.signs >> EverySet.member MealsAtRecommendedTimes) saved
     , birthWeight = Maybe.andThen .birthWeight saved
+
+    -- Nutrition measurements.
+    , stuntingLevel = Maybe.andThen .stuntingLevel saved
+    , stuntingLevelNotTaken = Maybe.map (.stuntingLevel >> isNothing) saved
+    , weight = Maybe.andThen .weight saved
+    , weightNotTaken = Maybe.map (.weight >> isNothing) saved
+    , muac = Maybe.andThen .muac saved
+    , muacNotTaken = Maybe.map (.muac >> isNothing) saved
+    , showsEdemaSigns = Maybe.map (.signs >> EverySet.member ShowsEdemaSigns) saved
     }
 
 
@@ -4485,26 +4554,52 @@ ncdaFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    updateANCVisits =
+                        EverySet.isEmpty value.ancVisitsDates |> not
+                in
                 { step = form.step
-                , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member NCDABornWithBirthDefect value.signs |> Just)
-                , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member NCDABreastfedForSixMonths value.signs |> Just)
-                , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member NCDAAppropriateComplementaryFeeding value.signs |> Just)
-                , ongeraMNP = or form.ongeraMNP (EverySet.member NCDAOngeraMNP value.signs |> Just)
-                , fiveFoodGroups = or form.fiveFoodGroups (EverySet.member NCDAFiveFoodGroups value.signs |> Just)
-                , mealFrequency6to8Months = or form.mealFrequency6to8Months (EverySet.member NCDAMealFrequency6to8Months value.signs |> Just)
-                , mealFrequency9to11Months = or form.mealFrequency9to11Months (EverySet.member NCDAMealFrequency9to11Months value.signs |> Just)
-                , mealFrequency12MonthsOrMore = or form.mealFrequency12MonthsOrMore (EverySet.member NCDAMealFrequency12MonthsOrMore value.signs |> Just)
-                , supportChildWithDisability = or form.supportChildWithDisability (EverySet.member NCDASupportChildWithDisability value.signs |> Just)
-                , conditionalCashTransfer = or form.conditionalCashTransfer (EverySet.member NCDAConditionalCashTransfer value.signs |> Just)
-                , conditionalFoodItems = or form.conditionalFoodItems (EverySet.member NCDAConditionalFoodItems value.signs |> Just)
-                , hasCleanWater = or form.hasCleanWater (EverySet.member NCDAHasCleanWater value.signs |> Just)
-                , hasHandwashingFacility = or form.hasHandwashingFacility (EverySet.member NCDAHasHandwashingFacility value.signs |> Just)
-                , hasToilets = or form.hasToilets (EverySet.member NCDAHasToilets value.signs |> Just)
-                , hasKitchenGarden = or form.hasKitchenGarden (EverySet.member NCDAHasKitchenGarden value.signs |> Just)
-                , regularPrenatalVisits = or form.regularPrenatalVisits (EverySet.member NCDARegularPrenatalVisits value.signs |> Just)
-                , ironSupplementsDuringPregnancy = or form.ironSupplementsDuringPregnancy (EverySet.member NCDAIronSupplementsDuringPregnancy value.signs |> Just)
-                , insecticideTreatedBednetsDuringPregnancy = or form.insecticideTreatedBednetsDuringPregnancy (EverySet.member NCDAInsecticideTreatedBednetsDuringPregnancy value.signs |> Just)
+                , updateANCVisits = or form.updateANCVisits (Just updateANCVisits)
+                , ancVisitsDates = or form.ancVisitsDates (Just value.ancVisitsDates)
+                , appropriateComplementaryFeeding = or form.appropriateComplementaryFeeding (EverySet.member AppropriateComplementaryFeeding value.signs |> Just)
+                , bornWithBirthDefect = or form.bornWithBirthDefect (EverySet.member BornWithBirthDefect value.signs |> Just)
+                , breastfedForSixMonths = or form.breastfedForSixMonths (EverySet.member BreastfedForSixMonths value.signs |> Just)
+                , conditionalFoodItems = or form.conditionalFoodItems (EverySet.member ConditionalFoodItems value.signs |> Just)
+                , fiveFoodGroups = or form.fiveFoodGroups (EverySet.member FiveFoodGroups value.signs |> Just)
+                , hasCleanWater = or form.hasCleanWater (EverySet.member HasCleanWater value.signs |> Just)
+                , hasHandwashingFacility = or form.hasHandwashingFacility (EverySet.member HasHandwashingFacility value.signs |> Just)
+                , hasToilets = or form.hasToilets (EverySet.member HasToilets value.signs |> Just)
+                , hasKitchenGarden = or form.hasKitchenGarden (EverySet.member HasKitchenGarden value.signs |> Just)
+
+                -- New:
+                , beneficiaryCashTransfer = or form.beneficiaryCashTransfer (EverySet.member BeneficiaryCashTransfer value.signs |> Just)
+                , childGotDiarrhea = or form.childGotDiarrhea (EverySet.member ChildGotDiarrhea value.signs |> Just)
+                , childReceivesFBF = or form.childReceivesFBF (EverySet.member ChildReceivesFBF value.signs |> Just)
+                , childTakingFBF = or form.childTakingFBF (EverySet.member ChildTakingFBF value.signs |> Just)
+                , childReceivesVitaminA = or form.childReceivesVitaminA value.receivesVitaminA
+                , childReceivesDewormer = or form.childReceivesDewormer (EverySet.member ChildReceivesDewormer value.signs |> Just)
+                , childReceivesECD = or form.childReceivesECD (EverySet.member ChildReceivesECD value.signs |> Just)
+                , childWithDisability = or form.childWithDisability (EverySet.member ChildWithDisability value.signs |> Just)
+                , ongeraMNP = or form.ongeraMNP (EverySet.member OngeraMNP value.signs |> Just)
+                , insecticideTreatedBednets = or form.insecticideTreatedBednets (EverySet.member InsecticideTreatedBednets value.signs |> Just)
+                , childBehindOnVaccination = or form.childBehindOnVaccination (EverySet.member ChildBehindOnVaccination value.signs |> Just)
+                , receivingCashTransfer = or form.receivingCashTransfer (EverySet.member ReceivingCashTransfer value.signs |> Just)
+                , receivingSupport = or form.receivingSupport (EverySet.member ReceivingSupport value.signs |> Just)
+                , supplementsDuringPregnancy = or form.supplementsDuringPregnancy (EverySet.member SupplementsDuringPregnancy value.signs |> Just)
+                , takenSupplementsPerGuidance = or form.takenSupplementsPerGuidance (EverySet.member TakenSupplementsPerGuidance value.signs |> Just)
+                , treatedForAcuteMalnutrition = or form.treatedForAcuteMalnutrition (EverySet.member TreatedForAcuteMalnutrition value.signs |> Just)
+                , takingOngeraMNP = or form.takingOngeraMNP (EverySet.member TakingOngeraMNP value.signs |> Just)
+                , mealsAtRecommendedTimes = or form.mealsAtRecommendedTimes (EverySet.member MealsAtRecommendedTimes value.signs |> Just)
                 , birthWeight = or form.birthWeight value.birthWeight
+
+                -- Nutrition measurements.
+                , stuntingLevel = or form.stuntingLevel value.stuntingLevel
+                , stuntingLevelNotTaken = or form.stuntingLevelNotTaken (isNothing value.stuntingLevel |> Just)
+                , weight = or form.weight value.weight
+                , weightNotTaken = or form.weightNotTaken (isNothing value.weight |> Just)
+                , muac = or form.muac value.muac
+                , muacNotTaken = or form.muacNotTaken (isNothing value.muac |> Just)
+                , showsEdemaSigns = or form.showsEdemaSigns (EverySet.member ShowsEdemaSigns value.signs |> Just)
                 }
             )
 
@@ -4519,30 +4614,49 @@ toNCDAValue : NCDAForm -> Maybe NCDAValue
 toNCDAValue form =
     let
         signs =
-            [ ifNullableTrue NCDABornWithBirthDefect form.bornWithBirthDefect
-            , ifNullableTrue NCDABreastfedForSixMonths form.breastfedForSixMonths
-            , ifNullableTrue NCDAAppropriateComplementaryFeeding form.appropriateComplementaryFeeding
-            , ifNullableTrue NCDAOngeraMNP form.ongeraMNP
-            , ifNullableTrue NCDAFiveFoodGroups form.fiveFoodGroups
-            , ifNullableTrue NCDAMealFrequency6to8Months form.mealFrequency6to8Months
-            , ifNullableTrue NCDAMealFrequency9to11Months form.mealFrequency9to11Months
-            , ifNullableTrue NCDAMealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore
-            , ifNullableTrue NCDASupportChildWithDisability form.supportChildWithDisability
-            , ifNullableTrue NCDAConditionalCashTransfer form.conditionalCashTransfer
-            , ifNullableTrue NCDAConditionalFoodItems form.conditionalFoodItems
-            , ifNullableTrue NCDAHasCleanWater form.hasCleanWater
-            , ifNullableTrue NCDAHasHandwashingFacility form.hasHandwashingFacility
-            , ifNullableTrue NCDAHasToilets form.hasToilets
-            , ifNullableTrue NCDAHasKitchenGarden form.hasKitchenGarden
-            , ifNullableTrue NCDARegularPrenatalVisits form.regularPrenatalVisits
-            , ifNullableTrue NCDAIronSupplementsDuringPregnancy form.ironSupplementsDuringPregnancy
-            , ifNullableTrue NCDAInsecticideTreatedBednetsDuringPregnancy form.insecticideTreatedBednetsDuringPregnancy
+            [ ifNullableTrue AppropriateComplementaryFeeding form.appropriateComplementaryFeeding
+            , ifNullableTrue BornWithBirthDefect form.bornWithBirthDefect
+            , ifNullableTrue BreastfedForSixMonths form.breastfedForSixMonths
+            , ifNullableTrue ConditionalFoodItems form.conditionalFoodItems
+            , ifNullableTrue FiveFoodGroups form.fiveFoodGroups
+            , ifNullableTrue HasCleanWater form.hasCleanWater
+            , ifNullableTrue HasHandwashingFacility form.hasHandwashingFacility
+            , ifNullableTrue HasToilets form.hasToilets
+            , ifNullableTrue HasKitchenGarden form.hasKitchenGarden
+
+            -- New:
+            , ifNullableTrue BeneficiaryCashTransfer form.beneficiaryCashTransfer
+            , ifNullableTrue ChildGotDiarrhea form.childGotDiarrhea
+            , ifNullableTrue ChildReceivesFBF form.childReceivesFBF
+            , ifNullableTrue ChildTakingFBF form.childTakingFBF
+            , ifNullableTrue ChildReceivesDewormer form.childReceivesDewormer
+            , ifNullableTrue ChildReceivesECD form.childReceivesECD
+            , ifNullableTrue ChildWithDisability form.childWithDisability
+            , ifNullableTrue OngeraMNP form.ongeraMNP
+            , ifNullableTrue InsecticideTreatedBednets form.insecticideTreatedBednets
+            , ifNullableTrue ChildBehindOnVaccination form.childBehindOnVaccination
+            , ifNullableTrue ReceivingCashTransfer form.receivingCashTransfer
+            , ifNullableTrue ReceivingSupport form.receivingSupport
+            , ifNullableTrue SupplementsDuringPregnancy form.supplementsDuringPregnancy
+            , ifNullableTrue TakenSupplementsPerGuidance form.takenSupplementsPerGuidance
+            , ifNullableTrue TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition
+            , ifNullableTrue TakingOngeraMNP form.takingOngeraMNP
+            , ifNullableTrue MealsAtRecommendedTimes form.mealsAtRecommendedTimes
+            , ifNullableTrue ShowsEdemaSigns form.showsEdemaSigns
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoNCDASigns)
+
+        ancVisitsDates =
+            Maybe.withDefault EverySet.empty form.ancVisitsDates
     in
     Maybe.map NCDAValue signs
         |> andMap (Just form.birthWeight)
+        |> andMap (Just ancVisitsDates)
+        |> andMap (Just form.childReceivesVitaminA)
+        |> andMap (Just form.stuntingLevel)
+        |> andMap (Just form.weight)
+        |> andMap (Just form.muac)
 
 
 {-| Whether to expect a counseling activity is not just a yes/no question,
@@ -4797,18 +4911,6 @@ resolveLabTestDate :
             )
     -> Maybe NominalDate
 resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
-    let
-        dateMeasured =
-            -- Date on which test was recorded.
-            -- Note that this is not the date when test was performed,
-            -- because it's possible to set past date for that.
-            -- We need the recorded date, because the logic says that
-            -- test that will not have results set for over 35 days is expired.
-            -- Can default to current date, because we use it only when there's
-            -- measurement value, and this means that there must be dateMeasured set.
-            Maybe.map (Tuple.second >> .dateMeasured) measurement
-                |> Maybe.withDefault currentDate
-    in
     getMeasurementValueFunc measurement
         |> Maybe.andThen
             (\value ->
@@ -4818,15 +4920,28 @@ resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
                         -- we treat the test as if it was not performed.
                         Nothing
 
-                    else if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
-                        -- No results were entered for more than 35 days since the
-                        -- day on which measurement was taken.
-                        -- Test is considered expired, and is being ignored
-                        -- (as if it was never performed).
-                        Nothing
-
                     else
-                        value.executionDate
+                        let
+                            dateMeasured =
+                                -- Date on which test was recorded.
+                                -- Note that this is not the date when test was performed,
+                                -- because it's possible to set past date for that.
+                                -- We need the recorded date, because the logic says that
+                                -- test that will not have results set for over 35 days is expired.
+                                -- Can default to current date, because we use it only when there's
+                                -- measurement value, and this means that there must be dateMeasured set.
+                                Maybe.map (Tuple.second >> .dateMeasured) measurement
+                                    |> Maybe.withDefault currentDate
+                        in
+                        if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
+                            -- No results were entered for more than 35 days since the
+                            -- day on which measurement was taken.
+                            -- Test is considered expired, and is being ignored
+                            -- (as if it was never performed).
+                            Nothing
+
+                        else
+                            value.executionDate
 
                 else
                     Nothing
@@ -4841,3 +4956,1347 @@ isTestResultValid =
            -- it to be valid, because results for some test are
            -- updated after few hours, or even days.
            Maybe.withDefault True
+
+
+resolveChildANCPregnancyData : PersonId -> ModelIndexedDb -> ( Maybe NominalDate, EverySet NominalDate )
+resolveChildANCPregnancyData childId db =
+    Dict.get childId db.pregnancyByNewborn
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.Extra.join
+        |> Maybe.map
+            (\( participantId, participant ) ->
+                let
+                    encountersDates =
+                        Dict.get participantId db.prenatalEncountersByParticipant
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map
+                                (Dict.values
+                                    >> List.filterMap
+                                        (\encounter ->
+                                            if not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ] then
+                                                Just encounter.startDate
+
+                                            else
+                                                Nothing
+                                        )
+                                    >> EverySet.fromList
+                                )
+                            |> Maybe.withDefault EverySet.empty
+                in
+                ( participant.eddDate, encountersDates )
+            )
+        |> Maybe.withDefault ( Nothing, EverySet.empty )
+
+
+childDiagnosedWithMalnutrition : PersonId -> ModelIndexedDb -> Bool
+childDiagnosedWithMalnutrition childId db =
+    let
+        individualParticipants =
+            Dict.get childId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        individualWellChildParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        individualNutritionParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        groupNutritionMeasurements =
+            Dict.get childId db.childMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.withDefault emptyChildMeasurementList
+
+        individualNutritionMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Backend.Measurement.Utils.generatePreviousMeasurements
+                        Backend.NutritionEncounter.Utils.getNutritionEncountersForParticipant
+                        .nutritionMeasurements
+                        Nothing
+                        participantId
+                        db
+                )
+                individualNutritionParticipantId
+                |> Maybe.withDefault []
+                |> List.map (Tuple.second >> Tuple.second)
+
+        individualWellChildMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Backend.Measurement.Utils.generatePreviousMeasurements
+                        getWellChildEncountersForParticipant
+                        .wellChildMeasurements
+                        Nothing
+                        participantId
+                        db
+                )
+                individualWellChildParticipantId
+                |> Maybe.withDefault []
+                |> List.map (Tuple.second >> Tuple.second)
+
+        groupNutritionAssessment =
+            generateGroupNutritionAssessmentEntries groupNutritionMeasurements
+
+        individualNutritionAssessment =
+            generateIndividualNutritionAssessmentEntries individualNutritionMeasurements
+
+        individuaWellChildAssessment =
+            generateIndividualNutritionAssessmentEntries individualWellChildMeasurements
+    in
+    individualNutritionAssessment
+        ++ groupNutritionAssessment
+        ++ individuaWellChildAssessment
+        |> List.any
+            (\( _, assessments ) ->
+                List.member AssesmentAcuteMalnutritionModerate assessments
+                    || List.member AssesmentAcuteMalnutritionSevere assessments
+            )
+
+
+resoloveLastScheduledImmunizationVisitDate : PersonId -> ModelIndexedDb -> Maybe NominalDate
+resoloveLastScheduledImmunizationVisitDate childId db =
+    let
+        individualParticipants =
+            Dict.get childId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        individualWellChildParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        individualWellChildMeasurements =
+            Maybe.map
+                (\participantId ->
+                    Backend.Measurement.Utils.generatePreviousMeasurements
+                        getWellChildEncountersForParticipant
+                        .wellChildMeasurements
+                        Nothing
+                        participantId
+                        db
+                )
+                individualWellChildParticipantId
+                |> Maybe.withDefault []
+                |> List.map (Tuple.second >> Tuple.second)
+    in
+    List.filterMap
+        (.nextVisit
+            >> getMeasurementValueFunc
+            >> Maybe.andThen .immunisationDate
+        )
+        individualWellChildMeasurements
+        |> -- Since generatePreviousMeasurements sorts DESC the list,
+           -- we know that at head of list we got immunization
+           -- visit date that was scheduled last.
+           List.head
+
+
+isBehindOnVaccinationsByProgress : NominalDate -> Site -> Bool -> PersonId -> ModelIndexedDb -> Bool
+isBehindOnVaccinationsByProgress currentDate site isChw childId db =
+    let
+        individualParticipants =
+            Dict.get childId db.individualParticipantsByPerson
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map Dict.toList
+                |> Maybe.withDefault []
+
+        individualWellChildParticipantId =
+            List.filter
+                (\( _, participant ) ->
+                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                )
+                individualParticipants
+                |> List.head
+                |> Maybe.map Tuple.first
+    in
+    if isJust individualWellChildParticipantId then
+        behindOnVaccinationsByProgressFromWellChild currentDate site isChw individualWellChildParticipantId db
+
+    else
+        let
+            individualChildScoreboardParticipantId =
+                List.filter
+                    (\( _, participant ) ->
+                        participant.encounterType == Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
+                    )
+                    individualParticipants
+                    |> List.head
+                    |> Maybe.map Tuple.first
+        in
+        behindOnVaccinationsByProgressFromChildScoreboard currentDate site isChw individualChildScoreboardParticipantId db
+
+
+behindOnVaccinationsByProgressFromWellChild :
+    NominalDate
+    -> Site
+    -> Bool
+    -> Maybe IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> Bool
+behindOnVaccinationsByProgressFromWellChild currentDate site isChw individualWellChildParticipantId db =
+    let
+        lastWellChildEncounterId =
+            Maybe.andThen
+                (getWellChildEncountersForParticipant db
+                    >> List.map Tuple.first
+                    >> List.head
+                )
+                individualWellChildParticipantId
+
+        maybeAssembled =
+            Maybe.andThen
+                (\id ->
+                    generateAssembledDataForWellChild site id db
+                        |> RemoteData.toMaybe
+                )
+                lastWellChildEncounterId
+    in
+    Maybe.map
+        (\assembled ->
+            behindOnVaccinationsByProgress currentDate
+                site
+                isChw
+                assembled.person
+                assembled.vaccinationProgress
+        )
+        maybeAssembled
+        |> Maybe.withDefault False
+
+
+behindOnVaccinationsByProgressFromChildScoreboard :
+    NominalDate
+    -> Site
+    -> Bool
+    -> Maybe IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> Bool
+behindOnVaccinationsByProgressFromChildScoreboard currentDate site isChw individualChildScoreboardParticipantId db =
+    let
+        lastChildScoreboardEncounterId =
+            Maybe.andThen
+                (getChildScoreboardEncountersForParticipant db
+                    >> List.map Tuple.first
+                    >> List.head
+                )
+                individualChildScoreboardParticipantId
+
+        maybeAssembled =
+            Maybe.andThen
+                (\id ->
+                    generateAssembledDataForChildScoreboard site id db
+                        |> RemoteData.toMaybe
+                )
+                lastChildScoreboardEncounterId
+    in
+    Maybe.map
+        (\assembled ->
+            behindOnVaccinationsByProgress currentDate
+                site
+                isChw
+                assembled.person
+                assembled.vaccinationProgress
+        )
+        maybeAssembled
+        |> Maybe.withDefault False
+
+
+{-| Here we look at vaccinations given during previous encounters.
+So that we know the state up until current encounter (where additional VaccinationStatus
+may have been recorded.)
+-}
+behindOnVaccinationsByHistory :
+    NominalDate
+    -> Site
+    -> Bool
+    -> Person
+    -> VaccinationProgressDict
+    -> VaccinationProgressDict
+    -> Bool
+behindOnVaccinationsByHistory currentDate site isChw person vaccinationHistory vaccinationProgress =
+    generateSuggestedVaccinations currentDate
+        site
+        isChw
+        person
+        vaccinationHistory
+        vaccinationProgress
+        |> List.isEmpty
+        |> not
+
+
+{-| Here we look at vaccinations given at previous encounters AND at
+current encounter, so we know the state at current moment.
+-}
+behindOnVaccinationsByProgress :
+    NominalDate
+    -> Site
+    -> Bool
+    -> Person
+    -> VaccinationProgressDict
+    -> Bool
+behindOnVaccinationsByProgress currentDate site isChw person vaccinationProgress =
+    generateSuggestedVaccinations currentDate
+        site
+        isChw
+        person
+        vaccinationProgress
+        vaccinationProgress
+        |> List.isEmpty
+        |> not
+
+
+resolveNCDASteps : NominalDate -> Person -> Bool -> Bool -> List NCDAStep
+resolveNCDASteps currentDate person ncdaNeverFilled atHealthCenter =
+    List.filter (expectNCDAStep currentDate person ncdaNeverFilled atHealthCenter) ncdaSteps
+
+
+expectNCDAStep : NominalDate -> Person -> Bool -> Bool -> NCDAStep -> Bool
+expectNCDAStep currentDate person ncdaNeverFilled atHealthCenter task =
+    case task of
+        -- If NCDA was filled before, for sure it included answers to
+        -- needed questions. Since questions at this step are to be asked
+        -- only once, we know it can be skipped.
+        NCDAStepAntenatalCare ->
+            ncdaNeverFilled
+
+        NCDAStepNutritionAssessment ->
+            not atHealthCenter
+
+        NCDAStepNutritionBehavior ->
+            ageInMonths currentDate person
+                |> Maybe.map (\ageMonths -> ageMonths >= 6)
+                |> Maybe.withDefault False
+
+        -- All other tasks are shown always.
+        _ ->
+            True
+
+
+ncdaSteps : List NCDAStep
+ncdaSteps =
+    [ NCDAStepAntenatalCare
+    , NCDAStepUniversalInterventions
+    , NCDAStepNutritionBehavior
+    , NCDAStepNutritionAssessment
+    , NCDAStepTargetedInterventions
+    , NCDAStepInfrastructureEnvironment
+    ]
+
+
+generateSuggestedVaccinations :
+    NominalDate
+    -> Site
+    -> Bool
+    -> Person
+    -> VaccinationProgressDict
+    -> VaccinationProgressDict
+    -> List ( WellChildVaccineType, VaccineDose )
+generateSuggestedVaccinations currentDate site isChw person vaccinationHistory vaccinationProgress =
+    if isChw then
+        [ ( VaccineBCG, VaccineDoseFirst ), ( VaccineOPV, VaccineDoseFirst ) ]
+
+    else
+        let
+            initialOpvAdministered =
+                wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
+        in
+        allVaccineTypes site
+            |> List.filter (expectVaccineForPerson currentDate site person initialOpvAdministered vaccinationProgress)
+            |> List.filterMap
+                (\vaccineType ->
+                    let
+                        suggestedDose =
+                            case latestVaccinationDataForVaccine vaccinationHistory vaccineType of
+                                Just ( lastDoseAdministered, lastDoseDate ) ->
+                                    nextDoseForVaccine currentDate site lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType
+
+                                Nothing ->
+                                    Just VaccineDoseFirst
+                    in
+                    Maybe.map (\nextDose -> ( vaccineType, nextDose )) suggestedDose
+                )
+
+
+wasInitialOpvAdministeredByVaccinationProgress : Person -> VaccinationProgressDict -> Bool
+wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress =
+    let
+        firstDoseAdminstrationDate =
+            Dict.get VaccineOPV vaccinationProgress
+                |> Maybe.andThen (Dict.get VaccineDoseFirst)
+    in
+    Maybe.map2
+        (\adminstrationDate birthDate ->
+            Date.diff Days birthDate adminstrationDate < 14
+        )
+        firstDoseAdminstrationDate
+        person.birthDate
+        |> Maybe.withDefault False
+
+
+{-| For each type of vaccine, we generate next dose and administration date.
+If there's no need for future vaccination, Nothing is returned.
+-}
+generateFutureVaccinationsData :
+    NominalDate
+    -> Site
+    -> Person
+    -> Bool
+    -> VaccinationProgressDict
+    -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday vaccinationProgress =
+    let
+        initialOpvAdministered =
+            wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
+    in
+    allVaccineTypesForPerson site person
+        |> List.map
+            (\vaccineType ->
+                let
+                    nextVaccinationData =
+                        case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
+                            Just ( lastDoseAdministered, lastDoseDate ) ->
+                                nextVaccinationDataForVaccine site
+                                    vaccineType
+                                    initialOpvAdministered
+                                    lastDoseDate
+                                    lastDoseAdministered
+
+                            Nothing ->
+                                -- There were no vaccination so far, so
+                                -- we offer first dose for today.
+                                let
+                                    initialDate =
+                                        Maybe.map
+                                            (\birthDate ->
+                                                initialVaccinationDateByBirthDate site
+                                                    birthDate
+                                                    initialOpvAdministered
+                                                    vaccinationProgress
+                                                    ( vaccineType, VaccineDoseFirst )
+                                            )
+                                            person.birthDate
+                                            |> Maybe.withDefault currentDate
+
+                                    vaccinationDate =
+                                        if scheduleFirstDoseForToday then
+                                            Date.max initialDate currentDate
+
+                                        else
+                                            initialDate
+                                in
+                                Just ( VaccineDoseFirst, vaccinationDate )
+                in
+                -- Getting Nothing at nextVaccinationData indicates that
+                -- vacination cycle is completed for this vaccine.
+                ( vaccineType, nextVaccinationData )
+            )
+
+
+{-| Check if the first dose of vaccine may be administered to the person on the limit date.
+-}
+expectVaccineForPerson : NominalDate -> Site -> Person -> Bool -> VaccinationProgressDict -> WellChildVaccineType -> Bool
+expectVaccineForPerson limitDate site person initialOpvAdministered vaccinationProgress vaccineType =
+    expectVaccineDoseForPerson limitDate site person initialOpvAdministered vaccinationProgress ( vaccineType, VaccineDoseFirst )
+
+
+{-| Check if a dose of vaccine may be administered to a person on the limit date.
+For example, to check if the dose of vaccine may be administered today, we set
+limit date to current date. If we want to check in one year, we set the limit date
+to current date + 1 year.
+-}
+expectVaccineDoseForPerson : NominalDate -> Site -> Person -> Bool -> VaccinationProgressDict -> ( WellChildVaccineType, VaccineDose ) -> Bool
+expectVaccineDoseForPerson limitDate site person initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
+    person.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                let
+                    expectedDate =
+                        initialVaccinationDateByBirthDate site
+                            birthDate
+                            initialOpvAdministered
+                            vaccinationProgress
+                            ( vaccineType, vaccineDose )
+
+                    compared =
+                        Date.compare expectedDate limitDate
+
+                    genderCondition =
+                        if vaccineType == VaccineHPV then
+                            person.gender == Female
+
+                        else
+                            True
+                in
+                (compared == LT || compared == EQ) && genderCondition
+            )
+        |> Maybe.withDefault False
+
+
+initialVaccinationDateByBirthDate :
+    Site
+    -> NominalDate
+    -> Bool
+    -> VaccinationProgressDict
+    -> ( WellChildVaccineType, VaccineDose )
+    -> NominalDate
+initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
+    let
+        dosesInterval =
+            vaccineDoseToComparable vaccineDose - 1
+
+        ( interval, unit ) =
+            getIntervalForVaccine site vaccineType
+    in
+    case vaccineType of
+        VaccineBCG ->
+            birthDate
+
+        VaccineOPV ->
+            case vaccineDose of
+                VaccineDoseFirst ->
+                    birthDate
+
+                _ ->
+                    if initialOpvAdministered then
+                        -- Second dose is given starting from age of 6 weeks.
+                        Date.add Weeks 6 birthDate
+                            |> Date.add unit ((dosesInterval - 1) * interval)
+
+                    else
+                        -- Second dose is given starting from age of 10 weeks.
+                        Date.add Weeks 6 birthDate
+                            |> Date.add unit (dosesInterval * interval)
+
+        VaccineDTP ->
+            Date.add Weeks 6 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineDTPStandalone ->
+            -- All 3 dosed of DTP were given, it has passed
+            -- at least 28 days since third dose, and, child
+            -- is at last 18 months old.
+            Dict.get VaccineOPV vaccinationProgress
+                |> Maybe.andThen (Dict.get VaccineDoseThird)
+                |> Maybe.map
+                    (\thirdDoseDate ->
+                        let
+                            fourWeeksAfterThirdDTPDose =
+                                Date.add Days 28 thirdDoseDate
+
+                            dateWhen18MonthsOld =
+                                Date.add Months 18 birthDate
+                        in
+                        if Date.compare fourWeeksAfterThirdDTPDose dateWhen18MonthsOld == GT then
+                            fourWeeksAfterThirdDTPDose
+
+                        else
+                            dateWhen18MonthsOld
+                    )
+                |> Maybe.withDefault
+                    -- In other words, never.
+                    (Date.add Years 999 birthDate)
+
+        VaccinePCV13 ->
+            Date.add Weeks 6 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineRotarix ->
+            Date.add Weeks 6 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineIPV ->
+            Date.add Weeks 14 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineMR ->
+            Date.add Weeks 36 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+        VaccineHPV ->
+            Date.add Years 12 birthDate
+                |> Date.add unit (dosesInterval * interval)
+
+
+latestVaccinationDataForVaccine : VaccinationProgressDict -> WellChildVaccineType -> Maybe ( VaccineDose, NominalDate )
+latestVaccinationDataForVaccine vaccinationsData vaccineType =
+    Dict.get vaccineType vaccinationsData
+        |> Maybe.andThen
+            (Dict.toList
+                >> List.sortBy (Tuple.first >> vaccineDoseToComparable)
+                >> List.reverse
+                >> List.head
+            )
+
+
+nextVaccinationDataForVaccine : Site -> WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
+    if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
+        Nothing
+
+    else
+        getNextVaccineDose lastDoseAdministered
+            |> Maybe.map
+                (\dose ->
+                    let
+                        ( interval, unit ) =
+                            getIntervalForVaccine site vaccineType
+                    in
+                    ( dose, Date.add unit interval lastDoseDate )
+                )
+
+
+nextDoseForVaccine : NominalDate -> Site -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
+nextDoseForVaccine currentDate site lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
+    nextVaccinationDataForVaccine site vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+        |> Maybe.andThen
+            (\( dose, dueDate ) ->
+                if Date.compare dueDate currentDate == GT then
+                    Nothing
+
+                else
+                    Just dose
+            )
+
+
+immunisationTaskToVaccineType : ImmunisationTask -> Maybe WellChildVaccineType
+immunisationTaskToVaccineType task =
+    case task of
+        TaskBCG ->
+            Just VaccineBCG
+
+        TaskDTP ->
+            Just VaccineDTP
+
+        TaskDTPStandalone ->
+            Just VaccineDTPStandalone
+
+        TaskHPV ->
+            Just VaccineHPV
+
+        TaskIPV ->
+            Just VaccineIPV
+
+        TaskMR ->
+            Just VaccineMR
+
+        TaskOPV ->
+            Just VaccineOPV
+
+        TaskPCV13 ->
+            Just VaccinePCV13
+
+        TaskRotarix ->
+            Just VaccineRotarix
+
+        TaskOverview ->
+            Nothing
+
+
+getAllDosesForVaccine : Bool -> WellChildVaccineType -> List VaccineDose
+getAllDosesForVaccine initialOpvAdministered vaccineType =
+    let
+        lastDose =
+            getLastDoseForVaccine initialOpvAdministered vaccineType
+    in
+    List.filterMap
+        (\dose ->
+            if vaccineDoseToComparable dose <= vaccineDoseToComparable lastDose then
+                Just dose
+
+            else
+                Nothing
+        )
+        allVaccineDoses
+
+
+getLastDoseForVaccine : Bool -> WellChildVaccineType -> VaccineDose
+getLastDoseForVaccine initialOpvAdministered vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            VaccineDoseFirst
+
+        VaccineOPV ->
+            if initialOpvAdministered then
+                VaccineDoseFourth
+
+            else
+                VaccineDoseThird
+
+        VaccineDTP ->
+            VaccineDoseThird
+
+        VaccineDTPStandalone ->
+            VaccineDoseFirst
+
+        VaccinePCV13 ->
+            VaccineDoseThird
+
+        VaccineRotarix ->
+            VaccineDoseSecond
+
+        VaccineIPV ->
+            VaccineDoseFirst
+
+        VaccineMR ->
+            VaccineDoseSecond
+
+        VaccineHPV ->
+            VaccineDoseSecond
+
+
+getIntervalForVaccine : Site -> WellChildVaccineType -> ( Int, Unit )
+getIntervalForVaccine site vaccineType =
+    case vaccineType of
+        VaccineBCG ->
+            ( 0, Days )
+
+        VaccineOPV ->
+            ( 4, Weeks )
+
+        VaccineDTP ->
+            ( 4, Weeks )
+
+        VaccineDTPStandalone ->
+            ( 0, Days )
+
+        VaccinePCV13 ->
+            ( 4, Weeks )
+
+        VaccineRotarix ->
+            ( 4, Weeks )
+
+        VaccineIPV ->
+            ( 0, Days )
+
+        VaccineMR ->
+            case site of
+                SiteBurundi ->
+                    ( 9, Months )
+
+                _ ->
+                    ( 6, Months )
+
+        VaccineHPV ->
+            ( 6, Months )
+
+
+allVaccineTypesForPerson : Site -> Person -> List WellChildVaccineType
+allVaccineTypesForPerson site person =
+    allVaccineTypes site
+        |> List.filter
+            (\vaccineType ->
+                case vaccineType of
+                    VaccineHPV ->
+                        person.gender == Female
+
+                    _ ->
+                        True
+            )
+
+
+allVaccineTypes : Site -> List WellChildVaccineType
+allVaccineTypes site =
+    let
+        common =
+            [ VaccineBCG
+            , VaccineOPV
+            , VaccineDTP
+            , VaccinePCV13
+            , VaccineRotarix
+            , VaccineIPV
+            , VaccineMR
+            ]
+    in
+    case site of
+        SiteBurundi ->
+            common ++ [ VaccineDTPStandalone ]
+
+        _ ->
+            common ++ [ VaccineHPV ]
+
+
+allVaccineDoses : List VaccineDose
+allVaccineDoses =
+    [ VaccineDoseFirst, VaccineDoseSecond, VaccineDoseThird, VaccineDoseFourth ]
+
+
+getPreviousMeasurements : List ( NominalDate, ( id, a ) ) -> List a
+getPreviousMeasurements =
+    List.map (Tuple.second >> Tuple.second)
+
+
+mergeVaccinationProgressDicts : VaccinationProgressDict -> VaccinationProgressDict -> VaccinationProgressDict
+mergeVaccinationProgressDicts dict1 dict2 =
+    Dict.merge
+        (\vaccineType dosesDict -> Dict.insert vaccineType dosesDict)
+        (\vaccineType dosesDict1 dosesDict2 ->
+            Dict.merge
+                (\dose date -> Dict.insert dose date)
+                (\dose date1 date2 ->
+                    if Date.compare date1 date2 == GT then
+                        Dict.insert dose date1
+
+                    else
+                        Dict.insert dose date2
+                )
+                (\dose date -> Dict.insert dose date)
+                dosesDict1
+                dosesDict2
+                Dict.empty
+                |> Dict.insert vaccineType
+        )
+        (\vaccineType dosesDict -> Dict.insert vaccineType dosesDict)
+        dict1
+        dict2
+        Dict.empty
+
+
+generateGroupNutritionAssessmentEntries : ChildMeasurementList -> List ( NominalDate, List NutritionAssessment )
+generateGroupNutritionAssessmentEntries measurementList =
+    let
+        assessmentsFromNutrition =
+            Dict.values measurementList.nutritions
+                |> List.filterMap
+                    (\nutrition -> filterNutritionAssessmentsFromNutritionValue nutrition.dateMeasured nutrition.value)
+
+        assessmentsFromFollowUp =
+            Dict.values measurementList.followUp
+                |> List.filterMap
+                    (\followUp -> filterNutritionAssessmentsFromFollowUpValue followUp.dateMeasured followUp.value)
+    in
+    mergeNutritionAssessmentEntries
+        assessmentsFromNutrition
+        assessmentsFromFollowUp
+
+
+generateIndividualNutritionAssessmentEntries :
+    List
+        { c
+            | nutrition :
+                Maybe
+                    ( id1
+                    , { v1
+                        | dateMeasured : NominalDate
+                        , value : NutritionValue
+                      }
+                    )
+            , followUp :
+                Maybe
+                    ( id2
+                    , { v2
+                        | dateMeasured : NominalDate
+                        , value : FollowUpValue
+                      }
+                    )
+        }
+    -> List ( NominalDate, List NutritionAssessment )
+generateIndividualNutritionAssessmentEntries measurementList =
+    let
+        assessmentsFromNutrition =
+            List.map
+                (\measurements ->
+                    Maybe.map2 filterNutritionAssessmentsFromNutritionValue
+                        (getMeasurementDateMeasuredFunc measurements.nutrition)
+                        (getMeasurementValueFunc measurements.nutrition)
+                        |> Maybe.Extra.join
+                )
+                measurementList
+                |> Maybe.Extra.values
+
+        assessmentsFromFollowUp =
+            List.map
+                (\measurements ->
+                    Maybe.map2 filterNutritionAssessmentsFromFollowUpValue
+                        (getMeasurementDateMeasuredFunc measurements.followUp)
+                        (getMeasurementValueFunc measurements.followUp)
+                        |> Maybe.Extra.join
+                )
+                measurementList
+                |> Maybe.Extra.values
+    in
+    mergeNutritionAssessmentEntries
+        assessmentsFromNutrition
+        assessmentsFromFollowUp
+
+
+filterNutritionAssessmentsFromNutritionValue : NominalDate -> NutritionValue -> Maybe ( NominalDate, List NutritionAssessment )
+filterNutritionAssessmentsFromNutritionValue dateMeasured value =
+    let
+        assesments =
+            EverySet.toList value.assesment
+                |> List.filterMap
+                    (\assesment ->
+                        case assesment of
+                            NoNutritionAssessment ->
+                                Nothing
+
+                            AssesmentMalnutritionSigns _ ->
+                                Just <| AssesmentMalnutritionSigns (EverySet.toList value.signs)
+
+                            _ ->
+                                Just assesment
+                    )
+    in
+    if List.isEmpty assesments then
+        Nothing
+
+    else
+        Just ( dateMeasured, assesments )
+
+
+filterNutritionAssessmentsFromFollowUpValue : NominalDate -> FollowUpValue -> Maybe ( NominalDate, List NutritionAssessment )
+filterNutritionAssessmentsFromFollowUpValue dateMeasured value =
+    let
+        assesments =
+            EverySet.toList value.assesment
+                |> List.filterMap
+                    (\assesment ->
+                        case assesment of
+                            NoNutritionAssessment ->
+                                Nothing
+
+                            _ ->
+                                Just assesment
+                    )
+    in
+    if List.isEmpty assesments then
+        Nothing
+
+    else
+        Just ( dateMeasured, assesments )
+
+
+mergeNutritionAssessmentEntries :
+    List ( NominalDate, List NutritionAssessment )
+    -> List ( NominalDate, List NutritionAssessment )
+    -> List ( NominalDate, List NutritionAssessment )
+mergeNutritionAssessmentEntries list1 list2 =
+    Dict.merge
+        (\date assessments -> Dict.insert date assessments)
+        (\date assessments1 assessments2 ->
+            Dict.insert date
+                ((assessments1 ++ assessments2)
+                    |> EverySet.fromList
+                    |> EverySet.toList
+                )
+        )
+        (\date assessments -> Dict.insert date assessments)
+        (Dict.fromList list1)
+        (Dict.fromList list2)
+        Dict.empty
+        |> Dict.toList
+
+
+generateAssembledDataForWellChild : Site -> WellChildEncounterId -> ModelIndexedDb -> WebData Pages.WellChild.Encounter.Model.AssembledData
+generateAssembledDataForWellChild site id db =
+    let
+        encounter =
+            Dict.get id db.wellChildEncounters
+                |> Maybe.withDefault NotAsked
+
+        measurements =
+            Dict.get id db.wellChildMeasurements
+                |> Maybe.withDefault NotAsked
+
+        participant =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter_ ->
+                        Dict.get encounter_.participant db.individualParticipants
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        person =
+            participant
+                |> RemoteData.andThen
+                    (\participant_ ->
+                        Dict.get participant_.person db.people
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        previousMeasurementsWithDates =
+            RemoteData.toMaybe encounter
+                |> Maybe.map
+                    (\encounter_ ->
+                        Backend.Measurement.Utils.generatePreviousMeasurements
+                            getWellChildEncountersForParticipant
+                            .wellChildMeasurements
+                            (Just id)
+                            encounter_.participant
+                            db
+                    )
+                |> Maybe.withDefault []
+
+        assembledWithEmptyVaccinationDicts =
+            RemoteData.map Pages.WellChild.Encounter.Model.AssembledData (Success id)
+                |> RemoteData.andMap encounter
+                |> RemoteData.andMap participant
+                |> RemoteData.andMap person
+                |> RemoteData.andMap measurements
+                |> RemoteData.andMap (Success previousMeasurementsWithDates)
+                |> RemoteData.andMap (Success Dict.empty)
+                |> RemoteData.andMap (Success Dict.empty)
+    in
+    RemoteData.map
+        (\assembled ->
+            let
+                ( vaccinationHistory, vaccinationProgress ) =
+                    generateVaccinationProgressDictsForWellChild site assembled db
+            in
+            { assembled | vaccinationHistory = vaccinationHistory, vaccinationProgress = vaccinationProgress }
+        )
+        assembledWithEmptyVaccinationDicts
+
+
+generateVaccinationProgressDictsForWellChild : Site -> Pages.WellChild.Encounter.Model.AssembledData -> ModelIndexedDb -> ( VaccinationProgressDict, VaccinationProgressDict )
+generateVaccinationProgressDictsForWellChild site assembled db =
+    let
+        previousMeasurements =
+            getPreviousMeasurements assembled.previousMeasurementsWithDates
+
+        vaccinationProgressByChildScoreboard =
+            let
+                individualParticipants =
+                    Dict.get assembled.participant.person db.individualParticipantsByPerson
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.toList
+                        |> Maybe.withDefault []
+
+                individualChildScoreboardParticipantId =
+                    List.filter
+                        (Tuple.second
+                            >> .encounterType
+                            >> (==) Backend.IndividualEncounterParticipant.Model.ChildScoreboardEncounter
+                        )
+                        individualParticipants
+                        |> List.head
+                        |> Maybe.map Tuple.first
+            in
+            Maybe.map (generateVaccinationProgressDictByChildScoreboard site db)
+                individualChildScoreboardParticipantId
+                |> Maybe.withDefault Dict.empty
+
+        vaccinationHistory =
+            generateVaccinationProgressForWellChild site assembled.person previousMeasurements
+
+        vaccinationProgress =
+            assembled.measurements
+                :: previousMeasurements
+                |> generateVaccinationProgressForWellChild site assembled.person
+    in
+    ( mergeVaccinationProgressDicts
+        vaccinationHistory
+        vaccinationProgressByChildScoreboard
+    , mergeVaccinationProgressDicts
+        vaccinationProgress
+        vaccinationProgressByChildScoreboard
+    )
+
+
+generateAssembledDataForChildScoreboard : Site -> ChildScoreboardEncounterId -> ModelIndexedDb -> WebData Pages.ChildScoreboard.Encounter.Model.AssembledData
+generateAssembledDataForChildScoreboard site id db =
+    let
+        encounter =
+            Dict.get id db.childScoreboardEncounters
+                |> Maybe.withDefault NotAsked
+
+        measurements =
+            Dict.get id db.childScoreboardMeasurements
+                |> Maybe.withDefault NotAsked
+
+        participant =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter_ ->
+                        Dict.get encounter_.participant db.individualParticipants
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        person =
+            participant
+                |> RemoteData.andThen
+                    (\participant_ ->
+                        Dict.get participant_.person db.people
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        previousMeasurementsWithDates =
+            RemoteData.toMaybe encounter
+                |> Maybe.map
+                    (\encounter_ ->
+                        Backend.Measurement.Utils.generatePreviousMeasurements
+                            getChildScoreboardEncountersForParticipant
+                            .childScoreboardMeasurements
+                            (Just id)
+                            encounter_.participant
+                            db
+                    )
+                |> Maybe.withDefault []
+
+        assembledWithEmptyVaccinationDicts =
+            RemoteData.map Pages.ChildScoreboard.Encounter.Model.AssembledData (Success id)
+                |> RemoteData.andMap encounter
+                |> RemoteData.andMap participant
+                |> RemoteData.andMap person
+                |> RemoteData.andMap measurements
+                |> RemoteData.andMap (Success previousMeasurementsWithDates)
+                |> RemoteData.andMap (Success Dict.empty)
+                |> RemoteData.andMap (Success Dict.empty)
+    in
+    RemoteData.map
+        (\assembled ->
+            let
+                ( vaccinationHistory, vaccinationProgress ) =
+                    generateVaccinationProgressDictsForChildScoreboard site assembled db
+            in
+            { assembled | vaccinationHistory = vaccinationHistory, vaccinationProgress = vaccinationProgress }
+        )
+        assembledWithEmptyVaccinationDicts
+
+
+generateVaccinationProgressDictsForChildScoreboard : Site -> Pages.ChildScoreboard.Encounter.Model.AssembledData -> ModelIndexedDb -> ( VaccinationProgressDict, VaccinationProgressDict )
+generateVaccinationProgressDictsForChildScoreboard site assembled db =
+    let
+        previousMeasurements =
+            getPreviousMeasurements assembled.previousMeasurementsWithDates
+
+        vaccinationProgressByWellChild =
+            let
+                individualParticipants =
+                    Dict.get assembled.participant.person db.individualParticipantsByPerson
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.toList
+                        |> Maybe.withDefault []
+
+                individualWellChildParticipantId =
+                    List.filter
+                        (Tuple.second
+                            >> .encounterType
+                            >> (==) Backend.IndividualEncounterParticipant.Model.WellChildEncounter
+                        )
+                        individualParticipants
+                        |> List.head
+                        |> Maybe.map Tuple.first
+            in
+            Maybe.map (generateVaccinationProgressDictByWellChild site assembled.person db)
+                individualWellChildParticipantId
+                |> Maybe.withDefault Dict.empty
+
+        vaccinationHistory =
+            generateVaccinationProgressForChildScoreboard site previousMeasurements
+
+        vaccinationProgress =
+            assembled.measurements
+                :: previousMeasurements
+                |> generateVaccinationProgressForChildScoreboard site
+    in
+    ( mergeVaccinationProgressDicts
+        vaccinationHistory
+        vaccinationProgressByWellChild
+    , mergeVaccinationProgressDicts
+        vaccinationProgress
+        vaccinationProgressByWellChild
+    )
+
+
+generateVaccinationProgressDictByWellChild : Site -> Person -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
+generateVaccinationProgressDictByWellChild site person db participantId =
+    Backend.Measurement.Utils.generatePreviousMeasurements
+        Backend.NutritionEncounter.Utils.getWellChildEncountersForParticipant
+        .wellChildMeasurements
+        Nothing
+        participantId
+        db
+        |> getPreviousMeasurements
+        |> generateVaccinationProgressForWellChild site person
+
+
+generateVaccinationProgressDictByChildScoreboard : Site -> ModelIndexedDb -> IndividualEncounterParticipantId -> VaccinationProgressDict
+generateVaccinationProgressDictByChildScoreboard site db participantId =
+    Backend.Measurement.Utils.generatePreviousMeasurements
+        Backend.NutritionEncounter.Utils.getChildScoreboardEncountersForParticipant
+        .childScoreboardMeasurements
+        Nothing
+        participantId
+        db
+        |> getPreviousMeasurements
+        |> generateVaccinationProgressForChildScoreboard site
+
+
+generateVaccinationProgressForWellChild : Site -> Person -> List WellChildMeasurements -> VaccinationProgressDict
+generateVaccinationProgressForWellChild site person measurements =
+    let
+        bcgImmunisationsProgress =
+            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        dtpImmunisationsProgress =
+            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        dtpStandaloneEntry =
+            -- This entry shall appear after 3 doses of DTP were given.
+            if isJust <| Dict.get VaccineDoseThird dtpImmunisationsProgress then
+                let
+                    dtpStandaloneImmunisations =
+                        List.filterMap (.dtpStandaloneImmunisation >> getMeasurementValueFunc)
+                            measurements
+                in
+                [ ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImmunisations ) ]
+
+            else
+                []
+
+        ipvImmunisationsProgress =
+            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        mrImmunisationsProgress =
+            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        opvImmunisationsProgress =
+            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        pcv13ImmunisationsProgress =
+            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        rotarixImmunisationsProgress =
+            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        hpvEntry =
+            if person.gender == Female then
+                let
+                    hpvImmunisations =
+                        List.filterMap (.hpvImmunisation >> getMeasurementValueFunc)
+                            measurements
+                in
+                [ ( VaccineHPV, generateVaccinationProgressForVaccine hpvImmunisations ) ]
+
+            else
+                []
+
+        vaccineTypesForSite =
+            allVaccineTypes site
+    in
+    [ ( VaccineBCG, bcgImmunisationsProgress )
+    , ( VaccineOPV, opvImmunisationsProgress )
+    , ( VaccineDTP, dtpImmunisationsProgress )
+    , ( VaccinePCV13, pcv13ImmunisationsProgress )
+    , ( VaccineRotarix, rotarixImmunisationsProgress )
+    , ( VaccineIPV, ipvImmunisationsProgress )
+    , ( VaccineMR, mrImmunisationsProgress )
+    ]
+        ++ dtpStandaloneEntry
+        ++ hpvEntry
+        |> List.filter
+            (\( vaccineType, _ ) ->
+                List.member vaccineType vaccineTypesForSite
+            )
+        |> Dict.fromList
+
+
+generateVaccinationProgressForChildScoreboard : Site -> List ChildScoreboardMeasurements -> VaccinationProgressDict
+generateVaccinationProgressForChildScoreboard site measurements =
+    let
+        bcgImmunisationsProgress =
+            List.filterMap (.bcgImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        dtpImmunisationsProgress =
+            List.filterMap (.dtpImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        -- This entry shall appear after 3 doses of DTP were given.
+        dtpStandaloneEntry =
+            if isJust <| Dict.get VaccineDoseThird dtpImmunisationsProgress then
+                let
+                    dtpStandaloneImmunisations =
+                        List.filterMap (.dtpStandaloneImmunisation >> getMeasurementValueFunc)
+                            measurements
+                in
+                [ ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImmunisations ) ]
+
+            else
+                []
+
+        ipvImmunisationsProgress =
+            List.filterMap (.ipvImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        mrImmunisationsProgress =
+            List.filterMap (.mrImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        opvImmunisationsProgress =
+            List.filterMap (.opvImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        pcv13ImmunisationsProgress =
+            List.filterMap (.pcv13Immunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        rotarixImmunisationsProgress =
+            List.filterMap (.rotarixImmunisation >> getMeasurementValueFunc)
+                measurements
+                |> generateVaccinationProgressForVaccine
+
+        vaccineTypesForSite =
+            allVaccineTypes site
+    in
+    [ ( VaccineBCG, bcgImmunisationsProgress )
+    , ( VaccineOPV, opvImmunisationsProgress )
+    , ( VaccineDTP, dtpImmunisationsProgress )
+    , ( VaccinePCV13, pcv13ImmunisationsProgress )
+    , ( VaccineRotarix, rotarixImmunisationsProgress )
+    , ( VaccineIPV, ipvImmunisationsProgress )
+    , ( VaccineMR, mrImmunisationsProgress )
+    ]
+        ++ dtpStandaloneEntry
+        |> List.filter
+            (\( vaccineType, _ ) ->
+                List.member vaccineType vaccineTypesForSite
+            )
+        |> Dict.fromList
+
+
+muacMeasurementIsOff : Maybe MuacInCm -> Bool
+muacMeasurementIsOff =
+    -- MUAC is not green.
+    Maybe.map (muacIndication >> (/=) ColorAlertGreen)
+        >> Maybe.withDefault False

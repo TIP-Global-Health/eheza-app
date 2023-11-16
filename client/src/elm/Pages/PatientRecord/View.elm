@@ -1,28 +1,24 @@
 module Pages.PatientRecord.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
-import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortByDate, sortTuplesByDateDesc)
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, generateFullName, isPersonAnAdult)
-import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
+import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.View
-import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra
 import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PatientRecord.Model exposing (..)
@@ -33,27 +29,31 @@ import Pages.Report.Utils exposing (diagnosisEntryStatusToString)
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , taskCompleted
-        , tasksBarId
-        , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewQuestionLabel
-        , viewSaveAction
-        , viewStartEncounterButton
+        ( viewStartEncounterButton
         )
-import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
-import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewPaneHeading, viewProgressReport)
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.Html exposing (spinner, thumbnailImage, viewModal)
+import Pages.WellChild.ProgressReport.Model
+import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading)
+import RemoteData
+import SyncManager.Model exposing (Site(..), SiteFeature)
+import Translate exposing (Language, translate, translateText)
+import Utils.Html exposing (spinner, thumbnailImage)
+import Utils.NominalDate exposing (sortByDate, sortTuplesByDateDesc)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw initiator db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> PersonId
+    -> Bool
+    -> PatientRecordInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site features id isChw initiator db model =
     Dict.get id db.people
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -77,10 +77,10 @@ view language currentDate zscores id isChw initiator db model =
 
                     ViewPatientRecord ->
                         if patientType == PatientChild then
-                            viewContentForChild language currentDate zscores id person isChw initiator db model
+                            viewContentForChild language currentDate zscores site features id person isChw initiator db model
 
                         else
-                            viewContentForOther language currentDate isChw id person patientType initiator db model
+                            viewContentForOther language currentDate site isChw id person patientType initiator db model
             )
         |> Maybe.withDefault spinner
 
@@ -149,8 +149,20 @@ viewStartEncounterPage language currentDate isChw personId person patientType in
         ]
 
 
-viewContentForChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> Person -> Bool -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewContentForChild language currentDate zscores childId child isChw initiator db model =
+viewContentForChild :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> PersonId
+    -> Person
+    -> Bool
+    -> PatientRecordInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewContentForChild language currentDate zscores site features childId child isChw initiator db model =
     let
         wellChildReportInitiator =
             Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord initiator childId
@@ -167,25 +179,27 @@ viewContentForChild language currentDate zscores childId child isChw initiator d
     Pages.WellChild.ProgressReport.View.viewProgressReport language
         currentDate
         zscores
+        site
+        features
         isChw
         wellChildReportInitiator
         False
         db
         model.diagnosisMode
-        model.sendViaWhatsAppDialog
+        model.reportToWhatsAppDialog
         model.spvReportTab
         SetActivePage
         SetSPVReportTab
         SetDiagnosisMode
-        MsgSendViaWhatsAppDialog
+        MsgReportToWhatsAppDialog
         Nothing
         Nothing
         bottomActionData
         ( childId, child )
 
 
-viewContentForOther : Language -> NominalDate -> Bool -> PersonId -> Person -> PatientType -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewContentForOther language currentDate isChw personId person patientType initiator db model =
+viewContentForOther : Language -> NominalDate -> Site -> Bool -> PersonId -> Person -> PatientType -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
+viewContentForOther language currentDate site isChw personId person patientType initiator db model =
     let
         individualParticipants =
             Dict.get personId db.individualParticipantsByPerson
@@ -229,6 +243,7 @@ viewContentForOther language currentDate isChw personId person patientType initi
                 viewAdultDetails
                     language
                     currentDate
+                    site
                     personId
                     person
                     db
@@ -246,8 +261,8 @@ viewContentForOther language currentDate isChw personId person patientType initi
         ]
 
 
-viewAdultDetails : Language -> NominalDate -> PersonId -> Person -> ModelIndexedDb -> List (Html Msg)
-viewAdultDetails language currentDate personId person db =
+viewAdultDetails : Language -> NominalDate -> Site -> PersonId -> Person -> ModelIndexedDb -> List (Html Msg)
+viewAdultDetails language currentDate site personId person db =
     let
         ( thumbnailClass, ageEntry ) =
             ( "mother"
@@ -265,8 +280,12 @@ viewAdultDetails language currentDate personId person db =
                 |> Maybe.withDefault emptyNode
 
         ubudeheEntry =
-            Maybe.map (Translate.UbudeheNumber >> translate language >> viewTransEntry Translate.UbudeheLabel) person.ubudehe
-                |> Maybe.withDefault emptyNode
+            if site == SiteRwanda then
+                Maybe.map (Translate.UbudeheNumber >> translate language >> viewTransEntry Translate.UbudeheLabel) person.ubudehe
+                    |> Maybe.withDefault emptyNode
+
+            else
+                emptyNode
 
         educationLevelEntry =
             Maybe.map (Translate.LevelOfEducation >> translate language >> viewTransEntry Translate.LevelOfEducationLabel) person.educationLevel
@@ -577,15 +596,8 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
             ( familyPlanning.dateMeasured, familyPlanning.value )
 
         prenatalEncountersIds =
-            List.map
-                (\participantId ->
-                    Dict.get participantId db.prenatalEncountersByParticipant
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.keys
-                )
+            List.concatMap (getPrenatalEncountersForParticipant db >> List.map Tuple.first)
                 prenatalParticipantsIds
-                |> Maybe.Extra.values
-                |> List.concat
     in
     div [ class "pane family-planning" ]
         [ viewPaneHeading language <| Translate.PatientRecordFilter FilterFamilyPlanning
@@ -595,6 +607,7 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
         ]
 
 
+viewFamilyPlanningEntry : Language -> ( NominalDate, EverySet FamilyPlanningSign ) -> Html any
 viewFamilyPlanningEntry language ( date, signs ) =
     div [ class "entry family-planning" ]
         [ div [ class "date" ] [ text <| formatDDMMYYYY date ]

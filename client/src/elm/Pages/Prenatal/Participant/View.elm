@@ -3,9 +3,8 @@ module Pages.Prenatal.Participant.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
-import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortEncounterTuplesDesc)
+import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Backend.PrenatalEncounter.Model
     exposing
         ( PrenatalEncounter
@@ -14,21 +13,20 @@ import Backend.PrenatalEncounter.Model
         , RecordPreganancyInitiator(..)
         , emptyPrenatalEncounter
         )
-import Date
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
 import Pages.Prenatal.Participant.Model exposing (..)
 import Pages.Prenatal.Participant.Utils exposing (isPregnancyActive)
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
+import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -91,7 +89,7 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
             prenatalSessions
                 |> Dict.toList
                 |> List.filter
-                    (\( sessionId, session ) ->
+                    (\( _, session ) ->
                         (session.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
                             && isPregnancyActive currentDate session
                     )
@@ -104,15 +102,9 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
             activePregnancyData
                 |> Maybe.map
                     (Tuple.first
-                        >> (\sessionId ->
-                                Dict.get sessionId db.prenatalEncountersByParticipant
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map
-                                        (Dict.toList
-                                            >> -- Sort DESC
-                                               List.sortWith sortEncounterTuplesDesc
-                                        )
-                                    |> RemoteData.withDefault []
+                        >> (getPrenatalEncountersForParticipant db
+                                >> -- Sort DESC
+                                   List.sortWith sortEncounterTuplesDesc
                            )
                     )
                 |> Maybe.withDefault []
@@ -154,11 +146,12 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
         label =
             p [ class "label-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter isChw ]
 
-        hasNurseEncounter =
-            not <| List.isEmpty nurseEncounters
-
         encounterTypeSpecificButtons =
             if isChw then
+                let
+                    hasNurseEncounter =
+                        not <| List.isEmpty nurseEncounters
+                in
                 viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePregnancyData chwEncounters hasNurseEncounter
 
             else

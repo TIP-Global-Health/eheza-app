@@ -1,17 +1,11 @@
 module Pages.AcuteIllness.Encounter.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter, AcuteIllnessEncounterType(..))
+import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
-import Date
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust, isNothing)
-import Pages.AcuteIllness.Activity.Types exposing (AILaboratoryTask(..), ExposureTask(..), NextStepsTask(..), PhysicalExamTask(..))
+import Maybe.Extra exposing (isJust)
 import Pages.AcuteIllness.Activity.Utils exposing (resolveAcuteIllnessDiagnosis)
 import Pages.AcuteIllness.Encounter.Model exposing (..)
 import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant)
@@ -90,28 +84,25 @@ generateAssembledData currentDate id isChw db =
                         diagnosisByCurrentEncounterMeasurements
 
                     else
-                        diagnosisByPreviousEncounters
+                        getAcuteIllnessDiagnosisByPreviousEncounters id db data.encounter.participant
 
                 diagnosisByCurrentEncounterMeasurements =
                     resolveAcuteIllnessDiagnosis currentDate isChw data
                         |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
 
-                diagnosisByPreviousEncounters =
-                    getAcuteIllnessDiagnosisByPreviousEncounters id db data.encounter.participant
-
-                currentEncounterData =
-                    AcuteIllnessEncounterData id
-                        data.encounter.encounterType
-                        data.encounter.startDate
-                        data.encounter.sequenceNumber
-                        data.encounter.diagnosis
-                        data.measurements
-
-                allEncountersData =
-                    data.previousEncountersData ++ [ currentEncounterData ]
-
                 ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =
                     let
+                        currentEncounterData =
+                            AcuteIllnessEncounterData id
+                                data.encounter.encounterType
+                                data.encounter.startDate
+                                data.encounter.sequenceNumber
+                                data.encounter.diagnosis
+                                data.measurements
+
+                        allEncountersData =
+                            data.previousEncountersData ++ [ currentEncounterData ]
+
                         nurseEncounterIndex =
                             List.indexedMap (\index encounterData -> ( index, encounterData.encounterType ))
                                 allEncountersData
@@ -170,7 +161,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         _ ->
                             Nothing
             )
-        >> List.sortWith compareAcuteIllnessEncounters
+        |> List.sortWith compareAcuteIllnessEncounters
 
 
 getAcuteIllnessDiagnosisByPreviousEncounters :

@@ -1,51 +1,65 @@
 module Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities, view)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
-import Backend.Measurement.Model exposing (WellChildMeasurements)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildActivity.Utils exposing (getActivityIcon, getAllActivities)
-import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
-import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewPersonDetailsExtended)
 import Pages.WellChild.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.WellChild.Encounter.Model exposing (..)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
+import SyncManager.Model exposing (Site, SiteFeature)
+import Translate exposing (Language, translate)
+import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site features id isChw db model =
     let
         assembled =
-            generateAssembledData id db
+            generateAssembledData site id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site features id isChw db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores id isChw db model assembled =
+viewHeaderAndContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewHeaderAndContent language currentDate zscores site features id isChw db model assembled =
     let
         header =
             viewHeader language isChw assembled
 
         content =
-            viewContent language currentDate zscores id isChw db model assembled
+            viewContent language currentDate zscores site features id isChw db model assembled
     in
     div [ class "page-encounter well-child" ]
         [ header
@@ -80,10 +94,21 @@ viewHeader language isChw assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id isChw db model assembled =
+viewContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate zscores site features id isChw db model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate zscores id isChw db assembled model
+        :: viewMainPageContent language currentDate zscores site features id isChw db assembled model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -133,11 +158,22 @@ warningPopup language childId encounterId warningPopupState =
             )
 
 
-viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate zscores id isChw db assembled model =
+viewMainPageContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> AssembledData
+    -> Model
+    -> List (Html Msg)
+viewMainPageContent language currentDate zscores site features id isChw db assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            partitionActivities currentDate zscores isChw db assembled
+            partitionActivities currentDate zscores site features isChw db assembled
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -211,11 +247,19 @@ viewMainPageContent language currentDate zscores id isChw db assembled model =
     ]
 
 
-partitionActivities : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> AssembledData -> ( List WellChildActivity, List WellChildActivity )
-partitionActivities currentDate zscores isChw db assembled =
+partitionActivities :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> ModelIndexedDb
+    -> AssembledData
+    -> ( List WellChildActivity, List WellChildActivity )
+partitionActivities currentDate zscores site features isChw db assembled =
     getAllActivities isChw
-        |> List.filter (expectActivity currentDate zscores isChw assembled db)
-        |> List.partition (activityCompleted currentDate zscores isChw assembled db)
+        |> List.filter (expectActivity currentDate zscores site features isChw assembled db)
+        |> List.partition (activityCompleted currentDate zscores site features isChw assembled db)
 
 
 allowEndingEcounter : List WellChildActivity -> Bool

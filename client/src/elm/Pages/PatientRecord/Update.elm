@@ -3,7 +3,7 @@ module Pages.PatientRecord.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
-import Components.SendViaWhatsAppDialog.Update
+import Components.ReportToWhatsAppDialog.Update
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -53,10 +53,10 @@ update currentDate id msg model =
                 , []
                 )
 
-        MsgSendViaWhatsAppDialog subMsg ->
+        MsgReportToWhatsAppDialog subMsg ->
             let
                 ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
-                    Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
+                    Components.ReportToWhatsAppDialog.Update.update subMsg model.reportToWhatsAppDialog
             in
-            ( { model | sendViaWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
+            ( { model | reportToWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
                 |> sequenceExtra (update currentDate id) extraMsgs

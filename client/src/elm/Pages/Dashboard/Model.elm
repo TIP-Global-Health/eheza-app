@@ -1,15 +1,12 @@
 module Pages.Dashboard.Model exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Dashboard.Model exposing (ParticipantStats)
-import Backend.Entities exposing (HealthCenterId, VillageId)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.Entities exposing (VillageId)
 import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender)
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..))
+import Pages.Page exposing (DashboardPage(..), Page)
 
 
 type FilterPeriod

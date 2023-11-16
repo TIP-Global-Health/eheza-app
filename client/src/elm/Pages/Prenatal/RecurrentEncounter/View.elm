@@ -1,54 +1,31 @@
 module Pages.Prenatal.RecurrentEncounter.View exposing (view)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
-import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
-import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalActivity.Utils
     exposing
-        ( generateHighRiskAlertData
-        , generateHighSeverityAlertData
-        , getActivityIcon
-        , getRecurrentActivityIcon
+        ( getRecurrentActivityIcon
         )
 import Backend.PrenatalEncounter.Model
     exposing
-        ( PrenatalEncounter
-        , PrenatalEncounterType(..)
-        , PrenatalProgressReportInitiator(..)
-        , RecordPreganancyInitiator(..)
+        ( PrenatalProgressReportInitiator(..)
         )
-import Date exposing (Interval(..))
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
-import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, emergencyReferalRequired, expectActivity)
+import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
 import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
 import Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewReportLink)
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
+import Pages.Utils exposing (viewReportLink)
+import Translate exposing (Language, translate)
+import Utils.Html exposing (activityCard, tabItem)
 import Utils.WebData exposing (viewWebData)
-
-
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 120
-    , height = 120
-    }
 
 
 view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg

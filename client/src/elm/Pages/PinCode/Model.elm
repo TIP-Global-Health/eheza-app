@@ -23,8 +23,7 @@ emptyModel =
 
 
 type Msg
-    = ClearPinCode
-    | HandleLoginClicked
+    = HandleLoginClicked
     | HandleLogoutClicked
     | SendOutMsg OutMsg
     | SetPinCode String

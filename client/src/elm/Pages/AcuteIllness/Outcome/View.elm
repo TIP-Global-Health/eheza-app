@@ -1,23 +1,20 @@
 module Pages.AcuteIllness.Outcome.View exposing (view)
 
-import App.Model
-import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (acuteIllnessOutcomeToString)
-import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualParticipantInitiator(..), allAcuteIllnessOutcome)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..), allAcuteIllnessOutcome)
 import Backend.Model exposing (ModelIndexedDb)
-import Date exposing (Unit(..))
-import Gizra.Html exposing (emptyNode)
+import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.AcuteIllness.Outcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSelectListInput)
+import Pages.Utils exposing (taskCompleted, viewLabel, viewSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -27,11 +24,9 @@ view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> Mo
 view language currentDate id isChw db model =
     let
         firstEncounterId =
-            Dict.get id db.acuteIllnessEncountersByParticipant
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map Dict.keys
-                |> RemoteData.withDefault []
+            getAcuteIllnessEncountersForParticipant db id
                 |> List.head
+                |> Maybe.map Tuple.first
 
         data =
             firstEncounterId

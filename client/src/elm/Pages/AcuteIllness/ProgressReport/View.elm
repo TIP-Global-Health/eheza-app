@@ -1,32 +1,27 @@
 module Pages.AcuteIllness.ProgressReport.View exposing (view)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..))
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAnAdult)
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.View
+import Backend.Person.Utils exposing (ageInMonths, isChildUnderAgeOf5, isPersonAnAdult)
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.View
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
-import Pages.AcuteIllness.Activity.Types exposing (NextStepsTask(..))
 import Pages.AcuteIllness.Activity.Utils
     exposing
-        ( muacRedOnSubsequentVisit
-        , resolveAcuteIllnessDiagnosis
-        , resolveAmoxicillinDosage
+        ( resolveAmoxicillinDosage
         , resolveCoartemDosage
         , resolveMedicationsNonAdministrationReasons
         , resolveORSDosage
@@ -50,37 +45,45 @@ import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport)
 import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
-import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (fromEntityUuid)
-import Translate exposing (Language, TranslationId, translate)
-import Translate.Model exposing (Language(..))
-import Utils.Html exposing (thumbnailImage, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
+import SyncManager.Model exposing (Site, SiteFeature)
+import Translate exposing (TranslationId, translate)
+import Translate.Model exposing (Language)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 180
-    , height = 180
-    }
-
-
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw initiator db model =
+view :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> AcuteIllnessProgressReportInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate site features id isChw initiator db model =
     let
         assembled =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewContent language currentDate id isChw initiator model) identity assembled
+    viewWebData language (viewContent language currentDate site features id isChw initiator model) identity assembled
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessProgressReportInitiator -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw initiator model assembled =
+viewContent :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> AcuteIllnessProgressReportInitiator
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate site features id isChw initiator model assembled =
     let
-        ( _, pendingActivities ) =
-            partitionActivities currentDate isChw assembled
-
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
@@ -93,18 +96,23 @@ viewContent language currentDate id isChw initiator model assembled =
             else
                 Nothing
 
-        allowEndEncounter =
-            allowEndingEcounter currentDate isChw assembled pendingActivities
-
         endEncounterMenu =
             case initiator of
                 InitiatorEncounterPage ->
+                    let
+                        ( _, pendingActivities ) =
+                            partitionActivities currentDate isChw assembled
+
+                        allowEndEncounter =
+                            allowEndingEcounter currentDate isChw assembled pendingActivities
+                    in
                     viewEndEncounterMenuForProgressReport language
+                        features
                         allowEndEncounter
                         SetEndEncounterDialogState
-                        (MsgSendViaWhatsAppDialog <|
-                            Components.SendViaWhatsAppDialog.Model.SetState <|
-                                Just Components.SendViaWhatsAppDialog.Model.Consent
+                        (MsgReportToWhatsAppDialog <|
+                            Components.ReportToWhatsAppDialog.Model.SetState <|
+                                Just Components.ReportToWhatsAppDialog.Model.Consent
                         )
 
                 _ ->
@@ -126,17 +134,18 @@ viewContent language currentDate id isChw initiator model assembled =
             , viewNextStepsPane language currentDate assembled
             , -- Actions are hidden when 'Share via WhatsApp' dialog is open,
               -- so they do not appear on generated screenshot.
-              showIf (isNothing model.sendViaWhatsAppDialog.state) endEncounterMenu
+              showIf (isNothing model.reportToWhatsAppDialog.state) endEncounterMenu
             ]
         , viewModal endEncounterDialog
-        , Html.map MsgSendViaWhatsAppDialog
-            (Components.SendViaWhatsAppDialog.View.view
+        , Html.map MsgReportToWhatsAppDialog
+            (Components.ReportToWhatsAppDialog.View.view
                 language
                 currentDate
+                site
                 ( assembled.participant.person, assembled.person )
-                Components.SendViaWhatsAppDialog.Model.ReportAcuteIllness
+                Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness
                 Nothing
-                model.sendViaWhatsAppDialog
+                model.reportToWhatsAppDialog
             )
         ]
 
@@ -507,9 +516,6 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                                     |> getMeasurementValueFunc
                                     |> Maybe.map (\(MuacInCm muac_) -> muac_)
 
-                            muacValue =
-                                Maybe.map String.fromFloat muac
-
                             muacWarning =
                                 Maybe.map
                                     (\muac_ ->
@@ -536,6 +542,10 @@ viewPhysicalExamPane language currentDate firstInitialWithSubsequent secondIniti
                                     td [ class "muac" ] [ text <| "(" ++ (String.toLower <| translate language Translate.Normal) ++ ")" ]
 
                                 else
+                                    let
+                                        muacValue =
+                                            Maybe.map String.fromFloat muac
+                                    in
                                     viewValueWithAlert muacValue muacWarning "muac"
                         in
                         tr []
@@ -604,7 +614,7 @@ viewNutritionSignsPane language currentDate firstInitialWithSubsequent secondIni
         div [ class "pane nutrition-signs" ]
             [ viewPaneHeading language Translate.NitritionSigns
             , div [ class "pane-content" ] <|
-                viewNutritionSigns language assembled.person nutritions
+                viewNutritionSigns language nutritions
             ]
 
 
@@ -788,7 +798,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                     List.tail initialWithSubsequent
                         |> Maybe.withDefault []
                         |> List.reverse
-                        |> List.map
+                        |> List.concatMap
                             (\dataSubsequent ->
                                 dataSubsequent.measurements.treatmentOngoing
                                     |> Maybe.map
@@ -806,7 +816,6 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                                         )
                                     |> Maybe.withDefault []
                             )
-                        |> List.concat
             )
         |> Maybe.withDefault []
 

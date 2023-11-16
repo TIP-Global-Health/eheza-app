@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
-import Date exposing (Unit(..))
+import Date exposing (Unit)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -242,8 +242,14 @@ type MsgChild
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
     | SetContributingFactorsSign ContributingFactorsSign
     | SetFollowUpOption FollowUpOption
+    | SetUpdateANCVisits Bool
+    | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetChildReceivesVitaminA ReceiveOption
+    | SetStuntingLevel StuntingLevel
+    | SetWeight String
+    | SetMuac String
     | SetNCDAHelperState (Maybe NCDASign)
     | SetNCDAFormStep NCDAStep
 
@@ -477,6 +483,7 @@ type alias VaccinationFormDynamicContentAndTasksConfig msg =
     , nextVaccinationDataForVaccine : NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
     , getIntervalForVaccine : VaccineDose -> ( Int, Unit )
     , firstDoseExpectedFrom : NominalDate
+    , suggestDoseToday : Bool
     }
 
 
@@ -1033,57 +1040,120 @@ emptyNCDAData =
 
 type alias NCDAForm =
     { step : Maybe NCDAStep
+
+    -- Step 1.
+    , updateANCVisits : Maybe Bool
+    , ancVisitsDates : Maybe (EverySet NominalDate)
+    , supplementsDuringPregnancy : Maybe Bool
+    , takenSupplementsPerGuidance : Maybe Bool
     , bornWithBirthDefect : Maybe Bool
+    , birthWeight : Maybe WeightInGrm
+
+    -- Step 2.
+    , stuntingLevel : Maybe StuntingLevel
+    , stuntingLevelNotTaken : Maybe Bool
+    , weight : Maybe WeightInKg
+    , weightNotTaken : Maybe Bool
+    , muac : Maybe MuacInCm
+    , muacNotTaken : Maybe Bool
+    , showsEdemaSigns : Maybe Bool
+
+    -- Step 3.
+    , childBehindOnVaccination : Maybe Bool
+    , childReceivesVitaminA : Maybe ReceiveOption
+    , childReceivesDewormer : Maybe Bool
+    , ongeraMNP : Maybe Bool
+    , takingOngeraMNP : Maybe Bool
+    , childReceivesECD : Maybe Bool
+
+    -- Step 4.
+    , fiveFoodGroups : Maybe Bool
     , breastfedForSixMonths : Maybe Bool
     , appropriateComplementaryFeeding : Maybe Bool
-    , ongeraMNP : Maybe Bool
-    , fiveFoodGroups : Maybe Bool
-    , mealFrequency6to8Months : Maybe Bool
-    , mealFrequency9to11Months : Maybe Bool
-    , mealFrequency12MonthsOrMore : Maybe Bool
-    , supportChildWithDisability : Maybe Bool
-    , conditionalCashTransfer : Maybe Bool
+    , mealsAtRecommendedTimes : Maybe Bool
+
+    -- Step 5.
+    , childReceivesFBF : Maybe Bool
+    , childTakingFBF : Maybe Bool
+    , beneficiaryCashTransfer : Maybe Bool
+    , receivingCashTransfer : Maybe Bool
     , conditionalFoodItems : Maybe Bool
+    , treatedForAcuteMalnutrition : Maybe Bool
+    , childWithDisability : Maybe Bool
+    , receivingSupport : Maybe Bool
+    , childGotDiarrhea : Maybe Bool
+
+    -- Step 6.
     , hasCleanWater : Maybe Bool
     , hasHandwashingFacility : Maybe Bool
     , hasToilets : Maybe Bool
     , hasKitchenGarden : Maybe Bool
-    , regularPrenatalVisits : Maybe Bool
-    , ironSupplementsDuringPregnancy : Maybe Bool
-    , insecticideTreatedBednetsDuringPregnancy : Maybe Bool
-    , birthWeight : Maybe WeightInGrm
+    , insecticideTreatedBednets : Maybe Bool
     }
 
 
 emptyNCDAForm : NCDAForm
 emptyNCDAForm =
     { step = Nothing
+
+    -- Step 1.
+    , updateANCVisits = Nothing
+    , ancVisitsDates = Nothing
+    , supplementsDuringPregnancy = Nothing
+    , takenSupplementsPerGuidance = Nothing
     , bornWithBirthDefect = Nothing
+    , birthWeight = Nothing
+
+    -- Step 2.
+    , stuntingLevel = Nothing
+    , stuntingLevelNotTaken = Nothing
+    , weight = Nothing
+    , weightNotTaken = Nothing
+    , muac = Nothing
+    , muacNotTaken = Nothing
+    , showsEdemaSigns = Nothing
+
+    -- Step 3.
+    , childBehindOnVaccination = Nothing
+    , childReceivesVitaminA = Nothing
+    , childReceivesDewormer = Nothing
+    , ongeraMNP = Nothing
+    , takingOngeraMNP = Nothing
+    , childReceivesECD = Nothing
+
+    -- Step 4.
+    , fiveFoodGroups = Nothing
     , breastfedForSixMonths = Nothing
     , appropriateComplementaryFeeding = Nothing
-    , ongeraMNP = Nothing
-    , fiveFoodGroups = Nothing
-    , mealFrequency6to8Months = Nothing
-    , mealFrequency9to11Months = Nothing
-    , mealFrequency12MonthsOrMore = Nothing
-    , supportChildWithDisability = Nothing
-    , conditionalCashTransfer = Nothing
+    , mealsAtRecommendedTimes = Nothing
+
+    -- Step 5.
+    , childReceivesFBF = Nothing
+    , childTakingFBF = Nothing
+    , beneficiaryCashTransfer = Nothing
+    , receivingCashTransfer = Nothing
     , conditionalFoodItems = Nothing
+    , treatedForAcuteMalnutrition = Nothing
+    , childWithDisability = Nothing
+    , receivingSupport = Nothing
+    , childGotDiarrhea = Nothing
+
+    -- Step 6.
     , hasCleanWater = Nothing
     , hasHandwashingFacility = Nothing
     , hasToilets = Nothing
     , hasKitchenGarden = Nothing
-    , regularPrenatalVisits = Nothing
-    , ironSupplementsDuringPregnancy = Nothing
-    , insecticideTreatedBednetsDuringPregnancy = Nothing
-    , birthWeight = Nothing
+    , insecticideTreatedBednets = Nothing
     }
 
 
 type NCDAStep
-    = NCDAStepQuestionsAskedOnce
-    | NCDAStepPermanentQuestions1
-    | NCDAStepPermanentQuestions2
+    = NCDAStepAntenatalCare
+    | NCDAStepNutritionAssessment
+    | NCDAStepUniversalInterventions
+    | NCDAStepNutritionBehavior
+    | NCDAStepTargetedInterventions
+    | NCDAStepInfrastructureEnvironment
 
 
 type GroupOfFoods
@@ -1151,3 +1221,55 @@ emptyHbA1cTestForm =
     , hba1cResult = Nothing
     , hba1cResultDirty = False
     }
+
+
+type alias NCDAContentConfig msg =
+    { -- Indicates if NCDA activity was performed at Health center,
+      -- or by CHW (during Child Scoreboard encounter).
+      atHealthCenter : Bool
+
+    -- Indications if display of tasks tray is required or not.
+    , showTasksTray : Bool
+
+    -- Required data, which is resolved from previous encounters.
+    , pregnancySummary : Maybe PregnancySummaryValue
+    , ncdaNeverFilled : Bool
+    , ncdaNotFilledAfterAgeOfSixMonths : Bool
+
+    -- ANC Visit actions.
+    , setUpdateANCVisitsMsg : Bool -> msg
+    , toggleANCVisitDateMsg : NominalDate -> msg
+
+    -- Other actions.
+    , setBoolInputMsg : (Bool -> NCDAForm -> NCDAForm) -> Bool -> msg
+    , setBirthWeightMsg : String -> msg
+    , setChildReceivesVitaminAMsg : ReceiveOption -> msg
+    , setStuntingLevelMsg : StuntingLevel -> msg
+    , setWeightMsg : String -> msg
+    , setMuacMsg : String -> msg
+    , setStepMsg : NCDAStep -> msg
+    , setHelperStateMsg : Maybe NCDASign -> msg
+    , saveMsg : msg
+    }
+
+
+minimalNumberOfANCVisits : Int
+minimalNumberOfANCVisits =
+    4
+
+
+type alias VaccinationProgressDict =
+    Dict WellChildVaccineType (Dict VaccineDose NominalDate)
+
+
+type ImmunisationTask
+    = TaskBCG
+    | TaskDTP
+    | TaskDTPStandalone
+    | TaskHPV
+    | TaskIPV
+    | TaskMR
+    | TaskOPV
+    | TaskPCV13
+    | TaskRotarix
+    | TaskOverview

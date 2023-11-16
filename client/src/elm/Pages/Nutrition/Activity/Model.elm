@@ -3,6 +3,7 @@ module Pages.Nutrition.Activity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 
@@ -20,8 +21,14 @@ type Msg
     | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetUpdateANCVisits Bool
+    | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool
     | SetBirthWeight String
+    | SetChildReceivesVitaminA ReceiveOption
+    | SetStuntingLevel StuntingLevel
+    | SetWeightForNCDA String
+    | SetMuacForNCDA String
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( NutritionNCDAId, NutritionNCDA ))

@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 21);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 22);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -40,18 +40,19 @@ const HEDLEY_RESTFUL_FOR_UPLOAD = [
  * we sync to just some devices.
  */
 const HEDLEY_RESTFUL_SHARDED = [
+  'acute_illness_encounter' => 'acute-illness-encounters',
+  'child_scoreboard_encounter' => 'child-scoreboard-encounter',
   'clinic' => 'clinics',
-  'person' => 'people',
-  'pmtct_participant' => 'pmtct-participants',
+  'home_visit_encounter' => 'home-visit-encounter',
   'individual_participant' => 'individual-participants',
-  'prenatal_encounter' => 'prenatal-encounters',
   'ncd_encounter' => 'ncd-encounter',
   'nutrition_encounter' => 'nutrition-encounters',
-  'acute_illness_encounter' => 'acute-illness-encounters',
-  'home_visit_encounter' => 'home-visit-encounter',
-  'well_child_encounter' => 'well-child-encounter',
+  'person' => 'people',
+  'pmtct_participant' => 'pmtct-participants',
+  'prenatal_encounter' => 'prenatal-encounters',
   'relationship' => 'relationships',
   'session' => 'sessions',
+  'well_child_encounter' => 'well-child-encounter',
   // Measurements.
   'acute_findings' => 'acute-findings',
   'acute_illness_contacts_tracing' => 'acute-illness-contacts-tracing',
@@ -68,6 +69,15 @@ const HEDLEY_RESTFUL_SHARDED = [
   'birth_plan' => 'birth-plan',
   'call_114' => 'call-114s',
   'child_fbf' => 'child-fbfs',
+  'child_scoreboard_bcg_iz' => 'child-scoreboard-bcg-immunisation',
+  'child_scoreboard_dtp_iz' => 'child-scoreboard-dtp-immunisation',
+  'child_scoreboard_dtp_sa_iz' => 'child-scoreboard-dtp-sa-immunisation',
+  'child_scoreboard_ipv_iz' => 'child-scoreboard-ipv-immunisation',
+  'child_scoreboard_mr_iz' => 'child-scoreboard-mr-immunisation',
+  'child_scoreboard_ncda' => 'child-scoreboard-ncda',
+  'child_scoreboard_opv_iz' => 'child-scoreboard-opv-immunisation',
+  'child_scoreboard_pcv13_iz' => 'child-scoreboard-pcv13-immunisation',
+  'child_scoreboard_rotarix_iz' => 'child-scoreboard-rotarix-immunisation',
   'contributing_factors' => 'contributing-factors',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
@@ -175,6 +185,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'well_child_bcg_immunisation' => 'well-child-bcg-immunisation',
   'well_child_contributing_factors' => 'well-child-contributing-factors',
   'well_child_dtp_immunisation' => 'well-child-dtp-immunisation',
+  'well_child_dtp_sa_immunisation' => 'well-child-dtp-sa-immunisation',
   'well_child_ecd' => 'well-child-ecd',
   'well_child_follow_up' => 'well-child-follow-up',
   'well_child_head_circumference' => 'well-child-head-circumference',

@@ -6,20 +6,12 @@ import Backend.IndividualEncounterParticipant.Decoder exposing (pregnancyOutcome
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
-import Pages.Page exposing (Page(..))
 import Pages.Prenatal.Outcome.Model exposing (..)
 
 
 update : NominalDate -> IndividualEncounterParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
-    let
-        noChange =
-            ( model, Cmd.none, [] )
-    in
     case msg of
-        NoOp ->
-            noChange
-
         SavePregnancyOutcome destinationPage ->
             Maybe.map3
                 (\dateConcluded outcome deliveryLocation ->
@@ -35,7 +27,7 @@ update currentDate id msg model =
                 model.pregnancyConcludedDate
                 model.pregnancyOutcome
                 model.deliveryLocation
-                |> Maybe.withDefault noChange
+                |> Maybe.withDefault ( model, Cmd.none, [] )
 
         SetActivePage page ->
             ( model

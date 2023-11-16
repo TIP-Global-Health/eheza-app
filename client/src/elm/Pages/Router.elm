@@ -2,36 +2,38 @@ module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
-import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessActivity.Utils
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
 import Backend.AcuteIllnessEncounter.Utils
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
+import Backend.ChildScoreboardActivity.Utils
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.HomeVisitActivity.Utils
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString, individualEncounterTypeToString)
 import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.Measurement.Utils
-import Backend.NCDActivity.Model exposing (NCDActivity(..), NCDRecurrentActivity(..))
+import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
 import Backend.NCDActivity.Utils
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
 import Backend.NCDEncounter.Utils
-import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
+import Backend.NutritionActivity.Model exposing (NutritionActivity)
 import Backend.NutritionActivity.Utils
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PatientRecord.Utils
-import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Model exposing (Initiator)
 import Backend.Person.Utils
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.PrenatalActivity.Utils
-import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..), RecordPreganancyInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
 import Backend.PrenatalEncounter.Utils exposing (..)
-import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildActivity.Utils
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import Url
-import Url.Parser as Parser exposing ((</>), Parser, custom, int, map, oneOf, s, string, top)
+import Url.Parser as Parser exposing ((</>), Parser, custom, map, oneOf, s, string, top)
 
 
 activePageByUrl : Url.Url -> Page
@@ -50,7 +52,7 @@ pageToFragment current =
         PinCodePage ->
             Just "pincode"
 
-        PageNotFound url ->
+        PageNotFound _ ->
             -- If we couldn't interpret the URL, we don't try to change it.
             Nothing
 
@@ -168,6 +170,9 @@ pageToFragment current =
 
                 NCDParticipantPage initiator id ->
                     Just <| "ncd-participant/" ++ fromEntityUuid id ++ "/" ++ Backend.IndividualEncounterParticipant.Utils.initiatorToUrlFragment initiator
+
+                ChildScoreboardParticipantPage id ->
+                    Just <| "child-scoreboard-participant/" ++ fromEntityUuid id
 
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
@@ -301,6 +306,15 @@ pageToFragment current =
                 NCDProgressReportPage initiator ->
                     Just <| "ncd-progress-report/" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragment initiator
 
+                ChildScoreboardEncounterPage id ->
+                    Just <| "child-scoreboard-encounter/" ++ fromEntityUuid id
+
+                ChildScoreboardActivityPage id activity ->
+                    Just <| "child-scoreboard-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.ChildScoreboardActivity.Utils.activityToString activity
+
+                ChildScoreboardReportPage id ->
+                    Just <| "child-scoreboard-report/" ++ fromEntityUuid id
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -344,6 +358,7 @@ parser =
         , map (\id initiator -> UserPage <| AcuteIllnessParticipantPage initiator id) (s "acute-illness-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| NCDParticipantPage initiator id) (s "ncd-participant" </> parseUuid </> parseIndividualParticipantInitiator)
+        , map (\id -> UserPage <| ChildScoreboardParticipantPage id) (s "child-scoreboard-participant" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -369,6 +384,9 @@ parser =
         , map (\id -> UserPage <| WellChildProgressReportPage id) (s "well-child-progress-report" </> parseUuid)
         , map (\id -> UserPage <| NCDEncounterPage id) (s "ncd-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDActivityPage id activity) (s "ncd-activity" </> parseUuid </> parseNCDActivity)
+        , map (\id -> UserPage <| ChildScoreboardEncounterPage id) (s "child-scoreboard-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| ChildScoreboardActivityPage id activity) (s "child-scoreboard-activity" </> parseUuid </> parseChildScoreboardActivity)
+        , map (\id -> UserPage <| ChildScoreboardReportPage id) (s "child-scoreboard-report" </> parseUuid)
         , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
@@ -465,6 +483,11 @@ parseNCDActivity =
 parseNCDRecurrentActivity : Parser (NCDRecurrentActivity -> c) c
 parseNCDRecurrentActivity =
     custom "NCDRecurrentActivity" Backend.NCDActivity.Utils.recurrentActivityFromString
+
+
+parseChildScoreboardActivity : Parser (ChildScoreboardActivity -> c) c
+parseChildScoreboardActivity =
+    custom "ChildScoreboardActivity" Backend.ChildScoreboardActivity.Utils.activityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

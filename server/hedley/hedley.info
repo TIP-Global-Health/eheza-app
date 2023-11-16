@@ -50,19 +50,20 @@ dependencies[] = hedley_device
 dependencies[] = hedley_health_center
 dependencies[] = hedley_general
 dependencies[] = hedley_ncd
+dependencies[] = hedley_ncda
 dependencies[] = hedley_nutrition
 dependencies[] = hedley_patient
 dependencies[] = hedley_person
 dependencies[] = hedley_prenatal
+dependencies[] = hedley_resilience
 dependencies[] = hedley_restful
 dependencies[] = hedley_schedule
 dependencies[] = hedley_stats
+dependencies[] = hedley_stock_management
 dependencies[] = hedley_user
 dependencies[] = hedley_view_export
 dependencies[] = hedley_well_child
 dependencies[] = hedley_whatsapp
-dependencies[] = hedley_resilience
-dependencies[] = hedley_stock_management
 
 ; Base class for SimpleTests.
 files[] = HedleyWebTestBase.inc

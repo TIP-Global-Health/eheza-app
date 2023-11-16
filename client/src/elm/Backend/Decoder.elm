@@ -1,6 +1,7 @@
 module Backend.Decoder exposing (decodeRevision)
 
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
@@ -85,6 +86,36 @@ decodeRevision =
 
                     "child_fbf" ->
                         decodeWithUuid ChildFbfRevision decodeFbf
+
+                    "child_scoreboard_encounter" ->
+                        decodeWithUuid ChildScoreboardEncounterRevision decodeChildScoreboardEncounter
+
+                    "child_scoreboard_bcg_iz" ->
+                        decodeWithUuid ChildScoreboardBCGImmunisationRevision decodeChildScoreboardBCGImmunisation
+
+                    "child_scoreboard_dtp_iz" ->
+                        decodeWithUuid ChildScoreboardDTPImmunisationRevision decodeChildScoreboardDTPImmunisation
+
+                    "child_scoreboard_dtp_sa_iz" ->
+                        decodeWithUuid ChildScoreboardDTPStandaloneImmunisationRevision decodeChildScoreboardDTPStandaloneImmunisation
+
+                    "child_scoreboard_ipv_iz" ->
+                        decodeWithUuid ChildScoreboardIPVImmunisationRevision decodeChildScoreboardIPVImmunisation
+
+                    "child_scoreboard_mr_iz" ->
+                        decodeWithUuid ChildScoreboardMRImmunisationRevision decodeChildScoreboardMRImmunisation
+
+                    "child_scoreboard_ncda" ->
+                        decodeWithUuid ChildScoreboardNCDARevision decodeChildScoreboardNCDA
+
+                    "child_scoreboard_opv_iz" ->
+                        decodeWithUuid ChildScoreboardOPVImmunisationRevision decodeChildScoreboardOPVImmunisation
+
+                    "child_scoreboard_pcv13_iz" ->
+                        decodeWithUuid ChildScoreboardPCV13ImmunisationRevision decodeChildScoreboardPCV13Immunisation
+
+                    "child_scoreboard_rotarix_iz" ->
+                        decodeWithUuid ChildScoreboardRotarixImmunisationRevision decodeChildScoreboardRotarixImmunisation
 
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
@@ -463,6 +494,9 @@ decodeRevision =
 
                     "well_child_dtp_immunisation" ->
                         decodeWithUuid WellChildDTPImmunisationRevision decodeWellChildDTPImmunisation
+
+                    "well_child_dtp_sa_immunisation" ->
+                        decodeWithUuid WellChildDTPStandaloneImmunisationRevision decodeWellChildDTPStandaloneImmunisation
 
                     "well_child_ecd" ->
                         decodeWithUuid WellChildECDRevision decodeWellChildECD

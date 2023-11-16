@@ -4,15 +4,10 @@ import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (..)
-import Backend.Measurement.Model exposing (HeightInCm(..))
 import Backend.Utils exposing (saveMeasurementCmd, sw)
-import Backend.WellChildEncounter.Encoder exposing (encodeWellChildEncounter)
 import Backend.WellChildEncounter.Model exposing (..)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
-import Json.Encode exposing (object)
-import Json.Encode.Extra
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toCmd, withoutDecoder)
@@ -228,7 +223,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedBCGImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveBCGImmunisation = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -240,7 +235,19 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedDTPImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveDTPImmunisation = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveDTPStandaloneImmunisation personId valueId value ->
+            ( { model | saveDTPStandaloneImmunisation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildDTPStandaloneImmunisationEndpoint HandleSavedDTPStandaloneImmunisation
+            , []
+            )
+
+        HandleSavedDTPStandaloneImmunisation data ->
+            ( { model | saveDTPStandaloneImmunisation = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -252,7 +259,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedHPVImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveHPVImmunisation = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -264,7 +271,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedIPVImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveIPVImmunisation = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -276,7 +283,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedMRImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveMRImmunisation = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -288,7 +295,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedOPVImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveOPVImmunisation = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -300,7 +307,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedPCV13Immunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | savePCV13Immunisation = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -312,7 +319,7 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             )
 
         HandleSavedRotarixImmunisation data ->
-            ( { model | saveImmunisation = data }
+            ( { model | saveRotarixImmunisation = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )

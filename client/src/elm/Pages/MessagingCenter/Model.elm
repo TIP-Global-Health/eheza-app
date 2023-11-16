@@ -8,8 +8,7 @@ import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model
     exposing
-        ( ResilienceSurvey
-        , ResilienceSurveyQuestion
+        ( ResilienceSurveyQuestion
         , ResilienceSurveyQuestionOption
         )
 import Date exposing (Date)
@@ -26,6 +25,7 @@ type alias Model =
     , messageOptionsDialogState : Maybe MessageOptionsDialogState
     , kickOffForm : KickOffForm
     , monthlySurveyForm : MonthlySurveyForm
+    , surveyScoreDialogState : Maybe SurveyScoreDialogState
     }
 
 
@@ -37,6 +37,7 @@ emptyModel =
     , messageOptionsDialogState = Nothing
     , kickOffForm = emptyKickOffForm
     , monthlySurveyForm = emptyMonthlySurveyForm
+    , surveyScoreDialogState = Nothing
     }
 
 
@@ -87,6 +88,10 @@ emptyMonthlySurveyForm =
     Dict.empty
 
 
+type SurveyScoreDialogState
+    = MonthlySurveyScore Int
+
+
 type Msg
     = SetActivePage Page
     | SetRole String
@@ -99,6 +104,7 @@ type Msg
     | SaveKickOffSurvey NurseId Nurse
     | SetMonthlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
     | SaveMonthlySurvey NurseId
+    | SetSurveyScoreDialogState (Maybe SurveyScoreDialogState)
     | SetActiveTab MessagingTab
     | ScrollTab Int
     | ResilienceMessageClicked NurseId ResilienceMessageId ResilienceMessage Bool

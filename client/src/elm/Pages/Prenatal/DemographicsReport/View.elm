@@ -1,15 +1,15 @@
-module Pages.Prenatal.DemographicsReport.View exposing (view, viewHeader)
+module Pages.Prenatal.DemographicsReport.View exposing (view)
 
 import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, getHealthCenterName)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalProgressReportInitiator(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import GeoLocation.Utils exposing (..)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
@@ -17,7 +17,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.View exposing (viewItemHeading)
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.WebData exposing (viewWebData)
@@ -30,8 +31,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PersonId -> PrenatalProgressReportInitiator -> ModelIndexedDb -> Html Msg
-view language currentDate personId initiator db =
+view : Language -> NominalDate -> Site -> PersonId -> PrenatalProgressReportInitiator -> ModelIndexedDb -> Html Msg
+view language currentDate site personId initiator db =
     let
         person =
             Dict.get personId db.people
@@ -41,7 +42,7 @@ view language currentDate personId initiator db =
             viewHeader language initiator
 
         content =
-            viewWebData language (viewContent language currentDate db personId) identity person
+            viewWebData language (viewContent language currentDate site db personId) identity person
     in
     div [ class "page-report demographics" ] <|
         [ header
@@ -86,12 +87,12 @@ viewHeader language initiator =
         ]
 
 
-viewContent : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewContent language currentDate db personId person =
+viewContent : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewContent language currentDate site db personId person =
     div [ class "ui unstackable items" ]
         [ viewPatientInformationPane language currentDate person
-        , viewFamilyInformationPane language currentDate db personId person
-        , viewAddressInformationPane language currentDate person
+        , viewFamilyInformationPane language currentDate site db personId person
+        , viewAddressInformationPane language currentDate site person
         , viewContactInformationPane language currentDate db person
         ]
 
@@ -148,13 +149,17 @@ viewPatientInformationPane language currentDate person =
         ]
 
 
-viewFamilyInformationPane : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewFamilyInformationPane language currentDate db personId person =
+viewFamilyInformationPane : Language -> NominalDate -> Site -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewFamilyInformationPane language currentDate site db personId person =
     let
-        ubudehe =
-            person.ubudehe
-                |> Maybe.map (Translate.UbudeheNumber >> translate language)
-                |> Maybe.withDefault ""
+        ubudeheItem =
+            if site == SiteRwanda then
+                Maybe.map (Translate.UbudeheNumber >> translate language) person.ubudehe
+                    |> Maybe.withDefault ""
+                    |> viewLineItem language Translate.FamilyUbudehe
+
+            else
+                emptyNode
 
         numberOfChildren =
             person.numberOfChildren
@@ -197,24 +202,34 @@ viewFamilyInformationPane language currentDate db personId person =
     in
     div [ class "family-information" ]
         [ viewItemHeading language Translate.FamilyInformation "blue"
-        , div [ class "pane-content" ]
-            [ viewLineItem language Translate.FamilyUbudehe ubudehe
+        , div [ class "pane-content" ] <|
+            [ ubudeheItem
             , viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
             , childrenView
             ]
         ]
 
 
-viewAddressInformationPane : Language -> NominalDate -> Person -> Html Msg
-viewAddressInformationPane language currentDate person =
+viewAddressInformationPane : Language -> NominalDate -> Site -> Person -> Html Msg
+viewAddressInformationPane language currentDate site person =
     div [ class "address-information" ]
         [ viewItemHeading language Translate.AddressInformation "blue"
         , div [ class "pane-content" ]
-            [ viewLineItem language Translate.Province (person.province |> Maybe.withDefault "")
-            , viewLineItem language Translate.District (person.district |> Maybe.withDefault "")
-            , viewLineItem language Translate.Sector (person.sector |> Maybe.withDefault "")
-            , viewLineItem language Translate.Cell (person.cell |> Maybe.withDefault "")
-            , viewLineItem language Translate.Village (person.village |> Maybe.withDefault "")
+            [ viewLineItem language
+                (resolveGeoSructureLabelLevel1 site)
+                (person.province |> Maybe.withDefault "")
+            , viewLineItem language
+                (resolveGeoSructureLabelLevel2 site)
+                (person.district |> Maybe.withDefault "")
+            , viewLineItem language
+                (resolveGeoSructureLabelLevel3 site)
+                (person.sector |> Maybe.withDefault "")
+            , viewLineItem language
+                (resolveGeoSructureLabelLevel4 site)
+                (person.cell |> Maybe.withDefault "")
+            , viewLineItem language
+                (resolveGeoSructureLabelLevel5 site)
+                (person.village |> Maybe.withDefault "")
             ]
         ]
 

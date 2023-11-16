@@ -1,8 +1,7 @@
-module Pages.WellChild.Activity.View exposing (view, viewAdministeredMedicationLabel, viewVaccinationOverview)
+module Pages.WellChild.Activity.View exposing (view, viewVaccinationOverview)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceIndication)
 import Backend.Model exposing (ModelIndexedDb)
@@ -10,38 +9,43 @@ import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
-        , resolvePreviousNCDAValuesForChild
+        , resolveNCDANeverFilled
+        , resolveNCDANotFilledAfterAgeOfSixMonths
         , resolvePreviousValuesSetForChild
         )
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
-import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
 import List.Extra
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (InvokationModule(..), NCDAData, PhotoForm, VaccinationFormViewMode(..), VitalsForm, VitalsFormMode(..))
+import Maybe.Extra exposing (isJust)
+import Measurement.Model
+    exposing
+        ( ImmunisationTask(..)
+        , InvokationModule(..)
+        , NCDAData
+        , PhotoForm
+        , VaccinationFormViewMode(..)
+        , VaccinationProgressDict
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( birthWeightInputsAndTasks
-        , renderDatePart
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewFollowUpForm
         , viewHealthEducationForm
-        , viewMeasurementFloatDiff
         , viewReferToProgramForm
         , viewSendToHealthCenterForm
-        , zScoreForHeightOrLength
         )
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
@@ -51,7 +55,6 @@ import Pages.Utils
         ( isTaskCompleted
         , maybeToBoolTask
         , taskCompleted
-        , taskCompletedWithException
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -67,33 +70,56 @@ import Pages.Utils
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Activity.Utils exposing (..)
-import Pages.WellChild.Encounter.Model exposing (AssembledData, VaccinationProgressDict)
+import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
-import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
+import ZScore.Model exposing (Centimetres(..))
 import ZScore.Utils exposing (diffDays, viewZScore, zScoreHeadCircumferenceForAge)
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw activity db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> WellChildActivity
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores site features id isChw activity db model =
     let
         data =
-            generateAssembledData id db
+            generateAssembledData site id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw activity db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores site features id isChw activity db model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores id isChw activity db model assembled =
+viewHeaderAndContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> WellChildActivity
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewHeaderAndContent language currentDate zscores site features id isChw activity db model assembled =
     let
         header =
             viewHeader language id activity
 
         content =
-            viewContent language currentDate zscores id isChw activity db model assembled
+            viewContent language currentDate zscores site features id isChw activity db model assembled
     in
     div [ class "page-activity well-child" ]
         [ header
@@ -120,10 +146,22 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> WellChildEncounterId -> Bool -> WellChildActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id isChw activity db model assembled =
+viewContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> WellChildEncounterId
+    -> Bool
+    -> WellChildActivity
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate zscores site features id isChw activity db model assembled =
     ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-        :: viewActivity language currentDate zscores id isChw activity assembled db model
+        :: viewActivity language currentDate zscores site features id isChw activity assembled db model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -177,6 +215,8 @@ viewActivity :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> WellChildEncounterId
     -> Bool
     -> WellChildActivity
@@ -184,7 +224,7 @@ viewActivity :
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewActivity language currentDate zscores id isChw activity assembled db model =
+viewActivity language currentDate zscores site features id isChw activity assembled db model =
     case activity of
         WellChildPregnancySummary ->
             viewPregnancySummaryForm language currentDate assembled model.pregnancySummaryForm
@@ -193,30 +233,25 @@ viewActivity language currentDate zscores id isChw activity assembled db model =
             viewDangerSignsContent language currentDate assembled model.dangerSignsData
 
         WellChildNutritionAssessment ->
-            viewNutritionAssessmenContent language currentDate zscores id isChw assembled db model.nutritionAssessmentData
+            viewNutritionAssessmenContent language currentDate site zscores id isChw assembled db model.nutritionAssessmentData
 
         WellChildImmunisation ->
-            viewImmunisationContent language currentDate isChw assembled db model.immunisationData
+            viewImmunisationContent language currentDate site isChw assembled db model.immunisationData
 
         WellChildECD ->
             viewECDForm language currentDate assembled model.ecdForm
 
         WellChildMedication ->
-            viewMedicationContent language currentDate isChw assembled model.medicationData
+            viewMedicationContent language currentDate site isChw assembled model.medicationData
 
         WellChildNextSteps ->
-            viewNextStepsContent language currentDate zscores id isChw assembled db model.nextStepsData
+            viewNextStepsContent language currentDate zscores site features id isChw assembled db model.nextStepsData
 
         WellChildPhoto ->
             viewPhotoContent language currentDate assembled model.photoForm
 
         WellChildNCDA ->
-            let
-                newbornExamPregnancySummary =
-                    getNewbornExamPregnancySummary assembled.participant.person db
-            in
-            resolvePreviousNCDAValuesForChild currentDate assembled.participant.person db
-                |> viewNCDAContent language currentDate assembled model.ncdaData newbornExamPregnancySummary
+            viewNCDAContent language currentDate zscores site assembled model.ncdaData db
 
 
 viewPregnancySummaryForm : Language -> NominalDate -> AssembledData -> PregnancySummaryForm -> List (Html Msg)
@@ -316,7 +351,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                                     )
                                 )
                                 "birth-length"
-                                Translate.CentimeterShorthand
+                                Translate.UnitCentimeter
                           ]
                         , [ maybeToBoolTask form.birthLength ]
                         )
@@ -550,12 +585,6 @@ viewDangerSignsContent :
     -> List (Html Msg)
 viewDangerSignsContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -642,6 +671,9 @@ viewDangerSignsContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskSymptomsReview ->
@@ -724,6 +756,7 @@ viewSymptomsReviewForm language currentDate person form =
 viewNutritionAssessmenContent :
     Language
     -> NominalDate
+    -> Site
     -> ZScore.Model.Model
     -> WellChildEncounterId
     -> Bool
@@ -731,14 +764,8 @@ viewNutritionAssessmenContent :
     -> ModelIndexedDb
     -> NutritionAssessmentData
     -> List (Html Msg)
-viewNutritionAssessmenContent language currentDate zscores id isChw assembled db data =
+viewNutritionAssessmenContent language currentDate site zscores id isChw assembled db data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -821,6 +848,9 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
 
             else
                 let
+                    person =
+                        assembled.person
+
                     maybeAgeInDays =
                         Maybe.map
                             (\birthDate -> diffDays birthDate currentDate)
@@ -851,7 +881,7 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                     measurements.muac
                         |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate assembled.person previousValuesSet.muac SetMuac
+                        |> viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
                     measurements.nutrition
@@ -890,6 +920,9 @@ viewNutritionAssessmenContent language currentDate zscores id isChw assembled db
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskHeight ->
@@ -941,20 +974,16 @@ viewHeadCircumferenceForm :
     -> List (Html Msg)
 viewHeadCircumferenceForm language currentDate person zscore previousValue form =
     let
-        maybeAgeInDays =
-            Maybe.map
-                (\birthDate -> diffDays birthDate currentDate)
-                person.birthDate
-
-        zScoreText =
-            Maybe.map viewZScore zscore
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
-
         inputSection =
             if measurementNotTakenChecked then
                 []
 
             else
+                let
+                    zScoreText =
+                        Maybe.map viewZScore zscore
+                            |> Maybe.withDefault (translate language Translate.NotAvailable)
+                in
                 [ div [ class "ui grid" ]
                     [ div [ class "eleven wide column" ]
                         [ viewMeasurementInput
@@ -962,7 +991,7 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
                             form.headCircumference
                             SetHeadCircumference
                             "head-circumference"
-                            Translate.CentimeterShorthand
+                            Translate.UnitCentimeter
                         ]
                     , div
                         [ class "five wide column" ]
@@ -970,7 +999,7 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
                             Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zscore
                         ]
                     ]
-                , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
+                , viewPreviousMeasurement language previousValue Translate.UnitCentimeter
                 , div [ class "ui large header z-score age" ]
                     [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
                     , span [ class "sub header" ]
@@ -1004,24 +1033,19 @@ viewHeadCircumferenceForm language currentDate person zscore previousValue form 
 viewImmunisationContent :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> ImmunisationData
     -> List (Html Msg)
-viewImmunisationContent language currentDate isChw assembled db data =
+viewImmunisationContent language currentDate site isChw assembled db data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
         tasks =
-            List.filter (expectImmunisationTask currentDate isChw assembled) immunisationTasks
+            List.filter (expectImmunisationTask currentDate site isChw assembled) immunisationTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1038,6 +1062,11 @@ viewImmunisationContent language currentDate isChw assembled db data =
                         TaskDTP ->
                             ( "dtp-vaccine"
                             , isJust measurements.dtpImmunisation
+                            )
+
+                        TaskDTPStandalone ->
+                            ( "dtp-vaccine"
+                            , isJust measurements.dtpStandaloneImmunisation
                             )
 
                         TaskHPV ->
@@ -1090,12 +1119,12 @@ viewImmunisationContent language currentDate isChw assembled db data =
             div [ class "column" ]
                 [ div attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.WellChildImmunisationTask task)
+                    , text <| translate language (Translate.WellChildImmunisationTask site task)
                     ]
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, immunisationTasksCompletedFromTotal language currentDate isChw assembled data task )) tasks
+            List.map (\task -> ( task, immunisationTasksCompletedFromTotal language currentDate site isChw assembled data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -1119,6 +1148,11 @@ viewImmunisationContent language currentDate isChw assembled db data =
                                         measurements.dtpImmunisation
                                             |> getMeasurementValueFunc
                                             |> vaccinationFormWithDefault data.dtpForm
+
+                                    VaccineDTPStandalone ->
+                                        measurements.dtpStandaloneImmunisation
+                                            |> getMeasurementValueFunc
+                                            |> vaccinationFormWithDefault data.dtpStandaloneForm
 
                                     VaccineHPV ->
                                         measurements.hpvImmunisation
@@ -1150,13 +1184,13 @@ viewImmunisationContent language currentDate isChw assembled db data =
                                             |> getMeasurementValueFunc
                                             |> vaccinationFormWithDefault data.rotarixForm
                         in
-                        ( viewVaccinationForm language currentDate isChw assembled vaccineType vaccinationForm
+                        ( viewVaccinationForm language currentDate site isChw assembled vaccineType vaccinationForm
                         , False
                         , vaccinationForm.viewMode == ViewModeInitial
                         )
                     )
                 |> Maybe.withDefault
-                    ( viewVaccinationOverviewForm language currentDate assembled.person assembled.vaccinationProgress db
+                    ( viewVaccinationOverviewForm language currentDate site assembled.person assembled.vaccinationProgress db
                     , True
                     , True
                     )
@@ -1175,6 +1209,9 @@ viewImmunisationContent language currentDate isChw assembled db data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskBCG ->
@@ -1182,6 +1219,9 @@ viewImmunisationContent language currentDate isChw assembled db data =
 
                                     TaskDTP ->
                                         SaveDTPImmunisation personId measurements.dtpImmunisation nextTask
+
+                                    TaskDTPStandalone ->
+                                        SaveDTPStandaloneImmunisation personId measurements.dtpStandaloneImmunisation nextTask
 
                                     TaskHPV ->
                                         SaveHPVImmunisation personId measurements.hpvImmunisation nextTask
@@ -1237,8 +1277,16 @@ viewImmunisationContent language currentDate isChw assembled db data =
     ]
 
 
-immunisationTasksCompletedFromTotal : Language -> NominalDate -> Bool -> AssembledData -> ImmunisationData -> Pages.WellChild.Activity.Types.ImmunisationTask -> ( Int, Int )
-immunisationTasksCompletedFromTotal language currentDate isChw assembled data task =
+immunisationTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> Site
+    -> Bool
+    -> AssembledData
+    -> ImmunisationData
+    -> Measurement.Model.ImmunisationTask
+    -> ( Int, Int )
+immunisationTasksCompletedFromTotal language currentDate site isChw assembled data task =
     Maybe.map
         (\vaccineType ->
             let
@@ -1253,6 +1301,11 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
                             assembled.measurements.dtpImmunisation
                                 |> getMeasurementValueFunc
                                 |> vaccinationFormWithDefault data.dtpForm
+
+                        VaccineDTPStandalone ->
+                            assembled.measurements.dtpStandaloneImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.dtpStandaloneForm
 
                         VaccineHPV ->
                             assembled.measurements.hpvImmunisation
@@ -1285,7 +1338,7 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
                                 |> vaccinationFormWithDefault data.rotarixForm
 
                 ( _, tasksActive, tasksCompleted ) =
-                    vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form
+                    vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
             in
             ( tasksActive, tasksCompleted )
         )
@@ -1293,11 +1346,11 @@ immunisationTasksCompletedFromTotal language currentDate isChw assembled data ta
         |> Maybe.withDefault ( 0, 0 )
 
 
-viewVaccinationForm : Language -> NominalDate -> Bool -> AssembledData -> WellChildVaccineType -> WellChildVaccinationForm -> Html Msg
-viewVaccinationForm language currentDate isChw assembled vaccineType form =
+viewVaccinationForm : Language -> NominalDate -> Site -> Bool -> AssembledData -> WellChildVaccineType -> WellChildVaccinationForm -> Html Msg
+viewVaccinationForm language currentDate site isChw assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
-            vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form
+            vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
     in
     div [ class "ui form vaccination" ] <|
         [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
@@ -1305,24 +1358,31 @@ viewVaccinationForm language currentDate isChw assembled vaccineType form =
             [ div [ class "header icon-label" ] <|
                 [ i [ class "icon-open-book" ] []
                 , div []
-                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription vaccineType ]
-                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage vaccineType ]
+                    [ div [ class "description" ] [ text <| translate language <| Translate.WellChildImmunisationDescription site vaccineType ]
+                    , div [ class "dosage" ] [ text <| translate language <| Translate.WellChildImmunisationDosage site vaccineType ]
                     ]
                 ]
-            , viewLabel language (Translate.WellChildImmunisationHistory vaccineType)
+            , viewLabel language (Translate.WellChildImmunizationHistory site vaccineType)
             ]
                 ++ contentByViewMode
         ]
 
 
-viewVaccinationOverviewForm : Language -> NominalDate -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
-viewVaccinationOverviewForm language currentDate child vaccinationProgress db =
+viewVaccinationOverviewForm : Language -> NominalDate -> Site -> Person -> VaccinationProgressDict -> ModelIndexedDb -> Html any
+viewVaccinationOverviewForm language currentDate site child vaccinationProgress db =
     div [ class "ui form vaccination-overview" ] <|
-        viewVaccinationOverview language currentDate child vaccinationProgress db
+        viewVaccinationOverview language currentDate site child vaccinationProgress db
 
 
-viewVaccinationOverview : Language -> NominalDate -> Person -> VaccinationProgressDict -> ModelIndexedDb -> List (Html any)
-viewVaccinationOverview language currentDate child vaccinationProgress db =
+viewVaccinationOverview :
+    Language
+    -> NominalDate
+    -> Site
+    -> Person
+    -> VaccinationProgressDict
+    -> ModelIndexedDb
+    -> List (Html any)
+viewVaccinationOverview language currentDate site child vaccinationProgress db =
     let
         entriesHeading =
             div [ class "heading vaccination" ]
@@ -1333,7 +1393,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                 ]
 
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate child False vaccinationProgress
+            generateFutureVaccinationsData currentDate site child False vaccinationProgress
                 |> Dict.fromList
 
         entries =
@@ -1364,7 +1424,7 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
                         |> Maybe.withDefault ( StatusCompleted, "completed" )
             in
             div [ class "entry vaccination" ]
-                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType (WellChildVaccine vaccineType) ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.VaccineType site (WellChildVaccine vaccineType) ]
                 , Dict.values doses
                     |> List.sortWith Date.compare
                     |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
@@ -1381,12 +1441,13 @@ viewVaccinationOverview language currentDate child vaccinationProgress db =
 vaccinationFormDynamicContentAndTasks :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> AssembledData
     -> WellChildVaccineType
     -> WellChildVaccinationForm
     -> ( List (Html Msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vaccineType form =
+vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form =
     Maybe.map
         (\birthDate ->
             let
@@ -1403,25 +1464,29 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
                     , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
                     , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine vaccineType initialOpvAdministered
-                    , getIntervalForVaccine = always (getIntervalForVaccine vaccineType)
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site vaccineType initialOpvAdministered
+                    , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
                     , firstDoseExpectedFrom =
-                        initialVaccinationDateByBirthDate birthDate
+                        initialVaccinationDateByBirthDate site
+                            birthDate
                             initialOpvAdministered
+                            assembled.vaccinationProgress
                             ( vaccineType, VaccineDoseFirst )
+                    , suggestDoseToday = True
                     }
 
                 initialOpvAdministeredByForm =
-                    wasInitialOpvAdministeredByVaccinationForm birthDate form
-
-                initialOpvAdministeredByProgress =
-                    wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+                    wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
 
                 initialOpvAdministered =
                     if form.administeredDosesDirty then
                         initialOpvAdministeredByForm
 
                     else
+                        let
+                            initialOpvAdministeredByProgress =
+                                wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+                        in
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =
@@ -1431,7 +1496,14 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                     else
                         getAllDosesForVaccine initialOpvAdministered vaccineType
                             |> List.filter
-                                (\dose -> expectVaccineDoseForPerson currentDate assembled.person initialOpvAdministered ( vaccineType, dose ))
+                                (\dose ->
+                                    expectVaccineDoseForPerson currentDate
+                                        site
+                                        assembled.person
+                                        initialOpvAdministered
+                                        assembled.vaccinationProgress
+                                        ( vaccineType, dose )
+                                )
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory
@@ -1456,7 +1528,12 @@ vaccinationFormDynamicContentAndTasks language currentDate isChw assembled vacci
                         form.administrationDates
                         |> Maybe.withDefault []
             in
-            Measurement.Utils.vaccinationFormDynamicContentAndTasks language currentDate config (WellChildVaccine vaccineType) form
+            Measurement.Utils.vaccinationFormDynamicContentAndTasks language
+                currentDate
+                site
+                config
+                (WellChildVaccine vaccineType)
+                form
         )
         assembled.person.birthDate
         |> Maybe.withDefault ( [], 0, 1 )
@@ -1885,7 +1962,7 @@ ecdFormInputsAndTasks language currentDate assembled ecdForm =
                 Nothing
             ]
     in
-    ( List.map Tuple.first persentedECDSignsData |> List.concat
+    ( List.concatMap Tuple.first persentedECDSignsData
     , List.map Tuple.second persentedECDSignsData
     )
 
@@ -1893,24 +1970,19 @@ ecdFormInputsAndTasks language currentDate assembled ecdForm =
 viewMedicationContent :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> AssembledData
     -> MedicationData
     -> List (Html Msg)
-viewMedicationContent language currentDate isChw assembled data =
+viewMedicationContent language currentDate site isChw assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
         tasks =
             medicationTasks
-                |> List.filter (expectMedicationTask currentDate isChw assembled)
+                |> List.filter (expectMedicationTask currentDate site isChw assembled)
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -1978,7 +2050,7 @@ viewMedicationContent language currentDate isChw assembled data =
                     measurements.albendazole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.albendazoleForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Just TaskMebendezole ->
                     let
@@ -1993,7 +2065,7 @@ viewMedicationContent language currentDate isChw assembled data =
                     measurements.mebendezole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Just TaskVitaminA ->
                     let
@@ -2008,7 +2080,7 @@ viewMedicationContent language currentDate isChw assembled data =
                     measurements.vitaminA
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
-                        |> viewMedicationAdministrationForm language currentDate assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled config
 
                 Nothing ->
                     []
@@ -2027,6 +2099,9 @@ viewMedicationContent language currentDate isChw assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskAlbendazole ->
@@ -2061,16 +2136,23 @@ type alias MedicationAdministrationFormConfig =
     { medication : MedicationDistributionSign
     , setMedicationAdministeredMsg : Bool -> Msg
     , setReasonForNonAdministration : AdministrationNote -> Msg
-    , resolveDosageAndIconFunc : NominalDate -> Person -> Maybe ( String, String )
+    , resolveDosageAndIconFunc : NominalDate -> Site -> Person -> Maybe ( String, String )
     , helper : TranslationId
     }
 
 
-viewMedicationAdministrationForm : Language -> NominalDate -> AssembledData -> MedicationAdministrationFormConfig -> MedicationAdministrationForm -> List (Html Msg)
-viewMedicationAdministrationForm language currentDate assembled config form =
+viewMedicationAdministrationForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> MedicationAdministrationFormConfig
+    -> MedicationAdministrationForm
+    -> List (Html Msg)
+viewMedicationAdministrationForm language currentDate site assembled config form =
     let
         instructions =
-            config.resolveDosageAndIconFunc currentDate assembled.person
+            config.resolveDosageAndIconFunc currentDate site assembled.person
                 |> Maybe.map
                     (\( dosage, icon ) ->
                         div [ class "instructions" ]
@@ -2122,25 +2204,21 @@ viewNextStepsContent :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> WellChildEncounterId
     -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> NextStepsData
     -> List (Html Msg)
-viewNextStepsContent language currentDate zscores id isChw assembled db data =
+viewNextStepsContent language currentDate zscores site features id isChw assembled db data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
         tasks =
-            List.filter (expectNextStepsTask currentDate zscores isChw assembled db) nextStepsTasks
+            List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db) nextStepsTasks
 
         activeTask =
             Maybe.Extra.or data.activeTask (List.head tasks)
@@ -2257,7 +2335,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                         |> List.singleton
 
                 Just TaskNextVisit ->
-                    viewNextVisitForm language currentDate isChw assembled db nextVisitForm
+                    viewNextVisitForm language currentDate site isChw assembled db nextVisitForm
                         |> List.singleton
 
                 Nothing ->
@@ -2277,6 +2355,9 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskContributingFactors ->
@@ -2299,7 +2380,7 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
                                     TaskNextVisit ->
                                         let
                                             ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-                                                resolveNextVisitDates currentDate isChw assembled db nextVisitForm
+                                                resolveNextVisitDates currentDate site isChw assembled db nextVisitForm
                                         in
                                         SaveNextVisit personId measurements.nextVisit nextDateForImmunisationVisit nextDateForPediatricVisit nextTask
 
@@ -2326,11 +2407,11 @@ viewNextStepsContent language currentDate zscores id isChw assembled db data =
     ]
 
 
-viewNextVisitForm : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NextVisitForm -> Html Msg
-viewNextVisitForm language currentDate isChw assembled db form =
+viewNextVisitForm : Language -> NominalDate -> Site -> Bool -> AssembledData -> ModelIndexedDb -> NextVisitForm -> Html Msg
+viewNextVisitForm language currentDate site isChw assembled db form =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-            resolveNextVisitDates currentDate isChw assembled db form
+            resolveNextVisitDates currentDate site isChw assembled db form
 
         viewSection value label =
             Maybe.map
@@ -2349,11 +2430,18 @@ viewNextVisitForm language currentDate isChw assembled db form =
 
 {-| We use saved values. If not found, fallback to logcal generation of next visit dates.
 -}
-resolveNextVisitDates : NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> NextVisitForm -> ( Maybe NominalDate, Maybe NominalDate )
-resolveNextVisitDates currentDate isChw assembled db form =
+resolveNextVisitDates :
+    NominalDate
+    -> Site
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> NextVisitForm
+    -> ( Maybe NominalDate, Maybe NominalDate )
+resolveNextVisitDates currentDate site isChw assembled db form =
     let
         ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-            generateNextVisitDates currentDate isChw assembled db
+            generateNextVisitDates currentDate site assembled db
     in
     ( Maybe.Extra.or form.immunisationDate nextDateForImmunisationVisit
     , Maybe.Extra.or form.pediatricVisitDate nextDateForPediatricVisit
@@ -2363,15 +2451,16 @@ resolveNextVisitDates currentDate isChw assembled db form =
 viewPhotoContent : Language -> NominalDate -> AssembledData -> PhotoForm -> List (Html Msg)
 viewPhotoContent language currentDate assembled form =
     let
-        photoId =
-            Maybe.map Tuple.first assembled.measurements.photo
-
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
         -- measurement, if we have that.
         ( displayPhoto, saveMsg, isDisabled ) =
             case form.url of
                 Just url ->
+                    let
+                        photoId =
+                            Maybe.map Tuple.first assembled.measurements.photo
+                    in
                     ( Just url
                     , [ onClick <| SavePhoto assembled.participant.person photoId url ]
                     , False
@@ -2395,12 +2484,11 @@ viewPhotoContent language currentDate assembled form =
             viewPhotoForm language currentDate displayPhoto DropZoneComplete
         , div [ class "actions" ]
             [ button
-                ([ classList
+                (classList
                     [ ( "ui fluid primary button", True )
                     , ( "disabled", isDisabled )
                     ]
-                 ]
-                    ++ saveMsg
+                    :: saveMsg
                 )
                 [ text <| translate language Translate.Save ]
             ]
@@ -2411,29 +2499,47 @@ viewPhotoContent language currentDate assembled form =
 viewNCDAContent :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
     -> AssembledData
     -> NCDAData
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> ModelIndexedDb
     -> List (Html Msg)
-viewNCDAContent language currentDate assembled data newbornExamPregnancySummary previousNCDAValues =
+viewNCDAContent language currentDate zscores site assembled data db =
     let
         form =
             getMeasurementValueFunc assembled.measurements.ncda
                 |> ncdaFormWithDefault data.form
 
-        saveMsg =
-            SaveNCDA assembled.participant.person assembled.measurements.ncda
+        personId =
+            assembled.participant.person
+
+        config =
+            { atHealthCenter = True
+            , showTasksTray = True
+            , pregnancySummary = getNewbornExamPregnancySummary personId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
+            , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
+            , setUpdateANCVisitsMsg = SetUpdateANCVisits
+            , toggleANCVisitDateMsg = ToggleANCVisitDate
+            , setBoolInputMsg = SetNCDABoolInput
+            , setBirthWeightMsg = SetBirthWeight
+            , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+            , setStuntingLevelMsg = SetStuntingLevel
+            , setWeightMsg = SetWeightForNCDA
+            , setMuacMsg = SetMuacForNCDA
+            , setStepMsg = SetNCDAFormStep
+            , setHelperStateMsg = SetNCDAHelperState
+            , saveMsg = SaveNCDA personId assembled.measurements.ncda
+            }
     in
     Measurement.View.viewNCDAContent language
         currentDate
+        zscores
+        site
+        personId
         assembled.person
-        SetNCDABoolInput
-        SetBirthWeight
-        SetNCDAFormStep
-        saveMsg
-        SetNCDAHelperState
+        config
         data.helperState
         form
-        newbornExamPregnancySummary
-        previousNCDAValues
+        db

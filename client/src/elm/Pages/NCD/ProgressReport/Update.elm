@@ -3,8 +3,8 @@ module Pages.NCD.ProgressReport.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.NCDEncounter.Model
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.Update
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
 import Pages.NCD.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..))
@@ -14,9 +14,6 @@ import Pages.Report.Model exposing (LabResultsMode(..))
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none, [] )
-
         CloseEncounter id ->
             ( { model | showEndEncounterDialog = False }
             , Cmd.none
@@ -54,12 +51,12 @@ update msg model =
         SetEndEncounterDialogState isOpen ->
             ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )
 
-        MsgSendViaWhatsAppDialog subMsg ->
+        MsgReportToWhatsAppDialog subMsg ->
             let
                 ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
-                    Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
+                    Components.ReportToWhatsAppDialog.Update.update subMsg model.reportToWhatsAppDialog
             in
-            ( { model | sendViaWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
+            ( { model | reportToWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
                 |> sequenceExtra update extraMsgs
 
         SetReportComponents maybeComponents ->
@@ -68,7 +65,7 @@ update msg model =
                     Maybe.map
                         (\components ->
                             case components of
-                                Components.SendViaWhatsAppDialog.Model.NCD antenatalComponents ->
+                                Components.ReportToWhatsAppDialog.Model.NCD antenatalComponents ->
                                     { model | components = Just antenatalComponents }
 
                                 -- We should never get here.

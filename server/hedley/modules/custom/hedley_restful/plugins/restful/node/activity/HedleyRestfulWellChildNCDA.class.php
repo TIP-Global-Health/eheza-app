@@ -14,7 +14,11 @@ class HedleyRestfulWellChildNCDA extends HedleyRestfulWellChildActivityBase {
    * {@inheritdoc}
    */
   protected $fields = [
+    'field_birth_weight',
+    'field_receive_option',
+    'field_stunting_level',
     'field_weight',
+    'field_muac',
   ];
 
   /**
@@ -22,6 +26,14 @@ class HedleyRestfulWellChildNCDA extends HedleyRestfulWellChildActivityBase {
    */
   protected $multiFields = [
     'field_ncda_signs',
+    'field_anc_visits_dates',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $multiDateFields = [
+    'field_anc_visits_dates',
   ];
 
 }

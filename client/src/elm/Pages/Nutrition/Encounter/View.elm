@@ -1,50 +1,63 @@
 module Pages.Nutrition.Encounter.View exposing (allowEndingEcounter, partitionActivities, view)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..), IndividualParticipantInitiator(..))
-import Backend.Measurement.Model exposing (NutritionMeasurements)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.NutritionActivity.Utils exposing (getActivityIcon, getAllActivities)
-import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
-import Backend.Person.Model exposing (Person)
-import Gizra.Html exposing (emptyNode)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryActivities, expectActivity)
 import Pages.Nutrition.Encounter.Model exposing (..)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays)
+import SyncManager.Model exposing (SiteFeature)
+import Translate exposing (Language, translate)
+import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id isChw db model =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> NutritionEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate zscores features id isChw db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores id isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores features id isChw db model) identity data
 
 
-viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate zscores id isChw db model data =
+viewHeaderAndContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> NutritionEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewHeaderAndContent language currentDate zscores features id isChw db model data =
     let
         header =
             viewHeader language isChw data
 
         content =
-            viewContent language currentDate zscores id isChw db model data
+            viewContent language currentDate zscores features id isChw db model data
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -87,19 +100,39 @@ viewHeader language isChw data =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id isChw db model data =
+viewContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> NutritionEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate zscores features id isChw db model data =
     ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
-        :: viewMainPageContent language currentDate zscores id isChw db data model
+        :: viewMainPageContent language currentDate zscores features id isChw db data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> Bool -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate zscores id isChw db data model =
+viewMainPageContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> NutritionEncounterId
+    -> Bool
+    -> ModelIndexedDb
+    -> AssembledData
+    -> Model
+    -> List (Html Msg)
+viewMainPageContent language currentDate zscores features id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
-            partitionActivities currentDate zscores isChw db data
+            partitionActivities currentDate zscores features isChw db data
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -171,10 +204,17 @@ viewMainPageContent language currentDate zscores id isChw db data model =
     ]
 
 
-partitionActivities : NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> AssembledData -> ( List NutritionActivity, List NutritionActivity )
-partitionActivities currentDate zscores isChw db assembled =
-    List.filter (expectActivity currentDate zscores isChw assembled db) getAllActivities
-        |> List.partition (activityCompleted currentDate zscores isChw assembled db)
+partitionActivities :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> Bool
+    -> ModelIndexedDb
+    -> AssembledData
+    -> ( List NutritionActivity, List NutritionActivity )
+partitionActivities currentDate zscores features isChw db assembled =
+    List.filter (expectActivity currentDate zscores features isChw assembled db) getAllActivities
+        |> List.partition (activityCompleted currentDate zscores features isChw assembled db)
 
 
 allowEndingEcounter : Bool -> List NutritionActivity -> Bool

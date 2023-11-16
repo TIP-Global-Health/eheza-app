@@ -2,7 +2,7 @@ module Pages.AcuteIllness.Outcome.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Decoder exposing (acuteIllnessOutcomeFromString, pregnancyOutcomeFromString)
+import Backend.IndividualEncounterParticipant.Decoder exposing (acuteIllnessOutcomeFromString)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
@@ -12,14 +12,7 @@ import Pages.Page exposing (Page(..))
 
 update : NominalDate -> IndividualEncounterParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
-    let
-        noChange =
-            ( model, Cmd.none, [] )
-    in
     case msg of
-        NoOp ->
-            noChange
-
         SaveAcuteIllnessOutcome ->
             model.acuteIllnessOutcome
                 |> Maybe.map
@@ -33,7 +26,7 @@ update currentDate id msg model =
                           ]
                         )
                     )
-                |> Maybe.withDefault noChange
+                |> Maybe.withDefault ( model, Cmd.none, [] )
 
         SetActivePage page ->
             ( model

@@ -1,7 +1,8 @@
 module SyncManager.Model exposing (..)
 
-import AssocList exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
@@ -23,9 +24,11 @@ import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (Session)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
-import Components.SendViaWhatsAppDialog.Model exposing (ReportType)
+import Components.ReportToWhatsAppDialog.Model exposing (ReportType)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import Editable exposing (Editable)
+import EverySet exposing (EverySet)
+import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo, emptyGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
@@ -68,8 +71,18 @@ type BackendAuthorityEntity
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
     | BackendAuthorityBirthPlan (BackendEntity BirthPlan)
-    | BackendAuthorityChildFbf (BackendEntity Fbf)
     | BackendAuthorityCall114 (BackendEntity Call114)
+    | BackendAuthorityChildFbf (BackendEntity Fbf)
+    | BackendAuthorityChildScoreboardEncounter (BackendEntity ChildScoreboardEncounter)
+    | BackendAuthorityChildScoreboardBCGImmunisation (BackendEntity ChildScoreboardBCGImmunisation)
+    | BackendAuthorityChildScoreboardDTPImmunisation (BackendEntity ChildScoreboardDTPImmunisation)
+    | BackendAuthorityChildScoreboardDTPStandaloneImmunisation (BackendEntity ChildScoreboardDTPStandaloneImmunisation)
+    | BackendAuthorityChildScoreboardIPVImmunisation (BackendEntity ChildScoreboardIPVImmunisation)
+    | BackendAuthorityChildScoreboardMRImmunisation (BackendEntity ChildScoreboardMRImmunisation)
+    | BackendAuthorityChildScoreboardNCDA (BackendEntity ChildScoreboardNCDA)
+    | BackendAuthorityChildScoreboardOPVImmunisation (BackendEntity ChildScoreboardOPVImmunisation)
+    | BackendAuthorityChildScoreboardPCV13Immunisation (BackendEntity ChildScoreboardPCV13Immunisation)
+    | BackendAuthorityChildScoreboardRotarixImmunisation (BackendEntity ChildScoreboardRotarixImmunisation)
     | BackendAuthorityClinic (BackendEntity Clinic)
     | BackendAuthorityContributingFactors (BackendEntity ContributingFactors)
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
@@ -188,6 +201,7 @@ type BackendAuthorityEntity
     | BackendAuthorityWellChildBCGImmunisation (BackendEntity WellChildBCGImmunisation)
     | BackendAuthorityWellChildContributingFactors (BackendEntity WellChildContributingFactors)
     | BackendAuthorityWellChildDTPImmunisation (BackendEntity WellChildDTPImmunisation)
+    | BackendAuthorityWellChildDTPStandaloneImmunisation (BackendEntity WellChildDTPStandaloneImmunisation)
     | BackendAuthorityWellChildECD (BackendEntity WellChildECD)
     | BackendAuthorityWellChildEncounter (BackendEntity WellChildEncounter)
     | BackendAuthorityWellChildFollowUp (BackendEntity WellChildFollowUp)
@@ -244,6 +258,8 @@ type alias SyncInfoGeneral =
     , deviceName : String
     , status : SyncInfoStatus
     , rollbarToken : String
+    , site : Site
+    , features : EverySet SiteFeature
     }
 
 
@@ -255,6 +271,8 @@ type alias SyncInfoGeneralForPort =
     , deviceName : String
     , status : String
     , rollbarToken : String
+    , site : String
+    , features : String
     }
 
 
@@ -337,6 +355,11 @@ type alias Model =
     -- `idle` - 50; which is the minimum we will allow.
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
     , syncSpeed : Editable SyncSpeed
+
+    -- We genereate and store Geo structure, to avoid repeated recalculations
+    -- on every click (at View), which causes unacceptable slowness.
+    , geoInfo : GeoInfo
+    , reverseGeoInfo : ReverseGeoInfo
     }
 
 
@@ -354,6 +377,8 @@ emptyModel flags =
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
+    , geoInfo = emptyGeoInfo
+    , reverseGeoInfo = Dict.empty
     }
 
 
@@ -387,6 +412,8 @@ type alias DownloadSyncResponse a =
     , revisionCount : Int
     , deviceName : String
     , rollbarToken : String
+    , site : Site
+    , features : EverySet SiteFeature
     }
 
 
@@ -652,6 +679,18 @@ type alias IncidentContnentIdentifier =
     -- For file upload incident, identifier is the cache url of file.
     -- For content upload, it's the UUID of uploaded entity.
     String
+
+
+type Site
+    = SiteRwanda
+    | SiteBurundi
+    | SiteUnknown
+
+
+type SiteFeature
+    = FeatureNCDA
+    | FeatureReportToWhatsApp
+    | FeatureStockManagement
 
 
 type Msg

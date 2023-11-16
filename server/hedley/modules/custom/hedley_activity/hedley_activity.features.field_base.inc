@@ -57,6 +57,38 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_anc_visits_dates'.
+  $field_bases['field_anc_visits_dates'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_anc_visits_dates',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
   // Exported field_base: 'field_anemia_treatment'.
   $field_bases['field_anemia_treatment'] = array(
     'active' => 1,
@@ -137,6 +169,24 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_birth_weight'.
+  $field_bases['field_birth_weight'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_birth_weight',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_bmi'.
@@ -1260,25 +1310,35 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
         'born-with-birth-defect' => 'Born With Birth Defect',
         'breastfed-for-six-months' => 'Breastfed for six months',
-        'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
-        'ongera-mnp' => 'Ongera Mnp',
-        'five-food-groups' => 'Five Food Groups',
-        'meal-frequency-6to8m' => 'Meal Frequency 6 to 9 months',
-        'meal-frequency-9to11m' => 'Meal Frequency 9 to 12 months',
-        'meal-frequency-12+m' => 'Meal Frequency 12 months or more',
-        'support-child-with-disability' => 'Support Child With Disability',
-        'conditional-cash-transfer' => 'Conditional Cash Transfer',
         'conditional-food-items' => 'Conditional Food Items',
+        'five-food-groups' => 'Five Food Groups',
         'has-clean-water' => 'Has Clean Water',
         'has-handwashing-facility' => 'Has Handwashing Facility',
         'has-toilets' => 'Has Toilets',
         'has-kitchen-garden' => 'Has Kitchen Garden',
-        'regular-prenatal-visits' => 'Regular Prenatal Visits',
-        'ron-supplements-during-pregnancy' => 'Iron Supplements During Pregnancy',
-        'insecticide-treated-bednets-during-pregnancy' => 'Insecticide Treated Bednets During Pregnancy',
+        'ongera-mnp' => 'Ongera-MNP',
         'none' => 'None',
+        'beneficiary-cash-transfer' => 'Beneficiary Cash Transfer',
+        'child-got-diarrhea' => 'Child got Diarrhea',
+        'child-receives-fbf' => 'Child receives FBF',
+        'child-taking-fbf' => 'Child Taking FBF',
+        'child-receives-vitamin-a' => 'Child receives Vitamin A',
+        'child-receives-dewormer' => 'Child receives dewormer',
+        'child-receives-ecd' => 'Child receives ECD',
+        'child-with-disability' => 'Child with Disability',
+        'insecticide-treated-bednets' => 'Insecticide Treated Bednets',
+        'meals-at-recommended-times' => 'Meals at recommended times',
+        'child-behind-on-vaccination' => 'Child behind on vaccination',
+        'receiving-cash-transfer' => 'Receiving Cash Transfer',
+        'receiving-support' => 'Receiving Support',
+        'supplements-during-pregnancy' => 'Supplements During Pregnancy',
+        'taken-supplements-per-guidance' => 'Taken Supplements per Guidance',
+        'taking-ongera-mnp' => 'Taking Ongera-MNP',
+        'treated-for-acute-malnutrition' => 'Treated for Acute Malnutrition',
+        'shows-edema-signs' => 'Shows Edema signs',
       ),
       'allowed_values_function' => '',
     ),
@@ -1897,6 +1957,33 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_stunting_level'.
+  $field_bases['field_stunting_level'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_stunting_level',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'green' => 'Green',
+        'yellow' => 'Yellow',
+        'red' => 'Red',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_syphilis_treatment'.

@@ -1,7 +1,6 @@
 module Backend.AcuteIllnessEncounter.Utils exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
-import Backend.Entities exposing (..)
 import Backend.NCDEncounter.Utils
 import Backend.PatientRecord.Utils
 import Maybe.Extra
@@ -139,13 +138,13 @@ progressReportInitiatorFromUrlFragment s =
 
         _ ->
             if String.startsWith "well-child-progress-report-" s then
-                String.dropLeft (String.length "well-child-progress-report-") s
+                String.dropLeft 27 s
                     |> toEntityUuid
                     |> InitiatorWellChildProgressReport
                     |> Just
 
             else if String.startsWith "nutrition-progress-report-" s then
-                String.dropLeft (String.length "nutrition-progress-report-") s
+                String.dropLeft 26 s
                     |> toEntityUuid
                     |> InitiatorIndividualNutritionProgressReport
                     |> Just
@@ -153,7 +152,7 @@ progressReportInitiatorFromUrlFragment s =
             else if String.startsWith "progress-report-" s then
                 let
                     ids =
-                        String.dropLeft (String.length "progress-report-") s
+                        String.dropLeft 16 s
                             |> String.split "+++"
                 in
                 -- In case of Group Nutrition report we need to know Session ID
@@ -175,7 +174,7 @@ progressReportInitiatorFromUrlFragment s =
             else if String.startsWith "patient-record-" s then
                 let
                     fragments =
-                        String.dropLeft (String.length "patient-record-") s
+                        String.dropLeft 15 s
                             |> String.split "+++"
                 in
                 if List.length fragments /= 2 then
@@ -194,7 +193,7 @@ progressReportInitiatorFromUrlFragment s =
                         |> Maybe.Extra.join
 
             else if String.startsWith "ncd-progress-report-" s then
-                String.dropLeft (String.length "ncd-progress-report-") s
+                String.dropLeft 20 s
                     |> Backend.NCDEncounter.Utils.progressReportInitiatorFromUrlFragment
                     |> Maybe.map InitiatorNCDProgressReport
 

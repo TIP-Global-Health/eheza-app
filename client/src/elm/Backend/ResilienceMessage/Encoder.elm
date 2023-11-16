@@ -1,10 +1,7 @@
 module Backend.ResilienceMessage.Encoder exposing (encodeResilienceMessage)
 
-import AssocList as Dict exposing (Dict)
 import Backend.ResilienceMessage.Model exposing (..)
 import Backend.ResilienceMessage.Utils exposing (..)
-import EverySet
-import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Gizra.TimePosix exposing (encodePosixAsSeconds)
 import Json.Encode exposing (..)
 import Restful.Endpoint exposing (encodeEntityUuid)

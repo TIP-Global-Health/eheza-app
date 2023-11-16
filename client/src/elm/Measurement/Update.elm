@@ -11,10 +11,12 @@ import Backend.Measurement.Model
         , LactationSign(..)
         , MeasurementData
         , MotherMeasurements
+        , MuacInCm(..)
         , WeightInGrm(..)
+        , WeightInKg(..)
         )
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
-import EverySet exposing (EverySet)
+import EverySet
 import Measurement.Model exposing (..)
 import Pages.Utils exposing (setMultiSelectInputValue)
 
@@ -97,7 +99,7 @@ updateChild msg model =
             let
                 newModel =
                     case outMsg of
-                        SavePhoto id photo ->
+                        SavePhoto _ _ ->
                             -- When we save a photo, we blank our local record
                             -- of the unsaved photo URL. We're saving the photo
                             -- locally, and when we succeed, we'll see it in
@@ -258,6 +260,59 @@ updateChild msg model =
             , Nothing
             )
 
+        SetUpdateANCVisits value ->
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedForm =
+                    { form | updateANCVisits = Just value, ancVisitsDates = Just EverySet.empty }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        ToggleANCVisitDate date ->
+            let
+                form =
+                    model.ncdaData.form
+
+                updatedANCVisitsDates =
+                    Maybe.map
+                        (\set ->
+                            if EverySet.member date set then
+                                EverySet.remove date set
+
+                            else
+                                EverySet.insert date set
+                        )
+                        form.ancVisitsDates
+                        |> Maybe.withDefault (EverySet.singleton date)
+
+                updateANCVisits =
+                    if EverySet.isEmpty updatedANCVisitsDates then
+                        Just False
+
+                    else
+                        form.updateANCVisits
+
+                updatedForm =
+                    { form | ancVisitsDates = Just updatedANCVisitsDates, updateANCVisits = updateANCVisits }
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
         SetNCDABoolInput formUpdateFunc value ->
             let
                 updatedForm =
@@ -279,6 +334,74 @@ updateChild msg model =
                         |> (\form ->
                                 { form
                                     | birthWeight = String.toFloat string |> Maybe.map WeightInGrm
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetChildReceivesVitaminA value ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | childReceivesVitaminA = Just value })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetStuntingLevel value ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form -> { form | stuntingLevel = Just value })
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetWeight string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | weight = String.toFloat string |> Maybe.map WeightInKg
+                                }
+                           )
+
+                updatedData =
+                    model.ncdaData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | ncdaData = updatedData }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetMuac string ->
+            let
+                updatedForm =
+                    model.ncdaData.form
+                        |> (\form ->
+                                { form
+                                    | muac = String.toFloat string |> Maybe.map MuacInCm
                                 }
                            )
 

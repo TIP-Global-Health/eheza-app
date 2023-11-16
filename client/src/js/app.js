@@ -269,7 +269,7 @@ dbSync.version(18).stores({
 });
 
 dbSync.version(19).stores({
-  whatsAppUploads: '++localId,screenshot,report_type,person,phone_number,fileId,syncStage',
+    whatsAppUploads: '++localId,screenshot,report_type,person,phone_number,fileId,syncStage',
 });
 
 dbSync.version(20).stores({
@@ -277,8 +277,12 @@ dbSync.version(20).stores({
 });
 
 dbSync.version(21).stores({
-  errorsHash: '++localId, hash',
-  dbErrors: '++localId, error, isSynced'
+    errorsHash: '++localId, hash',
+    dbErrors: '++localId, error, isSynced'
+});
+
+dbSync.version(22).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],newborn',
 });
 
 /**
@@ -339,7 +343,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 21;
+const dbVersion = 22;
 
 /**
  * Return saved info for General sync.
@@ -353,14 +357,24 @@ const getSyncInfoGeneral = function() {
     storageArr.lastSuccesfulContact = parseInt(storageArr.lastSuccesfulContact);
     storageArr.remainingToUpload = parseInt(storageArr.remainingToUpload);
     storageArr.remainingToDownload = parseInt(storageArr.remainingToDownload);
+
     if (storageArr.rollbarToken === undefined) {
       storageArr.rollbarToken = '';
     }
+
+    if (storageArr.site === undefined) {
+      storageArr.site = '';
+    }
+
+    if (storageArr.features === undefined) {
+      storageArr.features = '';
+    }
+
     return storageArr;
   }
 
   // No sync info saved yet.
-  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '' };
+  return { lastFetchedRevisionId: 0, lastSuccesfulContact: 0, remainingToUpload:0, remainingToDownload: 0, deviceName: '', status: 'Not Available', rollbarToken: '', site: '', features: '' };
 };
 
 /**
@@ -729,7 +743,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
               const uploadUrl = [
                 backendUrl,
-                '/api/file-upload?access_token=',
+                '/api/file-upload-public?access_token=',
                 accessToken,
               ].join('');
 
@@ -1144,7 +1158,37 @@ function makeProgressReportScreenshot(elementId, data) {
 
     const canvas = await html2canvas(element, {
         width: element.clientWidth,
-        windowHeight: totalHeight
+        windowHeight: totalHeight,
+        onclone: function(document) {
+          var styleSheets = document.styleSheets;
+          var promises = [];
+
+          for (var i = 0; i < styleSheets.length; i++) {
+            var styleSheet = styleSheets[i];
+            if (styleSheet.href) {
+              var promise = fetch(styleSheet.href, { cache: 'reload' })
+                .then(function(response) {
+                  if (response.ok) {
+                    return response.text();
+                  } else {
+                    throw new Error('Failed to fetch stylesheet: ' + response.url);
+                  }
+                })
+                .then(function(cssText) {
+                  var style = document.createElement('style');
+                  style.textContent = cssText;
+                  document.head.appendChild(style);
+                })
+                .catch(function(error) {
+                  console.error('Error fetching stylesheet:', error);
+                });
+
+              promises.push(promise);
+            }
+          }
+
+          return Promise.all(promises);
+        }
       });
 
     canvas.toBlob(async function(blob) {

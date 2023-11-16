@@ -3,6 +3,8 @@ module Backend.Measurement.Decoder exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Person.Decoder exposing (decodeGender)
@@ -11,10 +13,10 @@ import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict, decodeStringWithDefault)
+import Gizra.Json exposing (decodeFloat, decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
+import Json.Decode.Pipeline exposing (custom, optional, required)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
 import Utils.Json exposing (decodeEverySet, decodeWithFallback)
@@ -53,6 +55,11 @@ decodeWellChildMeasurement =
 decodeNCDMeasurement : Decoder value -> Decoder (Measurement NCDEncounterId value)
 decodeNCDMeasurement =
     decodeMeasurement "ncd_encounter"
+
+
+decodeChildScoreboardMeasurement : Decoder value -> Decoder (Measurement ChildScoreboardEncounterId value)
+decodeChildScoreboardMeasurement =
+    decodeMeasurement "child_scoreboard_encounter"
 
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
@@ -233,6 +240,7 @@ decodeWellChildMeasurements =
         |> optional "well_child_next_visit" (decodeHead decodeWellChildNextVisit) Nothing
         |> optional "well_child_bcg_immunisation" (decodeHead decodeWellChildBCGImmunisation) Nothing
         |> optional "well_child_dtp_immunisation" (decodeHead decodeWellChildDTPImmunisation) Nothing
+        |> optional "well_child_dtp_sa_immunisation" (decodeHead decodeWellChildDTPStandaloneImmunisation) Nothing
         |> optional "well_child_hpv_immunisation" (decodeHead decodeWellChildHPVImmunisation) Nothing
         |> optional "well_child_ipv_immunisation" (decodeHead decodeWellChildIPVImmunisation) Nothing
         |> optional "well_child_mr_immunisation" (decodeHead decodeWellChildMRImmunisation) Nothing
@@ -267,6 +275,20 @@ decodeNCDMeasurements =
         |> optional "ncd_symptom_review" (decodeHead decodeNCDSymptomReview) Nothing
         |> optional "ncd_urine_dipstick_test" (decodeHead decodeNCDUrineDipstickTest) Nothing
         |> optional "ncd_vitals" (decodeHead decodeNCDVitals) Nothing
+
+
+decodeChildScoreboardMeasurements : Decoder ChildScoreboardMeasurements
+decodeChildScoreboardMeasurements =
+    succeed ChildScoreboardMeasurements
+        |> optional "child_scoreboard_ncda" (decodeHead decodeChildScoreboardNCDA) Nothing
+        |> optional "child_scoreboard_bcg_iz" (decodeHead decodeChildScoreboardBCGImmunisation) Nothing
+        |> optional "child_scoreboard_dtp_iz" (decodeHead decodeChildScoreboardDTPImmunisation) Nothing
+        |> optional "child_scoreboard_dtp_sa_iz" (decodeHead decodeChildScoreboardDTPStandaloneImmunisation) Nothing
+        |> optional "child_scoreboard_ipv_iz" (decodeHead decodeChildScoreboardIPVImmunisation) Nothing
+        |> optional "child_scoreboard_mr_iz" (decodeHead decodeChildScoreboardMRImmunisation) Nothing
+        |> optional "child_scoreboard_opv_iz" (decodeHead decodeChildScoreboardOPVImmunisation) Nothing
+        |> optional "child_scoreboard_pcv13_iz" (decodeHead decodeChildScoreboardPCV13Immunisation) Nothing
+        |> optional "child_scoreboard_rotarix_iz" (decodeHead decodeChildScoreboardRotarixImmunisation) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -4650,6 +4672,11 @@ decodeWellChildDTPImmunisation =
     decodeWellChildMeasurement decodeVaccinationValue
 
 
+decodeWellChildDTPStandaloneImmunisation : Decoder WellChildDTPStandaloneImmunisation
+decodeWellChildDTPStandaloneImmunisation =
+    decodeWellChildMeasurement decodeVaccinationValue
+
+
 decodeWellChildHPVImmunisation : Decoder WellChildHPVImmunisation
 decodeWellChildHPVImmunisation =
     decodeWellChildMeasurement decodeVaccinationValue
@@ -5130,7 +5157,12 @@ decodeNCDAValue : Decoder NCDAValue
 decodeNCDAValue =
     succeed NCDAValue
         |> required "ncda_signs" (decodeEverySet decodeNCDASign)
-        |> optional "weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> optional "birth_weight" (nullable (map WeightInGrm decodeFloat)) Nothing
+        |> required "anc_visits_dates" (decodeEverySet Gizra.NominalDate.decodeYYYYMMDD)
+        |> optional "receive_option" (nullable decodeReceiveOption) Nothing
+        |> optional "stunting_level" (nullable decodeStuntingLevel) Nothing
+        |> optional "weight" (nullable (map WeightInKg decodeFloat)) Nothing
+        |> optional "muac" (nullable (map MuacInCm decodeFloat)) Nothing
 
 
 decodeNCDASign : Decoder NCDASign
@@ -5141,6 +5173,28 @@ decodeNCDASign =
                 ncdaSignFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized NCDASign")
+            )
+
+
+decodeReceiveOption : Decoder ReceiveOption
+decodeReceiveOption =
+    string
+        |> andThen
+            (\s ->
+                receiveOptionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized ReceiveOption")
+            )
+
+
+decodeStuntingLevel : Decoder StuntingLevel
+decodeStuntingLevel =
+    string
+        |> andThen
+            (\s ->
+                stuntingLevelFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized StuntingLevel")
             )
 
 
@@ -5157,6 +5211,11 @@ decodeNutritionNCDA =
 decodeWellChildNCDA : Decoder WellChildNCDA
 decodeWellChildNCDA =
     decodeWellChildMeasurement decodeNCDAValue
+
+
+decodeChildScoreboardNCDA : Decoder ChildScoreboardNCDA
+decodeChildScoreboardNCDA =
+    decodeChildScoreboardMeasurement decodeNCDAValue
 
 
 decodeNCDLipidPanelTest : Decoder NCDLipidPanelTest
@@ -5198,3 +5257,54 @@ decodeHbA1cTestValue =
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> optional "hba1c_result" (nullable decodeFloat) Nothing
+
+
+decodePregnancyByNewborn : Decoder (Maybe ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+decodePregnancyByNewborn =
+    oneOf
+        [ at [ "individual_participant" ] (decodeHead decodeIndividualEncounterParticipant)
+
+        -- Seems there're no individual participants for the pregnancy, so
+        -- we can determine that pregnancy was not tracked on E-Heza.
+        , succeed Nothing
+        ]
+
+
+decodeChildScoreboardBCGImmunisation : Decoder ChildScoreboardBCGImmunisation
+decodeChildScoreboardBCGImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardDTPImmunisation : Decoder ChildScoreboardDTPImmunisation
+decodeChildScoreboardDTPImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardDTPStandaloneImmunisation : Decoder ChildScoreboardDTPStandaloneImmunisation
+decodeChildScoreboardDTPStandaloneImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardIPVImmunisation : Decoder ChildScoreboardIPVImmunisation
+decodeChildScoreboardIPVImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardMRImmunisation : Decoder ChildScoreboardMRImmunisation
+decodeChildScoreboardMRImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardOPVImmunisation : Decoder ChildScoreboardOPVImmunisation
+decodeChildScoreboardOPVImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardPCV13Immunisation : Decoder ChildScoreboardPCV13Immunisation
+decodeChildScoreboardPCV13Immunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeChildScoreboardRotarixImmunisation : Decoder ChildScoreboardRotarixImmunisation
+decodeChildScoreboardRotarixImmunisation =
+    decodeChildScoreboardMeasurement decodeVaccinationValue

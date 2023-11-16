@@ -5,7 +5,6 @@ module Pages.AcuteIllness.Activity.View exposing
     , viewAdministeredMedicationQuestion
     , viewAmoxicillinAdministrationInstructions
     , viewHCRecommendation
-    , viewHealthEducationLabel
     , viewOralSolutionPrescription
     , viewParacetamolAdministrationInstructions
     , viewTabletsPrescription
@@ -13,39 +12,37 @@ module Pages.AcuteIllness.Activity.View exposing
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementValueFunc, muacIndication, muacValueFunc)
+import Backend.Measurement.Utils exposing (covidIsolationPeriod, getMeasurementValueFunc, muacValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInMonths, ageInYears, defaultIconForPerson, generateFullName, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, generateFullName, isPersonAFertileWoman)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Form
 import Form.Input
+import GeoLocation.Model exposing (GeoInfo)
+import GeoLocation.Utils exposing (..)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), MuacForm, SendToHCForm, VitalsForm, VitalsFormMode(..))
+import Maybe.Extra exposing (isJust, isNothing)
+import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils
     exposing
-        ( getInputConstraintsMuac
-        , healthEducationFormWithDefault
+        ( healthEducationFormWithDefault
         , muacFormWithDefault
-        , nutritionFormWithDefault
         , sendToHCFormWithDefault
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (renderDatePart, viewColorAlertIndication, viewSendToHealthCenterForm, viewSendToHospitalForm, viewVitalsForm)
+import Measurement.View exposing (renderDatePart, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Activity.Utils exposing (..)
@@ -60,8 +57,6 @@ import Pages.Utils
         ( getCurrentReasonForMedicationNonAdministration
         , isTaskCompleted
         , nonAdministrationReasonToSign
-        , taskAllCompleted
-        , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -72,37 +67,33 @@ import Pages.Utils
         , viewCustomSelectListInput
         , viewInstructionsLabel
         , viewLabel
-        , viewPhotoThumbFromImageUrl
-        , viewPreviousMeasurement
         , viewQuestionLabel
         , viewRedAlertForSelect
         , viewTextInput
         )
-import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (fromEntityId, toEntityId)
-import Set
+import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, geoInfo)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw activity db model =
+view : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site geoInfo id isChw activity db model =
     let
         assembled =
             generateAssembledData currentDate id isChw db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site geoInfo id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site geoInfo id isChw activity db model assembled =
     div [ class "page-activity acute-illness" ]
         [ viewHeader language id activity <| Maybe.map Tuple.second assembled.diagnosis
-        , viewContent language currentDate id isChw activity db model assembled
+        , viewContent language currentDate site geoInfo id isChw activity db model assembled
         , viewModal <|
             warningPopup language
                 currentDate
@@ -150,10 +141,10 @@ viewHeader language id activity diagnosis =
         ]
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id isChw activity db model assembled =
+viewContent : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site geoInfo id isChw activity db model assembled =
     (viewPersonDetailsWithAlert language currentDate isChw assembled model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id isChw activity db assembled model
+        :: viewActivity language currentDate site geoInfo id isChw activity db assembled model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -401,24 +392,21 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id isChw activity db assembled model =
+viewActivity : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate site geoInfo id isChw activity db assembled model =
     let
         personId =
             assembled.participant.person
 
         measurements =
             assembled.measurements
-
-        diagnosis =
-            Maybe.map Tuple.second assembled.diagnosis
     in
     case activity of
         AcuteIllnessSymptoms ->
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            viewAcuteIllnessPhysicalExam language currentDate id isChw assembled model.physicalExamData
+            viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled model.physicalExamData
 
         AcuteIllnessPriorTreatment ->
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
@@ -430,7 +418,7 @@ viewActivity language currentDate id isChw activity db assembled model =
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
 
         AcuteIllnessNextSteps ->
-            viewAcuteIllnessNextSteps language currentDate id isChw assembled db model.nextStepsData
+            viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled db model.nextStepsData
 
         AcuteIllnessOngoingTreatment ->
             viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurements ) model.ongoingTreatmentData
@@ -632,16 +620,14 @@ viewSymptomsGIForm language currentDate measurements form =
 viewAcuteIllnessPhysicalExam :
     Language
     -> NominalDate
+    -> Site
     -> AcuteIllnessEncounterId
     -> Bool
     -> AssembledData
     -> PhysicalExamData
     -> List (Html Msg)
-viewAcuteIllnessPhysicalExam language currentDate id isChw assembled data =
+viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
     let
-        personId =
-            assembled.participant.person
-
         person =
             assembled.person
 
@@ -743,7 +729,7 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled data =
                     measurements.muac
                         |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate assembled.person previousValue SetMuac
+                        |> viewMuacForm language currentDate site assembled.person previousValue SetMuac
 
                 Just PhysicalExamAcuteFindings ->
                     measurements.acuteFindings
@@ -774,6 +760,9 @@ viewAcuteIllnessPhysicalExam language currentDate id isChw assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     PhysicalExamVitals ->
@@ -1129,7 +1118,7 @@ viewCovidTestingForm language currentDate person form =
                             ++ isPregnantInput
 
                     else
-                        [ div [ class "why-not" ]
+                        div [ class "why-not" ]
                             [ viewQuestionLabel language Translate.WhyNot
                             , viewCheckBoxSelectInput language
                                 [ AdministeredPreviously
@@ -1143,8 +1132,7 @@ viewCovidTestingForm language currentDate person form =
                                 SetCovidTestingAdministrationNote
                                 Translate.AdministrationNote
                             ]
-                        ]
-                            ++ isPregnantInputForView
+                            :: isPregnantInputForView
                 )
                 form.testPerformed
                 |> Maybe.withDefault []
@@ -1569,12 +1557,9 @@ viewTreatmentReviewForm language currentDate measurements form =
         |> div [ class "ui form treatment-review" ]
 
 
-viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
-viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
+viewAcuteIllnessNextSteps : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled db data =
     let
-        personId =
-            assembled.participant.person
-
         person =
             assembled.person
 
@@ -1736,7 +1721,7 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
                     measurements.contactsTracing
                         |> getMeasurementValueFunc
                         |> contactsTracingFormWithDefault data.contactsTracingForm
-                        |> viewContactsTracingForm language currentDate db contactsTracingFinished
+                        |> viewContactsTracingForm language currentDate site geoInfo db contactsTracingFinished
 
                 Just NextStepsSymptomsReliefGuidance ->
                     measurements.healthEducation
@@ -1847,6 +1832,9 @@ viewAcuteIllnessNextSteps language currentDate id isChw assembled db data =
 
                     else
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     NextStepsIsolation ->
@@ -1956,6 +1944,21 @@ viewIsolationForm language currentDate isChw measurements form =
         derivedInputs =
             case form.patientIsolated of
                 Just True ->
+                    let
+                        signOnDoorInput =
+                            if isChw then
+                                [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
+                                , viewBoolInput
+                                    language
+                                    form.signOnDoor
+                                    SetSignOnDoor
+                                    "sign-on-door"
+                                    Nothing
+                                ]
+
+                            else
+                                []
+                    in
                     signOnDoorInput ++ healthEducationInput
 
                 Just False ->
@@ -1973,20 +1976,6 @@ viewIsolationForm language currentDate isChw measurements form =
 
                 Nothing ->
                     []
-
-        signOnDoorInput =
-            if isChw then
-                [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
-                , viewBoolInput
-                    language
-                    form.signOnDoor
-                    SetSignOnDoor
-                    "sign-on-door"
-                    Nothing
-                ]
-
-            else
-                []
 
         healthEducationInput =
             [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion
@@ -2187,9 +2176,6 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
             let
                 viewDerivedQuestion medication reasonToSignFunc =
                     let
-                        nonAdministrationSigns =
-                            form.nonAdministrationSigns |> Maybe.withDefault EverySet.empty
-
                         currentValue =
                             getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
                     in
@@ -2204,7 +2190,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 
                 -- When answer for medication administartion is Yes, we clean the reason for not adminsetering the medication.
                 updateNonAdministrationSigns medication reasonToSignFunc value form_ =
-                    if value == True then
+                    if value then
                         form_.nonAdministrationSigns
                             |> Maybe.andThen
                                 (\nonAdministrationSigns ->
@@ -2862,36 +2848,37 @@ viewHealthEducationForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis
 viewHealthEducationForm language currentDate maybeDiagnosis form =
     let
         healthEducationSection =
-            let
-                providedHealthEducation =
-                    form.educationForDiagnosis
-                        |> Maybe.withDefault True
-
-                reasonForNotProvidingHealthEducationOptions =
-                    [ PatientNeedsEmergencyReferral
-                    , ReceivedEmergencyCase
-                    , LackOfAppropriateEducationUserGuide
-                    , PatientRefused
-                    ]
-
-                reasonForNotProvidingHealthEducation =
-                    if not providedHealthEducation then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            reasonForNotProvidingHealthEducationOptions
-                            []
-                            form.reasonForNotProvidingHealthEducation
-                            SetReasonForNotProvidingHealthEducation
-                            Translate.ReasonForNotProvidingHealthEducation
-                        ]
-
-                    else
-                        []
-            in
             maybeDiagnosis
                 |> Maybe.map
                     (\diagnosis ->
-                        [ div [ class "label" ]
+                        let
+                            providedHealthEducation =
+                                form.educationForDiagnosis
+                                    |> Maybe.withDefault True
+
+                            reasonForNotProvidingHealthEducation =
+                                if not providedHealthEducation then
+                                    let
+                                        reasonForNotProvidingHealthEducationOptions =
+                                            [ PatientNeedsEmergencyReferral
+                                            , ReceivedEmergencyCase
+                                            , LackOfAppropriateEducationUserGuide
+                                            , PatientRefused
+                                            ]
+                                    in
+                                    [ viewQuestionLabel language Translate.WhyNot
+                                    , viewCheckBoxSelectInput language
+                                        reasonForNotProvidingHealthEducationOptions
+                                        []
+                                        form.reasonForNotProvidingHealthEducation
+                                        SetReasonForNotProvidingHealthEducation
+                                        Translate.ReasonForNotProvidingHealthEducation
+                                    ]
+
+                                else
+                                    []
+                        in
+                        div [ class "label" ]
                             [ text <| translate language Translate.ProvidedPreventionEducationQuestion
                             , text " "
                             , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
@@ -2903,8 +2890,7 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                                 "education-for-diagnosis"
                                 Nothing
                             ]
-                        ]
-                            ++ reasonForNotProvidingHealthEducation
+                            :: reasonForNotProvidingHealthEducation
                     )
                 |> Maybe.withDefault [ emptyNode ]
     in
@@ -3002,8 +2988,8 @@ viewFollowUpLabel language actionTranslationId iconClass =
     viewInstructionsLabel iconClass message
 
 
-viewContactsTracingForm : Language -> NominalDate -> ModelIndexedDb -> Bool -> ContactsTracingForm -> Html Msg
-viewContactsTracingForm language currentDate db contactsTracingFinished form =
+viewContactsTracingForm : Language -> NominalDate -> Site -> GeoInfo -> ModelIndexedDb -> Bool -> ContactsTracingForm -> Html Msg
+viewContactsTracingForm language currentDate site geoInfo db contactsTracingFinished form =
     let
         content =
             case form.state of
@@ -3016,13 +3002,13 @@ viewContactsTracingForm language currentDate db contactsTracingFinished form =
                             Maybe.map Dict.keys form.contacts
                                 |> Maybe.withDefault []
                     in
-                    viewContactsTracingFormSearchParticipants language currentDate db recordedContacts data
+                    viewContactsTracingFormSearchParticipants language currentDate site db recordedContacts data
 
                 ContactsTracingFormRecordContactDetails personId data ->
                     viewContactsTracingFormRecordContactDetails language currentDate personId db data
 
                 ContactsTracingFormRegisterContact data ->
-                    viewCreateContactForm language currentDate db data
+                    viewCreateContactForm language currentDate site geoInfo db data
     in
     div [ class "ui form contacts-tracing" ]
         content
@@ -3129,8 +3115,8 @@ viewTracedContact language currentDate db finished contact =
         ]
 
 
-viewContactsTracingFormSearchParticipants : Language -> NominalDate -> ModelIndexedDb -> List PersonId -> SearchParticipantsData -> List (Html Msg)
-viewContactsTracingFormSearchParticipants language currentDate db existingContacts data =
+viewContactsTracingFormSearchParticipants : Language -> NominalDate -> Site -> ModelIndexedDb -> List PersonId -> SearchParticipantsData -> List (Html Msg)
+viewContactsTracingFormSearchParticipants language currentDate site db existingContacts data =
     let
         searchForm =
             Pages.Utils.viewSearchForm language data.input Translate.PlaceholderSearchContactName SetContactsTracingInput
@@ -3189,7 +3175,7 @@ viewContactsTracingFormSearchParticipants language currentDate db existingContac
                     [ class "single-action" ]
                     [ div
                         [ class "ui primary button"
-                        , onClick <| SetContactsTracingFormState <| ContactsTracingFormRegisterContact emptyRegisterContactData
+                        , onClick <| SetContactsTracingFormState <| ContactsTracingFormRegisterContact (emptyRegisterContactData site)
                         ]
                         [ text <| translate language Translate.RegisterNewContact ]
                     ]
@@ -3364,8 +3350,8 @@ viewContactTracingParticipant language currentDate personId person checked newFo
         ]
 
 
-viewCreateContactForm : Language -> NominalDate -> ModelIndexedDb -> RegisterContactData -> List (Html Msg)
-viewCreateContactForm language currentDate db data =
+viewCreateContactForm : Language -> NominalDate -> Site -> GeoInfo -> ModelIndexedDb -> RegisterContactData -> List (Html Msg)
+viewCreateContactForm language currentDate site geoInfo db data =
     let
         request =
             db.postPerson
@@ -3397,17 +3383,30 @@ viewCreateContactForm language currentDate db data =
                     emptyNode
 
         demographicFields =
-            List.map (Html.map RegisterContactMsgForm) <|
-                [ Pages.Person.View.viewTextInput language Translate.FirstName Backend.Person.Form.firstName False data
-                , Pages.Person.View.viewTextInput language Translate.SecondName Backend.Person.Form.secondName True data
-                , genderInput
-                ]
+            let
+                firstNameInput =
+                    Pages.Person.View.viewTextInput language Translate.FirstName Backend.Person.Form.firstName False data
 
-        genderField =
-            Form.getFieldAsString Backend.Person.Form.gender data
+                secondNameInput =
+                    Pages.Person.View.viewTextInput language Translate.SecondName Backend.Person.Form.secondName True data
+
+                nameInputs =
+                    case site of
+                        SiteBurundi ->
+                            [ secondNameInput, firstNameInput ]
+
+                        _ ->
+                            [ firstNameInput, secondNameInput ]
+            in
+            List.map (Html.map RegisterContactMsgForm) <|
+                nameInputs
+                    ++ [ genderInput ]
 
         genderInput =
             let
+                genderField =
+                    Form.getFieldAsString Backend.Person.Form.gender data
+
                 label =
                     div [ class "six wide column required" ]
                         [ text <| translate language Translate.GenderLabel ++ ":" ]
@@ -3435,20 +3434,6 @@ viewCreateContactForm language currentDate db data =
                     :: maleOption
                     ++ femaleOption
 
-        geoLocationDictToOptions dict =
-            Dict.toList dict
-                |> List.map
-                    (\( id, geoLocation ) ->
-                        ( String.fromInt <| fromEntityId id, geoLocation.name )
-                    )
-
-        filterGeoLocationDictByParent parentId dict =
-            dict
-                |> Dict.filter
-                    (\_ geoLocation ->
-                        (Just <| toEntityId parentId) == geoLocation.parent
-                    )
-
         geoLocationInputClass isDisabled =
             "select-input"
                 ++ (if isDisabled then
@@ -3458,9 +3443,6 @@ viewCreateContactForm language currentDate db data =
                         ""
                    )
 
-        province =
-            Form.getFieldAsString Backend.Person.Form.province data
-
         district =
             Form.getFieldAsString Backend.Person.Form.district data
 
@@ -3469,9 +3451,6 @@ viewCreateContactForm language currentDate db data =
 
         cell =
             Form.getFieldAsString Backend.Person.Form.cell data
-
-        village =
-            Form.getFieldAsString Backend.Person.Form.village data
 
         viewProvince =
             let
@@ -3483,7 +3462,7 @@ viewCreateContactForm language currentDate db data =
                     isFormFieldSet district
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Province
+                (resolveGeoSructureLabelLevel1 site)
                 options
                 Backend.Person.Form.province
                 "ten"
@@ -3493,6 +3472,9 @@ viewCreateContactForm language currentDate db data =
 
         viewDistrict =
             let
+                province =
+                    Form.getFieldAsString Backend.Person.Form.province data
+
                 options =
                     emptyOption
                         :: (case getValueAsInt province of
@@ -3509,7 +3491,7 @@ viewCreateContactForm language currentDate db data =
                     isFormFieldSet sector
             in
             Pages.Person.View.viewSelectInput language
-                Translate.District
+                (resolveGeoSructureLabelLevel2 site)
                 options
                 Backend.Person.Form.district
                 "ten"
@@ -3535,7 +3517,7 @@ viewCreateContactForm language currentDate db data =
                     isFormFieldSet cell
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Sector
+                (resolveGeoSructureLabelLevel3 site)
                 options
                 Backend.Person.Form.sector
                 "ten"
@@ -3545,6 +3527,9 @@ viewCreateContactForm language currentDate db data =
 
         viewCell =
             let
+                village =
+                    Form.getFieldAsString Backend.Person.Form.village data
+
                 options =
                     emptyOption
                         :: (case getValueAsInt sector of
@@ -3561,7 +3546,7 @@ viewCreateContactForm language currentDate db data =
                     isFormFieldSet village
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Cell
+                (resolveGeoSructureLabelLevel4 site)
                 options
                 Backend.Person.Form.cell
                 "ten"
@@ -3584,7 +3569,7 @@ viewCreateContactForm language currentDate db data =
                            )
             in
             Pages.Person.View.viewSelectInput language
-                Translate.Village
+                (resolveGeoSructureLabelLevel5 site)
                 options
                 Backend.Person.Form.village
                 "ten"
@@ -3632,10 +3617,9 @@ viewCreateContactForm language currentDate db data =
                 [ text <| translate language Translate.Cancel ]
 
         formContent =
-            [ fieldset [ class "registration-form" ]
+            fieldset [ class "registration-form" ]
                 demographicFields
-            ]
-                ++ contactInformationSection
+                :: contactInformationSection
                 ++ addressSection
                 ++ [ div [ class "dual-action" ]
                         [ submitButton

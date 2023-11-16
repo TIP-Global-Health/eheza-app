@@ -9,7 +9,6 @@ import Backend.Measurement.Model
         ( AbdomenCPESign(..)
         , AdministrationNote(..)
         , BreastExamSign(..)
-        , CSectionReason(..)
         , DangerSign(..)
         , FamilyPlanningSign(..)
         , HandsCPESign(..)
@@ -23,7 +22,6 @@ import Backend.Measurement.Model
         , PostpartumHealingProblem(..)
         , PostpartumMotherDangerSign(..)
         , PrenatalSymptom(..)
-        , PreviousDeliveryPeriod(..)
         , VaginalExamSign(..)
         )
 import Backend.Measurement.Utils
@@ -38,11 +36,11 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
-import Date exposing (Unit(..))
-import EverySet exposing (EverySet)
+import Date
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (unwrap)
 import Measurement.Model exposing (VaccinationFormViewMode(..))
 import Measurement.Utils
     exposing
@@ -61,7 +59,6 @@ import Measurement.Utils
         , toOutsideCareValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toRandomBloodSugarTestValueWithDefault
-        , toSendToHCValueWithDefault
         , toSyphilisTestValueWithEmptyResults
         , toUrineDipstickTestValueWithDefault
         , toVaccinationValueWithDefault
@@ -76,16 +73,12 @@ import Pages.Prenatal.Activity.Utils exposing (..)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils exposing (insertIntoSet, nonAdministrationReasonToSign, setMultiSelectInputValue, tasksBarId)
 import RemoteData exposing (RemoteData(..))
-import Result exposing (Result)
-import Translate exposing (Language, translate)
+import Translate exposing (Language)
 
 
 update : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update language currentDate id db msg model =
     let
-        noChange =
-            ( model, Cmd.none, [] )
-
         corePhysicalExamForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -106,16 +99,6 @@ update language currentDate id db msg model =
                     )
                 |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
 
-        symptomReviewForm =
-            Dict.get id db.prenatalMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (.symptomReview
-                        >> getMeasurementValueFunc
-                        >> symptomReviewFormWithDefault model.symptomReviewData.form
-                    )
-                |> Maybe.withDefault model.symptomReviewData.form
-
         outsideCareForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -125,16 +108,6 @@ update language currentDate id db msg model =
                         >> outsideCareFormWithDefault model.historyData.outsideCareForm
                     )
                 |> Maybe.withDefault model.historyData.outsideCareForm
-
-        referralForm =
-            Dict.get id db.prenatalMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (.sendToHC
-                        >> getMeasurementValueFunc
-                        >> referralFormWithDefault model.nextStepsData.referralForm
-                    )
-                |> Maybe.withDefault model.nextStepsData.referralForm
 
         resolveVaccinationForm vaccineType form =
             Dict.get id db.prenatalMeasurements
@@ -187,7 +160,7 @@ update language currentDate id db msg model =
     in
     case msg of
         NoOp ->
-            noChange
+            ( model, Cmd.none, [] )
 
         DropZoneComplete result ->
             let
@@ -457,11 +430,11 @@ update language currentDate id db msg model =
 
         SetNumberOfCSections value ->
             let
-                form =
-                    model.historyData.obstetricFormSecondStep
-
                 updatedForm =
                     let
+                        form =
+                            model.historyData.obstetricFormSecondStep
+
                         updatedValue =
                             String.toInt value
                     in
@@ -1700,11 +1673,11 @@ update language currentDate id db msg model =
 
         SetPregnancyTestResult value ->
             let
-                result =
-                    pregnancyTestResultFromString value
-
                 updatedData =
                     let
+                        result =
+                            pregnancyTestResultFromString value
+
                         updatedForm =
                             model.laboratoryData.pregnancyTestForm
                                 |> (\form -> { form | pregnancyTestResult = result })
@@ -3091,6 +3064,16 @@ update language currentDate id db msg model =
 
         SetFacilityNonReferralReason currentValue facility reason ->
             let
+                referralForm =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.sendToHC
+                                >> getMeasurementValueFunc
+                                >> referralFormWithDefault model.nextStepsData.referralForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.referralForm
+
                 updatedValue =
                     nonReferralReasonToSign facility reason
 
@@ -3325,7 +3308,7 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SaveWait personId measurementId updatedValue secondPhaseRequired nextTask ->
+        SaveWait personId measurementId updatedValue ->
             let
                 extraMsgs =
                     -- When saving Wait activity, we pause the encounter, and
@@ -3355,6 +3338,17 @@ update language currentDate id db msg model =
 
                 extraMsgs =
                     if step == SymptomReviewStepQuestions then
+                        let
+                            symptomReviewForm =
+                                Dict.get id db.prenatalMeasurements
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> Maybe.map
+                                        (.symptomReview
+                                            >> getMeasurementValueFunc
+                                            >> symptomReviewFormWithDefault model.symptomReviewData.form
+                                        )
+                                    |> Maybe.withDefault model.symptomReviewData.form
+                        in
                         Maybe.map
                             (\symptoms ->
                                 if List.member CoughContinuous symptoms then
@@ -3659,7 +3653,7 @@ update language currentDate id db msg model =
                         |> resolveVaccinationForm vaccineType
 
                 updatedForm =
-                    if value == True then
+                    if value then
                         { form
                             | viewMode = ViewModeVaccinationUpdate dose
                             , updatePreviousVaccines = Nothing
@@ -3845,9 +3839,6 @@ update language currentDate id db msg model =
 
         SaveTetanusImmunisation personId saved ->
             let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
                 measurement =
                     getMeasurementValueFunc saved
 
@@ -3856,6 +3847,10 @@ update language currentDate id db msg model =
                         |> toVaccinationValueWithDefault measurement
                         |> Maybe.map
                             (\value ->
+                                let
+                                    measurementId =
+                                        Maybe.map Tuple.first saved
+                                in
                                 [ Backend.PrenatalEncounter.Model.SaveTetanusImmunisation personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb

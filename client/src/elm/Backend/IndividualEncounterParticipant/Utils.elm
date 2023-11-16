@@ -1,6 +1,5 @@
 module Backend.IndividualEncounterParticipant.Utils exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Backend.PatientRecord.Utils
 import Gizra.NominalDate exposing (NominalDate)
@@ -17,20 +16,23 @@ individualEncounterTypeToString encounterType =
         AntenatalEncounter ->
             "antenatal"
 
+        ChildScoreboardEncounter ->
+            "child-scoreboard"
+
         HomeVisitEncounter ->
             "home-visit"
 
         InmmunizationEncounter ->
             "inmmunization"
 
+        NCDEncounter ->
+            "ncd"
+
         NutritionEncounter ->
             "nutrition"
 
         WellChildEncounter ->
             "well-child"
-
-        NCDEncounter ->
-            "ncd"
 
 
 individualEncounterTypeFromString : String -> Maybe IndividualEncounterType
@@ -42,20 +44,23 @@ individualEncounterTypeFromString string =
         "antenatal" ->
             Just AntenatalEncounter
 
+        "child-scoreboard" ->
+            Just ChildScoreboardEncounter
+
         "home-visit" ->
             Just HomeVisitEncounter
 
         "inmmunization" ->
             Just InmmunizationEncounter
 
+        "ncd" ->
+            Just NCDEncounter
+
         "nutrition" ->
             Just NutritionEncounter
 
         "well-child" ->
             Just WellChildEncounter
-
-        "ncd" ->
-            Just NCDEncounter
 
         _ ->
             Nothing
@@ -89,7 +94,7 @@ initiatorFromUrlFragment s =
             if String.startsWith "patient-record-" s then
                 let
                     fragments =
-                        String.dropLeft (String.length "patient-record-") s
+                        String.dropLeft 15 s
                             |> String.split "+++"
                 in
                 if List.length fragments /= 2 then

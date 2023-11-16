@@ -6,7 +6,7 @@ import Pages.Report.Svg exposing (..)
 import Pages.Report.Utils exposing (getRandomBloodSugarResultValue)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
+import Translate exposing (Language, TranslationId, translate)
 
 
 {-| If you're calling any of the functions that generate charts,
@@ -97,10 +97,9 @@ viewBloodPressureByTime language sysPoints diaPoints =
             ++ sysHelper
             ++ diaHelper
             |> g []
-        , g []
-            [ drawPolyline measurementsSys "data red"
-            , drawPolyline measurementsDia "data green"
-            ]
+        , g [] <|
+            (drawPolyline measurementsSys "data red" :: drawPoints "#06B9FF" measurementsSys)
+                ++ (drawPolyline measurementsDia "data green" :: drawPoints "purple" measurementsDia)
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.left - 21.5 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 20 (dimensionsPx.right + 7.5 |> String.fromFloat)
@@ -133,9 +132,6 @@ viewBloodGlucoseByTime language results =
 
         horizontalStep =
             widthPx / toFloat (horizontalMax - horizontalMin)
-
-        points =
-            List.map getRandomBloodSugarResultValue results
 
         measurementsWithIndicators =
             measurementsWithInidactorsByTime verticalMin
@@ -184,8 +180,9 @@ viewBloodGlucoseByTime language results =
             , verticalLabel language Translate.BloodGlucose
             ]
                 ++ indicators
-        , g []
-            [ drawPolyline measurements "data black" ]
+        , g [] <|
+            drawPolyline measurements "data black"
+                :: drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 30 (dimensionsPx.left - 21.5 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 30 (dimensionsPx.right + 7.5 |> String.fromFloat)
@@ -233,8 +230,9 @@ viewHbA1cByTime language points =
             [ horizontalLabel language
             , verticalLabel language Translate.HbA1cPercentage
             ]
-        , g []
-            [ drawPolyline measurements "data black" ]
+        , g [] <|
+            drawPolyline measurements "data black"
+                :: drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 1 (dimensionsPx.left - 21.5 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 1 (dimensionsPx.right + 7.5 |> String.fromFloat)

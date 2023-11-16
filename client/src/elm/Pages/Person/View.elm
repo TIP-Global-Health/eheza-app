@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, expectedAgeByForm, validatePerson)
+import Backend.Person.Form exposing (applyDefaultValuesForPerson, expectedAgeByForm)
 import Backend.Person.Model
     exposing
         ( ExpectedAge(..)
@@ -36,31 +36,32 @@ import Backend.Person.Utils
         )
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalActivity.Model
-import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.Relationship.Model exposing (MyRelationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
-import Date exposing (Date, Unit(..))
+import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
+import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
+import GeoLocation.Utils exposing (..)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
-import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
+import Restful.Endpoint exposing (fromEntityUuid)
 import Set
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, geoInfo)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -315,10 +316,6 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
         typeForThumbnail =
             defaultIconForPerson currentDate person
 
-        isAdult =
-            isPersonAnAdult currentDate person
-                |> Maybe.withDefault True
-
         relationshipLabel =
             otherPerson.relationship
                 |> Maybe.map
@@ -382,6 +379,10 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                         -- Allow any adult. Allow any child, when clinic type is
                                         -- Sorwathe/Achi. When clinic type is other, allow child
                                         -- with age lower than 26 month.
+                                        isAdult =
+                                            isPersonAnAdult currentDate person
+                                                |> Maybe.withDefault True
+
                                         qualifiesByAge =
                                             isAdult || List.member session.clinicType [ Sorwathe, Achi ] || childAgeCondition
 
@@ -461,8 +462,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate maybeVillageId isChw operation initiator model db =
+viewCreateEditForm : Language -> NominalDate -> Site -> GeoInfo -> ReverseGeoInfo -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -479,19 +480,17 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
         -- new person with.
         -- When editing, this is the person that is being edited.
         maybeRelatedPerson =
-            personId
-                |> Maybe.andThen (\id -> Dict.get id db.people)
+            Maybe.andThen (\id -> Dict.get id db.people) personId
                 |> Maybe.andThen RemoteData.toMaybe
 
         maybeVillage =
-            maybeVillageId
-                |> Maybe.andThen (getVillageById db)
+            Maybe.andThen (getVillageById db) maybeVillageId
 
         today =
             currentDate
 
         personForm =
-            applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
+            applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
@@ -620,6 +619,15 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -90 today
                             , birthDateSelectorTo = Date.add Years -12 today
+                            , title = Translate.People
+                            }
+
+                        ChildScoreboardEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage ChildScoreboardEncounter)
+                            , expectedAge = ExpectChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -2 today
+                            , birthDateSelectorTo = Date.add Days -1 today
                             , title = Translate.People
                             }
 
@@ -801,11 +809,11 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     ]
                 ]
 
-        genderField =
-            Form.getFieldAsString Backend.Person.Form.gender personForm
-
         genderInput =
             let
+                genderField =
+                    Form.getFieldAsString Backend.Person.Form.gender personForm
+
                 label =
                     div [ class "six wide column required" ]
                         [ text <| translate language Translate.GenderLabel ++ ":" ]
@@ -954,13 +962,30 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
         hmisNumberInput =
             viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
+        firstNameInput =
+            viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
+
+        secondNameInput =
+            viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
+
+        nationalIdNumberInput =
+            viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+
         demographicFields =
             viewPhoto
                 :: (List.map (Html.map (MsgForm operation initiator)) <|
-                        [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
-                        , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
-                        , viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-                        ]
+                        case site of
+                            SiteBurundi ->
+                                [ secondNameInput
+                                , firstNameInput
+                                , nationalIdNumberInput
+                                ]
+
+                            _ ->
+                                [ firstNameInput
+                                , secondNameInput
+                                , nationalIdNumberInput
+                                ]
                    )
                 ++ [ birthDateInput ]
                 ++ (List.map (Html.map (MsgForm operation initiator)) <|
@@ -991,6 +1016,14 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                                 ]
                    )
 
+        demographicSection =
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language Translate.ParticipantDemographicInformation ++ ":" ]
+            , demographicFields
+                |> fieldset [ class "registration-form" ]
+            ]
+
         ubudeheOptions =
             allUbudehes
                 |> List.map
@@ -1001,24 +1034,31 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     )
                 |> (::) emptyOption
 
-        familyInformationFields =
-            [ viewSelectInput language Translate.FamilyUbudehe ubudeheOptions Backend.Person.Form.ubudehe "ten" "select-input" True personForm
-            ]
+        -- Only field here is Ubudehe, and it's Rwanda specific.
+        familyInformationSection =
+            if site == SiteRwanda then
+                let
+                    familyInformationFields =
+                        [ viewSelectInput language
+                            Translate.FamilyUbudehe
+                            ubudeheOptions
+                            Backend.Person.Form.ubudehe
+                            "ten"
+                            "select-input"
+                            True
+                            personForm
+                        ]
+                in
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.FamilyInformation ++ ":" ]
+                , familyInformationFields
+                    |> fieldset [ class "registration-form family-info" ]
+                    |> Html.map (MsgForm operation initiator)
+                ]
 
-        geoLocationDictToOptions dict =
-            dict
-                |> Dict.toList
-                |> List.map
-                    (\( id, geoLocation ) ->
-                        ( String.fromInt <| fromEntityId id, geoLocation.name )
-                    )
-
-        filterGeoLocationDictByParent parentId dict =
-            dict
-                |> Dict.filter
-                    (\_ geoLocation ->
-                        (Just <| toEntityId parentId) == geoLocation.parent
-                    )
+            else
+                []
 
         geoLocationInputClass isDisabled =
             "select-input"
@@ -1028,9 +1068,6 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     else
                         ""
                    )
-
-        province =
-            Form.getFieldAsString Backend.Person.Form.province personForm
 
         district =
             Form.getFieldAsString Backend.Person.Form.district personForm
@@ -1054,7 +1091,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     isFormFieldSet district
             in
             viewSelectInput language
-                Translate.Province
+                (resolveGeoSructureLabelLevel1 site)
                 options
                 Backend.Person.Form.province
                 "ten"
@@ -1064,6 +1101,9 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
 
         viewDistrict =
             let
+                province =
+                    Form.getFieldAsString Backend.Person.Form.province personForm
+
                 options =
                     emptyOption
                         :: (case getValueAsInt province of
@@ -1080,7 +1120,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     isFormFieldSet sector
             in
             viewSelectInput language
-                Translate.District
+                (resolveGeoSructureLabelLevel2 site)
                 options
                 Backend.Person.Form.district
                 "ten"
@@ -1106,7 +1146,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     isFormFieldSet cell
             in
             viewSelectInput language
-                Translate.Sector
+                (resolveGeoSructureLabelLevel3 site)
                 options
                 Backend.Person.Form.sector
                 "ten"
@@ -1132,7 +1172,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                     isFormFieldSet village
             in
             viewSelectInput language
-                Translate.Cell
+                (resolveGeoSructureLabelLevel4 site)
                 options
                 Backend.Person.Form.cell
                 "ten"
@@ -1171,7 +1211,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                            )
             in
             viewSelectInput language
-                Translate.Village
+                (resolveGeoSructureLabelLevel5 site)
                 options
                 Backend.Person.Form.village
                 "ten"
@@ -1179,19 +1219,20 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 True
                 personForm
 
-        addressFields =
-            [ viewProvince
-            , viewDistrict
-            , viewSector
-            , viewCell
-            , viewVillage
-            ]
-
         addressSection =
             if isChw then
                 []
 
             else
+                let
+                    addressFields =
+                        [ viewProvince
+                        , viewDistrict
+                        , viewSector
+                        , viewCell
+                        , viewVillage
+                        ]
+                in
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language Translate.AddressInformation ++ ":" ]
@@ -1213,15 +1254,15 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
             else
                 []
 
-        healthCenter =
-            Form.getFieldAsString Backend.Person.Form.healthCenter personForm
-
         healthCenterSection =
             if isChw then
                 []
 
             else
                 let
+                    healthCenter =
+                        Form.getFieldAsString Backend.Person.Form.healthCenter personForm
+
                     inputClass =
                         "select-input"
                             ++ (if isEditOperation && isFormFieldSet healthCenter then
@@ -1244,7 +1285,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                                                         , healthCenter_.name
                                                         )
                                                     )
-                                                |> List.sortBy (\( id, name ) -> name)
+                                                |> List.sortBy (\( _, name ) -> name)
                                         )
                                     |> RemoteData.withDefault []
                                )
@@ -1270,18 +1311,8 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                 [ text <| translate language Translate.Save ]
 
         formContent =
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.ParticipantDemographicInformation ++ ":" ]
-            , demographicFields
-                |> fieldset [ class "registration-form" ]
-            , h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.FamilyInformation ++ ":" ]
-            , familyInformationFields
-                |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm operation initiator)
-            ]
+            demographicSection
+                ++ familyInformationSection
                 ++ addressSection
                 ++ contactInformationSection
                 ++ healthCenterSection

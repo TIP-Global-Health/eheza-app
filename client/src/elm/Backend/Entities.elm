@@ -49,7 +49,7 @@ we need it.
 
 -}
 
-import Restful.Endpoint exposing (EntityUuid(..))
+import Restful.Endpoint exposing (EntityUuid)
 
 
 
@@ -951,6 +951,14 @@ type WellChildDTPImmunisationUuidType
     = WellChildDTPImmunisationUuidType
 
 
+type alias WellChildDTPStandaloneImmunisationId =
+    EntityUuid WellChildDTPStandaloneImmunisationUuidType
+
+
+type WellChildDTPStandaloneImmunisationUuidType
+    = WellChildDTPStandaloneImmunisationUuidType
+
+
 type alias WellChildHPVImmunisationId =
     EntityUuid WellChildHPVImmunisationUuidType
 
@@ -1413,3 +1421,83 @@ type alias StockUpdateId =
 
 type StockUpdateUuidType
     = StockUpdateUuidType
+
+
+type alias ChildScoreboardEncounterId =
+    EntityUuid ChildScoreboardEncounterUuidType
+
+
+type ChildScoreboardEncounterUuidType
+    = ChildScoreboardEncounterUuidType
+
+
+type alias ChildScoreboardNCDAId =
+    EntityUuid ChildScoreboardNCDAUuidType
+
+
+type ChildScoreboardNCDAUuidType
+    = ChildScoreboardNCDAUuidType
+
+
+type alias ChildScoreboardBCGImmunisationId =
+    EntityUuid ChildScoreboardBCGImmunisationUuidType
+
+
+type ChildScoreboardBCGImmunisationUuidType
+    = ChildScoreboardBCGImmunisationUuidType
+
+
+type alias ChildScoreboardDTPImmunisationId =
+    EntityUuid ChildScoreboardDTPImmunisationUuidType
+
+
+type ChildScoreboardDTPImmunisationUuidType
+    = ChildScoreboardDTPImmunisationUuidType
+
+
+type alias ChildScoreboardDTPStandaloneImmunisationId =
+    EntityUuid ChildScoreboardDTPStandaloneImmunisationUuidType
+
+
+type ChildScoreboardDTPStandaloneImmunisationUuidType
+    = ChildScoreboardDTPStandaloneImmunisationUuidType
+
+
+type alias ChildScoreboardIPVImmunisationId =
+    EntityUuid ChildScoreboardIPVImmunisationUuidType
+
+
+type ChildScoreboardIPVImmunisationUuidType
+    = ChildScoreboardIPVImmunisationUuidType
+
+
+type alias ChildScoreboardMRImmunisationId =
+    EntityUuid ChildScoreboardMRImmunisationUuidType
+
+
+type ChildScoreboardMRImmunisationUuidType
+    = ChildScoreboardMRImmunisationUuidType
+
+
+type alias ChildScoreboardOPVImmunisationId =
+    EntityUuid ChildScoreboardOPVImmunisationUuidType
+
+
+type ChildScoreboardOPVImmunisationUuidType
+    = ChildScoreboardOPVImmunisationUuidType
+
+
+type alias ChildScoreboardPCV13ImmunisationId =
+    EntityUuid ChildScoreboardPCV13ImmunisationUuidType
+
+
+type ChildScoreboardPCV13ImmunisationUuidType
+    = ChildScoreboardPCV13ImmunisationUuidType
+
+
+type alias ChildScoreboardRotarixImmunisationId =
+    EntityUuid ChildScoreboardRotarixImmunisationUuidType
+
+
+type ChildScoreboardRotarixImmunisationUuidType
+    = ChildScoreboardRotarixImmunisationUuidType

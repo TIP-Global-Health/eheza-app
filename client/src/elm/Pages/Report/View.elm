@@ -1,30 +1,23 @@
 module Pages.Report.View exposing (..)
 
-import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, labExpirationPeriod)
+import Backend.Measurement.Utils exposing (labExpirationPeriod)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Backend.NutritionEncounter.Utils exposing (sortTuplesByDateDesc)
-import Backend.Person.Model exposing (Person)
-import Date exposing (Interval(..), Unit(..))
-import EverySet exposing (EverySet)
+import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Measurement.Utils exposing (testPerformedByExecutionNote)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
 import Pages.Report.Utils exposing (..)
-import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
-import Utils.WebData exposing (viewWebData)
+import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
 viewLabsPane : Language -> NominalDate -> (Maybe LabResultsMode -> msg) -> Html msg
@@ -630,9 +623,6 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                     )
                 |> List.sortWith sortTuplesByDateDesc
 
-        hivTestResults =
-            getTestResultsKnownAsPositive .hiv .testResult
-
         hivPCRTestResults =
             getTestResults .hivPCR
                 (\value ->
@@ -647,18 +637,6 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         )
                         value.hivViralLoadStatus
                 )
-
-        partnerHIVTestResults =
-            getTestResults .partnerHIV .testResult
-
-        syphilisTestResults =
-            getTestResults .syphilis .testResult
-
-        hepatitisBTestResults =
-            getTestResultsKnownAsPositive .hepatitisB .testResult
-
-        malariaTestResults =
-            getTestResults .malaria .testResult
 
         bloodSmearTestResults =
             data.malaria
@@ -729,13 +707,6 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
         bilirubinResults =
             List.map (\( date, value ) -> ( date, value.bilirubin )) longUrineDipstickTestResults
 
-        randomBloodSugarResults =
-            List.filterMap randomBloodSugarResultFromValue data.randomBloodSugar
-                |> List.sortWith sortTuplesByDateDesc
-
-        hemoglobinResults =
-            getTestResults .hemoglobin .hemoglobinCount
-
         bloodGpRsResults =
             getTestResults .bloodGpRs (\value -> ( value.bloodGroup, value.rhesus ))
 
@@ -762,12 +733,6 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
 
         astResults =
             List.map (\( date, ( _, astResult ) ) -> ( date, astResult )) liverFunctionResults
-
-        pregnancyTestResults =
-            getTestResultsKnownAsPositive .pregnancy .testResult
-
-        hba1cResults =
-            getTestResults .hba1c .hba1cResult
 
         lipidPanelTestResults =
             List.filterMap
@@ -806,6 +771,35 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
         content =
             case mode of
                 LabResultsCurrentMain ->
+                    let
+                        hivTestResults =
+                            getTestResultsKnownAsPositive .hiv .testResult
+
+                        partnerHIVTestResults =
+                            getTestResults .partnerHIV .testResult
+
+                        syphilisTestResults =
+                            getTestResults .syphilis .testResult
+
+                        hepatitisBTestResults =
+                            getTestResultsKnownAsPositive .hepatitisB .testResult
+
+                        malariaTestResults =
+                            getTestResults .malaria .testResult
+
+                        randomBloodSugarResults =
+                            List.filterMap randomBloodSugarResultFromValue data.randomBloodSugar
+                                |> List.sortWith sortTuplesByDateDesc
+
+                        hemoglobinResults =
+                            getTestResults .hemoglobin .hemoglobinCount
+
+                        pregnancyTestResults =
+                            getTestResultsKnownAsPositive .pregnancy .testResult
+
+                        hba1cResults =
+                            getTestResults .hba1c .hba1cResult
+                    in
                     [ viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
                     , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
                         |> showIf displayConfig.hivPCR

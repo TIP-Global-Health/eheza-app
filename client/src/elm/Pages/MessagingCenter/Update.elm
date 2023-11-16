@@ -1,9 +1,9 @@
 module Pages.MessagingCenter.Update exposing (update)
 
 import App.Model
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb)
+import Backend.Model
 import Backend.Nurse.Model
 import Backend.Nurse.Utils exposing (resilienceRoleFromString)
 import Backend.Person.Utils
@@ -14,12 +14,12 @@ import Backend.Person.Utils
         , ubudeheFromInt
         )
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyType(..))
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
-import RemoteData exposing (RemoteData(..))
 import Time
 import Time.Extra
 
@@ -168,7 +168,7 @@ update currentTime currentDate msg model =
 
         SaveMonthlySurvey nurseId ->
             let
-                msgs =
+                ( msgs, extraMsgs ) =
                     if Dict.size model.monthlySurveyForm == List.length monthlySurveyQuestions then
                         -- We need all questions to have answers, to proceed with
                         -- save operations.
@@ -179,18 +179,49 @@ update currentTime currentDate msg model =
                                 , surveyType = ResilienceSurveyMonthly
                                 , signs = model.monthlySurveyForm
                                 }
+
+                            surveyScore =
+                                Dict.values model.monthlySurveyForm
+                                    |> List.map
+                                        (\answer ->
+                                            case answer of
+                                                ResilienceSurveyQuestionOption0 ->
+                                                    1
+
+                                                ResilienceSurveyQuestionOption1 ->
+                                                    2
+
+                                                ResilienceSurveyQuestionOption2 ->
+                                                    3
+
+                                                ResilienceSurveyQuestionOption3 ->
+                                                    4
+
+                                                ResilienceSurveyQuestionOption4 ->
+                                                    5
+                                        )
+                                    |> List.sum
                         in
-                        [ Backend.ResilienceSurvey.Model.CreateResilienceSurvey survey
-                            |> Backend.Model.MsgResilienceSurvey nurseId
-                            |> App.Model.MsgIndexedDb
-                        ]
+                        ( [ Backend.ResilienceSurvey.Model.CreateResilienceSurvey survey
+                                |> Backend.Model.MsgResilienceSurvey nurseId
+                                |> App.Model.MsgIndexedDb
+                          ]
+                        , [ MonthlySurveyScore surveyScore |> Just |> SetSurveyScoreDialogState ]
+                        )
 
                     else
-                        []
+                        ( [], [] )
             in
             ( model
             , Cmd.none
             , msgs
+            )
+                |> sequenceExtra (update currentTime currentDate) extraMsgs
+
+        SetSurveyScoreDialogState state ->
+            ( { model | surveyScoreDialogState = state }
+            , Cmd.none
+            , []
             )
 
         SetActiveTab tab ->

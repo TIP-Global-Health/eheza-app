@@ -1333,9 +1333,11 @@ input::placeholder {
   }
 
   &.diagnosis-popup,
+  &.warning-popup,
   &.open-pregnancy-popup,
   &.danger-signs-popup,
-  &.trace-contact-popup {
+  &.trace-contact-popup,
+  &.survey-score-popup {
     border-top: 15px solid $color-red-alert;
     margin-left: -300px;
     width: 600px;
@@ -1534,7 +1536,8 @@ input::placeholder {
     }
   }
 
-  &.diagnosis-popup {
+  &.diagnosis-popup,
+  &.warning-popup {
 
     .bottom-message p {
       margin-bottom: 10px;
@@ -1542,6 +1545,13 @@ input::placeholder {
 
     ul {
       text-align: left;
+    }
+  }
+
+  &.survey-score-popup {
+
+    .content {
+      padding-top: 2rem;
     }
   }
 
@@ -1699,7 +1709,8 @@ input::placeholder {
 }
 
 .icon-english,
-.icon-kinyarwanda {
+.icon-kinyarwanda,
+.icon-kirundi {
   width: 27px;
   height: 27px;
   display: block;
@@ -1712,6 +1723,11 @@ input::placeholder {
 
 .icon-kinyarwanda {
   background: url(#{$img-path}icon-kinyarwanda.png) no-repeat center;
+  background-size: 16px 11px;
+}
+
+.icon-kirundi {
+  background: url(#{$img-path}icon-kirundi.png) no-repeat center;
   background-size: 16px 11px;
 }
 
@@ -2833,6 +2849,76 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-history-gray.svg);
+  }
+}
+
+.icon-ncda-antenatal {
+  .active &:after {
+    background-image: url(#{$img-path}icon-antenatal-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-antenatal-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-antenatal-gray.svg);
+  }
+}
+
+.icon-ncda-universal-intervention {
+  .active &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-gray.svg);
+  }
+}
+
+.icon-ncda-nutrition-behavior {
+  .active &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-gray.svg);
+  }
+}
+
+.icon-ncda-targeted-intervention {
+  .active &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-gray.svg);
+  }
+}
+
+.icon-ncda-infrastructure-environment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-infrastructure-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-infrastructure-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-infrastructure-gray.svg);
   }
 }
 

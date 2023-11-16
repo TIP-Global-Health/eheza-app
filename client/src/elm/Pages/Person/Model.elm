@@ -1,6 +1,5 @@
 module Pages.Person.Model exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
 import Backend.Person.Model exposing (Initiator, ParticipantDirectoryOperation)
 import Date exposing (Date)
@@ -8,6 +7,7 @@ import DateSelector.Model exposing (DateSelectorConfig)
 import Form
 import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
+import SyncManager.Model exposing (Site)
 
 
 type alias Model =
@@ -16,16 +16,16 @@ type alias Model =
     }
 
 
-emptyCreateModel : Model
-emptyCreateModel =
-    { form = Backend.Person.Form.emptyCreateForm
+emptyCreateModel : Site -> Model
+emptyCreateModel site =
+    { form = Backend.Person.Form.emptyCreateForm site
     , dateSelectorPopupState = Nothing
     }
 
 
-emptyEditModel : Model
-emptyEditModel =
-    { form = Backend.Person.Form.emptyEditForm
+emptyEditModel : Site -> Model
+emptyEditModel site =
+    { form = Backend.Person.Form.emptyEditForm site
     , dateSelectorPopupState = Nothing
     }
 

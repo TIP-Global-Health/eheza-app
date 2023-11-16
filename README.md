@@ -7,7 +7,7 @@
 TIP’s E-Heza Data Solutions is a digital app designed by and for the frontline health worker that can be used on a smartphone or tablet.
 E-Heza captures essential data at the point of care to improve the health of mother and child by providing frontline health workers with immediate insights to help personalize information and advice, and help the mother track the well-being of her child.
 
-E-Heza has been added to the Digital Public Goods Alliance [DPG Registry](http://digitalpublicgoods.net/registry/). The goal of the DPGA and its registry is to promote digital public goods in order to create a more equitable world. Being recognised as a DPG increases the visibility, support for, and prominence of open projects that have the potential to tackle global challenges. To become a digital public good, all projects are required to meet the [DPG Standard](http://digitalpublicgoods.net/standard/) to ensure that projects truly encapsulate open source principles. 
+E-Heza has been added to the Digital Public Goods Alliance [DPG Registry](http://digitalpublicgoods.net/registry/). The goal of the DPGA and its registry is to promote digital public goods in order to create a more equitable world. Being recognised as a DPG increases the visibility, support for, and prominence of open projects that have the potential to tackle global challenges. To become a digital public good, all projects are required to meet the [DPG Standard](http://digitalpublicgoods.net/standard/) to ensure that projects truly encapsulate open source principles.
 
 ## Technical stack
  - [Elm](https://elm-lang.org/) for the mobile frontend
@@ -39,7 +39,7 @@ Primary ports:
 
 1. https://ddev.readthedocs.io/en/latest/#installation . Minimum version: [v1.21.1](https://github.com/drud/ddev/releases/tag/v1.21.1)
 1. On Mac, for the sake of Elm compilation, please make sure that the VM/container has at least 16GB of available RAM, otherwise `elm make` might get killed by the OOM killer.
-1. cp .ddev/config.local.yaml.example .ddev/config.local.yaml
+1. `cp .ddev/config.local.yaml.example .ddev/config.local.yaml`. Note that by default, installation is performed for Rwanda site. If you wish to install for Burundi site, set `EHEZA_SITE=burundi` at `.ddev/local.config.yaml`.
 1. ddev restart
 1. `cp client/src/elm/LocalConfig.Example.elm client/src/elm/LocalConfig.elm`
 1. `ddev gulp`
@@ -117,8 +117,9 @@ infrastructure-related data for Elm. This file is gitignored, and it is
 used during Elm compilation, before the final artifact is pushed to Pantheon.
 Put it in a private repository, and link that repository using
 `EHEZA_INFRA_REPO_REMOTE`, defined in `.ddev/config.local.yaml.example`.
+Also, set `EHEZA_SITE`, to indicate the site installation is done for.
 The repository does not have a strict structure, but the file should be
-present at the `elm/Config.Deploy.elm` path.
+present at the `elm/[EHEZA_SITE]/Config.Deploy.elm` path.
 
 #### Steps
 
@@ -163,4 +164,3 @@ Inside Jenkins, these scripts can be "Freestyle project"s with
 If that's a no-go, for the advancedqueue, `supervisord` is a better choice,
 as that queue needs to be processed all the time. For the reporting, a simple
 cron job might be sufficient.
-

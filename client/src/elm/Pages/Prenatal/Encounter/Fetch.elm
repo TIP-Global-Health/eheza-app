@@ -2,10 +2,10 @@ module Pages.Prenatal.Encounter.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Maybe.Extra
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : PrenatalEncounterId -> ModelIndexedDb -> List MsgIndexedDb
@@ -13,27 +13,19 @@ fetch id db =
     let
         participantId =
             Dict.get id db.prenatalEncounters
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .participant
 
         personId =
-            participantId
-                |> Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
+            Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
+                participantId
+                |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .person
 
         encountersIds =
-            participantId
-                |> Maybe.map
-                    (\participantId_ ->
-                        Dict.get participantId_ db.prenatalEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map Dict.keys
-                            |> RemoteData.withDefault []
-                    )
+            Maybe.map (getPrenatalEncountersForParticipant db) participantId
                 |> Maybe.withDefault []
+                |> List.map Tuple.first
 
         -- We fetch measurements for  all encounters, to be
         -- able to apply `expectedPrenatalActivity` logic.

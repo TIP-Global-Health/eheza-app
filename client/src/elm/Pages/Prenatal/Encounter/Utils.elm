@@ -5,20 +5,19 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getHeightValue, getMeasurementValueFunc, muacValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (sortEncounterTuples, sortEncounterTuplesDesc)
+import Backend.NutritionEncounter.Utils
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (..)
-import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter, lmpToEDDDate)
-import Date exposing (Unit(..))
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
+import EverySet
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, orElse, unwrap)
-import Pages.Prenatal.Activity.Types exposing (NextStepsTask(..))
 import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData)
 import Pages.Prenatal.Utils exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
+import Utils.NominalDate exposing (sortEncounterTuples, sortEncounterTuplesDesc)
 
 
 getAllActivities : AssembledData -> List PrenatalActivity
@@ -253,10 +252,7 @@ resolveGlobalObstetricHistory nursePreviousMeasurements measurements =
 
 getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )
 getPrenatalEncountersForParticipant db participantId =
-    Dict.get participantId db.prenatalEncountersByParticipant
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map Dict.toList
-        |> Maybe.withDefault []
+    Backend.NutritionEncounter.Utils.getPrenatalEncountersForParticipant db participantId
         |> List.sortWith sortEncounterTuplesDesc
 
 
@@ -391,7 +387,7 @@ getFirstEncounterMeasurements isChw assembled =
             else
                 assembled.measurements
 
-        encounterData :: others ->
+        encounterData :: _ ->
             encounterData.measurements
 
 
@@ -405,7 +401,7 @@ getLastEncounterMeasurementsWithDate currentDate isChw assembled =
             else
                 ( assembled.encounter.startDate, assembled.measurements )
 
-        encounterData :: others ->
+        encounterData :: _ ->
             ( encounterData.startDate, encounterData.measurements )
 
 
@@ -538,18 +534,6 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                         |> Maybe.andThen
                             (\measurement ->
                                 let
-                                    height =
-                                        Tuple.second measurement
-                                            |> .value
-                                            |> .height
-                                            |> getHeightValue
-
-                                    weight =
-                                        Tuple.second measurement
-                                            |> .value
-                                            |> .weight
-                                            |> weightValueFunc
-
                                     muac =
                                         Tuple.second measurement
                                             |> .value
@@ -560,6 +544,19 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                                     Just (transAlert diagnosis)
 
                                 else
+                                    let
+                                        height =
+                                            Tuple.second measurement
+                                                |> .value
+                                                |> .height
+                                                |> getHeightValue
+
+                                        weight =
+                                            Tuple.second measurement
+                                                |> .value
+                                                |> .weight
+                                                |> weightValueFunc
+                                    in
                                     calculateBmi (Just height) (Just weight)
                                         |> Maybe.andThen
                                             (\bmi_ ->

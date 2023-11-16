@@ -48,21 +48,22 @@ choices about what to show the user, rather than the details).
 
 -}
 
-import Activity.Model exposing (Activity(..))
-import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import Activity.Model exposing (Activity)
+import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.Measurement.Model exposing (LaboratoryTest)
 import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
-import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
+import Backend.NutritionActivity.Model exposing (NutritionActivity)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Initiator)
-import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..), PrenatalRecurrentActivity(..))
+import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
-import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
+import Backend.WellChildActivity.Model exposing (WellChildActivity)
 
 
 {-| What does the user want to see?
@@ -190,9 +191,13 @@ type UserPage
     | NCDParticipantPage IndividualParticipantInitiator PersonId
     | NCDEncounterPage NCDEncounterId -- NCD activities index.
     | NCDActivityPage NCDEncounterId NCDActivity -- record NCD activity.
-    | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index
-    | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity
+    | NCDRecurrentEncounterPage NCDEncounterId -- NCD recurrent activities index.
+    | NCDRecurrentActivityPage NCDEncounterId NCDRecurrentActivity -- record NCD recurrent activity.
     | NCDProgressReportPage NCDProgressReportInitiator
+    | ChildScoreboardParticipantPage PersonId
+    | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- Child Scoreboard activities index.
+    | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
+    | ChildScoreboardReportPage ChildScoreboardEncounterId -- Scorecard.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

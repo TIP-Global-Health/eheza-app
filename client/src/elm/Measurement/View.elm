@@ -7,7 +7,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Activity.Utils exposing (generateNutritionAssessment)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (ClinicType(..))
-import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
+import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (..)
@@ -20,35 +20,42 @@ import Backend.Measurement.Utils
         , muacIndication
         , muacValueFunc
         , nutritionSignToString
+        , receiveOptionToString
         , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getNewbornExamPregnancySummary
+        ( calculateZScoreWeightForAge
+        , getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
-        , resolvePreviousNCDAValuesForChild
+        , resolveNCDANeverFilled
+        , resolveNCDANotFilledAfterAgeOfSixMonths
         )
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
-import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
+import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput)
 import Html.Parser.Util exposing (toVirtualDom)
 import Json.Decode
+import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( maybeToBoolTask
+        ( isTaskCompleted
+        , maybeToBoolTask
         , taskCompleted
+        , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -61,11 +68,11 @@ import Pages.Utils
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
-        , viewSaveAction
         )
-import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
+import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Utils exposing (selectLanguage)
 import Utils.Html exposing (viewModal)
@@ -80,6 +87,7 @@ child when we enter something.
 viewChild :
     Language
     -> NominalDate
+    -> Site
     -> Bool
     -> ( PersonId, Person )
     -> ChildActivity
@@ -90,7 +98,7 @@ viewChild :
     -> ModelChild
     -> PreviousValuesSet
     -> Html MsgChild
-viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
+viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db model previousValuesSet =
     case activity of
         ChildFbf ->
             viewChildFbf language currentDate child session.offlineSession.session.clinicType (mapMeasurementData .fbf measurements) model.fbfForm
@@ -102,7 +110,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousValuesSet.height zscores model
 
         Muac ->
-            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
+            viewMuac site language currentDate isChw child (mapMeasurementData .muac measurements) previousValuesSet.muac zscores model
 
         NutritionSigns ->
             viewNutritionSigns language currentDate zscores childId (mapMeasurementData .nutrition measurements) session.offlineSession db model.nutrition
@@ -125,12 +133,7 @@ viewChild language currentDate isChw ( childId, child ) activity measurements zs
             viewSendToHC language currentDate (mapMeasurementData .sendToHC measurements) model.sendToHCForm
 
         Activity.Model.NCDA ->
-            let
-                newbornExamPregnancySummary =
-                    getNewbornExamPregnancySummary childId db
-            in
-            resolvePreviousNCDAValuesForChild currentDate childId db
-                |> viewNCDA language currentDate child (mapMeasurementData .ncda measurements) model.ncdaData newbornExamPregnancySummary
+            viewNCDA language currentDate zscores site childId child (mapMeasurementData .ncda measurements) model.ncdaData db
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -146,7 +149,7 @@ type alias FloatFormConfig id value =
     , constraints : FloatInputConstraints
     , unit : TranslationId
     , inputValue : ModelChild -> String
-    , storedValue : value -> Float
+    , toBackendValue : String -> Maybe Float
     , dateMeasured : value -> NominalDate
     , viewIndication : Maybe (Language -> Float -> Html MsgChild)
     , updateMsg : String -> MsgChild
@@ -163,9 +166,9 @@ heightFormConfig =
     , zScoreForAge = Just <| \model age gender height -> zScoreLengthHeightForAge model age gender (Centimetres height)
     , zScoreForHeightOrLength = Nothing
     , constraints = getInputConstraintsHeight
-    , unit = Translate.CentimeterShorthand
+    , unit = Translate.UnitCentimeter
     , inputValue = .height
-    , storedValue = .value >> getHeightValue
+    , toBackendValue = String.toFloat
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateHeight
@@ -173,18 +176,33 @@ heightFormConfig =
     }
 
 
-muacFormConfig : FloatFormConfig MuacId Muac
-muacFormConfig =
+muacFormConfig : Site -> FloatFormConfig MuacId Muac
+muacFormConfig site =
+    let
+        ( toBackendValue, unit ) =
+            case site of
+                SiteBurundi ->
+                    ( -- At Burundi, value is entered as mm, but we need to store it
+                      -- as cm. Therefore, we multiply by 0.1.
+                      String.toFloat >> Maybe.map ((*) 0.1 >> Round.roundNum 1)
+                    , Translate.UnitMillimeter
+                    )
+
+                _ ->
+                    ( String.toFloat
+                    , Translate.UnitCentimeter
+                    )
+    in
     { blockName = "muac"
     , activity = ChildActivity Muac
     , placeholderText = Translate.PlaceholderEnterMUAC
     , zScoreLabelForAge = Translate.ZScoreMuacForAge
     , zScoreForAge = Nothing
     , zScoreForHeightOrLength = Nothing
-    , constraints = getInputConstraintsMuac
-    , unit = Translate.CentimeterShorthand
+    , constraints = getInputConstraintsMuac site
+    , unit = unit
     , inputValue = .muac
-    , storedValue = .value >> muacValueFunc
+    , toBackendValue = toBackendValue
     , dateMeasured = .dateMeasured
     , viewIndication = Just <| \language val -> viewColorAlertIndication language (muacIndication (MuacInCm val))
     , updateMsg = UpdateMuac
@@ -203,7 +221,7 @@ weightFormConfig =
     , constraints = getInputConstraintsWeight
     , unit = Translate.KilogramShorthand
     , inputValue = .weight
-    , storedValue = .value >> weightValueFunc
+    , toBackendValue = String.toFloat
     , dateMeasured = .dateMeasured
     , viewIndication = Nothing
     , updateMsg = UpdateWeight
@@ -230,9 +248,9 @@ viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewMuac =
-    viewFloatForm muacFormConfig
+viewMuac : Site -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac site =
+    viewFloatForm (muacFormConfig site)
 
 
 viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe Float -> ZScore.Model.Model -> ModelChild -> Html MsgChild
@@ -241,6 +259,9 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- What is the string input value from the form?
         inputValue =
             config.inputValue model
+
+        inputAsFloat =
+            String.toFloat inputValue
 
         -- Our input is a string, which may or may not be a valid float,
         -- since we want to let users enter things like "." to start with
@@ -259,16 +280,12 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- `Nothing` if our input value doesn't convert to a string
         -- successfully at the moment ... in which case we won't bother
         -- with the various interpretations yet. (Or allow saving).
-        floatValue =
-            inputValue
-                |> String.toFloat
+        backendValue =
+            config.toBackendValue inputValue
 
         -- What is the most recent measurement we've saved, either locally or
         -- to the backend (we don't care at the moment which). If this is a new
         -- measurement we haven't saved yet, this will be Nothing.
-        savedMeasurement =
-            measurements.current
-
         -- For calculating ZScores, we need to know how old the child was at
         -- the time of the **measurement**. If we have an existing value that
         -- we're modifying, we can get that from the value. (In that case,
@@ -279,15 +296,21 @@ viewFloatForm config language currentDate isChw child measurements previousValue
         -- TODO: We should probably surface this in the UI ... that is, display
         -- what day we think the measurement was made on, and allow the nurse
         -- to change that if necessary.
-        dateMeasured =
-            savedMeasurement
-                |> Maybe.map (Tuple.second >> config.dateMeasured)
-                |> Maybe.withDefault currentDate
-
         -- And, we'll need the child's age.
         maybeAgeInDays =
             Maybe.map
-                (\birthDate -> diffDays birthDate dateMeasured)
+                (\birthDate ->
+                    let
+                        savedMeasurement =
+                            measurements.current
+
+                        dateMeasured =
+                            savedMeasurement
+                                |> Maybe.map (Tuple.second >> config.dateMeasured)
+                                |> Maybe.withDefault currentDate
+                    in
+                    diffDays birthDate dateMeasured
+                )
                 child.birthDate
 
         renderedZScoreForAge =
@@ -296,15 +319,15 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                     (\zScoreForAge ->
                         let
                             zScoreText =
-                                floatValue
-                                    |> Maybe.andThen
-                                        (\val ->
-                                            Maybe.andThen
-                                                (\ageInDays ->
-                                                    zScoreForAge zscores ageInDays child.gender val
-                                                )
-                                                maybeAgeInDays
-                                        )
+                                Maybe.andThen
+                                    (\val ->
+                                        Maybe.andThen
+                                            (\ageInDays ->
+                                                zScoreForAge zscores ageInDays child.gender val
+                                            )
+                                            maybeAgeInDays
+                                    )
+                                    backendValue
                                     |> Maybe.map viewZScore
                                     |> Maybe.withDefault (translate language Translate.NotAvailable)
                         in
@@ -347,7 +370,7 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                                                             )
                                                             maybeAgeInDays
                                                     )
-                                                    floatValue
+                                                    backendValue
                                             )
                                         |> Maybe.map viewZScore
                                         |> Maybe.withDefault (translate language Translate.NotAvailable)
@@ -363,15 +386,16 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                         )
 
         saveMsg =
-            floatValue
-                |> Maybe.andThen
-                    (\value ->
-                        if not <| withinConstraints config.constraints value then
-                            Nothing
+            Maybe.Extra.andThen2
+                (\asFloat forBackend ->
+                    if not <| withinConstraints config.constraints asFloat then
+                        Nothing
 
-                        else
-                            config.saveMsg (Maybe.map Tuple.first measurements.current) value |> Just
-                    )
+                    else
+                        config.saveMsg (Maybe.map Tuple.first measurements.current) forBackend |> Just
+                )
+                inputAsFloat
+                backendValue
     in
     div
         [ class <| "ui full segment " ++ config.blockName ]
@@ -399,11 +423,11 @@ viewFloatForm config language currentDate isChw child measurements previousValue
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
                                 previousValue
-                                floatValue
+                                inputAsFloat
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
                                 config.viewIndication
-                                floatValue
+                                backendValue
                         ]
                     ]
                 , previousValue
@@ -624,18 +648,15 @@ viewNutritionSigns language currentDate zscores childId measurement offlineSessi
         activity =
             ChildActivity NutritionSigns
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        assesment =
-            generateNutritionAssessment currentDate zscores childId db offlineSession
-                |> nutritionAssessmentForBackend
-
         saveMsg =
             if EverySet.isEmpty value.signs then
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 Just <| SendOutMsgChild <| SaveNutrition existingId value
     in
     div [ class "ui full segment nutrition" ]
@@ -715,20 +736,21 @@ viewChildFbf language currentDate child clinicType measurement form =
         activity =
             ChildActivity ChildFbf
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        notice =
-            if isJust form.distributionNotice then
-                form.distributionNotice
-
-            else
-                Just DistributedFully
-
         saveMsg =
             form.distributedAmount
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+
+                            notice =
+                                if isJust form.distributionNotice then
+                                    form.distributionNotice
+
+                                else
+                                    Just DistributedFully
+                        in
                         { form | distributionNotice = notice }
                             |> fbfFormToValue
                             |> SaveChildFbf existingId
@@ -952,9 +974,6 @@ viewFollowUpForm language currentDate setFollowUpOptionMsg form =
 viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
 viewHealthEducation language currentDate measurement form_ =
     let
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saved =
             getMeasurementValueFunc measurement.current
 
@@ -995,6 +1014,10 @@ viewHealthEducation language currentDate measurement form_ =
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 toHealthEducationValueWithDefault saved form_
                     |> Maybe.map (SaveHealthEducation existingId >> SendOutMsgChild)
     in
@@ -1070,8 +1093,8 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
     let
         message =
             div [] <|
-                [ text <| translate language actionTranslationId ]
-                    ++ renderDatePart language maybeDate
+                (text <| translate language actionTranslationId)
+                    :: renderDatePart language maybeDate
                     ++ [ text "." ]
     in
     div [ class "header icon-label" ] <|
@@ -1083,9 +1106,6 @@ viewHealthEducationLabel language actionTranslationId iconClass maybeDate =
 viewSendToHC : Language -> NominalDate -> MeasurementData (Maybe ( GroupSendToHCId, GroupSendToHC )) -> SendToHCForm -> Html MsgChild
 viewSendToHC language currentDate measurement form_ =
     let
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saved =
             getMeasurementValueFunc measurement.current
 
@@ -1128,6 +1148,10 @@ viewSendToHC language currentDate measurement form_ =
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 toSendToHCValueWithDefault saved form_
                     |> Maybe.map (SaveSendToHC existingId >> SendOutMsgChild)
     in
@@ -1322,16 +1346,6 @@ viewVitalsForm language currentDate config form =
             Maybe.map
                 (\birthDate -> Gizra.NominalDate.diffYears birthDate currentDate)
                 config.birthDate
-
-        bloodPressureSection =
-            viewBloodPressureSection
-                form.sysBloodPressure
-                form.diaBloodPressure
-                sysBloodPressureUpdateFunc
-                diaBloodPressureUpdateFunc
-                config.sysBloodPressurePreviousValue
-                config.diaBloodPressurePreviousValue
-                True
 
         viewBloodPressureSection sys dia sysUpdateFunc diaUpdateFunc sysPrevValue diaPrevValue addSeparator =
             Maybe.map
@@ -1531,6 +1545,17 @@ viewVitalsForm language currentDate config form =
                         ++ bodyTemperatureSection
 
                 VitalsFormFull ->
+                    let
+                        bloodPressureSection =
+                            viewBloodPressureSection
+                                form.sysBloodPressure
+                                form.diaBloodPressure
+                                sysBloodPressureUpdateFunc
+                                diaBloodPressureUpdateFunc
+                                config.sysBloodPressurePreviousValue
+                                config.diaBloodPressurePreviousValue
+                                True
+                    in
                     bloodPressureSection
                         ++ heartRateSection
                         ++ respiratoryRateSection
@@ -1835,14 +1860,15 @@ viewFamilyPlanning language measurement signs =
         activity =
             MotherActivity FamilyPlanning
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saveMsg =
             if EverySet.isEmpty signs then
                 Nothing
 
             else
+                let
+                    existingId =
+                        Maybe.map Tuple.first measurement.current
+                in
                 Just <| SendOutMsgMother <| SaveFamilyPlanningSigns existingId signs
     in
     div
@@ -1925,13 +1951,14 @@ viewLactation language measurement form =
         activity =
             MotherActivity Lactation
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
         saveMsg =
             form.breastfeeding
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+                        in
                         lactationFormToSigns form
                             |> SaveLactation existingId
                             |> SendOutMsgMother
@@ -1970,20 +1997,21 @@ viewMotherFbf language currentDate mother clinicType measurement form =
         activity =
             MotherActivity MotherFbf
 
-        existingId =
-            Maybe.map Tuple.first measurement.current
-
-        notice =
-            if isJust form.distributionNotice then
-                form.distributionNotice
-
-            else
-                Just DistributedFully
-
         saveMsg =
             form.distributedAmount
                 |> Maybe.map
                     (\_ ->
+                        let
+                            existingId =
+                                Maybe.map Tuple.first measurement.current
+
+                            notice =
+                                if isJust form.distributionNotice then
+                                    form.distributionNotice
+
+                                else
+                                    Just DistributedFully
+                        in
                         { form | distributionNotice = notice }
                             |> fbfFormToValue
                             |> SaveMotherFbf existingId
@@ -2289,421 +2317,1231 @@ viewTreatmentWithDosage language sign =
 viewNCDAContent :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> PersonId
     -> Person
-    -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
-    -> (String -> msg)
-    -> (NCDAStep -> msg)
-    -> msg
-    -> (Maybe NCDASign -> msg)
+    -> NCDAContentConfig msg
     -> Maybe NCDASign
     -> NCDAForm
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> ModelIndexedDb
     -> List (Html msg)
-viewNCDAContent language currentDate person setBoolInputMsg setBirthWeightMsg setStepMsg saveMsg setHelperStateMsg helperState form newbornExamPregnancySummary previousNCDAValues =
+viewNCDAContent language currentDate zscores site personId person config helperState form db =
     let
-        ( inputs, tasks ) =
-            ncdaFormInputsAndTasks language
-                currentDate
-                person
-                setBoolInputMsg
-                setBirthWeightMsg
-                setHelperStateMsg
-                form
-                currentStep
-                newbornExamPregnancySummary
-
-        totalTasks =
-            List.length tasks
-
-        tasksCompleted =
-            List.map taskCompleted tasks
-                |> List.sum
+        steps =
+            resolveNCDASteps currentDate person config.ncdaNeverFilled config.atHealthCenter
 
         currentStep =
-            resolveNCDAFormStep newbornExamPregnancySummary previousNCDAValues form
+            Maybe.Extra.or form.step (List.head steps)
 
-        actions =
+        viewTask step =
             let
-                actionButton =
-                    Pages.Utils.saveButton language (tasksCompleted == totalTasks)
+                iconClass =
+                    case step of
+                        NCDAStepAntenatalCare ->
+                            "ncda-antenatal"
 
-                backButton backStep =
-                    button
-                        [ class "ui fluid primary button"
-                        , onClick <| setStepMsg backStep
+                        NCDAStepUniversalInterventions ->
+                            "ncda-universal-intervention"
+
+                        NCDAStepNutritionBehavior ->
+                            "ncda-nutrition-behavior"
+
+                        NCDAStepNutritionAssessment ->
+                            "nutrition-assessment"
+
+                        NCDAStepTargetedInterventions ->
+                            "ncda-targeted-intervention"
+
+                        NCDAStepInfrastructureEnvironment ->
+                            "ncda-infrastructure-environment"
+
+                isActive =
+                    currentStep == Just step
+
+                isCompleted =
+                    isTaskCompleted tasksCompletedFromTotalDict step
+
+                attributes =
+                    classList
+                        [ ( "link-section", True )
+                        , ( "active", isActive )
+                        , ( "completed", not isActive && isCompleted )
                         ]
-                        [ text <| ("< " ++ translate language Translate.Back) ]
-            in
-            case currentStep of
-                NCDAStepQuestionsAskedOnce ->
-                    div [ class "actions" ]
-                        [ actionButton (setStepMsg NCDAStepPermanentQuestions1) ]
+                        :: navigationAction
 
-                NCDAStepPermanentQuestions1 ->
-                    let
-                        initialStep =
-                            resolveNCDAFormInitialStep newbornExamPregnancySummary previousNCDAValues
-                    in
-                    if initialStep == NCDAStepPermanentQuestions1 then
-                        div [ class "actions" ]
-                            [ actionButton (setStepMsg NCDAStepPermanentQuestions2) ]
+                navigationAction =
+                    if isActive then
+                        []
 
                     else
-                        div [ class "actions two" ]
-                            [ backButton NCDAStepQuestionsAskedOnce
-                            , actionButton (setStepMsg NCDAStepPermanentQuestions2)
-                            ]
+                        [ onClick <| config.setStepMsg step ]
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.NCDAStep step)
+                    ]
+                ]
 
-                NCDAStepPermanentQuestions2 ->
-                    div [ class "actions two" ]
-                        [ backButton NCDAStepPermanentQuestions1
-                        , actionButton saveMsg
-                        ]
+        formHtmlAndTasks =
+            List.map
+                (\step ->
+                    ( step
+                    , ncdaFormInputsAndTasks language
+                        currentDate
+                        zscores
+                        site
+                        personId
+                        person
+                        config
+                        form
+                        step
+                        db
+                    )
+                )
+                steps
+                |> Dict.fromList
+
+        tasksCompletedFromTotalDict =
+            Dict.map
+                (\_ ( _, tasks_ ) ->
+                    ( List.map taskCompleted tasks_
+                        |> List.sum
+                    , List.length tasks_
+                    )
+                )
+                formHtmlAndTasks
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.map
+                (\step ->
+                    let
+                        html =
+                            Dict.get step formHtmlAndTasks
+                                |> Maybe.map Tuple.first
+                                |> Maybe.withDefault []
+
+                        ( completed, total ) =
+                            Dict.get step tasksCompletedFromTotalDict
+                                |> Maybe.withDefault ( 0, 0 )
+                    in
+                    ( html, completed, total )
+                )
+                currentStep
+                |> Maybe.withDefault ( [], 0, 0 )
+
+        ( header, actions ) =
+            Maybe.map
+                (\step ->
+                    let
+                        actionButton =
+                            Pages.Utils.saveButton language (tasksCompleted == totalTasks)
+                    in
+                    if config.showTasksTray then
+                        let
+                            actionMsg =
+                                List.filter
+                                    (\step_ ->
+                                        (Just step_ /= currentStep)
+                                            && (not <| isTaskCompleted tasksCompletedFromTotalDict step_)
+                                    )
+                                    steps
+                                    |> List.head
+                                    |> Maybe.map config.setStepMsg
+                                    |> Maybe.withDefault config.saveMsg
+                        in
+                        ( div [ class "ui task segment blue", Attr.id tasksBarId ]
+                            [ div [ class "ui five column grid" ] <|
+                                List.map viewTask steps
+                            ]
+                        , div [ class "actions" ]
+                            [ actionButton actionMsg ]
+                        )
+
+                    else
+                        ( emptyNode
+                        , List.Extra.elemIndex step steps
+                            |> Maybe.map
+                                (\stepIndex ->
+                                    let
+                                        backButton backStep =
+                                            button
+                                                [ class "ui fluid primary button"
+                                                , onClick <| config.setStepMsg backStep
+                                                ]
+                                                [ text <| ("< " ++ translate language Translate.Back) ]
+
+                                        totalSteps =
+                                            List.length steps
+
+                                        previousStep =
+                                            List.Extra.getAt (stepIndex - 1) steps
+
+                                        nextStep =
+                                            List.Extra.getAt (stepIndex + 1) steps
+                                    in
+                                    case ( previousStep, nextStep ) of
+                                        ( Nothing, Just next ) ->
+                                            div [ class "actions" ]
+                                                [ actionButton (config.setStepMsg next) ]
+
+                                        ( Just prev, Just next ) ->
+                                            div [ class "actions two" ]
+                                                [ backButton prev
+                                                , actionButton (config.setStepMsg next)
+                                                ]
+
+                                        ( Just prev, Nothing ) ->
+                                            div [ class "actions two" ]
+                                                [ backButton prev
+                                                , actionButton config.saveMsg
+                                                ]
+
+                                        ( Nothing, Nothing ) ->
+                                            div [ class "actions" ]
+                                                [ actionButton config.saveMsg ]
+                                )
+                            |> Maybe.withDefault emptyNode
+                        )
+                )
+                currentStep
+                |> Maybe.withDefault ( emptyNode, emptyNode )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ header
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form ncda" ]
-                inputs
-            ]
+            [ div [ class "ui form ncda" ] viewForm ]
         , actions
         ]
     , viewModal <|
-        viewNCDAHelperDialog language (setHelperStateMsg Nothing) helperState
+        viewNCDAHelperDialog language (config.setHelperStateMsg Nothing) helperState
     ]
 
 
 ncdaFormInputsAndTasks :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> PersonId
     -> Person
-    -> ((Bool -> NCDAForm -> NCDAForm) -> Bool -> msg)
-    -> (String -> msg)
-    -> (Maybe NCDASign -> msg)
+    -> NCDAContentConfig msg
     -> NCDAForm
     -> NCDAStep
-    -> Maybe PregnancySummaryValue
+    -> ModelIndexedDb
     -> ( List (Html msg), List (Maybe Bool) )
-ncdaFormInputsAndTasks language currentDate person setBoolInputMsg setBirthWeightMsg setHelperStateMsg form currentStep newbornExamPregnancySummary =
+ncdaFormInputsAndTasks language currentDate zscores site personId person config form currentStep db =
     let
-        inputAndTaskForSign sign =
+        inputsAndTasksForSign sign =
             case sign of
-                NCDABornWithBirthDefect ->
+                SupplementsDuringPregnancy ->
                     let
                         updateFunc value form_ =
-                            { form_ | bornWithBirthDefect = Just value }
+                            { form_ | supplementsDuringPregnancy = Just value, takenSupplementsPerGuidance = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.supplementsDuringPregnancy == Just True then
+                                inputsAndTasksForSign TakenSupplementsPerGuidance
+
+                            else
+                                ( [], [] )
+
+                        counseling =
+                            if
+                                (form.supplementsDuringPregnancy == Just False)
+                                    || (form.takenSupplementsPerGuidance == Just False)
+                            then
+                                [ viewCounselingLabel SupplementsDuringPregnancy ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDABornWithBirthDefect form.bornWithBirthDefect updateFunc
-                    , form.bornWithBirthDefect
+                    ( viewNCDAInput SupplementsDuringPregnancy form.supplementsDuringPregnancy updateFunc
+                        ++ derivedInputs
+                        ++ counseling
+                    , form.supplementsDuringPregnancy :: derivedTasks
                     )
 
-                NCDABreastfedForSixMonths ->
+                TakenSupplementsPerGuidance ->
                     let
                         updateFunc value form_ =
-                            { form_ | breastfedForSixMonths = Just value }
+                            { form_ | takenSupplementsPerGuidance = Just value }
                     in
-                    ( viewNCDAInput NCDABreastfedForSixMonths form.breastfedForSixMonths updateFunc
-                    , form.breastfedForSixMonths
+                    ( viewNCDAInput TakenSupplementsPerGuidance form.takenSupplementsPerGuidance updateFunc
+                    , [ form.takenSupplementsPerGuidance ]
                     )
 
-                NCDAAppropriateComplementaryFeeding ->
+                ChildBehindOnVaccination ->
+                    if isBehindOnVaccinationsByProgress currentDate site (not config.atHealthCenter) personId db then
+                        let
+                            updateFunc value form_ =
+                                { form_ | childBehindOnVaccination = Just value }
+
+                            counseling =
+                                Maybe.map
+                                    (\childBehind ->
+                                        if childBehind then
+                                            [ viewCounselingLabel ChildBehindOnVaccination ]
+
+                                        else
+                                            [ viewCustomLabel language Translate.NCDAUpdateVaccineRecordMessage "." "label counseling" ]
+                                    )
+                                    form.childBehindOnVaccination
+                                    |> Maybe.withDefault []
+
+                            lastScheduledImmunizationVisitDate =
+                                resoloveLastScheduledImmunizationVisitDate personId db
+                        in
+                        ( viewCustomLabel language (Translate.NCDANumberImmunizationAppointmentLabel lastScheduledImmunizationVisitDate) "." "label"
+                            :: viewNCDAInput ChildBehindOnVaccination form.childBehindOnVaccination updateFunc
+                            ++ counseling
+                        , [ form.childBehindOnVaccination ]
+                        )
+
+                    else
+                        ( [], [] )
+
+                ShowsEdemaSigns ->
                     let
                         updateFunc value form_ =
-                            { form_ | appropriateComplementaryFeeding = Just value }
+                            { form_ | showsEdemaSigns = Just value }
                     in
-                    ( viewNCDAInput NCDAAppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc
-                    , form.appropriateComplementaryFeeding
+                    ( viewNCDAInput ShowsEdemaSigns form.showsEdemaSigns updateFunc
+                    , [ form.showsEdemaSigns ]
                     )
 
-                NCDAOngeraMNP ->
+                OngeraMNP ->
                     let
                         updateFunc value form_ =
-                            { form_ | ongeraMNP = Just value }
+                            { form_
+                                | ongeraMNP = Just value
+                                , takingOngeraMNP = Nothing
+                            }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if not config.atHealthCenter && form.ongeraMNP == Just True then
+                                inputsAndTasksForSign TakingOngeraMNP
+
+                            else
+                                ( [], [] )
+
+                        counseling =
+                            if form.ongeraMNP == Just False || form.takingOngeraMNP == Just False then
+                                [ viewCounselingLabel OngeraMNP ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAOngeraMNP form.ongeraMNP updateFunc
-                    , form.ongeraMNP
+                    ( viewNCDAInput OngeraMNP form.ongeraMNP updateFunc
+                        ++ derivedInputs
+                        ++ counseling
+                    , form.ongeraMNP :: derivedTasks
                     )
 
-                NCDAFiveFoodGroups ->
+                TakingOngeraMNP ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | takingOngeraMNP = Just value }
+                    in
+                    ( viewNCDAInput TakingOngeraMNP form.takingOngeraMNP updateFunc
+                    , [ form.takingOngeraMNP ]
+                    )
+
+                FiveFoodGroups ->
                     let
                         updateFunc value form_ =
                             { form_ | fiveFoodGroups = Just value }
+
+                        counseling =
+                            if form.fiveFoodGroups == Just False then
+                                [ viewCounselingLabel FiveFoodGroups ]
+
+                            else
+                                []
                     in
                     ( [ div [ class "label-with-helper" ]
-                            [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups
+                            [ viewQuestionLabel language <| Translate.NCDASignQuestion FiveFoodGroups
                             , div
                                 [ class "label-helper"
-                                , onClick <| setHelperStateMsg (Just NCDAFiveFoodGroups)
+                                , onClick <| config.setHelperStateMsg (Just FiveFoodGroups)
                                 ]
                                 [ img [ src "assets/images/question-mark.svg" ] [] ]
                             ]
                       , viewBoolInput
                             language
                             form.fiveFoodGroups
-                            (setBoolInputMsg updateFunc)
+                            (config.setBoolInputMsg updateFunc)
                             ""
                             Nothing
                       ]
-                    , form.fiveFoodGroups
+                        ++ counseling
+                    , [ form.fiveFoodGroups ]
                     )
 
-                NCDAMealFrequency6to8Months ->
+                BreastfedForSixMonths ->
                     let
                         updateFunc value form_ =
-                            { form_ | mealFrequency6to8Months = Just value }
+                            { form_ | breastfedForSixMonths = Just value }
+
+                        counseling =
+                            if form.breastfedForSixMonths == Just False then
+                                [ viewCounselingLabel BreastfedForSixMonths ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAMealFrequency6to8Months form.mealFrequency6to8Months updateFunc
-                    , form.mealFrequency6to8Months
+                    ( viewNCDAInput BreastfedForSixMonths form.breastfedForSixMonths updateFunc ++ counseling
+                    , [ form.breastfedForSixMonths ]
                     )
 
-                NCDAMealFrequency9to11Months ->
+                AppropriateComplementaryFeeding ->
                     let
                         updateFunc value form_ =
-                            { form_ | mealFrequency9to11Months = Just value }
+                            { form_ | appropriateComplementaryFeeding = Just value }
+
+                        counseling =
+                            if form.appropriateComplementaryFeeding == Just False then
+                                [ viewCounselingLabel AppropriateComplementaryFeeding ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAMealFrequency9to11Months form.mealFrequency9to11Months updateFunc
-                    , form.mealFrequency9to11Months
+                    ( viewNCDAInput AppropriateComplementaryFeeding form.appropriateComplementaryFeeding updateFunc ++ counseling
+                    , [ form.appropriateComplementaryFeeding ]
                     )
 
-                NCDAMealFrequency12MonthsOrMore ->
+                MealsAtRecommendedTimes ->
                     let
                         updateFunc value form_ =
-                            { form_ | mealFrequency12MonthsOrMore = Just value }
+                            { form_ | mealsAtRecommendedTimes = Just value }
+
+                        counseling =
+                            if form.mealsAtRecommendedTimes == Just False then
+                                [ viewCounselingLabel MealsAtRecommendedTimes ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAMealFrequency12MonthsOrMore form.mealFrequency12MonthsOrMore updateFunc
-                    , form.mealFrequency12MonthsOrMore
+                    ( [ div [ class "label-with-helper" ]
+                            [ viewQuestionLabel language <| Translate.NCDASignQuestion MealsAtRecommendedTimes
+                            , div
+                                [ class "label-helper"
+                                , onClick <| config.setHelperStateMsg (Just MealsAtRecommendedTimes)
+                                ]
+                                [ img [ src "assets/images/question-mark.svg" ] [] ]
+                            ]
+                      , viewBoolInput
+                            language
+                            form.mealsAtRecommendedTimes
+                            (config.setBoolInputMsg updateFunc)
+                            ""
+                            Nothing
+                      ]
+                        ++ counseling
+                    , [ form.mealsAtRecommendedTimes ]
                     )
 
-                NCDASupportChildWithDisability ->
+                ChildReceivesFBF ->
                     let
                         updateFunc value form_ =
-                            { form_ | supportChildWithDisability = Just value }
+                            { form_ | childReceivesFBF = Just value, childTakingFBF = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childReceivesFBF == Just True then
+                                inputsAndTasksForSign ChildTakingFBF
+
+                            else
+                                ( [], [] )
+
+                        counseling =
+                            if form.childReceivesFBF == Just False || form.childTakingFBF == Just False then
+                                [ viewCounselingLabel ChildReceivesFBF ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDASupportChildWithDisability form.supportChildWithDisability updateFunc
-                    , form.supportChildWithDisability
+                    ( viewNCDAInput ChildReceivesFBF form.childReceivesFBF updateFunc
+                        ++ derivedInputs
+                        ++ counseling
+                    , form.childReceivesFBF :: derivedTasks
                     )
 
-                NCDAConditionalCashTransfer ->
+                ChildTakingFBF ->
                     let
                         updateFunc value form_ =
-                            { form_ | conditionalCashTransfer = Just value }
+                            { form_ | childTakingFBF = Just value }
                     in
-                    ( viewNCDAInput NCDAConditionalCashTransfer form.conditionalCashTransfer updateFunc
-                    , form.conditionalCashTransfer
+                    ( viewNCDAInput ChildTakingFBF form.childTakingFBF updateFunc
+                    , [ form.childTakingFBF ]
                     )
 
-                NCDAConditionalFoodItems ->
+                ChildReceivesVitaminA ->
+                    let
+                        childReceivesVitaminAInput =
+                            [ viewQuestionLabel language <| Translate.NCDASignQuestion ChildReceivesVitaminA
+                            , viewCheckBoxSelectInput language
+                                [ OptionReceive, OptionNotReceive ]
+                                [ OptionNotApplicable ]
+                                form.childReceivesVitaminA
+                                config.setChildReceivesVitaminAMsg
+                                Translate.ReceiveOption
+                            ]
+
+                        counseling =
+                            if form.childReceivesVitaminA == Just OptionNotReceive then
+                                [ viewCounselingLabel ChildReceivesVitaminA ]
+
+                            else
+                                []
+                    in
+                    ( childReceivesVitaminAInput
+                        ++ counseling
+                    , [ maybeToBoolTask form.childReceivesVitaminA ]
+                    )
+
+                ChildReceivesDewormer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childReceivesDewormer = Just value }
+
+                        counseling =
+                            if form.childReceivesDewormer == Just False then
+                                [ viewCounselingLabel ChildReceivesDewormer ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ChildReceivesDewormer form.childReceivesDewormer updateFunc
+                        ++ counseling
+                    , [ form.childReceivesDewormer ]
+                    )
+
+                ChildReceivesECD ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childReceivesECD = Just value }
+
+                        counseling =
+                            if form.childReceivesECD == Just False then
+                                [ viewCounselingLabel ChildReceivesECD ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ChildReceivesECD form.childReceivesECD updateFunc
+                        ++ counseling
+                    , [ form.childReceivesECD ]
+                    )
+
+                BeneficiaryCashTransfer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | beneficiaryCashTransfer = Just value, receivingCashTransfer = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.beneficiaryCashTransfer == Just True then
+                                inputsAndTasksForSign ReceivingCashTransfer
+
+                            else
+                                ( [], [] )
+
+                        counseling =
+                            if form.receivingCashTransfer == Just False then
+                                [ viewCounselingLabel BeneficiaryCashTransfer ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput BeneficiaryCashTransfer form.beneficiaryCashTransfer updateFunc
+                        ++ derivedInputs
+                        ++ counseling
+                    , form.beneficiaryCashTransfer :: derivedTasks
+                    )
+
+                ReceivingCashTransfer ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | receivingCashTransfer = Just value }
+                    in
+                    ( viewNCDAInput ReceivingCashTransfer form.receivingCashTransfer updateFunc
+                    , [ form.receivingCashTransfer ]
+                    )
+
+                ConditionalFoodItems ->
                     let
                         updateFunc value form_ =
                             { form_ | conditionalFoodItems = Just value }
+
+                        counseling =
+                            if form.conditionalFoodItems == Just False then
+                                [ viewCounselingLabel ConditionalFoodItems ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAConditionalFoodItems form.conditionalFoodItems updateFunc
-                    , form.conditionalFoodItems
+                    ( viewNCDAInput ConditionalFoodItems form.conditionalFoodItems updateFunc ++ counseling
+                    , [ form.conditionalFoodItems ]
                     )
 
-                NCDAHasCleanWater ->
+                TreatedForAcuteMalnutrition ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | treatedForAcuteMalnutrition = Just value }
+
+                        counseling =
+                            if form.treatedForAcuteMalnutrition == Just False then
+                                [ viewCounselingLabel TreatedForAcuteMalnutrition ]
+
+                            else
+                                []
+                    in
+                    ( viewCustomLabel language Translate.ChildHasMalnutritionPhrase "." "label red"
+                        :: viewNCDAInput TreatedForAcuteMalnutrition form.treatedForAcuteMalnutrition updateFunc
+                        ++ counseling
+                    , [ form.treatedForAcuteMalnutrition ]
+                    )
+
+                ChildWithDisability ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childWithDisability = Just value, receivingSupport = Nothing }
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.childWithDisability == Just True then
+                                inputsAndTasksForSign ReceivingSupport
+
+                            else
+                                ( [], [] )
+                    in
+                    ( viewNCDAInput ChildWithDisability form.childWithDisability updateFunc
+                        ++ derivedInputs
+                    , form.childWithDisability :: derivedTasks
+                    )
+
+                ReceivingSupport ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | receivingSupport = Just value }
+
+                        counseling =
+                            if form.receivingSupport == Just False then
+                                [ viewCounselingLabel ReceivingSupport ]
+
+                            else
+                                []
+                    in
+                    ( viewNCDAInput ReceivingSupport form.receivingSupport updateFunc ++ counseling
+                    , [ form.receivingSupport ]
+                    )
+
+                ChildGotDiarrhea ->
+                    let
+                        updateFunc value form_ =
+                            { form_ | childGotDiarrhea = Just value }
+                    in
+                    ( viewNCDAInput ChildGotDiarrhea form.childGotDiarrhea updateFunc
+                    , [ form.childGotDiarrhea ]
+                    )
+
+                HasCleanWater ->
                     let
                         updateFunc value form_ =
                             { form_ | hasCleanWater = Just value }
+
+                        counseling =
+                            if form.hasCleanWater == Just False then
+                                [ viewCounselingLabel HasCleanWater ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAHasCleanWater form.hasCleanWater updateFunc
-                    , form.hasCleanWater
+                    ( viewNCDAInput HasCleanWater form.hasCleanWater updateFunc ++ counseling
+                    , [ form.hasCleanWater ]
                     )
 
-                NCDAHasHandwashingFacility ->
+                HasHandwashingFacility ->
                     let
                         updateFunc value form_ =
                             { form_ | hasHandwashingFacility = Just value }
+
+                        counseling =
+                            if form.hasHandwashingFacility == Just False then
+                                [ viewCounselingLabel HasHandwashingFacility ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAHasHandwashingFacility form.hasHandwashingFacility updateFunc
-                    , form.hasHandwashingFacility
+                    ( viewNCDAInput HasHandwashingFacility form.hasHandwashingFacility updateFunc ++ counseling
+                    , [ form.hasHandwashingFacility ]
                     )
 
-                NCDAHasToilets ->
+                HasToilets ->
                     let
                         updateFunc value form_ =
                             { form_ | hasToilets = Just value }
+
+                        counseling =
+                            if form.hasToilets == Just False then
+                                [ viewCounselingLabel HasToilets ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAHasToilets form.hasToilets updateFunc
-                    , form.hasToilets
+                    ( viewNCDAInput HasToilets form.hasToilets updateFunc ++ counseling
+                    , [ form.hasToilets ]
                     )
 
-                NCDAHasKitchenGarden ->
+                HasKitchenGarden ->
                     let
                         updateFunc value form_ =
                             { form_ | hasKitchenGarden = Just value }
+
+                        counseling =
+                            if form.hasKitchenGarden == Just False then
+                                [ viewCounselingLabel HasKitchenGarden ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDAHasKitchenGarden form.hasKitchenGarden updateFunc
-                    , form.hasKitchenGarden
+                    ( viewNCDAInput HasKitchenGarden form.hasKitchenGarden updateFunc ++ counseling
+                    , [ form.hasKitchenGarden ]
                     )
 
-                NCDARegularPrenatalVisits ->
+                InsecticideTreatedBednets ->
                     let
                         updateFunc value form_ =
-                            { form_ | regularPrenatalVisits = Just value }
+                            { form_ | insecticideTreatedBednets = Just value }
+
+                        counseling =
+                            if form.insecticideTreatedBednets == Just False then
+                                [ viewCounselingLabel InsecticideTreatedBednets ]
+
+                            else
+                                []
                     in
-                    ( viewNCDAInput NCDARegularPrenatalVisits form.regularPrenatalVisits updateFunc
-                    , form.regularPrenatalVisits
+                    ( viewNCDAInput InsecticideTreatedBednets form.insecticideTreatedBednets updateFunc ++ counseling
+                    , [ form.insecticideTreatedBednets ]
                     )
 
-                NCDAIronSupplementsDuringPregnancy ->
+                BornWithBirthDefect ->
                     let
                         updateFunc value form_ =
-                            { form_ | ironSupplementsDuringPregnancy = Just value }
+                            { form_ | bornWithBirthDefect = Just value }
                     in
-                    ( viewNCDAInput NCDAIronSupplementsDuringPregnancy form.ironSupplementsDuringPregnancy updateFunc
-                    , form.ironSupplementsDuringPregnancy
-                    )
-
-                NCDAInsecticideTreatedBednetsDuringPregnancy ->
-                    let
-                        updateFunc value form_ =
-                            { form_ | insecticideTreatedBednetsDuringPregnancy = Just value }
-                    in
-                    ( viewNCDAInput NCDAInsecticideTreatedBednetsDuringPregnancy form.insecticideTreatedBednetsDuringPregnancy updateFunc
-                    , form.insecticideTreatedBednetsDuringPregnancy
+                    ( viewNCDAInput BornWithBirthDefect form.bornWithBirthDefect updateFunc
+                    , [ form.bornWithBirthDefect ]
                     )
 
                 NoNCDASigns ->
-                    ( [], Nothing )
+                    ( [], [] )
 
         viewNCDAInput sign value updateFunc =
             [ viewQuestionLabel language <| Translate.NCDASignQuestion sign
             , viewBoolInput
                 language
                 value
-                (setBoolInputMsg updateFunc)
+                (config.setBoolInputMsg updateFunc)
                 ""
                 Nothing
             ]
+
+        viewCounselingLabel sign =
+            viewCustomLabel language (Translate.NCDASignCounseling sign) "." "label counseling"
     in
     case currentStep of
-        NCDAStepQuestionsAskedOnce ->
+        NCDAStepAntenatalCare ->
             let
-                ancSignsInputsAndTasks =
-                    List.map inputAndTaskForSign
-                        [ NCDARegularPrenatalVisits
-                        , NCDAIronSupplementsDuringPregnancy
-                        , NCDAInsecticideTreatedBednetsDuringPregnancy
-                        ]
+                ( ancVisitsSection, ancVisitsTasks ) =
+                    ancVisitsInpustAndTasks language currentDate personId person config form db
+
+                ( signsInputs, signTasks ) =
+                    inputsAndTasksForSign SupplementsDuringPregnancy
 
                 ( newbornExamSection, newbornExamTasks ) =
-                    if showNCDAQuestionsByNewbornExam newbornExamPregnancySummary then
+                    if showNCDAQuestionsByNewbornExam config.pregnancySummary then
                         let
                             ( birthWeightSection, birthWeightTasks ) =
-                                birthWeightInputsAndTasks language form.birthWeight setBirthWeightMsg
+                                birthWeightInputsAndTasks language form.birthWeight config.setBirthWeightMsg
 
                             ( birthDefectSection, birthDefectTask ) =
-                                inputAndTaskForSign NCDABornWithBirthDefect
+                                inputsAndTasksForSign BornWithBirthDefect
                         in
                         ( birthWeightSection ++ birthDefectSection
-                        , birthDefectTask :: birthWeightTasks
+                        , birthDefectTask ++ birthWeightTasks
                         )
 
                     else
                         ( [], [] )
             in
-            ( (List.map Tuple.first ancSignsInputsAndTasks |> List.concat)
+            ( ancVisitsSection
+                ++ signsInputs
                 ++ newbornExamSection
-            , List.map Tuple.second ancSignsInputsAndTasks
+            , ancVisitsTasks
+                ++ signTasks
                 ++ newbornExamTasks
             )
 
-        NCDAStepPermanentQuestions1 ->
+        NCDAStepUniversalInterventions ->
             let
                 signs =
-                    feedingSign
-                        ++ [ NCDAOngeraMNP
-                           , NCDAFiveFoodGroups
-                           ]
-                        ++ mealFrequencySign
-                        ++ [ NCDAConditionalCashTransfer
-                           , NCDAConditionalFoodItems
-                           ]
+                    if config.atHealthCenter then
+                        [ OngeraMNP ]
 
-                ( feedingSign, mealFrequencySign ) =
+                    else
+                        [ ChildBehindOnVaccination
+                        , ChildReceivesVitaminA
+                        , ChildReceivesDewormer
+                        , OngeraMNP
+                        , ChildReceivesECD
+                        ]
+
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign signs
+            in
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
+            )
+
+        NCDAStepNutritionBehavior ->
+            let
+                breastfeedingSign =
+                    if config.ncdaNotFilledAfterAgeOfSixMonths then
+                        [ BreastfedForSixMonths ]
+
+                    else
+                        []
+
+                signs =
+                    FiveFoodGroups :: breastfeedingSign ++ [ AppropriateComplementaryFeeding, MealsAtRecommendedTimes ]
+
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign signs
+            in
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
+            )
+
+        NCDAStepNutritionAssessment ->
+            let
+                ( stuntingLevelInput, stuntingLevelTask ) =
+                    let
+                        measurementNotTakenChecked =
+                            form.stuntingLevelNotTaken == Just True
+
+                        measurementNotTakenUpdateFunc value form_ =
+                            { form_ | stuntingLevelNotTaken = Just value, stuntingLevel = Nothing }
+
+                        measurementNotTakenValueWhenChecked =
+                            Maybe.map not form.stuntingLevelNotTaken
+                                |> Maybe.withDefault True
+
+                        inputSection =
+                            if measurementNotTakenChecked then
+                                []
+
+                            else
+                                [ viewCheckBoxSelectInput language
+                                    [ LevelGreen, LevelYellow ]
+                                    [ LevelRed ]
+                                    form.stuntingLevel
+                                    config.setStuntingLevelMsg
+                                    Translate.StuntingLevel
+                                ]
+
+                        notTakenCheckbox =
+                            [ div
+                                [ class "ui checkbox activity skip-step"
+                                , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
+                                ]
+                                [ input
+                                    [ type_ "checkbox"
+                                    , checked measurementNotTakenChecked
+                                    , classList [ ( "checked", measurementNotTakenChecked ) ]
+                                    ]
+                                    []
+                                , label [] [ text <| translate language Translate.MeasurementNotTaken ]
+                                ]
+                            ]
+                    in
+                    ( viewLabel language Translate.StuntingLevelLabel :: inputSection ++ notTakenCheckbox
+                    , [ if measurementNotTakenChecked then
+                            form.stuntingLevelNotTaken
+
+                        else
+                            maybeToBoolTask form.stuntingLevel
+                      ]
+                    )
+
+                weightAsFloat =
+                    Maybe.map (\(WeightInKg weight) -> weight)
+                        form.weight
+
+                ( weightInput, weightTask ) =
+                    let
+                        measurementNotTakenChecked =
+                            form.weightNotTaken == Just True
+
+                        measurementNotTakenUpdateFunc value form_ =
+                            { form_ | weightNotTaken = Just value, weight = Nothing }
+
+                        measurementNotTakenValueWhenChecked =
+                            Maybe.map not form.weightNotTaken
+                                |> Maybe.withDefault True
+
+                        inputSection =
+                            if measurementNotTakenChecked then
+                                []
+
+                            else
+                                [ viewMeasurementInput
+                                    language
+                                    weightAsFloat
+                                    config.setWeightMsg
+                                    "weight"
+                                    Translate.KilogramShorthand
+                                ]
+
+                        notTakenCheckbox =
+                            [ div
+                                [ class "ui checkbox activity skip-step"
+                                , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
+                                ]
+                                [ input
+                                    [ type_ "checkbox"
+                                    , checked measurementNotTakenChecked
+                                    , classList [ ( "checked", measurementNotTakenChecked ) ]
+                                    ]
+                                    []
+                                , label [] [ text <| translate language Translate.MeasurementNotTaken ]
+                                ]
+                            ]
+                    in
+                    ( viewLabel language Translate.Weight :: inputSection ++ notTakenCheckbox
+                    , [ if measurementNotTakenChecked then
+                            form.weightNotTaken
+
+                        else
+                            maybeToBoolTask form.weight
+                      ]
+                    )
+
+                ( muacInput, muacTask ) =
                     ageInMonths currentDate person
                         |> Maybe.map
                             (\ageMonths ->
-                                ( if ageMonths < 6 then
-                                    []
+                                if ageMonths >= 6 then
+                                    let
+                                        muacAsFloat =
+                                            Maybe.map (\(MuacInCm muac) -> muac)
+                                                form.muac
 
-                                  else if ageMonths < 7 then
-                                    [ NCDABreastfedForSixMonths ]
+                                        measurementNotTakenChecked =
+                                            form.muacNotTaken == Just True
 
-                                  else
-                                    [ NCDAAppropriateComplementaryFeeding ]
-                                , if ageMonths < 6 then
-                                    []
+                                        measurementNotTakenUpdateFunc value form_ =
+                                            { form_ | muacNotTaken = Just value, muac = Nothing }
 
-                                  else if ageMonths < 9 then
-                                    [ NCDAMealFrequency6to8Months ]
+                                        measurementNotTakenValueWhenChecked =
+                                            Maybe.map not form.muacNotTaken
+                                                |> Maybe.withDefault True
 
-                                  else if ageMonths < 12 then
-                                    [ NCDAMealFrequency9to11Months ]
+                                        inputSection =
+                                            if measurementNotTakenChecked then
+                                                []
 
-                                  else
-                                    [ NCDAMealFrequency12MonthsOrMore ]
-                                )
+                                            else
+                                                [ div [ class "ui grid" ]
+                                                    [ div [ class "eleven wide column" ]
+                                                        [ viewMeasurementInput
+                                                            language
+                                                            muacAsFloat
+                                                            config.setMuacMsg
+                                                            "muac"
+                                                            Translate.UnitCentimeter
+                                                        ]
+                                                    , div
+                                                        [ class "five wide column" ]
+                                                        [ showMaybe <|
+                                                            Maybe.map (muacIndication >> viewColorAlertIndication language) form.muac
+                                                        ]
+                                                    ]
+                                                ]
+
+                                        notTakenCheckbox =
+                                            [ div
+                                                [ class "ui checkbox activity skip-step"
+                                                , onClick <| config.setBoolInputMsg measurementNotTakenUpdateFunc measurementNotTakenValueWhenChecked
+                                                ]
+                                                [ input
+                                                    [ type_ "checkbox"
+                                                    , checked measurementNotTakenChecked
+                                                    , classList [ ( "checked", measurementNotTakenChecked ) ]
+                                                    ]
+                                                    []
+                                                , label [] [ text <| translate language Translate.MeasurementNotTaken ]
+                                                ]
+                                            ]
+                                    in
+                                    ( viewLabel language Translate.MUAC :: inputSection ++ notTakenCheckbox
+                                    , [ if measurementNotTakenChecked then
+                                            form.muacNotTaken
+
+                                        else
+                                            maybeToBoolTask form.muac
+                                      ]
+                                    )
+
+                                else
+                                    ( [], [] )
                             )
                         |> Maybe.withDefault ( [], [] )
 
-                inputsAndTasks =
-                    List.map inputAndTaskForSign signs
+                ( edemaInput, edemaTask ) =
+                    inputsAndTasksForSign ShowsEdemaSigns
             in
-            ( List.map Tuple.first inputsAndTasks
+            ( List.filter (List.isEmpty >> not)
+                [ stuntingLevelInput
+                , weightInput
+                , muacInput
+                , edemaInput
+                ]
+                |> List.intersperse [ div [ class "separator" ] [] ]
                 |> List.concat
-            , List.map Tuple.second inputsAndTasks
+            , stuntingLevelTask
+                ++ weightTask
+                ++ muacTask
+                ++ edemaTask
             )
 
-        NCDAStepPermanentQuestions2 ->
+        NCDAStepTargetedInterventions ->
+            let
+                childReceivesFBFSign =
+                    if config.atHealthCenter then
+                        []
+
+                    else
+                        [ ChildReceivesFBF ]
+
+                treatedForAcuteMalnutritionSign =
+                    if not config.atHealthCenter && muacMeasurementIsOff form.muac then
+                        [ TreatedForAcuteMalnutrition ]
+
+                    else
+                        []
+
+                childGotDiarrheaSign =
+                    if config.atHealthCenter then
+                        []
+
+                    else
+                        [ ChildGotDiarrhea ]
+
+                signs =
+                    childReceivesFBFSign
+                        ++ [ BeneficiaryCashTransfer
+                           , ConditionalFoodItems
+                           ]
+                        ++ treatedForAcuteMalnutritionSign
+                        ++ [ ChildWithDisability ]
+                        ++ childGotDiarrheaSign
+
+                inputsAndTasks =
+                    List.map inputsAndTasksForSign signs
+            in
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
+            )
+
+        NCDAStepInfrastructureEnvironment ->
             let
                 inputsAndTasks =
-                    List.map inputAndTaskForSign
-                        [ NCDAHasCleanWater
-                        , NCDAHasHandwashingFacility
-                        , NCDAHasToilets
-                        , NCDAHasKitchenGarden
-                        , NCDASupportChildWithDisability
+                    List.map inputsAndTasksForSign
+                        [ HasCleanWater
+                        , HasHandwashingFacility
+                        , HasToilets
+                        , HasKitchenGarden
+                        , InsecticideTreatedBednets
                         ]
             in
-            ( List.map Tuple.first inputsAndTasks
-                |> List.concat
-            , List.map Tuple.second inputsAndTasks
+            ( List.concatMap Tuple.first inputsAndTasks
+            , List.concatMap Tuple.second inputsAndTasks
             )
 
 
-resolveNCDAFormStep : Maybe PregnancySummaryValue -> List ( NominalDate, NCDAValue ) -> NCDAForm -> NCDAStep
-resolveNCDAFormStep newbornExamPregnancySummary previousNCDAValues form =
-    Maybe.withDefault
-        (resolveNCDAFormInitialStep newbornExamPregnancySummary previousNCDAValues)
-        form.step
+ancVisitsInpustAndTasks :
+    Language
+    -> NominalDate
+    -> PersonId
+    -> Person
+    -> NCDAContentConfig msg
+    -> NCDAForm
+    -> ModelIndexedDb
+    -> ( List (Html msg), List (Maybe Bool) )
+ancVisitsInpustAndTasks language currentDate personId person config form db =
+    Maybe.map
+        (\birthDate ->
+            let
+                ( eddDate, encountersDatesFromANCData ) =
+                    resolveChildANCPregnancyData personId db
 
+                historySection =
+                    let
+                        entriesForView =
+                            EverySet.toList encountersDatesFromANCData
+                                |> List.sortWith Date.compare
+                                |> List.indexedMap
+                                    (\index date -> viewHistoryEntry (String.fromInt <| index + 1) date)
 
-resolveNCDAFormInitialStep :
-    Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
-    -> NCDAStep
-resolveNCDAFormInitialStep newbornExamPregnancySummary previousNCDAValues =
-    let
-        showANCQuestions =
-            -- If NCDA was filled before, for sure it included answers to
-            -- needed questions.
-            List.isEmpty previousNCDAValues
+                        viewHistoryEntry index date =
+                            div [ class "history-entry" ]
+                                [ div [ class "dose" ] [ text index ]
+                                , div [ class "date" ] [ text <| formatDDMMYYYY date ]
+                                ]
 
-        showNewbornExamQuestions =
-            (-- If NCDA was filled before, for sure it included answers to
-             -- needed questions.
-             List.isEmpty previousNCDAValues
+                        visitsForView =
+                            if List.isEmpty entriesForView then
+                                [ viewCustomLabel language Translate.NCDANoANVCVisitsOnRecord "." "label-normal" ]
+
+                            else
+                                entriesForView
+                    in
+                    div [ class "history" ]
+                        visitsForView
+
+                ( inputs, tasks ) =
+                    let
+                        encountersDatesFromForm =
+                            -- Since ANC step of NCDA form is filled only once, we know
+                            -- that current activity is the first one filled, and there's
+                            -- no need to examine existing NCDA activities.
+                            Maybe.withDefault EverySet.empty form.ancVisitsDates
+
+                        ( derivedInputs, derivedTasks ) =
+                            if form.updateANCVisits == Just True then
+                                let
+                                    pregnancyStartDate =
+                                        Maybe.map eddToLmpDate eddDate
+                                            |> Maybe.withDefault
+                                                -- If we don't have LMP date, we'll assume that
+                                                -- pregnancy was complete (lasted 9 months).
+                                                (eddToLmpDate birthDate)
+
+                                    encountersMonthsFromANCData =
+                                        EverySet.toList encountersDatesFromANCData
+                                            |> List.map
+                                                (\encounterDate ->
+                                                    Date.diff Date.Months pregnancyStartDate encounterDate + 1
+                                                )
+
+                                    encountersMonthsFromForm =
+                                        EverySet.toList encountersDatesFromForm
+                                            |> List.map
+                                                (\encounterDate ->
+                                                    Date.diff Date.Months pregnancyStartDate encounterDate + 1
+                                                )
+
+                                    content =
+                                        List.range 1 9
+                                            |> List.map
+                                                (\monthNumber ->
+                                                    div [ class "item" ]
+                                                        [ div [ class "month-number" ] [ text <| String.fromInt monthNumber ]
+                                                        , viewRadioButton monthNumber
+                                                        ]
+                                                )
+                                            |> greedyGroupsOf 3
+                                            |> List.map (div [ class "trimester" ])
+                                            |> List.intersperse
+                                                (div [ class "trimesters-separator" ]
+                                                    [ div [ class "section left" ]
+                                                        [ div [ class "top" ] []
+                                                        , div [ class "bottom" ] []
+                                                        ]
+                                                    , div [ class "section right" ]
+                                                        [ div [ class "top" ] []
+                                                        , div [ class "bottom" ] []
+                                                        ]
+                                                    ]
+                                                )
+
+                                    viewRadioButton monthNumber =
+                                        let
+                                            isChecked =
+                                                List.member monthNumber encountersMonthsFromANCData
+                                                    || List.member monthNumber encountersMonthsFromForm
+
+                                            disabled =
+                                                List.member monthNumber encountersMonthsFromANCData
+
+                                            dateForMonth =
+                                                Date.add Date.Months (monthNumber - 1) pregnancyStartDate
+                                                    |> Date.add Date.Days 14
+                                        in
+                                        div [ class "month-radio" ]
+                                            [ input
+                                                [ type_ "radio"
+                                                , checked isChecked
+                                                , classList
+                                                    [ ( "checked", isChecked )
+                                                    , ( "disabled", disabled )
+                                                    ]
+                                                ]
+                                                []
+                                            , label [ onClick <| config.toggleANCVisitDateMsg dateForMonth ] [ text "" ]
+                                            ]
+                                in
+                                ( [ viewLabel language Translate.ANCIndicateVisitsMonthsPhrase
+                                  , div [ class "form-input anc-months" ]
+                                        content
+                                  ]
+                                , [ maybeToBoolTask form.ancVisitsDates ]
+                                )
+
+                            else
+                                ( [], [] )
+
+                        counseling =
+                            if isJust form.updateANCVisits then
+                                let
+                                    ancDataVisits =
+                                        EverySet.size encountersDatesFromANCData
+
+                                    formVisists =
+                                        EverySet.size encountersDatesFromForm
+                                in
+                                if (ancDataVisits + formVisists) < 4 then
+                                    viewCustomLabel language Translate.NCDAANCVisitsCounseling "." "label counseling"
+
+                                else
+                                    emptyNode
+
+                            else
+                                emptyNode
+                    in
+                    ( [ viewQuestionLabel language Translate.ANCEncountersNotRecordedQuestion
+                      , viewBoolInput
+                            language
+                            form.updateANCVisits
+                            config.setUpdateANCVisitsMsg
+                            ""
+                            Nothing
+                      ]
+                        ++ derivedInputs
+                        ++ [ counseling ]
+                    , form.updateANCVisits :: derivedTasks
+                    )
+            in
+            ( [ viewLabel language Translate.AntenatalVisistsHistory
+              , historySection
+              ]
+                ++ inputs
+            , tasks
             )
-                && showNCDAQuestionsByNewbornExam newbornExamPregnancySummary
-    in
-    if showANCQuestions || showNewbornExamQuestions then
-        NCDAStepQuestionsAskedOnce
-
-    else
-        NCDAStepPermanentQuestions1
+        )
+        person.birthDate
+        |> Maybe.withDefault ( [], [] )
 
 
 showNCDAQuestionsByNewbornExam : Maybe PregnancySummaryValue -> Bool
@@ -2713,7 +3551,7 @@ showNCDAQuestionsByNewbornExam newbornExamPregnancySummary =
     -- Newborn exam was launched, so, it could have been filled
     -- without them.
     -- It's enough to check if one of the questions was answered,
-    -- because both answres are required to save the form.
+    -- because both answereds are required to save the form.
     Maybe.map (.birthWeight >> isNothing) newbornExamPregnancySummary
         |> Maybe.withDefault True
 
@@ -2758,38 +3596,34 @@ viewNCDAHelperDialog : Language -> msg -> Maybe NCDASign -> Maybe (Html msg)
 viewNCDAHelperDialog language action helperState =
     Maybe.andThen
         (\sign ->
-            case sign of
-                NCDAFiveFoodGroups ->
-                    Just <|
-                        div [ class "ui active modal ncda-helper-popup" ]
-                            [ div [ class "header" ]
-                                [ viewQuestionLabel language <| Translate.NCDASignQuestion NCDAFiveFoodGroups ]
-                            , div
-                                [ class "content" ]
-                                [ ol [] <|
-                                    List.map
-                                        (\foodGroup ->
-                                            li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
-                                        )
-                                        [ Staples
-                                        , Legumes
-                                        , DairyProducts
-                                        , AnimalSourceFoods
-                                        , Eggs
-                                        , FruitsVegetables
-                                        , BreastMilk
-                                        , MealsWithEdibleOil
-                                        ]
+            let
+                viewHelperDialog dialogContent =
+                    div [ class "ui active modal ncda-helper-popup" ]
+                        [ div [ class "header" ]
+                            [ viewLabel language <| Translate.NCDASignHelperHeader sign ]
+                        , div
+                            [ class "content" ]
+                            [ dialogContent ]
+                        , div
+                            [ class "actions" ]
+                            [ button
+                                [ class "ui fluid primary button"
+                                , onClick action
                                 ]
-                            , div
-                                [ class "actions" ]
-                                [ button
-                                    [ class "ui fluid primary button"
-                                    , onClick action
-                                    ]
-                                    [ text <| translate language Translate.Close ]
-                                ]
+                                [ text <| translate language Translate.Close ]
                             ]
+                        ]
+            in
+            case sign of
+                FiveFoodGroups ->
+                    fiveFoodGroupsHelperDialog language action
+                        |> viewHelperDialog
+                        |> Just
+
+                MealsAtRecommendedTimes ->
+                    mealsAtRecommendedTimesHelperDialog language action
+                        |> viewHelperDialog
+                        |> Just
 
                 _ ->
                     Nothing
@@ -2797,16 +3631,45 @@ viewNCDAHelperDialog language action helperState =
         helperState
 
 
+fiveFoodGroupsHelperDialog : Language -> msg -> Html msg
+fiveFoodGroupsHelperDialog language action =
+    ol [] <|
+        List.map
+            (\foodGroup ->
+                li [] [ text <| translate language <| Translate.GroupOfFoods foodGroup ]
+            )
+            [ Staples
+            , Legumes
+            , DairyProducts
+            , AnimalSourceFoods
+            , Eggs
+            , FruitsVegetables
+            , BreastMilk
+            , MealsWithEdibleOil
+            ]
+
+
+mealsAtRecommendedTimesHelperDialog : Language -> msg -> Html msg
+mealsAtRecommendedTimesHelperDialog language action =
+    ul []
+        [ li [] [ text <| translate language <| Translate.NCDAMealFrequency6to9 ]
+        , li [] [ text <| translate language <| Translate.NCDAMealFrequency9to12 ]
+        , li [] [ text <| translate language <| Translate.NCDAMealFrequency12to24 ]
+        ]
+
+
 viewNCDA :
     Language
     -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> PersonId
     -> Person
     -> MeasurementData (Maybe ( GroupNCDAId, GroupNCDA ))
     -> NCDAData
-    -> Maybe PregnancySummaryValue
-    -> List ( NominalDate, NCDAValue )
+    -> ModelIndexedDb
     -> Html MsgChild
-viewNCDA language currentDate child measurement data newbornExamPregnancySummary previousNCDAValues =
+viewNCDA language currentDate zscores site childId child measurement data db =
     let
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -2817,22 +3680,37 @@ viewNCDA language currentDate child measurement data newbornExamPregnancySummary
         form =
             ncdaFormWithDefault data.form saved
 
-        saveMsg =
-            toNCDAValueWithDefault saved data.form
-                |> Maybe.map (SaveNCDA existingId)
-                |> Maybe.withDefault NoOp
-                |> SendOutMsgChild
+        config =
+            { atHealthCenter = True
+            , showTasksTray = False
+            , pregnancySummary = getNewbornExamPregnancySummary childId db
+            , ncdaNeverFilled = resolveNCDANeverFilled currentDate childId db
+            , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate childId child db
+            , setUpdateANCVisitsMsg = SetUpdateANCVisits
+            , toggleANCVisitDateMsg = ToggleANCVisitDate
+            , setBoolInputMsg = SetNCDABoolInput
+            , setBirthWeightMsg = SetBirthWeight
+            , setChildReceivesVitaminAMsg = SetChildReceivesVitaminA
+            , setStuntingLevelMsg = SetStuntingLevel
+            , setWeightMsg = SetWeight
+            , setMuacMsg = SetMuac
+            , setStepMsg = SetNCDAFormStep
+            , setHelperStateMsg = SetNCDAHelperState
+            , saveMsg =
+                toNCDAValueWithDefault saved data.form
+                    |> Maybe.map (SaveNCDA existingId)
+                    |> Maybe.withDefault NoOp
+                    |> SendOutMsgChild
+            }
     in
     viewNCDAContent language
         currentDate
+        zscores
+        site
+        childId
         child
-        SetNCDABoolInput
-        SetBirthWeight
-        SetNCDAFormStep
-        saveMsg
-        SetNCDAHelperState
+        config
         data.helperState
         form
-        newbornExamPregnancySummary
-        previousNCDAValues
-        |> div []
+        db
+        |> div [ class "form-content ncda" ]

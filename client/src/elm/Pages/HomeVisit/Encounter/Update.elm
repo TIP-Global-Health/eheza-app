@@ -1,12 +1,10 @@
 module Pages.HomeVisit.Encounter.Update exposing (update)
 
 import App.Model
-import App.Ports
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.HomeVisitEncounter.Model
 import Backend.Model
 import Pages.HomeVisit.Encounter.Model exposing (..)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

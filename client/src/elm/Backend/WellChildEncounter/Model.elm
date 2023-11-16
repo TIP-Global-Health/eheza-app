@@ -115,9 +115,9 @@ type alias Model =
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
-    , saveImmunisation : WebData ()
     , saveBCGImmunisation : WebData ()
     , saveDTPImmunisation : WebData ()
+    , saveDTPStandaloneImmunisation : WebData ()
     , saveHPVImmunisation : WebData ()
     , saveIPVImmunisation : WebData ()
     , saveMRImmunisation : WebData ()
@@ -149,9 +149,9 @@ emptyModel =
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
-    , saveImmunisation = NotAsked
     , saveBCGImmunisation = NotAsked
     , saveDTPImmunisation = NotAsked
+    , saveDTPStandaloneImmunisation = NotAsked
     , saveHPVImmunisation = NotAsked
     , saveIPVImmunisation = NotAsked
     , saveMRImmunisation = NotAsked
@@ -204,6 +204,8 @@ type Msg
     | HandleSavedBCGImmunisation (WebData ())
     | SaveDTPImmunisation PersonId (Maybe WellChildDTPImmunisationId) VaccinationValue
     | HandleSavedDTPImmunisation (WebData ())
+    | SaveDTPStandaloneImmunisation PersonId (Maybe WellChildDTPStandaloneImmunisationId) VaccinationValue
+    | HandleSavedDTPStandaloneImmunisation (WebData ())
     | SaveHPVImmunisation PersonId (Maybe WellChildHPVImmunisationId) VaccinationValue
     | HandleSavedHPVImmunisation (WebData ())
     | SaveIPVImmunisation PersonId (Maybe WellChildIPVImmunisationId) VaccinationValue

@@ -3,18 +3,12 @@ module Pages.Nutrition.Encounter.Utils exposing (..)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionActivity.Model exposing (..)
-import Backend.NutritionEncounter.Utils exposing (getNutritionEncountersForParticipant, sortTuplesByDateDesc)
-import Backend.Person.Utils exposing (ageInMonths)
-import Date exposing (Unit(..))
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Backend.NutritionEncounter.Utils exposing (getNutritionEncountersForParticipant)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Nutrition.Encounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, translate)
-import ZScore.Model
 
 
 generateAssembledData : NutritionEncounterId -> ModelIndexedDb -> WebData AssembledData
@@ -57,23 +51,10 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success previousMeasurementsWithDates)
 
 
-generatePreviousMeasurements : Maybe NutritionEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
-generatePreviousMeasurements currentEncounterId participantId db =
-    getNutritionEncountersForParticipant db participantId
-        |> List.filterMap
-            (\( encounterId, encounter ) ->
-                -- If the ID of current encounter was provided,
-                -- we do not want to get its data.
-                if currentEncounterId == Just encounterId then
-                    Nothing
-
-                else
-                    case Dict.get encounterId db.nutritionMeasurements of
-                        Just (Success data) ->
-                            Just ( encounter.startDate, ( encounterId, data ) )
-
-                        _ ->
-                            Nothing
-            )
-        -- Most recent date to least recent date.
-        |> List.sortWith sortTuplesByDateDesc
+generatePreviousMeasurements :
+    Maybe NutritionEncounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+generatePreviousMeasurements =
+    Backend.Measurement.Utils.generatePreviousMeasurements getNutritionEncountersForParticipant .nutritionMeasurements

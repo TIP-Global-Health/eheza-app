@@ -2,7 +2,7 @@ module Backend.Person.Form exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
-import Backend.Measurement.Model exposing (Gender(..))
+import Backend.Measurement.Model exposing (Gender)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils
@@ -13,7 +13,6 @@ import Backend.Person.Utils
         , generateFullName
         , hivStatusToString
         , isAdult
-        , isPersonAnAdult
         , maritalStatusToString
         , modeOfDeliveryToString
         , resolveExpectedAge
@@ -23,41 +22,42 @@ import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
 import Form.Field
-import Form.Init exposing (..)
 import Form.Validate exposing (..)
+import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo)
+import GeoLocation.Utils exposing (getGeoInfo, getGeoLocation)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isNothing, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
+import SyncManager.Model exposing (Site(..))
 import Translate exposing (ValidationError(..))
-import Utils.Form exposing (fromDecoder, nullable, required)
-import Utils.GeoLocation exposing (geoInfo, getGeoLocation)
+import Utils.Form exposing (fromDecoder, nullable)
 
 
 type alias PersonForm =
     Form ValidationError Person
 
 
-emptyCreateForm : PersonForm
-emptyCreateForm =
+emptyCreateForm : Site -> PersonForm
+emptyCreateForm site =
     initial []
-        (validatePerson Nothing (CreatePerson Nothing) Nothing)
+        (validatePerson site Nothing (CreatePerson Nothing) Nothing)
 
 
-emptyEditForm : PersonForm
-emptyEditForm =
+emptyEditForm : Site -> PersonForm
+emptyEditForm site =
     initial []
-        (validatePerson Nothing (toEntityUuid "1" |> EditPerson) Nothing)
+        (validatePerson site Nothing (toEntityUuid "1" |> EditPerson) Nothing)
 
 
 type alias ContactForm =
     Form ValidationError Person
 
 
-emptyContactForm : ContactForm
-emptyContactForm =
-    initial [] validateContact
+emptyContactForm : Site -> ContactForm
+emptyContactForm site =
+    initial [] (validateContact site)
 
 
 {-| Given the birth date actually entered into the form, what age range are we
@@ -71,8 +71,8 @@ expectedAgeByForm currentDate form operation =
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-applyDefaultValuesForPerson : NominalDate -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
-applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson operation form =
+applyDefaultValuesForPerson : NominalDate -> Site -> ReverseGeoInfo -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
+applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation form =
     let
         defaultProvince =
             if isChw then
@@ -84,7 +84,7 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
 
         defaultProvinceId =
             defaultProvince
-                |> Maybe.andThen (getGeoLocation Nothing)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo Nothing)
                 |> Maybe.map Tuple.first
 
         defaultDistrict =
@@ -97,7 +97,7 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
 
         defaultDistrictId =
             defaultDistrict
-                |> Maybe.andThen (getGeoLocation defaultProvinceId)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultProvinceId)
                 |> Maybe.map Tuple.first
 
         defaultSector =
@@ -110,7 +110,7 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
 
         defaultSectorId =
             defaultSector
-                |> Maybe.andThen (getGeoLocation defaultDistrictId)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultDistrictId)
                 |> Maybe.map Tuple.first
 
         defaultCell =
@@ -123,7 +123,7 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
 
         defaultCellId =
             defaultCell
-                |> Maybe.andThen (getGeoLocation defaultSectorId)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultSectorId)
                 |> Maybe.map Tuple.first
 
         defaultVillage =
@@ -136,12 +136,17 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
 
         defaultVillageId =
             defaultVillage
-                |> Maybe.andThen (getGeoLocation defaultCellId)
+                |> Maybe.andThen (getGeoLocation reverseGeoInfo defaultCellId)
                 |> Maybe.map Tuple.first
 
         defaultUbudehe =
-            maybeRelatedPerson
-                |> Maybe.andThen .ubudehe
+            -- Ubudehe is Rwanda specific. For all other sites
+            -- we preset NoUbudehe, and the inoput is hidden on form.
+            if site == SiteRwanda then
+                Maybe.andThen .ubudehe maybeRelatedPerson
+
+            else
+                Just NoUbudehe
 
         defaultHealthCenter =
             if isChw then
@@ -152,50 +157,8 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
                 maybeRelatedPerson
                     |> Maybe.andThen .healthCenterId
 
-        defaultHmisNumber =
-            maybeRelatedPerson
-                |> Maybe.andThen .hmisNumber
-
-        defaultModeOfDelivery =
-            maybeRelatedPerson
-                |> Maybe.andThen .modeOfDelivery
-
-        defaultHivStatus =
-            maybeRelatedPerson
-                |> Maybe.andThen .hivStatus
-
-        defaultlEducationLevel =
-            maybeRelatedPerson
-                |> Maybe.andThen .educationLevel
-
-        defaultlNumberOfChildrenl =
-            maybeRelatedPerson
-                |> Maybe.andThen .numberOfChildren
-
-        defaultMaritalStatus =
-            maybeRelatedPerson
-                |> Maybe.andThen .maritalStatus
-
-        defaultFirstName =
-            maybeRelatedPerson |> Maybe.map .firstName
-
-        defaultSecondName =
-            maybeRelatedPerson |> Maybe.map .secondName
-
-        defaultNationalIdNumber =
-            maybeRelatedPerson |> Maybe.andThen .nationalIdNumber
-
-        defaultBirthDate =
-            maybeRelatedPerson |> Maybe.andThen .birthDate
-
-        defaultAvatarUrl =
-            maybeRelatedPerson |> Maybe.andThen .avatarUrl
-
-        defaultTelephoneNumber =
-            maybeRelatedPerson |> Maybe.andThen .telephoneNumber
-
         validation =
-            validatePerson maybeRelatedPerson operation (Just currentDate)
+            validatePerson site maybeRelatedPerson operation (Just currentDate)
 
         formFieldEmpty fieldName form_ =
             Form.getFieldAsString fieldName form_
@@ -296,6 +259,49 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
 
         EditPerson _ ->
+            let
+                defaultHmisNumber =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .hmisNumber
+
+                defaultModeOfDelivery =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .modeOfDelivery
+
+                defaultHivStatus =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .hivStatus
+
+                defaultlEducationLevel =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .educationLevel
+
+                defaultlNumberOfChildrenl =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .numberOfChildren
+
+                defaultMaritalStatus =
+                    maybeRelatedPerson
+                        |> Maybe.andThen .maritalStatus
+
+                defaultFirstName =
+                    maybeRelatedPerson |> Maybe.map .firstName
+
+                defaultSecondName =
+                    maybeRelatedPerson |> Maybe.map .secondName
+
+                defaultNationalIdNumber =
+                    maybeRelatedPerson |> Maybe.andThen .nationalIdNumber
+
+                defaultBirthDate =
+                    maybeRelatedPerson |> Maybe.andThen .birthDate
+
+                defaultAvatarUrl =
+                    maybeRelatedPerson |> Maybe.andThen .avatarUrl
+
+                defaultTelephoneNumber =
+                    maybeRelatedPerson |> Maybe.andThen .telephoneNumber
+            in
             form
                 |> applyDefaultTextInput photo defaultAvatarUrl identity
                 |> applyDefaultTextInput firstName defaultFirstName identity
@@ -323,9 +329,12 @@ applyDefaultValuesForPerson currentDate maybeVillage isChw maybeRelatedPerson op
 {-| The person supplied here is the related person, if we're constructing someone
 who is the child or parent of a person we know.
 -}
-validatePerson : Maybe Person -> ParticipantDirectoryOperation -> Maybe NominalDate -> Validation ValidationError Person
-validatePerson maybeRelated operation maybeCurrentDate =
+validatePerson : Site -> Maybe Person -> ParticipantDirectoryOperation -> Maybe NominalDate -> Validation ValidationError Person
+validatePerson site maybeRelated operation maybeCurrentDate =
     let
+        geoInfo =
+            getGeoInfo site
+
         externalExpectedAge =
             Maybe.map2
                 (\related currentDate -> expectedAgeByPerson currentDate related operation)
@@ -384,11 +393,11 @@ validatePerson maybeRelated operation maybeCurrentDate =
                 |> andMap (field ubudehe (validateUbudehe maybeRelated))
                 |> andMap (field educationLevel <| validateEducationLevel expectedAge)
                 |> andMap (field maritalStatus <| validateMaritalStatus expectedAge)
-                |> andMap (field province (validateProvince maybeRelated))
-                |> andMap (field district (validateDistrict maybeRelated))
-                |> andMap (field sector (validateSector maybeRelated))
-                |> andMap (field cell (validateCell maybeRelated))
-                |> andMap (field village (validateVillage maybeRelated))
+                |> andMap (field province (validateProvince geoInfo maybeRelated))
+                |> andMap (field district (validateDistrict geoInfo maybeRelated))
+                |> andMap (field sector (validateSector geoInfo maybeRelated))
+                |> andMap (field cell (validateCell geoInfo maybeRelated))
+                |> andMap (field village (validateVillage geoInfo maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
                 |> andMap (succeed False)
@@ -397,9 +406,12 @@ validatePerson maybeRelated operation maybeCurrentDate =
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
 
 
-validateContact : Validation ValidationError Person
-validateContact =
+validateContact : Site -> Validation ValidationError Person
+validateContact site =
     let
+        geoInfo =
+            getGeoInfo site
+
         withFirstName firstNameValue =
             andThen (withAllNames firstNameValue) (field secondName string)
 
@@ -420,11 +432,11 @@ validateContact =
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
-                |> andMap (field province validateProvinceForContact)
-                |> andMap (field district validateDistrictForContact)
-                |> andMap (field sector validateSectorForContact)
-                |> andMap (field cell validateCellForContact)
-                |> andMap (field village validateVillageForContact)
+                |> andMap (field province (validateProvinceForContact geoInfo))
+                |> andMap (field district (validateDistrictForContact geoInfo))
+                |> andMap (field sector (validateSectorForContact geoInfo))
+                |> andMap (field cell (validateCellForContact geoInfo))
+                |> andMap (field village (validateVillageForContact geoInfo))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
@@ -458,9 +470,6 @@ validateHmisNumber =
         |> andThen
             (\s ->
                 let
-                    trimmed =
-                        String.trim s
-
                     error =
                         customError InvalidHmisNumber
                 in
@@ -468,7 +477,7 @@ validateHmisNumber =
                     |> Maybe.map
                         (\number ->
                             if number > 0 && number < 16 then
-                                succeed trimmed
+                                succeed <| String.trim s
 
                             else
                                 fail error
@@ -488,8 +497,8 @@ withDefault related =
             identity
 
 
-validateProvince : Maybe Person -> Validation ValidationError (Maybe String)
-validateProvince related =
+validateProvince : GeoInfo -> Maybe Person -> Validation ValidationError (Maybe String)
+validateProvince geoInfo related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -501,8 +510,8 @@ validateProvince related =
         |> withDefault (Maybe.andThen .province related)
 
 
-validateProvinceForContact : Validation ValidationError (Maybe String)
-validateProvinceForContact =
+validateProvinceForContact : GeoInfo -> Validation ValidationError (Maybe String)
+validateProvinceForContact geoInfo =
     int
         |> andThen
             (\id ->
@@ -513,8 +522,8 @@ validateProvinceForContact =
         |> nullable
 
 
-validateDistrict : Maybe Person -> Validation ValidationError (Maybe String)
-validateDistrict related =
+validateDistrict : GeoInfo -> Maybe Person -> Validation ValidationError (Maybe String)
+validateDistrict geoInfo related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -526,8 +535,8 @@ validateDistrict related =
         |> withDefault (Maybe.andThen .district related)
 
 
-validateDistrictForContact : Validation ValidationError (Maybe String)
-validateDistrictForContact =
+validateDistrictForContact : GeoInfo -> Validation ValidationError (Maybe String)
+validateDistrictForContact geoInfo =
     int
         |> andThen
             (\id ->
@@ -538,8 +547,8 @@ validateDistrictForContact =
         |> nullable
 
 
-validateSector : Maybe Person -> Validation ValidationError (Maybe String)
-validateSector related =
+validateSector : GeoInfo -> Maybe Person -> Validation ValidationError (Maybe String)
+validateSector geoInfo related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -551,8 +560,8 @@ validateSector related =
         |> withDefault (Maybe.andThen .sector related)
 
 
-validateSectorForContact : Validation ValidationError (Maybe String)
-validateSectorForContact =
+validateSectorForContact : GeoInfo -> Validation ValidationError (Maybe String)
+validateSectorForContact geoInfo =
     int
         |> andThen
             (\id ->
@@ -563,8 +572,8 @@ validateSectorForContact =
         |> nullable
 
 
-validateCell : Maybe Person -> Validation ValidationError (Maybe String)
-validateCell related =
+validateCell : GeoInfo -> Maybe Person -> Validation ValidationError (Maybe String)
+validateCell geoInfo related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -576,8 +585,8 @@ validateCell related =
         |> withDefault (Maybe.andThen .cell related)
 
 
-validateCellForContact : Validation ValidationError (Maybe String)
-validateCellForContact =
+validateCellForContact : GeoInfo -> Validation ValidationError (Maybe String)
+validateCellForContact geoInfo =
     int
         |> andThen
             (\id ->
@@ -588,8 +597,8 @@ validateCellForContact =
         |> nullable
 
 
-validateVillage : Maybe Person -> Validation ValidationError (Maybe String)
-validateVillage related =
+validateVillage : GeoInfo -> Maybe Person -> Validation ValidationError (Maybe String)
+validateVillage geoInfo related =
     int
         |> mapError (\_ -> customError RequiredField)
         |> andThen
@@ -601,8 +610,8 @@ validateVillage related =
         |> withDefault (Maybe.andThen .village related)
 
 
-validateVillageForContact : Validation ValidationError (Maybe String)
-validateVillageForContact =
+validateVillageForContact : GeoInfo -> Validation ValidationError (Maybe String)
+validateVillageForContact geoInfo =
     int
         |> andThen
             (\id ->

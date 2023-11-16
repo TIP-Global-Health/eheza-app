@@ -3,40 +3,31 @@ module Pages.NCD.RecurrentActivity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (IllnessSymptom(..), ViralLoadStatus(..))
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDActivity.Model
 import Backend.NCDEncounter.Model
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
         ( toCreatinineResultsValueWithDefault
         , toLipidPanelResultsValueWithDefault
         , toLiverFunctionResultsValueWithDefault
         , toRandomBloodSugarResultsValueWithDefault
-        , toSendToHCValueWithDefault
         , toUrineDipstickResultsValueWithDefault
         )
 import Pages.GlobalCaseManagement.Utils exposing (ncdLabsResultsTestData)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
-import Pages.NCD.RecurrentActivity.Utils exposing (..)
 import Pages.NCD.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (nonAdministrationReasonToSign, setMultiSelectInputValue)
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, translate)
+import Pages.Utils exposing (setMultiSelectInputValue)
+import RemoteData
 
 
 update : NominalDate -> NCDEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
-        noChange =
-            ( model, Cmd.none, [] )
-
         medicationDistributionForm =
             Dict.get id db.ncdMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -46,16 +37,6 @@ update currentDate id db msg model =
                         >> medicationDistributionFormWithDefault model.nextStepsData.medicationDistributionForm
                     )
                 |> Maybe.withDefault model.nextStepsData.medicationDistributionForm
-
-        referralForm =
-            Dict.get id db.ncdMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (.referral
-                        >> getMeasurementValueFunc
-                        >> referralFormWithDefault model.nextStepsData.referralForm
-                    )
-                |> Maybe.withDefault model.nextStepsData.referralForm
 
         generateLabResultsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveLabResultsTask task ]) nextTask
@@ -96,9 +77,6 @@ update currentDate id db msg model =
                     )
     in
     case msg of
-        NoOp ->
-            noChange
-
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -713,6 +691,16 @@ update currentDate id db msg model =
 
         SetFacilityNonReferralReason currentValue facility reason ->
             let
+                referralForm =
+                    Dict.get id db.ncdMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.referral
+                                >> getMeasurementValueFunc
+                                >> referralFormWithDefault model.nextStepsData.referralForm
+                            )
+                        |> Maybe.withDefault model.nextStepsData.referralForm
+
                 updatedValue =
                     nonReferralReasonToSign facility reason
 

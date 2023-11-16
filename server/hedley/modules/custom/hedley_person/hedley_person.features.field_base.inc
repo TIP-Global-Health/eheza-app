@@ -349,6 +349,26 @@ function hedley_person_field_default_field_bases() {
     'type' => 'text',
   );
 
+  // Exported field_base: 'field_ncda_data'.
+  $field_bases['field_ncda_data'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ncda_data',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'text_long',
+  );
+
   // Exported field_base: 'field_number_of_children'.
   $field_bases['field_number_of_children'] = array(
     'active' => 1,
@@ -642,6 +662,7 @@ function hedley_person_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        0 => 0,
         1 => 1,
         2 => 2,
         3 => 3,

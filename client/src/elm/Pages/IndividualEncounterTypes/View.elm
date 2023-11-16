@@ -3,8 +3,8 @@ module Pages.IndividualEncounterTypes.View exposing (view)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Utils exposing (isPersonAFertileWoman)
+import Backend.Utils exposing (ncdaEnabled)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -12,18 +12,16 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewBySyncStatus)
-import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model exposing (SyncInfoStatus(..))
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
-view language currentDate healthCenterId isChw model =
+view : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
+view language currentDate features healthCenterId isChw model =
     div
         [ class "wrap wrap-alt-2 page-encounter-types" ]
         [ viewHeader language
-        , viewContent language currentDate healthCenterId isChw model
+        , viewContent language currentDate features healthCenterId isChw model
             |> viewBySyncStatus language healthCenterId model.syncManager.syncInfoAuthorities
         ]
 
@@ -42,8 +40,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
-viewContent language currentDate healthCenterId isChw model =
+viewContent : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
+viewContent language currentDate features healthCenterId isChw model =
     let
         encounterButton encounterType =
             button
@@ -56,10 +54,19 @@ viewContent language currentDate healthCenterId isChw model =
 
         buttons =
             if isChw then
+                let
+                    childScoreboardButton =
+                        if ncdaEnabled features then
+                            encounterButton ChildScoreboardEncounter
+
+                        else
+                            emptyNode
+                in
                 [ encounterButton AcuteIllnessEncounter
                 , encounterButton AntenatalEncounter
                 , encounterButton NutritionEncounter
                 , encounterButton WellChildEncounter
+                , childScoreboardButton
                 ]
 
             else

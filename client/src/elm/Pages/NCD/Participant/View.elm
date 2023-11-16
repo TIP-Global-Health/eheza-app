@@ -6,24 +6,20 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
     exposing
         ( IndividualEncounterParticipant
-        , IndividualEncounterType(..)
         , IndividualParticipantInitiator(..)
         , emptyIndividualEncounterParticipant
         )
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDEncounter.Model exposing (NCDEncounter)
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Backend.NCDEncounter.Model
+import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Pages.NCD.Participant.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
+import RemoteData exposing (RemoteData(..))
+import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -108,7 +104,7 @@ viewNCDAction language currentDate selectedHealthCenter id db sessions =
         maybeSessionId =
             Dict.toList sessions
                 |> List.filter
-                    (\( sessionId, session ) ->
+                    (\( _, session ) ->
                         session.encounterType == Backend.IndividualEncounterParticipant.Model.NCDEncounter
                     )
                 |> List.head
@@ -120,25 +116,20 @@ viewNCDAction language currentDate selectedHealthCenter id db sessions =
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
             Maybe.map
-                (\sessionId ->
-                    Dict.get sessionId db.ncdEncountersByParticipant
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.map
-                            (\dict ->
-                                ( Dict.toList dict
-                                    |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
-                                    |> List.head
-                                    |> Maybe.map Tuple.first
-                                , Dict.toList dict
-                                    |> List.filter
-                                        (\( _, encounter ) ->
-                                            encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                        )
-                                    |> List.isEmpty
-                                    |> not
+                (getNCDEncountersForParticipant db
+                    >> (\list ->
+                            ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
+                                |> List.head
+                                |> Maybe.map Tuple.first
+                            , List.filter
+                                (\( _, encounter ) ->
+                                    encounter.startDate == currentDate && encounter.endDate == Just currentDate
                                 )
+                                list
+                                |> List.isEmpty
+                                |> not
                             )
-                        |> RemoteData.withDefault ( Nothing, False )
+                       )
                 )
                 maybeSessionId
                 |> Maybe.withDefault ( Nothing, False )

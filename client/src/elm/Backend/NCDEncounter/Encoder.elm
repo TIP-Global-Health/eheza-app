@@ -2,7 +2,7 @@ module Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
 
 import Backend.NCDEncounter.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (..)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)

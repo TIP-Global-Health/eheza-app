@@ -31,7 +31,7 @@ var screenshotsUploadUrlRegex = /\/cache-upload\/screenshots/;
  *
  * @type {number}
  */
-var dbVerno = 21;
+var dbVerno = 22;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
@@ -55,6 +55,16 @@ var tableForType = {
     call_114: 'shards',
     catchment_area: 'nodes',
     child_fbf: 'shards',
+    child_scoreboard_encounter: 'shards',
+    child_scoreboard_bcg_iz: 'shards',
+    child_scoreboard_dtp_iz: 'shards',
+    child_scoreboard_dtp_sa_iz: 'shards',
+    child_scoreboard_ipv_iz: 'shards',
+    child_scoreboard_mr_iz: 'shards',
+    child_scoreboard_ncda: 'shards',
+    child_scoreboard_opv_iz: 'shards',
+    child_scoreboard_pcv13_iz: 'shards',
+    child_scoreboard_rotarix_iz: 'shards',
     clinic: 'shards',
     contributing_factors: 'shards',
     counseling_schedule: 'nodes',
@@ -181,6 +191,7 @@ var tableForType = {
     well_child_bcg_immunisation: 'shards',
     well_child_contributing_factors: 'shards',
     well_child_dtp_immunisation: 'shards',
+    well_child_dtp_sa_immunisation: 'shards',
     well_child_ecd: 'shards',
     well_child_encounter: 'shards',
     well_child_follow_up: 'shards',

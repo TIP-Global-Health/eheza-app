@@ -2,7 +2,7 @@ module Backend.IndividualEncounterParticipant.Decoder exposing (..)
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeFromString)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)

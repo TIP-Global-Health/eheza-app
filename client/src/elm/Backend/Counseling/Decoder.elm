@@ -14,6 +14,7 @@ decodeCounselingTopic =
     succeed TranslationSet
         |> required "label" string
         |> required "kinyarwanda_title" (maybe string)
+        |> hardcoded Nothing
 
 
 decodeCounselingTiming : Decoder CounselingTiming

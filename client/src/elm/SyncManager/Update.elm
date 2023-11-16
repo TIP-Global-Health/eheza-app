@@ -3,13 +3,14 @@ port module SyncManager.Update exposing (subscriptions, update)
 import App.Model exposing (SubModelReturn)
 import App.Ports exposing (bindDropZone, initRollbar)
 import App.Utils exposing (sequenceSubModelReturn)
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Model
 import Debouncer.Basic as Debouncer exposing (provideInput)
 import Device.Encoder
 import Device.Model exposing (Device)
 import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
+import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeValue)
@@ -165,13 +166,13 @@ update currentDate currentTime activePage dbVersion device msg model =
 
         BackendAuthorityFetchHandle zipper webData ->
             let
-                currentZipper =
-                    Zipper.current zipper
-
                 ( saveFetchedDataCmd, modelUpdated, extraMsgs ) =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             let
+                                currentZipper =
+                                    Zipper.current zipper
+
                                 dataToSend =
                                     data.entities
                                         |> List.foldl
@@ -447,15 +448,16 @@ update currentDate currentTime activePage dbVersion device msg model =
                         }
 
                 -- Calculating the time it took authorities to sync.
-                authoritiesSyncTime =
-                    currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
-
                 -- When sync is completed (status is about to change to Idle), we need to decide on
                 -- additional actions:
                 -- If sync lasted  more than 45 seconds (initial sync, for example), we refresh the page.
                 -- Otherwise, we trigger photos download.
                 extraMsgs =
                     if modelWithSyncStatus.syncStatus == SyncIdle then
+                        let
+                            authoritiesSyncTime =
+                                currentTimeMillis - model.syncInfoGeneral.lastSuccesfulContact
+                        in
                         if authoritiesSyncTime > 45000 then
                             [ SchedulePageRefresh ]
 
@@ -807,14 +809,22 @@ update currentDate currentTime activePage dbVersion device msg model =
                                                 , deviceName = data.deviceName
                                                 , status = status
                                                 , rollbarToken = data.rollbarToken
+                                                , site = data.site
+                                                , features = data.features
                                             }
                                        )
 
                             modelWithSyncStatus =
+                                let
+                                    geoInfo =
+                                        getGeoInfo syncInfoGeneral.site
+                                in
                                 SyncManager.Utils.determineSyncStatus activePage
                                     { model
                                         | syncStatus = SyncDownloadGeneral model.downloadGeneralResponse
                                         , syncInfoGeneral = syncInfoGeneral
+                                        , geoInfo = geoInfo
+                                        , reverseGeoInfo = getReverseGeoInfo geoInfo
                                     }
                         in
                         SubModelReturn
@@ -1240,14 +1250,15 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         |> Maybe.map
                                             (\zipper ->
                                                 let
-                                                    currentZipper =
-                                                        Zipper.current zipper
-
                                                     status =
                                                         if result.remaining == 0 then
                                                             Success
 
                                                         else
+                                                            let
+                                                                currentZipper =
+                                                                    Zipper.current zipper
+                                                            in
                                                             currentZipper.status
 
                                                     zipperUpdated =

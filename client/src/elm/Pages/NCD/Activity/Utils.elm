@@ -1,23 +1,18 @@
 module Pages.NCD.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (NCDEncounterId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
 import Backend.NCDActivity.Utils exposing (getAllActivities)
 import Backend.NCDEncounter.Types exposing (..)
-import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import Date
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import List.Extra
-import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils
     exposing
@@ -45,8 +40,8 @@ import Pages.Utils
         , viewNumberInput
         , viewQuestionLabel
         )
-import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, translate)
+import SyncManager.Model exposing (Site)
+import Translate
 import Translate.Model exposing (Language(..))
 
 
@@ -511,8 +506,8 @@ toSocialHistoryValue form =
         form.foodGroup
 
 
-medicalHistoryTasksCompletedFromTotal : NominalDate -> AssembledData -> MedicalHistoryData -> MedicalHistoryTask -> ( Int, Int )
-medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
+medicalHistoryTasksCompletedFromTotal : NominalDate -> Site -> AssembledData -> MedicalHistoryData -> MedicalHistoryTask -> ( Int, Int )
+medicalHistoryTasksCompletedFromTotal currentDate site assembled data task =
     case task of
         TaskCoMorbidities ->
             let
@@ -539,7 +534,7 @@ medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
                 ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.socialHistory
                         |> socialHistoryFormWithDefault data.socialHistoryForm
-                        |> socialHistoryFormInputsAndTasks English currentDate
+                        |> socialHistoryFormInputsAndTasks English currentDate site
             in
             ( Maybe.Extra.values tasks
                 |> List.length
@@ -564,8 +559,8 @@ medicalHistoryTasksCompletedFromTotal currentDate assembled data task =
             ( 0, 0 )
 
 
-socialHistoryFormInputsAndTasks : Language -> NominalDate -> SocialHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
-socialHistoryFormInputsAndTasks language currentDate form =
+socialHistoryFormInputsAndTasks : Language -> NominalDate -> Site -> SocialHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
+socialHistoryFormInputsAndTasks language currentDate site form =
     let
         ( alcoholInputs, alcoholTasks ) =
             let
@@ -587,7 +582,7 @@ socialHistoryFormInputsAndTasks language currentDate form =
                     else
                         ( [], [] )
             in
-            ( [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignDrinkAlcohol
+            ( [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion site SignDrinkAlcohol
               , viewBoolInput language
                     form.alcohol
                     (SetSocialHistoryBoolInput
@@ -622,7 +617,7 @@ socialHistoryFormInputsAndTasks language currentDate form =
                     else
                         ( [], [] )
             in
-            ( [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignSmokeCigarettes
+            ( [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion site SignSmokeCigarettes
               , viewBoolInput language
                     form.cigarettes
                     (SetSocialHistoryBoolInput
@@ -639,7 +634,7 @@ socialHistoryFormInputsAndTasks language currentDate form =
     in
     ( alcoholInputs
         ++ cigarettesInputs
-        ++ [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignConsumeSalt
+        ++ [ viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion site SignConsumeSalt
            , viewBoolInput language
                 form.salt
                 (SetSocialHistoryBoolInput
@@ -657,7 +652,7 @@ socialHistoryFormInputsAndTasks language currentDate form =
                 form.foodGroup
                 SetFoodGroup
                 Translate.FoodGroup
-           , viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignDifficult4TimesAYear
+           , viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion site SignDifficult4TimesAYear
            , viewBoolInput language
                 form.difficult4Times
                 (SetSocialHistoryBoolInput
@@ -667,7 +662,7 @@ socialHistoryFormInputsAndTasks language currentDate form =
                 )
                 "difficult-4-times"
                 Nothing
-           , viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion SignHelpWithTreatmentAtHome
+           , viewQuestionLabel language <| Translate.NCDSocialHistorySignQuestion site SignHelpWithTreatmentAtHome
            , viewBoolInput language
                 form.helpAtHome
                 (SetSocialHistoryBoolInput
@@ -680,8 +675,7 @@ socialHistoryFormInputsAndTasks language currentDate form =
            ]
     , alcoholTasks
         ++ cigarettesTasks
-        ++ [ form.salt, form.difficult4Times, form.helpAtHome ]
-        ++ [ maybeToBoolTask form.foodGroup ]
+        ++ [ form.salt, form.difficult4Times, form.helpAtHome, maybeToBoolTask form.foodGroup ]
     )
 
 

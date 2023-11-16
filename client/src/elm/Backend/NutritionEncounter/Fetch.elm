@@ -5,12 +5,18 @@ import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( getAcuteIllnessEncountersForParticipant
+        , getChildScoreboardEncountersForParticipant
+        , getNutritionEncountersForParticipant
+        , getWellChildEncountersForParticipant
+        )
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Backend.Utils exposing (resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson)
-import EverySet exposing (EverySet)
+import EverySet
 import Maybe.Extra
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
@@ -40,6 +46,7 @@ fetch id db =
         ++ fetchForNutrition id db
         ++ fetchForWellChild id db
         ++ fetchForNCDAScoreboard id db
+        ++ fetchForChildScoreboard id db
         ++ fetchParentsMsgs
 
 
@@ -50,15 +57,9 @@ fetchForNutrition id db =
             resolveIndividualParticipantForPerson id NutritionEncounter db
 
         encountersIds =
-            participantId
-                |> Maybe.map
-                    (\participantId_ ->
-                        Dict.get participantId_ db.nutritionEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map Dict.keys
-                            |> RemoteData.withDefault []
-                    )
+            Maybe.map (getNutritionEncountersForParticipant db) participantId
                 |> Maybe.withDefault []
+                |> List.map Tuple.first
 
         -- We fetch all encounters.
         fetchEncounters =
@@ -103,18 +104,62 @@ fetchForWellChild id db =
         ++ fetchMeasurements
 
 
+fetchForChildScoreboard : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetchForChildScoreboard id db =
+    let
+        participantId =
+            resolveIndividualParticipantForPerson id ChildScoreboardEncounter db
+
+        encountersIds =
+            Maybe.map (getChildScoreboardEncountersForParticipant db) participantId
+                |> Maybe.withDefault []
+                |> List.map Tuple.first
+
+        -- We fetch all encounters.
+        fetchEncounters =
+            List.map FetchChildScoreboardEncounter encountersIds
+
+        -- We fetch measurements of all encounters.
+        fetchMeasurements =
+            List.map FetchChildScoreboardMeasurements encountersIds
+    in
+    Maybe.Extra.values
+        [ Maybe.map FetchIndividualEncounterParticipant participantId
+        , Maybe.map FetchChildScoreboardEncountersForParticipant participantId
+        ]
+        ++ fetchEncounters
+        ++ fetchMeasurements
+
+
 fetchForNCDAScoreboard : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForNCDAScoreboard id db =
-    resolveIndividualParticipantsForPerson id AcuteIllnessEncounter db
-        |> List.map
-            (\participantId ->
-                let
-                    fetchMeasurementsMsgs =
-                        Dict.get participantId db.acuteIllnessEncountersByParticipant
-                            |> Maybe.andThen RemoteData.toMaybe
-                            |> Maybe.map
-                                (Dict.toList
-                                    >> List.filterMap
+    let
+        fetchPrenatalDataMsgs =
+            let
+                -- Trying to resolve the pregnancy tracked on E-Heza, at which
+                -- the child was registered on E-Heza (during CHW Postpartum
+                -- encounter).
+                maybePregnancyId =
+                    Dict.get id db.pregnancyByNewborn
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.Extra.join
+                        |> Maybe.map Tuple.first
+            in
+            FetchPregnancyByNewborn id
+                :: Maybe.Extra.values
+                    [ -- Loading data for pregnancy participant and encounters.
+                      Maybe.map FetchIndividualEncounterParticipant maybePregnancyId
+                    , Maybe.map FetchPrenatalEncountersForParticipant maybePregnancyId
+                    ]
+
+        fetchAcuteIllnessDataMsgs =
+            resolveIndividualParticipantsForPerson id AcuteIllnessEncounter db
+                |> List.concatMap
+                    (\participantId ->
+                        let
+                            fetchMeasurementsMsgs =
+                                getAcuteIllnessEncountersForParticipant db participantId
+                                    |> List.filterMap
                                         (\( encounterId, encounter ) ->
                                             -- We need to fetch measurements of encounters where Uncomplicated
                                             -- Gastrointestinal Infection was diagnosed, to check if treatment was given.
@@ -124,9 +169,8 @@ fetchForNCDAScoreboard id db =
                                             else
                                                 Nothing
                                         )
-                                )
-                            |> Maybe.withDefault []
-                in
-                FetchAcuteIllnessEncountersForParticipant participantId :: fetchMeasurementsMsgs
-            )
-        |> List.concat
+                        in
+                        FetchAcuteIllnessEncountersForParticipant participantId :: fetchMeasurementsMsgs
+                    )
+    in
+    fetchAcuteIllnessDataMsgs ++ fetchPrenatalDataMsgs

@@ -1,9 +1,7 @@
 module Pages.Report.Svg exposing (..)
 
-import Html exposing (Html)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
 
 
 svgMarker identification fill =
@@ -142,6 +140,20 @@ drawPolyshape shape points_ class_ =
                     ]
                     []
            )
+
+
+drawPoints : String -> List ( Float, Float ) -> List (Svg any)
+drawPoints fill =
+    List.map
+        (\( x, y ) ->
+            circle
+                [ cx <| String.fromFloat x
+                , cy <| String.fromFloat y
+                , r "4"
+                , Svg.Attributes.style <| "fill:" ++ fill
+                ]
+                []
+        )
 
 
 withinRange : number -> number -> number -> Bool

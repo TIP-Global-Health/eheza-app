@@ -30,11 +30,11 @@ import Backend.Measurement.Model
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
 import Gizra.Json exposing (decodeFloat, decodeInt)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Pages.Report.Utils exposing (compareAcuteIllnessEncountersDesc)
-import Restful.Endpoint exposing (decodeEntityUuid, toEntityUuid)
+import Restful.Endpoint exposing (toEntityUuid)
 import Utils.Json exposing (decodeEverySet, decodeWithFallback)
 
 
@@ -141,13 +141,6 @@ decodeMuacNutritionValue =
                 else
                     succeed <| NutritionValue Good (String.fromFloat value)
             )
-
-
-decodeBeneficiaries : Decoder Nutrition
-decodeBeneficiaries =
-    succeed Nutrition
-        |> required "severe_nutrition" decodeInt
-        |> required "moderate_nutrition" decodeInt
 
 
 decodeChildrenBeneficiariesData : Decoder (Dict ProgramType (List ChildrenBeneficiariesStats))
@@ -353,8 +346,3 @@ decodePrenatalEncounterDataItem =
     succeed PrenatalEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
         |> required "danger_signs" (decodeEverySet (decodeWithFallback NoDangerSign decodeDangerSign))
-
-
-decodeDangerSignWithFallback : Decoder DangerSign
-decodeDangerSignWithFallback =
-    decodeWithFallback NoDangerSign decodeDangerSign

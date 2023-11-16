@@ -8,15 +8,13 @@ import Backend.Measurement.Model
         ( AdministrationNote(..)
         , ImageUrl(..)
         , MedicationDistributionSign(..)
-        , MedicationDistributionValue
         , MedicationNonAdministrationSign(..)
         )
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import Backend.Utils exposing (reportToWhatsAppEnabled)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -27,10 +25,9 @@ import Html.Events exposing (..)
 import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust, or, unwrap)
-import Pages.Page exposing (Page(..), UserPage(..))
 import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model
-import Time exposing (Month(..))
+import Round
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
@@ -77,18 +74,20 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                 )
 
             else
-                let
-                    renderAgeFunc =
-                        if isAboveAgeOf2Years then
-                            renderAgeYearsMonths
-
-                        else
-                            renderAgeMonthsDays
-                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> renderAgeFunc language birthDate currentDate)
+                        (\birthDate ->
+                            let
+                                renderAgeFunc =
+                                    if isAboveAgeOf2Years then
+                                        renderAgeYearsMonths
+
+                                    else
+                                        renderAgeMonthsDays
+                            in
+                            renderAgeFunc language birthDate currentDate
+                        )
                 )
     in
     [ div [ class "ui image" ]
@@ -144,18 +143,20 @@ viewPersonDetailsExtended language currentDate person =
                 )
 
             else
-                let
-                    renderAgeFunc =
-                        if isAboveAgeOf2Years then
-                            renderAgeYearsMonths
-
-                        else
-                            renderAgeMonthsDays
-                in
                 ( "child"
                 , person.birthDate
                     |> Maybe.map
-                        (\birthDate -> viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate))
+                        (\birthDate ->
+                            let
+                                renderAgeFunc =
+                                    if isAboveAgeOf2Years then
+                                        renderAgeYearsMonths
+
+                                    else
+                                        renderAgeMonthsDays
+                            in
+                            viewEntry Translate.AgeWord (renderAgeFunc language birthDate currentDate)
+                        )
                     |> Maybe.withDefault emptyNode
                 )
 
@@ -934,22 +935,18 @@ viewEncounterActionButton language label buttonColor allowAction action =
         ]
 
 
-viewEndEncounterMenuForProgressReport : Language -> Bool -> (Bool -> msg) -> msg -> Html msg
-viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateMsg setSendViaWhatsAppDialogStateMsg =
+viewEndEncounterMenuForProgressReport : Language -> EverySet SiteFeature -> Bool -> (Bool -> msg) -> msg -> Html msg
+viewEndEncounterMenuForProgressReport language features allowEndEncounter setDialogStateMsg setReportToWhatsAppDialogStateMsg =
     let
-        sendViaWhatsAppEnabled =
-            -- For now, we disabled 'Send via WhatsApp' feature.
-            False
-
-        ( actionsClass, endEncounterButtonColor, sendViaWhatsAppButton ) =
-            if sendViaWhatsAppEnabled then
+        ( actionsClass, endEncounterButtonColor, reportToWhatsAppButton ) =
+            if reportToWhatsAppEnabled features then
                 ( "actions two"
                 , "velvet"
                 , button
                     [ class "ui fluid primary button"
-                    , onClick setSendViaWhatsAppDialogStateMsg
+                    , onClick setReportToWhatsAppDialogStateMsg
                     ]
-                    [ text <| translate language Translate.SendViaWhatsApp ]
+                    [ text <| translate language Translate.ReportToWhatsApp ]
                 )
 
             else
@@ -970,7 +967,7 @@ viewEndEncounterMenuForProgressReport language allowEndEncounter setDialogStateM
     div [ class actionsClass ]
         [ button attributes
             [ text <| translate language Translate.EndEncounter ]
-        , sendViaWhatsAppButton
+        , reportToWhatsAppButton
         ]
 
 
@@ -1222,9 +1219,9 @@ customSaveButton language active msg label =
         [ text <| translate language label ]
 
 
-customPopup : Language -> Bool -> TranslationId -> ( Html msg, Html msg, msg ) -> Html msg
-customPopup language showWarning actionLabel ( topMessage, bottomMessage, action ) =
-    div [ class "ui active modal diagnosis-popup" ]
+customPopup : Language -> Bool -> TranslationId -> String -> ( Html msg, Html msg, msg ) -> Html msg
+customPopup language showWarning actionLabel extraClass ( topMessage, bottomMessage, action ) =
+    div [ class <| "ui active modal " ++ extraClass ]
         [ div [ class "content" ] <|
             [ div [ class "popup-heading-wrapper" ]
                 [ img [ src "assets/images/exclamation-red.png" ] []
@@ -1294,3 +1291,16 @@ viewBySyncStatus language healthCenterId syncInfoAuthorities contentForView =
             )
         |> Maybe.withDefault
             (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
+
+
+setMuacValueForSite : Site -> String -> Maybe Float
+setMuacValueForSite site s =
+    case site of
+        SiteBurundi ->
+            -- At Burundi, value is entered as mm, but we need to store it
+            -- as cm. Therefore, we multiply by 0.1.
+            String.toFloat s
+                |> Maybe.map ((*) 0.1 >> Round.roundNum 1)
+
+        _ ->
+            String.toFloat s

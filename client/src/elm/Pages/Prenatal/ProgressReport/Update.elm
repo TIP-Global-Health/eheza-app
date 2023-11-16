@@ -3,8 +3,8 @@ module Pages.Prenatal.ProgressReport.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.PrenatalEncounter.Model
-import Components.SendViaWhatsAppDialog.Model
-import Components.SendViaWhatsAppDialog.Update
+import Components.ReportToWhatsAppDialog.Model
+import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..))
 import Pages.Prenatal.ProgressReport.Model exposing (..)
@@ -48,12 +48,12 @@ update msg model =
         SetEndEncounterDialogState value ->
             ( { model | showEndEncounterDialog = value }, Cmd.none, [] )
 
-        MsgSendViaWhatsAppDialog subMsg ->
+        MsgReportToWhatsAppDialog subMsg ->
             let
                 ( dialogUpdated, cmd, ( extraMsgs, appMsgs ) ) =
-                    Components.SendViaWhatsAppDialog.Update.update subMsg model.sendViaWhatsAppDialog
+                    Components.ReportToWhatsAppDialog.Update.update subMsg model.reportToWhatsAppDialog
             in
-            ( { model | sendViaWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
+            ( { model | reportToWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
                 |> sequenceExtra update extraMsgs
 
         SetReportComponents maybeComponents ->
@@ -62,7 +62,7 @@ update msg model =
                     Maybe.map
                         (\components ->
                             case components of
-                                Components.SendViaWhatsAppDialog.Model.Antenatal antenatalComponents ->
+                                Components.ReportToWhatsAppDialog.Model.Antenatal antenatalComponents ->
                                     { model | components = Just antenatalComponents }
 
                                 -- We should never get here.

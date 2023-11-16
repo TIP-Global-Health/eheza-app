@@ -3,7 +3,6 @@ module Pages.NCD.Activity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import DateSelector.Model exposing (DateSelectorConfig)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing

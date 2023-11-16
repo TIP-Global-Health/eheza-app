@@ -8,6 +8,7 @@ module SyncManager.Decoder exposing
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Decoder
+import Backend.ChildScoreboardEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
@@ -29,14 +30,15 @@ import Backend.Session.Decoder
 import Backend.StockUpdate.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
-import Components.SendViaWhatsAppDialog.Decoder exposing (decodeReportType)
+import Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
+import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
-import Time
+import SyncManager.Utils exposing (siteFeaturesFromString, siteFromString)
 
 
 decodeIndexDbQueryTypeResult : Decoder IndexDbQueryTypeResult
@@ -290,6 +292,8 @@ decodeDownloadSyncResponseGeneral =
             |> required "revision_count" decodeInt
             |> optional "device_name" string ""
             |> optional "rollbar_token" string ""
+            |> optional "site" decodeSite SiteRwanda
+            |> optional "features" decodeSiteFeatures EverySet.empty
         )
 
 
@@ -353,6 +357,18 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
             )
 
 
+decodeSite : Decoder Site
+decodeSite =
+    string
+        |> andThen (siteFromString >> succeed)
+
+
+decodeSiteFeatures : Decoder (EverySet SiteFeature)
+decodeSiteFeatures =
+    string
+        |> andThen (siteFeaturesFromString >> succeed)
+
+
 decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
 decodeDownloadSyncResponseAuthority =
     field "data"
@@ -361,6 +377,8 @@ decodeDownloadSyncResponseAuthority =
             |> required "revision_count" decodeInt
             |> hardcoded ""
             |> hardcoded ""
+            |> hardcoded SiteUnknown
+            |> hardcoded EverySet.empty
         )
 
 
@@ -372,6 +390,8 @@ decodeDownloadSyncResponseAuthorityStats =
             |> hardcoded 0
             |> hardcoded ""
             |> hardcoded ""
+            |> hardcoded SiteUnknown
+            |> hardcoded EverySet.empty
         )
 
 
@@ -482,6 +502,56 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeFbf
                             BackendAuthorityChildFbf
+
+                    "child_scoreboard_encounter" ->
+                        doDecode
+                            Backend.ChildScoreboardEncounter.Decoder.decodeChildScoreboardEncounter
+                            BackendAuthorityChildScoreboardEncounter
+
+                    "child_scoreboard_bcg_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardBCGImmunisation
+                            BackendAuthorityChildScoreboardBCGImmunisation
+
+                    "child_scoreboard_dtp_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardDTPImmunisation
+                            BackendAuthorityChildScoreboardDTPImmunisation
+
+                    "child_scoreboard_dtp_sa_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardDTPStandaloneImmunisation
+                            BackendAuthorityChildScoreboardDTPStandaloneImmunisation
+
+                    "child_scoreboard_ipv_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardIPVImmunisation
+                            BackendAuthorityChildScoreboardIPVImmunisation
+
+                    "child_scoreboard_mr_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardMRImmunisation
+                            BackendAuthorityChildScoreboardMRImmunisation
+
+                    "child_scoreboard_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardNCDA
+                            BackendAuthorityChildScoreboardNCDA
+
+                    "child_scoreboard_opv_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardOPVImmunisation
+                            BackendAuthorityChildScoreboardOPVImmunisation
+
+                    "child_scoreboard_pcv13_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardPCV13Immunisation
+                            BackendAuthorityChildScoreboardPCV13Immunisation
+
+                    "child_scoreboard_rotarix_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardRotarixImmunisation
+                            BackendAuthorityChildScoreboardRotarixImmunisation
 
                     "clinic" ->
                         doDecode
@@ -1070,6 +1140,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildDTPImmunisation
                             BackendAuthorityWellChildDTPImmunisation
+
+                    "well_child_dtp_sa_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildDTPStandaloneImmunisation
+                            BackendAuthorityWellChildDTPStandaloneImmunisation
 
                     "well_child_ecd" ->
                         doDecode

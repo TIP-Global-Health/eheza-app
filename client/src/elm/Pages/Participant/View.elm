@@ -1,20 +1,20 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..))
+import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity)
 import Activity.Utils exposing (getActivityIcon, isCaregiver, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
-import Backend.Person.Model exposing (Person, Ubudehe(..))
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
+import EverySet exposing (EverySet)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Html.Attributes as Attr exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import LocalData
 import Maybe.Extra
@@ -27,6 +27,7 @@ import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
@@ -44,6 +45,8 @@ viewChild :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> PersonId
     -> ( SessionId, EditableSession )
@@ -51,13 +54,13 @@ viewChild :
     -> ModelIndexedDb
     -> Model ChildActivity
     -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewChild language currentDate zscores isChw childId ( sessionId, session ) pages db model =
+viewChild language currentDate zscores site features isChw childId ( sessionId, session ) pages db model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages db model
+            viewFoundChild language currentDate zscores site features isChw ( childId, child ) ( sessionId, session ) pages db model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -76,6 +79,8 @@ viewFoundChild :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> ( PersonId, Person )
     -> ( SessionId, EditableSession )
@@ -83,7 +88,7 @@ viewFoundChild :
     -> ModelIndexedDb
     -> Model ChildActivity
     -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages db model =
+viewFoundChild language currentDate zscores site features isChw ( childId, child ) ( sessionId, session ) pages db model =
     let
         maybeMother =
             getMyMother childId session.offlineSession
@@ -108,16 +113,19 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                 |> Maybe.withDefault False
 
         age =
-            let
-                renderAgeFunc =
-                    if isAboveAgeOf2Years then
-                        renderAgeYearsMonths
-
-                    else
-                        renderAgeMonthsDays
-            in
             child.birthDate
-                |> Maybe.map (\birthDate -> renderAgeFunc language birthDate currentDate)
+                |> Maybe.map
+                    (\birthDate ->
+                        let
+                            renderAgeFunc =
+                                if isAboveAgeOf2Years then
+                                    renderAgeYearsMonths
+
+                                else
+                                    renderAgeMonthsDays
+                        in
+                        renderAgeFunc language birthDate currentDate
+                    )
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
                 |> Translate.ReportAge
                 |> translate language
@@ -132,11 +140,8 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
         break =
             br [] []
 
-        config =
-            childParticipant
-
         activities =
-            summarizeChildParticipant currentDate zscores childId session.offlineSession isChw db
+            summarizeChildParticipant currentDate zscores features childId session.offlineSession isChw db
 
         selectedActivity =
             case model.selectedTab of
@@ -193,14 +198,14 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     Just activity ->
                         let
                             form =
-                                getChildForm childId pages session
+                                getChildForm site childId pages session
                         in
                         getChildMeasurementData childId session
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
                                     [ resolvePreviousValuesSetForChild currentDate childId db
-                                        |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
+                                        |> Measurement.View.viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"
                                     ]
@@ -251,6 +256,8 @@ viewMother :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> PersonId
     -> ( SessionId, EditableSession )
@@ -258,13 +265,13 @@ viewMother :
     -> ModelIndexedDb
     -> Model MotherActivity
     -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewMother language currentDate zscores isChw motherId ( sessionId, session ) pages db model =
+viewMother language currentDate zscores site features isChw motherId ( sessionId, session ) pages db model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessionId, session ) pages db model
+            viewFoundMother language currentDate zscores site features isChw ( motherId, mother ) ( sessionId, session ) pages db model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -281,6 +288,8 @@ viewFoundMother :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> ( PersonId, Person )
     -> ( SessionId, EditableSession )
@@ -288,10 +297,26 @@ viewFoundMother :
     -> ModelIndexedDb
     -> Model MotherActivity
     -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessionId, session ) pages db model =
+viewFoundMother language currentDate zscores site features isChw ( motherId, mother ) ( sessionId, session ) pages db model =
     let
         break =
             br [] []
+
+        ubudeheForView =
+            if site == SiteRwanda then
+                [ showMaybe <|
+                    Maybe.map
+                        (\ubudehe ->
+                            p [ class "ubudehe-wrapper" ]
+                                [ label [] [ text <| translate language Translate.UbudeheLabel ++ ": " ]
+                                , span [] [ text <| translate language <| Translate.UbudeheNumber ubudehe ]
+                                ]
+                        )
+                        mother.ubudehe
+                ]
+
+            else
+                []
 
         childrenList =
             getChildren motherId session.offlineSession
@@ -302,7 +327,7 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                 |> List.intersperse break
 
         activities =
-            summarizeMotherParticipant currentDate zscores motherId session.offlineSession isChw db
+            summarizeMotherParticipant currentDate zscores features motherId session.offlineSession isChw db
 
         selectedActivity =
             case model.selectedTab of
@@ -365,8 +390,7 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                         [ div
                             [ class "ui image" ]
                             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-                        , div
-                            [ class "content" ]
+                        , div [ class "content" ] <|
                             [ h2
                                 [ class "ui header" ]
                                 [ text mother.name ]
@@ -379,18 +403,11 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                                             ]
                                     )
                                     mother.educationLevel
-                            , showMaybe <|
-                                Maybe.map
-                                    (\ubudehe ->
-                                        p [ class "ubudehe-wrapper" ]
-                                            [ label [] [ text <| translate language Translate.UbudeheLabel ++ ": " ]
-                                            , span [] [ text <| translate language <| Translate.UbudeheNumber ubudehe ]
-                                            ]
-                                    )
-                                    mother.ubudehe
-                            , p [] childrenList
-                            , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
                             ]
+                                ++ ubudeheForView
+                                ++ [ p [] childrenList
+                                   , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
+                                   ]
                         ]
                     ]
                     |> keyed "mother"
@@ -467,11 +484,12 @@ viewActivityCards config language offlineSession personId activities selectedTab
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted <| List.length activities.completed
 
-        progressTabTitle =
-            translate language <| Translate.ProgressReport
-
         extraTabs =
             if config.showProgressReportTab then
+                let
+                    progressTabTitle =
+                        translate language <| Translate.ProgressReport
+                in
                 [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
 
             else

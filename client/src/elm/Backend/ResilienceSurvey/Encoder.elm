@@ -1,10 +1,9 @@
 module Backend.ResilienceSurvey.Encoder exposing (encodeResilienceSurvey)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.ResilienceSurvey.Model exposing (..)
 import Backend.ResilienceSurvey.Utils exposing (..)
-import EverySet
-import Gizra.NominalDate exposing (encodeYYYYMMDD)
+import Gizra.NominalDate
 import Json.Encode exposing (..)
 import Restful.Endpoint exposing (encodeEntityUuid)
 

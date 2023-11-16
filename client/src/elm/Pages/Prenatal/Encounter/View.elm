@@ -1,14 +1,9 @@
 module Pages.Prenatal.Encounter.View exposing (generateActivityData, view, viewActionButton, viewMotherAndMeasurements)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
-import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Model exposing (ObstetricHistoryValue)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
-import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalActivity.Utils
     exposing
@@ -18,19 +13,17 @@ import Backend.PrenatalActivity.Utils
         )
 import Backend.PrenatalEncounter.Model
     exposing
-        ( PrenatalEncounter
-        , PrenatalEncounterType(..)
+        ( PrenatalEncounterType(..)
         , PrenatalProgressReportInitiator(..)
         , RecordPreganancyInitiator(..)
         )
-import Date exposing (Interval(..))
-import EverySet exposing (EverySet)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
+import EverySet
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Utils exposing (activityCompleted, expectActivity, noDangerSigns)
 import Pages.Prenatal.Encounter.Model exposing (..)
@@ -39,30 +32,29 @@ import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
 import Pages.Utils exposing (viewEndEncounterButtonCustomColor, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
-import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (activityCard, tabItem, thumbnailImage, viewLoading, viewModal)
-import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths)
+import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw db model =
+view : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id isChw db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id isChw model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site id isChw model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Bool -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id isChw model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site id isChw model assembled =
     let
         header =
             viewHeader language isChw assembled
 
         content =
-            viewContent language currentDate isChw assembled model
+            viewContent language currentDate site isChw assembled model
 
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -83,7 +75,7 @@ viewHeaderAndContent language currentDate id isChw model assembled =
             viewChwWarningPopup language assembled model
         , viewModal endEncounterDialog
         , viewModal <|
-            viewUndeterminedDiagnosesWarningPopup language currentDate assembled model
+            viewUndeterminedDiagnosesWarningPopup language currentDate site assembled model
         ]
 
 
@@ -104,11 +96,11 @@ viewHeader language isChw assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> Html Msg
-viewContent language currentDate isChw assembled model =
+viewContent : Language -> NominalDate -> Site -> Bool -> AssembledData -> Model -> Html Msg
+viewContent language currentDate site isChw assembled model =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewMainPageContent language currentDate assembled model
+            ++ viewMainPageContent language currentDate site assembled model
 
 
 viewChwWarningPopup : Language -> AssembledData -> Model -> Maybe (Html Msg)
@@ -137,8 +129,8 @@ viewChwWarningPopup language assembled model =
         Nothing
 
 
-viewUndeterminedDiagnosesWarningPopup : Language -> NominalDate -> AssembledData -> Model -> Maybe (Html Msg)
-viewUndeterminedDiagnosesWarningPopup language currentDate assembled model =
+viewUndeterminedDiagnosesWarningPopup : Language -> NominalDate -> Site -> AssembledData -> Model -> Maybe (Html Msg)
+viewUndeterminedDiagnosesWarningPopup language currentDate site assembled model =
     if assembled.encounter.encounterType /= NursePostpartumEncounter || model.undeterminedDiagnosesWarningAcknowledged then
         Nothing
 
@@ -146,8 +138,8 @@ viewUndeterminedDiagnosesWarningPopup language currentDate assembled model =
         let
             ( completedActivities, pendingActivities ) =
                 getAllActivities assembled
-                    |> List.filter (expectActivity currentDate assembled)
-                    |> List.partition (activityCompleted currentDate assembled)
+                    |> List.filter (expectActivity currentDate site assembled)
+                    |> List.partition (activityCompleted currentDate site assembled)
         in
         if List.length pendingActivities > 0 || List.member NextSteps completedActivities then
             Nothing
@@ -157,7 +149,7 @@ viewUndeterminedDiagnosesWarningPopup language currentDate assembled model =
                 diagnoses =
                     EverySet.toList assembled.encounter.diagnoses
 
-                ( undetermined, determined ) =
+                ( undetermined, _ ) =
                     List.partition (\diagnosis -> List.member diagnosis undeterminedPostpartumDiagnoses) diagnoses
             in
             if List.isEmpty undetermined then
@@ -195,27 +187,27 @@ viewMotherDetails language currentDate isChw assembled alertsDialogData =
         mother =
             assembled.person
 
-        firstEncounterMeasurements =
-            getFirstEncounterMeasurements isChw assembled
-
-        highRiskAlertsData =
-            allHighRiskFactors
-                |> List.filterMap (generateHighRiskAlertData language firstEncounterMeasurements)
-
-        highSeverityAlertsData =
-            allHighSeverityAlerts
-                |> List.filterMap (generateHighSeverityAlertData language currentDate isChw assembled)
-
-        recurringHighSeverityAlertsData =
-            allRecurringHighSeverityAlerts
-                |> List.map (generateRecurringHighSeverityAlertData language currentDate isChw assembled)
-                |> List.filter (List.isEmpty >> not)
-
         alertsDialogSection =
             alertsDialogData
                 |> Maybe.map
                     (\( isDialogOpen, setAlertsDialogStateMsg ) ->
                         let
+                            firstEncounterMeasurements =
+                                getFirstEncounterMeasurements isChw assembled
+
+                            highRiskAlertsData =
+                                allHighRiskFactors
+                                    |> List.filterMap (generateHighRiskAlertData language firstEncounterMeasurements)
+
+                            highSeverityAlertsData =
+                                allHighSeverityAlerts
+                                    |> List.filterMap (generateHighSeverityAlertData language currentDate isChw assembled)
+
+                            recurringHighSeverityAlertsData =
+                                allRecurringHighSeverityAlerts
+                                    |> List.map (generateRecurringHighSeverityAlertData language currentDate isChw assembled)
+                                    |> List.filter (List.isEmpty >> not)
+
                             alertSign =
                                 if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData && List.isEmpty recurringHighSeverityAlertsData then
                                     emptyNode
@@ -300,8 +292,7 @@ alertsDialog language highRiskAlertsData highSeverityAlertsData recurringHighSev
 
             recurringHighSeverityAlerts =
                 recurringHighSeverityAlertsData
-                    |> List.map viewRecurringHighSeverityAlert
-                    |> List.concat
+                    |> List.concatMap viewRecurringHighSeverityAlert
 
             highSeverityAlertsEmpty =
                 List.isEmpty highSeverityAlerts && List.isEmpty recurringHighSeverityAlerts
@@ -373,13 +364,13 @@ viewIndicators language currentDate lmpDate obstetricHistory =
         ]
 
 
-viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate assembled model =
+viewMainPageContent : Language -> NominalDate -> Site -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate site assembled model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities assembled
-                |> List.filter (expectActivity currentDate assembled)
-                |> List.partition (activityCompleted currentDate assembled)
+                |> List.filter (expectActivity currentDate site assembled)
+                |> List.partition (activityCompleted currentDate site assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

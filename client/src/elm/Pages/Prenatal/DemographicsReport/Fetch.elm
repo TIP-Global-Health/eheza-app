@@ -4,7 +4,6 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Maybe.Extra
 import RemoteData exposing (RemoteData(..))
 
 

@@ -2,20 +2,16 @@ module Pages.NCD.Activity.View exposing (view)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
-import Backend.Person.Model exposing (Person)
-import EverySet
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model
     exposing
         ( ContentAndTasksForPerformedLaboratoryTestConfig
@@ -30,7 +26,8 @@ import Measurement.Model
         )
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
+        ( OutsideCareConfig
+        , corePhysicalExamFormWithDefault
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
         , familyPlanningFormWithDefault
@@ -51,12 +48,12 @@ import Measurement.Utils
         , viewUrineDipstickForm
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (viewCorePhysicalExamForm, viewFamilyPlanningForm, viewVitalsForm)
+import Measurement.View exposing (viewFamilyPlanningForm)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Activity.Utils exposing (..)
 import Pages.NCD.Model exposing (..)
-import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault, resolveReferralInputsAndTasks)
+import Pages.NCD.Utils exposing (generateAssembledData, medicationDistributionFormWithDefault, referralFormWithDefault)
 import Pages.NCD.View exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
@@ -67,34 +64,30 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
         , viewCustomLabel
-        , viewLabel
-        , viewNumberInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
         )
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (viewModal)
+import SyncManager.Model exposing (Site)
+import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> NCDEncounterId -> NCDActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> Site -> NCDEncounterId -> NCDActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate site id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate site id activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> NCDEncounterId -> NCDActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Site -> NCDEncounterId -> NCDActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate site id activity db model assembled =
     div [ class "page-activity ncd" ] <|
         [ viewHeader language id activity
-        , viewContent language currentDate activity db model assembled
+        , viewContent language currentDate site activity db model assembled
         ]
 
 
@@ -115,16 +108,16 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> NCDActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity db model assembled =
+viewContent : Language -> NominalDate -> Site -> NCDActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate site activity db model assembled =
     div [ class "ui unstackable items" ] <|
         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
-            :: viewActivity language currentDate activity assembled db model
+            :: viewActivity language currentDate site activity assembled db model
         )
 
 
-viewActivity : Language -> NominalDate -> NCDActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate activity assembled db model =
+viewActivity : Language -> NominalDate -> Site -> NCDActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate site activity assembled db model =
     case activity of
         DangerSigns ->
             viewDangerSignsContent language currentDate assembled model.dangerSignsData
@@ -139,7 +132,7 @@ viewActivity language currentDate activity assembled db model =
             viewLaboratoryContent language currentDate assembled model.laboratoryData
 
         MedicalHistory ->
-            viewMedicalHistoryContent language currentDate assembled model.medicalHistoryData
+            viewMedicalHistoryContent language currentDate site assembled model.medicalHistoryData
 
         SymptomReview ->
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
@@ -284,15 +277,6 @@ viewFamilyPlanningContent language currentDate assembled data =
 viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
 viewExaminationContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
-        measurements =
-            assembled.measurements
-
         tasks =
             [ TaskVitals, TaskCoreExam ]
 
@@ -383,6 +367,12 @@ viewExaminationContent language currentDate assembled data =
             Maybe.map
                 (\task ->
                     let
+                        personId =
+                            assembled.participant.person
+
+                        measurements =
+                            assembled.measurements
+
                         saveAction =
                             case task of
                                 TaskVitals ->
@@ -451,18 +441,9 @@ viewCoreExamForm language currentDate form =
     Measurement.View.viewCorePhysicalExamForm language currentDate config form
 
 
-viewMedicalHistoryContent : Language -> NominalDate -> AssembledData -> MedicalHistoryData -> List (Html Msg)
-viewMedicalHistoryContent language currentDate assembled data =
+viewMedicalHistoryContent : Language -> NominalDate -> Site -> AssembledData -> MedicalHistoryData -> List (Html Msg)
+viewMedicalHistoryContent language currentDate site assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
-        measurements =
-            assembled.measurements
-
         tasks =
             [ TaskCoMorbidities
             , TaskMedicationHistory
@@ -540,7 +521,7 @@ viewMedicalHistoryContent language currentDate assembled data =
                             )
 
                         _ ->
-                            ( task, medicalHistoryTasksCompletedFromTotal currentDate assembled data task )
+                            ( task, medicalHistoryTasksCompletedFromTotal currentDate site assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -583,7 +564,7 @@ viewMedicalHistoryContent language currentDate assembled data =
                 Just TaskSocialHistory ->
                     getMeasurementValueFunc assembled.measurements.socialHistory
                         |> socialHistoryFormWithDefault data.socialHistoryForm
-                        |> viewSocialHistoryForm language currentDate
+                        |> viewSocialHistoryForm language currentDate site
 
                 Just TaskFamilyHistory ->
                     getMeasurementValueFunc assembled.measurements.familyHistory
@@ -610,6 +591,12 @@ viewMedicalHistoryContent language currentDate assembled data =
             Maybe.map
                 (\task ->
                     let
+                        personId =
+                            assembled.participant.person
+
+                        measurements =
+                            assembled.measurements
+
                         saveButtonActive =
                             tasksCompleted == totalTasks
 
@@ -761,6 +748,7 @@ viewOutsideCareContent language currentDate assembled form =
     ]
 
 
+outsideCareConfig : OutsideCareConfig MedicalCondition Msg
 outsideCareConfig =
     { setBoolInputMsg = SetOutsideCareSignBoolInput
     , setDiagnosisMsg = SetOutsideCareDiagnosis
@@ -856,11 +844,11 @@ viewMedicationHistoryForm language currentDate form =
         ]
 
 
-viewSocialHistoryForm : Language -> NominalDate -> SocialHistoryForm -> Html Msg
-viewSocialHistoryForm language currentDate form =
+viewSocialHistoryForm : Language -> NominalDate -> Site -> SocialHistoryForm -> Html Msg
+viewSocialHistoryForm language currentDate site form =
     let
         ( inputs, _ ) =
-            socialHistoryFormInputsAndTasks language currentDate form
+            socialHistoryFormInputsAndTasks language currentDate site form
     in
     div [ class "ui form social-history" ]
         inputs
@@ -879,12 +867,6 @@ viewFamilyHistoryForm language currentDate form =
 viewLaboratoryContent : Language -> NominalDate -> AssembledData -> LaboratoryData -> List (Html Msg)
 viewLaboratoryContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -1039,6 +1021,9 @@ viewLaboratoryContent language currentDate assembled data =
             Maybe.map
                 (\task ->
                     let
+                        personId =
+                            assembled.participant.person
+
                         saveMsg =
                             case task of
                                 TaskHIVTest ->
@@ -1150,12 +1135,6 @@ contentAndTasksForPerformedLaboratoryTestConfig =
 viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
 viewNextStepsContent language currentDate assembled data =
     let
-        personId =
-            assembled.participant.person
-
-        person =
-            assembled.person
-
         measurements =
             assembled.measurements
 
@@ -1272,6 +1251,9 @@ viewNextStepsContent language currentDate assembled data =
                 |> Maybe.map
                     (\task ->
                         let
+                            personId =
+                                assembled.participant.person
+
                             saveMsg =
                                 case task of
                                     TaskHealthEducation ->

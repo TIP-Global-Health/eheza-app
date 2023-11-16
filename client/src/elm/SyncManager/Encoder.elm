@@ -11,7 +11,7 @@ import AssocList as Dict
 import Backend.Measurement.Encoder
 import Backend.Person.Encoder
 import Backend.StockUpdate.Encoder
-import Components.SendViaWhatsAppDialog.Encoder exposing (encodeReportType)
+import Components.ReportToWhatsAppDialog.Encoder exposing (encodeReportType)
 import Gizra.NominalDate
 import Json.Encode exposing (Value, int, list, null, object, string)
 import Json.Encode.Extra exposing (maybe)
@@ -20,7 +20,6 @@ import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendEntityIdentifier
-        , BackendGeneralEntity(..)
         , BackendWhatsAppEntity
         , IndexDbQueryUploadAuthorityResultRecord
         , IndexDbQueryUploadGeneralResultRecord

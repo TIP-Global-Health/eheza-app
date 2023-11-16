@@ -4,7 +4,7 @@ import Html exposing (Html)
 import Pages.Report.Svg exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
+import Translate exposing (Language, translate)
 
 
 {-| If you're calling any of the functions that generate charts,
@@ -134,13 +134,14 @@ viewBMIForEGA language points =
                 ]
                 [ text <| translate language Translate.BMI ]
             ]
-        , g []
+        , g [] <|
             [ drawPolygon topRedPoints "red-area"
             , drawPolygon yellowPoints "yellow-area"
             , drawPolygon greenPoints "green-area"
             , drawPolygon bottomRedPoints "red-area"
             , drawPolyline measurements "data"
             ]
+                ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
@@ -256,7 +257,7 @@ viewFundalHeightForEGA language points =
                 ]
                 [ text <| translate language Translate.FundalHeight ]
             ]
-        , g []
+        , g [] <|
             [ drawPolygon bottomRedPoints "red-area"
             , drawPolygon bottomYellowPoints "yellow-area"
             , drawPolygon greenPoints "green-area"
@@ -264,6 +265,7 @@ viewFundalHeightForEGA language points =
             , drawPolygon topRedPoints "red-area"
             , drawPolyline measurements "data"
             ]
+                ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)

@@ -1,20 +1,17 @@
 module Pages.Prenatal.Outcome.View exposing (view)
 
-import App.Model
-import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
-import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), IndividualParticipantInitiator(..), PregnancyOutcome(..), allPregnancyOutcome)
+import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), IndividualParticipantInitiator(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
+import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick)
 import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
@@ -32,10 +29,8 @@ view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> Re
 view language currentDate id isChw initiator db model =
     let
         lastEncounterId =
-            Dict.get id db.prenatalEncountersByParticipant
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map Dict.keys
-                |> RemoteData.withDefault []
+            getPrenatalEncountersForParticipant db id
+                |> List.map Tuple.first
                 |> List.reverse
                 |> List.head
 
