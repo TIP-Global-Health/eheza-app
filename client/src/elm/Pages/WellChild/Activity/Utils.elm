@@ -1413,6 +1413,7 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
                 || -- CHW should send patient to HC, if child is behind on vaccinatons.
                    ((assembled.encounter.encounterType /= PediatricCare)
+                        && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
                         && isBehindOnVaccinationsByProgress currentDate site assembled.participant.person db
                    )
 
@@ -1423,6 +1424,7 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
                 || -- CHW should send patient to HC, if child is behind on vaccinatons.
                    ((assembled.encounter.encounterType /= PediatricCare)
+                        && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
                         && isBehindOnVaccinationsByProgress currentDate site assembled.participant.person db
                    )
 
