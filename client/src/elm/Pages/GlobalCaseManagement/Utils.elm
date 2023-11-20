@@ -356,18 +356,21 @@ generateFollowUpsForResidents :
     -> Village
     -> ModelIndexedDb
     -> FollowUpMeasurements
-    -> ( List PersonId, List PersonId, List PersonId )
+    -> FollowUpPatients
     -> FollowUpMeasurements
-generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal ) =
+generateFollowUpsForResidents currentDate village db followUps followUpPatients =
     let
         residentsForNutrition =
-            filterResidents db village peopleForNutrition
+            filterResidents db village followUpPatients.nutrition
 
         residentsForAccuteIllness =
-            filterResidents db village peopleForAccuteIllness
+            filterResidents db village followUpPatients.acuteIllness
 
         residentsForPrenatal =
-            filterResidents db village peopleForPrenatal
+            filterResidents db village followUpPatients.prenatal
+
+        residentsForNextVisit =
+            filterResidents db village followUpPatients.nextVisit
 
         nutritionGroup =
             Dict.filter
@@ -403,6 +406,13 @@ generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrit
                     List.member followUp.participantId residentsForPrenatal
                 )
                 followUps.prenatal
+
+        nextVisit =
+            Dict.filter
+                (\_ followUp ->
+                    List.member followUp.participantId residentsForNextVisit
+                )
+                followUps.nextVisit
     in
     { followUps
         | nutritionGroup = nutritionGroup
@@ -410,10 +420,11 @@ generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrit
         , wellChild = wellChild
         , acuteIllness = acuteIllness
         , prenatal = prenatal
+        , nextVisit = nextVisit
     }
 
 
-resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> ( List PersonId, List PersonId, List PersonId )
+resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> FollowUpPatients
 resolveUniquePatientsFromFollowUps limitDate followUps =
     let
         peopleForNutritionGroup =
@@ -432,13 +443,15 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
                 |> List.map .participantId
                 |> Pages.Utils.unique
     in
-    ( peopleForNutritionGroup
-        ++ peopleForNutritionIndividual
-        ++ peopleForWellChild
-        |> Pages.Utils.unique
-    , uniquePatientsFromFollowUps .acuteIllness
-    , uniquePatientsFromFollowUps .prenatal
-    )
+    { nutrition =
+        peopleForNutritionGroup
+            ++ peopleForNutritionIndividual
+            ++ peopleForWellChild
+            |> Pages.Utils.unique
+    , acuteIllness = uniquePatientsFromFollowUps .acuteIllness
+    , prenatal = uniquePatientsFromFollowUps .prenatal
+    , nextVisit = uniquePatientsFromFollowUps .nextVisit
+    }
 
 
 filterResidents : ModelIndexedDb -> Village -> List PersonId -> List PersonId

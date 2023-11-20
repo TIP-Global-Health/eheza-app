@@ -154,6 +154,14 @@ type alias NCDLabsEntryData =
     }
 
 
+type alias FollowUpPatients =
+    { nutrition : List PersonId
+    , acuteIllness : List PersonId
+    , prenatal : List PersonId
+    , nextVisit : List PersonId
+    }
+
+
 type Msg
     = SetActivePage Page
     | SetFilter (Maybe CaseManagementFilter)
