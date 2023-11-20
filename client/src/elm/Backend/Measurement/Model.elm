@@ -3101,6 +3101,7 @@ type alias FollowUpMeasurements =
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
     , ncdLabs : Dict NCDLabsResultsId NCDLabsResults
+    , nextVisit : Dict WellChildNextVisitId WellChildNextVisit
     }
 
 
