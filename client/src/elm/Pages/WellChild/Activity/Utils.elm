@@ -1741,6 +1741,7 @@ fromNextVisitValue : Maybe NextVisitValue -> NextVisitForm
 fromNextVisitValue saved =
     { immunisationDate = Maybe.andThen .immunisationDate saved
     , pediatricVisitDate = Maybe.andThen .pediatricVisitDate saved
+    , resolutionDate = Maybe.andThen .resolutionDate saved
     }
 
 
@@ -1752,6 +1753,7 @@ nextVisitFormWithDefault form saved =
             (\value ->
                 { immunisationDate = or form.immunisationDate value.immunisationDate
                 , pediatricVisitDate = or form.pediatricVisitDate value.pediatricVisitDate
+                , resolutionDate = or form.resolutionDate value.resolutionDate
                 }
             )
 
@@ -1768,6 +1770,7 @@ toNextVisitValue form =
         NextVisitValue
             form.immunisationDate
             form.pediatricVisitDate
+            form.resolutionDate
 
 
 

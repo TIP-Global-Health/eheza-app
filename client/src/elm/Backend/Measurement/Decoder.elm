@@ -4664,6 +4664,7 @@ decodeNextVisitValue =
     succeed NextVisitValue
         |> required "immunisation_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
         |> required "pediatric_visit_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
 decodeWellChildBCGImmunisation : Decoder WellChildBCGImmunisation

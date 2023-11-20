@@ -440,12 +440,13 @@ emptyNextStepsData =
 type alias NextVisitForm =
     { immunisationDate : Maybe NominalDate
     , pediatricVisitDate : Maybe NominalDate
+    , resolutionDate : Maybe NominalDate
     }
 
 
 emptyNextVisitForm : NextVisitForm
 emptyNextVisitForm =
-    NextVisitForm Nothing Nothing
+    NextVisitForm Nothing Nothing Nothing
 
 
 type alias HomeVisitData =
