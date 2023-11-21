@@ -331,6 +331,7 @@ type MsgIndexedDb
     | FetchHomeVisitMeasurements HomeVisitEncounterId
     | FetchWellChildEncounter WellChildEncounterId
     | FetchWellChildEncountersForParticipant IndividualEncounterParticipantId
+    | FetchWellChildEncountersForParticipants (List IndividualEncounterParticipantId)
     | FetchWellChildMeasurements WellChildEncounterId
     | FetchNCDEncounter NCDEncounterId
     | FetchNCDEncountersForParticipant IndividualEncounterParticipantId
@@ -390,6 +391,7 @@ type MsgIndexedDb
     | HandleFetchedHomeVisitMeasurements HomeVisitEncounterId (WebData HomeVisitMeasurements)
     | HandleFetchedWellChildEncounter WellChildEncounterId (WebData WellChildEncounter)
     | HandleFetchedWellChildEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
+    | HandleFetchedWellChildEncountersForParticipants (WebData (Dict IndividualEncounterParticipantId (Dict WellChildEncounterId WellChildEncounter)))
     | HandleFetchedWellChildMeasurements WellChildEncounterId (WebData WellChildMeasurements)
     | HandleFetchedNCDEncounter NCDEncounterId (WebData NCDEncounter)
     | HandleFetchedNCDEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))

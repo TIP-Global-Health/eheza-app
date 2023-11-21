@@ -53,24 +53,36 @@ fetchForCHWAtVillage currentDate village db followUps =
             followUpPatients.nutrition
                 ++ followUpPatients.acuteIllness
                 ++ followUpPatients.prenatal
+                ++ followUpPatients.nextVisit
                 |> Pages.Utils.unique
 
         residentsForNutrition =
             filterResidents db village followUpPatients.nutrition
 
+        residentsForNextVisit =
+            filterResidents db village followUpPatients.nextVisit
+
         followUpsForResidents =
             generateFollowUpsForResidents currentDate village db followUps followUpPatients
+
+        fetchIndividualParticipantsMsg =
+            FetchIndividualEncounterParticipantsForPeople (residentsForNutrition ++ residentsForNextVisit)
 
         --
         --  Nutrition follows ups calculations.
         --
-        fetchIndividualParticipantsMsg =
-            FetchIndividualEncounterParticipantsForPeople residentsForNutrition
-
         fetchHomeVisitEncountersMsg =
             List.concatMap (\personId -> resolveIndividualParticipantsForPerson personId HomeVisitEncounter db)
                 residentsForNutrition
                 |> FetchHomeVisitEncountersForParticipants
+
+        --
+        --  Next Visit follows ups calculations.
+        --
+        fetchWellChildEncountersMsg =
+            List.concatMap (\personId -> resolveIndividualParticipantsForPerson personId WellChildEncounter db)
+                residentsForNutrition
+                |> FetchWellChildEncountersForParticipants
 
         --
         --  Acute illness follows ups calculations.
@@ -123,6 +135,7 @@ fetchForCHWAtVillage currentDate village db followUps =
     , fetchAcuteIllnessEncountersForParticipantMsg
     , fetchPrenatalEncountersForParticipantMsg
     , fetchIndividualParticipantsMsg
+    , fetchWellChildEncountersMsg
     ]
 
 

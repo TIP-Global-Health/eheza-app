@@ -29,6 +29,7 @@ type CaseManagementFilter
     | FilterContactsTrace
     | FilterPrenatalLabs
     | FilterNCDLabs
+    | FilterImmunization
 
 
 type FollowUpDueOption
@@ -91,14 +92,34 @@ type alias PrenatalFollowUpEntry =
     }
 
 
+type alias NextVisitFollowUpItem =
+    { dateMeasured : NominalDate
+    , dueDate : NominalDate
+    , personName : String
+    }
+
+
+type alias NextVisitFollowUpEntry =
+    { personId : PersonId
+    , item : NextVisitFollowUpItem
+    }
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
     | FollowUpPrenatal FollowUpPrenatalData
+    | FollowUpNextVisit FollowUpNextVisitData
     | CaseManagementContactsTracing
 
 
 type alias FollowUpNutritionData =
+    { personId : PersonId
+    , personName : String
+    }
+
+
+type alias FollowUpNextVisitData =
     { personId : PersonId
     , personName : String
     }

@@ -24,7 +24,7 @@ import RemoteData exposing (WebData)
 
 chwFilters : List CaseManagementFilter
 chwFilters =
-    [ FilterAcuteIllness, FilterAntenatal, FilterNutrition ]
+    [ FilterAcuteIllness, FilterAntenatal, FilterNutrition, FilterImmunization ]
 
 
 nurseFilters : List CaseManagementFilter
@@ -178,6 +178,42 @@ generatePrenatalFollowUps limitDate db followUps =
                                     (Dict.insert ( participantId, personId ) newItem accum)
                         )
                     |> Maybe.withDefault accum
+            )
+            Dict.empty
+
+
+generateNextVisitFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NextVisitFollowUpItem
+generateNextVisitFollowUps limitDate followUps =
+    Dict.values followUps.nextVisit
+        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+        |> List.filterMap
+            (\followUp ->
+                Maybe.andThen
+                    (\dueDate ->
+                        if not <| Date.compare limitDate dueDate == LT then
+                            Just ( followUp.dateMeasured, followUp.participantId, dueDate )
+
+                        else
+                            Nothing
+                    )
+                    followUp.value.immunisationDate
+            )
+        |> List.foldl
+            (\( dateMeasured, participantId, dueDate ) accum ->
+                let
+                    candidateItem =
+                        NextVisitFollowUpItem dateMeasured dueDate ""
+                in
+                Dict.get participantId accum
+                    |> Maybe.map
+                        (\memberItem ->
+                            if Date.compare candidateItem.dateMeasured memberItem.dateMeasured == GT then
+                                Dict.insert participantId candidateItem accum
+
+                            else
+                                accum
+                        )
+                    |> Maybe.withDefault (Dict.insert participantId candidateItem accum)
             )
             Dict.empty
 

@@ -980,6 +980,7 @@ type TranslationId
     | NextPediatricVisit Bool
     | NextSteps
     | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
+    | NextVisitFollowUpInstructions
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -3637,6 +3638,9 @@ translationSet trans =
                     , kirundi = Just "Ibipimo vy'ingwara zitandukira"
                     }
 
+                FilterImmunization ->
+                    translationSet Immunisation
+
         CaseManagementPaneHeader encounterType ->
             case encounterType of
                 Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
@@ -3671,6 +3675,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ibizamini bikorerwa ufite indwara zitandura"
                     , kirundi = Just "Ibipimo vy'ingwara zitandukira"
                     }
+
+                FilterImmunization ->
+                    translationSet Immunisation
 
         Celsius ->
             { english = "Celsius"
@@ -5194,7 +5201,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = ""
+                    { english = "Do you want to start a Well Child encounter for"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -11551,6 +11558,12 @@ translationSet trans =
                     -- We qualify it as Medication distribution, to keep
                     -- consistant with other types of Covid steps.
                     translationSet MedicationDistribution
+
+        NextVisitFollowUpInstructions ->
+            { english = "Check for Immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         No ->
             { english = "No"
