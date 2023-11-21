@@ -182,8 +182,8 @@ generatePrenatalFollowUps limitDate db followUps =
             Dict.empty
 
 
-generateNextVisitFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NextVisitFollowUpItem
-generateNextVisitFollowUps limitDate followUps =
+generateImmunizationFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId ImmunizationFollowUpItem
+generateImmunizationFollowUps limitDate followUps =
     Dict.values followUps.nextVisit
         |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
         |> List.filterMap
@@ -202,7 +202,7 @@ generateNextVisitFollowUps limitDate followUps =
             (\( dateMeasured, participantId, dueDate ) accum ->
                 let
                     candidateItem =
-                        NextVisitFollowUpItem dateMeasured dueDate ""
+                        ImmunizationFollowUpItem dateMeasured dueDate ""
                 in
                 Dict.get participantId accum
                     |> Maybe.map
@@ -405,8 +405,8 @@ generateFollowUpsForResidents currentDate village db followUps followUpPatients 
         residentsForPrenatal =
             filterResidents db village followUpPatients.prenatal
 
-        residentsForNextVisit =
-            filterResidents db village followUpPatients.nextVisit
+        residentsForImmunization =
+            filterResidents db village followUpPatients.immunization
 
         nutritionGroup =
             Dict.filter
@@ -446,7 +446,7 @@ generateFollowUpsForResidents currentDate village db followUps followUpPatients 
         nextVisit =
             Dict.filter
                 (\_ followUp ->
-                    List.member followUp.participantId residentsForNextVisit
+                    List.member followUp.participantId residentsForImmunization
                 )
                 followUps.nextVisit
     in
@@ -486,7 +486,7 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
             |> Pages.Utils.unique
     , acuteIllness = uniquePatientsFromFollowUps .acuteIllness
     , prenatal = uniquePatientsFromFollowUps .prenatal
-    , nextVisit = uniquePatientsFromFollowUps .nextVisit
+    , immunization = uniquePatientsFromFollowUps .nextVisit
     }
 
 

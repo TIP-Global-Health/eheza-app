@@ -720,6 +720,7 @@ type TranslationId
     | Ignore
     | IllnessSymptom IllnessSymptom
     | Immunisation
+    | ImmunizationFollowUpInstructions
     | ImmunizationHistory
     | IncompleteCervixPreviousPregnancy
     | IndexPatient
@@ -980,7 +981,6 @@ type TranslationId
     | NextPediatricVisit Bool
     | NextSteps
     | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
-    | NextVisitFollowUpInstructions
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -6724,6 +6724,12 @@ translationSet trans =
             , kirundi = Just "Incanco"
             }
 
+        ImmunizationFollowUpInstructions ->
+            { english = "Check for Immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         ImmunizationHistory ->
             { english = "Immunization History"
             , kinyarwanda = Just "Amakuru ku nkingo yafashe"
@@ -11558,12 +11564,6 @@ translationSet trans =
                     -- We qualify it as Medication distribution, to keep
                     -- consistant with other types of Covid steps.
                     translationSet MedicationDistribution
-
-        NextVisitFollowUpInstructions ->
-            { english = "Check for Immunization"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
 
         No ->
             { english = "No"

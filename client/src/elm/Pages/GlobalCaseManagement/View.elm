@@ -123,12 +123,12 @@ viewContentForChw language currentDate village model db followUps =
         prenatalFollowUpsPane =
             viewPrenatalPane language currentDate prenatalFollowUps db model
 
-        nextVisitFollowUps =
-            generateNextVisitFollowUps currentDate followUpsForResidents
+        immunizationFollowUps =
+            generateImmunizationFollowUps currentDate followUpsForResidents
                 |> fillPersonName identity db
 
         immunizationFollowUpsPane =
-            viewImmunizationPane language currentDate nextVisitFollowUps db model
+            viewImmunizationPane language currentDate immunizationFollowUps db model
 
         panes =
             [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
@@ -230,7 +230,7 @@ viewStartFollowUpEncounterDialog language dataType =
         FollowUpAcuteIllness data ->
             startFollowUpDialog AcuteIllnessEncounter data.personName
 
-        FollowUpNextVisit data ->
+        FollowUpImmunization data ->
             startFollowUpDialog WellChildEncounter data.personName
 
         -- We should never get here, since Prenatal got
@@ -1082,18 +1082,18 @@ viewNCDLabsEntry language data =
         (NCDRecurrentEncounterPage data.encounterId)
 
 
-viewImmunizationPane : Language -> NominalDate -> Dict PersonId NextVisitFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
+viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
 viewImmunizationPane language currentDate itemsDict db model =
     let
         entries =
-            generateNextVisitFollowUpEntries language currentDate itemsDict db
+            generateImmunizationFollowUpEntries language currentDate itemsDict db
 
         content =
             if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                List.map (viewNextVisitFollowUpEntry language currentDate) entries
+                List.map (viewImmunizationFollowUpEntry language currentDate) entries
     in
     div [ class "pane" ]
         [ viewItemHeading language FilterImmunization
@@ -1101,15 +1101,15 @@ viewImmunizationPane language currentDate itemsDict db model =
         ]
 
 
-generateNextVisitFollowUpEntries : Language -> NominalDate -> Dict PersonId NextVisitFollowUpItem -> ModelIndexedDb -> List NextVisitFollowUpEntry
-generateNextVisitFollowUpEntries language limitDate itemsDict db =
-    Dict.map (generateNextVisitFollowUpEntryData language limitDate db) itemsDict
+generateImmunizationFollowUpEntries : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntries language limitDate itemsDict db =
+    Dict.map (generateImmunizationFollowUpEntryData language limitDate db) itemsDict
         |> Dict.values
         |> Maybe.Extra.values
 
 
-generateNextVisitFollowUpEntryData : Language -> NominalDate -> ModelIndexedDb -> PersonId -> NextVisitFollowUpItem -> Maybe NextVisitFollowUpEntry
-generateNextVisitFollowUpEntryData language limitDate db personId item =
+generateImmunizationFollowUpEntryData : Language -> NominalDate -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntryData language limitDate db personId item =
     let
         lastWellChildEncounter =
             resolveIndividualParticipantForPerson personId WellChildEncounter db
@@ -1131,7 +1131,7 @@ generateNextVisitFollowUpEntryData language limitDate db personId item =
         (\encounter ->
             -- Last Well Child encounter occurred before follow up was scheduled.
             if Date.compare encounter.startDate item.dateMeasured == LT then
-                Just <| NextVisitFollowUpEntry personId item
+                Just <| ImmunizationFollowUpEntry personId item
 
             else
                 Nothing
@@ -1139,11 +1139,11 @@ generateNextVisitFollowUpEntryData language limitDate db personId item =
         lastWellChildEncounter
         |> -- No Home Visit encounter found.
            Maybe.withDefault
-            (Just <| NextVisitFollowUpEntry personId item)
+            (Just <| ImmunizationFollowUpEntry personId item)
 
 
-viewNextVisitFollowUpEntry : Language -> NominalDate -> NextVisitFollowUpEntry -> Html Msg
-viewNextVisitFollowUpEntry language currentDate entry =
+viewImmunizationFollowUpEntry : Language -> NominalDate -> ImmunizationFollowUpEntry -> Html Msg
+viewImmunizationFollowUpEntry language currentDate entry =
     let
         item =
             entry.item
@@ -1156,10 +1156,10 @@ viewNextVisitFollowUpEntry language currentDate entry =
                 OverDue
 
         popupData =
-            FollowUpNextVisit <| FollowUpNextVisitData entry.personId item.personName
+            FollowUpImmunization <| FollowUpImmunizationData entry.personId item.personName
     in
     viewFollowUpEntry language
         dueOption
         item.personName
         popupData
-        [ p [] [ text <| translate language Translate.NextVisitFollowUpInstructions ] ]
+        [ p [] [ text <| translate language Translate.ImmunizationFollowUpInstructions ] ]

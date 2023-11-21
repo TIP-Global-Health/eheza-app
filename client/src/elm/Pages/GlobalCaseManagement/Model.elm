@@ -92,16 +92,16 @@ type alias PrenatalFollowUpEntry =
     }
 
 
-type alias NextVisitFollowUpItem =
+type alias ImmunizationFollowUpItem =
     { dateMeasured : NominalDate
     , dueDate : NominalDate
     , personName : String
     }
 
 
-type alias NextVisitFollowUpEntry =
+type alias ImmunizationFollowUpEntry =
     { personId : PersonId
-    , item : NextVisitFollowUpItem
+    , item : ImmunizationFollowUpItem
     }
 
 
@@ -109,7 +109,7 @@ type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
     | FollowUpPrenatal FollowUpPrenatalData
-    | FollowUpNextVisit FollowUpNextVisitData
+    | FollowUpImmunization FollowUpImmunizationData
     | CaseManagementContactsTracing
 
 
@@ -119,7 +119,7 @@ type alias FollowUpNutritionData =
     }
 
 
-type alias FollowUpNextVisitData =
+type alias FollowUpImmunizationData =
     { personId : PersonId
     , personName : String
     }
@@ -179,7 +179,7 @@ type alias FollowUpPatients =
     { nutrition : List PersonId
     , acuteIllness : List PersonId
     , prenatal : List PersonId
-    , nextVisit : List PersonId
+    , immunization : List PersonId
     }
 
 

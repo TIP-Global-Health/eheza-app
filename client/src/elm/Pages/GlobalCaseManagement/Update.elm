@@ -48,7 +48,7 @@ update currentDate healthCenterId msg db model =
                                     FollowUpAcuteIllness data ->
                                         startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
 
-                                    FollowUpNextVisit data ->
+                                    FollowUpImmunization data ->
                                         startFollowUpEncounterWellChild currentDate selectedHealthCenter db data
 
                                     -- We should never get here, as Prenatal Encounter got it's own action.
