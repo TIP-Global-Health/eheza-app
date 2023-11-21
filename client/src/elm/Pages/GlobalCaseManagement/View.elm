@@ -134,7 +134,6 @@ viewContentForChw language currentDate village model db followUps =
             [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
             , ( FilterAntenatal, prenatalFollowUpsPane )
             , ( FilterNutrition, nutritionFollowUpsPane )
-            , ( FilterNutrition, nutritionFollowUpsPane )
             , ( FilterImmunization, immunizationFollowUpsPane )
             ]
                 |> List.filterMap
