@@ -40,6 +40,11 @@ function hedley_case_management_node_insert($node) {
   ];
   if (in_array($node->type, $prenatal_triggers)) {
     hedley_case_management_handle_prenatal_insert_trigger($node);
+    return;
+  }
+
+  if ($node->type == 'well_child_encounter') {
+    hedley_case_management_handle_immunization_insert_trigger($node);
   }
 }
 
@@ -247,6 +252,66 @@ function hedley_case_management_resolve_prenatal_follow_ups($person_id, $to_nid 
   }
 
   $result = $query->execute();
+  if (empty($result['node'])) {
+    return;
+  }
+
+  foreach (array_keys($result['node']) as $follow_up) {
+    hedley_case_management_resolve_follow_up($follow_up);
+  }
+}
+
+/**
+ * Processes create events that trigger immunization follow-ups resolution.
+ *
+ * @param object $node
+ *   Created node.
+ */
+function hedley_case_management_handle_immunization_insert_trigger($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $encounter_type = $wrapper->field_well_child_encounter_type->value();
+
+  if ($encounter_type == 'newborn-exam') {
+    // Newborn exam happens once, only for child younger
+    // than 2 months old.
+    // This type of exam does not have Next Visit activity, so
+    // it should not resolve immunization follow-ups.
+    return;
+  }
+
+  $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+
+  if (empty($person_id)) {
+    // Failed to load required data.
+    return;
+  }
+
+  // Trigger follow-ups resolution.
+  hedley_case_management_resolve_immunization_follow_ups($person_id, $node->nid);
+}
+
+/**
+ * Marks immunization follow-ups belonging to person as resolved.
+ *
+ * @param int $person_id
+ *   Person ID.
+ * @param int $to_nid
+ *   IDs of loaded follow-ups should be below this node ID.
+ * @param int $limit
+ *   Maximal number of follow-ups to load. Defaults to 200.
+ */
+function hedley_case_management_resolve_immunization_follow_ups($person_id, $to_nid, $limit = 200) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'well_child_next_visit')
+    ->propertyCondition('nid', $to_nid, '<')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->addTag('exclude_resolved')
+    ->range(0, $limit)
+    ->execute();
+
   if (empty($result['node'])) {
     return;
   }
