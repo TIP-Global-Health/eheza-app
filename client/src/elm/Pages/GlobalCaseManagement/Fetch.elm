@@ -81,7 +81,7 @@ fetchForCHWAtVillage currentDate village db followUps =
         --
         fetchWellChildEncountersMsg =
             List.concatMap (\personId -> resolveIndividualParticipantsForPerson personId WellChildEncounter db)
-                residentsForNutrition
+                residentsForImmunization
                 |> FetchWellChildEncountersForParticipants
 
         --
