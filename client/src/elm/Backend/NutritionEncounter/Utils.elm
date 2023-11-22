@@ -520,6 +520,8 @@ resolvePreviousValuesSetForChild currentDate site childId db =
         muacValueFunc =
             case site of
                 SiteBurundi ->
+                    -- MUAC value is stored in cm, but at Burundi, we
+                    -- need to show it as mm.
                     (*) 10
 
                 _ ->
