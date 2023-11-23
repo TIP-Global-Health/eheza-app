@@ -381,14 +381,6 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
     $ids = array_keys($result['node']);
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
-      $birth_date = strtotime($node->field_birth_date[LANGUAGE_NONE][0]['value']);
-      if ($birth_date < strtotime("-9 year")) {
-        // We generate data for children only.
-        // Our first records are from Jan 2018, so going back
-        // 9 years to make sure we cover all children.
-        return;
-      }
-
       $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
       if (empty($json_data)) {
         continue;
@@ -406,7 +398,7 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
 /**
  * Generate aggregated NCDA data for person, and store in field on person node.
  *
- * @param stdClass $person_id
+ * @param object $person
  *   Person node for which NCDA data is generated.
  *
  * @return bool
@@ -442,7 +434,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person) {
   $heights = $weights = $muacs = $ncdas = $nutritions = $send_to_hcs = [];
   $medication_distributions = $immunisations = [];
   $birth_weight = NULL;
-  $measurements = hedley_general_get_person_measurements($person_id, $content_types_to_load);
+  $measurements = hedley_general_get_person_measurements($person->nid, $content_types_to_load);
   if (!empty($measurements)) {
     $nodes = node_load_multiple($measurements);
     foreach ($nodes as $node) {
@@ -646,7 +638,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person) {
     ],
   ];
 
-  $newborn_participant_id = hedley_general_ncda_newborn_participant($person_id);
+  $newborn_participant_id = hedley_general_ncda_newborn_participant($person->nid);
   if ($newborn_participant_id) {
     // Resolving EDD date from participant that represents pregnancy.
     $newborn_participant = node_load($newborn_participant_id);
