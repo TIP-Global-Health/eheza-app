@@ -20,7 +20,7 @@ $nid = drush_get_option('nid', 0);
 $batch = drush_get_option('batch', 50);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 250);
+$memory_limit = drush_get_option('memory_limit', 240);
 
 $type = 'person';
 $base_query = new EntityFieldQuery();
@@ -62,7 +62,7 @@ while (TRUE) {
   foreach ($nodes as $node) {
     $success = hedley_ncda_calculate_aggregated_data_for_person($node);
     if ($success) {
-      $total += 1;
+      $total++;
     }
 
     $memory = round(memory_get_usage() / 1048576);
