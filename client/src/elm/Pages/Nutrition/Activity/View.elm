@@ -226,7 +226,7 @@ viewActivity :
 viewActivity language currentDate zscores site id activity isChw assembled db model =
     let
         previousValuesSet =
-            resolvePreviousValuesSetForChild currentDate assembled.participant.person db
+            resolvePreviousValuesSetForChild currentDate site assembled.participant.person db
     in
     case activity of
         Height ->

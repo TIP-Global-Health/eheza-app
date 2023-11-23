@@ -32,6 +32,7 @@ import List.Extra
 import Maybe.Extra
 import Pages.Utils exposing (ifEverySetEmpty)
 import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (Site(..))
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 import ZScore.Model exposing (Kilograms(..))
 import ZScore.Utils exposing (diffDays, zScoreWeightForAge)
@@ -499,10 +500,11 @@ resolveNCDAValuesForChild childId db =
 
 resolvePreviousValuesSetForChild :
     NominalDate
+    -> Site
     -> PersonId
     -> ModelIndexedDb
     -> PreviousValuesSet
-resolvePreviousValuesSetForChild currentDate childId db =
+resolvePreviousValuesSetForChild currentDate site childId db =
     let
         previousMeasurementsSet =
             resolvePreviousMeasurementsSetForChild childId db
@@ -514,10 +516,22 @@ resolvePreviousValuesSetForChild currentDate childId db =
                 )
                 >> List.head
                 >> Maybe.map Tuple.second
+
+        muacValueFunc =
+            case site of
+                SiteBurundi ->
+                    -- MUAC value is stored in cm, but at Burundi, we
+                    -- need to show it as mm.
+                    (*) 10
+
+                _ ->
+                    identity
     in
     PreviousValuesSet
         (getLatestValue previousMeasurementsSet.heights)
-        (getLatestValue previousMeasurementsSet.muacs)
+        (getLatestValue previousMeasurementsSet.muacs
+            |> Maybe.map muacValueFunc
+        )
         (getLatestValue previousMeasurementsSet.weights)
         (getLatestValue previousMeasurementsSet.headCircumferences)
 
