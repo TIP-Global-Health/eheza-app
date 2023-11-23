@@ -132,7 +132,8 @@ function hedley_ncda_calculate_aggregated_data_worker($queue_item) {
   }
 
   try {
-    hedley_ncda_calculate_aggregated_data_for_person($person_id);
+    $person = node_load($person_id);
+    hedley_ncda_calculate_aggregated_data_for_person($person);
   }
   catch (Exception $e) {
     return [
@@ -380,6 +381,14 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
     $ids = array_keys($result['node']);
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
+      $birth_date = strtotime($node->field_birth_date[LANGUAGE_NONE][0]['value']);
+      if ($birth_date < strtotime("-9 year")) {
+        // We generate data for children only.
+        // Our first records are from Jan 2018, so going back
+        // 9 years to make sure we cover all children.
+        return;
+      }
+
       $json_data = $node->field_ncda_data[LANGUAGE_NONE][0]['value'];
       if (empty($json_data)) {
         continue;
@@ -397,25 +406,26 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
 /**
  * Generate aggregated NCDA data for person, and store in field on person node.
  *
- * @param int $person_id
- *   The ID of the person for whom to generate the NCDA data.
+ * @param stdClass $person_id
+ *   Person node for which NCDA data is generated.
+ *
+ * @return bool
+ *   True, if data was calculated for person.
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
-  $person = node_load($person_id);
-  $wrapper = entity_metadata_wrapper('node', $person);
-  $birth_date = $wrapper->field_birth_date->value();
+function hedley_ncda_calculate_aggregated_data_for_person($person) {
+  $birth_date = strtotime($person->field_birth_date[LANGUAGE_NONE][0]['value']);
   if (empty($birth_date)) {
     // We must know the birthdate to be able to present NCDA data.
-    return;
+    return FALSE;
   }
 
   if ($birth_date < strtotime("-9 year")) {
     // We generate data for children only.
     // Our first records are from Jan 2018, so going back
     // 9 years to make sure we cover all children.
-    return;
+    return FALSE;
   }
 
   $data['birth_date'] = date("Y-m-d", $birth_date);
@@ -918,8 +928,10 @@ function hedley_ncda_calculate_aggregated_data_for_person($person_id) {
   }
 
   $encoded_data = json_encode($data);
-  $wrapper->field_ncda_data->set($encoded_data);
-  $wrapper->save();
+  $person->field_ncda_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
+  node_save($person);
+
+  return TRUE;
 }
 
 /**
