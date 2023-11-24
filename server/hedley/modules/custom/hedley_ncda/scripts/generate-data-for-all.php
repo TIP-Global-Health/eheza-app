@@ -20,14 +20,15 @@ $nid = drush_get_option('nid', 0);
 $batch = drush_get_option('batch', 50);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 250);
+$memory_limit = drush_get_option('memory_limit', 240);
 
-$type = 'village';
+$type = 'person';
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
-  ->propertyCondition('type', $type)
-  ->propertyOrderBy('nid', 'ASC');
+  ->entityCondition('bundle', $type)
+  ->propertyCondition('status', NODE_PUBLISHED)
+  ->addTag('exclude_deleted');
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
@@ -57,30 +58,27 @@ while (TRUE) {
   }
 
   $ids = array_keys($result['node']);
-  foreach ($ids as $id) {
-    $residents = hedley_chw_get_village_residents($id);
-
-    foreach ($residents as $resident) {
-      hedley_ncda_calculate_aggregated_data_for_person($resident);
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $success = hedley_ncda_calculate_aggregated_data_for_person($node);
+    if ($success) {
+      $total++;
     }
-    $count = count($residents);
-    $total += $count;
-    drush_print("Village $id: $count residents");
 
     $memory = round(memory_get_usage() / 1048576);
-
     if ($memory >= $memory_limit) {
       drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
       return;
     }
-
-    drush_print("Memory: $memory");
-
-    // Free up memory.
-    drupal_static_reset();
   }
+
+  $memory = round(memory_get_usage() / 1048576);
+  drush_print("Calculated so far: $total, Memory: $memory");
+
+  // Free up memory.
+  drupal_static_reset();
 
   $nid = end($ids);
 }
 
-drush_print("Done! There are $total residents.");
+drush_print("Done! NCDA data calculated for $total children.");
