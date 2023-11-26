@@ -1,7 +1,7 @@
 module Pages.HomeVisit.Encounter.View exposing (view)
 
 import Backend.Entities exposing (..)
-import Backend.HomeVisitActivity.Utils exposing (getActivityIcon, getAllActivities)
+import Backend.HomeVisitActivity.Utils exposing (getActivityIcon, allActivities)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
@@ -76,7 +76,7 @@ viewMainPageContent : Language -> NominalDate -> HomeVisitEncounterId -> Bool ->
 viewMainPageContent language currentDate id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
-            getAllActivities
+            allActivities
                 |> List.filter (expectActivity currentDate data.person data db)
                 |> List.partition (activityCompleted currentDate data.person data db)
 

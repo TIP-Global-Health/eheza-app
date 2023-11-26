@@ -19,7 +19,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDActivity.Utils exposing (getAllActivities)
+import Backend.NCDActivity.Utils exposing (allActivities)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator)
 import Backend.Person.Model exposing (Person)
 import Components.ReportToWhatsAppDialog.Model
@@ -281,7 +281,7 @@ viewContent language currentDate site features initiator db model assembled =
                                         Backend.NCDEncounter.Types.InitiatorEncounterPage _ ->
                                             let
                                                 ( _, pendingActivities ) =
-                                                    List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled) getAllActivities
+                                                    List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled) allActivities
                                                         |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
 
                                                 allowEndEncounter =

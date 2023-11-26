@@ -31,3 +31,6 @@ update msg model =
 
         SetEndEncounterDialogState isOpen ->
             ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )
+
+        SetDialogState state ->
+            ( { model | dialogState = state }, Cmd.none, [] )
