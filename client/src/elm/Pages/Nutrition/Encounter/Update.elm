@@ -3,6 +3,8 @@ module Pages.Nutrition.Encounter.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.NutritionEncounter.Model
+import EverySet exposing (EverySet)
+import Gizra.Update exposing (sequenceExtra)
 import Pages.Nutrition.Encounter.Model exposing (..)
 import Pages.Page exposing (Page(..))
 
@@ -25,12 +27,17 @@ update msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+                |> sequenceExtra update [ SetDialogState Nothing ]
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
 
-        SetEndEncounterDialogState isOpen ->
-            ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )
+        SkipActivity activity ->
+            ( { model | skippedActivities = EverySet.insert activity model.skippedActivities }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra update [ SetDialogState Nothing ]
 
         SetDialogState state ->
             ( { model | dialogState = state }, Cmd.none, [] )

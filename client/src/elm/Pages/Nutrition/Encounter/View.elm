@@ -14,7 +14,7 @@ import Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryA
 import Pages.Nutrition.Encounter.Model exposing (..)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink, viewSkipNCDADialog)
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
@@ -68,14 +68,12 @@ viewHeaderAndContent language currentDate zscores features id isChw db model dat
                                 Translate.EndEncounterQuestion
                                 Translate.OnceYouEndTheEncounter
                                 (CloseEncounter id)
-                                (SetEndEncounterDialogState False)
+                                (SetDialogState Nothing)
 
                         DialogSkipNCDA ->
-                            viewEndEncounterDialog language
-                                Translate.EndEncounterQuestion
-                                Translate.OnceYouEndTheEncounter
-                                (CloseEncounter id)
-                                (SetEndEncounterDialogState False)
+                            viewSkipNCDADialog language
+                                (SetActivePage <| UserPage <| NutritionActivityPage id NCDA)
+                                (SkipActivity NCDA)
                 )
                 model.dialogState
     in
@@ -193,10 +191,19 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                     ]
 
         viewCard activity =
+            let
+                action =
+                    case activity of
+                        NCDA ->
+                            SetDialogState <| Just DialogSkipNCDA
+
+                        _ ->
+                            SetActivePage <| UserPage <| NutritionActivityPage id activity
+            in
             activityCard language
                 (Translate.NutritionActivityTitle activity)
                 (getActivityIcon activity)
-                (SetActivePage <| UserPage <| NutritionActivityPage id activity)
+                action
 
         allowEndEncounter =
             allowEndingEcounter isChw pendingActivities

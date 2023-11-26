@@ -625,7 +625,7 @@ viewActions language features initiator activeTab msgReportToWhatsAppDialogMsg b
                                         )
 
                                 TabNCDAScoreboard ->
-                                    viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
+                                    viewEndEncounterButton language data.allowEndEncounter (data.setEndEncounterDialogStateMsg True)
 
                 endEncounterDialog =
                     if data.showEndEncounterDialog then

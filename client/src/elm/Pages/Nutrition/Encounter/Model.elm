@@ -14,9 +14,6 @@ import Pages.Page exposing (Page)
 type alias Model =
     { selectedTab : Tab
     , skippedActivities : EverySet NutritionActivity
-
-    -- @todo: remove
-    , showEndEncounterDialog : Bool
     , dialogState : Maybe DialogType
     }
 
@@ -25,7 +22,6 @@ emptyModel : Model
 emptyModel =
     { selectedTab = Pending
     , skippedActivities = EverySet.empty
-    , showEndEncounterDialog = False
     , dialogState = Nothing
     }
 
@@ -34,8 +30,7 @@ type Msg
     = CloseEncounter NutritionEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
-      -- @todo: remove
-    | SetEndEncounterDialogState Bool
+    | SkipActivity NutritionActivity
     | SetDialogState (Maybe DialogType)
 
 
