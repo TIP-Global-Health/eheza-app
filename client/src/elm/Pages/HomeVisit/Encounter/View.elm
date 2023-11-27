@@ -1,7 +1,7 @@
 module Pages.HomeVisit.Encounter.View exposing (view)
 
 import Backend.Entities exposing (..)
-import Backend.HomeVisitActivity.Utils exposing (getActivityIcon, allActivities)
+import Backend.HomeVisitActivity.Utils exposing (allActivities, getActivityIcon)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
