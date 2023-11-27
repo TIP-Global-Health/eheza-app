@@ -297,12 +297,4 @@ partitionActivitiesConsideringSkipped currentDate zscores site features isChw db
 
 allowEndingEcounter : List WellChildActivity -> Bool
 allowEndingEcounter pendingActivities =
-    case pendingActivities of
-        [] ->
-            True
-
-        [ WellChildPhoto ] ->
-            True
-
-        _ ->
-            False
+    List.all (\activity -> List.member activity [ WellChildNCDA, WellChildPhoto ]) pendingActivities
