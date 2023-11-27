@@ -42,7 +42,7 @@ fetch currentDate healthCenterId villageId db =
 fetchForCHWAtVillage : NominalDate -> Village -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
 fetchForCHWAtVillage currentDate village db followUps =
     let
-        ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal ) =
+        followUpPatients =
             resolveUniquePatientsFromFollowUps currentDate followUps
 
         -- We need to fetch all people in follow ups, to determine if person
@@ -50,27 +50,39 @@ fetchForCHWAtVillage currentDate village db followUps =
         -- Then, we'll fetch participants and encounters data only for
         -- those that are residents.
         peopleForFetch =
-            peopleForNutrition
-                ++ peopleForAccuteIllness
-                ++ peopleForPrenatal
+            followUpPatients.nutrition
+                ++ followUpPatients.acuteIllness
+                ++ followUpPatients.prenatal
+                ++ followUpPatients.immunization
                 |> Pages.Utils.unique
 
         residentsForNutrition =
-            filterResidents db village peopleForNutrition
+            filterResidents db village followUpPatients.nutrition
+
+        residentsForImmunization =
+            filterResidents db village followUpPatients.immunization
 
         followUpsForResidents =
-            generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal )
+            generateFollowUpsForResidents currentDate village db followUps followUpPatients
+
+        fetchIndividualParticipantsMsg =
+            FetchIndividualEncounterParticipantsForPeople (residentsForNutrition ++ residentsForImmunization)
 
         --
         --  Nutrition follows ups calculations.
         --
-        fetchIndividualParticipantsMsg =
-            FetchIndividualEncounterParticipantsForPeople residentsForNutrition
-
         fetchHomeVisitEncountersMsg =
             List.concatMap (\personId -> resolveIndividualParticipantsForPerson personId HomeVisitEncounter db)
                 residentsForNutrition
                 |> FetchHomeVisitEncountersForParticipants
+
+        --
+        --  Immunization follows ups calculations.
+        --
+        fetchWellChildEncountersMsg =
+            List.concatMap (\personId -> resolveIndividualParticipantsForPerson personId WellChildEncounter db)
+                residentsForImmunization
+                |> FetchWellChildEncountersForParticipants
 
         --
         --  Acute illness follows ups calculations.
@@ -123,6 +135,7 @@ fetchForCHWAtVillage currentDate village db followUps =
     , fetchAcuteIllnessEncountersForParticipantMsg
     , fetchPrenatalEncountersForParticipantMsg
     , fetchIndividualParticipantsMsg
+    , fetchWellChildEncountersMsg
     ]
 
 

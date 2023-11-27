@@ -18,7 +18,12 @@ type alias WellChildEncounter =
     }
 
 
-emptyWellChildEncounter : IndividualEncounterParticipantId -> NominalDate -> WellChildEncounterType -> Maybe HealthCenterId -> WellChildEncounter
+emptyWellChildEncounter :
+    IndividualEncounterParticipantId
+    -> NominalDate
+    -> WellChildEncounterType
+    -> Maybe HealthCenterId
+    -> WellChildEncounter
 emptyWellChildEncounter participant startDate encounterType shard =
     { participant = participant
     , startDate = startDate

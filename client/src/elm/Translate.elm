@@ -720,6 +720,7 @@ type TranslationId
     | Ignore
     | IllnessSymptom IllnessSymptom
     | Immunisation
+    | ImmunizationFollowUpInstructions
     | ImmunizationHistory
     | IncompleteCervixPreviousPregnancy
     | IndexPatient
@@ -3637,6 +3638,9 @@ translationSet trans =
                     , kirundi = Just "Ibipimo vy'ingwara zitandukira"
                     }
 
+                FilterImmunization ->
+                    translationSet Immunisation
+
         CaseManagementPaneHeader encounterType ->
             case encounterType of
                 Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
@@ -3671,6 +3675,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ibizamini bikorerwa ufite indwara zitandura"
                     , kirundi = Just "Ibipimo vy'ingwara zitandukira"
                     }
+
+                FilterImmunization ->
+                    translationSet Immunisation
 
         Celsius ->
             { english = "Celsius"
@@ -5194,7 +5201,7 @@ translationSet trans =
                     }
 
                 WellChildEncounter ->
-                    { english = ""
+                    { english = "Do you want to start a Well Child encounter for"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -6715,6 +6722,12 @@ translationSet trans =
             { english = "Immunization"
             , kinyarwanda = Just "Inkingo"
             , kirundi = Just "Incanco"
+            }
+
+        ImmunizationFollowUpInstructions ->
+            { english = "Check for Immunization"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         ImmunizationHistory ->

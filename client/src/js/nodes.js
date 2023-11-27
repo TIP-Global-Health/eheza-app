@@ -560,6 +560,7 @@
     }
 
     // List with all types of Follow Up measurements.
+    // Follow Ups get resolved using date_concluded field.
     var followUpMeasurementsTypes = [
       'acute_illness_follow_up',
       'follow_up',
@@ -568,10 +569,13 @@
       'well_child_follow_up',
       'acute_illness_trace_contact',
       'prenatal_labs_results',
-      'ncd_labs_results'
+      'ncd_labs_results',
+      'well_child_next_visit'
     ];
 
-    // Follow Ups that get resolved using date_concluded field.
+    // These are tupes of follow ups that need to be loaded, even if they
+    // were resolved during period of past 6 months.
+    // This is required to present data at Dashboard statistics.
     var resolvedFollowUpMeasurementsTypes = [
       'acute_illness_trace_contact',
       'prenatal_labs_results',
