@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.Report.View exposing (view)
+module Pages.ChildScoreboard.ProgressReport.View exposing (view)
 
 import Backend.ChildScoreboardActivity.Utils exposing (allActivities)
 import Backend.Entities exposing (..)
@@ -11,7 +11,7 @@ import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectA
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.ChildScoreboard.Encounter.View exposing (acuteIllnessEncounterPopup, viewEndEncounterButton)
-import Pages.ChildScoreboard.Report.Model exposing (Model, Msg(..))
+import Pages.ChildScoreboard.ProgressReport.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard)
 import SyncManager.Model exposing (Site)

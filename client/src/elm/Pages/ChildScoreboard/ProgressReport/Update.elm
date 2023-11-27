@@ -1,11 +1,11 @@
-module Pages.ChildScoreboard.Report.Update exposing (update)
+module Pages.ChildScoreboard.ProgressReport.Update exposing (update)
 
 import App.Model
 import Backend.ChildScoreboardEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model
 import Gizra.Update exposing (sequenceExtra)
-import Pages.ChildScoreboard.Report.Model exposing (..)
+import Pages.ChildScoreboard.ProgressReport.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 
 
