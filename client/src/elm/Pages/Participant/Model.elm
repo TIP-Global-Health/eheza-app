@@ -1,4 +1,12 @@
-module Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..), emptyModel)
+module Pages.Participant.Model exposing
+    ( ChildUpdateReturns
+    , DialogType(..)
+    , Model
+    , MotherUpdateReturns
+    , Msg(..)
+    , Tab(..)
+    , emptyModel
+    )
 
 {-| This module models the UI state for showing a particular participant.
 
@@ -18,6 +26,7 @@ mother and child with the appropriate types.
 
 import Activity.Model exposing (ChildActivity, MotherActivity)
 import Backend.Measurement.Model exposing (NutritionAssessment)
+import EverySet exposing (EverySet)
 import Measurement.Model
 import Pages.Page exposing (Page)
 
@@ -28,6 +37,13 @@ type Msg activity measurement
     | SetSelectedActivity activity
     | SetSelectedTab Tab
     | SetWarningPopupState (List NutritionAssessment)
+    | SkipActivity activity
+    | SetDialogState (Maybe DialogType)
+
+
+type DialogType
+    = DialogWarning (List NutritionAssessment)
+    | DialogSkipNCDA
 
 
 {-| Activity is a `Maybe` so we can model the case where the user
@@ -37,6 +53,18 @@ type alias Model activity =
     { selectedActivity : Maybe activity
     , selectedTab : Tab
     , warningPopupState : List NutritionAssessment
+    , skippedActivities : EverySet activity
+    , dialogState : Maybe DialogType
+    }
+
+
+emptyModel : Model any
+emptyModel =
+    { selectedActivity = Nothing
+    , selectedTab = Pending
+    , warningPopupState = []
+    , skippedActivities = EverySet.empty
+    , dialogState = Nothing
     }
 
 
@@ -57,14 +85,6 @@ type Tab
     = Completed
     | Pending
     | ProgressReport
-
-
-emptyModel : Model any
-emptyModel =
-    { selectedActivity = Nothing
-    , selectedTab = Pending
-    , warningPopupState = []
-    }
 
 
 type alias ChildUpdateReturns =
