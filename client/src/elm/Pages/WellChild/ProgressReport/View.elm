@@ -314,6 +314,9 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
 
                                     Backend.PatientRecord.Model.InitiatorPatientRecord personId ->
                                         UserPage (PatientRecordPage Backend.PatientRecord.Model.InitiatorParticipantDirectory personId)
+
+                            Pages.WellChild.ProgressReport.Model.InitiatorChildScoreboard childScoreboardEncounterId ->
+                                UserPage (ChildScoreboardEncounterPage childScoreboardEncounterId)
                 in
                 setActivePageMsg targetPage
     in
@@ -775,6 +778,9 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
 
                                 Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator personId ->
                                     Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord patientRecordInitiator personId
+
+                                InitiatorChildScoreboard childScoreboardEncounterId ->
+                                    InitiatorChildScoreboardProgressReport childScoreboardEncounterId
                     in
                     viewAcuteIllnessDiagnosisEntry language acuteIllnessProgressReportInitiator db setActivePageMsg data
                 )
@@ -833,6 +839,12 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
                         )
 
                     Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord _ _ ->
+                        ( always True
+                        , always True
+                        , always True
+                        )
+
+                    InitiatorChildScoreboard _ ->
                         ( always True
                         , always True
                         , always True

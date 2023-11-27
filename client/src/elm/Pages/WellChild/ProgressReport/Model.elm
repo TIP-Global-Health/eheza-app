@@ -39,6 +39,7 @@ type WellChildProgressReportInitiator
     | InitiatorNutritionIndividual NutritionEncounterId
     | InitiatorNutritionGroup SessionId PersonId
     | InitiatorPatientRecord PatientRecordInitiator PersonId
+    | InitiatorChildScoreboard ChildScoreboardEncounterId
 
 
 type alias BottomActionData msg =

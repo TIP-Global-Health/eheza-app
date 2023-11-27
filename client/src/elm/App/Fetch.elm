@@ -363,7 +363,7 @@ fetch model =
                 Pages.NCD.ProgressReport.Fetch.fetch encounterId model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (ChildScoreboardReportPage id) ->
+            UserPage (ChildScoreboardProgressReportPage id) ->
                 Pages.ChildScoreboard.ProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 

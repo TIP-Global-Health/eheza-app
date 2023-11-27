@@ -931,7 +931,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity)
                             |> flexPageWrapper configured.config model
 
-                    ChildScoreboardReportPage encounterId ->
+                    ChildScoreboardProgressReportPage encounterId ->
                         let
                             page_ =
                                 Dict.get encounterId loggedInModel.childScoreboardReportPages
@@ -941,6 +941,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             currentDate
                             model.zscores
                             site
+                            features
                             encounterId
                             model.indexedDb
                             page_

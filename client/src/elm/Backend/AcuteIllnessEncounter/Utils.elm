@@ -129,6 +129,9 @@ progressReportInitiatorToUrlFragment initiator =
         InitiatorNCDProgressReport ncdProgressReportInitiator ->
             "ncd-progress-report-" ++ Backend.NCDEncounter.Utils.progressReportInitiatorToUrlFragment ncdProgressReportInitiator
 
+        InitiatorChildScoreboardProgressReport encounterId ->
+            "child-scoreboard-progress-report-" ++ fromEntityUuid encounterId
+
 
 progressReportInitiatorFromUrlFragment : String -> Maybe AcuteIllnessProgressReportInitiator
 progressReportInitiatorFromUrlFragment s =
@@ -147,6 +150,12 @@ progressReportInitiatorFromUrlFragment s =
                 String.dropLeft 26 s
                     |> toEntityUuid
                     |> InitiatorIndividualNutritionProgressReport
+                    |> Just
+
+            else if String.startsWith "child-scoreboard-progress-report-" s then
+                String.dropLeft 33 s
+                    |> toEntityUuid
+                    |> InitiatorChildScoreboardProgressReport
                     |> Just
 
             else if String.startsWith "progress-report-" s then

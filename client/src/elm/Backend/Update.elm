@@ -6745,7 +6745,7 @@ generateChildScoreboardAssesmentCompletedMsgs currentDate site after id =
                     List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate site assembled after)
                         Backend.ChildScoreboardActivity.Utils.allActivities
                 then
-                    [ App.Model.SetActivePage (UserPage (ChildScoreboardReportPage id)) ]
+                    [ App.Model.SetActivePage (UserPage (ChildScoreboardProgressReportPage id)) ]
 
                 else
                     []

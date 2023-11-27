@@ -89,7 +89,7 @@ viewMainPageContent language currentDate site db assembled model =
             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
 
         scorecardTabTitle =
-            translate language Translate.ChildScorecard
+            translate language Translate.ProgressReport
 
         tabs =
             div [ class "ui tabular menu" ]
@@ -104,7 +104,7 @@ viewMainPageContent language currentDate site db assembled model =
                 , tabItem scorecardTabTitle
                     (model.selectedTab == Scorecard)
                     "scorecard"
-                    (SetActivePage <| UserPage <| ChildScoreboardReportPage assembled.id)
+                    (SetActivePage <| UserPage <| ChildScoreboardProgressReportPage assembled.id)
                 ]
 
         viewCard activity =
