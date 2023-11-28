@@ -671,7 +671,7 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         pageContent =
             case activePage of
                 PageOverview ->
-                    viewAcuteIllnessOverviewPage language encountersForSelectedMonth model
+                    viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth model
 
                 PageCovid19 ->
                     viewCovid19Page language encountersForSelectedMonth managedCovid model
@@ -688,8 +688,8 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         ++ pageContent
 
 
-viewAcuteIllnessOverviewPage : Language -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
-viewAcuteIllnessOverviewPage language encounters model =
+viewAcuteIllnessOverviewPage : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
+viewAcuteIllnessOverviewPage language isChw encounters model =
     let
         totalAssesments =
             countAcuteIllnessAssesments encounters
@@ -729,12 +729,19 @@ viewAcuteIllnessOverviewPage language encounters model =
                 , ( FeverCauseGI, giCases )
                 , ( FeverCauseUnknown, feverOfUnknownOriginCases )
                 ]
+
+        ( levelCases, referrals ) =
+            if isChw then
+                ( Translate.CommunityLevelCases, Translate.HealthCenterReferrals )
+
+            else
+                ( Translate.HealthCenterLevelCases, Translate.HospitalReferrals )
     in
     [ div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.TotalAssessment) (String.fromInt totalAssesments)
-            , chwCard language (Translate.Dashboard Translate.CommunityLevelCases) (String.fromInt managedLocally)
-            , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+            , chwCard language (Translate.Dashboard levelCases) (String.fromInt managedLocally)
+            , chwCard language (Translate.Dashboard referrals) (String.fromInt sentToHC)
             ]
         ]
     , div [ class "ui centered grid" ]
