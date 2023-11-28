@@ -247,7 +247,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
 
                             MenuDashboards ->
                                 ( "dashboards"
-                                , UserPage <| DashboardPage MainPage
+                                , UserPage <| DashboardPage PageMain
                                 )
 
                             MenuCaseManagement ->

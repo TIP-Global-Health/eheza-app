@@ -143,7 +143,7 @@ emptyModel maybeSelectedVillage =
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
-    , latestPage = MainPage
+    , latestPage = PageMain
     , modalState = Nothing
     , monthGap = 0
     }

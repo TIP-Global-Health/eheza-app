@@ -7,7 +7,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
-import Pages.Page exposing (DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), NutritionSubPage(..), Page(..), UserPage(..))
 import Restful.Endpoint exposing (toEntityUuid)
 
 
@@ -48,7 +48,8 @@ update currentDate healthCenterId subPage db msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate healthCenterId subPage db) [ SetActivePage (UserPage (DashboardPage (NursePage CaseManagementPage))) ]
+                |> sequenceExtra (update currentDate healthCenterId subPage db)
+                    [ SetActivePage (UserPage (DashboardPage (PageNutrition PageCaseManagement))) ]
 
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
@@ -121,13 +122,13 @@ update currentDate healthCenterId subPage db msg model =
             let
                 newPeriod =
                     case page of
-                        UserPage (DashboardPage MainPage) ->
+                        UserPage (DashboardPage PageMain) ->
                             OneYear
 
-                        UserPage (DashboardPage (NursePage StatsPage)) ->
+                        UserPage (DashboardPage (PageNutrition PageStats)) ->
                             ThisMonth
 
-                        UserPage (DashboardPage (NursePage CaseManagementPage)) ->
+                        UserPage (DashboardPage (PageNutrition PageCaseManagement)) ->
                             ThreeMonthsAgo
 
                         _ ->

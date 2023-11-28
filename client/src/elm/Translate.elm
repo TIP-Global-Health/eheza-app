@@ -449,6 +449,7 @@ type TranslationId
     | ChildIdentification
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildName
+    | ChildNutrition
     | Children
     | ChildrenNames
     | ChildrenNationalId
@@ -571,7 +572,7 @@ type TranslationId
     | DangerSignsTask DangerSignsTask
     | EmptyString
     | EncounterDate
-    | EncounterTypePageLabel ChwDashboardPage
+    | EncounterTypePageLabel DashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
@@ -3858,6 +3859,12 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ChildNutrition ->
+            { english = "Child Nutrition"
+            , kinyarwanda = Just "Imirire y'Umwana"
+            , kirundi = Just "Ugufungura k'umwana"
+            }
+
         Clear ->
             { english = "Clear"
             , kinyarwanda = Just "Gukuraho"
@@ -5186,39 +5193,42 @@ translationSet trans =
 
         EncounterTypePageLabel page ->
             case page of
-                AcuteIllnessPage subPage ->
+                PageMain ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PageAcuteIllness subPage ->
                     case subPage of
-                        OverviewPage ->
+                        PageOverview ->
                             { english = "Overview"
                             , kinyarwanda = Just "Ishusho Rusange"
                             , kirundi = Just "Incamake"
                             }
 
-                        Covid19Page ->
+                        PageCovid19 ->
                             { english = "COVID-19"
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
                             }
 
-                        MalariaPage ->
+                        PageMalaria ->
                             { english = "Malaria"
                             , kinyarwanda = Just "Malariya"
                             , kirundi = Just "Malariya"
                             }
 
-                        GastroPage ->
+                        PageGastro ->
                             { english = "Gastro"
                             , kinyarwanda = Just "Indwara yo mu nda"
                             , kirundi = Just "Amara"
                             }
 
-                NutritionPage ->
-                    { english = "Child Nutrition"
-                    , kinyarwanda = Just "Imirire y'Umwana"
-                    , kirundi = Just "Ugufungura k'umwana"
-                    }
+                PageNutrition _ ->
+                    translationSet ChildNutrition
 
-                AntenatalPage ->
+                PagePrenatal ->
                     translationSet AntenatalCare
 
         EncounterWarningForDiagnosisPane warning suffix ->
@@ -6961,10 +6971,7 @@ translationSet trans =
                     }
 
                 NutritionEncounter ->
-                    { english = "Child Nutrition"
-                    , kinyarwanda = Just "Imirire y'umwana"
-                    , kirundi = Just "Ugufungura k'umwana"
-                    }
+                    translationSet ChildNutrition
 
                 WellChildEncounter ->
                     if isChw then
