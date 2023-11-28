@@ -97,8 +97,8 @@ getRecurrentActivityIcon activity =
     recurrentActivityToString activity
 
 
-getAllActivities : List NCDActivity
-getAllActivities =
+allActivities : List NCDActivity
+allActivities =
     [ DangerSigns
     , SymptomReview
     , MedicalHistory

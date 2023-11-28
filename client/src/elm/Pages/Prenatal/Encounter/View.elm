@@ -517,4 +517,4 @@ viewActionButton language buttonColor pendingActivities completedActivities paus
         viewPauseEncounterButton language buttonColor enabled pauseMsg
 
     else
-        viewEndEncounterButtonCustomColor language buttonColor enabled setDialogStateMsg
+        viewEndEncounterButtonCustomColor language buttonColor enabled (setDialogStateMsg True)

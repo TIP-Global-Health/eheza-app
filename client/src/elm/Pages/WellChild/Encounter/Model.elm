@@ -6,6 +6,7 @@ import Backend.Measurement.Model exposing (WellChildMeasurements)
 import Backend.Person.Model exposing (Person)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildEncounter.Model exposing (..)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (VaccinationProgressDict)
 import Pages.Page exposing (Page)
@@ -13,14 +14,16 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { selectedTab : Tab
-    , warningPopupState : Maybe WarningPopupType
+    , skippedActivities : EverySet WellChildActivity
+    , dialogState : Maybe DialogType
     }
 
 
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
-    , warningPopupState = Nothing
+    , skippedActivities = EverySet.empty
+    , dialogState = Nothing
     }
 
 
@@ -28,9 +31,15 @@ type Msg
     = CloseEncounter WellChildEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
-    | SetWarningPopupState (Maybe WarningPopupType)
     | TriggerAcuteIllnessEncounter PersonId WellChildEncounterId
     | NavigateToActivity WellChildEncounterId WellChildActivity
+    | SkipActivity WellChildActivity
+    | SetDialogState (Maybe DialogType)
+
+
+type DialogType
+    = DialogWarning WarningPopupType
+    | DialogSkipNCDA
 
 
 type WarningPopupType

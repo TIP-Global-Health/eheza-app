@@ -3,15 +3,26 @@ module Pages.Nutrition.Encounter.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (NutritionMeasurements)
+import Backend.NutritionActivity.Model exposing (NutritionActivity)
 import Backend.NutritionEncounter.Model exposing (..)
 import Backend.Person.Model exposing (Person)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { selectedTab : Tab
-    , showEndEncounterDialog : Bool
+    , skippedActivities : EverySet NutritionActivity
+    , dialogState : Maybe DialogType
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { selectedTab = Pending
+    , skippedActivities = EverySet.empty
+    , dialogState = Nothing
     }
 
 
@@ -19,7 +30,8 @@ type Msg
     = CloseEncounter NutritionEncounterId
     | SetActivePage Page
     | SetSelectedTab Tab
-    | SetEndEncounterDialogState Bool
+    | SkipActivity NutritionActivity
+    | SetDialogState (Maybe DialogType)
 
 
 type Tab
@@ -28,11 +40,9 @@ type Tab
     | Reports
 
 
-emptyModel : Model
-emptyModel =
-    { selectedTab = Pending
-    , showEndEncounterDialog = False
-    }
+type DialogType
+    = DialogEndEncounter
+    | DialogSkipNCDA
 
 
 type alias AssembledData =
