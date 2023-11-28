@@ -22494,7 +22494,7 @@ translateActivePage page =
                     , kirundi = Nothing
                     }
 
-                ChildScoreboardReportPage _ ->
+                ChildScoreboardProgressReportPage _ ->
                     translationSet ChildScorecard
 
 

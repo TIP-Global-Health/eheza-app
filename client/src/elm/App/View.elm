@@ -32,8 +32,8 @@ import Pages.ChildScoreboard.Activity.View
 import Pages.ChildScoreboard.Encounter.Model
 import Pages.ChildScoreboard.Encounter.View
 import Pages.ChildScoreboard.Participant.View
-import Pages.ChildScoreboard.Report.Model
-import Pages.ChildScoreboard.Report.View
+import Pages.ChildScoreboard.ProgressReport.Model
+import Pages.ChildScoreboard.ProgressReport.View
 import Pages.Clinical.View
 import Pages.Clinics.View
 import Pages.Dashboard.View
@@ -931,16 +931,17 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity)
                             |> flexPageWrapper configured.config model
 
-                    ChildScoreboardReportPage encounterId ->
+                    ChildScoreboardProgressReportPage encounterId ->
                         let
                             page_ =
                                 Dict.get encounterId loggedInModel.childScoreboardReportPages
-                                    |> Maybe.withDefault Pages.ChildScoreboard.Report.Model.emptyModel
+                                    |> Maybe.withDefault Pages.ChildScoreboard.ProgressReport.Model.emptyModel
                         in
-                        Pages.ChildScoreboard.Report.View.view model.language
+                        Pages.ChildScoreboard.ProgressReport.View.view model.language
                             currentDate
                             model.zscores
                             site
+                            features
                             encounterId
                             model.indexedDb
                             page_
