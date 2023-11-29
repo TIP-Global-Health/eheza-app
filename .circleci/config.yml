@@ -43,4 +43,4 @@ jobs:
       - checkout
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
-      - run: ddev simpletest
+      - run: ci-scripts/circleci_wait.sh ddev simpletest
