@@ -674,7 +674,7 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
                     viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth model
 
                 PageCovid19 ->
-                    viewCovid19Page language encountersForSelectedMonth managedCovid model
+                    viewCovid19Page language isChw encountersForSelectedMonth managedCovid model
 
                 PageMalaria ->
                     viewMalariaPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
@@ -773,30 +773,46 @@ viewFeverDistributionDonutChart language feverByCauses =
             ]
 
 
-viewCovid19Page : Language -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewCovid19Page language encounters managedCovid model =
+viewCovid19Page : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewCovid19Page language isChw encounters managedCovid model =
     let
-        callsTo114 =
-            countDiagnosedWithCovidCallsTo114 encounters
-
-        sentToHC =
-            countDiagnosedWithCovidSentToHC encounters
-
         managedAtHome =
             countDiagnosedWithCovidManagedAtHome encounters
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
-            , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
-            , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+    if isChw then
+        let
+            callsTo114 =
+                countDiagnosedWithCovidCallsTo114 encounters
+
+            sentToHC =
+                countDiagnosedWithCovidSentToHC encounters
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
+                , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+                , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) ]
+
+    else
+        let
+            sentToHospital =
+                -- @todo
+                0
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row" ]
+                [ chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+                , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+                ]
+            ]
         ]
-    ]
 
 
 viewMalariaPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
