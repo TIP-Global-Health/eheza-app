@@ -677,7 +677,7 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
                     viewCovid19Page language isChw encountersForSelectedMonth managedCovid model
 
                 PageMalaria ->
-                    viewMalariaPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
+                    viewMalariaPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
 
                 PageGastro ->
                     viewGastroPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
@@ -815,38 +815,54 @@ viewCovid19Page language isChw encounters managedCovid model =
         ]
 
 
-viewMalariaPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewMalariaPage language selectedDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
+viewMalariaPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewMalariaPage language isChw selectedDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
     let
         totalDaignosed =
             countDiagnosedWithMalaria encountersForSelectedMonth
-
-        uncomplicatedMalariaManagedByChw =
-            countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
-
-        uncomplicatedMalariaAndPregnantSentToHC =
-            countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
-
-        complicatedMalariaSentToHC =
-            countComplicatedMalariaSentToHC encountersForSelectedMonth
-
-        resolvedMalariaCases =
-            countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
+    if isChw then
+        let
+            uncomplicatedMalariaManagedByChw =
+                countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
+
+            uncomplicatedMalariaAndPregnantSentToHC =
+                countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
+
+            complicatedMalariaSentToHC =
+                countComplicatedMalariaSentToHC encountersForSelectedMonth
+
+            resolvedMalariaCases =
+                countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC)
+                , chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria)
+                ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC)
-            , chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria)
+
+    else
+        let
+            sentToHospital =
+                -- @todo
+                0
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+                ]
             ]
         ]
-    ]
 
 
 viewGastroPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
