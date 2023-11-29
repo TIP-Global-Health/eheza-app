@@ -120,6 +120,20 @@ update currentDate healthCenterId subPage db msg model =
 
         SetActivePage page ->
             let
+                -- When nurse navigates from Nutrition charts page to main oage,
+                -- reset filters to All Programs, unless village was selected.
+                ( programTypeFilter, selectedVillageFilter ) =
+                    case ( subPage, page ) of
+                        ( PageNutrition PageCharts, UserPage (DashboardPage PageMain) ) ->
+                            if model.programTypeFilter /= FilterProgramCommunity then
+                                ( FilterAllPrograms, Nothing )
+
+                            else
+                                ( model.programTypeFilter, model.selectedVillageFilter )
+
+                        _ ->
+                            ( model.programTypeFilter, model.selectedVillageFilter )
+
                 newPeriod =
                     case page of
                         UserPage (DashboardPage PageMain) ->
@@ -134,7 +148,15 @@ update currentDate healthCenterId subPage db msg model =
                         _ ->
                             OneYear
             in
-            ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )
+            ( { model
+                | latestPage = subPage
+                , programTypeFilter = programTypeFilter
+                , selectedVillageFilter = selectedVillageFilter
+                , period = newPeriod
+              }
+            , Cmd.none
+            , [ App.Model.SetActivePage page ]
+            )
 
 
 getAssembledPermutationMsg : Maybe HealthCenterId -> Model -> List App.Model.Msg

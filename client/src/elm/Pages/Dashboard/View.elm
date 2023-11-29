@@ -143,7 +143,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
                                 :: pageContent
-                                ++ [ viewCustomModal language isChw nurse assembled.stats db model
+                                ++ [ viewCustomModal language page isChw nurse assembled.stats db model
                                    , div [ class "timestamp" ]
                                         [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ assembled.stats.timestamp ++ " UTC" ]
                                    ]
@@ -1880,8 +1880,8 @@ viewPieChartLegend language translateFunc colorFunc signs =
         )
 
 
-viewCustomModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewCustomModal language isChw nurse stats db model =
+viewCustomModal : Language -> DashboardPage -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewCustomModal language page isChw nurse stats db model =
     model.modalState
         |> Maybe.map
             (\state ->
@@ -1890,7 +1890,7 @@ viewCustomModal language isChw nurse stats db model =
                         viewStatsTableModal language title data
 
                     FiltersModal ->
-                        viewFiltersModal language isChw nurse stats db model
+                        viewFiltersModal language page isChw nurse stats db model
             )
         |> viewModal
 
@@ -1924,8 +1924,8 @@ viewStatsTableModal language title data =
         ]
 
 
-viewFiltersModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewFiltersModal language isChw nurse stats db model =
+viewFiltersModal : Language -> DashboardPage -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersModal language page isChw nurse stats db model =
     let
         programTypeFilterInputSection =
             if isChw then
@@ -1934,15 +1934,28 @@ viewFiltersModal language isChw nurse stats db model =
 
             else
                 let
+                    options =
+                        case page of
+                            -- Nutrition group types filters are only relevant
+                            -- on Nutrition page. For all others It's either
+                            -- All Programs, or selected village.
+                            PageNutrition PageCharts ->
+                                [ FilterAllPrograms
+                                , FilterProgramFbf
+                                , FilterProgramPmtct
+                                , FilterProgramSorwathe
+                                , FilterProgramAchi
+                                , FilterProgramCommunity
+                                ]
+
+                            _ ->
+                                [ FilterAllPrograms
+                                , FilterProgramCommunity
+                                ]
+
                     programTypeFilterInput =
                         viewCustomSelectListInput (Just model.programTypeFilter)
-                            [ FilterAllPrograms
-                            , FilterProgramFbf
-                            , FilterProgramPmtct
-                            , FilterProgramSorwathe
-                            , FilterProgramAchi
-                            , FilterProgramCommunity
-                            ]
+                            options
                             filterProgramTypeToString
                             SetFilterProgramType
                             (Translate.FilterProgramType >> Translate.Dashboard >> translate language)
