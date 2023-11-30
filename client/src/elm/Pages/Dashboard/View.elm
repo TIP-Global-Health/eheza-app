@@ -680,7 +680,7 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
                     viewMalariaPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
 
                 PageGastro ->
-                    viewGastroPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
+                    viewGastroPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     [ viewAcuteIllnessMenu language activePage
     , monthSelector language selectedDate model
@@ -865,34 +865,50 @@ viewMalariaPage language isChw selectedDate acuteIllnessData encountersForSelect
         ]
 
 
-viewGastroPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewGastroPage language selectedDate acuteIllnessData encountersForSelectedMonth managedGI model =
+viewGastroPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewGastroPage language isChw selectedDate acuteIllnessData encountersForSelectedMonth managedGI model =
     let
         totalDaignosed =
             countDiagnosedWithGI encountersForSelectedMonth
-
-        uncomplicatedGIManagedByChw =
-            countUncomplicatedGIManagedByChw encountersForSelectedMonth
-
-        complicatedGISentToHC =
-            countComplicatedGISentToHC encountersForSelectedMonth
-
-        resolvedGICases =
-            countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw)
-            , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
+    if isChw then
+        let
+            uncomplicatedGIManagedByChw =
+                countUncomplicatedGIManagedByChw encountersForSelectedMonth
+
+            complicatedGISentToHC =
+                countComplicatedGISentToHC encountersForSelectedMonth
+
+            resolvedGICases =
+                countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw)
+                , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI)
+                ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI)
+
+    else
+        let
+            sentToHospital =
+                -- @todo
+                0
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+                ]
             ]
         ]
-    ]
 
 
 viewNutritionChartsPage : Language -> NominalDate -> Bool -> Nurse -> NutritionSubPage -> NutritionPageData -> ModelIndexedDb -> Model -> List (Html Msg)
