@@ -1,20 +1,13 @@
 #!/bin/bash
 # circleci_wait.sh
 
-# The command to execute
 CMD="$*"
 
-# Timeout duration (default to 20 minutes)
-TIMEOUT=1200
-
-# Interval in seconds between checks
+TIMEOUT=1600
 INTERVAL=60
-
-# Start the command in the background
 $CMD &
 CMD_PID=$!
 
-# Wait for the command to finish or timeout
 TIME_PASSED=0
 while [ $TIME_PASSED -lt $TIMEOUT ]; do
     sleep $INTERVAL
@@ -32,3 +25,4 @@ done
 
 echo "Timeout reached, terminating process"
 kill $CMD_PID
+exit 1
