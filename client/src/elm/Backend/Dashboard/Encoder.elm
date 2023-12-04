@@ -17,7 +17,10 @@ import Backend.Measurement.Encoder
         , encodeSendToHCSign
         )
 import Backend.Person.Encoder exposing (encodeGender)
+import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounterType)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Dict as LegacyDict
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
@@ -289,7 +292,17 @@ encodePrenatalDataItem item =
 
 encodePrenatalEncounterDataItem : PrenatalEncounterDataItem -> Value
 encodePrenatalEncounterDataItem item =
+    let
+        diagnosesWithDefault diagnoses =
+            if EverySet.isEmpty diagnoses then
+                List.singleton NoPrenatalDiagnosis
+
+            else
+                EverySet.toList diagnoses
+    in
     object
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
+        , ( "encounter_type", encodePrenatalEncounterType item.encounterType )
+        , ( "prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault item.diagnoses) )
         ]
