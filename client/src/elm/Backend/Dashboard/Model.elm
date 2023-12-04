@@ -4,7 +4,7 @@ module Backend.Dashboard.Model exposing (..)
 -}
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis, AcuteIllnessEncounterType)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
 import Backend.Measurement.Model
@@ -270,6 +270,7 @@ type alias AcuteIllnessDataItem =
 
 type alias AcuteIllnessEncounterDataItem =
     { startDate : NominalDate
+    , encounterType : AcuteIllnessEncounterType
     , sequenceNumber : Int
     , diagnosis : AcuteIllnessDiagnosis
     , feverRecorded : Bool

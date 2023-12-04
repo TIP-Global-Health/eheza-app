@@ -1,7 +1,7 @@
 module Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis, encodeAcuteIllnessEncounterType)
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (encodeDeliveryLocation, encodeIndividualEncounterParticipantOutcome)
@@ -257,6 +257,7 @@ encodeAcuteIllnessEncounterDataItem : AcuteIllnessEncounterDataItem -> Value
 encodeAcuteIllnessEncounterDataItem item =
     object
         [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "encounter_type", encodeAcuteIllnessEncounterType item.encounterType )
         , ( "sequence_number", int item.sequenceNumber )
         , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
         , ( "fever", bool item.feverRecorded )
