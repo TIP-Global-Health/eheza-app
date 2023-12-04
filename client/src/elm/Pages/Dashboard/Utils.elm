@@ -38,6 +38,7 @@ import Backend.Measurement.Model
         , SendToHCSign(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Model exposing (Village)
 import Date exposing (Unit(..), isBetween)
 import EverySet
@@ -713,10 +714,60 @@ countResolvedGICasesForSelectedMonth selectedDate itemsList =
 --
 
 
+countNewlyDiagnosesCasesForSelectedMonth : NominalDate -> List PrenatalDiagnosis -> List PrenatalDataItem -> Int
+countNewlyDiagnosesCasesForSelectedMonth selectedDate diagnoses itemsList =
+    List.filter
+        (\pregnancy ->
+            let
+                matchDates =
+                    List.filterMap
+                        (\encounter ->
+                            if
+                                EverySet.toList encounter.diagnoses
+                                    |> List.any (\diagnosis -> List.member diagnosis diagnoses)
+                            then
+                                Just encounter.startDate
+
+                            else
+                                Nothing
+                        )
+                        pregnancy.encounters
+                        |> List.sortWith Date.compare
+            in
+            List.head matchDates
+                |> Maybe.map (withinSelectedMonth selectedDate)
+                |> Maybe.withDefault False
+        )
+        itemsList
+        |> List.length
+
+
+syphilisDiagnoses : List PrenatalDiagnosis
+syphilisDiagnoses =
+    [ DiagnosisSyphilis, DiagnosisSyphilisWithComplications ]
+
+
+preeclampsiaDiagnoses : List PrenatalDiagnosis
+preeclampsiaDiagnoses =
+    [ DiagnosisSeverePreeclampsiaInitialPhase
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
+severeAnemiaDiagnoses : List PrenatalDiagnosis
+severeAnemiaDiagnoses =
+    [ DiagnosisMalariaWithSevereAnemia
+    , DiagnosisModerateAnemia
+    , DiagnosisSevereAnemia
+    , DiagnosisSevereAnemiaWithComplications
+    ]
+
+
 countNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
 countNewlyIdentifiedPregananciesForSelectedMonth selectedDate itemsList =
-    itemsList
-        |> List.filter (.created >> withinSelectedMonth selectedDate)
+    List.filter (.created >> withinSelectedMonth selectedDate) itemsList
         |> List.length
 
 

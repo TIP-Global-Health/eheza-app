@@ -23,6 +23,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(.
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Utils exposing (getVillageById)
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
@@ -965,6 +966,13 @@ viewPrenatalPage language currentDate isChw assembled db model =
 
         deliveriesAtFacility =
             countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+
+        prenatalDiagnosesSection =
+            if isChw then
+                []
+
+            else
+                viewPrenatalDiagnosesSection language selectedDate assembled
     in
     [ monthSelector language selectedDate model
     , div [ class "ui grid" ]
@@ -979,6 +987,68 @@ viewPrenatalPage language currentDate isChw assembled db model =
             [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
             , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
             , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+            ]
+        ]
+    ]
+        ++ prenatalDiagnosesSection
+
+
+viewPrenatalDiagnosesSection : Language -> NominalDate -> AssembledData -> List (Html Msg)
+viewPrenatalDiagnosesSection language currentDate assembled =
+    let
+        totalHighRiskPregnancies =
+            -- @rodo
+            0
+
+        newlyDiagnosesSyphilisCases =
+            countNewlyDiagnosesCasesForSelectedMonth currentDate syphilisDiagnoses assembled.prenatalData
+
+        newlyDiagnosesPreeclampsiaCases =
+            countNewlyDiagnosesCasesForSelectedMonth currentDate preeclampsiaDiagnoses assembled.prenatalData
+
+        newlyDiagnosesEclampsiaCases =
+            countNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisEclampsia ] assembled.prenatalData
+
+        newlyDiagnosesSevereAnemiaCases =
+            countNewlyDiagnosesCasesForSelectedMonth currentDate severeAnemiaDiagnoses assembled.prenatalData
+
+        newlyDiagnosesAcuteMalnutritionCases =
+            -- @rodo
+            0
+
+        withDangerSigns =
+            -- @rodo
+            0
+
+        newlyDiagnosesGestationalDiabetesCases =
+            countNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisGestationalDiabetes ] assembled.prenatalData
+
+        newlyDiagnosesHIVCases =
+            countNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisHIV ] assembled.prenatalData
+    in
+    [ div [ class "separator" ] []
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.TotalHighRiskPregnancies (String.fromInt totalHighRiskPregnancies) ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.Syphilis (String.fromInt newlyDiagnosesSyphilisCases)
+            , chwCard language Translate.Preeclampsia (String.fromInt newlyDiagnosesPreeclampsiaCases)
+            , chwCard language Translate.Eclampsia (String.fromInt newlyDiagnosesEclampsiaCases)
+            ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.SevereAnemia (String.fromInt newlyDiagnosesSevereAnemiaCases)
+            , chwCard language Translate.AcuteMalnutrition (String.fromInt newlyDiagnosesAcuteMalnutritionCases)
+            , chwCard language Translate.DangerSigns (String.fromInt withDangerSigns)
+            ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.GestationalDiabetes (String.fromInt newlyDiagnosesGestationalDiabetesCases)
+            , chwCard language Translate.HIV (String.fromInt newlyDiagnosesHIVCases)
             ]
         ]
     ]
