@@ -762,6 +762,8 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $query = hedley_stats_get_base_query($health_center_id, 'prenatal_encounter');
   $fields_to_join = [
     'field_individual_participant',
+    'field_prenatal_encounter_type',
+    'field_prenatal_diagnoses',
   ];
   foreach ($fields_to_join as $field) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
@@ -777,16 +779,33 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $query->addField('danger_signs', 'field_danger_signs_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT danger_signs.field_danger_signs_value)", 'danger_signs');
 
+  // Pull data of prenatal_diagnoses that were recorded during encounter.
+  $query->leftJoin('field_data_field_prenatal_diagnoses', 'prenatal_diagnoses', 'prenatal_diagnoses.entity_id = node.nid');
+  $query->addField('prenatal_diagnoses', 'field_prenatal_diagnoses_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT prenatal_diagnoses.field_prenatal_diagnoses_value)", 'prenatal_diagnoses');
+
   $query->groupBy('node.nid');
 
   $result = hedley_stats_run_node_query_in_batches($query);
 
   foreach ($result as $row) {
-    $items[$row->field_individual_participant]['encounters'][] = [
+    $diagnoses = $row->prenatal_diagnoses;
+    if (empty($diagnoses)) {
+      $diagnoses = 'none';
+    }
+
+    $item =  [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'danger_signs' => explode(',', $row->danger_signs),
+      'diagnoses' => $diagnoses,
     ];
+
+    if (!empty($row->field_prenatal_encounter_type)) {
+      $item['encounter_type'] = $row->field_prenatal_encounter_type;
+    }
+
+    $items[$row->field_individual_participant]['encounters'][] = $item;
   }
 
   // Free up memory.
