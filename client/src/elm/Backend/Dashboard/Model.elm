@@ -259,6 +259,7 @@ type alias PrenatalEncounterDataItem =
     , encounterType : PrenatalEncounterType
     , dangerSigns : EverySet DangerSign
     , diagnoses : EverySet PrenatalDiagnosis
+    , muac : Maybe Float
     }
 
 

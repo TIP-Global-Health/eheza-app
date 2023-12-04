@@ -784,6 +784,11 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $query->addField('prenatal_diagnoses', 'field_prenatal_diagnoses_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT prenatal_diagnoses.field_prenatal_diagnoses_value)", 'prenatal_diagnoses');
 
+  // Pull data of MUAC that was recorded during encounter.
+  $query->leftJoin('field_data_field_muac', 'muac', 'muac.entity_id = prenatal_encounter.entity_id');
+  $query->addField('muac', 'field_muac_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT muac.field_muac_value)", 'muac');
+
   $query->groupBy('node.nid');
 
   $result = hedley_stats_run_node_query_in_batches($query);
@@ -803,6 +808,10 @@ function hedley_stats_get_prenatal_data($health_center_id) {
 
     if (!empty($row->field_prenatal_encounter_type)) {
       $item['encounter_type'] = $row->field_prenatal_encounter_type;
+    }
+
+    if(!empty($row->muac)) {
+      $item['muac'] = $row->muac;
     }
 
     $items[$row->field_individual_participant]['encounters'][] = $item;

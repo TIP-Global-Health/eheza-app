@@ -299,10 +299,15 @@ encodePrenatalEncounterDataItem item =
 
             else
                 EverySet.toList diagnoses
+
+        muac =
+            Maybe.map (\value -> [ ( "muac", float value ) ]) item.muac
+                |> Maybe.withDefault []
     in
-    object
+    object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
         , ( "encounter_type", encodePrenatalEncounterType item.encounterType )
         , ( "prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault item.diagnoses) )
         ]
+            ++ muac

@@ -366,3 +366,4 @@ decodePrenatalEncounterDataItem =
         |> optional "encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType) NurseEncounter
         |> required "danger_signs" (decodeEverySet (decodeWithFallback NoDangerSign decodeDangerSign))
         |> optional "prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "muac" (nullable decodeFloat) Nothing
