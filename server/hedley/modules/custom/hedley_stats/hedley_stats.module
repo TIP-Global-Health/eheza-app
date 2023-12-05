@@ -528,7 +528,7 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
 function hedley_stats_get_acute_illness_data($health_center_id) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $health_center_id)) {
-    // return $cache_data;
+    return $cache_data;
   }
 
   // Pull all acute illness encounters during past 6 month.
