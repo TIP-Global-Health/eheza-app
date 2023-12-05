@@ -269,6 +269,7 @@ type Dashboard
     | PatientCurrentlyUnderCare
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
+    | PregnanciesWith4VisitsOrMore
     | ProgramType
     | ResolvedCases
     | Severe
@@ -23002,7 +23003,7 @@ translateDashboard trans =
             }
 
         NewPregnancy ->
-            { english = "New Identified Pregnancies"
+            { english = "Newly Identified Pregnancies"
             , kinyarwanda = Just "Abagore bashya batwite"
             , kirundi = Just "Imbanyi nshasha zamenyekanye"
             }
@@ -23088,6 +23089,12 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     , kirundi = Just "Amezi atatu"
                     }
+
+        PregnanciesWith4VisitsOrMore ->
+            { english = "# of Women with 4 Visits or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         ProgramType ->
             { english = "Program Type"

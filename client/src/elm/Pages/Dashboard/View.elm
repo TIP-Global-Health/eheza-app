@@ -24,7 +24,6 @@ import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(.
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Utils exposing (getVillageById)
 import Color exposing (Color)
@@ -188,7 +187,7 @@ viewPageMain language currentDate healthCenterId isChw assembled db model =
 
         -- Prenatal
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw assembled.prenatalData
 
         totalNewborn =
             countNewbornForSelectedMonth selectedDate assembled.prenatalData
@@ -952,30 +951,45 @@ viewPrenatalPage language currentDate isChw assembled db model =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         newlyIdentifiedPreganancies =
-            countNewlyIdentifiedPregananciesForSelectedMonth selectedDate assembled.prenatalData
+            countNewlyIdentifiedPregananciesForSelectedMonth selectedDate isChw assembled.prenatalData
 
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw assembled.prenatalData
 
         pregnanciesDueWithin4Month =
-            countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate assembled.prenatalData
+            countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate isChw assembled.prenatalData
 
-        currentlyPregnantWithDangerSigns =
-            countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate assembled.prenatalData
+        secondRow =
+            if isChw then
+                let
+                    currentlyPregnantWithDangerSigns =
+                        countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate assembled.prenatalData
 
-        deliveriesAtHome =
-            countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
+                    deliveriesAtHome =
+                        countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
 
-        deliveriesAtFacility =
-            countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+                    deliveriesAtFacility =
+                        countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+                in
+                [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
+                , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
+                , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+                ]
+
+            else
+                let
+                    pregnanciesWith4VisitsOrMore =
+                        countPregnanciesWith4VisitsOrMoreForSelectedMonth selectedDate assembled.prenatalData
+                in
+                [ chwCard language (Translate.Dashboard Translate.PregnanciesWith4VisitsOrMore) (String.fromInt pregnanciesWith4VisitsOrMore)
+                ]
 
         dataForNurses =
             List.filterMap
                 (\pregnancy ->
                     let
                         nurseEncounters =
-                            List.filter (\encounter -> List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ])
-                                pregnancy.encounters
+                            List.filter isNurseEncounter pregnancy.encounters
                     in
                     if List.isEmpty nurseEncounters then
                         Nothing
@@ -1000,12 +1014,9 @@ viewPrenatalPage language currentDate isChw assembled db model =
             , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
             ]
         ]
-    , div [ class "ui centered grid" ]
+    , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
-            , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
-            , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
-            ]
+            secondRow
         ]
     ]
         ++ prenatalDiagnosesSection

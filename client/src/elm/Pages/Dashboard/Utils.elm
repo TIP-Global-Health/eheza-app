@@ -20,6 +20,7 @@ import Backend.Dashboard.Model
         , Periods
         , PersonIdentifier
         , PrenatalDataItem
+        , PrenatalEncounterDataItem
         , ProgramType(..)
         , TotalBeneficiaries
         , TotalEncountersData
@@ -38,6 +39,7 @@ import Backend.Measurement.Model
         , SendToHCSign(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Model exposing (Village)
 import Date exposing (Unit(..), isBetween)
@@ -62,6 +64,7 @@ import Pages.GlobalCaseManagement.View
         , generatePrenatalFollowUpEntries
         )
 import Translate exposing (Language)
+import Utils.NominalDate exposing (sortByDate)
 
 
 filterProgramTypeToString : FilterProgramType -> String
@@ -820,16 +823,40 @@ severeAnemiaDiagnoses =
     ]
 
 
-countNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-countNewlyIdentifiedPregananciesForSelectedMonth selectedDate itemsList =
-    List.filter (.created >> withinSelectedMonth selectedDate) itemsList
-        |> List.length
+isNurseEncounter : PrenatalEncounterDataItem -> Bool
+isNurseEncounter encounter =
+    List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
 
 
-countCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
-countCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
-    getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList
-        |> List.length
+countNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
+countNewlyIdentifiedPregananciesForSelectedMonth selectedDate isChw itemsList =
+    if isChw then
+        List.filter (.created >> withinSelectedMonth selectedDate) itemsList
+            |> List.length
+
+    else
+        List.filter
+            (\pregnancy ->
+                List.sortWith (sortByDate .startDate) pregnancy.encounters
+                    |> List.head
+                    |> Maybe.map isNurseEncounter
+                    |> Maybe.withDefault False
+            )
+            itemsList
+            |> List.filter (.created >> withinSelectedMonth selectedDate)
+            |> List.length
+
+
+countCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> Bool -> List PrenatalDataItem -> Int
+countCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw itemsList =
+    if isChw then
+        getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList
+            |> List.length
+
+    else
+        getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList
+            |> List.filter (.encounters >> List.any isNurseEncounter)
+            |> List.length
 
 
 getCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
@@ -916,8 +943,8 @@ countNewbornForSelectedMonth selectedDate itemsList =
         |> List.length
 
 
-countPregnanciesDueWithin4MonthsForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
+countPregnanciesDueWithin4MonthsForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
+countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate isChw itemsList =
     let
         dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
@@ -926,38 +953,93 @@ countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
             Date.ceiling Date.Month selectedDate
                 |> Date.add Date.Days -1
     in
-    itemsList
-        |> List.filter
-            (\item ->
-                let
-                    -- Either pregnanacy is not concluded, or, it was concluded
-                    -- after selected months has ended.
-                    dateConcludedFilter =
-                        case item.dateConcluded of
-                            Just dateConcluded ->
-                                Date.compare dateConcluded dateLastDayOfSelectedMonth == GT
+    List.filter
+        (\item ->
+            let
+                -- For CHW, no restriction.
+                -- For nurses, we want at least one encounter to
+                -- be conducted by nurse at HC.
+                facilityFilter =
+                    if isChw then
+                        True
 
-                            Nothing ->
-                                True
+                    else
+                        let
+                            encountersTillSelectedDate =
+                                List.filter (\encounter -> not <| Date.compare encounter.startDate selectedDate == GT)
+                                    item.encounters
+                        in
+                        List.any isNurseEncounter encountersTillSelectedDate
 
-                    -- Expected date exists, is within selected month or
-                    -- latter than that, and within 120 days from the
-                    -- beginning of selected month.
-                    expectedDateConcludedFilter =
-                        item.expectedDateConcluded
-                            |> Maybe.map
-                                (\expectedDateConcluded ->
-                                    let
-                                        compareResult =
-                                            Date.compare expectedDateConcluded dateFirstDayOfSelectedMonth
-                                    in
-                                    (compareResult == GT || compareResult == EQ)
-                                        && (Date.diff Date.Days dateFirstDayOfSelectedMonth expectedDateConcluded <= 120)
-                                )
-                            |> Maybe.withDefault False
-                in
-                dateConcludedFilter && expectedDateConcludedFilter
-            )
+                -- Either pregnanacy is not concluded, or, it was concluded
+                -- after selected months has ended.
+                dateConcludedFilter =
+                    case item.dateConcluded of
+                        Just dateConcluded ->
+                            Date.compare dateConcluded dateLastDayOfSelectedMonth == GT
+
+                        Nothing ->
+                            True
+
+                -- Expected date exists, is within selected month or
+                -- latter than that, and within 120 days from the
+                -- beginning of selected month.
+                expectedDateConcludedFilter =
+                    item.expectedDateConcluded
+                        |> Maybe.map
+                            (\expectedDateConcluded ->
+                                let
+                                    compareResult =
+                                        Date.compare expectedDateConcluded dateFirstDayOfSelectedMonth
+                                in
+                                (compareResult == GT || compareResult == EQ)
+                                    && (Date.diff Date.Days dateFirstDayOfSelectedMonth expectedDateConcluded <= 120)
+                            )
+                        |> Maybe.withDefault False
+            in
+            facilityFilter && dateConcludedFilter && expectedDateConcludedFilter
+        )
+        itemsList
+        |> List.length
+
+
+{-| Only for Nurses.
+-}
+countPregnanciesWith4VisitsOrMoreForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+countPregnanciesWith4VisitsOrMoreForSelectedMonth selectedDate itemsList =
+    let
+        dateFirstDayOfSelectedMonth =
+            Date.floor Date.Month selectedDate
+
+        dateLastDayOfSelectedMonth =
+            Date.ceiling Date.Month selectedDate
+                |> Date.add Date.Days -1
+    in
+    List.filter
+        (\item ->
+            let
+                -- Either pregnanacy is not concluded, or, it was concluded
+                -- after selected months has ended.
+                dateConcludedFilter =
+                    case item.dateConcluded of
+                        Just dateConcluded ->
+                            Date.compare dateConcluded dateLastDayOfSelectedMonth == GT
+
+                        Nothing ->
+                            True
+
+                -- We want at least one encounter to  be conducted by nurse at HC.
+                facilityFilter =
+                    let
+                        encountersTillSelectedDate =
+                            List.filter (\encounter -> not <| Date.compare encounter.startDate selectedDate == GT)
+                                item.encounters
+                    in
+                    List.any isNurseEncounter encountersTillSelectedDate
+            in
+            facilityFilter && dateConcludedFilter
+        )
+        itemsList
         |> List.length
 
 
