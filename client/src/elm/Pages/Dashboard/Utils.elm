@@ -714,8 +714,8 @@ countResolvedGICasesForSelectedMonth selectedDate itemsList =
 --
 
 
-countNewlyDiagnosesCasesForSelectedMonth : NominalDate -> List PrenatalDiagnosis -> List PrenatalDataItem -> Int
-countNewlyDiagnosesCasesForSelectedMonth selectedDate diagnoses itemsList =
+filterNewlyDiagnosesCasesForSelectedMonth : NominalDate -> List PrenatalDiagnosis -> List PrenatalDataItem -> List PrenatalDataItem
+filterNewlyDiagnosesCasesForSelectedMonth selectedDate diagnoses itemsList =
     List.filter
         (\pregnancy ->
             let
@@ -739,7 +739,62 @@ countNewlyDiagnosesCasesForSelectedMonth selectedDate diagnoses itemsList =
                 |> Maybe.withDefault False
         )
         itemsList
-        |> List.length
+
+
+filterNewlyDiagnosesMalnutritionForSelectedMonth : NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
+filterNewlyDiagnosesMalnutritionForSelectedMonth selectedDate itemsList =
+    List.filter
+        (\pregnancy ->
+            let
+                matchDates =
+                    List.filterMap
+                        (\encounter ->
+                            Maybe.andThen
+                                (\muac ->
+                                    if muac < 21 then
+                                        Just encounter.startDate
+
+                                    else
+                                        Nothing
+                                )
+                                encounter.muac
+                        )
+                        pregnancy.encounters
+                        |> List.sortWith Date.compare
+            in
+            List.head matchDates
+                |> Maybe.map (withinSelectedMonth selectedDate)
+                |> Maybe.withDefault False
+        )
+        itemsList
+
+
+filterNewlyDiagnosesDangerSignsForSelectedMonth : NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
+filterNewlyDiagnosesDangerSignsForSelectedMonth selectedDate itemsList =
+    List.filter
+        (\pregnancy ->
+            let
+                matchDates =
+                    List.filterMap
+                        (\encounter ->
+                            case EverySet.toList encounter.dangerSigns of
+                                [] ->
+                                    Nothing
+
+                                [ NoDangerSign ] ->
+                                    Nothing
+
+                                _ ->
+                                    Just encounter.startDate
+                        )
+                        pregnancy.encounters
+                        |> List.sortWith Date.compare
+            in
+            List.head matchDates
+                |> Maybe.map (withinSelectedMonth selectedDate)
+                |> Maybe.withDefault False
+        )
+        itemsList
 
 
 syphilisDiagnoses : List PrenatalDiagnosis
