@@ -1044,21 +1044,20 @@ countPregnanciesWith4VisitsOrMoreForSelectedMonth selectedDate itemsList =
 
 
 countDeliveriesAtLocationForSelectedMonth : NominalDate -> DeliveryLocation -> List PrenatalDataItem -> Int
-countDeliveriesAtLocationForSelectedMonth selectedDate location itemsList =
-    itemsList
-        |> List.filter
-            (\item ->
-                Maybe.map2
-                    (\dateConcluded deliveryLocation ->
-                        -- Live baby born within selected month.
-                        withinSelectedMonth selectedDate dateConcluded
-                            && (deliveryLocation == location)
-                    )
-                    item.dateConcluded
-                    item.deliveryLocation
-                    |> Maybe.withDefault False
-            )
-        |> List.length
+countDeliveriesAtLocationForSelectedMonth selectedDate location =
+    List.filter
+        (\item ->
+            Maybe.map2
+                (\dateConcluded deliveryLocation ->
+                    -- Live baby born within selected month.
+                    withinSelectedMonth selectedDate dateConcluded
+                        && (deliveryLocation == location)
+                )
+                item.dateConcluded
+                item.deliveryLocation
+                |> Maybe.withDefault False
+        )
+        >> List.length
 
 
 

@@ -249,6 +249,7 @@ type Dashboard
     | GirlsFilterLabel
     | GoodNutritionLabel
     | HomeDeliveries
+    | HealthCenterDeliveries
     | HealthFacilityDeliveries
     | HealthCenterLevelCases
     | HealthCenterReferrals
@@ -22928,6 +22929,12 @@ translateDashboard trans =
             { english = "Home Deliveries"
             , kinyarwanda = Just "Ababyariye mu Rugo"
             , kirundi = Just "Imvyaro zabereye muhira"
+            }
+
+        HealthCenterDeliveries ->
+            { english = "Health Center Deliveries"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         HealthFacilityDeliveries ->
