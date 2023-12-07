@@ -703,6 +703,18 @@ viewAcuteIllnessOverviewPage language isChw encounters model =
         feverOfUnknownOriginCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encounters
 
+        secondRow =
+            if isChw then
+                div [ class "ui centered grid" ]
+                    [ div [ class "three column row" ]
+                        [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
+                        , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
+                        ]
+                    ]
+
+            else
+                emptyNode
+
         covidCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19Suspect ] True encounters
 
@@ -744,12 +756,7 @@ viewAcuteIllnessOverviewPage language isChw encounters model =
             , chwCard language (Translate.Dashboard referrals) (String.fromInt sentToHC)
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
-            , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
-            ]
-        ]
+    , secondRow
     , div [ class "ui blue segment donut-chart fever" ]
         [ viewFeverDistributionDonutChart language feverByCauses ]
     ]
