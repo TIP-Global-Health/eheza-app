@@ -1,7 +1,7 @@
 module Pages.Dashboard.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Dashboard.Model
     exposing
         ( AcuteIllnessDataItem
@@ -1368,3 +1368,8 @@ childrenBeneficiariesByProgramType programType childrenBeneficiaries =
 filterByLimitDate : NominalDate -> Dict id { a | dateMeasured : NominalDate } -> Dict id { a | dateMeasured : NominalDate }
 filterByLimitDate limitDate followUps =
     Dict.filter (\_ followUp -> Date.compare followUp.dateMeasured limitDate == LT) followUps
+
+
+isAcuteIllnessNurseEncounter : AcuteIllnessEncounterDataItem -> Bool
+isAcuteIllnessNurseEncounter encounter =
+    encounter.encounterType /= AcuteIllnessEncounterCHW
