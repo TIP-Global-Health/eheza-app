@@ -721,9 +721,6 @@ viewAcuteIllnessOverviewPage language isChw encounters model =
                 let
                     undeterminedCases =
                         countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
-
-                    feverOfUnknownOriginCases =
-                        countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encounters
                 in
                 div [ class "ui centered grid" ]
                     [ div [ class "three column row" ]
@@ -734,6 +731,9 @@ viewAcuteIllnessOverviewPage language isChw encounters model =
 
             else
                 emptyNode
+
+        feverOfUnknownOriginCases =
+            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encounters
 
         covidCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisCovid19Suspect ] True encounters
