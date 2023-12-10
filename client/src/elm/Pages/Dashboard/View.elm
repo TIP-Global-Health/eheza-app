@@ -991,6 +991,10 @@ viewPrenatalPage language currentDate isChw assembled db model =
             countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate isChw assembled.prenatalData
 
         secondRow =
+            let
+                deliveriesAtFacility =
+                    countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+            in
             if isChw then
                 let
                     currentlyPregnantWithDangerSigns =
@@ -998,9 +1002,6 @@ viewPrenatalPage language currentDate isChw assembled db model =
 
                     deliveriesAtHome =
                         countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
-
-                    deliveriesAtFacility =
-                        countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
                 in
                 [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
                 , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
@@ -1013,6 +1014,7 @@ viewPrenatalPage language currentDate isChw assembled db model =
                         countPregnanciesWith4VisitsOrMoreForSelectedMonth selectedDate assembled.prenatalData
                 in
                 [ chwCard language (Translate.Dashboard Translate.PregnanciesWith4VisitsOrMore) (String.fromInt pregnanciesWith4VisitsOrMore)
+                , chwCard language (Translate.Dashboard Translate.HealthCenterDeliveries) (String.fromInt deliveriesAtFacility)
                 ]
 
         dataForNurses =
