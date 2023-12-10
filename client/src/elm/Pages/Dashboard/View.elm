@@ -123,7 +123,9 @@ view language page currentDate healthCenterId isChw nurse model db =
                                         )
 
                                     PageAcuteIllness subPage ->
-                                        ( viewAcuteIllnessPage language currentDate healthCenterId isChw subPage assembled db model, "acute-illness" )
+                                        ( viewAcuteIllnessPage language currentDate healthCenterId isChw subPage assembled db model
+                                        , "acute-illness"
+                                        )
 
                                     PageNutrition subPage ->
                                         ( viewNutritionPage language
@@ -140,7 +142,9 @@ view language page currentDate healthCenterId isChw nurse model db =
                                         )
 
                                     PagePrenatal ->
-                                        ( viewPrenatalPage language currentDate isChw assembled db model, "prenatal" )
+                                        ( viewPrenatalPage language currentDate isChw assembled db model
+                                        , "prenatal"
+                                        )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
@@ -983,14 +987,14 @@ viewPrenatalPage language currentDate isChw assembled db model =
         currentlyPregnant =
             countCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw assembled.prenatalData
 
-        pregnanciesDueWithin4Month =
+        pregnanciesDueWithin4Months =
             countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate isChw assembled.prenatalData
 
         secondRow =
             if isChw then
                 let
                     currentlyPregnantWithDangerSigns =
-                        countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate assembled.prenatalData
+                        countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate isChw assembled.prenatalData
 
                     deliveriesAtHome =
                         countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
@@ -1038,7 +1042,7 @@ viewPrenatalPage language currentDate isChw assembled db model =
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
             , chwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant)
-            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
+            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Months)
             ]
         ]
     , div [ class "ui grid" ]
