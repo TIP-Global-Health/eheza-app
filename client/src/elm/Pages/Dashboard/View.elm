@@ -651,8 +651,27 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
+        dataForNurses =
+            List.filterMap
+                (\illness ->
+                    let
+                        nurseEncounters =
+                            List.filter isAcuteIllnessNurseEncounter illness.encounters
+                    in
+                    if List.isEmpty nurseEncounters then
+                        Nothing
+
+                    else
+                        Just { illness | encounters = nurseEncounters }
+                )
+                assembled.acuteIllnessData
+
         encountersForSelectedMonth =
-            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+            if isChw then
+                getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+
+            else
+                getAcuteIllnessEncountersForSelectedMonth selectedDate dataForNurses
 
         limitDate =
             Date.ceiling Date.Month selectedDate
@@ -699,8 +718,21 @@ viewAcuteIllnessOverviewPage language isChw encounters model =
         ( sentToHC, managedLocally ) =
             countAcuteIllnessCasesByTreatmentApproach encounters
 
-        undeterminedCases =
-            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
+        secondRow =
+            if isChw then
+                let
+                    undeterminedCases =
+                        countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
+                in
+                div [ class "ui centered grid" ]
+                    [ div [ class "three column row" ]
+                        [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
+                        , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
+                        ]
+                    ]
+
+            else
+                emptyNode
 
         feverOfUnknownOriginCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encounters
@@ -746,12 +778,7 @@ viewAcuteIllnessOverviewPage language isChw encounters model =
             , chwCard language (Translate.Dashboard referrals) (String.fromInt sentToHC)
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
-            , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
-            ]
-        ]
+    , secondRow
     , div [ class "ui blue segment donut-chart fever" ]
         [ viewFeverDistributionDonutChart language feverByCauses ]
     ]
