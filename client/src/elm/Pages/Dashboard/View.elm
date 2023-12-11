@@ -704,9 +704,24 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
                 )
                 assembled.acuteIllnessData
 
+        dataForChws =
+            List.filterMap
+                (\illness ->
+                    let
+                        chwEncounters =
+                            List.filter (isAcuteIllnessNurseEncounter >> not) illness.encounters
+                    in
+                    if List.isEmpty chwEncounters then
+                        Nothing
+
+                    else
+                        Just { illness | encounters = chwEncounters }
+                )
+                assembled.acuteIllnessData
+
         encountersForSelectedMonth =
             if isChw then
-                getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+                getAcuteIllnessEncountersForSelectedMonth selectedDate dataForChws
 
             else
                 getAcuteIllnessEncountersForSelectedMonth selectedDate dataForNurses
