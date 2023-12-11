@@ -191,7 +191,7 @@ viewPageMain language currentDate healthCenterId isChw assembled db model =
 
         -- Prenatal
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth selectedDate isChw assembled.prenatalData
 
         totalNewborn =
             countNewbornForSelectedMonth selectedDate assembled.prenatalData
@@ -985,10 +985,13 @@ viewPrenatalPage language currentDate isChw assembled db model =
             countNewlyIdentifiedPregananciesForSelectedMonth selectedDate isChw assembled.prenatalData
 
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth selectedDate isChw assembled.prenatalData
 
         pregnanciesDueWithin4Months =
             countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate isChw assembled.prenatalData
+
+        currentlyPregnantWithDangerSigns =
+            countCurrentlyPregnantWithDangerSignsForSelectedMonth selectedDate isChw assembled.prenatalData
 
         secondRow =
             let
@@ -997,9 +1000,6 @@ viewPrenatalPage language currentDate isChw assembled db model =
             in
             if isChw then
                 let
-                    currentlyPregnantWithDangerSigns =
-                        countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate isChw assembled.prenatalData
-
                     deliveriesAtHome =
                         countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
                 in
@@ -1037,7 +1037,7 @@ viewPrenatalPage language currentDate isChw assembled db model =
                 []
 
             else
-                viewPrenatalDiagnosesSection language selectedDate dataForNurses
+                viewPrenatalDiagnosesSection language selectedDate currentlyPregnantWithDangerSigns dataForNurses
     in
     [ monthSelector language selectedDate model
     , div [ class "ui grid" ]
@@ -1055,8 +1055,8 @@ viewPrenatalPage language currentDate isChw assembled db model =
         ++ prenatalDiagnosesSection
 
 
-viewPrenatalDiagnosesSection : Language -> NominalDate -> List PrenatalDataItem -> List (Html Msg)
-viewPrenatalDiagnosesSection language currentDate data =
+viewPrenatalDiagnosesSection : Language -> NominalDate -> Int -> List PrenatalDataItem -> List (Html Msg)
+viewPrenatalDiagnosesSection language currentDate currentlyPregnantWithDangerSigns data =
     let
         totalHighRiskPregnancies =
             newlyDiagnosesSyphilisPregnancies
@@ -1065,12 +1065,12 @@ viewPrenatalDiagnosesSection language currentDate data =
                 ++ newlyDiagnosesSevereAnemiaPregnancies
                 ++ newlyDiagnosesAcuteMalnutritionPregnancies
                 ++ newlyDiagnosesAcuteMalnutritionPregnancies
-                ++ withDangerSignsPregnancies
                 ++ newlyDiagnosesGestationalDiabetesPregnancies
                 ++ newlyDiagnosesHIVPregnancies
                 |> List.map .identifier
                 |> EverySet.fromList
                 |> EverySet.size
+                |> (+) currentlyPregnantWithDangerSigns
 
         newlyDiagnosesSyphilisPregnancies =
             filterNewlyDiagnosesCasesForSelectedMonth currentDate syphilisDiagnoses data
@@ -1086,9 +1086,6 @@ viewPrenatalDiagnosesSection language currentDate data =
 
         newlyDiagnosesAcuteMalnutritionPregnancies =
             filterNewlyDiagnosesMalnutritionForSelectedMonth currentDate data
-
-        withDangerSignsPregnancies =
-            filterNewlyDiagnosesDangerSignsForSelectedMonth currentDate data
 
         newlyDiagnosesGestationalDiabetesPregnancies =
             filterNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisGestationalDiabetes ] data
@@ -1112,7 +1109,7 @@ viewPrenatalDiagnosesSection language currentDate data =
         [ div [ class "three column row" ]
             [ chwCard language Translate.SevereAnemia (String.fromInt <| List.length newlyDiagnosesSevereAnemiaPregnancies)
             , chwCard language Translate.AcuteMalnutrition (String.fromInt <| List.length newlyDiagnosesAcuteMalnutritionPregnancies)
-            , chwCard language Translate.DangerSigns (String.fromInt <| List.length withDangerSignsPregnancies)
+            , chwCard language Translate.DangerSigns (String.fromInt currentlyPregnantWithDangerSigns)
             ]
         ]
     , div [ class "ui grid" ]

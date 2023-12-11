@@ -64,7 +64,7 @@ import Pages.GlobalCaseManagement.View
         , generatePrenatalFollowUpEntries
         )
 import Translate exposing (Language)
-import Utils.NominalDate exposing (sortByDate)
+import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
 
 
 filterProgramTypeToString : FilterProgramType -> String
@@ -768,33 +768,6 @@ filterNewlyDiagnosesMalnutritionForSelectedMonth selectedDate =
         )
 
 
-filterNewlyDiagnosesDangerSignsForSelectedMonth : NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
-filterNewlyDiagnosesDangerSignsForSelectedMonth selectedDate =
-    List.filter
-        (\pregnancy ->
-            let
-                matchDates =
-                    List.filterMap
-                        (\encounter ->
-                            case EverySet.toList encounter.dangerSigns of
-                                [] ->
-                                    Nothing
-
-                                [ NoDangerSign ] ->
-                                    Nothing
-
-                                _ ->
-                                    Just encounter.startDate
-                        )
-                        pregnancy.encounters
-                        |> List.sortWith Date.compare
-            in
-            List.head matchDates
-                |> Maybe.map (withinSelectedMonth selectedDate)
-                |> Maybe.withDefault False
-        )
-
-
 syphilisDiagnoses : List PrenatalDiagnosis
 syphilisDiagnoses =
     [ DiagnosisSyphilis, DiagnosisSyphilisWithComplications ]
@@ -847,14 +820,14 @@ countNewlyIdentifiedPregananciesForSelectedMonth selectedDate isChw itemsList =
             |> List.length
 
 
-countCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> Bool -> List PrenatalDataItem -> Int
-countCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw =
-    getCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw
+countCurrentlyPregnantForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
+countCurrentlyPregnantForSelectedMonth selectedDate isChw =
+    getCurrentlyPregnantForSelectedMonth selectedDate isChw
         >> List.length
 
 
-getCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> Bool -> List PrenatalDataItem -> List PrenatalDataItem
-getCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw =
+getCurrentlyPregnantForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> List PrenatalDataItem
+getCurrentlyPregnantForSelectedMonth selectedDate isChw =
     let
         dateFirstDayOfSelectedMonth =
             Date.floor Date.Month selectedDate
@@ -906,19 +879,38 @@ getCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw =
         )
 
 
-countCurrentlyPregnantWithDangerSignsForSelectedMonth : NominalDate -> NominalDate -> Bool -> List PrenatalDataItem -> Int
-countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate isChw =
-    getCurrentlyPregnantForSelectedMonth currentDate selectedDate isChw
+{-| Danger signs is considered a permanent condition until it is "cleared".
+That is if a patient had a danger sign last month and has not been seen,
+she would still be counted. If she had a danger sign last month, but this month
+she had an encounter and she has no danger signs, then she is not counted.
+-}
+countCurrentlyPregnantWithDangerSignsForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
+countCurrentlyPregnantWithDangerSignsForSelectedMonth selectedDate isChw =
+    getCurrentlyPregnantForSelectedMonth selectedDate isChw
         >> List.filter
-            (.encounters
-                >> List.any
-                    (\encounter ->
-                        -- Active pregnancy that got an encounter at
-                        -- selected month, where danger signs where recorded.
-                        withinSelectedMonth selectedDate encounter.startDate
-                            && (not <| EverySet.isEmpty encounter.dangerSigns)
-                            && (encounter.dangerSigns /= EverySet.singleton NoDangerSign)
-                    )
+            (\pregnancy ->
+                let
+                    -- All encounters that took place till selected month (including).
+                    encountersTillSelectedMonth =
+                        let
+                            dateFirstDayOfNextMonth =
+                                Date.ceiling Date.Month selectedDate
+                        in
+                        List.filter
+                            (\encounter ->
+                                Date.compare encounter.startDate dateFirstDayOfNextMonth == LT
+                            )
+                            pregnancy.encounters
+                in
+                List.sortWith (sortByDateDesc .startDate) encountersTillSelectedMonth
+                    -- Get last encounter, and check if there were danger signs or not.
+                    |> List.head
+                    |> Maybe.map
+                        (\encounter ->
+                            (not <| EverySet.isEmpty encounter.dangerSigns)
+                                && (encounter.dangerSigns /= EverySet.singleton NoDangerSign)
+                        )
+                    |> Maybe.withDefault False
             )
         >> List.length
 
