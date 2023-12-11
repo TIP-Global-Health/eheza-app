@@ -11,7 +11,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewPersonDetailsExtended)
+import Pages.Utils exposing (viewPersonDetailsExtended, viewSkipNCDADialog)
 import Pages.WellChild.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.WellChild.Encounter.Model exposing (..)
 import Pages.WellChild.Encounter.Utils exposing (allowEndingEcounter, generateAssembledData)
@@ -60,15 +60,28 @@ viewHeaderAndContent language currentDate zscores site features id isChw db mode
 
         content =
             viewContent language currentDate zscores site features id isChw db model assembled
+
+        dialog =
+            Maybe.map
+                (\state ->
+                    case state of
+                        DialogWarning popupType ->
+                            warningPopup language
+                                assembled.participant.person
+                                id
+                                popupType
+
+                        DialogSkipNCDA ->
+                            viewSkipNCDADialog language
+                                (SetActivePage <| UserPage <| WellChildActivityPage id WellChildNCDA)
+                                (SkipActivity WellChildNCDA)
+                )
+                model.dialogState
     in
     div [ class "page-encounter well-child" ]
         [ header
         , content
-        , viewModal <|
-            warningPopup language
-                assembled.participant.person
-                id
-                model.warningPopupState
+        , viewModal dialog
         ]
 
 
@@ -113,49 +126,45 @@ viewContent language currentDate zscores site features id isChw db model assembl
         |> div [ class "ui unstackable items" ]
 
 
-warningPopup : Language -> PersonId -> WellChildEncounterId -> Maybe WarningPopupType -> Maybe (Html Msg)
-warningPopup language childId encounterId warningPopupState =
-    warningPopupState
-        |> Maybe.map
-            (\popupType ->
-                let
-                    warningHeading =
-                        [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+warningPopup : Language -> PersonId -> WellChildEncounterId -> WarningPopupType -> Html Msg
+warningPopup language childId encounterId popupType =
+    let
+        warningHeading =
+            [ img [ src "assets/images/exclamation-red.png" ] []
+            , div [ class "popup-heading warning" ] [ text <| translate language Translate.Warning ++ "!" ]
+            ]
+
+        actions =
+            case popupType of
+                PopupDangerSigns ->
+                    div [ class "two ui buttons" ]
+                        [ button
+                            [ class "ui fluid button"
+                            , onClick <| SetDialogState Nothing
+                            ]
+                            [ text <| translate language Translate.Cancel ]
+                        , button
+                            [ class "ui primary fluid button"
+                            , onClick <| TriggerAcuteIllnessEncounter childId encounterId
+                            ]
+                            [ text <| translate language Translate.CloseAndContinue ]
                         ]
 
-                    actions =
-                        case popupType of
-                            PopupDangerSigns ->
-                                div [ class "two ui buttons" ]
-                                    [ button
-                                        [ class "ui fluid button"
-                                        , onClick <| SetWarningPopupState Nothing
-                                        ]
-                                        [ text <| translate language Translate.Cancel ]
-                                    , button
-                                        [ class "ui primary fluid button"
-                                        , onClick <| TriggerAcuteIllnessEncounter childId encounterId
-                                        ]
-                                        [ text <| translate language Translate.CloseAndContinue ]
-                                    ]
-
-                            PopupECD _ ->
-                                button
-                                    [ class "ui fluid button"
-                                    , onClick <| SetWarningPopupState Nothing
-                                    ]
-                                    [ text <| translate language Translate.Continue ]
-                in
-                div [ class "ui active modal danger-signs-popup" ]
-                    [ div [ class "content" ]
-                        [ div [ class "popup-heading-wrapper" ] warningHeading
-                        , div [ class "popup-action" ] [ text <| translate language <| Translate.WellChildEncounterPopup popupType ]
+                PopupECD _ ->
+                    button
+                        [ class "ui fluid button"
+                        , onClick <| SetDialogState Nothing
                         ]
-                    , div [ class "actions" ]
-                        [ actions ]
-                    ]
-            )
+                        [ text <| translate language Translate.Continue ]
+    in
+    div [ class "ui active modal danger-signs-popup" ]
+        [ div [ class "content" ]
+            [ div [ class "popup-heading-wrapper" ] warningHeading
+            , div [ class "popup-action" ] [ text <| translate language <| Translate.WellChildEncounterPopup popupType ]
+            ]
+        , div [ class "actions" ]
+            [ actions ]
+        ]
 
 
 viewMainPageContent :
@@ -173,7 +182,7 @@ viewMainPageContent :
 viewMainPageContent language currentDate zscores site features id isChw db assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            partitionActivities currentDate zscores site features isChw db assembled
+            partitionActivitiesConsideringSkipped currentDate zscores site features isChw db assembled model.skippedActivities
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -190,12 +199,6 @@ viewMainPageContent language currentDate zscores site features id isChw db assem
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetActivePage (UserPage (WellChildProgressReportPage id)))
                 ]
-
-        viewCard activity =
-            activityCard language
-                (Translate.WellChildActivityTitle activity)
-                (getActivityIcon activity)
-                (NavigateToActivity id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
@@ -219,6 +222,21 @@ viewMainPageContent language currentDate zscores site features id isChw db assem
                             List.map viewCard selectedActivities
                     ]
                 ]
+
+        viewCard activity =
+            let
+                action =
+                    case activity of
+                        WellChildNCDA ->
+                            SetDialogState <| Just DialogSkipNCDA
+
+                        _ ->
+                            NavigateToActivity id activity
+            in
+            activityCard language
+                (Translate.WellChildActivityTitle activity)
+                (getActivityIcon activity)
+                action
 
         allowEndEncounter =
             allowEndingEcounter currentDate pendingActivities assembled
@@ -257,5 +275,20 @@ partitionActivities :
     -> AssembledData
     -> ( List WellChildActivity, List WellChildActivity )
 partitionActivities currentDate zscores site features isChw db assembled =
-    List.filter (expectActivity currentDate zscores site features isChw assembled db) getAllActivities
+    partitionActivitiesConsideringSkipped currentDate zscores site features isChw db assembled EverySet.empty
+
+
+partitionActivitiesConsideringSkipped :
+    NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> ModelIndexedDb
+    -> AssembledData
+    -> EverySet WellChildActivity
+    -> ( List WellChildActivity, List WellChildActivity )
+partitionActivitiesConsideringSkipped currentDate zscores site features isChw db assembled skipped =
+    List.filter (\activity -> EverySet.member activity skipped |> not) getAllActivities
+        |> List.filter (expectActivity currentDate zscores site features isChw assembled db)
         |> List.partition (activityCompleted currentDate zscores site features isChw assembled db)

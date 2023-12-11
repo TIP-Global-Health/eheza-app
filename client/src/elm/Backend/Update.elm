@@ -1870,8 +1870,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                                                     setPopUpStateMsg popupType =
                                                         Pages.WellChild.Encounter.Model.PopupECD popupType
+                                                            |> Pages.WellChild.Encounter.Model.DialogWarning
                                                             |> Just
-                                                            |> Pages.WellChild.Encounter.Model.SetWarningPopupState
+                                                            |> Pages.WellChild.Encounter.Model.SetDialogState
                                                             |> App.Model.MsgPageWellChildEncounter id
                                                             |> App.Model.MsgLoggedIn
 
@@ -6796,7 +6797,9 @@ generateWellChildDangerSignsAlertMsgs currentDate maybeId =
               App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
 
             -- Show danger signs alert popup.
-            , Pages.WellChild.Encounter.Model.SetWarningPopupState (Just Pages.WellChild.Encounter.Model.PopupDangerSigns)
+            , Pages.WellChild.Encounter.Model.DialogWarning Pages.WellChild.Encounter.Model.PopupDangerSigns
+                |> Just
+                |> Pages.WellChild.Encounter.Model.SetDialogState
                 |> App.Model.MsgPageWellChildEncounter id
                 |> App.Model.MsgLoggedIn
             ]
@@ -6815,7 +6818,7 @@ generateChildScoreboardAssesmentCompletedMsgs currentDate site after id =
                     List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate site assembled after)
                         Backend.ChildScoreboardActivity.Utils.allActivities
                 then
-                    [ App.Model.SetActivePage (UserPage (ChildScoreboardReportPage id)) ]
+                    [ App.Model.SetActivePage (UserPage (ChildScoreboardProgressReportPage id)) ]
 
                 else
                     []

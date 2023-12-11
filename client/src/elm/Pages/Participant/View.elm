@@ -23,8 +23,9 @@ import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Nutrition.Activity.View exposing (warningPopup)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Participant.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Session.Model
+import Pages.Utils exposing (viewSkipNCDADialog)
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import SyncManager.Model exposing (Site(..), SiteFeature)
@@ -143,6 +144,11 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
         activities =
             summarizeChildParticipant currentDate zscores features childId session.offlineSession isChw db
 
+        filteredActivities =
+            { pending = List.filter (\activity -> EverySet.member activity model.skippedActivities |> not) activities.pending
+            , completed = List.filter (\activity -> EverySet.member activity model.skippedActivities |> not) activities.completed
+            }
+
         selectedActivity =
             case model.selectedTab of
                 ProgressReport ->
@@ -154,25 +160,25 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                     model.selectedActivity
                         |> Maybe.andThen
                             (\activity ->
-                                if List.member activity activities.completed then
+                                if List.member activity filteredActivities.completed then
                                     Just activity
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (List.head activities.completed)
+                        |> Maybe.Extra.orElse (List.head filteredActivities.completed)
 
                 Pending ->
                     model.selectedActivity
                         |> Maybe.andThen
                             (\activity ->
-                                if List.member activity activities.pending then
+                                if List.member activity filteredActivities.pending then
                                     Just activity
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (List.head activities.pending)
+                        |> Maybe.Extra.orElse (List.head filteredActivities.pending)
 
         content =
             if model.selectedTab == ProgressReport then
@@ -204,7 +210,7 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
-                                    [ resolvePreviousValuesSetForChild currentDate childId db
+                                    [ resolvePreviousValuesSetForChild currentDate site childId db
                                         |> Measurement.View.viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"
@@ -214,11 +220,23 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                     Nothing ->
                         []
 
-        popup =
-            warningPopup language
-                currentDate
-                (SetWarningPopupState [])
-                model.warningPopupState
+        dialog =
+            Maybe.andThen
+                (\state ->
+                    case state of
+                        DialogWarning assessments ->
+                            warningPopup language
+                                currentDate
+                                (SetDialogState Nothing)
+                                assessments
+
+                        DialogSkipNCDA ->
+                            Just <|
+                                viewSkipNCDADialog language
+                                    (SetSelectedActivity NCDA)
+                                    (SkipActivity NCDA)
+                )
+                model.dialogState
                 |> viewModal
                 |> keyed "pupup"
                 |> List.singleton
@@ -227,8 +245,7 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
         List.concat
             [ [ viewHeader language sessionId |> keyed "header"
               , div [ class "ui unstackable items participant-page child" ]
-                    [ div
-                        [ class "item" ]
+                    [ div [ class "item" ]
                         [ div
                             [ class "ui image" ]
                             [ thumbnailImage "child" child.avatarUrl child.name thumbnailDimensions.height thumbnailDimensions.width ]
@@ -246,9 +263,9 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                     ]
                     |> keyed "child-info"
               ]
-            , viewActivityCards childParticipant language session.offlineSession childId activities model.selectedTab selectedActivity
+            , viewActivityCards childParticipant language session.offlineSession childId filteredActivities model.selectedTab selectedActivity
             , content
-            , popup
+            , dialog
             ]
 
 
@@ -519,10 +536,17 @@ viewActivityListItem config language clinicType selectedActivity activityItem =
 
             else
                 Translate.ActivitiesTitle activity
+
+        action =
+            if activity == ChildActivity NCDA then
+                SetDialogState <| Just DialogSkipNCDA
+
+            else
+                SetSelectedActivity activityItem
     in
     div [ class "column" ]
         [ a
-            [ onClick <| SetSelectedActivity activityItem
+            [ onClick action
             , classList
                 [ ( "link-section", True )
                 , ( "active", selectedActivity == Just activityItem )

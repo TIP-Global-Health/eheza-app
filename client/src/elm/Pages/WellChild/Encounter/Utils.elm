@@ -133,7 +133,7 @@ pediatricCareMilestoneToComparable milestone =
 
 allowEndingEcounter : NominalDate -> List WellChildActivity -> AssembledData -> Bool
 allowEndingEcounter currentDate pendingActivities assembled =
-    List.filter ((/=) WellChildPhoto) pendingActivities
+    List.filter (\activity -> not <| List.member activity [ WellChildNCDA, WellChildPhoto ]) pendingActivities
         |> (\pending ->
                 case pending of
                     [] ->

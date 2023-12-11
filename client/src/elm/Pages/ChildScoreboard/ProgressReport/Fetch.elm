@@ -1,19 +1,18 @@
-module Pages.Nutrition.ProgressReport.Fetch exposing (fetch)
+module Pages.ChildScoreboard.ProgressReport.Fetch exposing (fetch)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
 import Pages.AcuteIllness.Participant.Fetch
-import Pages.Nutrition.Encounter.Fetch
-import Pages.Person.Fetch exposing (fetchFamilyMembers)
+import Pages.ChildScoreboard.Encounter.Fetch
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : NutritionEncounterId -> ModelIndexedDb -> List MsgIndexedDb
+fetch : ChildScoreboardEncounterId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
         participantId =
-            Dict.get id db.nutritionEncounters
+            Dict.get id db.childScoreboardEncounters
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .participant
 
@@ -30,4 +29,4 @@ fetch id db =
                 maybePersonId
                 |> Maybe.withDefault []
     in
-    Pages.Nutrition.Encounter.Fetch.fetch id db ++ fetchAcuteIllnessDataMsgs
+    Pages.ChildScoreboard.Encounter.Fetch.fetch id db ++ fetchAcuteIllnessDataMsgs

@@ -843,7 +843,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 |> Maybe.withDefault ( 0, 0 )
 
         previousValuesSet =
-            resolvePreviousValuesSetForChild currentDate assembled.participant.person db
+            resolvePreviousValuesSetForChild currentDate site assembled.participant.person db
 
         headCircumferenceForm =
             measurements.headCircumference

@@ -197,7 +197,7 @@ type UserPage
     | ChildScoreboardParticipantPage PersonId
     | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- Child Scoreboard activities index.
     | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
-    | ChildScoreboardReportPage ChildScoreboardEncounterId -- Scorecard.
+    | ChildScoreboardProgressReportPage ChildScoreboardEncounterId -- Scorecard.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

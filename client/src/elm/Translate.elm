@@ -1519,6 +1519,9 @@ type TranslationId
     | Shared
     | Signature
     | SignOnDoorPostedQuestion
+    | SkipNCDADialogConfirm
+    | SkipNCDADialogQuestion
+    | SkipNCDADialogReject
     | SpecialityCareHeaderPrefix
     | SpecialityCareHeaderSuffix
     | SpecialityCareSignQuestion SpecialityCareSign
@@ -19686,6 +19689,24 @@ translationSet trans =
             , kirundi = Just "Mbega warashize ku myango ibimenyetso vyerekana ko ikibaza ari ic'ubwiherero/ukuba wenyene"
             }
 
+        SkipNCDADialogConfirm ->
+            { english = "Yes, proceed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        SkipNCDADialogQuestion ->
+            { english = "The Child Scorecard activity requires entering information on the pillars of child nutrition. Would you like to proceed?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        SkipNCDADialogReject ->
+            { english = "No, skip"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         SpecialityCareHeaderPrefix ->
             { english = "You were diagnosed with"
             , kinyarwanda = Just "Wasuzumwe uburwayi bwa"
@@ -22544,7 +22565,7 @@ translateActivePage page =
                     , kirundi = Nothing
                     }
 
-                ChildScoreboardReportPage _ ->
+                ChildScoreboardProgressReportPage _ ->
                     translationSet ChildScorecard
 
 
