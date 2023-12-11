@@ -1012,9 +1012,13 @@ viewPrenatalPage language currentDate isChw assembled db model =
                 let
                     pregnanciesWith4VisitsOrMore =
                         countPregnanciesWith4VisitsOrMoreForSelectedMonth selectedDate assembled.prenatalData
+
+                    hospitalReferrals =
+                        countHospitalReferralsForSelectedMonth selectedDate assembled.prenatalData
                 in
                 [ chwCard language (Translate.Dashboard Translate.PregnanciesWith4VisitsOrMore) (String.fromInt pregnanciesWith4VisitsOrMore)
                 , chwCard language (Translate.Dashboard Translate.HealthCenterDeliveries) (String.fromInt deliveriesAtFacility)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt hospitalReferrals)
                 ]
 
         dataForNurses =

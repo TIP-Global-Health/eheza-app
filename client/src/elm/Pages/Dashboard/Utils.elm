@@ -1030,6 +1030,23 @@ countPregnanciesWith4VisitsOrMoreForSelectedMonth selectedDate =
         >> List.length
 
 
+{-| Pregnancies that a nurse have an encounter at selected month, where
+patient was referred to hospital.
+-}
+countHospitalReferralsForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+countHospitalReferralsForSelectedMonth selectedDate =
+    List.filter
+        (.encounters
+            >> List.any
+                (\encounter ->
+                    isNurseEncounter encounter
+                        && withinSelectedMonth selectedDate encounter.startDate
+                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+                )
+        )
+        >> List.length
+
+
 countDeliveriesAtLocationForSelectedMonth : NominalDate -> DeliveryLocation -> List PrenatalDataItem -> Int
 countDeliveriesAtLocationForSelectedMonth selectedDate location =
     List.filter
