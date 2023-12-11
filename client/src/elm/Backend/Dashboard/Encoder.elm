@@ -309,5 +309,6 @@ encodePrenatalEncounterDataItem item =
         , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
         , ( "encounter_type", encodePrenatalEncounterType item.encounterType )
         , ( "prenatal_diagnoses", list encodePrenatalDiagnosis (diagnosesWithDefault item.diagnoses) )
+        , ( "send_to_hc", encodeEverySet encodeSendToHCSign item.sendToHCSigns )
         ]
             ++ muac

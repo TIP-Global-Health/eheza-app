@@ -260,6 +260,7 @@ type alias PrenatalEncounterDataItem =
     , dangerSigns : EverySet DangerSign
     , diagnoses : EverySet PrenatalDiagnosis
     , muac : Maybe Float
+    , sendToHCSigns : EverySet SendToHCSign
     }
 
 
