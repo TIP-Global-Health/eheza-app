@@ -261,6 +261,7 @@ type alias PrenatalEncounterDataItem =
 type alias AcuteIllnessDataItem =
     { identifier : PersonIdentifier
     , created : NominalDate
+    , birthDate : NominalDate
     , diagnosis : AcuteIllnessDiagnosis
     , dateConcluded : Maybe NominalDate
     , outcome : Maybe IndividualEncounterParticipantOutcome

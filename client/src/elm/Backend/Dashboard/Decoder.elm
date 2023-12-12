@@ -294,6 +294,7 @@ decodeAcuteIllnessDataItem =
     succeed AcuteIllnessDataItem
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
         |> hardcoded NoAcuteIllnessDiagnosis
         |> required "date_concluded" (nullable decodeYYYYMMDD)
         |> required "outcome" (nullable decodeIndividualEncounterParticipantOutcome)

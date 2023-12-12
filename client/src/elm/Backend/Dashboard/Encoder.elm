@@ -246,6 +246,7 @@ encodeAcuteIllnessDataItem : AcuteIllnessDataItem -> List ( String, Value )
 encodeAcuteIllnessDataItem item =
     [ ( "id", int item.identifier )
     , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
     , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
     , ( "date_concluded", maybe encodeYYYYMMDD item.dateConcluded )
     , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome item.outcome )
