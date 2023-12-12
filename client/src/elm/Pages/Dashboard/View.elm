@@ -902,17 +902,17 @@ viewMalariaPage language isChw selectedDate acuteIllnessData encountersForSelect
     let
         totalDaignosed =
             countDiagnosedWithMalaria encountersForSelectedMonth
+
+        uncomplicatedMalariaAndPregnantSentToHC =
+            countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
+
+        complicatedMalariaSentToHC =
+            countComplicatedMalariaSentToHC encountersForSelectedMonth
     in
     if isChw then
         let
             uncomplicatedMalariaManagedByChw =
                 countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
-
-            uncomplicatedMalariaAndPregnantSentToHC =
-                countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
-
-            complicatedMalariaSentToHC =
-                countComplicatedMalariaSentToHC encountersForSelectedMonth
 
             resolvedMalariaCases =
                 countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
@@ -935,8 +935,7 @@ viewMalariaPage language isChw selectedDate acuteIllnessData encountersForSelect
     else
         let
             sentToHospital =
-                -- @todo
-                0
+                uncomplicatedMalariaAndPregnantSentToHC + complicatedMalariaSentToHC
         in
         [ div [ class "ui grid" ]
             [ div [ class "two column row" ]
