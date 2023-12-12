@@ -260,6 +260,7 @@ encodeAcuteIllnessEncounterDataItem item =
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "encounter_type", encodeAcuteIllnessEncounterType item.encounterType )
         , ( "sequence_number", int item.sequenceNumber )
+        , ( "age_in_months", int item.ageInMonths )
         , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
         , ( "fever", bool item.feverRecorded )
         , ( "isolation", encodeEverySet encodeIsolationSign item.isolationSigns )

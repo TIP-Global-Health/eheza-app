@@ -935,7 +935,9 @@ viewMalariaPage language isChw selectedDate acuteIllnessData encountersForSelect
     else
         let
             sentToHospital =
-                uncomplicatedMalariaAndPregnantSentToHC + complicatedMalariaSentToHC
+                countUncomplicatedMalariaSentToHC encountersForSelectedMonth
+                    + uncomplicatedMalariaAndPregnantSentToHC
+                    + complicatedMalariaSentToHC
         in
         [ div [ class "ui grid" ]
             [ div [ class "two column row" ]

@@ -273,6 +273,7 @@ type alias AcuteIllnessEncounterDataItem =
     { startDate : NominalDate
     , encounterType : AcuteIllnessEncounterType
     , sequenceNumber : Int
+    , ageInMonths : Int
     , diagnosis : AcuteIllnessDiagnosis
     , feverRecorded : Bool
     , isolationSigns : EverySet IsolationSign

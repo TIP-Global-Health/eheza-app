@@ -592,6 +592,21 @@ countUncomplicatedMalariaManagedByChw encounters =
         |> List.length
 
 
+countUncomplicatedMalariaSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedMalariaSentToHC encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Uncomplicated Malaria diagnosis,
+            -- patient is bellow age of 6 months and
+            -- patient was sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaUncomplicated)
+                && (encounter.ageInMonths < 6)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+        )
+        encounters
+        |> List.length
+
+
 countUncomplicatedMalariaAndPregnantSentToHC : List AcuteIllnessEncounterDataItem -> Int
 countUncomplicatedMalariaAndPregnantSentToHC encounters =
     List.filter
