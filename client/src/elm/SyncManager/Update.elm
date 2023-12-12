@@ -816,6 +816,9 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                             modelWithSyncStatus =
                                 let
+                                    -- At general sync we get site param,
+                                    -- Theoretically, it may change, and therefore,
+                                    -- we recalculate geo info data.
                                     geoInfo =
                                         getGeoInfo syncInfoGeneral.site
                                 in
@@ -1064,6 +1067,13 @@ update currentDate currentTime activePage dbVersion device msg model =
                         noChange
 
                     else
+                        let
+                            -- This is first step of sync.
+                            -- When device is offline, we may not get any further,
+                            -- therefore, we need to generate and store geo info data here.
+                            geoInfo =
+                                getGeoInfo model.syncInfoGeneral.site
+                        in
                         update
                             currentDate
                             currentTime
@@ -1071,7 +1081,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                             dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadPhoto)
-                            { model | syncStatus = SyncUploadPhoto errorsCount RemoteData.Loading }
+                            { model
+                                | syncStatus = SyncUploadPhoto errorsCount RemoteData.Loading
+                                , geoInfo = geoInfo
+                                , reverseGeoInfo = getReverseGeoInfo geoInfo
+                            }
 
                 _ ->
                     noChange
