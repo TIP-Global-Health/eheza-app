@@ -953,14 +953,14 @@ viewGastroPage language isChw selectedDate acuteIllnessData encountersForSelecte
     let
         totalDaignosed =
             countDiagnosedWithGI encountersForSelectedMonth
+
+        complicatedGISentToHC =
+            countComplicatedGISentToHC encountersForSelectedMonth
     in
     if isChw then
         let
             uncomplicatedGIManagedByChw =
                 countUncomplicatedGIManagedByChw encountersForSelectedMonth
-
-            complicatedGISentToHC =
-                countComplicatedGISentToHC encountersForSelectedMonth
 
             resolvedGICases =
                 countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
@@ -980,15 +980,10 @@ viewGastroPage language isChw selectedDate acuteIllnessData encountersForSelecte
         ]
 
     else
-        let
-            sentToHospital =
-                -- @todo
-                0
-        in
         [ div [ class "ui grid" ]
             [ div [ class "two column row" ]
                 [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt complicatedGISentToHC)
                 ]
             ]
         ]
