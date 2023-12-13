@@ -1003,7 +1003,7 @@ function hedley_stats_get_ncd_data($health_center_id) {
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'diagnoses' => explode(',', $row->ncd_diagnoses),
       'medical_conditions' => explode(',', $row->medical_conditions),
-      'comorbidities' => explode(',', $row->comorbidities),
+      'co_morbidities' => explode(',', $row->comorbidities),
     ];
   }
 
