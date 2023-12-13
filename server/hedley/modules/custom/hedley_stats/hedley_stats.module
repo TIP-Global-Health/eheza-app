@@ -260,6 +260,8 @@ function hedley_stats_requires_acute_illness_statistics_recalculation($wrapper) 
 function hedley_stats_requires_ncd_statistics_recalculation($wrapper) {
   $triggering_types = [
     HEDLEY_ACTIVITY_NCD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NCD_OUTSIDE_CARE_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NCD_CO_MORBIDITIES_CONTENT_TYPE,
   ];
   $bundle = $wrapper->getBundle();
 
@@ -969,6 +971,16 @@ function hedley_stats_get_ncd_data($health_center_id) {
   // Join with NCD Encounter table, through which we can join measurements data.
   $query->leftJoin('field_data_field_ncd_encounter', 'ncd_encounter', 'ncd_encounter.field_ncd_encounter_target_id = node.nid');
 
+  // Pull data of medical conditions (diagnoses) that were recorded during encounter at Outside care activity.
+  $query->leftJoin('field_data_field_medical_conditions', 'medical_conditions', 'medical_conditions.entity_id = ncd_encounter.entity_id');
+  $query->addField('medical_conditions', 'field_medical_conditions_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT medical_conditions.field_medical_conditions_value)", 'medical_conditions');
+
+  // Pull data of comorbidities (diagnoses) that were recorded during encounter at Outside care activity.
+  $query->leftJoin('field_data_field_comorbidities', 'comorbidities', 'comorbidities.entity_id = ncd_encounter.entity_id');
+  $query->addField('comorbidities', 'field_comorbidities_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT comorbidities.field_comorbidities_value)", 'comorbidities');
+
   $query->groupBy('node.nid');
 
   $result = hedley_stats_run_node_query_in_batches($query);
@@ -990,6 +1002,8 @@ function hedley_stats_get_ncd_data($health_center_id) {
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'diagnoses' => explode(',', $row->ncd_diagnoses),
+      'medical_conditions' => explode(',', $row->medical_conditions),
+      'comorbidities' => explode(',', $row->comorbidities),
     ];
   }
 
