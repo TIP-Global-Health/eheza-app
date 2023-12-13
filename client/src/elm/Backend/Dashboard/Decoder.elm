@@ -14,6 +14,7 @@ import Backend.Measurement.Decoder
         , decodeHCContactSign
         , decodeHCRecommendation
         , decodeIsolationSign
+        , decodeMedicalCondition
         , decodeRecommendation114
         , decodeSendToHCSign
         )
@@ -24,6 +25,7 @@ import Backend.Measurement.Model
         , HCContactSign(..)
         , HCRecommendation(..)
         , IsolationSign(..)
+        , MedicalCondition(..)
         , Recommendation114(..)
         , SendToHCSign(..)
         )
@@ -402,3 +404,5 @@ decodeNCDEncounterDataItem =
     succeed NCDEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
         |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoNCDDiagnosis)
+        |> required "medical_conditions" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
+        |> required "co_morbidities" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))

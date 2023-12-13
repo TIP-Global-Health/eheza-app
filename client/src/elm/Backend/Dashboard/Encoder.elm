@@ -13,6 +13,7 @@ import Backend.Measurement.Encoder
         , encodeHCContactSign
         , encodeHCRecommendation
         , encodeIsolationSign
+        , encodeMedicalCondition
         , encodeRecommendation114
         , encodeSendToHCSign
         )
@@ -345,4 +346,6 @@ encodeNCDEncounterDataItem item =
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "diagnoses", list encodeNCDDiagnosis (diagnosesWithDefault item.diagnoses) )
+        , ( "medical_conditions", encodeEverySet encodeMedicalCondition item.medicalConditions )
+        , ( "co_morbidities", encodeEverySet encodeMedicalCondition item.coMorbidities )
         ]

@@ -16,6 +16,7 @@ import Backend.Measurement.Model
         , HCContactSign
         , HCRecommendation
         , IsolationSign
+        , MedicalCondition
         , Recommendation114
         , SendToHCSign
         )
@@ -305,4 +306,6 @@ type alias NCDDataItem =
 type alias NCDEncounterDataItem =
     { startDate : NominalDate
     , diagnoses : EverySet NCDDiagnosis
+    , medicalConditions : EverySet MedicalCondition
+    , coMorbidities : EverySet MedicalCondition
     }
