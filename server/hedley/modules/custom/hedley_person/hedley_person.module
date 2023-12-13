@@ -828,7 +828,7 @@ function hedley_person_import_patient($patient_type, array $values) {
     // Try to create relationship with parent/caregiver.
     $relation = strtolower(trim($values[HEDLEY_PERSON_COLUMN_CHILD_RELATION]));
     if (empty($relation)) {
-      return "Import was successful, but failed relationship was not set, and therefore, not created.";
+      return "Import was successful, but relationship was not set, and therefore, not created.";
     }
 
     // Resolve parent/caregiver.
