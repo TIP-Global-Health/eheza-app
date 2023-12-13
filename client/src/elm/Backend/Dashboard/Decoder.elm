@@ -27,6 +27,8 @@ import Backend.Measurement.Model
         , Recommendation114(..)
         , SendToHCSign(..)
         )
+import Backend.NCDEncounter.Decoder exposing (decodeNCDDiagnosis)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -53,6 +55,7 @@ decodeDashboardStatsRaw =
         |> required "total_encounters" decodeTotalEncountersData
         |> required "acute_illness_data" (list decodeAcuteIllnessDataItem)
         |> required "prenatal_data" (list decodePrenatalDataItem)
+        |> required "ncd_data" (list decodeNCDDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -371,3 +374,31 @@ decodePrenatalEncounterDataItem =
         |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "muac" (nullable decodeFloat) Nothing
         |> required "send_to_hc" (decodeEverySet (decodeWithFallback NoSendToHCSigns decodeSendToHCSign))
+
+
+decodeNCDDataItem : Decoder NCDDataItem
+decodeNCDDataItem =
+    succeed NCDDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "encounters" (list decodeNCDEncounterDataItem)
+
+
+decodeNCDEncounterDataItem : Decoder NCDEncounterDataItem
+decodeNCDEncounterDataItem =
+    let
+        decodeDiagnoses =
+            map
+                (\items ->
+                    if List.isEmpty items then
+                        EverySet.singleton NoNCDDiagnosis
+
+                    else
+                        EverySet.fromList items
+                )
+            <|
+                list (decodeWithFallback NoNCDDiagnosis decodeNCDDiagnosis)
+    in
+    succeed NCDEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoNCDDiagnosis)

@@ -215,7 +215,7 @@ viewPageMainForChw language currentDate healthCenterId assembled db model =
 
         -- Prenatal
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth selectedDate isChw assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth selectedDate True assembled.prenatalData
 
         totalNewborn =
             countNewbornForSelectedMonth selectedDate assembled.prenatalData

@@ -16,6 +16,8 @@ import Backend.Measurement.Encoder
         , encodeRecommendation114
         , encodeSendToHCSign
         )
+import Backend.NCDEncounter.Encoder exposing (encodeNCDDiagnosis)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -38,6 +40,7 @@ encodeDashboardStatsRaw stats =
     , encodeTotalEncountersData stats.totalEncounters
     , encodeAcuteIllnessData stats.acuteIllnessData
     , encodePrenatalData stats.prenatalData
+    , encodeNCDData stats.ncdData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
@@ -314,3 +317,32 @@ encodePrenatalEncounterDataItem item =
         , ( "send_to_hc", encodeEverySet encodeSendToHCSign item.sendToHCSigns )
         ]
             ++ muac
+
+
+encodeNCDData : List NCDDataItem -> ( String, Value )
+encodeNCDData itemsList =
+    ( "ncd_data", list (encodeNCDDataItem >> object) itemsList )
+
+
+encodeNCDDataItem : NCDDataItem -> List ( String, Value )
+encodeNCDDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "encounters", list encodeNCDEncounterDataItem item.encounters )
+    ]
+
+
+encodeNCDEncounterDataItem : NCDEncounterDataItem -> Value
+encodeNCDEncounterDataItem item =
+    let
+        diagnosesWithDefault diagnoses =
+            if EverySet.isEmpty diagnoses then
+                List.singleton NoNCDDiagnosis
+
+            else
+                EverySet.toList diagnoses
+    in
+    object <|
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "diagnoses", list encodeNCDDiagnosis (diagnosesWithDefault item.diagnoses) )
+        ]

@@ -13,6 +13,7 @@ import Backend.Dashboard.Model
         , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
+        , NCDDataItem
         , Nutrition
         , NutritionPageData
         , NutritionStatus
@@ -123,6 +124,7 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     { stats = filteredStats
     , acuteIllnessData = generateFilteredAcuteIllnessData stats selectedVillageFilter
     , prenatalData = generateFilteredPrenatalData stats selectedVillageFilter
+    , ncdData = generateFilteredNCDData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 
@@ -171,6 +173,16 @@ generateFilteredPrenatalData stats selectedVillageFilter =
             (\villageId -> Dict.get villageId stats.villagesWithResidents)
         |> Maybe.map
             (\residents -> List.filter (\item -> List.member item.identifier residents) stats.prenatalData)
+        |> Maybe.withDefault []
+
+
+generateFilteredNCDData : DashboardStatsRaw -> Maybe VillageId -> List NCDDataItem
+generateFilteredNCDData stats selectedVillageFilter =
+    selectedVillageFilter
+        |> Maybe.andThen
+            (\villageId -> Dict.get villageId stats.villagesWithResidents)
+        |> Maybe.map
+            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.ncdData)
         |> Maybe.withDefault []
 
 

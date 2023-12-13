@@ -19,6 +19,7 @@ import Backend.Measurement.Model
         , Recommendation114
         , SendToHCSign
         )
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
@@ -29,6 +30,7 @@ type alias AssembledData =
     { stats : DashboardStats
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
+    , ncdData : List NCDDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -58,6 +60,7 @@ type alias DashboardStatsRaw =
     , totalEncounters : TotalEncountersData
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
+    , ncdData : List NCDDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -78,6 +81,7 @@ emptyModel =
     , totalEncounters = TotalEncountersData Dict.empty Dict.empty
     , acuteIllnessData = []
     , prenatalData = []
+    , ncdData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -288,4 +292,17 @@ type alias AcuteIllnessEncounterDataItem =
     , recommendation114 : EverySet Recommendation114
     , hcContactSigns : EverySet HCContactSign
     , hcRecommendation : EverySet HCRecommendation
+    }
+
+
+type alias NCDDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , encounters : List NCDEncounterDataItem
+    }
+
+
+type alias NCDEncounterDataItem =
+    { startDate : NominalDate
+    , diagnoses : EverySet NCDDiagnosis
     }
