@@ -562,6 +562,10 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
 
+  // Add patient birthdate, so we can calculate the age.
+  $query->leftJoin('field_data_field_birth_date', 'birth_date', 'birth_date.entity_id = field_person.field_person_target_id');
+  $query->addField('birth_date', 'field_birth_date_value');
+
   $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
@@ -571,6 +575,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
+      'birth_date' => date_format(date_create($row->field_birth_date_value), 'Y-m-d'),
       // We use the 'end date' of expected fields here, because the
       // 'date concluded' field is not set when illness is resolved.
       // While we could do that for illness, 'date concluded' field was meant

@@ -77,7 +77,7 @@ pageToFragment current =
 
                                 PageAcuteIllness subPage ->
                                     case subPage of
-                                        PageOverview ->
+                                        PageAcuteIllnessOverview ->
                                             "acute-illness"
 
                                         PageCovid19 ->
@@ -102,6 +102,23 @@ pageToFragment current =
 
                                 PagePrenatal ->
                                     "prenatal"
+
+                                PageNCD subPage ->
+                                    case subPage of
+                                        PageNCDOverview ->
+                                            "ncd"
+
+                                        PageHypertension ->
+                                            "hypertension"
+
+                                        PageHIV ->
+                                            "hiv"
+
+                                        PageDiabetes ->
+                                            "diabetes"
+
+                                PageChildWellness ->
+                                    "child-wellness"
                     in
                     Just ("dashboard/" ++ url)
 
@@ -406,11 +423,16 @@ parseDashboardPage =
         , map (PageNutrition PageCharts) (s "nutrition-charts")
         , map (PageNutrition PageStats) (s "nutrition-stats")
         , map (PageNutrition PageCaseManagement) (s "nutrition-case-management")
-        , map (PageAcuteIllness PageOverview) (s "acute-illness")
+        , map (PageAcuteIllness PageAcuteIllnessOverview) (s "acute-illness")
         , map (PageAcuteIllness PageCovid19) (s "covid-19")
         , map (PageAcuteIllness PageMalaria) (s "malaria")
         , map (PageAcuteIllness PageGastro) (s "gastro")
         , map PagePrenatal (s "prenatal")
+        , map (PageNCD PageNCDOverview) (s "ncd")
+        , map (PageNCD PageHypertension) (s "hypertension")
+        , map (PageNCD PageHIV) (s "hiv")
+        , map (PageNCD PageDiabetes) (s "diabetes")
+        , map PageChildWellness (s "child-wellness")
         ]
 
 

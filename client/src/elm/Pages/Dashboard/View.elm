@@ -42,7 +42,7 @@ import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
-import Pages.Page exposing (AcuteIllnessSubPage(..), DashboardPage(..), NutritionSubPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (AcuteIllnessSubPage(..), DashboardPage(..), NCDSubPage(..), NutritionSubPage(..), Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( calculatePercentage
@@ -57,7 +57,7 @@ import Scale
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import Translate exposing (Language, TranslationId, translate, translateText)
+import Translate exposing (Language, TranslationId, translate, translateText, translationSet)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
@@ -82,13 +82,13 @@ view language page currentDate healthCenterId isChw nurse model db =
                     viewHeader language label PinCodePage
 
                 PageAcuteIllness _ ->
-                    viewHeader language (Translate.CaseManagementFilterLabel FilterAcuteIllness) (UserPage <| DashboardPage PageMain)
+                    viewHeader language Translate.AcuteIllness (UserPage <| DashboardPage PageMain)
 
                 PageNutrition subPage ->
                     let
                         label =
                             if isChw then
-                                Translate.CaseManagementFilterLabel FilterNutrition
+                                Translate.HomeVisit
 
                             else
                                 Translate.ChildNutrition
@@ -107,7 +107,13 @@ view language page currentDate healthCenterId isChw nurse model db =
                     viewHeader language label goBackPage
 
                 PagePrenatal ->
-                    viewHeader language (Translate.CaseManagementFilterLabel FilterAntenatal) (UserPage <| DashboardPage PageMain)
+                    viewHeader language Translate.AntenatalCare (UserPage <| DashboardPage PageMain)
+
+                PageNCD _ ->
+                    viewHeader language Translate.NCDs (UserPage <| DashboardPage PageMain)
+
+                PageChildWellness ->
+                    viewHeader language Translate.ChildWellness (UserPage <| DashboardPage PageMain)
 
         content =
             Dict.get healthCenterId db.computedDashboards
@@ -142,9 +148,13 @@ view language page currentDate healthCenterId isChw nurse model db =
                                         )
 
                                     PagePrenatal ->
-                                        ( viewPrenatalPage language currentDate isChw assembled db model
-                                        , "prenatal"
-                                        )
+                                        ( viewPrenatalPage language currentDate isChw assembled db model, "prenatal" )
+
+                                    PageNCD subPage ->
+                                        ( viewNCDPage language currentDate healthCenterId isChw subPage assembled db model, "ncd" )
+
+                                    PageChildWellness ->
+                                        ( viewChildWellnessPage language currentDate healthCenterId isChw assembled db model, "child-wellness" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
@@ -178,6 +188,20 @@ viewHeader language label goBackPage =
 
 viewPageMain : Language -> NominalDate -> HealthCenterId -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
 viewPageMain language currentDate healthCenterId isChw assembled db model =
+    if isChw then
+        viewPageMainForChw language currentDate healthCenterId assembled db model
+
+    else
+        viewPageMainForNurse language currentDate healthCenterId assembled db model
+
+
+viewPageMainForNurse : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPageMainForNurse language currentDate healthCenterId assembled db model =
+    [ viewMenuForNurse language ]
+
+
+viewPageMainForChw : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPageMainForChw language currentDate healthCenterId assembled db model =
     let
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
@@ -213,7 +237,7 @@ viewPageMain language currentDate healthCenterId isChw assembled db model =
                 followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
-    [ viewMenu language isChw
+    [ viewMenuForChw language
     , monthSelector language selectedDate model
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
@@ -225,9 +249,9 @@ viewPageMain language currentDate healthCenterId isChw assembled db model =
     , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.CaseManagementFilterLabel FilterAcuteIllness) (String.fromInt totalAcuteIllnessFollowUps)
-            , chwCard language (Translate.CaseManagementFilterLabel FilterNutrition) (String.fromInt totalNutritionFollowUps)
-            , chwCard language (Translate.CaseManagementFilterLabel FilterAntenatal) (String.fromInt totalPrenatalFollowUps)
+            [ chwCard language Translate.AcuteIllness (String.fromInt totalAcuteIllnessFollowUps)
+            , chwCard language Translate.HomeVisit (String.fromInt totalNutritionFollowUps)
+            , chwCard language Translate.AntenatalCare (String.fromInt totalPrenatalFollowUps)
             ]
         ]
     ]
@@ -525,12 +549,6 @@ viewFiltersPane language page db model =
     let
         filters =
             case page of
-                PageMain ->
-                    [ labelSelected, programTypeFilterButton ]
-
-                PageAcuteIllness _ ->
-                    [ labelSelected, programTypeFilterButton ]
-
                 PageNutrition subPage ->
                     case subPage of
                         PageCharts ->
@@ -554,7 +572,7 @@ viewFiltersPane language page db model =
                         PageCaseManagement ->
                             []
 
-                PagePrenatal ->
+                _ ->
                     [ labelSelected, programTypeFilterButton ]
 
         programTypeFilterButton =
@@ -597,19 +615,34 @@ viewFiltersPane language page db model =
         filters
 
 
-viewMenu : Language -> Bool -> Html Msg
-viewMenu language isChw =
+viewMenuForNurse : Language -> Html Msg
+viewMenuForNurse language =
+    div []
+        [ div [ class "ui segment nurse-filters" ]
+            [ viewMenuButton language PagePrenatal Nothing
+            , viewMenuButton language (PageNutrition PageCharts) Nothing
+            , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+            ]
+        , div [ class "ui segment nurse-filters center" ]
+            [ viewMenuButton language (PageNCD PageNCDOverview) Nothing
+            , viewMenuButton language PageChildWellness Nothing
+            ]
+        ]
+
+
+viewMenuForChw : Language -> Html Msg
+viewMenuForChw language =
     div [ class "ui segment chw-filters" ]
         [ viewMenuButton language PagePrenatal Nothing
         , viewMenuButton language (PageNutrition PageCharts) Nothing
-        , viewMenuButton language (PageAcuteIllness PageOverview) Nothing
+        , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
         ]
 
 
 viewAcuteIllnessMenu : Language -> AcuteIllnessSubPage -> Html Msg
 viewAcuteIllnessMenu language activePage =
     div [ class "ui segment chw-filters" ]
-        [ viewMenuButton language (PageAcuteIllness PageOverview) (Just <| PageAcuteIllness activePage)
+        [ viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageCovid19) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageMalaria) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageGastro) (Just <| PageAcuteIllness activePage)
@@ -620,12 +653,17 @@ viewMenuButton : Language -> DashboardPage -> Maybe DashboardPage -> Html Msg
 viewMenuButton language targetPage activePage =
     let
         label =
-            if isNothing activePage && targetPage == PageAcuteIllness PageOverview then
-                -- On Main page, and target is Acute Illness page.
-                Translate.CaseManagementFilterLabel FilterAcuteIllness
+            case ( activePage, targetPage ) of
+                ( Nothing, PageAcuteIllness PageAcuteIllnessOverview ) ->
+                    -- On Main page, and target is Acute Illness page.
+                    Translate.AcuteIllness
 
-            else
-                Translate.EncounterTypePageLabel targetPage
+                ( Nothing, PageNCD PageNCDOverview ) ->
+                    -- On Main page, and target is Acute Illness page.
+                    Translate.NCDs
+
+                _ ->
+                    Translate.EncounterTypePageLabel targetPage
     in
     button
         [ classList
@@ -670,9 +708,24 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
                 )
                 assembled.acuteIllnessData
 
+        dataForChws =
+            List.filterMap
+                (\illness ->
+                    let
+                        chwEncounters =
+                            List.filter (isAcuteIllnessNurseEncounter >> not) illness.encounters
+                    in
+                    if List.isEmpty chwEncounters then
+                        Nothing
+
+                    else
+                        Just { illness | encounters = chwEncounters }
+                )
+                assembled.acuteIllnessData
+
         encountersForSelectedMonth =
             if isChw then
-                getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+                getAcuteIllnessEncountersForSelectedMonth selectedDate dataForChws
 
             else
                 getAcuteIllnessEncountersForSelectedMonth selectedDate dataForNurses
@@ -695,7 +748,7 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
 
         pageContent =
             case activePage of
-                PageOverview ->
+                PageAcuteIllnessOverview ->
                     viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth model
 
                 PageCovid19 ->
@@ -853,17 +906,17 @@ viewMalariaPage language isChw selectedDate acuteIllnessData encountersForSelect
     let
         totalDaignosed =
             countDiagnosedWithMalaria encountersForSelectedMonth
+
+        uncomplicatedMalariaAndPregnantSentToHC =
+            countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
+
+        complicatedMalariaSentToHC =
+            countComplicatedMalariaSentToHC encountersForSelectedMonth
     in
     if isChw then
         let
             uncomplicatedMalariaManagedByChw =
                 countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
-
-            uncomplicatedMalariaAndPregnantSentToHC =
-                countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
-
-            complicatedMalariaSentToHC =
-                countComplicatedMalariaSentToHC encountersForSelectedMonth
 
             resolvedMalariaCases =
                 countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
@@ -886,8 +939,9 @@ viewMalariaPage language isChw selectedDate acuteIllnessData encountersForSelect
     else
         let
             sentToHospital =
-                -- @todo
-                0
+                countUncomplicatedMalariaSentToHC encountersForSelectedMonth
+                    + uncomplicatedMalariaAndPregnantSentToHC
+                    + complicatedMalariaSentToHC
         in
         [ div [ class "ui grid" ]
             [ div [ class "two column row" ]
@@ -903,14 +957,14 @@ viewGastroPage language isChw selectedDate acuteIllnessData encountersForSelecte
     let
         totalDaignosed =
             countDiagnosedWithGI encountersForSelectedMonth
+
+        complicatedGISentToHC =
+            countComplicatedGISentToHC encountersForSelectedMonth
     in
     if isChw then
         let
             uncomplicatedGIManagedByChw =
                 countUncomplicatedGIManagedByChw encountersForSelectedMonth
-
-            complicatedGISentToHC =
-                countComplicatedGISentToHC encountersForSelectedMonth
 
             resolvedGICases =
                 countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
@@ -930,15 +984,10 @@ viewGastroPage language isChw selectedDate acuteIllnessData encountersForSelecte
         ]
 
     else
-        let
-            sentToHospital =
-                -- @todo
-                0
-        in
         [ div [ class "ui grid" ]
             [ div [ class "two column row" ]
                 [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt complicatedGISentToHC)
                 ]
             ]
         ]
@@ -2339,3 +2388,32 @@ resolvePreviousMonth thisMonth =
 monthSelector : Language -> NominalDate -> Model -> Html Msg
 monthSelector language selectedDate model =
     viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap
+
+
+viewNCDPage :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> Bool
+    -> NCDSubPage
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewNCDPage language currentDate healthCenterId isChw activePage assembled db model =
+    --@todo
+    [ text "viewNCDPage" ]
+
+
+viewChildWellnessPage :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> Bool
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewChildWellnessPage language currentDate healthCenterId isChw assembled db model =
+    --@todo
+    [ text "viewChildWellnessPage" ]

@@ -97,7 +97,8 @@
       }
     }
 
-    &.chw-filters {
+    &.chw-filters,
+    &.nurse-filters {
       background-color: transparent;
       min-height: 40px;
       padding: 25px 0;
@@ -127,6 +128,15 @@
           color: $color-white;
         }
       }
+    }
+
+    &.nurse-filters {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    &.nurse-filters.center {
+      justify-content: center;
     }
 
     &.donut-chart {

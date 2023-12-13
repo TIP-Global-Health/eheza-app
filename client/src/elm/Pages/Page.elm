@@ -202,6 +202,8 @@ type DashboardPage
     | PageNutrition NutritionSubPage
     | PageAcuteIllness AcuteIllnessSubPage
     | PagePrenatal
+    | PageNCD NCDSubPage
+    | PageChildWellness
 
 
 type NutritionSubPage
@@ -211,10 +213,17 @@ type NutritionSubPage
 
 
 type AcuteIllnessSubPage
-    = PageOverview
+    = PageAcuteIllnessOverview
     | PageCovid19
     | PageMalaria
     | PageGastro
+
+
+type NCDSubPage
+    = PageNCDOverview
+    | PageHypertension
+    | PageHIV
+    | PageDiabetes
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it
