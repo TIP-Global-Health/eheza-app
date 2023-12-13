@@ -191,7 +191,10 @@ function hedley_stats_requires_prenatal_statistics_recalculation($wrapper) {
   $triggering_types = [
     HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE,
+    // For send_to_hc.
     HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE,
+    // For MUAC.
+    HEDLEY_ACTIVITY_PRENATAL_NUTRITION_CONTENT_TYPE,
   ];
   $bundle = $wrapper->getBundle();
 
