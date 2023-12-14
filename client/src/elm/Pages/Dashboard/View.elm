@@ -151,10 +151,10 @@ view language page currentDate healthCenterId isChw nurse model db =
                                         ( viewPrenatalPage language currentDate isChw assembled db model, "prenatal" )
 
                                     PageNCD subPage ->
-                                        ( viewNCDPage language currentDate healthCenterId isChw subPage assembled db model, "ncd" )
+                                        ( viewNCDPage language currentDate healthCenterId subPage assembled db model, "ncd" )
 
                                     PageChildWellness ->
-                                        ( viewChildWellnessPage language currentDate healthCenterId isChw assembled db model, "child-wellness" )
+                                        ( viewChildWellnessPage language currentDate healthCenterId assembled db model, "child-wellness" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
@@ -618,12 +618,12 @@ viewFiltersPane language page db model =
 viewMenuForNurse : Language -> Html Msg
 viewMenuForNurse language =
     div []
-        [ div [ class "ui segment nurse-filters" ]
+        [ div [ class "ui segment page-filters nurse" ]
             [ viewMenuButton language PagePrenatal Nothing
             , viewMenuButton language (PageNutrition PageCharts) Nothing
             , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
             ]
-        , div [ class "ui segment nurse-filters center" ]
+        , div [ class "ui segment page-filters nurse center" ]
             [ viewMenuButton language (PageNCD PageNCDOverview) Nothing
             , viewMenuButton language PageChildWellness Nothing
             ]
@@ -632,7 +632,7 @@ viewMenuForNurse language =
 
 viewMenuForChw : Language -> Html Msg
 viewMenuForChw language =
-    div [ class "ui segment chw-filters" ]
+    div [ class "ui segment page-filters" ]
         [ viewMenuButton language PagePrenatal Nothing
         , viewMenuButton language (PageNutrition PageCharts) Nothing
         , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
@@ -641,11 +641,21 @@ viewMenuForChw language =
 
 viewAcuteIllnessMenu : Language -> AcuteIllnessSubPage -> Html Msg
 viewAcuteIllnessMenu language activePage =
-    div [ class "ui segment chw-filters" ]
+    div [ class "ui segment page-filters" ]
         [ viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageCovid19) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageMalaria) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageGastro) (Just <| PageAcuteIllness activePage)
+        ]
+
+
+viewNCDMenu : Language -> NCDSubPage -> Html Msg
+viewNCDMenu language activePage =
+    div [ class "ui segment page-filters" ]
+        [ viewMenuButton language (PageNCD PageNCDOverview) (Just <| PageNCD activePage)
+        , viewMenuButton language (PageNCD PageHypertension) (Just <| PageNCD activePage)
+        , viewMenuButton language (PageNCD PageHIV) (Just <| PageNCD activePage)
+        , viewMenuButton language (PageNCD PageDiabetes) (Just <| PageNCD activePage)
         ]
 
 
@@ -2394,26 +2404,47 @@ viewNCDPage :
     Language
     -> NominalDate
     -> HealthCenterId
-    -> Bool
     -> NCDSubPage
     -> AssembledData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewNCDPage language currentDate healthCenterId isChw activePage assembled db model =
-    --@todo
-    [ text "viewNCDPage" ]
+viewNCDPage language currentDate healthCenterId activePage assembled db model =
+    let
+        selectedDate =
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
+
+        -- pageContent =
+        --     case activePage of
+        --         PageAcuteIllnessOverview ->
+        --             viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth model
+        --
+        --         PageCovid19 ->
+        --             viewCovid19Page language isChw encountersForSelectedMonth managedCovid model
+        --
+        --         PageMalaria ->
+        --             viewMalariaPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
+        --
+        --         PageGastro ->
+        --             viewGastroPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
+    in
+    [ viewNCDMenu language activePage
+    , monthSelector language selectedDate model
+    ]
+
+
+
+-- ++ pageContent
 
 
 viewChildWellnessPage :
     Language
     -> NominalDate
     -> HealthCenterId
-    -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewChildWellnessPage language currentDate healthCenterId isChw assembled db model =
+viewChildWellnessPage language currentDate healthCenterId assembled db model =
     --@todo
     [ text "viewChildWellnessPage" ]
