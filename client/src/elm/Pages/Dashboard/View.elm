@@ -10,6 +10,7 @@ import Backend.Dashboard.Model
         , CaseManagement
         , CaseNutritionTotal
         , DashboardStats
+        , NCDDataItem
         , Nutrition
         , NutritionPageData
         , NutritionValue
@@ -2414,27 +2415,89 @@ viewNCDPage language currentDate healthCenterId activePage assembled db model =
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
-        -- pageContent =
-        --     case activePage of
-        --         PageAcuteIllnessOverview ->
-        --             viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth model
-        --
-        --         PageCovid19 ->
-        --             viewCovid19Page language isChw encountersForSelectedMonth managedCovid model
-        --
-        --         PageMalaria ->
-        --             viewMalariaPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
-        --
-        --         PageGastro ->
-        --             viewGastroPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
+        pageContent =
+            case activePage of
+                PageNCDOverview ->
+                    viewNCDOverviewPage language selectedDate assembled.ncdData model
+
+                PageHypertension ->
+                    viewHypertensionPage language selectedDate assembled.ncdData model
+
+                PageHIV ->
+                    viewHIVPage language selectedDate assembled.ncdData model
+
+                PageDiabetes ->
+                    viewDiabetesPage language selectedDate assembled.ncdData model
     in
     [ viewNCDMenu language activePage
     , monthSelector language selectedDate model
     ]
+        ++ pageContent
 
 
+viewNCDOverviewPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
+viewNCDOverviewPage language selectedDate data model =
+    []
 
--- ++ pageContent
+
+viewHypertensionPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
+viewHypertensionPage language selectedDate data model =
+    let
+        totalCases =
+            -- @todo
+            0
+
+        newCases =
+            -- @todo
+            0
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "two column row" ]
+            [ chwCard language (Translate.Dashboard Translate.HypertensionCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.HypertensionNewCases) (String.fromInt newCases)
+            ]
+        ]
+    ]
+
+
+viewHIVPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
+viewHIVPage language selectedDate data model =
+    let
+        totalCases =
+            -- @todo
+            0
+
+        managedByPMTCT =
+            -- @todo
+            0
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "two column row" ]
+            [ chwCard language (Translate.Dashboard Translate.TotalCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.ManagedByPMTCT) (String.fromInt managedByPMTCT)
+            ]
+        ]
+    ]
+
+
+viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
+viewDiabetesPage language selectedDate data model =
+    let
+        totalCases =
+            -- @todo
+            0
+
+        newCases =
+            -- @todo
+            0
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "two column row" ]
+            [ chwCard language (Translate.Dashboard Translate.TotalDiabeticCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.DiabetesNewCases) (String.fromInt newCases)
+            ]
+        ]
+    ]
 
 
 viewChildWellnessPage :
