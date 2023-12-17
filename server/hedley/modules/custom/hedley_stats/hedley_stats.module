@@ -295,7 +295,7 @@ function hedley_stats_requires_ncd_statistics_recalculation($wrapper) {
 function hedley_stats_requires_pmtct_statistics_recalculation($wrapper) {
   $bundle = $wrapper->getBundle();
 
-  return ($bundle == HEDLEY_ACTIVITY_GROUP_PARTICIPANT) && ($wrapper->field_clinic->field_group_type == 'pmtct');
+  return ($bundle == HEDLEY_ACTIVITY_GROUP_PARTICIPANT) && ($wrapper->field_clinic->field_group_type->value() == 'pmtct');
 }
 
 /**
@@ -1111,7 +1111,7 @@ function hedley_stats_get_pmtct_data($health_center_id, array $pmtct_clinics) {
   $items = [];
   foreach ($result as $row) {
     $items[] = [
-      'patient_id' => $row->field_adult,
+      'id' => $row->field_adult,
       'start_date' => date_format(date_create($row->field_expected), 'Y-m-d'),
       'end_date' => date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
     ];
