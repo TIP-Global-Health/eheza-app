@@ -409,8 +409,8 @@ decodeNCDEncounterDataItem =
         |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoNCDDiagnosis)
         |> required "medical_conditions" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
         |> required "co_morbidities" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
-        |> required "hiv_test_result" (nullable decodeTestResult)
-        |> required "hiv_test_execution_note" (nullable decodeTestExecutionNote)
+        |> optional "hiv_test_result" (nullable decodeTestResult) Nothing
+        |> optional "hiv_test_execution_note" (nullable decodeTestExecutionNote) Nothing
 
 
 decodePMTCTDataItem : Decoder PMTCTDataItem
