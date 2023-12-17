@@ -14,6 +14,7 @@ import Backend.Dashboard.Model
         , Nutrition
         , NutritionPageData
         , NutritionValue
+        , PMTCTDataItem
         , ParticipantStats
         , Periods
         , PrenatalDataItem
@@ -2424,7 +2425,7 @@ viewNCDPage language currentDate healthCenterId activePage assembled db model =
                     viewHypertensionPage language selectedDate assembled.ncdData model
 
                 PageHIV ->
-                    viewHIVPage language selectedDate assembled.ncdData model
+                    viewHIVPage language selectedDate assembled.ncdData assembled.pmtctData
 
                 PageDiabetes ->
                     viewDiabetesPage language selectedDate assembled.ncdData model
@@ -2459,16 +2460,31 @@ viewHypertensionPage language selectedDate dataItems model =
     ]
 
 
-viewHIVPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
-viewHIVPage language selectedDate dataItems model =
+viewHIVPage : Language -> NominalDate -> List NCDDataItem -> List PMTCTDataItem -> List (Html Msg)
+viewHIVPage language selectedDate dataItems pmtctData =
     let
-        totalCases =
-            generatePatientsWithHIV dataItems
-                |> List.length
+        patientsWithHIV =
+            generatePatientsWithHIV selectedDate dataItems
 
+        totalCases =
+            List.length patientsWithHIV
+
+        -- Patients with HIV that participate at PMTCT group.
         managedByPMTCT =
-            -- @todo
-            0
+            List.filter
+                (\id ->
+                    List.any
+                        (\pmtctParticipant ->
+                            (pmtctParticipant.identifier == id)
+                                && -- PMTCT participation started at current month or before.
+                                   withinOrBeforeSelectedMonth selectedDate pmtctParticipant.startDate
+                                && -- PMTCT participation ends at current month or after.
+                                   withinOrAfterSelectedMonth selectedDate pmtctParticipant.endDate
+                        )
+                        pmtctData
+                )
+                patientsWithHIV
+                |> List.length
     in
     [ div [ class "ui grid" ]
         [ div [ class "two column row" ]
@@ -2483,10 +2499,10 @@ viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> Model -> List 
 viewDiabetesPage language selectedDate dataItems model =
     let
         totalCases =
-            countTotalNumberOfPatientsWithDiabetes dataItems
+            countTotalNumberOfPatientsWithDiabetes selectedDate dataItems
 
         newCases =
-            countNewlyIdentifieDiabetesCasesForSelectedMonth selectedDate dataItems
+            countNewlyIdentifiedDiabetesCasesForSelectedMonth selectedDate dataItems
     in
     [ div [ class "ui grid" ]
         [ div [ class "two column row" ]

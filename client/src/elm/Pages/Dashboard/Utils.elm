@@ -1615,10 +1615,13 @@ countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate =
 {-| Counts all data items (representing NCD participants) that had Diabetes
 diagnosis recorded during any of it's encounters.
 -}
-countTotalNumberOfPatientsWithDiabetes : List NCDDataItem -> Int
-countTotalNumberOfPatientsWithDiabetes =
+countTotalNumberOfPatientsWithDiabetes : NominalDate -> List NCDDataItem -> Int
+countTotalNumberOfPatientsWithDiabetes selectedDate =
     List.filter
         (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth selectedDate)
             >> --  Generate dates of all encounters where Diabetes was diagnosed.
                generateDiabetesDiagnosisEncountersDates
             >> List.isEmpty
@@ -1630,8 +1633,8 @@ countTotalNumberOfPatientsWithDiabetes =
 {-| Counts all data items (representing NCD participants) that had first Diabetes
 diagnosis recorded during selected month.
 -}
-countNewlyIdentifieDiabetesCasesForSelectedMonth : NominalDate -> List NCDDataItem -> Int
-countNewlyIdentifieDiabetesCasesForSelectedMonth selectedDate =
+countNewlyIdentifiedDiabetesCasesForSelectedMonth : NominalDate -> List NCDDataItem -> Int
+countNewlyIdentifiedDiabetesCasesForSelectedMonth selectedDate =
     List.filter
         (.encounters
             >> --  Generate dates of all encounters where Diabetes was diagnosed.
@@ -1643,39 +1646,6 @@ countNewlyIdentifieDiabetesCasesForSelectedMonth selectedDate =
             >> Maybe.withDefault False
         )
         >> List.length
-
-
-generatePatientsWithHIV : List NCDDataItem -> List PersonIdentifier
-generatePatientsWithHIV =
-    List.filter
-        (.encounters
-            >> -- Generate dates of all encounters where Hypertension was diagnosed.
-               List.filter
-                (\encounter ->
-                    let
-                        byTestResult =
-                            Maybe.map ((==) TestPositive)
-                                encounter.hivTestResult
-                                |> Maybe.withDefault False
-
-                        byTestExecutionNote =
-                            Maybe.map ((==) TestNoteKnownAsPositive)
-                                encounter.hivTestExecutionNote
-                                |> Maybe.withDefault False
-
-                        byMedicalConditions =
-                            let
-                                medicalConditions =
-                                    EverySet.union encounter.medicalConditions encounter.coMorbidities
-                            in
-                            EverySet.member MedicalConditionHIV medicalConditions
-                    in
-                    byTestResult || byTestExecutionNote || byMedicalConditions
-                )
-            >> List.isEmpty
-            >> not
-        )
-        >> List.map .identifier
 
 
 {-| Generate dates of all encounters where Diabetes was diagnosed.
@@ -1708,6 +1678,42 @@ generateDiabetesDiagnosisEncountersDates =
         >> List.sortWith Date.compare
 
 
+generatePatientsWithHIV : NominalDate -> List NCDDataItem -> List PersonIdentifier
+generatePatientsWithHIV selectedDate =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth selectedDate)
+            >> -- Generate dates of all encounters where Hypertension was diagnosed.
+               List.filter
+                (\encounter ->
+                    let
+                        byTestResult =
+                            Maybe.map ((==) TestPositive)
+                                encounter.hivTestResult
+                                |> Maybe.withDefault False
+
+                        byTestExecutionNote =
+                            Maybe.map ((==) TestNoteKnownAsPositive)
+                                encounter.hivTestExecutionNote
+                                |> Maybe.withDefault False
+
+                        byMedicalConditions =
+                            let
+                                medicalConditions =
+                                    EverySet.union encounter.medicalConditions encounter.coMorbidities
+                            in
+                            EverySet.member MedicalConditionHIV medicalConditions
+                    in
+                    byTestResult || byTestExecutionNote || byMedicalConditions
+                )
+            >> List.isEmpty
+            >> not
+        )
+        >> List.map .identifier
+
+
 
 --
 -- Helper functions.
@@ -1725,6 +1731,36 @@ withinSelectedMonth selectedDate date =
     in
     (Date.monthNumber date == month)
         && (Date.year date == year)
+
+
+withinOrBeforeSelectedMonth : NominalDate -> NominalDate -> Bool
+withinOrBeforeSelectedMonth selectedDate date =
+    let
+        month =
+            Date.monthNumber selectedDate
+
+        year =
+            Date.year selectedDate
+    in
+    (Date.year date < year)
+        || ((Date.year date == year)
+                && (Date.monthNumber date <= month)
+           )
+
+
+withinOrAfterSelectedMonth : NominalDate -> NominalDate -> Bool
+withinOrAfterSelectedMonth selectedDate date =
+    let
+        month =
+            Date.monthNumber selectedDate
+
+        year =
+            Date.year selectedDate
+    in
+    (Date.year date > year)
+        || ((Date.year date == year)
+                && (Date.monthNumber date >= month)
+           )
 
 
 getSelectedDate : NominalDate -> Model -> NominalDate
