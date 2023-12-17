@@ -32,6 +32,7 @@ define('HEDLEY_STATS_NUTRITION', 'sync_stats_nutrition');
 define('HEDLEY_STATS_PRENATAL', 'sync_stats_prenatal');
 define('HEDLEY_STATS_ACUTE_ILLNESS', 'sync_stats_acute_illness');
 define('HEDLEY_STATS_NCD', 'sync_stats_ncd');
+define('HEDLEY_STATS_PMTCT', 'sync_stats_pmtct');
 
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
@@ -43,6 +44,7 @@ define('HEDLEY_STATS_SYNC_CASE_MANAGEMENT', 'sync_case_management_stats');
 define('HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA', 'sync_acute_illness_data');
 define('HEDLEY_STATS_SYNC_PRENATAL_DATA', 'sync_prenatal_data');
 define('HEDLEY_STATS_SYNC_NCD_DATA', 'sync_ncd_data');
+define('HEDLEY_STATS_SYNC_PMTCT_DATA', 'sync_pmtct_data');
 define('HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS', 'villages_with_residents');
 
 // Cache methods.
@@ -153,6 +155,10 @@ function hedley_stats_requires_statistics_recalculation($node) {
     return HEDLEY_STATS_NCD;
   }
 
+  if (hedley_stats_requires_pmtct_statistics_recalculation($wrapper)) {
+    return HEDLEY_STATS_PMTCT;
+  }
+
   return FALSE;
 }
 
@@ -249,7 +255,7 @@ function hedley_stats_requires_acute_illness_statistics_recalculation($wrapper) 
 }
 
 /**
- * Checks if entity requires Prenatal statistics recalculation.
+ * Checks if entity requires NCD statistics recalculation.
  *
  * @param object $wrapper
  *   Entity metadata wrapper.
@@ -278,6 +284,21 @@ function hedley_stats_requires_ncd_statistics_recalculation($wrapper) {
 }
 
 /**
+ * Checks if entity requires PMTCT statistics recalculation.
+ *
+ * @param object $wrapper
+ *   Entity metadata wrapper.
+ *
+ * @return bool
+ *   True, if statistics recalculation is required.
+ */
+function hedley_stats_requires_pmtct_statistics_recalculation($wrapper) {
+  $bundle = $wrapper->getBundle();
+
+  return ($bundle == HEDLEY_ACTIVITY_GROUP_PARTICIPANT) && ($wrapper->field_clinic->field_group_type == 'pmtct');
+}
+
+/**
  * Clears all statistics related caches for a health center.
  *
  * @param int $nid
@@ -298,6 +319,10 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
 
     case HEDLEY_STATS_NCD:
       hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NCD_DATA, $nid);
+      return;
+
+    case HEDLEY_STATS_PMTCT:
+      hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_PMTCT_DATA, $nid);
       return;
   }
 
@@ -395,9 +420,9 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
 
   // Get all clinics of type 'FBF' for the HC.
-  $fbf_clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf');
+  $clinics = hedley_health_center_get_clinics_of_health_center($health_center_id);
   // Calculate statistics that are provided for FBF clinics only.
-  hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
+  hedley_stats_get_session_attendance_stats_by_health_center($health_center_id,  $clinics['fbf']);
 
   hedley_stats_get_case_management($health_center_id);
   hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id);
@@ -407,6 +432,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_get_acute_illness_data($health_center_id);
   hedley_stats_get_prenatal_data($health_center_id);
   hedley_stats_get_ncd_data($health_center_id);
+  hedley_stats_get_pmtct_data($health_center_id, $clinics['pmtct']);
 
   $stats_cache_hash = md5(time());
   // Store in cache only the hash. All statistics have their own cache.
@@ -491,6 +517,12 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   }
   $ncd_data = $cache_data;
 
+  $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PMTCT_DATA, $health_center_id);
+  if ($cache_data === NULL) {
+    return [];
+  }
+  $pmtct_data = $cache_data;
+
   $wrapper = entity_metadata_wrapper('node', $health_center_id);
   $health_center_uuid = $wrapper->field_uuid->value();
 
@@ -508,6 +540,7 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
     'acute_illness_data' => $acute_illness_data,
     'prenatal_data' => $prenatal_data,
     'ncd_data' => $ncd_data,
+    'pmtct_data' => $pmtct_data,
     'villages_with_residents' => $villages_with_residents,
   ];
 
@@ -895,7 +928,7 @@ function hedley_stats_get_prenatal_data($health_center_id) {
  *   The health center node ID.
  *
  * @return array
- *   List of AI encounters data.
+ *   List of NCD participant data with its encounters.
  *
  * @throws Exception
  */
@@ -1032,6 +1065,65 @@ function hedley_stats_get_ncd_data($health_center_id) {
 
   // Store in cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NCD_DATA, $health_center_id, NULL, $values);
+
+  return $values;
+}
+
+/**
+ * Return data of PMTCT group encounters.
+ *
+ * We need to know mother ID, and when participation starts and ends, to
+ * be able to count mothers that got HIV (per NCD data) and participate at PMTCT Group.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ * @param array $pmtct_clinics
+ *   Nodes IDs of PMTCT clinics of health center.
+ *
+ * @return array
+ *   List of AI encounters data.
+ *
+ * @throws Exception
+ */
+function hedley_stats_get_pmtct_data($health_center_id, array $pmtct_clinics) {
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PMTCT_DATA, $health_center_id)) {
+     return $cache_data;
+  }
+
+  $query = hedley_stats_get_base_query($health_center_id, 'pmtct_participant');
+  $fields_to_join = [
+    'field_clinic',
+    'field_adult',
+  ];
+  foreach ($fields_to_join as $field) {
+    hedley_general_join_field_to_query($query, 'node', $field, FALSE);
+  }
+  // Participant belong to one of PMTCT clinics of the health center.
+  $query->condition('field_clinic.field_clinic_target_id', $pmtct_clinics, 'IN');
+  // Participantion ends after presented period (past 6 months).
+  $one_day = 24 * 3600;
+  $ending_after = strtotime("first day of -5 months") - $one_day;
+  $ending_after_date = date('Y-m-d 00:00:00', $ending_after);
+  $query->condition('field_expected.field_expected_value2', $ending_after_date, '>');
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+  $items = [];
+  foreach ($result as $row) {
+    $items[] = [
+      'patient_id' => $row->field_adult,
+      'start_date' => date_format(date_create($row->field_expected), 'Y-m-d'),
+      'end_date' => date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
+    ];
+  }
+
+  // Free up memory.
+  drupal_static_reset();
+
+  $values = array_values($items);
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PMTCT_DATA, $health_center_id, NULL, $values);
 
   return $values;
 }
@@ -2288,7 +2380,6 @@ function hedley_stats_get_range_for_period($period, $extend = FALSE) {
         'start' => strtotime("first day of -5 months"),
         'end' => $now + $one_day,
       ];
-
   }
 }
 
