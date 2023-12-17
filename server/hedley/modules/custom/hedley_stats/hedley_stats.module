@@ -580,7 +580,9 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     return $cache_data;
   }
 
-  // Pull all acute illness encounters during past 6 month.
+  // Pull all acute illness encounters during past 6 months.
+  // Since dashboard presents data for past 6 months, we will be generating data
+  // for all illnesses that had an encounter over past 6 months.
   $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
   // Resolve all illnesses associated with those encounters.
@@ -903,7 +905,9 @@ function hedley_stats_get_ncd_data($health_center_id) {
     return $cache_data;
   }
 
-  // Pull all acute illness encounters during past 6 month.
+  // Pull all NCD encounters during past 6 months.
+  // Since dashboard presents data for past 6 months, we will be generating data
+  // for all NCD participants that had an encounter over past 6 months.
   $query = hedley_stats_get_base_query($health_center_id, 'ncd_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
   // Resolve all illnesses associated with those encounters.
