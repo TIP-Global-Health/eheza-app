@@ -16,6 +16,8 @@ import Backend.Measurement.Encoder
         , encodeMedicalCondition
         , encodeRecommendation114
         , encodeSendToHCSign
+        , encodeTestExecutionNote
+        , encodeTestResult
         )
 import Backend.NCDEncounter.Encoder exposing (encodeNCDDiagnosis)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
@@ -342,6 +344,16 @@ encodeNCDEncounterDataItem item =
 
             else
                 EverySet.toList diagnoses
+
+        hivTestResult =
+            Maybe.map (\result -> [ ( "hiv_test_result", encodeTestResult result ) ])
+                item.hivTestResult
+                |> Maybe.withDefault []
+
+        hivTestExecutionNote =
+            Maybe.map (\note -> [ ( "hiv_test_execution_note", encodeTestExecutionNote note ) ])
+                item.hivTestExecutionNote
+                |> Maybe.withDefault []
     in
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
@@ -349,3 +361,5 @@ encodeNCDEncounterDataItem item =
         , ( "medical_conditions", encodeEverySet encodeMedicalCondition item.medicalConditions )
         , ( "co_morbidities", encodeEverySet encodeMedicalCondition item.coMorbidities )
         ]
+            ++ hivTestResult
+            ++ hivTestExecutionNote

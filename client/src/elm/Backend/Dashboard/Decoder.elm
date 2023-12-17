@@ -17,6 +17,8 @@ import Backend.Measurement.Decoder
         , decodeMedicalCondition
         , decodeRecommendation114
         , decodeSendToHCSign
+        , decodeTestExecutionNote
+        , decodeTestResult
         )
 import Backend.Measurement.Model
     exposing
@@ -406,3 +408,5 @@ decodeNCDEncounterDataItem =
         |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoNCDDiagnosis)
         |> required "medical_conditions" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
         |> required "co_morbidities" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
+        |> required "hiv_test_result" (nullable decodeTestResult)
+        |> required "hiv_test_execution_note" (nullable decodeTestExecutionNote)

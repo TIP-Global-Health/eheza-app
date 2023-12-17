@@ -19,6 +19,8 @@ import Backend.Measurement.Model
         , MedicalCondition
         , Recommendation114
         , SendToHCSign
+        , TestExecutionNote
+        , TestResult
         )
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
@@ -308,4 +310,6 @@ type alias NCDEncounterDataItem =
     , diagnoses : EverySet NCDDiagnosis
     , medicalConditions : EverySet MedicalCondition
     , coMorbidities : EverySet MedicalCondition
+    , hivTestResult : Maybe TestResult
+    , hivTestExecutionNote : Maybe TestExecutionNote
     }
