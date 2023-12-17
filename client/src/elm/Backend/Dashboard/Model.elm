@@ -34,6 +34,7 @@ type alias AssembledData =
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
     , ncdData : List NCDDataItem
+    , pmtctData : List PMTCTDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -64,6 +65,7 @@ type alias DashboardStatsRaw =
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
     , ncdData : List NCDDataItem
+    , pmtctData : List PMTCTDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -85,6 +87,7 @@ emptyModel =
     , acuteIllnessData = []
     , prenatalData = []
     , ncdData = []
+    , pmtctData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -312,4 +315,11 @@ type alias NCDEncounterDataItem =
     , coMorbidities : EverySet MedicalCondition
     , hivTestResult : Maybe TestResult
     , hivTestExecutionNote : Maybe TestExecutionNote
+    }
+
+
+type alias PMTCTDataItem =
+    { identifier : PersonIdentifier
+    , startDate : NominalDate
+    , endDate : NominalDate
     }

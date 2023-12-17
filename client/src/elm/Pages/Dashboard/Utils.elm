@@ -19,6 +19,7 @@ import Backend.Dashboard.Model
         , NutritionPageData
         , NutritionStatus
         , NutritionValue
+        , PMTCTDataItem
         , Periods
         , PersonIdentifier
         , PrenatalDataItem
@@ -130,6 +131,7 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     , acuteIllnessData = generateFilteredAcuteIllnessData stats selectedVillageFilter
     , prenatalData = generateFilteredPrenatalData stats selectedVillageFilter
     , ncdData = generateFilteredNCDData stats selectedVillageFilter
+    , pmtctData = generateFilteredPMTCTData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 
@@ -188,6 +190,16 @@ generateFilteredNCDData stats selectedVillageFilter =
             (\villageId -> Dict.get villageId stats.villagesWithResidents)
         |> Maybe.map
             (\residents -> List.filter (\item -> List.member item.identifier residents) stats.ncdData)
+        |> Maybe.withDefault []
+
+
+generateFilteredPMTCTData : DashboardStatsRaw -> Maybe VillageId -> List PMTCTDataItem
+generateFilteredPMTCTData stats selectedVillageFilter =
+    selectedVillageFilter
+        |> Maybe.andThen
+            (\villageId -> Dict.get villageId stats.villagesWithResidents)
+        |> Maybe.map
+            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.pmtctData)
         |> Maybe.withDefault []
 
 

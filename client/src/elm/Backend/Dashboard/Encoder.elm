@@ -44,6 +44,7 @@ encodeDashboardStatsRaw stats =
     , encodeAcuteIllnessData stats.acuteIllnessData
     , encodePrenatalData stats.prenatalData
     , encodeNCDData stats.ncdData
+    , encodePMTCTData stats.pmtctData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
@@ -363,3 +364,16 @@ encodeNCDEncounterDataItem item =
         ]
             ++ hivTestResult
             ++ hivTestExecutionNote
+
+
+encodePMTCTData : List PMTCTDataItem -> ( String, Value )
+encodePMTCTData itemsList =
+    ( "pmtct_data", list (encodePMTCTDataItem >> object) itemsList )
+
+
+encodePMTCTDataItem : PMTCTDataItem -> List ( String, Value )
+encodePMTCTDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "start_date", encodeYYYYMMDD item.startDate )
+    , ( "end_date", encodeYYYYMMDD item.endDate )
+    ]

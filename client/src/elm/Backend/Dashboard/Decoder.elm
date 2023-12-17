@@ -60,6 +60,7 @@ decodeDashboardStatsRaw =
         |> required "acute_illness_data" (list decodeAcuteIllnessDataItem)
         |> required "prenatal_data" (list decodePrenatalDataItem)
         |> required "ncd_data" (list decodeNCDDataItem)
+        |> required "pmtct_data" (list decodePMTCTDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -410,3 +411,11 @@ decodeNCDEncounterDataItem =
         |> required "co_morbidities" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
         |> required "hiv_test_result" (nullable decodeTestResult)
         |> required "hiv_test_execution_note" (nullable decodeTestExecutionNote)
+
+
+decodePMTCTDataItem : Decoder PMTCTDataItem
+decodePMTCTDataItem =
+    succeed PMTCTDataItem
+        |> required "id" decodeInt
+        |> required "start_date" decodeYYYYMMDD
+        |> required "end_date" decodeYYYYMMDD
