@@ -2483,12 +2483,10 @@ viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> Model -> List 
 viewDiabetesPage language selectedDate dataItems model =
     let
         totalCases =
-            -- @todo
-            0
+            countTotalNumberOfPatientsWithDiabetes dataItems
 
         newCases =
-            -- @todo
-            0
+            countNewlyIdentifieDiabetesCasesForSelectedMonth selectedDate dataItems
     in
     [ div [ class "ui grid" ]
         [ div [ class "two column row" ]

@@ -14,6 +14,7 @@ import Backend.Dashboard.Model
         , DashboardStats
         , DashboardStatsRaw
         , NCDDataItem
+        , NCDEncounterDataItem
         , Nutrition
         , NutritionPageData
         , NutritionStatus
@@ -1555,8 +1556,8 @@ applyGenderFilter model list =
         list
 
 
-{-| Count all data items (representing NCD participants) that had first Hypertension
-diagnosis recorded durinf selected month.
+{-| Counts all data items (representing NCD participants) that had first Hypertension
+diagnosis recorded during selected month.
 Hypertension can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
 Outside care activities).
 -}
@@ -1568,11 +1569,11 @@ countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate =
                List.filterMap
                 (\encounter ->
                     let
-                        hypertensionByDiagnosis =
+                        byDiagnosis =
                             List.any (\diagnosis -> EverySet.member diagnosis encounter.diagnoses)
                                 [ DiagnosisHypertensionStage1, DiagnosisHypertensionStage2, DiagnosisHypertensionStage3 ]
 
-                        hypertensionByMedicalConditions =
+                        byMedicalConditions =
                             let
                                 medicalConditions =
                                     EverySet.union encounter.medicalConditions encounter.coMorbidities
@@ -1580,7 +1581,7 @@ countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate =
                             List.any (\condition -> EverySet.member condition medicalConditions)
                                 [ MedicalConditionHypertension, MedicalConditionPregnancyRelatedHypertension ]
                     in
-                    if hypertensionByDiagnosis || hypertensionByMedicalConditions then
+                    if byDiagnosis || byMedicalConditions then
                         Just encounter.startDate
 
                     else
@@ -1595,6 +1596,69 @@ countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate =
             >> Maybe.withDefault False
         )
         >> List.length
+
+
+{-| Counts all data items (representing NCD participants) that had Diabetes
+diagnosis recorded during any of it's encounters.
+-}
+countTotalNumberOfPatientsWithDiabetes : List NCDDataItem -> Int
+countTotalNumberOfPatientsWithDiabetes =
+    List.filter
+        (.encounters
+            >> --  Generate dates of all encounters where Diabetes was diagnosed.
+               generateDiabetesDiagnosisEncountersDates
+            >> List.isEmpty
+            >> not
+        )
+        >> List.length
+
+
+{-| Counts all data items (representing NCD participants) that had first Diabetes
+diagnosis recorded during selected month.
+-}
+countNewlyIdentifieDiabetesCasesForSelectedMonth : NominalDate -> List NCDDataItem -> Int
+countNewlyIdentifieDiabetesCasesForSelectedMonth selectedDate =
+    List.filter
+        (.encounters
+            >> --  Generate dates of all encounters where Diabetes was diagnosed.
+               generateDiabetesDiagnosisEncountersDates
+            -- Take first date, which represents first diagnosis for Hypertension.
+            >> List.head
+            -- Check if it falls within selected month.
+            >> Maybe.map (withinSelectedMonth selectedDate)
+            >> Maybe.withDefault False
+        )
+        >> List.length
+
+
+{-| Generate dates of all encounters where Diabetes was diagnosed.
+Diabetes can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
+Outside care activities).
+-}
+generateDiabetesDiagnosisEncountersDates : List NCDEncounterDataItem -> List NominalDate
+generateDiabetesDiagnosisEncountersDates =
+    List.filterMap
+        (\encounter ->
+            let
+                byDiagnosis =
+                    List.any (\diagnosis -> EverySet.member diagnosis encounter.diagnoses)
+                        [ DiagnosisDiabetesInitial, DiagnosisDiabetesRecurrent ]
+
+                byMedicalConditions =
+                    let
+                        medicalConditions =
+                            EverySet.union encounter.medicalConditions encounter.coMorbidities
+                    in
+                    EverySet.member MedicalConditionDiabetes medicalConditions
+            in
+            if byDiagnosis || byMedicalConditions then
+                Just encounter.startDate
+
+            else
+                Nothing
+        )
+        -- Sort by date ASC.
+        >> List.sortWith Date.compare
 
 
 
