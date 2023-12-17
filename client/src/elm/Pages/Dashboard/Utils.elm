@@ -36,10 +36,12 @@ import Backend.Measurement.Model
         , FollowUpMeasurements
         , HCContactSign(..)
         , HCRecommendation(..)
+        , MedicalCondition(..)
         , Recommendation114(..)
         , SendToHCSign(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Model exposing (Village)
@@ -1551,6 +1553,48 @@ applyGenderFilter model list =
                     False
         )
         list
+
+
+{-| Count all data items (representing NCD participants) that had first Hypertension
+diagnosis recorded durinf selected month.
+Hypertension can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
+Outside care activities).
+-}
+countNewlyIdentifieHypertensionCasesForSelectedMonth : NominalDate -> List NCDDataItem -> Int
+countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate =
+    List.filter
+        (.encounters
+            >> -- Generate dates of all encounters where Hypertension was diagnosed.
+               List.filterMap
+                (\encounter ->
+                    let
+                        hypertensionByDiagnosis =
+                            List.any (\diagnosis -> EverySet.member diagnosis encounter.diagnoses)
+                                [ DiagnosisHypertensionStage1, DiagnosisHypertensionStage2, DiagnosisHypertensionStage3 ]
+
+                        hypertensionByMedicalConditions =
+                            let
+                                medicalConditions =
+                                    EverySet.union encounter.medicalConditions encounter.coMorbidities
+                            in
+                            List.any (\condition -> EverySet.member condition medicalConditions)
+                                [ MedicalConditionHypertension, MedicalConditionPregnancyRelatedHypertension ]
+                    in
+                    if hypertensionByDiagnosis || hypertensionByMedicalConditions then
+                        Just encounter.startDate
+
+                    else
+                        Nothing
+                )
+            -- Sort by date ASC.
+            >> List.sortWith Date.compare
+            -- Take first date, which represents first diagnosis for Hypertension.
+            >> List.head
+            -- Check if it falls within selected month.
+            >> Maybe.map (withinSelectedMonth selectedDate)
+            >> Maybe.withDefault False
+        )
+        >> List.length
 
 
 

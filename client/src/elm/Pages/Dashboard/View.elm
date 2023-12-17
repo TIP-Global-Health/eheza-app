@@ -2436,20 +2436,19 @@ viewNCDPage language currentDate healthCenterId activePage assembled db model =
 
 
 viewNCDOverviewPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
-viewNCDOverviewPage language selectedDate data model =
+viewNCDOverviewPage language selectedDate dataItems model =
     []
 
 
 viewHypertensionPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
-viewHypertensionPage language selectedDate data model =
+viewHypertensionPage language selectedDate dataItems model =
     let
         totalCases =
             -- @todo
             0
 
         newCases =
-            -- @todo
-            0
+            countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate dataItems
     in
     [ div [ class "ui grid" ]
         [ div [ class "two column row" ]
@@ -2461,7 +2460,7 @@ viewHypertensionPage language selectedDate data model =
 
 
 viewHIVPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
-viewHIVPage language selectedDate data model =
+viewHIVPage language selectedDate dataItems model =
     let
         totalCases =
             -- @todo
@@ -2481,7 +2480,7 @@ viewHIVPage language selectedDate data model =
 
 
 viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
-viewDiabetesPage language selectedDate data model =
+viewDiabetesPage language selectedDate dataItems model =
     let
         totalCases =
             -- @todo
