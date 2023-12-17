@@ -985,6 +985,18 @@ function hedley_stats_get_ncd_data($health_center_id) {
   $query->addField('comorbidities', 'field_comorbidities_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT comorbidities.field_comorbidities_value)", 'comorbidities');
 
+  // Pull data of HIV test result recorded at NCD HIV Test activity.
+  $query->leftJoin('field_data_field_test_result', 'test_result', 'test_result.entity_id = ncd_encounter.entity_id');
+  $query->addField('test_result', 'field_test_result_value');
+  $query->condition(db_or()->isNull('test_result.bundle')->condition('test_result.bundle', 'ncd_hiv_test'));
+  $query->addExpression("GROUP_CONCAT(test_result.field_test_result_value)", 'test_result');
+
+  // Pull data of HIV test execution note recorded at NCD HIV Test activity.
+  $query->leftJoin('field_data_field_test_execution_note', 'test_execution_note', 'test_execution_note.entity_id = ncd_encounter.entity_id');
+  $query->addField('test_execution_note', 'field_test_execution_note_value');
+  $query->condition(db_or()->isNull('test_execution_note.bundle')->condition('test_execution_note.bundle', 'ncd_hiv_test'));
+  $query->addExpression("GROUP_CONCAT(test_execution_note.field_test_execution_note_value)", 'test_execution_note');
+
   $query->groupBy('node.nid');
 
   $result = hedley_stats_run_node_query_in_batches($query);
@@ -1008,6 +1020,8 @@ function hedley_stats_get_ncd_data($health_center_id) {
       'diagnoses' => explode(',', $row->ncd_diagnoses),
       'medical_conditions' => explode(',', $row->medical_conditions),
       'co_morbidities' => explode(',', $row->comorbidities),
+      'hiv_test_result' => $row->test_result,
+      'hiv_test_execution_note' => $row->test_execution_note,
     ];
   }
 
