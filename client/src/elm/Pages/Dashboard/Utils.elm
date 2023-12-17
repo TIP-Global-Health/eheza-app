@@ -40,6 +40,8 @@ import Backend.Measurement.Model
         , MedicalCondition(..)
         , Recommendation114(..)
         , SendToHCSign(..)
+        , TestExecutionNote(..)
+        , TestResult(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
@@ -1629,6 +1631,39 @@ countNewlyIdentifieDiabetesCasesForSelectedMonth selectedDate =
             >> Maybe.withDefault False
         )
         >> List.length
+
+
+generatePatientsWithHIV : List NCDDataItem -> List PersonIdentifier
+generatePatientsWithHIV =
+    List.filter
+        (.encounters
+            >> -- Generate dates of all encounters where Hypertension was diagnosed.
+               List.filter
+                (\encounter ->
+                    let
+                        byTestResult =
+                            Maybe.map ((==) TestPositive)
+                                encounter.hivTestResult
+                                |> Maybe.withDefault False
+
+                        byTestExecutionNote =
+                            Maybe.map ((==) TestNoteKnownAsPositive)
+                                encounter.hivTestExecutionNote
+                                |> Maybe.withDefault False
+
+                        byMedicalConditions =
+                            let
+                                medicalConditions =
+                                    EverySet.union encounter.medicalConditions encounter.coMorbidities
+                            in
+                            EverySet.member MedicalConditionHIV medicalConditions
+                    in
+                    byTestResult || byTestExecutionNote || byMedicalConditions
+                )
+            >> List.isEmpty
+            >> not
+        )
+        >> List.map .identifier
 
 
 {-| Generate dates of all encounters where Diabetes was diagnosed.

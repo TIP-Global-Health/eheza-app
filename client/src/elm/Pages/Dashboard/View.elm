@@ -2463,8 +2463,8 @@ viewHIVPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html
 viewHIVPage language selectedDate dataItems model =
     let
         totalCases =
-            -- @todo
-            0
+            generatePatientsWithHIV dataItems
+                |> List.length
 
         managedByPMTCT =
             -- @todo
