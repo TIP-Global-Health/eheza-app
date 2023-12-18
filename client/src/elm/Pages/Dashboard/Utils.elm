@@ -1623,7 +1623,7 @@ countTotalNumberOfPatientsWithDiabetes selectedDate =
                -- or prior to that.
                List.filter (.startDate >> withinOrBeforeSelectedMonth selectedDate)
             >> --  Generate dates of all encounters where Diabetes was diagnosed.
-               generateDiabetesDiagnosisEncountersDates
+               generateDiabetesDiagnosisEncountersDates True
             >> List.isEmpty
             >> not
         )
@@ -1638,7 +1638,7 @@ countNewlyIdentifiedDiabetesCasesForSelectedMonth selectedDate =
     List.filter
         (.encounters
             >> --  Generate dates of all encounters where Diabetes was diagnosed.
-               generateDiabetesDiagnosisEncountersDates
+               generateDiabetesDiagnosisEncountersDates False
             -- Take first date, which represents first diagnosis for Hypertension.
             >> List.head
             -- Check if it falls within selected month.
@@ -1652,8 +1652,8 @@ countNewlyIdentifiedDiabetesCasesForSelectedMonth selectedDate =
 Diabetes can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
 Outside care activities).
 -}
-generateDiabetesDiagnosisEncountersDates : List NCDEncounterDataItem -> List NominalDate
-generateDiabetesDiagnosisEncountersDates =
+generateDiabetesDiagnosisEncountersDates : Bool -> List NCDEncounterDataItem -> List NominalDate
+generateDiabetesDiagnosisEncountersDates includingMedicalConditions =
     List.filterMap
         (\encounter ->
             let
@@ -1662,11 +1662,15 @@ generateDiabetesDiagnosisEncountersDates =
                         [ DiagnosisDiabetesInitial, DiagnosisDiabetesRecurrent ]
 
                 byMedicalConditions =
-                    let
-                        medicalConditions =
-                            EverySet.union encounter.medicalConditions encounter.coMorbidities
-                    in
-                    EverySet.member MedicalConditionDiabetes medicalConditions
+                    if includingMedicalConditions then
+                        let
+                            medicalConditions =
+                                EverySet.union encounter.medicalConditions encounter.coMorbidities
+                        in
+                        EverySet.member MedicalConditionDiabetes medicalConditions
+
+                    else
+                        False
             in
             if byDiagnosis || byMedicalConditions then
                 Just encounter.startDate
