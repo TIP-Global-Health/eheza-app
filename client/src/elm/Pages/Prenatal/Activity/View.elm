@@ -413,23 +413,29 @@ viewPregnancyDatingContent language currentDate assembled data =
                             Maybe.map
                                 (\range ->
                                     let
-                                        dateFrom =
+                                        ( dateFrom, dateDefault ) =
                                             case range of
                                                 Pages.Prenatal.Activity.Types.OneMonth ->
-                                                    Date.add Months -1 currentDate
+                                                    ( Date.add Months -1 currentDate
+                                                    , Date.add Months -1 currentDate
+                                                    )
 
                                                 Pages.Prenatal.Activity.Types.ThreeMonths ->
-                                                    Date.add Months -3 currentDate
+                                                    ( Date.add Months -3 currentDate
+                                                    , Date.add Months -3 currentDate
+                                                    )
 
                                                 SixMonthsOrMore ->
-                                                    Date.add Months -36 currentDate
+                                                    ( Date.add Months -12 currentDate
+                                                    , Date.add Months -6 currentDate
+                                                    )
 
                                         dateSelectorConfig =
                                             { select = SetLmpDate
                                             , close = SetLmpDateSelectorState Nothing
                                             , dateFrom = dateFrom
                                             , dateTo = currentDate
-                                            , dateDefault = Just dateFrom
+                                            , dateDefault = Just dateDefault
                                             }
                                     in
                                     [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
