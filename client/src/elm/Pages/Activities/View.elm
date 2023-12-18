@@ -7,14 +7,15 @@ import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession)
+import EverySet exposing (EverySet)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List
 import LocalData
-import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Activities.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterDialog)
+import Pages.Utils exposing (viewEndEncounterDialog, viewSkipNCDADialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
@@ -28,6 +29,7 @@ view language nurse ( sessionId, session ) model =
 
         allActivities =
             getAllChildActivitiesExcludingNextSteps session.offlineSession
+                |> List.filter (\activity -> not <| EverySet.member activity model.skippedActivities)
                 |> List.map (\activity -> ( getParticipantCountForActivity summary activity, activity ))
 
         ( pendingActivities_, completedActivities_ ) =
@@ -68,12 +70,19 @@ view language nurse ( sessionId, session ) model =
 
                     else
                         Trans.ActivitiesTitle activity
+
+                action =
+                    if activity == ChildActivity NCDA then
+                        SetDialogState <| Just DialogSkipNCDA
+
+                    else
+                        SetRedirectPage <| UserPage <| SessionPage sessionId <| ActivityPage activity
             in
             div
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId <| ActivityPage activity
+                    , onClick action
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div
@@ -93,13 +102,28 @@ view language nurse ( sessionId, session ) model =
                     ]
                 ]
 
-        endSessionDialog =
-            if model.showEndSessionDialog then
-                Just <|
-                    viewEndEncounterDialog language Trans.AreYouSure Trans.OnceYouEndYourGroupEncounter CloseSession (ShowEndSessionDialog False)
+        dialog =
+            Maybe.map
+                (\state ->
+                    case state of
+                        DialogEndSession ->
+                            viewEndEncounterDialog language
+                                Trans.AreYouSure
+                                Trans.OnceYouEndYourGroupEncounter
+                                CloseSession
+                                (SetDialogState Nothing)
 
-            else
-                Nothing
+                        DialogSkipNCDA ->
+                            viewSkipNCDADialog language
+                                (SetRedirectPage <|
+                                    UserPage <|
+                                        SessionPage sessionId <|
+                                            ActivityPage <|
+                                                ChildActivity NCDA
+                                )
+                                (SkipActivity <| ChildActivity NCDA)
+                )
+                model.dialogState
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
@@ -167,5 +191,5 @@ view language nurse ( sessionId, session ) model =
                 ]
             , endSessionButton
             ]
-        , viewModal endSessionDialog
+        , viewModal dialog
         ]
