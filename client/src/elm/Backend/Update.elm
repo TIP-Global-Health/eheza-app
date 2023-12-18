@@ -6407,7 +6407,9 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
                         case activePage of
                             UserPage (SessionPage _ (ChildPage _)) ->
                                 updateAssesmentMsgs
-                                    ++ [ Pages.Participant.Model.SetWarningPopupState assessmentAfter
+                                    ++ [ Pages.Participant.Model.DialogWarning assessmentAfter
+                                            |> Just
+                                            |> Pages.Participant.Model.SetDialogState
                                             |> Pages.Session.Model.MsgChild childId
                                             |> App.Model.MsgPageSession sessionId
                                             |> App.Model.MsgLoggedIn
