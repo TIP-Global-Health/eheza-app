@@ -36,7 +36,6 @@ type Msg activity measurement
     | Redirect Page
     | SetSelectedActivity activity
     | SetSelectedTab Tab
-    | SetWarningPopupState (List NutritionAssessment)
     | SkipActivity activity
     | SetDialogState (Maybe DialogType)
 
