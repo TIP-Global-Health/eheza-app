@@ -2445,8 +2445,7 @@ viewHypertensionPage : Language -> NominalDate -> List NCDDataItem -> Model -> L
 viewHypertensionPage language selectedDate dataItems model =
     let
         totalCases =
-            -- @todo
-            0
+            countTotalNumberOfPatientsWithHypertension selectedDate dataItems
 
         newCases =
             countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate dataItems
