@@ -2428,7 +2428,7 @@ viewNCDPage language currentDate healthCenterId activePage assembled db model =
                     viewHIVPage language selectedDate assembled.ncdData assembled.pmtctData
 
                 PageDiabetes ->
-                    viewDiabetesPage language selectedDate assembled.ncdData model
+                    viewDiabetesPage language selectedDate assembled.ncdData assembled.prenatalData model
     in
     [ viewNCDMenu language activePage
     , monthSelector language selectedDate model
@@ -2494,19 +2494,39 @@ viewHIVPage language selectedDate dataItems pmtctData =
     ]
 
 
-viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
-viewDiabetesPage language selectedDate dataItems model =
+viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> List PrenatalDataItem -> Model -> List (Html Msg)
+viewDiabetesPage language selectedDate dataItems prenatalDataItems model =
     let
         totalCases =
             countTotalNumberOfPatientsWithDiabetes selectedDate dataItems
 
         newCases =
             countNewlyIdentifiedDiabetesCasesForSelectedMonth selectedDate dataItems
+
+        gestationalCases =
+            let
+                dataForNurses =
+                    List.filterMap
+                        (\pregnancy ->
+                            let
+                                nurseEncounters =
+                                    List.filter isNurseEncounter pregnancy.encounters
+                            in
+                            if List.isEmpty nurseEncounters then
+                                Nothing
+
+                            else
+                                Just { pregnancy | encounters = nurseEncounters }
+                        )
+                        prenatalDataItems
+            in
+            countTotalNumberOfPatientsWithGestationalDiabetes selectedDate dataForNurses
     in
     [ div [ class "ui grid" ]
-        [ div [ class "two column row" ]
+        [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.TotalDiabeticCases) (String.fromInt totalCases)
             , chwCard language (Translate.Dashboard Translate.DiabetesNewCases) (String.fromInt newCases)
+            , chwCard language Translate.GestationalDiabetes (String.fromInt gestationalCases)
             ]
         ]
     ]

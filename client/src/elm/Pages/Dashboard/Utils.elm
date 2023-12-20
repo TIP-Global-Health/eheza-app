@@ -1679,6 +1679,26 @@ countNewlyIdentifiedDiabetesCasesForSelectedMonth selectedDate =
         >> List.length
 
 
+{-| Counts all data items (representing ANC participants) that had Diabetes
+diagnosis recorded during any of it's encounters.
+-}
+countTotalNumberOfPatientsWithGestationalDiabetes : NominalDate -> List PrenatalDataItem -> Int
+countTotalNumberOfPatientsWithGestationalDiabetes selectedDate =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth selectedDate)
+            >> -- Check if any of them had Gestational Diabetes diagnosis.
+               List.any (.diagnoses >> EverySet.member DiagnosisGestationalDiabetes)
+        )
+        -- Since one woman may have multiple pregnancies, we make sure
+        -- that patient identifier is unique before we count the total.
+        >> List.map .identifier
+        >> EverySet.fromList
+        >> EverySet.size
+
+
 {-| Generate dates of all encounters where Diabetes was diagnosed.
 Diabetes can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
 Outside care activities).
