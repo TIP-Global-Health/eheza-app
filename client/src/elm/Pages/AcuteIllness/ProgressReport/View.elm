@@ -180,6 +180,9 @@ viewHeader language id initiator =
 
                 InitiatorNCDProgressReport ncdProgressReportInitiator ->
                     NCDProgressReportPage ncdProgressReportInitiator
+
+                InitiatorChildScoreboardProgressReport childScoreboardEncounterId ->
+                    ChildScoreboardProgressReportPage childScoreboardEncounterId
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]

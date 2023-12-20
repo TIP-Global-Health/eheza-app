@@ -126,6 +126,7 @@ type AcuteIllnessProgressReportInitiator
     | InitiatorGroupNutritionProgressReport SessionId PersonId
     | InitiatorPatientRecord PatientRecordInitiator PersonId
     | InitiatorNCDProgressReport NCDProgressReportInitiator
+    | InitiatorChildScoreboardProgressReport ChildScoreboardEncounterId
 
 
 type Msg

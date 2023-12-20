@@ -365,7 +365,7 @@ viewMainPageContent language currentDate id isChw assembled model =
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
+                , viewEndEncounterButton language allowEndEncounter (SetEndEncounterDialogState True)
                 ]
     in
     [ tabs

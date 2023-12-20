@@ -99,6 +99,6 @@ getActivityIcon activity =
             "next-steps"
 
 
-getAllActivities : List NutritionActivity
-getAllActivities =
+allActivities : List NutritionActivity
+allActivities =
     [ Height, Muac, Nutrition, Weight, Photo, NCDA, NextSteps ]

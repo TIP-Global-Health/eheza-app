@@ -902,19 +902,42 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+viewSkipNCDADialog : Language -> msg -> msg -> Html msg
+viewSkipNCDADialog language confirmAction cancelAction =
+    div [ class "ui tiny active modal" ]
+        [ div [ class "content" ]
+            [ p [] [ text <| translate language Translate.SkipNCDADialogQuestion ] ]
+        , div
+            [ class "actions" ]
+            [ div [ class "two ui buttons" ]
+                [ button
+                    [ class "ui primary fluid button"
+                    , onClick confirmAction
+                    ]
+                    [ text <| translate language Translate.SkipNCDADialogConfirm ]
+                , button
+                    [ class "ui fluid button"
+                    , onClick cancelAction
+                    ]
+                    [ text <| translate language Translate.SkipNCDADialogReject ]
+                ]
+            ]
+        ]
+
+
 viewStartEncounterButton : Language -> msg -> Html msg
 viewStartEncounterButton language action =
     viewEncounterActionButton language Translate.StartEncounter "primary" True action
 
 
-viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
+viewEndEncounterButton : Language -> Bool -> msg -> Html msg
 viewEndEncounterButton language =
     viewEndEncounterButtonCustomColor language "primary"
 
 
-viewEndEncounterButtonCustomColor : Language -> String -> Bool -> (Bool -> msg) -> Html msg
-viewEndEncounterButtonCustomColor language buttonColor allowEndEncounter setDialogStateMsgs =
-    viewEncounterActionButton language Translate.EndEncounter buttonColor allowEndEncounter (setDialogStateMsgs True)
+viewEndEncounterButtonCustomColor : Language -> String -> Bool -> msg -> Html msg
+viewEndEncounterButtonCustomColor language buttonColor =
+    viewEncounterActionButton language Translate.EndEncounter buttonColor
 
 
 viewEncounterActionButton : Language -> TranslationId -> String -> Bool -> msg -> Html msg

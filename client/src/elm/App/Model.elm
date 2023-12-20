@@ -39,7 +39,7 @@ import Pages.AcuteIllness.Participant.Model
 import Pages.AcuteIllness.ProgressReport.Model
 import Pages.ChildScoreboard.Activity.Model
 import Pages.ChildScoreboard.Encounter.Model
-import Pages.ChildScoreboard.Report.Model
+import Pages.ChildScoreboard.ProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
@@ -301,7 +301,7 @@ type alias LoggedInModel =
     , ncdProgressReportPages : Dict NCDEncounterId Pages.NCD.ProgressReport.Model.Model
     , childScoreboardEncounterPages : Dict ChildScoreboardEncounterId Pages.ChildScoreboard.Encounter.Model.Model
     , childScoreboardActivityPages : Dict ( ChildScoreboardEncounterId, ChildScoreboardActivity ) Pages.ChildScoreboard.Activity.Model.Model
-    , childScoreboardReportPages : Dict ChildScoreboardEncounterId Pages.ChildScoreboard.Report.Model.Model
+    , childScoreboardReportPages : Dict ChildScoreboardEncounterId Pages.ChildScoreboard.ProgressReport.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
     , patientRecordPages : Dict PersonId Pages.PatientRecord.Model.Model
@@ -428,7 +428,7 @@ type MsgLoggedIn
     | MsgPageNutritionProgressReport NutritionEncounterId Pages.Nutrition.ProgressReport.Model.Msg
     | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChild.ProgressReport.Model.Msg
     | MsgPageNCDProgressReport NCDEncounterId Pages.NCD.ProgressReport.Model.Msg
-    | MsgPageChildScoreboardReport ChildScoreboardEncounterId Pages.ChildScoreboard.Report.Model.Msg
+    | MsgPageChildScoreboardReport ChildScoreboardEncounterId Pages.ChildScoreboard.ProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllness.Outcome.Model.Msg
     | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
     | MsgPageClinicalProgressReport PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Msg

@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.NCDActivity.Model exposing (NCDActivity(..))
-import Backend.NCDActivity.Utils exposing (getAllActivities)
+import Backend.NCDActivity.Utils exposing (allActivities)
 import Backend.NCDEncounter.Types exposing (..)
 import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import Date
@@ -192,7 +192,7 @@ mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     -- All activities that will appear at current
     -- encounter are completed, besides Next Steps itself.
-    EverySet.fromList getAllActivities
+    EverySet.fromList allActivities
         |> EverySet.remove NextSteps
         |> EverySet.toList
         |> List.all (activityCompleted currentDate assembled)

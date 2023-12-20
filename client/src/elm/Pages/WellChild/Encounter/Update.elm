@@ -5,6 +5,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticip
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterNote(..))
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -35,18 +36,16 @@ update currentDate zscores site isChw db msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+                |> sequenceExtra (update currentDate zscores site isChw db) [ SetDialogState Nothing ]
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
-
-        SetWarningPopupState state ->
-            ( { model | warningPopupState = state }, Cmd.none, [] )
 
         TriggerAcuteIllnessEncounter childId encounterId ->
             let
                 extraMsgs =
                     [ SetActivePage (UserPage (AcuteIllnessParticipantPage InitiatorParticipantsPage childId))
-                    , SetWarningPopupState Nothing
+                    , SetDialogState Nothing
                     ]
 
                 markEncounterAsAITriggerMsg =
@@ -112,3 +111,13 @@ update currentDate zscores site isChw db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate zscores site isChw db) extraMsgs
+
+        SkipActivity activity ->
+            ( { model | skippedActivities = EverySet.insert activity model.skippedActivities }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate zscores site isChw db) [ SetDialogState Nothing ]
+
+        SetDialogState state ->
+            ( { model | dialogState = state }, Cmd.none, [] )

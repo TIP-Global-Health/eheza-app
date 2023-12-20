@@ -42,6 +42,7 @@ fetch id db =
 
     -- Fetch Group measuments that belong to child.
     , Backend.Model.FetchChildMeasurements id
+    , Backend.Model.FetchExpectedSessions id
     ]
         ++ fetchForNutrition id db
         ++ fetchForWellChild id db

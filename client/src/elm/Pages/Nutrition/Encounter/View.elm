@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
-import Backend.NutritionActivity.Utils exposing (getActivityIcon, getAllActivities)
+import Backend.NutritionActivity.Utils exposing (allActivities, getActivityIcon)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -14,7 +14,7 @@ import Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryA
 import Pages.Nutrition.Encounter.Model exposing (..)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
+import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink, viewSkipNCDADialog)
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
@@ -59,22 +59,28 @@ viewHeaderAndContent language currentDate zscores features id isChw db model dat
         content =
             viewContent language currentDate zscores features id isChw db model data
 
-        endEncounterDialog =
-            if model.showEndEncounterDialog then
-                Just <|
-                    viewEndEncounterDialog language
-                        Translate.EndEncounterQuestion
-                        Translate.OnceYouEndTheEncounter
-                        (CloseEncounter id)
-                        (SetEndEncounterDialogState False)
+        dialog =
+            Maybe.map
+                (\state ->
+                    case state of
+                        DialogEndEncounter ->
+                            viewEndEncounterDialog language
+                                Translate.EndEncounterQuestion
+                                Translate.OnceYouEndTheEncounter
+                                (CloseEncounter id)
+                                (SetDialogState Nothing)
 
-            else
-                Nothing
+                        DialogSkipNCDA ->
+                            viewSkipNCDADialog language
+                                (SetActivePage <| UserPage <| NutritionActivityPage id NCDA)
+                                (SkipActivity NCDA)
+                )
+                model.dialogState
     in
     div [ class "page-encounter nutrition" ]
         [ header
         , content
-        , viewModal endEncounterDialog
+        , viewModal dialog
         ]
 
 
@@ -132,7 +138,7 @@ viewMainPageContent :
 viewMainPageContent language currentDate zscores features id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
-            partitionActivities currentDate zscores features isChw db data
+            partitionActivitiesConsideringSkipped currentDate zscores features isChw db data model.skippedActivities
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -149,12 +155,6 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
-
-        viewCard activity =
-            activityCard language
-                (Translate.NutritionActivityTitle activity)
-                (getActivityIcon activity)
-                (SetActivePage <| UserPage <| NutritionActivityPage id activity)
 
         ( selectedActivities, emptySectionMessage ) =
             case model.selectedTab of
@@ -190,13 +190,28 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                         ]
                     ]
 
+        viewCard activity =
+            let
+                action =
+                    case activity of
+                        NCDA ->
+                            SetDialogState <| Just DialogSkipNCDA
+
+                        _ ->
+                            SetActivePage <| UserPage <| NutritionActivityPage id activity
+            in
+            activityCard language
+                (Translate.NutritionActivityTitle activity)
+                (getActivityIcon activity)
+                action
+
         allowEndEncounter =
             allowEndingEcounter isChw pendingActivities
 
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
+                , viewEndEncounterButton language allowEndEncounter (SetDialogState <| Just DialogEndEncounter)
                 ]
     in
     [ tabs
@@ -213,7 +228,21 @@ partitionActivities :
     -> AssembledData
     -> ( List NutritionActivity, List NutritionActivity )
 partitionActivities currentDate zscores features isChw db assembled =
-    List.filter (expectActivity currentDate zscores features isChw assembled db) getAllActivities
+    partitionActivitiesConsideringSkipped currentDate zscores features isChw db assembled EverySet.empty
+
+
+partitionActivitiesConsideringSkipped :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> Bool
+    -> ModelIndexedDb
+    -> AssembledData
+    -> EverySet NutritionActivity
+    -> ( List NutritionActivity, List NutritionActivity )
+partitionActivitiesConsideringSkipped currentDate zscores features isChw db assembled skipped =
+    List.filter (\activity -> EverySet.member activity skipped |> not) allActivities
+        |> List.filter (expectActivity currentDate zscores features isChw assembled db)
         |> List.partition (activityCompleted currentDate zscores features isChw assembled db)
 
 

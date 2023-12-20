@@ -7,7 +7,7 @@ import Backend.IndividualEncounterParticipant.Model
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity)
-import Backend.NCDActivity.Utils exposing (getActivityIcon, getAllActivities)
+import Backend.NCDActivity.Utils exposing (allActivities, getActivityIcon)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -95,7 +95,7 @@ viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData
 viewMainPageContent language currentDate db assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled) getAllActivities
+            List.filter (expectActivity currentDate assembled) allActivities
                 |> List.partition (activityCompleted currentDate assembled)
 
         pendingTabTitle =
@@ -160,7 +160,7 @@ viewMainPageContent language currentDate db assembled model =
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , viewEndEncounterButton language allowEndEncounter SetEndEncounterDialogState
+                , viewEndEncounterButton language allowEndEncounter (SetEndEncounterDialogState True)
                 ]
     in
     [ tabs
