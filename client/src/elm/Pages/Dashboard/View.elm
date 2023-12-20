@@ -44,7 +44,16 @@ import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
-import Pages.Page exposing (AcuteIllnessSubPage(..), DashboardPage(..), NCDSubPage(..), NutritionSubPage(..), Page(..), UserPage(..))
+import Pages.Page
+    exposing
+        ( AcuteIllnessSubPage(..)
+        , ChildWellnessSubPage(..)
+        , DashboardPage(..)
+        , NCDSubPage(..)
+        , NutritionSubPage(..)
+        , Page(..)
+        , UserPage(..)
+        )
 import Pages.Utils
     exposing
         ( calculatePercentage
@@ -114,8 +123,8 @@ view language page currentDate healthCenterId isChw nurse model db =
                 PageNCD _ ->
                     viewHeader language Translate.NCDs (UserPage <| DashboardPage PageMain)
 
-                PageChildWellness ->
-                    viewHeader language Translate.ChildWellness (UserPage <| DashboardPage PageMain)
+                PageChildWellness _ ->
+                    viewHeader language Translate.Pediatrics (UserPage <| DashboardPage PageMain)
 
         content =
             Dict.get healthCenterId db.computedDashboards
@@ -155,8 +164,8 @@ view language page currentDate healthCenterId isChw nurse model db =
                                     PageNCD subPage ->
                                         ( viewNCDPage language currentDate healthCenterId subPage assembled db model, "ncd" )
 
-                                    PageChildWellness ->
-                                        ( viewChildWellnessPage language currentDate healthCenterId assembled db model, "child-wellness" )
+                                    PageChildWellness subPage ->
+                                        ( viewChildWellnessPage language currentDate healthCenterId subPage assembled db model, "child-wellness" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
@@ -627,7 +636,7 @@ viewMenuForNurse language =
             ]
         , div [ class "ui segment page-filters nurse center" ]
             [ viewMenuButton language (PageNCD PageHypertension) Nothing
-            , viewMenuButton language PageChildWellness Nothing
+            , viewMenuButton language (PageChildWellness PageChildWellnessOverview) Nothing
             ]
         ]
 
@@ -660,6 +669,14 @@ viewNCDMenu language activePage =
         ]
 
 
+viewChildWellnessMenu : Language -> ChildWellnessSubPage -> Html Msg
+viewChildWellnessMenu language activePage =
+    div [ class "ui segment page-filters center" ]
+        [ viewMenuButton language (PageChildWellness PageChildWellnessOverview) (Just <| PageChildWellness activePage)
+        , viewMenuButton language (PageChildWellness PageChildWellnessNutrition) (Just <| PageChildWellness activePage)
+        ]
+
+
 viewMenuButton : Language -> DashboardPage -> Maybe DashboardPage -> Html Msg
 viewMenuButton language targetPage activePage =
     let
@@ -672,6 +689,10 @@ viewMenuButton language targetPage activePage =
                 ( Nothing, PageNCD PageHypertension ) ->
                     -- On Main page, and target is Acute Illness page.
                     Translate.NCDs
+
+                ( Nothing, PageChildWellness PageChildWellnessOverview ) ->
+                    -- On Main page, and target is Acute Illness page.
+                    Translate.ChildWellness
 
                 _ ->
                     Translate.EncounterTypePageLabel targetPage
@@ -2527,10 +2548,28 @@ viewChildWellnessPage :
     Language
     -> NominalDate
     -> HealthCenterId
+    -> ChildWellnessSubPage
     -> AssembledData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewChildWellnessPage language currentDate healthCenterId assembled db model =
-    --@todo
-    [ text "viewChildWellnessPage" ]
+viewChildWellnessPage language currentDate healthCenterId activePage assembled db model =
+    let
+        selectedDate =
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
+
+        -- pageContent =
+        --     case activePage of
+        --         PageChildWellnessOverview ->
+        --             viewChildWellnessOverviewPage language selectedDate assembled.ncdData model
+        --
+        --         PageChildWellnessNutrition ->
+        --             viewChildWellnessNutritionPage language selectedDate assembled.ncdData assembled.pmtctData
+    in
+    [ viewChildWellnessMenu language activePage
+    , monthSelector language selectedDate model
+    ]
+
+
+
+-- ++ pageContent

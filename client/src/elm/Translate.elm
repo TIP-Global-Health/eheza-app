@@ -1021,6 +1021,7 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | Nutrition
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssessment NutritionAssessment
@@ -1082,6 +1083,7 @@ type TranslationId
     | PatientShowsNoSignsOfCovid
     | Patients
     | PediatricCareMilestone PediatricCareMilestone
+    | Pediatrics
     | PediatricVisit
     | People
     | Percentage
@@ -2750,10 +2752,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NutritionSigns ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Just "Imirire"
-                    , kirundi = Just "Ugufungura"
-                    }
+                    translationSet Nutrition
 
                 ChildActivity Activity.Model.ChildPicture ->
                     { english = "Photo"
@@ -5275,8 +5274,13 @@ translationSet trans =
                         PageDiabetes ->
                             translationSet Diabetes
 
-                PageChildWellness ->
-                    translationSet ChildWellness
+                PageChildWellness subPage ->
+                    case subPage of
+                        PageChildWellnessOverview ->
+                            translationSet Overview
+
+                        PageChildWellnessNutrition ->
+                            translationSet Nutrition
 
         EncounterWarningForDiagnosisPane warning suffix ->
             let
@@ -11463,6 +11467,12 @@ translationSet trans =
             , kirundi = Just "Urugendo kubw'urucanco ruzokurikira umunsi ruzobako"
             }
 
+        Pediatrics ->
+            { english = "Pediatrics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NextPediatricVisit ->
             { english = "Next pediatric visit"
             , kinyarwanda = Just "Isura ry'umwana rikurikira"
@@ -11913,6 +11923,12 @@ translationSet trans =
             , kirundi = Just "Igitigiri c'abavutse itarike itaragera/igihe kitarashika, bamaze gupfa"
             }
 
+        Nutrition ->
+            { english = "Nutrition"
+            , kinyarwanda = Just "Imirire"
+            , kirundi = Just "Ugufungura"
+            }
+
         NutritionActivityHelper activity ->
             case activity of
                 Backend.NutritionActivity.Model.Muac ->
@@ -11969,10 +11985,7 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.Nutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Just "Imirire"
-                    , kirundi = Just "Ugufungura"
-                    }
+                    translationSet Nutrition
 
                 Backend.NutritionActivity.Model.Photo ->
                     { english = "Photo"
@@ -12078,10 +12091,7 @@ translationSet trans =
                     }
 
                 TaskNutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Just "Imirire"
-                    , kirundi = Just "Ugufungura"
-                    }
+                    translationSet Nutrition
 
                 TaskWeight ->
                     { english = "Weight"
@@ -12829,10 +12839,7 @@ translationSet trans =
                     }
 
                 PhysicalExamNutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Just "Imirire"
-                    , kirundi = Just "Ugufungura"
-                    }
+                    translationSet Nutrition
 
         PlaceholderEnterHeight ->
             { english = "Enter height here…"

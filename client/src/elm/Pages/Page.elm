@@ -203,7 +203,7 @@ type DashboardPage
     | PageAcuteIllness AcuteIllnessSubPage
     | PagePrenatal
     | PageNCD NCDSubPage
-    | PageChildWellness
+    | PageChildWellness ChildWellnessSubPage
 
 
 type NutritionSubPage
@@ -223,6 +223,11 @@ type NCDSubPage
     = PageHypertension
     | PageHIV
     | PageDiabetes
+
+
+type ChildWellnessSubPage
+    = PageChildWellnessOverview
+    | PageChildWellnessNutrition
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it
