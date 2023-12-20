@@ -957,7 +957,7 @@ function hedley_stats_get_ncd_data($health_center_id) {
   $individual_participants = array_keys($result);
   if (empty($individual_participants)) {
     $result = [];
-    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA, $health_center_id, NULL, $result);
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NCD_DATA, $health_center_id, NULL, $result);
     return $result;
   }
 
