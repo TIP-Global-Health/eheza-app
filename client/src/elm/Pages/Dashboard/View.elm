@@ -626,7 +626,7 @@ viewMenuForNurse language =
             , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
             ]
         , div [ class "ui segment page-filters nurse center" ]
-            [ viewMenuButton language (PageNCD PageNCDOverview) Nothing
+            [ viewMenuButton language (PageNCD PageHypertension) Nothing
             , viewMenuButton language PageChildWellness Nothing
             ]
         ]
@@ -654,8 +654,7 @@ viewAcuteIllnessMenu language activePage =
 viewNCDMenu : Language -> NCDSubPage -> Html Msg
 viewNCDMenu language activePage =
     div [ class "ui segment page-filters" ]
-        [ viewMenuButton language (PageNCD PageNCDOverview) (Just <| PageNCD activePage)
-        , viewMenuButton language (PageNCD PageHypertension) (Just <| PageNCD activePage)
+        [ viewMenuButton language (PageNCD PageHypertension) (Just <| PageNCD activePage)
         , viewMenuButton language (PageNCD PageHIV) (Just <| PageNCD activePage)
         , viewMenuButton language (PageNCD PageDiabetes) (Just <| PageNCD activePage)
         ]
@@ -670,7 +669,7 @@ viewMenuButton language targetPage activePage =
                     -- On Main page, and target is Acute Illness page.
                     Translate.AcuteIllness
 
-                ( Nothing, PageNCD PageNCDOverview ) ->
+                ( Nothing, PageNCD PageHypertension ) ->
                     -- On Main page, and target is Acute Illness page.
                     Translate.NCDs
 
@@ -2418,9 +2417,6 @@ viewNCDPage language currentDate healthCenterId activePage assembled db model =
 
         pageContent =
             case activePage of
-                PageNCDOverview ->
-                    viewNCDOverviewPage language selectedDate assembled.ncdData model
-
                 PageHypertension ->
                     viewHypertensionPage language selectedDate assembled.ncdData model
 
@@ -2434,11 +2430,6 @@ viewNCDPage language currentDate healthCenterId activePage assembled db model =
     , monthSelector language selectedDate model
     ]
         ++ pageContent
-
-
-viewNCDOverviewPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
-viewNCDOverviewPage language selectedDate dataItems model =
-    []
 
 
 viewHypertensionPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)

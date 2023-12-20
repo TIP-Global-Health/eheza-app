@@ -105,9 +105,6 @@ pageToFragment current =
 
                                 PageNCD subPage ->
                                     case subPage of
-                                        PageNCDOverview ->
-                                            "ncd"
-
                                         PageHypertension ->
                                             "hypertension"
 
@@ -428,7 +425,6 @@ parseDashboardPage =
         , map (PageAcuteIllness PageMalaria) (s "malaria")
         , map (PageAcuteIllness PageGastro) (s "gastro")
         , map PagePrenatal (s "prenatal")
-        , map (PageNCD PageNCDOverview) (s "ncd")
         , map (PageNCD PageHypertension) (s "hypertension")
         , map (PageNCD PageHIV) (s "hiv")
         , map (PageNCD PageDiabetes) (s "diabetes")

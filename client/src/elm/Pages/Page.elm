@@ -220,8 +220,7 @@ type AcuteIllnessSubPage
 
 
 type NCDSubPage
-    = PageNCDOverview
-    | PageHypertension
+    = PageHypertension
     | PageHIV
     | PageDiabetes
 

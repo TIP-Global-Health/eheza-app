@@ -5266,9 +5266,6 @@ translationSet trans =
 
                 PageNCD subPage ->
                     case subPage of
-                        PageNCDOverview ->
-                            translationSet Overview
-
                         PageHypertension ->
                             translationSet Hypertension
 
