@@ -240,6 +240,7 @@ type Dashboard
     | DiabetesNewCases
     | DiagnosisUndetermined
     | DiagnosedCases
+    | ECDOnTrackLabel
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | FeversByCause
@@ -259,6 +260,7 @@ type Dashboard
     | HypertensionCases
     | HypertensionNewCases
     | IncidenceOf
+    | ImmunizationOnTrackLabel
     | LastUpdated
     | ManagedByPMTCT
     | MissedSessionsLabel
@@ -271,6 +273,7 @@ type Dashboard
     | NewCasesPerMonth
     | NewPregnancy
     | NoDataForPeriod
+    | NumberOfChildrenSeen
     | PatientsManagedAtHome
     | PatientCurrentlyUnderCare
     | PercentageLabel FilterPeriod
@@ -408,6 +411,7 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
+    | Behind
     | BirthDefect BirthDefect
     | BirthDefectLabel
     | BirthDefectsPresentQuestion
@@ -1046,6 +1050,7 @@ type TranslationId
     | OnceYouEndYourGroupEncounter
     | OngoingTreatmentTask OngoingTreatmentTask
     | OnlySickChild
+    | OnTrack
     | Or
     | OutsideCareLabel
     | Overview
@@ -3216,6 +3221,12 @@ translationSet trans =
             , kirundi = Just "Ugutangura kubonana bushasha"
             }
 
+        Behind ->
+            { english = "Behind"
+            , kinyarwanda = Just "Biri inyuma"
+            , kirundi = Just "Inyuma"
+            }
+
         BirthDefect defect ->
             case defect of
                 DefectBirthInjury ->
@@ -5069,16 +5080,10 @@ translationSet trans =
         ECDStatus status ->
             case status of
                 StatusOnTrack ->
-                    { english = "On Track"
-                    , kinyarwanda = Just "Biri ku gihe"
-                    , kirundi = Just "Ku mrurongo"
-                    }
+                    translationSet OnTrack
 
                 StatusECDBehind ->
-                    { english = "Behind"
-                    , kinyarwanda = Just "Biri inyuma"
-                    , kirundi = Just "Inyuma"
-                    }
+                    translationSet Behind
 
                 StatusOffTrack ->
                     { english = "Off Track"
@@ -12443,6 +12448,12 @@ translationSet trans =
             { english = "Only Sick Child"
             , kinyarwanda = Just "Umwana urwaye gusa"
             , kirundi = Just "Umwana agwaye gusa"
+            }
+
+        OnTrack ->
+            { english = "On Track"
+            , kinyarwanda = Just "Biri ku gihe"
+            , kirundi = Just "Ku mrurongo"
             }
 
         Or ->
@@ -20988,10 +20999,7 @@ translationSet trans =
         VaccinationStatus status ->
             case status of
                 StatusBehind ->
-                    { english = "Behind"
-                    , kinyarwanda = Just "Ntibyakozwe"
-                    , kirundi = Just "Inyuma"
-                    }
+                    translationSet Behind
 
                 StatusCompleted ->
                     { english = "Completed"
@@ -22787,6 +22795,12 @@ translateDashboard trans =
             , kirundi = Just "Ivyasuzumwe"
             }
 
+        ECDOnTrackLabel ->
+            { english = "% ECD on Track"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         FamilyPlanningLabel ->
             { english = "Family Planning"
             , kinyarwanda = Just "Kuboneza Urubyaro"
@@ -22985,6 +22999,12 @@ translateDashboard trans =
             , kirundi = Just "icabaye"
             }
 
+        ImmunizationOnTrackLabel ->
+            { english = "% Immunization on Track"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         LastUpdated ->
             { english = "Last updated"
             , kinyarwanda = Just "Ivugurura riheruka"
@@ -23055,6 +23075,12 @@ translateDashboard trans =
             { english = "No data for the selected period."
             , kinyarwanda = Just "Nta bipimo bigaragara muri iki gihe wahisemo"
             , kirundi = Just "Nta makuru y'igihe catowe."
+            }
+
+        NumberOfChildrenSeen ->
+            { english = "# of Children Seen"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         PatientsManagedAtHome ->

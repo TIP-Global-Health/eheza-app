@@ -18,6 +18,7 @@ import Backend.Dashboard.Model
         , ParticipantStats
         , Periods
         , PrenatalDataItem
+        , SPVDataItem
         , TotalBeneficiaries
         , emptyNutritionValue
         )
@@ -844,7 +845,7 @@ viewAcuteIllnessOverviewPage language isChw encounters model =
         giCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisGastrointestinalInfectionComplicated ] True encounters
 
-        feverByCauses =
+        chartData =
             List.filter (Tuple.second >> (/=) 0)
                 [ ( FeverCauseCovid19, covidCases )
                 , ( FeverCauseMalaria, malariaCases )
@@ -868,24 +869,30 @@ viewAcuteIllnessOverviewPage language isChw encounters model =
             ]
         ]
     , secondRow
-    , div [ class "ui blue segment donut-chart fever" ]
-        [ viewFeverDistributionDonutChart language feverByCauses ]
+    , div [ class "ui blue segment donut-chart left" ]
+        [ viewDonutChart language
+            (Translate.Dashboard Translate.FeversByCause)
+            (Translate.FeverCause >> Translate.Dashboard)
+            feverCauseToColor
+            feverCausesColors
+            chartData
+        ]
     ]
 
 
-viewFeverDistributionDonutChart : Language -> List ( FeverCause, Int ) -> Html Msg
-viewFeverDistributionDonutChart language feverByCauses =
-    if List.isEmpty feverByCauses then
+viewDonutChart : Language -> TranslationId -> (a -> TranslationId) -> (a -> Color) -> Dict a Color -> List ( a, Int ) -> Html Msg
+viewDonutChart language label translationFunc toColorFunc colors data =
+    if List.isEmpty data then
         div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
 
     else
         div [ class "ui center aligned grid" ]
             [ div [ class "middle aligned row" ]
                 [ div [ class "content" ]
-                    [ viewPieChart feverCausesColors feverByCauses
+                    [ viewPieChart colors data
                     , div [ class "in-chart" ]
-                        [ translateText language <| Translate.Dashboard Translate.FeversByCause ]
-                    , viewPieChartLegend language (Translate.FeverCause >> Translate.Dashboard) feverCauseToColor feverByCauses
+                        [ translateText language label ]
+                    , viewPieChartLegend language translationFunc toColorFunc data
                     ]
                 ]
             ]
@@ -2558,18 +2565,90 @@ viewChildWellnessPage language currentDate healthCenterId activePage assembled d
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
-        -- pageContent =
-        --     case activePage of
-        --         PageChildWellnessOverview ->
-        --             viewChildWellnessOverviewPage language selectedDate assembled.ncdData model
-        --
-        --         PageChildWellnessNutrition ->
-        --             viewChildWellnessNutritionPage language selectedDate assembled.ncdData assembled.pmtctData
+        pageContent =
+            case activePage of
+                PageChildWellnessOverview ->
+                    viewChildWellnessOverviewPage language selectedDate assembled.spvData
+
+                PageChildWellnessNutrition ->
+                    viewChildWellnessNutritionPage language selectedDate assembled.spvData
     in
     [ viewChildWellnessMenu language activePage
     , monthSelector language selectedDate model
     ]
+        ++ pageContent
 
 
+viewChildWellnessOverviewPage : Language -> NominalDate -> List SPVDataItem -> List (Html Msg)
+viewChildWellnessOverviewPage language selectedDate dataItems =
+    let
+        numberOfChildrenSeen =
+            -- @todo:
+            0
 
--- ++ pageContent
+        ecdOnTrack =
+            -- @todo
+            1
+
+        ecdBehind =
+            -- @todo
+            1
+
+        immunizationOnTrack =
+            -- @todo
+            2
+
+        immunizationBehind =
+            -- @todo
+            1
+
+        ecdChartData =
+            [ ( Translate.OnTrack, ecdOnTrack )
+            , ( Translate.Behind, ecdBehind )
+            ]
+
+        immunizationChartData =
+            [ ( Translate.OnTrack, immunizationOnTrack )
+            , ( Translate.Behind, immunizationBehind )
+            ]
+
+        toColorFunc item =
+            case item of
+                Translate.OnTrack ->
+                    Color.rgb (27 / 255) (207 / 255) (193 / 255)
+
+                _ ->
+                    Color.rgb (240 / 255) (111 / 255) (107 / 255)
+
+        colors =
+            [ ( Translate.OnTrack, Color.rgb (27 / 255) (207 / 255) (193 / 255) )
+            , ( Translate.Behind, Color.rgb (240 / 255) (111 / 255) (107 / 255) )
+            ]
+                |> Dict.fromList
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "three column row center" ]
+            [ chwCard language (Translate.Dashboard Translate.NumberOfChildrenSeen) (String.fromInt numberOfChildrenSeen) ]
+        ]
+    , div [ class "ui blue segment donut-chart left" ]
+        [ viewDonutChart language
+            (Translate.Dashboard Translate.ECDOnTrackLabel)
+            identity
+            toColorFunc
+            colors
+            ecdChartData
+        ]
+    , div [ class "ui blue segment donut-chart left" ]
+        [ viewDonutChart language
+            (Translate.Dashboard Translate.ImmunizationOnTrackLabel)
+            identity
+            toColorFunc
+            colors
+            immunizationChartData
+        ]
+    ]
+
+
+viewChildWellnessNutritionPage : Language -> NominalDate -> List SPVDataItem -> List (Html Msg)
+viewChildWellnessNutritionPage language selectedDate dataItems =
+    []
