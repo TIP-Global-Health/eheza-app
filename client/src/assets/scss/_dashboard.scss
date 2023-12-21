@@ -8,6 +8,10 @@
     margin-top: 50px;
   }
 
+  .ui.grid .column.row.center {
+    justify-content: center;
+  }
+
   .ui.segment {
 
     .content .very.basic.table {
@@ -245,7 +249,7 @@
       }
     }
 
-    &.donut-chart.fever {
+    &.donut-chart.left {
       min-height: 300px;
 
       .row .content {
