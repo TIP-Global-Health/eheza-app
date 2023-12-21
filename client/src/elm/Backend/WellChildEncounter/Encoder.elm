@@ -1,4 +1,4 @@
-module Backend.WellChildEncounter.Encoder exposing (encodeWellChildEncounter)
+module Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning, encodeWellChildEncounter)
 
 import Backend.WellChildEncounter.Model exposing (..)
 import EverySet

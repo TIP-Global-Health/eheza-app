@@ -25,6 +25,7 @@ import Backend.Measurement.Model
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -35,6 +36,7 @@ type alias AssembledData =
     , prenatalData : List PrenatalDataItem
     , ncdData : List NCDDataItem
     , pmtctData : List PMTCTDataItem
+    , spvData : List SPVDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -66,6 +68,7 @@ type alias DashboardStatsRaw =
     , prenatalData : List PrenatalDataItem
     , ncdData : List NCDDataItem
     , pmtctData : List PMTCTDataItem
+    , spvData : List SPVDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -88,6 +91,7 @@ emptyModel =
     , prenatalData = []
     , ncdData = []
     , pmtctData = []
+    , spvData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -322,4 +326,17 @@ type alias PMTCTDataItem =
     { identifier : PersonIdentifier
     , startDate : NominalDate
     , endDate : NominalDate
+    }
+
+
+type alias SPVDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , encounters : List SPVEncounterDataItem
+    }
+
+
+type alias SPVEncounterDataItem =
+    { startDate : NominalDate
+    , warnings : EverySet EncounterWarning
     }

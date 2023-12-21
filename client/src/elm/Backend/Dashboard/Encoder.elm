@@ -24,6 +24,8 @@ import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Dict as LegacyDict
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -45,6 +47,7 @@ encodeDashboardStatsRaw stats =
     , encodePrenatalData stats.prenatalData
     , encodeNCDData stats.ncdData
     , encodePMTCTData stats.pmtctData
+    , encodeSPVData stats.spvData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
@@ -377,3 +380,32 @@ encodePMTCTDataItem item =
     , ( "start_date", encodeYYYYMMDD item.startDate )
     , ( "end_date", encodeYYYYMMDD item.endDate )
     ]
+
+
+encodeSPVData : List SPVDataItem -> ( String, Value )
+encodeSPVData itemsList =
+    ( "spv_data", list (encodeSPVDataItem >> object) itemsList )
+
+
+encodeSPVDataItem : SPVDataItem -> List ( String, Value )
+encodeSPVDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "encounters", list encodeSPVEncounterDataItem item.encounters )
+    ]
+
+
+encodeSPVEncounterDataItem : SPVEncounterDataItem -> Value
+encodeSPVEncounterDataItem item =
+    let
+        warningsWithDefault warnings =
+            if EverySet.isEmpty warnings then
+                List.singleton NoEncounterWarnings
+
+            else
+                EverySet.toList warnings
+    in
+    object <|
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "warnings", list encodeEncounterWarning (warningsWithDefault item.warnings) )
+        ]

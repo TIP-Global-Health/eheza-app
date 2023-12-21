@@ -128,10 +128,11 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
             generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter
     in
     { stats = filteredStats
-    , acuteIllnessData = generateFilteredAcuteIllnessData stats selectedVillageFilter
-    , prenatalData = generateFilteredPrenatalData stats selectedVillageFilter
-    , ncdData = generateFilteredNCDData stats selectedVillageFilter
-    , pmtctData = generateFilteredPMTCTData stats selectedVillageFilter
+    , acuteIllnessData = generateFilteredData .acuteIllnessData stats selectedVillageFilter
+    , prenatalData = generateFilteredData .prenatalData stats selectedVillageFilter
+    , ncdData = generateFilteredData .ncdData stats selectedVillageFilter
+    , pmtctData = generateFilteredData .pmtctData stats selectedVillageFilter
+    , spvData = generateFilteredData .spvData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 
@@ -163,43 +164,14 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
     }
 
 
-generateFilteredAcuteIllnessData : DashboardStatsRaw -> Maybe VillageId -> List AcuteIllnessDataItem
-generateFilteredAcuteIllnessData stats selectedVillageFilter =
-    selectedVillageFilter
-        |> Maybe.andThen
-            (\villageId -> Dict.get villageId stats.villagesWithResidents)
-        |> Maybe.map
-            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.acuteIllnessData)
-        |> Maybe.withDefault []
-
-
-generateFilteredPrenatalData : DashboardStatsRaw -> Maybe VillageId -> List PrenatalDataItem
-generateFilteredPrenatalData stats selectedVillageFilter =
-    selectedVillageFilter
-        |> Maybe.andThen
-            (\villageId -> Dict.get villageId stats.villagesWithResidents)
-        |> Maybe.map
-            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.prenatalData)
-        |> Maybe.withDefault []
-
-
-generateFilteredNCDData : DashboardStatsRaw -> Maybe VillageId -> List NCDDataItem
-generateFilteredNCDData stats selectedVillageFilter =
-    selectedVillageFilter
-        |> Maybe.andThen
-            (\villageId -> Dict.get villageId stats.villagesWithResidents)
-        |> Maybe.map
-            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.ncdData)
-        |> Maybe.withDefault []
-
-
-generateFilteredPMTCTData : DashboardStatsRaw -> Maybe VillageId -> List PMTCTDataItem
-generateFilteredPMTCTData stats selectedVillageFilter =
-    selectedVillageFilter
-        |> Maybe.andThen
-            (\villageId -> Dict.get villageId stats.villagesWithResidents)
-        |> Maybe.map
-            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.pmtctData)
+generateFilteredData :
+    (DashboardStatsRaw -> List { a | identifier : PersonIdentifier })
+    -> DashboardStatsRaw
+    -> Maybe VillageId
+    -> List { a | identifier : PersonIdentifier }
+generateFilteredData getDataFunc stats selectedVillageFilter =
+    Maybe.andThen (\villageId -> Dict.get villageId stats.villagesWithResidents) selectedVillageFilter
+        |> Maybe.map (\residents -> List.filter (\item -> List.member item.identifier residents) (getDataFunc stats))
         |> Maybe.withDefault []
 
 

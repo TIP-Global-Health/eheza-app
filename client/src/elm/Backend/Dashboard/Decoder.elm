@@ -37,6 +37,8 @@ import Backend.Person.Decoder exposing (decodeGender)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Dict as LegacyDict
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
@@ -61,6 +63,7 @@ decodeDashboardStatsRaw =
         |> required "prenatal_data" (list decodePrenatalDataItem)
         |> required "ncd_data" (list decodeNCDDataItem)
         |> required "pmtct_data" (list decodePMTCTDataItem)
+        |> required "spv_data" (list decodeSPVDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -419,3 +422,31 @@ decodePMTCTDataItem =
         |> required "id" decodeInt
         |> required "start_date" decodeYYYYMMDD
         |> required "end_date" decodeYYYYMMDD
+
+
+decodeSPVDataItem : Decoder SPVDataItem
+decodeSPVDataItem =
+    succeed SPVDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "encounters" (list decodeSPVEncounterDataItem)
+
+
+decodeSPVEncounterDataItem : Decoder SPVEncounterDataItem
+decodeSPVEncounterDataItem =
+    let
+        decodeWarnings =
+            map
+                (\items ->
+                    if List.isEmpty items then
+                        EverySet.singleton NoEncounterWarnings
+
+                    else
+                        EverySet.fromList items
+                )
+            <|
+                list (decodeWithFallback NoEncounterWarnings decodeEncounterWarning)
+    in
+    succeed SPVEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "warnings" decodeWarnings (EverySet.singleton NoEncounterWarnings)
