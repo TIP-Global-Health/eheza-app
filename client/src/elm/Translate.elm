@@ -251,7 +251,9 @@ type Dashboard
     | GoodNutritionLabel
     | HomeDeliveries
     | HealthFacilityDeliveries
+    | HealthCenterLevelCases
     | HealthCenterReferrals
+    | HospitalReferrals
     | IncidenceOf
     | LastUpdated
     | MissedSessionsLabel
@@ -22912,10 +22914,22 @@ translateDashboard trans =
             , kirundi = Just "Imvyaro zabereye kw'ivuriro"
             }
 
+        HealthCenterLevelCases ->
+            { english = "HC Level Cases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         HealthCenterReferrals ->
             { english = "Health Center Referrals"
             , kinyarwanda = Just "Aboherejwe ku kigo nderabuzima"
             , kirundi = Just "Kurungika abarwayi kw'ivuriro"
+            }
+
+        HospitalReferrals ->
+            { english = "Hospital Referrals"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         IncidenceOf ->

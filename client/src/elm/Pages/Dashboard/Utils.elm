@@ -1,7 +1,7 @@
 module Pages.Dashboard.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Dashboard.Model
     exposing
         ( AcuteIllnessDataItem
@@ -587,6 +587,21 @@ countUncomplicatedMalariaManagedByChw encounters =
             -- and patient was not sent to health center.
             (encounter.diagnosis == DiagnosisMalariaUncomplicated)
                 && not (EverySet.member ReferToHealthCenter encounter.sendToHCSigns)
+        )
+        encounters
+        |> List.length
+
+
+countUncomplicatedMalariaSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedMalariaSentToHC encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Uncomplicated Malaria diagnosis,
+            -- patient is bellow age of 6 months and
+            -- patient was sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaUncomplicated)
+                && (encounter.ageInMonths < 6)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
         )
         encounters
         |> List.length
@@ -1368,3 +1383,8 @@ childrenBeneficiariesByProgramType programType childrenBeneficiaries =
 filterByLimitDate : NominalDate -> Dict id { a | dateMeasured : NominalDate } -> Dict id { a | dateMeasured : NominalDate }
 filterByLimitDate limitDate followUps =
     Dict.filter (\_ followUp -> Date.compare followUp.dateMeasured limitDate == LT) followUps
+
+
+isAcuteIllnessNurseEncounter : AcuteIllnessEncounterDataItem -> Bool
+isAcuteIllnessNurseEncounter encounter =
+    encounter.encounterType /= AcuteIllnessEncounterCHW

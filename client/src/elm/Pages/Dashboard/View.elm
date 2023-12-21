@@ -155,7 +155,7 @@ view language page currentDate healthCenterId isChw nurse model db =
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
                                 :: pageContent
-                                ++ [ viewCustomModal language isChw nurse assembled.stats db model
+                                ++ [ viewCustomModal language page isChw nurse assembled.stats db model
                                    , div [ class "timestamp" ]
                                         [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ assembled.stats.timestamp ++ " UTC" ]
                                    ]
@@ -689,8 +689,42 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         selectedDate =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
+        dataForNurses =
+            List.filterMap
+                (\illness ->
+                    let
+                        nurseEncounters =
+                            List.filter isAcuteIllnessNurseEncounter illness.encounters
+                    in
+                    if List.isEmpty nurseEncounters then
+                        Nothing
+
+                    else
+                        Just { illness | encounters = nurseEncounters }
+                )
+                assembled.acuteIllnessData
+
+        dataForChws =
+            List.filterMap
+                (\illness ->
+                    let
+                        chwEncounters =
+                            List.filter (isAcuteIllnessNurseEncounter >> not) illness.encounters
+                    in
+                    if List.isEmpty chwEncounters then
+                        Nothing
+
+                    else
+                        Just { illness | encounters = chwEncounters }
+                )
+                assembled.acuteIllnessData
+
         encountersForSelectedMonth =
-            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+            if isChw then
+                getAcuteIllnessEncountersForSelectedMonth selectedDate dataForChws
+
+            else
+                getAcuteIllnessEncountersForSelectedMonth selectedDate dataForNurses
 
         limitDate =
             Date.ceiling Date.Month selectedDate
@@ -711,16 +745,16 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         pageContent =
             case activePage of
                 PageAcuteIllnessOverview ->
-                    viewAcuteIllnessOverviewPage language encountersForSelectedMonth model
+                    viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth model
 
                 PageCovid19 ->
-                    viewCovid19Page language encountersForSelectedMonth managedCovid model
+                    viewCovid19Page language isChw encountersForSelectedMonth managedCovid model
 
                 PageMalaria ->
-                    viewMalariaPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
+                    viewMalariaPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
 
                 PageGastro ->
-                    viewGastroPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
+                    viewGastroPage language isChw selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     [ viewAcuteIllnessMenu language activePage
     , monthSelector language selectedDate model
@@ -728,8 +762,8 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         ++ pageContent
 
 
-viewAcuteIllnessOverviewPage : Language -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
-viewAcuteIllnessOverviewPage language encounters model =
+viewAcuteIllnessOverviewPage : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
+viewAcuteIllnessOverviewPage language isChw encounters model =
     let
         totalAssesments =
             countAcuteIllnessAssesments encounters
@@ -737,8 +771,21 @@ viewAcuteIllnessOverviewPage language encounters model =
         ( sentToHC, managedLocally ) =
             countAcuteIllnessCasesByTreatmentApproach encounters
 
-        undeterminedCases =
-            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
+        secondRow =
+            if isChw then
+                let
+                    undeterminedCases =
+                        countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
+                in
+                div [ class "ui centered grid" ]
+                    [ div [ class "three column row" ]
+                        [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
+                        , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
+                        ]
+                    ]
+
+            else
+                emptyNode
 
         feverOfUnknownOriginCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encounters
@@ -769,20 +816,22 @@ viewAcuteIllnessOverviewPage language encounters model =
                 , ( FeverCauseGI, giCases )
                 , ( FeverCauseUnknown, feverOfUnknownOriginCases )
                 ]
+
+        ( levelCases, referrals ) =
+            if isChw then
+                ( Translate.CommunityLevelCases, Translate.HealthCenterReferrals )
+
+            else
+                ( Translate.HealthCenterLevelCases, Translate.HospitalReferrals )
     in
     [ div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.TotalAssessment) (String.fromInt totalAssesments)
-            , chwCard language (Translate.Dashboard Translate.CommunityLevelCases) (String.fromInt managedLocally)
-            , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+            , chwCard language (Translate.Dashboard levelCases) (String.fromInt managedLocally)
+            , chwCard language (Translate.Dashboard referrals) (String.fromInt sentToHC)
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
-            , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
-            ]
-        ]
+    , secondRow
     , div [ class "ui blue segment donut-chart fever" ]
         [ viewFeverDistributionDonutChart language feverByCauses ]
     ]
@@ -806,94 +855,138 @@ viewFeverDistributionDonutChart language feverByCauses =
             ]
 
 
-viewCovid19Page : Language -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewCovid19Page language encounters managedCovid model =
+viewCovid19Page : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewCovid19Page language isChw encounters managedCovid model =
     let
-        callsTo114 =
-            countDiagnosedWithCovidCallsTo114 encounters
-
-        sentToHC =
-            countDiagnosedWithCovidSentToHC encounters
-
         managedAtHome =
             countDiagnosedWithCovidManagedAtHome encounters
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
-            , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
-            , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+    if isChw then
+        let
+            callsTo114 =
+                countDiagnosedWithCovidCallsTo114 encounters
+
+            sentToHC =
+                countDiagnosedWithCovidSentToHC encounters
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
+                , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+                , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) ]
+
+    else
+        let
+            sentToHospital =
+                -- @todo
+                0
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row" ]
+                [ chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+                , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+                ]
+            ]
         ]
-    ]
 
 
-viewMalariaPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewMalariaPage language selectedDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
+viewMalariaPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewMalariaPage language isChw selectedDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
     let
         totalDaignosed =
             countDiagnosedWithMalaria encountersForSelectedMonth
-
-        uncomplicatedMalariaManagedByChw =
-            countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
 
         uncomplicatedMalariaAndPregnantSentToHC =
             countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
 
         complicatedMalariaSentToHC =
             countComplicatedMalariaSentToHC encountersForSelectedMonth
-
-        resolvedMalariaCases =
-            countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
+    if isChw then
+        let
+            uncomplicatedMalariaManagedByChw =
+                countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
+
+            resolvedMalariaCases =
+                countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC)
+                , chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria)
+                ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC)
-            , chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria)
+
+    else
+        let
+            sentToHospital =
+                countUncomplicatedMalariaSentToHC encountersForSelectedMonth
+                    + uncomplicatedMalariaAndPregnantSentToHC
+                    + complicatedMalariaSentToHC
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+                ]
             ]
         ]
-    ]
 
 
-viewGastroPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewGastroPage language selectedDate acuteIllnessData encountersForSelectedMonth managedGI model =
+viewGastroPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewGastroPage language isChw selectedDate acuteIllnessData encountersForSelectedMonth managedGI model =
     let
         totalDaignosed =
             countDiagnosedWithGI encountersForSelectedMonth
 
-        uncomplicatedGIManagedByChw =
-            countUncomplicatedGIManagedByChw encountersForSelectedMonth
-
         complicatedGISentToHC =
             countComplicatedGISentToHC encountersForSelectedMonth
-
-        resolvedGICases =
-            countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw)
-            , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
+    if isChw then
+        let
+            uncomplicatedGIManagedByChw =
+                countUncomplicatedGIManagedByChw encountersForSelectedMonth
+
+            resolvedGICases =
+                countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw)
+                , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI)
+                ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI)
+
+    else
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt complicatedGISentToHC)
+                ]
             ]
         ]
-    ]
 
 
 viewNutritionChartsPage : Language -> NominalDate -> Bool -> Nurse -> NutritionSubPage -> NutritionPageData -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -1913,8 +2006,8 @@ viewPieChartLegend language translateFunc colorFunc signs =
         )
 
 
-viewCustomModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewCustomModal language isChw nurse stats db model =
+viewCustomModal : Language -> DashboardPage -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewCustomModal language page isChw nurse stats db model =
     model.modalState
         |> Maybe.map
             (\state ->
@@ -1923,7 +2016,7 @@ viewCustomModal language isChw nurse stats db model =
                         viewStatsTableModal language title data
 
                     FiltersModal ->
-                        viewFiltersModal language isChw nurse stats db model
+                        viewFiltersModal language page isChw nurse stats db model
             )
         |> viewModal
 
@@ -1957,8 +2050,8 @@ viewStatsTableModal language title data =
         ]
 
 
-viewFiltersModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewFiltersModal language isChw nurse stats db model =
+viewFiltersModal : Language -> DashboardPage -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersModal language page isChw nurse stats db model =
     let
         programTypeFilterInputSection =
             if isChw then
@@ -1967,15 +2060,28 @@ viewFiltersModal language isChw nurse stats db model =
 
             else
                 let
+                    options =
+                        case page of
+                            -- Nutrition group types filters are only relevant
+                            -- on Nutrition page. For all others It's either
+                            -- All Programs, or selected village.
+                            PageNutrition PageCharts ->
+                                [ FilterAllPrograms
+                                , FilterProgramFbf
+                                , FilterProgramPmtct
+                                , FilterProgramSorwathe
+                                , FilterProgramAchi
+                                , FilterProgramCommunity
+                                ]
+
+                            _ ->
+                                [ FilterAllPrograms
+                                , FilterProgramCommunity
+                                ]
+
                     programTypeFilterInput =
                         viewCustomSelectListInput (Just model.programTypeFilter)
-                            [ FilterAllPrograms
-                            , FilterProgramFbf
-                            , FilterProgramPmtct
-                            , FilterProgramSorwathe
-                            , FilterProgramAchi
-                            , FilterProgramCommunity
-                            ]
+                            options
                             filterProgramTypeToString
                             SetFilterProgramType
                             (Translate.FilterProgramType >> Translate.Dashboard >> translate language)

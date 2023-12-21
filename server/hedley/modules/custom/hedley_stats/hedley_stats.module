@@ -562,6 +562,10 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
 
+  // Add patient birthdate, so we can calculate the age.
+  $query->leftJoin('field_data_field_birth_date', 'birth_date', 'birth_date.entity_id = field_person.field_person_target_id');
+  $query->addField('birth_date', 'field_birth_date_value');
+
   $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
@@ -571,6 +575,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       'id' => $row->field_person,
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
+      'birth_date' => date_format(date_create($row->field_birth_date_value), 'Y-m-d'),
       // We use the 'end date' of expected fields here, because the
       // 'date concluded' field is not set when illness is resolved.
       // While we could do that for illness, 'date concluded' field was meant
@@ -590,6 +595,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     'field_individual_participant',
     'field_sequence_number',
     'field_acute_illness_diagnosis',
+    'field_ai_encounter_type',
   ];
   foreach ($fields_to_join as $field) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
@@ -659,7 +665,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     $fever_by_signs = !empty($row->fever_period) && $row->fever_period > 0;
     $fever_by_vitals = !empty($row->body_temperature) && (float) $row->body_temperature >= 37.5;
 
-    $items[$row->field_individual_participant]['encounters'][] = [
+    $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'sequence_number' => $row->field_sequence_number,
@@ -672,6 +678,12 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       'contact_hc' => empty($row->contact_hc) ? [] : explode(',', $row->contact_hc),
       'recommendation_hc' => empty($row->recommendation_hc) ? [] : explode(',', $row->recommendation_hc),
     ];
+
+    if (!empty($row->field_ai_encounter_type)) {
+      $item['encounter_type'] = $row->field_ai_encounter_type;
+    }
+
+    $items[$row->field_individual_participant]['encounters'][] = $item;
   }
 
   // Free up memory.

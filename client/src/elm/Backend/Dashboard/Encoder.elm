@@ -1,7 +1,7 @@
 module Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis, encodeAcuteIllnessEncounterType)
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (encodeDeliveryLocation, encodeIndividualEncounterParticipantOutcome)
@@ -246,6 +246,7 @@ encodeAcuteIllnessDataItem : AcuteIllnessDataItem -> List ( String, Value )
 encodeAcuteIllnessDataItem item =
     [ ( "id", int item.identifier )
     , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
     , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
     , ( "date_concluded", maybe encodeYYYYMMDD item.dateConcluded )
     , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome item.outcome )
@@ -257,7 +258,9 @@ encodeAcuteIllnessEncounterDataItem : AcuteIllnessEncounterDataItem -> Value
 encodeAcuteIllnessEncounterDataItem item =
     object
         [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "encounter_type", encodeAcuteIllnessEncounterType item.encounterType )
         , ( "sequence_number", int item.sequenceNumber )
+        , ( "age_in_months", int item.ageInMonths )
         , ( "diagnosis", encodeAcuteIllnessDiagnosis item.diagnosis )
         , ( "fever", bool item.feverRecorded )
         , ( "isolation", encodeEverySet encodeIsolationSign item.isolationSigns )

@@ -1,8 +1,8 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounterType)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
@@ -30,7 +30,7 @@ import Backend.Measurement.Model
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
 import Gizra.Json exposing (decodeFloat, decodeInt)
-import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Gizra.NominalDate exposing (decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Pages.Report.Utils exposing (compareAcuteIllnessEncountersDesc)
@@ -294,6 +294,7 @@ decodeAcuteIllnessDataItem =
     succeed AcuteIllnessDataItem
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
         |> hardcoded NoAcuteIllnessDiagnosis
         |> required "date_concluded" (nullable decodeYYYYMMDD)
         |> required "outcome" (nullable decodeIndividualEncounterParticipantOutcome)
@@ -302,7 +303,8 @@ decodeAcuteIllnessDataItem =
             (\item ->
                 let
                     orderedEncounters =
-                        List.sortWith compareAcuteIllnessEncountersDesc item.encounters
+                        List.map (\encounter -> { encounter | ageInMonths = diffMonths item.birthDate encounter.startDate }) item.encounters
+                            |> List.sortWith compareAcuteIllnessEncountersDesc
 
                     resolvedDiagnosis =
                         List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) orderedEncounters
@@ -318,7 +320,9 @@ decodeAcuteIllnessEncounterDataItem : Decoder AcuteIllnessEncounterDataItem
 decodeAcuteIllnessEncounterDataItem =
     succeed AcuteIllnessEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" (decodeWithFallback AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType) AcuteIllnessEncounterCHW
         |> required "sequence_number" (decodeWithFallback 1 decodeInt)
+        |> hardcoded 0
         |> required "diagnosis" decodeAcuteIllnessDiagnosis
         |> required "fever" bool
         |> required "isolation" (decodeEverySet (decodeWithFallback NoIsolationSigns decodeIsolationSign))
