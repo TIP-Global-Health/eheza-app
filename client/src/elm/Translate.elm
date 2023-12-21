@@ -261,6 +261,7 @@ type Dashboard
     | HypertensionNewCases
     | IncidenceOf
     | ImmunizationOnTrackLabel
+    | IncidentsOfWasting
     | LastUpdated
     | ManagedByPMTCT
     | MissedSessionsLabel
@@ -273,7 +274,10 @@ type Dashboard
     | NewCasesPerMonth
     | NewPregnancy
     | NoDataForPeriod
+    | NumberOfCephaly
     | NumberOfChildrenSeen
+    | NumberOfDiagnosedMalnourished
+    | NumberOfStunting
     | PatientsManagedAtHome
     | PatientCurrentlyUnderCare
     | PercentageLabel FilterPeriod
@@ -287,6 +291,7 @@ type Dashboard
     | StatisticsHelper
     | SubFilter DashboardSubFilter
     | TotalBeneficiaries
+    | TotalBeneficiariesWasting
     | TotalMalnourished
     | TotalEncountersLabel
     | TotalAssessment
@@ -22940,7 +22945,7 @@ translateDashboard trans =
             }
 
         GoodNutritionLabel ->
-            { english = "% Good nutrition"
+            { english = "% Good Nutrition"
             , kinyarwanda = Just "% Abafite imirire myiza"
             , kirundi = Just "% vyo Gufungura neza"
             }
@@ -23001,6 +23006,12 @@ translateDashboard trans =
 
         ImmunizationOnTrackLabel ->
             { english = "% Immunization on Track"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        IncidentsOfWasting ->
+            { english = "Incidents of Wasting"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -23077,8 +23088,26 @@ translateDashboard trans =
             , kirundi = Just "Nta makuru y'igihe catowe."
             }
 
+        NumberOfCephaly ->
+            { english = "# of Micro/Macrocephaly"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NumberOfChildrenSeen ->
             { english = "# of Children Seen"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NumberOfDiagnosedMalnourished ->
+            { english = "# of Diagnosed Malnourished"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NumberOfStunting ->
+            { english = "# of Stunting"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -23215,6 +23244,12 @@ translateDashboard trans =
             , kirundi = Just "Abagenerwabikorwa bose"
             }
 
+        TotalBeneficiariesWasting ->
+            { english = "Total Beneficiaries Wasting"
+            , kinyarwanda = Just "Umubare w'abana bose bafite"
+            , kirundi = Just "Abagenerwabikorwa bose"
+            }
+
         TotalMalnourished ->
             { english = "Total Malnourished"
             , kinyarwanda = Nothing
@@ -23222,7 +23257,7 @@ translateDashboard trans =
             }
 
         TotalEncountersLabel ->
-            { english = "Total encounters completed"
+            { english = "Total Encounters Completed"
             , kinyarwanda = Just "Ibikorwa byose byarangiye"
             , kirundi = Just "Icegeranyo c'imibonano yose yaheze"
             }

@@ -2651,4 +2651,47 @@ viewChildWellnessOverviewPage language selectedDate dataItems =
 
 viewChildWellnessNutritionPage : Language -> NominalDate -> List SPVDataItem -> List (Html Msg)
 viewChildWellnessNutritionPage language selectedDate dataItems =
-    []
+    let
+        percentOfGoodNutrition =
+            -- @todo
+            0
+
+        totalEncountersComplete =
+            -- @todo
+            0
+
+        totalBeneficiariesWasting =
+            -- @todo
+            0
+
+        incidentsOfWasting =
+            -- @todo
+            0
+
+        numberOfStunting =
+            -- @todo
+            0
+
+        numberOfCephaly =
+            -- @todo
+            0
+
+        numberOfDiagnosedMalnorished =
+            -- @todo
+            0
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "three column row center" ]
+            [ chwCard language (Translate.Dashboard Translate.GoodNutritionLabel) (String.fromInt percentOfGoodNutrition)
+            , chwCard language (Translate.Dashboard Translate.TotalEncountersLabel) (String.fromInt totalEncountersComplete)
+            , chwCard language (Translate.Dashboard Translate.TotalBeneficiariesWasting) (String.fromInt totalBeneficiariesWasting)
+            ]
+        , div [ class "three column row center" ]
+            [ chwCard language (Translate.Dashboard Translate.IncidentsOfWasting) (String.fromInt incidentsOfWasting)
+            , chwCard language (Translate.Dashboard Translate.NumberOfStunting) (String.fromInt numberOfStunting)
+            , chwCard language (Translate.Dashboard Translate.NumberOfCephaly) (String.fromInt numberOfCephaly)
+            ]
+        , div [ class "three column row center" ]
+            [ chwCard language (Translate.Dashboard Translate.NumberOfDiagnosedMalnourished) (String.fromInt numberOfDiagnosedMalnorished) ]
+        ]
+    ]
