@@ -47,7 +47,7 @@ define('HEDLEY_STATS_SYNC_ACUTE_ILLNESS_DATA', 'sync_acute_illness_data');
 define('HEDLEY_STATS_SYNC_PRENATAL_DATA', 'sync_prenatal_data');
 define('HEDLEY_STATS_SYNC_NCD_DATA', 'sync_ncd_data');
 define('HEDLEY_STATS_SYNC_PMTCT_DATA', 'sync_pmtct_data');
-define('HEDLEY_STATS_SYNC_SPV_DATA', 'sync_pmtct_data');
+define('HEDLEY_STATS_SYNC_SPV_DATA', 'sync_spv_data');
 define('HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS', 'villages_with_residents');
 
 // Cache methods.
