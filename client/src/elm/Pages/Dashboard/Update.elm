@@ -120,7 +120,7 @@ update currentDate healthCenterId subPage db msg model =
 
         SetActivePage page ->
             let
-                -- When nurse navigates from Nutrition charts page to main oage,
+                -- When nurse navigates from Nutrition charts page to main page,
                 -- reset filters to All Programs, unless village was selected.
                 ( programTypeFilter, selectedVillageFilter ) =
                     case ( subPage, page ) of
