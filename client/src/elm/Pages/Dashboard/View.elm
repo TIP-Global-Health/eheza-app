@@ -2681,12 +2681,12 @@ viewChildWellnessNutritionPage language selectedDate dataItems =
             0
     in
     [ div [ class "ui grid" ]
-        [ div [ class "three column row center" ]
+        [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.GoodNutritionLabel) (String.fromInt percentOfGoodNutrition)
             , chwCard language (Translate.Dashboard Translate.TotalEncountersLabel) (String.fromInt totalEncountersComplete)
             , chwCard language (Translate.Dashboard Translate.TotalBeneficiariesWasting) (String.fromInt totalBeneficiariesWasting)
             ]
-        , div [ class "three column row center" ]
+        , div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.IncidentsOfWasting) (String.fromInt incidentsOfWasting)
             , chwCard language (Translate.Dashboard Translate.NumberOfStunting) (String.fromInt numberOfStunting)
             , chwCard language (Translate.Dashboard Translate.NumberOfCephaly) (String.fromInt numberOfCephaly)
