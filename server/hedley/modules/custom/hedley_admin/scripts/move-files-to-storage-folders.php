@@ -33,11 +33,11 @@ $count_query = clone $base_query;
 $count = $count_query->execute()->rowCount();
 
 if ($count == 0) {
-  drush_print("Not files to relocate into storage folder.");
+  drush_print("No files to relocate into storage folder.");
   exit;
 }
 
-drush_print("Located $count to relocate into storage folder.");
+drush_print("Located $count files to relocate into storage folder.");
 
 while (TRUE) {
   // Free up memory.
