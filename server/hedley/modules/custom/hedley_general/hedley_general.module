@@ -452,3 +452,47 @@ function hedley_general_shards_by_person($nid) {
 
   return !empty($shards) ? $shards : [];
 }
+
+/**
+ * Implements hook_file_presave().
+ *
+ * If file is saved directly into 'private', sets it's uri and
+ * destination to storage sub folder (storage-MM-YYYY).
+ * We need this, so that photos that are fetched from client get correct
+ * uri for image style into 'deferredPhotos' table, which is used to
+ * download deferred photos during device sync.
+ * The file itself will be moved to storage folder at hook_file_insert().
+ */
+function hedley_general_file_presave($file) {
+  if ($file->uri !== 'private://' . $file->filename) {
+    return;
+  }
+
+  // Generate storages sub-folder name per current date.
+  $target_folder = 'private://storage-' . date('m-Y', time()) . '/';
+  if (!file_prepare_directory($target_folder, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+    return;
+  }
+
+  $new_uri = str_replace('private://', $target_folder, $file->uri);
+  $file->uri = $new_uri;
+  $file->destination = $new_uri;
+}
+
+/**
+ * Implements hook_file_insert().
+ *
+ * At hook_file_presave(), file uri is set to storage sub-folder.
+ * If such file is inserted, we move the file from 'private' to
+ * storage sub-folder.
+ */
+function hedley_general_file_insert($file) {
+  $file = file_load($file->fid);
+  if (strstr($file->uri, 'private://storage-') === FALSE) {
+    return;
+  }
+
+  $destination = $file->uri;
+  $file->uri = 'private://' . $file->filename;
+  file_move($file, $destination);
+}
