@@ -319,9 +319,10 @@ function hedley_stats_requires_pmtct_statistics_recalculation($wrapper) {
  */
 function hedley_stats_requires_spv_statistics_recalculation($wrapper) {
   $triggering_types = array_merge([
-      HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
-      HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE,
-    ],
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_ECD_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE,
+  ],
     HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES
   );
 
