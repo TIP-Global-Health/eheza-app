@@ -10,6 +10,7 @@ import Backend.Measurement.Decoder
     exposing
         ( decodeCall114Sign
         , decodeDangerSign
+        , decodeECDSign
         , decodeFamilyPlanningSign
         , decodeHCContactSign
         , decodeHCRecommendation
@@ -24,6 +25,7 @@ import Backend.Measurement.Model
     exposing
         ( Call114Sign(..)
         , DangerSign(..)
+        , ECDSign(..)
         , HCContactSign(..)
         , HCRecommendation(..)
         , IsolationSign(..)
@@ -389,6 +391,7 @@ decodeNCDDataItem =
     succeed NCDDataItem
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
         |> required "encounters" (list decodeNCDEncounterDataItem)
 
 
@@ -429,6 +432,7 @@ decodeSPVDataItem =
     succeed SPVDataItem
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
         |> required "encounters" (list decodeSPVEncounterDataItem)
 
 
@@ -450,3 +454,13 @@ decodeSPVEncounterDataItem =
     succeed SPVEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
         |> optional "warnings" decodeWarnings (EverySet.singleton NoEncounterWarnings)
+        |> required "ecd_signs" (decodeEverySet (decodeWithFallback NoECDSigns decodeECDSign))
+        |> required "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_dtp_sa_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_pcv13_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_rotarix_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_ipv_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_mr_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_hpv_immunisation" (decodeEverySet decodeYYYYMMDD)

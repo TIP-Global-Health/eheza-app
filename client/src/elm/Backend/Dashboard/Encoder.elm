@@ -9,6 +9,7 @@ import Backend.Measurement.Encoder
     exposing
         ( encodeCall114Sign
         , encodeDangerSign
+        , encodeECDSign
         , encodeFamilyPlanningSign
         , encodeHCContactSign
         , encodeHCRecommendation
@@ -335,6 +336,7 @@ encodeNCDDataItem : NCDDataItem -> List ( String, Value )
 encodeNCDDataItem item =
     [ ( "id", int item.identifier )
     , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
     , ( "encounters", list encodeNCDEncounterDataItem item.encounters )
     ]
 
@@ -391,6 +393,7 @@ encodeSPVDataItem : SPVDataItem -> List ( String, Value )
 encodeSPVDataItem item =
     [ ( "id", int item.identifier )
     , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
     , ( "encounters", list encodeSPVEncounterDataItem item.encounters )
     ]
 
@@ -398,6 +401,7 @@ encodeSPVDataItem item =
 encodeSPVEncounterDataItem : SPVEncounterDataItem -> Value
 encodeSPVEncounterDataItem item =
     let
+        --  , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
         warningsWithDefault warnings =
             if EverySet.isEmpty warnings then
                 List.singleton NoEncounterWarnings
@@ -408,4 +412,14 @@ encodeSPVEncounterDataItem item =
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "warnings", list encodeEncounterWarning (warningsWithDefault item.warnings) )
+        , ( "ecd_signs", encodeEverySet encodeECDSign item.ecdSigns )
+        , ( "well_child_bcg_immunisation", encodeEverySet encodeYYYYMMDD item.bcgImminizarionDates )
+        , ( "well_child_opv_immunisation", encodeEverySet encodeYYYYMMDD item.opvImminizarionDates )
+        , ( "well_child_dtp_immunisation", encodeEverySet encodeYYYYMMDD item.dtpImminizarionDates )
+        , ( "well_child_dtp_sa_immunisation", encodeEverySet encodeYYYYMMDD item.dtpStandaloneImminizarionDates )
+        , ( "well_child_pcv13_immunisation", encodeEverySet encodeYYYYMMDD item.pcv13ImminizarionDates )
+        , ( "well_child_rotarix_immunisation", encodeEverySet encodeYYYYMMDD item.rotarixImminizarionDates )
+        , ( "well_child_ipv_immunisation", encodeEverySet encodeYYYYMMDD item.ipvImminizarionDates )
+        , ( "well_child_mr_immunisation", encodeEverySet encodeYYYYMMDD item.mrImminizarionDates )
+        , ( "well_child_hpv_immunisation", encodeEverySet encodeYYYYMMDD item.hpvImminizarionDates )
         ]

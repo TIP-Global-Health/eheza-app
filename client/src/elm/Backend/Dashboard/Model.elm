@@ -11,6 +11,7 @@ import Backend.Measurement.Model
     exposing
         ( Call114Sign
         , DangerSign
+        , ECDSign
         , FamilyPlanningSign
         , Gender
         , HCContactSign
@@ -308,6 +309,7 @@ type alias AcuteIllnessEncounterDataItem =
 type alias NCDDataItem =
     { identifier : PersonIdentifier
     , created : NominalDate
+    , birthDate : NominalDate
     , encounters : List NCDEncounterDataItem
     }
 
@@ -332,6 +334,7 @@ type alias PMTCTDataItem =
 type alias SPVDataItem =
     { identifier : PersonIdentifier
     , created : NominalDate
+    , birthDate : NominalDate
     , encounters : List SPVEncounterDataItem
     }
 
@@ -339,4 +342,14 @@ type alias SPVDataItem =
 type alias SPVEncounterDataItem =
     { startDate : NominalDate
     , warnings : EverySet EncounterWarning
+    , ecdSigns : EverySet ECDSign
+    , bcgImminizarionDates : EverySet NominalDate
+    , opvImminizarionDates : EverySet NominalDate
+    , dtpImminizarionDates : EverySet NominalDate
+    , dtpStandaloneImminizarionDates : EverySet NominalDate
+    , pcv13ImminizarionDates : EverySet NominalDate
+    , rotarixImminizarionDates : EverySet NominalDate
+    , ipvImminizarionDates : EverySet NominalDate
+    , mrImminizarionDates : EverySet NominalDate
+    , hpvImminizarionDates : EverySet NominalDate
     }
