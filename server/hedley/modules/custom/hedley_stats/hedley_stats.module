@@ -1249,6 +1249,7 @@ function hedley_stats_get_spv_data($health_center_id) {
   $base_query = hedley_stats_get_base_query($health_center_id, 'well_child_encounter');
   $fields_to_join = [
     'field_individual_participant',
+    'field_well_child_encounter_type',
   ];
   foreach ($fields_to_join as $field) {
     hedley_general_join_field_to_query($base_query, 'node', $field, FALSE);
@@ -1293,13 +1294,19 @@ function hedley_stats_get_spv_data($health_center_id) {
       }
     }
 
-    $items[$row->field_individual_participant]['encounters'][$row->nid] = [
+    $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'warnings' => explode(',', $row->encounter_warnings),
       'ecd_signs' => explode(',', $row->ecd_signs),
       HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE => $administration_dates,
     ];
+
+    if (!empty($row->field_well_child_encounter_type)) {
+      $item['encounter_type'] = $row->field_well_child_encounter_type;
+    }
+
+    $items[$row->field_individual_participant]['encounters'][$row->nid] = $item;
   }
 
   // Free up memory.
