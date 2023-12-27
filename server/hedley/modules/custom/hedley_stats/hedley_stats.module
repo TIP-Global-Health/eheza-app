@@ -1266,14 +1266,24 @@ function hedley_stats_get_spv_data($health_center_id) {
   }
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
 
-  // Pull data of prenatal_diagnoses that were recorded during encounter.
+  // Join with Well Child Encounter table, through which we can join measurements data.
+  $query->leftJoin('field_data_field_well_child_encounter', 'well_child_encounter', 'well_child_encounter.field_well_child_encounter_target_id = node.nid');
+
+  // Pull data of well child warnings that were recorded during encounter.
   $query->leftJoin('field_data_field_encounter_warnings', 'encounter_warnings', 'encounter_warnings.entity_id = node.nid');
   $query->addField('encounter_warnings', 'field_encounter_warnings_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT encounter_warnings.field_encounter_warnings_value)", 'encounter_warnings');
 
-  // @todo: is this needed?
-  // Join with Well Child Encounter table, through which we can join measurements data.
-  $query->leftJoin('field_data_field_well_child_encounter', 'well_child_encounter', 'well_child_encounter.field_well_child_encounter_target_id = node.nid');
+  // Pull data of ECD signs that were recorded at Well Child ECD activity.
+  $query->leftJoin('field_data_field_ecd_signs', 'ecd_signs', 'ecd_signs.entity_id = well_child_encounter.entity_id');
+  $query->addField('ecd_signs', 'field_ecd_signs_value');
+  $query->addExpression("GROUP_CONCAT(ecd_signs.field_ecd_signs_value)", 'ecd_signs');
+
+  // Pull data of PCV immunization.
+  $query->leftJoin('field_data_field_administration_dates', 'administration_dates', 'administration_dates.entity_id = well_child_encounter.entity_id');
+  $query->addField('administration_dates', 'field_administration_dates_value');
+  $query->condition(db_or()->isNull('administration_dates.bundle')->condition('administration_dates.bundle', 'well_child_pcv13_immunisation'));
+  $query->addExpression("GROUP_CONCAT(administration_dates.field_administration_dates_value)", 'administration_dates');
 
   $query->groupBy('node.nid');
 
@@ -1292,10 +1302,18 @@ function hedley_stats_get_spv_data($health_center_id) {
       continue;
     }
 
-    $items[$row->field_individual_participant]['encounters'][] = [
+    $pcv_administration_data = explode(',', $row->administration_dates);
+    $pcv_administration_dates = [];
+    foreach ($pcv_administration_data as $value) {
+      $pcv_administration_dates[] = date_format(date_create($value), 'Y-m-d');
+    }
+
+    $items[$row->field_individual_participant]['encounters'][$row->nid] = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'warnings' => explode(',', $row->encounter_warnings),
+      'ecd_signs' => explode(',', $row->ecd_signs),
+      'pcv_administration_dates' => $pcv_administration_dates,
     ];
   }
 
