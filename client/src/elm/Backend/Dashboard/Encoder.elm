@@ -49,6 +49,7 @@ encodeDashboardStatsRaw stats =
     , encodeNCDData stats.ncdData
     , encodePMTCTData stats.pmtctData
     , encodeSPVData stats.spvData
+    , encodeChildScoreboardData stats.childScoreboardData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
@@ -422,4 +423,33 @@ encodeSPVEncounterDataItem item =
         , ( "well_child_ipv_immunisation", encodeEverySet encodeYYYYMMDD item.ipvImminizarionDates )
         , ( "well_child_mr_immunisation", encodeEverySet encodeYYYYMMDD item.mrImminizarionDates )
         , ( "well_child_hpv_immunisation", encodeEverySet encodeYYYYMMDD item.hpvImminizarionDates )
+        ]
+
+
+encodeChildScoreboardData : List ChildScoreboardDataItem -> ( String, Value )
+encodeChildScoreboardData itemsList =
+    ( "child_scoreboard_data", list (encodeChildScoreboardDataItem >> object) itemsList )
+
+
+encodeChildScoreboardDataItem : ChildScoreboardDataItem -> List ( String, Value )
+encodeChildScoreboardDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
+    , ( "encounters", list encodeChildScoreboardEncounterDataItem item.encounters )
+    ]
+
+
+encodeChildScoreboardEncounterDataItem : ChildScoreboardEncounterDataItem -> Value
+encodeChildScoreboardEncounterDataItem item =
+    object <|
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "child_scoreboard_bcg_iz", encodeEverySet encodeYYYYMMDD item.bcgImminizarionDates )
+        , ( "child_scoreboard_opv_iz", encodeEverySet encodeYYYYMMDD item.opvImminizarionDates )
+        , ( "child_scoreboard_dtp_iz", encodeEverySet encodeYYYYMMDD item.dtpImminizarionDates )
+        , ( "child_scoreboard_dtp_sa_iz", encodeEverySet encodeYYYYMMDD item.dtpStandaloneImminizarionDates )
+        , ( "child_scoreboard_pcv13_iz", encodeEverySet encodeYYYYMMDD item.pcv13ImminizarionDates )
+        , ( "child_scoreboard_rotarix_iz", encodeEverySet encodeYYYYMMDD item.rotarixImminizarionDates )
+        , ( "child_scoreboard_ipv_iz", encodeEverySet encodeYYYYMMDD item.ipvImminizarionDates )
+        , ( "child_scoreboard_mr_iz", encodeEverySet encodeYYYYMMDD item.mrImminizarionDates )
         ]

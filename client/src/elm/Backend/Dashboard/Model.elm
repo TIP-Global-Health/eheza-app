@@ -38,6 +38,7 @@ type alias AssembledData =
     , ncdData : List NCDDataItem
     , pmtctData : List PMTCTDataItem
     , spvData : List SPVDataItem
+    , childScoreboardData : List ChildScoreboardDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -70,6 +71,7 @@ type alias DashboardStatsRaw =
     , ncdData : List NCDDataItem
     , pmtctData : List PMTCTDataItem
     , spvData : List SPVDataItem
+    , childScoreboardData : List ChildScoreboardDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -93,6 +95,7 @@ emptyModel =
     , ncdData = []
     , pmtctData = []
     , spvData = []
+    , childScoreboardData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -352,4 +355,25 @@ type alias SPVEncounterDataItem =
     , ipvImminizarionDates : EverySet NominalDate
     , mrImminizarionDates : EverySet NominalDate
     , hpvImminizarionDates : EverySet NominalDate
+    }
+
+
+type alias ChildScoreboardDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , encounters : List ChildScoreboardEncounterDataItem
+    }
+
+
+type alias ChildScoreboardEncounterDataItem =
+    { startDate : NominalDate
+    , bcgImminizarionDates : EverySet NominalDate
+    , opvImminizarionDates : EverySet NominalDate
+    , dtpImminizarionDates : EverySet NominalDate
+    , dtpStandaloneImminizarionDates : EverySet NominalDate
+    , pcv13ImminizarionDates : EverySet NominalDate
+    , rotarixImminizarionDates : EverySet NominalDate
+    , ipvImminizarionDates : EverySet NominalDate
+    , mrImminizarionDates : EverySet NominalDate
     }

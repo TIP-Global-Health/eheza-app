@@ -66,6 +66,7 @@ decodeDashboardStatsRaw =
         |> required "ncd_data" (list decodeNCDDataItem)
         |> required "pmtct_data" (list decodePMTCTDataItem)
         |> required "spv_data" (list decodeSPVDataItem)
+        |> required "child_scoreboard_data" (list decodeChildScoreboardDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -464,3 +465,26 @@ decodeSPVEncounterDataItem =
         |> required "well_child_ipv_immunisation" (decodeEverySet decodeYYYYMMDD)
         |> required "well_child_mr_immunisation" (decodeEverySet decodeYYYYMMDD)
         |> required "well_child_hpv_immunisation" (decodeEverySet decodeYYYYMMDD)
+
+
+decodeChildScoreboardDataItem : Decoder ChildScoreboardDataItem
+decodeChildScoreboardDataItem =
+    succeed ChildScoreboardDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "encounters" (list decodeChildScoreboardEncounterDataItem)
+
+
+decodeChildScoreboardEncounterDataItem : Decoder ChildScoreboardEncounterDataItem
+decodeChildScoreboardEncounterDataItem =
+    succeed ChildScoreboardEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> required "child_scoreboard_bcg_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_opv_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_dtp_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_dtp_sa_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_pcv13_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_rotarix_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_ipv_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_mr_iz" (decodeEverySet decodeYYYYMMDD)
