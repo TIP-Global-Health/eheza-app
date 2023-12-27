@@ -1117,7 +1117,6 @@ viewPrenatalDiagnosesSection language currentDate currentlyPregnantWithDangerSig
                 ++ newlyDiagnosesEclampsiaPregnancies
                 ++ newlyDiagnosesSevereAnemiaPregnancies
                 ++ newlyDiagnosesAcuteMalnutritionPregnancies
-                ++ newlyDiagnosesAcuteMalnutritionPregnancies
                 ++ newlyDiagnosesGestationalDiabetesPregnancies
                 ++ newlyDiagnosesHIVPregnancies
                 |> List.map .identifier
