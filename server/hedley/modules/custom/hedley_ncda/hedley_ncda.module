@@ -473,7 +473,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person) {
         continue;
       }
 
-      if (in_array($node->type, HEDLEY_ACTIVITY_IMMUNISATION_BUNDLES)) {
+      if (in_array($node->type, hedley_ncda_resolve_immunization_bundles())) {
         $immunisations[] = $node;
         continue;
       }
@@ -1106,6 +1106,19 @@ function hedley_ncda_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_MUAC_BUNDLES,
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES,
-    HEDLEY_ACTIVITY_IMMUNISATION_BUNDLES
+    hedley_ncda_resolve_immunization_bundles()
+  );
+}
+
+/**
+ * Generates a list of immunization bundles relevant for NCDA.
+ *
+ * @return string[]
+ *   List of immunization bundles.
+ */
+function hedley_ncda_resolve_immunization_bundles() {
+  return array_merge(
+    HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
+    HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IMMUNISATION_BUNDLES
   );
 }

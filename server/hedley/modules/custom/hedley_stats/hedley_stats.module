@@ -1088,17 +1088,6 @@ function hedley_stats_get_ncd_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
-    if (empty($items[$row->field_individual_participant])) {
-      // If we got here, there's an encounter that is not
-      // assigned to participant.
-      // This is anomaly that should not happen, since participant
-      // is mandatory field.
-      // However, there was one case where it happened on live,
-      // so adding this check for certainty, since this failure causes
-      // health center sync to get stuck, making HC devices not usable.
-      continue;
-    }
-
     $items[$row->field_individual_participant]['encounters'][] = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
@@ -1257,17 +1246,20 @@ function hedley_stats_get_spv_data($health_center_id) {
   drupal_static_reset();
 
   // Resolve encounters data.
-  $query = hedley_stats_get_base_query($health_center_id, 'well_child_encounter');
+  $base_query = hedley_stats_get_base_query($health_center_id, 'well_child_encounter');
   $fields_to_join = [
     'field_individual_participant',
   ];
   foreach ($fields_to_join as $field) {
-    hedley_general_join_field_to_query($query, 'node', $field, FALSE);
+    hedley_general_join_field_to_query($base_query, 'node', $field, FALSE);
   }
-  $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
+  $base_query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
 
-  // Join with Well Child Encounter table, through which we can join measurements data.
-  $query->leftJoin('field_data_field_well_child_encounter', 'well_child_encounter', 'well_child_encounter.field_well_child_encounter_target_id = node.nid');
+  // Join with Well Child Encounter table, through which
+  // we can join measurements data.
+  $base_query->leftJoin('field_data_field_well_child_encounter', 'well_child_encounter', 'well_child_encounter.field_well_child_encounter_target_id = node.nid');
+
+  $query = clone $base_query;
 
   // Pull data of well child warnings that were recorded during encounter.
   $query->leftJoin('field_data_field_encounter_warnings', 'encounter_warnings', 'encounter_warnings.entity_id = node.nid');
@@ -1279,10 +1271,12 @@ function hedley_stats_get_spv_data($health_center_id) {
   $query->addField('ecd_signs', 'field_ecd_signs_value');
   $query->addExpression("GROUP_CONCAT(ecd_signs.field_ecd_signs_value)", 'ecd_signs');
 
-  // Pull data of PCV immunization.
+  // Pull data of HPV immunization. We join HPV here, as all other types
+  // are part of HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES list,
+  // which is used later to join all remaining immunizations.
   $query->leftJoin('field_data_field_administration_dates', 'administration_dates', 'administration_dates.entity_id = well_child_encounter.entity_id');
   $query->addField('administration_dates', 'field_administration_dates_value');
-  $query->condition(db_or()->isNull('administration_dates.bundle')->condition('administration_dates.bundle', 'well_child_pcv13_immunisation'));
+  $query->condition(db_or()->isNull('administration_dates.bundle')->condition('administration_dates.bundle', HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE));
   $query->addExpression("GROUP_CONCAT(administration_dates.field_administration_dates_value)", 'administration_dates');
 
   $query->groupBy('node.nid');
@@ -1291,21 +1285,12 @@ function hedley_stats_get_spv_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
-    if (empty($items[$row->field_individual_participant])) {
-      // If we got here, there's an encounter that is not
-      // assigned to participant.
-      // This is anomaly that should not happen, since participant
-      // is mandatory field.
-      // However, there was one case where it happened on live,
-      // so adding this check for certainty, since this failure causes
-      // health center sync to get stuck, making HC devices not usable.
-      continue;
-    }
-
-    $pcv_administration_data = explode(',', $row->administration_dates);
-    $pcv_administration_dates = [];
-    foreach ($pcv_administration_data as $value) {
-      $pcv_administration_dates[] = date_format(date_create($value), 'Y-m-d');
+    $administration_data = explode(',', $row->administration_dates);
+    $administration_dates = [];
+    foreach ($administration_data as $value) {
+      if (!empty($value)) {
+        $administration_dates[] = date_format(date_create($value), 'Y-m-d');
+      }
     }
 
     $items[$row->field_individual_participant]['encounters'][$row->nid] = [
@@ -1313,19 +1298,68 @@ function hedley_stats_get_spv_data($health_center_id) {
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'warnings' => explode(',', $row->encounter_warnings),
       'ecd_signs' => explode(',', $row->ecd_signs),
-      'pcv_administration_dates' => $pcv_administration_dates,
+      HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE => $administration_dates,
     ];
   }
 
   // Free up memory.
   drupal_static_reset();
 
+  foreach (HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES as $bundle) {
+    hedley_stats_add_immunization_dates_for_bundle($base_query, 'well_child', $bundle, $items);
+  }
+
+  foreach ($items as &$item) {
+    $item['encounters'] = array_values($item['encounters']);
+  }
   $values = array_values($items);
 
   // Store in cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SPV_DATA, $health_center_id, NULL, $values);
 
   return $values;
+}
+
+/**
+ * Add immunization dates for a specific bundle to the given items array.
+ *
+ * @param SelectQuery $base_query
+ *   The base query to build upon.
+ * @param string $encounter_type
+ *   The type of encounter from which immunization data is to be pulled.
+ * @param string $bundle
+ *   The bundle for immunization type.
+ * @param array $items
+ *   An array to store the immunization dates for encounters
+ *   of each participant.
+ */
+function hedley_stats_add_immunization_dates_for_bundle(SelectQuery $base_query, $encounter_type, $bundle, array &$items) {
+  $query = clone $base_query;
+  // Pull data of PCV immunization.
+  $query->leftJoin('field_data_field_administration_dates', 'administration_dates', "administration_dates.entity_id = {$encounter_type}_encounter.entity_id");
+  $query->addField('administration_dates', 'field_administration_dates_value');
+  $query->condition(db_or()->isNull('administration_dates.bundle')->condition('administration_dates.bundle', $bundle));
+  $query->addExpression("GROUP_CONCAT(administration_dates.field_administration_dates_value)", 'administration_dates');
+
+  $query->groupBy('node.nid');
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  // Populate data of the encounters.
+  foreach ($result as $row) {
+    $administration_data = explode(',', $row->administration_dates);
+    $administration_dates = [];
+    foreach ($administration_data as $value) {
+      if (!empty($value)) {
+        $administration_dates[] = date_format(date_create($value), 'Y-m-d');
+      }
+    }
+
+    $items[$row->field_individual_participant]['encounters'][$row->nid][$bundle] = $administration_dates;
+  }
+
+  // Free up memory.
+  drupal_static_reset();
 }
 
 /**
