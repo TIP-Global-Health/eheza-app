@@ -15,6 +15,7 @@ import Backend.Dashboard.Model
         , NutritionValue
         , ParticipantStats
         , Periods
+        , PrenatalDataItem
         , TotalBeneficiaries
         , emptyNutritionValue
         )
@@ -23,6 +24,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(.
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Utils exposing (getVillageById)
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
@@ -127,7 +129,9 @@ view language page currentDate healthCenterId isChw nurse model db =
                                         )
 
                                     PageAcuteIllness subPage ->
-                                        ( viewAcuteIllnessPage language currentDate healthCenterId isChw subPage assembled db model, "acute-illness" )
+                                        ( viewAcuteIllnessPage language currentDate healthCenterId isChw subPage assembled db model
+                                        , "acute-illness"
+                                        )
 
                                     PageNutrition subPage ->
                                         ( viewNutritionPage language
@@ -211,7 +215,7 @@ viewPageMainForChw language currentDate healthCenterId assembled db model =
 
         -- Prenatal
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth selectedDate isChw assembled.prenatalData
 
         totalNewborn =
             countNewbornForSelectedMonth selectedDate assembled.prenatalData
@@ -1027,36 +1031,143 @@ viewPrenatalPage language currentDate isChw assembled db model =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         newlyIdentifiedPreganancies =
-            countNewlyIdentifiedPregananciesForSelectedMonth selectedDate assembled.prenatalData
+            countNewlyIdentifiedPregananciesForSelectedMonth selectedDate isChw assembled.prenatalData
 
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth selectedDate isChw assembled.prenatalData
 
-        pregnanciesDueWithin4Month =
-            countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate assembled.prenatalData
+        pregnanciesDueWithin4Months =
+            countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate isChw assembled.prenatalData
 
         currentlyPregnantWithDangerSigns =
-            countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate assembled.prenatalData
+            countCurrentlyPregnantWithDangerSignsForSelectedMonth selectedDate isChw assembled.prenatalData
 
-        deliveriesAtHome =
-            countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
+        secondRow =
+            let
+                deliveriesAtFacility =
+                    countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+            in
+            if isChw then
+                let
+                    deliveriesAtHome =
+                        countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
+                in
+                [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
+                , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
+                , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+                ]
 
-        deliveriesAtFacility =
-            countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+            else
+                let
+                    pregnanciesWith4VisitsOrMore =
+                        countPregnanciesWith4VisitsOrMoreForSelectedMonth selectedDate assembled.prenatalData
+
+                    hospitalReferrals =
+                        countHospitalReferralsForSelectedMonth selectedDate assembled.prenatalData
+                in
+                [ chwCard language (Translate.Dashboard Translate.PregnanciesWith4VisitsOrMore) (String.fromInt pregnanciesWith4VisitsOrMore)
+                , chwCard language (Translate.Dashboard Translate.HealthCenterDeliveries) (String.fromInt deliveriesAtFacility)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt hospitalReferrals)
+                ]
+
+        dataForNurses =
+            List.filterMap
+                (\pregnancy ->
+                    let
+                        nurseEncounters =
+                            List.filter isNurseEncounter pregnancy.encounters
+                    in
+                    if List.isEmpty nurseEncounters then
+                        Nothing
+
+                    else
+                        Just { pregnancy | encounters = nurseEncounters }
+                )
+                assembled.prenatalData
+
+        prenatalDiagnosesSection =
+            if isChw then
+                []
+
+            else
+                viewPrenatalDiagnosesSection language selectedDate currentlyPregnantWithDangerSigns dataForNurses
     in
     [ monthSelector language selectedDate model
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
             , chwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant)
-            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
+            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Months)
             ]
         ]
-    , div [ class "ui centered grid" ]
+    , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
-            , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
-            , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+            secondRow
+        ]
+    ]
+        ++ prenatalDiagnosesSection
+
+
+viewPrenatalDiagnosesSection : Language -> NominalDate -> Int -> List PrenatalDataItem -> List (Html Msg)
+viewPrenatalDiagnosesSection language currentDate currentlyPregnantWithDangerSigns data =
+    let
+        totalHighRiskPregnancies =
+            newlyDiagnosesSyphilisPregnancies
+                ++ newlyDiagnosesPreeclampsiaPregnancies
+                ++ newlyDiagnosesEclampsiaPregnancies
+                ++ newlyDiagnosesSevereAnemiaPregnancies
+                ++ newlyDiagnosesAcuteMalnutritionPregnancies
+                ++ newlyDiagnosesGestationalDiabetesPregnancies
+                ++ newlyDiagnosesHIVPregnancies
+                |> List.map .identifier
+                |> EverySet.fromList
+                |> EverySet.size
+                |> (+) currentlyPregnantWithDangerSigns
+
+        newlyDiagnosesSyphilisPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate syphilisDiagnoses data
+
+        newlyDiagnosesPreeclampsiaPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate preeclampsiaDiagnoses data
+
+        newlyDiagnosesEclampsiaPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisEclampsia ] data
+
+        newlyDiagnosesSevereAnemiaPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate severeAnemiaDiagnoses data
+
+        newlyDiagnosesAcuteMalnutritionPregnancies =
+            filterNewlyDiagnosesMalnutritionForSelectedMonth currentDate data
+
+        newlyDiagnosesGestationalDiabetesPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisGestationalDiabetes ] data
+
+        newlyDiagnosesHIVPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisHIV ] data
+    in
+    [ div [ class "separator" ] []
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.TotalHighRiskPregnancies (String.fromInt totalHighRiskPregnancies) ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.Syphilis (String.fromInt <| List.length newlyDiagnosesSyphilisPregnancies)
+            , chwCard language Translate.Preeclampsia (String.fromInt <| List.length newlyDiagnosesPreeclampsiaPregnancies)
+            , chwCard language Translate.Eclampsia (String.fromInt <| List.length newlyDiagnosesEclampsiaPregnancies)
+            ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.SevereAnemia (String.fromInt <| List.length newlyDiagnosesSevereAnemiaPregnancies)
+            , chwCard language Translate.AcuteMalnutrition (String.fromInt <| List.length newlyDiagnosesAcuteMalnutritionPregnancies)
+            , chwCard language Translate.DangerSigns (String.fromInt currentlyPregnantWithDangerSigns)
+            ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.GestationalDiabetes (String.fromInt <| List.length newlyDiagnosesGestationalDiabetesPregnancies)
+            , chwCard language Translate.HIV (String.fromInt <| List.length newlyDiagnosesHIVPregnancies)
             ]
         ]
     ]

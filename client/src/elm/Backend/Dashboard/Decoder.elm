@@ -28,7 +28,11 @@ import Backend.Measurement.Model
         , SendToHCSign(..)
         )
 import Backend.Person.Decoder exposing (decodeGender)
+import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Dict as LegacyDict
+import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (..)
@@ -347,6 +351,23 @@ decodePrenatalDataItem =
 
 decodePrenatalEncounterDataItem : Decoder PrenatalEncounterDataItem
 decodePrenatalEncounterDataItem =
+    let
+        decodeDiagnoses =
+            map
+                (\items ->
+                    if List.isEmpty items then
+                        EverySet.singleton NoPrenatalDiagnosis
+
+                    else
+                        EverySet.fromList items
+                )
+            <|
+                list (decodeWithFallback NoPrenatalDiagnosis decodePrenatalDiagnosis)
+    in
     succeed PrenatalEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType) NurseEncounter
         |> required "danger_signs" (decodeEverySet (decodeWithFallback NoDangerSign decodeDangerSign))
+        |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> required "send_to_hc" (decodeEverySet (decodeWithFallback NoSendToHCSigns decodeSendToHCSign))

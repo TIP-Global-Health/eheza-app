@@ -250,6 +250,7 @@ type Dashboard
     | GirlsFilterLabel
     | GoodNutritionLabel
     | HomeDeliveries
+    | HealthCenterDeliveries
     | HealthFacilityDeliveries
     | HealthCenterLevelCases
     | HealthCenterReferrals
@@ -270,6 +271,7 @@ type Dashboard
     | PatientCurrentlyUnderCare
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
+    | PregnanciesWith4VisitsOrMore
     | ProgramType
     | ResolvedCases
     | Severe
@@ -315,6 +317,7 @@ type TranslationId
     | AcuteIllnessOutcome AcuteIllnessOutcome
     | AcuteIllnessOutcomeLabel
     | AcuteIllnessStatus AcuteIllnessStatus
+    | AcuteMalnutrition
     | ActiveDiagnosis
     | Activities
     | ActivitiesCompleted Int
@@ -518,6 +521,7 @@ type TranslationId
     | CurrentlyPregnantQuestion
     | CurrentStock
     | DangerSign DangerSign
+    | DangerSigns
     | DangerSignsLabelForNurse
     | Date
     | DateConcludedEstimatedQuestion
@@ -560,6 +564,7 @@ type TranslationId
     | DueTo
     | EarlyMastitisOrEngorgmentReliefMethod EarlyMastitisOrEngorgmentReliefMethod
     | EarlyChildhoodDevelopment
+    | Eclampsia
     | ECDSignQuestion ECDSign
     | ECDStatus ECDStatus
     | Edd
@@ -639,6 +644,7 @@ type TranslationId
     | FundalPalpableWarning
     | Gender Gender
     | GenderLabel
+    | GestationalDiabetes
     | GestationalDiabetesPreviousPregnancy
     | Glass String
     | GoHome
@@ -1095,6 +1101,7 @@ type TranslationId
     | PostpartumChildDangerSign PostpartumChildDangerSign
     | PostpartumMotherDangerSign PostpartumMotherDangerSign
     | Predecessor Predecessor
+    | Preeclampsia
     | PreeclampsiaPreviousPregnancy
     | Pregnancy
     | PregnancyConclusion
@@ -1512,6 +1519,7 @@ type TranslationId
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SevereAcuteMalnutrition
+    | SevereAnemia
     | SevereHemorrhagingPreviousDelivery
     | Shared
     | Signature
@@ -1557,6 +1565,7 @@ type TranslationId
     | SymptomsGISignAbbrev SymptomsGISign
     | SymptomsRespiratorySign SymptomsRespiratorySign
     | SymptomsTask SymptomsTask
+    | Syphilis
     | SyphilisRecommendedTreatmentHeader
     | SyphilisRecommendedTreatmentHelper
     | SyphilisRecommendedTreatmentInstructions
@@ -1597,6 +1606,7 @@ type TranslationId
     | ThisGroupHasNoMothers
     | Time
     | To
+    | TotalHighRiskPregnancies
     | ToThePatient
     | TransportationPlanQuestion
     | TraveledToCOVID19CountryQuestion
@@ -2269,6 +2279,12 @@ translationSet trans =
                     , kirundi = Just "Cakemutse"
                     }
 
+        AcuteMalnutrition ->
+            { english = "Acute Malnutrition"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         ActiveDiagnosis ->
             { english = "Active Diagnosis"
             , kinyarwanda = Just "Uburwayi Bwasuzumwe"
@@ -2844,10 +2860,7 @@ translationSet trans =
                     }
 
                 AcuteIllnessDangerSigns ->
-                    { english = "Danger Signs"
-                    , kinyarwanda = Just "Ibimenyetso Mpuruza"
-                    , kirundi = Just "Ibimenyetso vy'akaga"
-                    }
+                    translationSet DangerSigns
 
         AdverseEventSinglePlural val ->
             if val == 1 then
@@ -4204,10 +4217,7 @@ translationSet trans =
         DeliveryComplication complication ->
             case complication of
                 ComplicationGestationalDiabetes ->
-                    { english = "Gestational Diabetes"
-                    , kinyarwanda = Just "Diyabete yaje umugore utwite"
-                    , kirundi = Just "Diyabete y'imbanyi"
-                    }
+                    translationSet GestationalDiabetes
 
                 ComplicationEmergencyCSection ->
                     { english = "Emergency C-Section"
@@ -4216,10 +4226,7 @@ translationSet trans =
                     }
 
                 ComplicationPreclampsia ->
-                    { english = "Preeclampsia"
-                    , kinyarwanda = Just "Umuvuduko w'amaraso uza uje k'umugore twite (Preclampsia)"
-                    , kirundi = Just "Ivuduga ry'amaraso igihe c'imbanyi"
-                    }
+                    translationSet Preeclampsia
 
                 ComplicationMaternalHemmorhage ->
                     { english = "Maternal Hemorrhage"
@@ -4517,6 +4524,12 @@ translationSet trans =
                     , kirundi = Just "Nta nimwe muri izi"
                     }
 
+        DangerSigns ->
+            { english = "Danger Signs"
+            , kinyarwanda = Just "Ibimenyetso mpuruza"
+            , kirundi = Just "Ibimenyetso vy'akaga"
+            }
+
         DangerSignsLabelForNurse ->
             { english = "Patient shows signs of"
             , kinyarwanda = Just "Umurwayi aragaragaza ibimenyetso bya"
@@ -4787,6 +4800,12 @@ translationSet trans =
                     , kinyarwanda = Just "komeza konsa cyangwa ukoreshe ikiganza wikame"
                     , kirundi = Just "Kubandanya wonsa umwana canke ukoreshe ukuboka ukuremwo amata"
                     }
+
+        Eclampsia ->
+            { english = "Eclampsia"
+            , kinyarwanda = Just "Ekalampusi"
+            , kirundi = Just "Éclampsie"
+            }
 
         ECDSignQuestion sign ->
             case sign of
@@ -5926,6 +5945,12 @@ translationSet trans =
             { english = "Gender"
             , kinyarwanda = Just "Igitsina"
             , kirundi = Just "Igitsina"
+            }
+
+        GestationalDiabetes ->
+            { english = "Gestational Diabetes"
+            , kinyarwanda = Just "Diyabete iterwa no utwite"
+            , kirundi = Just "Diyabete y'imbanyi"
             }
 
         GestationalDiabetesPreviousPregnancy ->
@@ -7819,10 +7844,7 @@ translationSet trans =
                     }
 
                 TestSyphilis ->
-                    { english = "Syphilis"
-                    , kinyarwanda = Just "Mburugu"
-                    , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
-                    }
+                    translationSet Syphilis
 
                 TestUrineDipstick ->
                     { english = "Urine Dipstick"
@@ -9410,10 +9432,7 @@ translationSet trans =
                     translationSet Hypertension
 
                 MedicalConditionGestationalDiabetes ->
-                    { english = "Gestational Diabetes"
-                    , kinyarwanda = Just "Diyabete iterwa no utwite"
-                    , kirundi = Just "Diyabete y'imbanyi"
-                    }
+                    translationSet GestationalDiabetes
 
                 MedicalConditionPregnancyRelatedHypertension ->
                     { english = "Pregnancy Related Hypertension"
@@ -9452,10 +9471,7 @@ translationSet trans =
                     }
 
                 MedicalConditionSyphilis ->
-                    { english = "Syphilis"
-                    , kinyarwanda = Just "Mburugu"
-                    , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
-                    }
+                    translationSet Syphilis
 
                 MedicalConditionEyeComplications ->
                     { english = "Eye Complications"
@@ -10582,10 +10598,7 @@ translationSet trans =
         NCDActivityTitle activity ->
             case activity of
                 Backend.NCDActivity.Model.DangerSigns ->
-                    { english = "Danger Signs"
-                    , kinyarwanda = Just "Ibimenyetso mpuruza"
-                    , kirundi = Just "Ibimenyetso vy'akaga"
-                    }
+                    translationSet DangerSigns
 
                 Backend.NCDActivity.Model.Examination ->
                     { english = "Examination"
@@ -13042,6 +13055,12 @@ translationSet trans =
                     , kirundi = Just "Nta na kimwe"
                     }
 
+        Preeclampsia ->
+            { english = "Preeclampsia"
+            , kinyarwanda = Just "Umuvuduko w'amaraso uza uje k'umugore twite (Preclampsia)"
+            , kirundi = Just "Ivuduga ry'amaraso igihe c'imbanyi"
+            }
+
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Just "Ubushize yagize ibimenyetso bibanziriza guhinda umushyitsi"
@@ -13138,10 +13157,7 @@ translationSet trans =
         PrenatalActivityTitle activity ->
             case activity of
                 Backend.PrenatalActivity.Model.DangerSigns ->
-                    { english = "Danger Signs"
-                    , kinyarwanda = Just "Ibimenyetso mpuruza"
-                    , kirundi = Just "Ibimenyetso vy'akaga"
-                    }
+                    translationSet DangerSigns
 
                 Backend.PrenatalActivity.Model.Examination ->
                     { english = "Examination"
@@ -13348,10 +13364,7 @@ translationSet trans =
                     translationSet <| PrenatalDiagnosis DiagnosisSeverePreeclampsiaInitialPhase
 
                 DiagnosisEclampsia ->
-                    { english = "Eclampsia"
-                    , kinyarwanda = Just "Ekalampusi"
-                    , kirundi = Just "Éclampsie"
-                    }
+                    translationSet Eclampsia
 
                 DiagnosisHIV ->
                     translationSet HIV
@@ -13369,10 +13382,7 @@ translationSet trans =
                     }
 
                 DiagnosisSyphilis ->
-                    { english = "Syphilis"
-                    , kinyarwanda = Just "Mburugu"
-                    , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
-                    }
+                    translationSet Syphilis
 
                 DiagnosisSyphilisWithComplications ->
                     { english = "Syphilis with Complications"
@@ -13429,10 +13439,7 @@ translationSet trans =
                     }
 
                 DiagnosisSevereAnemia ->
-                    { english = "Severe Anemia"
-                    , kinyarwanda = Just "Amaraso Macye Cyane"
-                    , kirundi = Just "Ibura ry'amaraso rikaze"
-                    }
+                    translationSet SevereAnemia
 
                 DiagnosisSevereAnemiaWithComplications ->
                     { english = "Severe Anemia with Complications"
@@ -13642,10 +13649,7 @@ translationSet trans =
                     translationSet Diabetes
 
                 Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
-                    { english = "Gestational Diabetes"
-                    , kinyarwanda = Just "Diyabete iterwa no utwite"
-                    , kirundi = Just "Diyabete y'imbanyi"
-                    }
+                    translationSet GestationalDiabetes
 
                 DiagnosisRhesusNegative ->
                     { english = "Rhesus Negative"
@@ -13827,10 +13831,7 @@ translationSet trans =
                     }
 
                 DiagnosisSyphilis ->
-                    { english = "Syphilis"
-                    , kinyarwanda = Just "Mburugu"
-                    , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
-                    }
+                    translationSet Syphilis
 
                 DiagnosisSyphilisWithComplications ->
                     { english = "Syphilis with Complications"
@@ -14100,10 +14101,7 @@ translationSet trans =
                     translationSet Diabetes
 
                 Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
-                    { english = "Gestational Diabetes"
-                    , kinyarwanda = Just "Diyabete yatewe no gutwita"
-                    , kirundi = Just "Diyabete y'imbanyi"
-                    }
+                    translationSet GestationalDiabetes
 
                 DiagnosisRhesusNegative ->
                     { english = "Rhesus Negative"
@@ -19613,6 +19611,12 @@ translationSet trans =
             , kirundi = Just "Ingwara yo gufungura nabi ikaze"
             }
 
+        SevereAnemia ->
+            { english = "Severe Anemia"
+            , kinyarwanda = Just "Amaraso Macye Cyane"
+            , kirundi = Just "Ibura ry'amaraso rikaze"
+            }
+
         SevereHemorrhagingPreviousDelivery ->
             { english = "Severe Hemorrhaging in previous delivery (>500 ml)"
             , kinyarwanda = Just "Ubushize yavuye cyane akimara kubyara hejuru ya Ml 500"
@@ -20228,6 +20232,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+        Syphilis ->
+            { english = "Syphilis"
+            , kinyarwanda = Just "Mburugu"
+            , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
+            }
+
         SyphilisRecommendedTreatmentHeader ->
             { english = "This patient has tested positive for Syphilis"
             , kinyarwanda = Just "Uyu murwayi afite ubwandu bwa Mburugu"
@@ -20462,6 +20472,12 @@ translationSet trans =
             { english = "to"
             , kinyarwanda = Just "kuri"
             , kirundi = Just "kuri"
+            }
+
+        TotalHighRiskPregnancies ->
+            { english = "Total Number of High Risk Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         ToThePatient ->
@@ -21218,10 +21234,7 @@ translationSet trans =
         WellChildActivityTitle activity ->
             case activity of
                 WellChildDangerSigns ->
-                    { english = "Danger Signs"
-                    , kinyarwanda = Just "Ibimenyetso Mpuruza"
-                    , kirundi = Just "Ibimenyetso vy'akaga"
-                    }
+                    translationSet DangerSigns
 
                 WellChildNutritionAssessment ->
                     translationSet NutritionAssessmentLabel
@@ -22908,6 +22921,12 @@ translateDashboard trans =
             , kirundi = Just "Imvyaro zabereye muhira"
             }
 
+        HealthCenterDeliveries ->
+            { english = "Health Center Deliveries"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         HealthFacilityDeliveries ->
             { english = "Health Facility Deliveries"
             , kinyarwanda = Just "Ababyariye ku Ivuriro"
@@ -22981,7 +23000,7 @@ translateDashboard trans =
             }
 
         NewPregnancy ->
-            { english = "New Identified Pregnancies"
+            { english = "Newly Identified Pregnancies"
             , kinyarwanda = Just "Abagore bashya batwite"
             , kirundi = Just "Imbanyi nshasha zamenyekanye"
             }
@@ -23067,6 +23086,12 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     , kirundi = Just "Amezi atatu"
                     }
+
+        PregnanciesWith4VisitsOrMore ->
+            { english = "# of Women with 4 Visits or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         ProgramType ->
             { english = "Program Type"

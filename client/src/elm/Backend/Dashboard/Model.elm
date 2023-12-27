@@ -19,6 +19,8 @@ import Backend.Measurement.Model
         , Recommendation114
         , SendToHCSign
         )
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -254,7 +256,11 @@ type alias PrenatalDataItem =
 
 type alias PrenatalEncounterDataItem =
     { startDate : NominalDate
+    , encounterType : PrenatalEncounterType
     , dangerSigns : EverySet DangerSign
+    , diagnoses : EverySet PrenatalDiagnosis
+    , muac : Maybe Float
+    , sendToHCSigns : EverySet SendToHCSign
     }
 
 

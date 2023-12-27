@@ -191,6 +191,10 @@ function hedley_stats_requires_prenatal_statistics_recalculation($wrapper) {
   $triggering_types = [
     HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
     HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE,
+    // For send_to_hc.
+    HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE,
+    // For MUAC.
+    HEDLEY_ACTIVITY_PRENATAL_NUTRITION_CONTENT_TYPE,
   ];
   $bundle = $wrapper->getBundle();
 
@@ -523,7 +527,7 @@ function hedley_stats_get_villages_with_residents($health_center_id) {
  * @return array
  *   List of AI encounters data.
  *
- * @throws \Exception
+ * @throws Exception
  */
 function hedley_stats_get_acute_illness_data($health_center_id) {
   // Return the cache if exists.
@@ -767,14 +771,20 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $query = hedley_stats_get_base_query($health_center_id, 'prenatal_encounter');
   $fields_to_join = [
     'field_individual_participant',
+    'field_prenatal_encounter_type',
   ];
   foreach ($fields_to_join as $field) {
     hedley_general_join_field_to_query($query, 'node', $field, FALSE);
   }
   $query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
 
-  // Join with Prenatal Encounter table, through which we can join
-  // measurements data.
+  // Pull data of prenatal_diagnoses that were recorded during encounter.
+  $query->leftJoin('field_data_field_prenatal_diagnoses', 'prenatal_diagnoses', 'prenatal_diagnoses.entity_id = node.nid');
+  $query->addField('prenatal_diagnoses', 'field_prenatal_diagnoses_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT prenatal_diagnoses.field_prenatal_diagnoses_value)", 'prenatal_diagnoses');
+
+  // Join with Prenatal Encounter table,
+  // through which we can join measurements data.
   $query->leftJoin('field_data_field_prenatal_encounter', 'prenatal_encounter', 'prenatal_encounter.field_prenatal_encounter_target_id = node.nid');
 
   // Pull data of danger signs that were recorded during encounter.
@@ -782,16 +792,38 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $query->addField('danger_signs', 'field_danger_signs_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT danger_signs.field_danger_signs_value)", 'danger_signs');
 
+  // Pull data of MUAC that was recorded during encounter.
+  $query->leftJoin('field_data_field_muac', 'muac', 'muac.entity_id = prenatal_encounter.entity_id');
+  $query->addField('muac', 'field_muac_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT muac.field_muac_value)", 'muac');
+
+  // Pull data of health center referrals that were recorded during encounter.
+  $query->leftJoin('field_data_field_send_to_hc', 'send_to_hc', 'send_to_hc.entity_id = prenatal_encounter.entity_id');
+  $query->addField('send_to_hc', 'field_send_to_hc_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT send_to_hc.field_send_to_hc_value)", 'send_to_hc');
+
   $query->groupBy('node.nid');
 
   $result = hedley_stats_run_node_query_in_batches($query);
 
   foreach ($result as $row) {
-    $items[$row->field_individual_participant]['encounters'][] = [
+    $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'danger_signs' => explode(',', $row->danger_signs),
+      'send_to_hc' => explode(',', $row->send_to_hc),
+      'diagnoses' => explode(',', $row->prenatal_diagnoses),
     ];
+
+    if (!empty($row->field_prenatal_encounter_type)) {
+      $item['encounter_type'] = $row->field_prenatal_encounter_type;
+    }
+
+    if (!empty($row->muac)) {
+      $item['muac'] = $row->muac;
+    }
+
+    $items[$row->field_individual_participant]['encounters'][] = $item;
   }
 
   // Free up memory.
