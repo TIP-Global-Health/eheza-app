@@ -27,6 +27,7 @@ define('HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE', 'antenatal');
 define('HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE', 'acute-illness');
 define('HEDLEY_STATS_NCD_ENCOUNTER_TYPE', 'ncd');
 define('HEDLEY_STATS_SPV_ENCOUNTER_TYPE', 'well-child');
+define('HEDLEY_STATS_CHILD_SCOREBOARD_ENCOUNTER_TYPE', 'child-scoreboard');
 
 // Statistics cache types.
 define('HEDLEY_STATS_NUTRITION', 'sync_stats_nutrition');
@@ -35,6 +36,7 @@ define('HEDLEY_STATS_ACUTE_ILLNESS', 'sync_stats_acute_illness');
 define('HEDLEY_STATS_NCD', 'sync_stats_ncd');
 define('HEDLEY_STATS_PMTCT', 'sync_stats_pmtct');
 define('HEDLEY_STATS_SPV', 'sync_stats_spv');
+define('HEDLEY_STATS_CHILD_SCOREBOARD', 'sync_stats_child_scoreboard');
 
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
@@ -48,6 +50,7 @@ define('HEDLEY_STATS_SYNC_PRENATAL_DATA', 'sync_prenatal_data');
 define('HEDLEY_STATS_SYNC_NCD_DATA', 'sync_ncd_data');
 define('HEDLEY_STATS_SYNC_PMTCT_DATA', 'sync_pmtct_data');
 define('HEDLEY_STATS_SYNC_SPV_DATA', 'sync_spv_data');
+define('HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA', 'sync_child_scoreboard_data');
 define('HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS', 'villages_with_residents');
 
 // Cache methods.
@@ -164,6 +167,10 @@ function hedley_stats_requires_statistics_recalculation($node) {
 
   if (hedley_stats_requires_spv_statistics_recalculation($wrapper)) {
     return HEDLEY_STATS_SPV;
+  }
+
+  if (hedley_stats_requires_child_scoreboard_statistics_recalculation($wrapper)) {
+    return HEDLEY_STATS_CHILD_SCOREBOARD;
   }
 
   return FALSE;
@@ -341,6 +348,36 @@ function hedley_stats_requires_spv_statistics_recalculation($wrapper) {
 }
 
 /**
+ * Checks if entity requires SPV statistics recalculation.
+ *
+ * @param object $wrapper
+ *   Entity metadata wrapper.
+ *
+ * @return bool
+ *   True, if statistics recalculation is required.
+ */
+function hedley_stats_requires_child_scoreboard_statistics_recalculation($wrapper) {
+  $triggering_types = array_merge([
+    HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE
+  ],
+    HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IMMUNISATION_BUNDLES
+  );
+
+  $bundle = $wrapper->getBundle();
+
+  if (in_array($bundle, $triggering_types)) {
+    return TRUE;
+  }
+
+  if ($bundle == HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE) {
+    $encounter_type = $wrapper->field_encounter_type->value();
+    return $encounter_type == HEDLEY_STATS_CHILD_SCOREBOARD_ENCOUNTER_TYPE;
+  }
+
+  return FALSE;
+}
+
+/**
  * Clears all statistics related caches for a health center.
  *
  * @param int $nid
@@ -368,6 +405,10 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
 
     case HEDLEY_STATS_SPV:
       hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SPV_DATA, $nid);
+      return;
+
+    case HEDLEY_STATS_CHILD_SCOREBOARD:
+      hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA, $nid);
       return;
   }
 
@@ -479,6 +520,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_get_ncd_data($health_center_id);
   hedley_stats_get_pmtct_data($health_center_id, $clinics['pmtct']);
   hedley_stats_get_spv_data($health_center_id);
+  hedley_stats_get_child_scorecard_data($health_center_id);
 
   $stats_cache_hash = md5(time());
   // Store in cache only the hash. All statistics have their own cache.
@@ -575,6 +617,12 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   }
   $spv_data = $cache_data;
 
+  $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA, $health_center_id);
+  if ($cache_data === NULL) {
+    return [];
+  }
+  $child_scoreboard_data = $cache_data;
+
   $wrapper = entity_metadata_wrapper('node', $health_center_id);
   $health_center_uuid = $wrapper->field_uuid->value();
 
@@ -594,6 +642,7 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
     'ncd_data' => $ncd_data,
     'pmtct_data' => $pmtct_data,
     'spv_data' => $spv_data,
+    'child_scoreboard_data' => $child_scoreboard_data,
     'villages_with_residents' => $villages_with_residents,
   ];
 
@@ -1328,6 +1377,127 @@ function hedley_stats_get_spv_data($health_center_id) {
 
   // Store in cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SPV_DATA, $health_center_id, NULL, $values);
+
+  return $values;
+}
+
+/**
+ * Return Child Scoreboard data that is used to generate statistics.
+ *
+ * We get data of all encounters for patients that were active during
+ * past 6 months.
+ * We need to know when encounters were created, it's
+ * diagnoses and several measurements. Also, we add patient ID,
+ * to be able to associate it with its village.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ *
+ * @return array
+ *   List of Child Scoreboard  participant data with its encounters.
+ *
+ * @throws Exception
+ */
+function hedley_stats_get_child_scorecard_data($health_center_id) {
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA, $health_center_id)) {
+    return $cache_data;
+  }
+
+  // Pull all Child Scoreboard encounters during past 6 months.
+  // Since dashboard presents data for past 6 months, we will be generating data
+  // for all Child Scoreboard participants that had an encounter over past 6 months.
+  $query = hedley_stats_get_base_query($health_center_id, 'child_scoreboard_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
+
+  // Resolve all illnesses associated with those encounters.
+  hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
+  $query->groupBy('field_individual_participant.field_individual_participant_target_id');
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('field_individual_participant');
+
+  $individual_participants = array_keys($result);
+  if (empty($individual_participants)) {
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA, $health_center_id, NULL, $result);
+    return $result;
+  }
+
+  // For each illness, pull the patient and outcome data.
+  $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
+  $query->condition('node.nid', $individual_participants, 'IN');
+
+  $fields_to_join = [
+    'field_person',
+  ];
+  foreach ($fields_to_join as $field) {
+    hedley_general_join_field_to_query($query, 'node', $field, FALSE);
+  }
+
+  // Add patient birthdate, so we can calculate the age.
+  $query->leftJoin('field_data_field_birth_date', 'birth_date', 'birth_date.entity_id = field_person.field_person_target_id');
+  $query->addField('birth_date', 'field_birth_date_value');
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  $items = [];
+  // Prepare participant data to be consumed by client side.
+  foreach ($result as $row) {
+    $items[$row->nid] = [
+      'id' => $row->field_person,
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
+      'birth_date' => date_format(date_create($row->field_birth_date_value), 'Y-m-d'),
+      'encounters' => [],
+    ];
+  }
+
+  // Free up memory.
+  drupal_static_reset();
+
+  // Resolve encounters data.
+  $base_query = hedley_stats_get_base_query($health_center_id, 'child_scoreboard_encounter');
+  $fields_to_join = [
+    'field_individual_participant',
+  ];
+  foreach ($fields_to_join as $field) {
+    hedley_general_join_field_to_query($base_query, 'node', $field, FALSE);
+  }
+  $base_query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
+
+  // Join with Well Child Encounter table, through which
+  // we can join measurements data.
+  $base_query->leftJoin('field_data_field_child_scoreboard_encounter', 'child_scoreboard_encounter', 'child_scoreboard_encounter.field_child_scoreboard_encounter_target_id = node.nid');
+
+  $query = clone $base_query;
+
+  $query->groupBy('node.nid');
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  // Populate data of the encounters.
+  foreach ($result as $row) {
+    $items[$row->field_individual_participant]['encounters'][$row->nid] = [
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
+    ];
+  }
+
+  // Free up memory.
+  drupal_static_reset();
+
+  foreach (HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IMMUNISATION_BUNDLES as $bundle) {
+    hedley_stats_add_immunization_dates_for_bundle($base_query, 'child_scoreboard', $bundle, $items);
+  }
+
+  foreach ($items as &$item) {
+    $item['encounters'] = array_values($item['encounters']);
+  }
+  $values = array_values($items);
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA, $health_center_id, NULL, $values);
 
   return $values;
 }

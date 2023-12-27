@@ -4,8 +4,7 @@
  * @file
  * Clears statistics caches and recalculates statistics for all HCs.
  *
- * Execution:  drush scr profiles/hedley/modules/custom/hedley_stats/
- *             scripts/recalculate-stats.php.
+ * Execution:  drush scr profiles/hedley/modules/custom/hedley_stats/scripts/recalculate-stats.php.
  */
 
 if (!drupal_is_cli()) {
@@ -67,6 +66,7 @@ while (TRUE) {
     hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_NCD);
     hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_PMTCT);
     hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_SPV);
+    hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_CHILD_SCOREBOARD);
 
     // Add AQ item to re-calculate all the stats offline.
     hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $id, [
