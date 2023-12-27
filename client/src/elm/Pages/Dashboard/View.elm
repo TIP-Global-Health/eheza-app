@@ -220,7 +220,7 @@ viewPageMainForChw language currentDate healthCenterId assembled db model =
 
         -- ANC
         encountersForSelectedMonth =
-            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+            getEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
 
         diagnosedCases =
             countAcuteIllnessDiagnosedCases encountersForSelectedMonth
@@ -758,10 +758,10 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
 
         encountersForSelectedMonth =
             if isChw then
-                getAcuteIllnessEncountersForSelectedMonth selectedDate dataForChws
+                getEncountersForSelectedMonth selectedDate dataForChws
 
             else
-                getAcuteIllnessEncountersForSelectedMonth selectedDate dataForNurses
+                getEncountersForSelectedMonth selectedDate dataForNurses
 
         limitDate =
             Date.ceiling Date.Month selectedDate
@@ -2583,8 +2583,8 @@ viewChildWellnessOverviewPage : Language -> NominalDate -> List SPVDataItem -> L
 viewChildWellnessOverviewPage language selectedDate dataItems =
     let
         numberOfChildrenSeen =
-            -- @todo:
-            0
+            getEncountersForSelectedMonth selectedDate dataItems
+                |> List.length
 
         ecdOnTrack =
             -- @todo

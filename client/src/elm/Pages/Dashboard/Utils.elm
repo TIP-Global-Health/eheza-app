@@ -422,14 +422,23 @@ generateTotalEncountersFromPeriodsDict programTypeFilter dict =
 
 
 --
--- Acute illness - Overview functions.
+-- Global functions.
 --
 
 
-getAcuteIllnessEncountersForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem
-getAcuteIllnessEncountersForSelectedMonth selectedDate =
+getEncountersForSelectedMonth :
+    NominalDate
+    -> List { dataItem | encounters : List { ecounterDataItem | startDate : NominalDate } }
+    -> List { ecounterDataItem | startDate : NominalDate }
+getEncountersForSelectedMonth selectedDate =
     List.concatMap .encounters
         >> List.filter (.startDate >> withinSelectedMonth selectedDate)
+
+
+
+--
+-- Acute illness - Overview functions.
+--
 
 
 countAcuteIllnessAssesments : List AcuteIllnessEncounterDataItem -> Int
