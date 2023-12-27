@@ -171,9 +171,13 @@ generateFilteredData :
     -> Maybe VillageId
     -> List { a | identifier : PersonIdentifier }
 generateFilteredData getDataFunc stats selectedVillageFilter =
+    let
+        beforeFiltering =
+            getDataFunc stats
+    in
     Maybe.andThen (\villageId -> Dict.get villageId stats.villagesWithResidents) selectedVillageFilter
-        |> Maybe.map (\residents -> List.filter (\item -> List.member item.identifier residents) (getDataFunc stats))
-        |> Maybe.withDefault []
+        |> Maybe.map (\residents -> List.filter (\item -> List.member item.identifier residents) beforeFiltering)
+        |> Maybe.withDefault beforeFiltering
 
 
 applyProgramTypeAndResidentsFilters :
