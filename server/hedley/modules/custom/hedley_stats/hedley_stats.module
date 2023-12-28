@@ -1534,6 +1534,14 @@ function hedley_stats_add_immunization_dates_for_bundle(SelectQuery $base_query,
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant]['encounters'][$row->nid])) {
+      // There's no encounter to associate measurement with.
+      // In theory, this should not be happening, but in fact this
+      // have occurred on live.
+      // Therefore, check was added to prevent decoder failure on client.
+      continue;
+    }
+
     $administration_data = explode(',', $row->administration_dates);
     $administration_dates = [];
     foreach ($administration_data as $value) {
