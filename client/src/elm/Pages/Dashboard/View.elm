@@ -2615,24 +2615,21 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
                     in
                     case ( spvItem, childScoreboardItem ) of
                         ( Just spv, Just childScoreboard ) ->
-                            { identifier = identifier
-                            , birthDate = Just spv.birthDate
+                            { birthDate = Just spv.birthDate
                             , gender = spv.gender
                             , vaccinationProgress = generateVaccinationProgressDict site spv.gender spv.encounters childScoreboard.encounters
                             }
                                 :: accum
 
                         ( Just spv, Nothing ) ->
-                            { identifier = identifier
-                            , birthDate = Just spv.birthDate
+                            { birthDate = Just spv.birthDate
                             , gender = spv.gender
                             , vaccinationProgress = generateVaccinationProgressDict site spv.gender spv.encounters []
                             }
                                 :: accum
 
                         ( Nothing, Just childScoreboard ) ->
-                            { identifier = identifier
-                            , birthDate = Just childScoreboard.birthDate
+                            { birthDate = Just childScoreboard.birthDate
                             , gender = childScoreboard.gender
                             , vaccinationProgress = generateVaccinationProgressDict site childScoreboard.gender [] childScoreboard.encounters
                             }

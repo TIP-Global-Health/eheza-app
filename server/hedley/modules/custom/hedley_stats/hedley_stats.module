@@ -1296,7 +1296,7 @@ function hedley_stats_get_spv_data($health_center_id) {
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
       'birth_date' => date_format(date_create($row->field_birth_date_value), 'Y-m-d'),
-      'gender' => $row->field_gender,
+      'gender' => $row->field_gender_value,
       'encounters' => [],
     ];
   }
@@ -1458,7 +1458,7 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
       'birth_date' => date_format(date_create($row->field_birth_date_value), 'Y-m-d'),
-      'gender' => $row->field_gender,
+      'gender' => $row->field_gender_value,
       'encounters' => [],
     ];
   }

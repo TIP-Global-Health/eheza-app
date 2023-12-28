@@ -1896,44 +1896,25 @@ vaccineDoseFromOrder order =
 withinSelectedMonth : NominalDate -> NominalDate -> Bool
 withinSelectedMonth dateLastDayOfSelectedMonth date =
     let
-        month =
-            Date.monthNumber dateLastDayOfSelectedMonth
-
-        year =
-            Date.year dateLastDayOfSelectedMonth
+        dateFirstDayOfSelectedMonth =
+            Date.floor Date.Month dateLastDayOfSelectedMonth
     in
-    (Date.monthNumber date == month)
-        && (Date.year date == year)
+    (not <| Date.compare date dateFirstDayOfSelectedMonth == LT)
+        && (not <| Date.compare date dateLastDayOfSelectedMonth == GT)
 
 
 withinOrBeforeSelectedMonth : NominalDate -> NominalDate -> Bool
 withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth date =
-    let
-        month =
-            Date.monthNumber dateLastDayOfSelectedMonth
-
-        year =
-            Date.year dateLastDayOfSelectedMonth
-    in
-    (Date.year date < year)
-        || ((Date.year date == year)
-                && (Date.monthNumber date <= month)
-           )
+    not <| Date.compare date dateLastDayOfSelectedMonth == GT
 
 
 withinOrAfterSelectedMonth : NominalDate -> NominalDate -> Bool
 withinOrAfterSelectedMonth dateLastDayOfSelectedMonth date =
     let
-        month =
-            Date.monthNumber dateLastDayOfSelectedMonth
-
-        year =
-            Date.year dateLastDayOfSelectedMonth
+        dateFirstDayOfSelectedMonth =
+            Date.floor Date.Month dateLastDayOfSelectedMonth
     in
-    (Date.year date > year)
-        || ((Date.year date == year)
-                && (Date.monthNumber date >= month)
-           )
+    not <| Date.compare date dateFirstDayOfSelectedMonth == LT
 
 
 childrenBeneficiariesByProgramType : ProgramType -> Dict ProgramType (List ChildrenBeneficiariesStats) -> List ChildrenBeneficiariesStats
