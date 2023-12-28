@@ -395,6 +395,7 @@ encodeSPVDataItem item =
     [ ( "id", int item.identifier )
     , ( "created", encodeYYYYMMDD item.created )
     , ( "birth_date", encodeYYYYMMDD item.birthDate )
+    , ( "gender", encodeGender item.gender )
     , ( "encounters", list encodeSPVEncounterDataItem item.encounters )
     ]
 
@@ -436,6 +437,7 @@ encodeChildScoreboardDataItem item =
     [ ( "id", int item.identifier )
     , ( "created", encodeYYYYMMDD item.created )
     , ( "birth_date", encodeYYYYMMDD item.birthDate )
+    , ( "gender", encodeGender item.gender )
     , ( "encounters", list encodeChildScoreboardEncounterDataItem item.encounters )
     ]
 

@@ -434,6 +434,7 @@ decodeSPVDataItem =
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
+        |> required "gender" decodeGender
         |> required "encounters" (list decodeSPVEncounterDataItem)
 
 
@@ -473,6 +474,7 @@ decodeChildScoreboardDataItem =
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
+        |> required "gender" decodeGender
         |> required "encounters" (list decodeChildScoreboardEncounterDataItem)
 
 

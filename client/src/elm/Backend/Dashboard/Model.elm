@@ -338,6 +338,7 @@ type alias SPVDataItem =
     { identifier : PersonIdentifier
     , created : NominalDate
     , birthDate : NominalDate
+    , gender : Gender
     , encounters : List SPVEncounterDataItem
     }
 
@@ -362,6 +363,7 @@ type alias ChildScoreboardDataItem =
     { identifier : PersonIdentifier
     , created : NominalDate
     , birthDate : NominalDate
+    , gender : Gender
     , encounters : List ChildScoreboardEncounterDataItem
     }
 
