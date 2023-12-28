@@ -507,8 +507,8 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   // Get all clinics of type 'FBF' for the HC.
   $clinics = hedley_health_center_get_clinics_of_health_center($health_center_id);
   // Calculate statistics that are provided for FBF clinics only.
-  hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $clinics['fbf']);
-
+  $fbf_clinics = !empty($clinics['fbf']) ? $clinics['fbf'] : [];
+  hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
   hedley_stats_get_case_management($health_center_id);
   hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id);
   hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS);
@@ -517,7 +517,8 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_get_acute_illness_data($health_center_id);
   hedley_stats_get_prenatal_data($health_center_id);
   hedley_stats_get_ncd_data($health_center_id);
-  hedley_stats_get_pmtct_data($health_center_id, $clinics['pmtct']);
+  $pmtct_clinics = !empty($clinics['pmtct']) ? $clinics['pmtct'] : [];
+  hedley_stats_get_pmtct_data($health_center_id, $pmtct_clinics);
   hedley_stats_get_spv_data($health_center_id);
   hedley_stats_get_child_scorecard_data($health_center_id);
 
