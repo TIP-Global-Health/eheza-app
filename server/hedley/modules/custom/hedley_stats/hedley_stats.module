@@ -1334,6 +1334,31 @@ function hedley_stats_get_spv_data($health_center_id) {
   $query->condition(db_or()->isNull('administration_dates.bundle')->condition('administration_dates.bundle', HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE));
   $query->addExpression("GROUP_CONCAT(administration_dates.field_administration_dates_value)", 'administration_dates');
 
+  // Pull data of MUAC that was recorded during encounter.
+  $query->leftJoin('field_data_field_muac', 'muac', 'muac.entity_id = well_child_encounter.entity_id');
+  $query->addField('muac', 'field_muac_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT muac.field_muac_value)", 'muac');
+
+  // Pull data of Nutrition Signs that was recorded during encounter.
+  $query->leftJoin('field_data_field_nutrition_signs', 'nutrition_signs', 'nutrition_signs.entity_id = well_child_encounter.entity_id');
+  $query->addField('nutrition_signs', 'field_nutrition_signs_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT nutrition_signs.field_nutrition_signs_value)", 'nutrition_signs');
+
+  // Pull data of weight for age z-score for determining 'Underweight'.
+  // Taken from Well Child weight measurement.
+  // Note that there's similar field on height activity, so condition for
+  // bundle needs to be set.
+  $query->leftJoin('field_data_field_zscore_age', 'zscore_age', 'zscore_age.entity_id = well_child_encounter.entity_id');
+  $query->addField('zscore_age', 'field_zscore_age_value');
+  $query->condition(db_or()->isNull('administration_dates.bundle')->condition('administration_dates.bundle', HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE));
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_age.field_zscore_age_value)", 'zscore_age');
+
+  // Pull data of weight for height z-score for determining 'Wasting'.
+  // Taken from Well Child weight measurement.
+  $query->leftJoin('field_data_field_zscore_length', 'zscore_length', 'zscore_length.entity_id = well_child_encounter.entity_id');
+  $query->addField('zscore_length', 'field_zscore_length_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_length.field_zscore_length_value)", 'zscore_length');
+
   $query->groupBy('node.nid');
 
   $result = hedley_stats_run_node_query_in_batches($query);
@@ -1352,11 +1377,24 @@ function hedley_stats_get_spv_data($health_center_id) {
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'warnings' => explode(',', $row->encounter_warnings),
+      'nutrition_signs' => explode(',', $row->nutrition_signs),
       HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE => $administration_dates,
     ];
 
     if (!empty($row->field_well_child_encounter_type)) {
       $item['encounter_type'] = $row->field_well_child_encounter_type;
+    }
+
+    if (!empty($row->muac)) {
+      $item['muac'] = $row->muac;
+    }
+
+    if (!empty($row->zscore_age)) {
+      $item['zscore_age'] = $row->zscore_age;
+    }
+
+    if (!empty($row->zscore_length)) {
+      $item['zscore_length'] = $row->zscore_length;
     }
 
     $items[$row->field_individual_participant]['encounters'][$row->nid] = $item;
