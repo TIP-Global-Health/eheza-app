@@ -1393,7 +1393,7 @@ viewVaccinationOverview language currentDate site child vaccinationProgress db =
                 ]
 
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate site child False vaccinationProgress
+            generateFutureVaccinationsData currentDate site child.birthDate child.gender False vaccinationProgress
                 |> Dict.fromList
 
         entries =
@@ -1485,7 +1485,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled 
                     else
                         let
                             initialOpvAdministeredByProgress =
-                                wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+                                wasInitialOpvAdministeredByVaccinationProgress assembled.person.birthDate assembled.vaccinationProgress
                         in
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 

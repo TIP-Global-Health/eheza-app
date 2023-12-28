@@ -547,7 +547,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                     else
                         let
                             initialOpvAdministeredByProgress =
-                                wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+                                wasInitialOpvAdministeredByVaccinationProgress assembled.person.birthDate assembled.vaccinationProgress
                         in
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 

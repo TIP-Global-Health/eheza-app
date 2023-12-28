@@ -347,15 +347,15 @@ type alias SPVEncounterDataItem =
     { startDate : NominalDate
     , warnings : EverySet EncounterWarning
     , ecdSigns : EverySet ECDSign
-    , bcgImminizarionDates : EverySet NominalDate
-    , opvImminizarionDates : EverySet NominalDate
-    , dtpImminizarionDates : EverySet NominalDate
-    , dtpStandaloneImminizarionDates : EverySet NominalDate
-    , pcv13ImminizarionDates : EverySet NominalDate
-    , rotarixImminizarionDates : EverySet NominalDate
-    , ipvImminizarionDates : EverySet NominalDate
-    , mrImminizarionDates : EverySet NominalDate
-    , hpvImminizarionDates : EverySet NominalDate
+    , bcgImminizationDates : EverySet NominalDate
+    , opvImminizationDates : EverySet NominalDate
+    , dtpImminizationDates : EverySet NominalDate
+    , dtpStandaloneImminizationDates : EverySet NominalDate
+    , pcv13ImminizationDates : EverySet NominalDate
+    , rotarixImminizationDates : EverySet NominalDate
+    , ipvImminizationDates : EverySet NominalDate
+    , mrImminizationDates : EverySet NominalDate
+    , hpvImminizationDates : EverySet NominalDate
     }
 
 
@@ -370,12 +370,12 @@ type alias ChildScoreboardDataItem =
 
 type alias ChildScoreboardEncounterDataItem =
     { startDate : NominalDate
-    , bcgImminizarionDates : EverySet NominalDate
-    , opvImminizarionDates : EverySet NominalDate
-    , dtpImminizarionDates : EverySet NominalDate
-    , dtpStandaloneImminizarionDates : EverySet NominalDate
-    , pcv13ImminizarionDates : EverySet NominalDate
-    , rotarixImminizarionDates : EverySet NominalDate
-    , ipvImminizarionDates : EverySet NominalDate
-    , mrImminizarionDates : EverySet NominalDate
+    , bcgImminizationDates : EverySet NominalDate
+    , opvImminizationDates : EverySet NominalDate
+    , dtpImminizationDates : EverySet NominalDate
+    , dtpStandaloneImminizationDates : EverySet NominalDate
+    , pcv13ImminizationDates : EverySet NominalDate
+    , rotarixImminizationDates : EverySet NominalDate
+    , ipvImminizationDates : EverySet NominalDate
+    , mrImminizationDates : EverySet NominalDate
     }

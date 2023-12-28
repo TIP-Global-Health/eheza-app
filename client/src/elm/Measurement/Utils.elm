@@ -5317,7 +5317,7 @@ generateSuggestedVaccinations currentDate site isChw person vaccinationHistory v
     else
         let
             initialOpvAdministered =
-                wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
+                wasInitialOpvAdministeredByVaccinationProgress person.birthDate vaccinationHistory
         in
         allVaccineTypes site
             |> List.filter (expectVaccineForPerson currentDate site person initialOpvAdministered vaccinationProgress)
@@ -5336,19 +5336,19 @@ generateSuggestedVaccinations currentDate site isChw person vaccinationHistory v
                 )
 
 
-wasInitialOpvAdministeredByVaccinationProgress : Person -> VaccinationProgressDict -> Bool
-wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress =
+wasInitialOpvAdministeredByVaccinationProgress : Maybe NominalDate -> VaccinationProgressDict -> Bool
+wasInitialOpvAdministeredByVaccinationProgress birthDate vaccinationProgress =
     let
         firstDoseAdminstrationDate =
             Dict.get VaccineOPV vaccinationProgress
                 |> Maybe.andThen (Dict.get VaccineDoseFirst)
     in
     Maybe.map2
-        (\adminstrationDate birthDate ->
-            Date.diff Days birthDate adminstrationDate < 14
+        (\adminstrationDate birthDate_ ->
+            Date.diff Days birthDate_ adminstrationDate < 14
         )
         firstDoseAdminstrationDate
-        person.birthDate
+        birthDate
         |> Maybe.withDefault False
 
 
@@ -5358,16 +5358,17 @@ If there's no need for future vaccination, Nothing is returned.
 generateFutureVaccinationsData :
     NominalDate
     -> Site
-    -> Person
+    -> Maybe NominalDate
+    -> Gender
     -> Bool
     -> VaccinationProgressDict
     -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday vaccinationProgress =
+generateFutureVaccinationsData currentDate site birthDate gender scheduleFirstDoseForToday vaccinationProgress =
     let
         initialOpvAdministered =
-            wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
+            wasInitialOpvAdministeredByVaccinationProgress birthDate vaccinationProgress
     in
-    allVaccineTypesForPerson site person
+    allVaccineTypesByGender site gender
         |> List.map
             (\vaccineType ->
                 let
@@ -5386,14 +5387,14 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
                                 let
                                     initialDate =
                                         Maybe.map
-                                            (\birthDate ->
+                                            (\birthDate_ ->
                                                 initialVaccinationDateByBirthDate site
-                                                    birthDate
+                                                    birthDate_
                                                     initialOpvAdministered
                                                     vaccinationProgress
                                                     ( vaccineType, VaccineDoseFirst )
                                             )
-                                            person.birthDate
+                                            birthDate
                                             |> Maybe.withDefault currentDate
 
                                     vaccinationDate =
@@ -5699,14 +5700,14 @@ getIntervalForVaccine site vaccineType =
             ( 6, Months )
 
 
-allVaccineTypesForPerson : Site -> Person -> List WellChildVaccineType
-allVaccineTypesForPerson site person =
+allVaccineTypesByGender : Site -> Gender -> List WellChildVaccineType
+allVaccineTypesByGender site gender =
     allVaccineTypes site
         |> List.filter
             (\vaccineType ->
                 case vaccineType of
                     VaccineHPV ->
-                        person.gender == Female
+                        gender == Female
 
                     _ ->
                         True
