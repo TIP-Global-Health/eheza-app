@@ -4,7 +4,8 @@
  * @file
  * Clears statistics caches and recalculates statistics for all HCs.
  *
- * Execution:  drush scr profiles/hedley/modules/custom/hedley_stats/scripts/recalculate-stats.php.
+ * Execution:  drush scr
+ *  profiles/hedley/modules/custom/hedley_stats/scripts/recalculate-stats.php.
  */
 
 if (!drupal_is_cli()) {
