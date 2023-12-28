@@ -1282,6 +1282,10 @@ function hedley_stats_get_spv_data($health_center_id) {
   $query->leftJoin('field_data_field_birth_date', 'birth_date', 'birth_date.entity_id = field_person.field_person_target_id');
   $query->addField('birth_date', 'field_birth_date_value');
 
+  // Add patient gender, so we know if HPV vaccination is required.
+  $query->leftJoin('field_data_field_gender', 'gender', 'gender.entity_id = field_person.field_person_target_id');
+  $query->addField('gender', 'field_gender_value');
+
   $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
@@ -1292,6 +1296,7 @@ function hedley_stats_get_spv_data($health_center_id) {
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
       'birth_date' => date_format(date_create($row->field_birth_date_value), 'Y-m-d'),
+      'gender' => $row->field_gender,
       'encounters' => [],
     ];
   }
@@ -1439,6 +1444,10 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
   $query->leftJoin('field_data_field_birth_date', 'birth_date', 'birth_date.entity_id = field_person.field_person_target_id');
   $query->addField('birth_date', 'field_birth_date_value');
 
+  // Add patient gender, so we know if HPV vaccination is required.
+  $query->leftJoin('field_data_field_gender', 'gender', 'gender.entity_id = field_person.field_person_target_id');
+  $query->addField('gender', 'field_gender_value');
+
   $result = hedley_stats_run_node_query_in_batches($query);
 
   $items = [];
@@ -1449,6 +1458,7 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
       // Field for 'created' is added at hedley_stats_get_base_query().
       'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
       'birth_date' => date_format(date_create($row->field_birth_date_value), 'Y-m-d'),
+      'gender' => $row->field_gender,
       'encounters' => [],
     ];
   }
