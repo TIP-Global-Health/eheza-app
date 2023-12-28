@@ -30,6 +30,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Utils exposing (getVillageById)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
 import Debug exposing (toString)
@@ -78,6 +79,7 @@ import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Utils.Html exposing (spinner, viewModal)
+import Utils.NominalDate exposing (sortByDateDesc)
 
 
 view : Language -> DashboardPage -> NominalDate -> Site -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
@@ -2588,7 +2590,35 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
     let
         numberOfChildrenSeen =
             getEncountersForSelectedMonth dateLastDayOfSelectedMonth spvDataItems
+                |> List.filter isNurseEncounter
                 |> List.length
+
+        -- For each participant, we resolve last SPV encounter.
+        ecdDataItems =
+            List.filterMap
+                (\item ->
+                    List.filter
+                        (\encounter ->
+                            isNurseEncounter encounter
+                                && withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
+                        )
+                        item.encounters
+                        |> List.sortWith (sortByDateDesc .startDate)
+                        |> List.head
+                )
+                spvDataItems
+
+        isNurseEncounter =
+            .encounterType >> (==) PediatricCare
+
+        ecdOnTrack =
+            List.filter
+                (\encounter -> EverySet.member NoECDMilstoneWarning encounter.warnings)
+                ecdDataItems
+                |> List.length
+
+        ecdBehind =
+            List.length ecdDataItems - ecdOnTrack
 
         spvDataDict =
             List.map (\item -> ( item.identifier, item )) spvDataItems
@@ -2677,14 +2707,6 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
                     -- This indicates that there're no future vaccinations to be
                     -- done, and therefore, patient is on track.
                     True
-
-        ecdOnTrack =
-            -- @todo
-            1
-
-        ecdBehind =
-            -- @todo
-            1
 
         immunizationOnTrack =
             List.filter isImmunizationOnTrack immunizationDataItems

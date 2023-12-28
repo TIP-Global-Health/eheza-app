@@ -11,7 +11,6 @@ import Backend.Measurement.Model
     exposing
         ( Call114Sign
         , DangerSign
-        , ECDSign
         , FamilyPlanningSign
         , Gender
         , HCContactSign
@@ -26,7 +25,7 @@ import Backend.Measurement.Model
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning, WellChildEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -345,8 +344,8 @@ type alias SPVDataItem =
 
 type alias SPVEncounterDataItem =
     { startDate : NominalDate
+    , encounterType : WellChildEncounterType
     , warnings : EverySet EncounterWarning
-    , ecdSigns : EverySet ECDSign
     , bcgImminizationDates : EverySet NominalDate
     , opvImminizationDates : EverySet NominalDate
     , dtpImminizationDates : EverySet NominalDate

@@ -10,7 +10,6 @@ import Backend.Measurement.Decoder
     exposing
         ( decodeCall114Sign
         , decodeDangerSign
-        , decodeECDSign
         , decodeFamilyPlanningSign
         , decodeHCContactSign
         , decodeHCRecommendation
@@ -39,8 +38,8 @@ import Backend.Person.Decoder exposing (decodeGender)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
+import Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning, decodeWellChildEncounterType)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Dict as LegacyDict
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
@@ -455,8 +454,8 @@ decodeSPVEncounterDataItem =
     in
     succeed SPVEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" decodeWellChildEncounterType PediatricCare
         |> optional "warnings" decodeWarnings (EverySet.singleton NoEncounterWarnings)
-        |> required "ecd_signs" (decodeEverySet (decodeWithFallback NoECDSigns decodeECDSign))
         |> required "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD)
         |> required "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD)
         |> required "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD)

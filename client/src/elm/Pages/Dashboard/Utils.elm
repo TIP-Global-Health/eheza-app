@@ -1895,12 +1895,8 @@ vaccineDoseFromOrder order =
 
 withinSelectedMonth : NominalDate -> NominalDate -> Bool
 withinSelectedMonth dateLastDayOfSelectedMonth date =
-    let
-        dateFirstDayOfSelectedMonth =
-            Date.floor Date.Month dateLastDayOfSelectedMonth
-    in
-    (not <| Date.compare date dateFirstDayOfSelectedMonth == LT)
-        && (not <| Date.compare date dateLastDayOfSelectedMonth == GT)
+    withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth date
+        && withinOrAfterSelectedMonth dateLastDayOfSelectedMonth date
 
 
 withinOrBeforeSelectedMonth : NominalDate -> NominalDate -> Bool

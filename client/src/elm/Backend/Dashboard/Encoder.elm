@@ -9,7 +9,6 @@ import Backend.Measurement.Encoder
     exposing
         ( encodeCall114Sign
         , encodeDangerSign
-        , encodeECDSign
         , encodeFamilyPlanningSign
         , encodeHCContactSign
         , encodeHCRecommendation
@@ -25,7 +24,7 @@ import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning)
+import Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning, encodeWellChildEncounterType)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Dict as LegacyDict
 import EverySet exposing (EverySet)
@@ -413,8 +412,8 @@ encodeSPVEncounterDataItem item =
     in
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "encounter_type", encodeWellChildEncounterType item.encounterType )
         , ( "warnings", list encodeEncounterWarning (warningsWithDefault item.warnings) )
-        , ( "ecd_signs", encodeEverySet encodeECDSign item.ecdSigns )
         , ( "well_child_bcg_immunisation", encodeEverySet encodeYYYYMMDD item.bcgImminizationDates )
         , ( "well_child_opv_immunisation", encodeEverySet encodeYYYYMMDD item.opvImminizationDates )
         , ( "well_child_dtp_immunisation", encodeEverySet encodeYYYYMMDD item.dtpImminizationDates )

@@ -327,7 +327,6 @@ function hedley_stats_requires_pmtct_statistics_recalculation($wrapper) {
 function hedley_stats_requires_spv_statistics_recalculation($wrapper) {
   $triggering_types = array_merge([
     HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
-    HEDLEY_ACTIVITY_WELL_CHILD_ECD_CONTENT_TYPE,
     HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE,
   ],
     HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES
@@ -1326,11 +1325,6 @@ function hedley_stats_get_spv_data($health_center_id) {
   $query->addField('encounter_warnings', 'field_encounter_warnings_value');
   $query->addExpression("GROUP_CONCAT(DISTINCT encounter_warnings.field_encounter_warnings_value)", 'encounter_warnings');
 
-  // Pull data of ECD signs that were recorded at Well Child ECD activity.
-  $query->leftJoin('field_data_field_ecd_signs', 'ecd_signs', 'ecd_signs.entity_id = well_child_encounter.entity_id');
-  $query->addField('ecd_signs', 'field_ecd_signs_value');
-  $query->addExpression("GROUP_CONCAT(ecd_signs.field_ecd_signs_value)", 'ecd_signs');
-
   // Pull data of HPV immunization. We join HPV here, as all other types
   // are part of HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES list,
   // which is used later to join all remaining immunizations.
@@ -1357,7 +1351,6 @@ function hedley_stats_get_spv_data($health_center_id) {
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
       'warnings' => explode(',', $row->encounter_warnings),
-      'ecd_signs' => explode(',', $row->ecd_signs),
       HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE => $administration_dates,
     ];
 
