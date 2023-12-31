@@ -16,9 +16,6 @@ if (!drupal_is_cli()) {
   return;
 }
 
-// Get the last node id.
-$entity_id = drush_get_option('entity_id', 0);
-
 // Get the number of nodes to be processed.
 $batch = drush_get_option('batch', 500);
 
@@ -41,44 +38,25 @@ if (empty($head_circumferences)) {
 
 // Query to resolve well child encounters to which resolved
 // Head Circumferences measurements belong.
-$base_query = db_select('field_data_field_well_child_encounter', 'wce')
+$query = db_select('field_data_field_well_child_encounter', 'wce')
   ->fields('wce', ['field_well_child_encounter_target_id']);
-$base_query->condition('entity_id', $head_circumferences, 'IN');
+$query->condition('entity_id', $head_circumferences, 'IN');
+$ids = $query->execute()->fetchCol('field_well_child_encounter_target_id');
 
-$count_query = clone $base_query;
-$count_query->condition('entity_id', $entity_id, '>');
-$executed = $count_query->execute();
-$total = $executed->rowCount();
+$total = count($ids);
 
 if ($total == 0) {
   drush_print("There are no Well Child encounters to process.");
   exit;
 }
 
+$ids = array_unique($ids);
 drush_print("Located $total Well Child encounters for processing.");
 
-$precessed = $updated = 0;
-
-while ($precessed < $total) {
-  // Free up memory.
-  drupal_static_reset();
-
-  $query = clone $base_query;
-  if ($entity_id) {
-    $query->condition('entity_id', $entity_id, '>');
-  }
-
-  $ids = $query
-    ->range(0, $batch)
-    ->execute()
-    ->fetchCol('field_well_child_encounter_target_id');
-
-  if (count($ids) == 0) {
-    // No more items to process.
-    break;
-  }
-
-  $nodes = node_load_multiple($ids);
+$chunks = array_chunk($ids, $batch);
+$updated = $precessed = 0;
+foreach ($chunks as $chunk) {
+  $nodes = node_load_multiple($chunk);
   foreach ($nodes as $node) {
     $unset = FALSE;
     $warnings = $node->field_encounter_warnings[LANGUAGE_NONE];
@@ -102,14 +80,12 @@ while ($precessed < $total) {
     $updated++;
   }
 
-  $entity_id = end($ids);
-
   if (round(memory_get_usage() / 1048576) >= $memory_limit) {
-    drush_print(dt('Stopped before out of memory. Start process from the node ID @entity_id', ['@entity_id' => $entity_id]));
+    drush_print(dt('Stopped before out of memory.'));
     return;
   }
 
-  $precessed += count($ids);
+  $precessed += count($chunk);
 
   drush_print("Processed: $precessed, Updated: $updated.");
 }
