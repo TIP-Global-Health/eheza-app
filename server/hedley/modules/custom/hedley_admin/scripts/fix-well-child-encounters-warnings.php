@@ -72,7 +72,7 @@ foreach ($chunks as $chunk) {
       continue;
     }
 
-    if (empty($warnings)) {
+    if (empty($warnings) || ($warnings[0]['value'] === NULL)) {
       $warnings = ['value' => 'none'];
     }
     $node->field_encounter_warnings[LANGUAGE_NONE] = [$warnings];
