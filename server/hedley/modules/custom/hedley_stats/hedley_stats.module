@@ -327,6 +327,10 @@ function hedley_stats_requires_pmtct_statistics_recalculation($wrapper) {
 function hedley_stats_requires_spv_statistics_recalculation($wrapper) {
   $triggering_types = array_merge([
     HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_MUAC_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_NUTRITION_CONTENT_TYPE,
     HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE,
   ],
     HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES
@@ -1387,10 +1391,10 @@ function hedley_stats_get_spv_data($health_center_id) {
       $item['muac'] = $row->muac;
     }
     if (!empty($row->zscore_age)) {
-      $item['zscore_age_weight'] = $row->zscore_age;
+      $item['zscore_underweight'] = $row->zscore_age;
     }
     if (!empty($row->zscore_length)) {
-      $item['zscore_length'] = $row->zscore_length;
+      $item['zscore_wasting'] = $row->zscore_length;
     }
     $items[$row->field_individual_participant]['encounters'][$row->nid] = $item;
   }
@@ -1445,7 +1449,7 @@ function hedley_stats_get_spv_data($health_center_id) {
 
     $items[$row->field_individual_participant]['encounters'][$row->nid][$first_immunization_bundle] = $administration_dates;
     if (!empty($row->zscore_age)) {
-      $items[$row->field_individual_participant]['encounters'][$row->nid]['zscore_age_height'] = $row->zscore_age;
+      $items[$row->field_individual_participant]['encounters'][$row->nid]['zscore_stunting'] = $row->zscore_age;
     }
   }
 

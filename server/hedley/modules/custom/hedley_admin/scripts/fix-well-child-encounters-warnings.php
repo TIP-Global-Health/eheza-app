@@ -47,7 +47,7 @@ $total = count($ids);
 
 if ($total == 0) {
   drush_print("There are no Well Child encounters to process.");
-  exit;
+  return;
 }
 
 $ids = array_unique($ids);
