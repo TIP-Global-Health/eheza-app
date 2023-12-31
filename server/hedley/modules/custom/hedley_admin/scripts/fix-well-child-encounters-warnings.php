@@ -20,7 +20,7 @@ if (!drupal_is_cli()) {
 $entity_id = drush_get_option('entity_id', 0);
 
 // Get the number of nodes to be processed.
-$batch = drush_get_option('batch', 50);
+$batch = drush_get_option('batch', 500);
 
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 200);
@@ -57,8 +57,9 @@ if ($total == 0) {
 
 drush_print("Located $total Well Child encounters for processing.");
 
-$updated = 0;
-while (TRUE) {
+$precessed = $updated = 0;
+
+while ($precessed < $total) {
   // Free up memory.
   drupal_static_reset();
 
@@ -108,7 +109,9 @@ while (TRUE) {
     return;
   }
 
-  drush_print("Update warning at  $updated encounters.");
+  $precessed += count($ids);
+
+  drush_print("Processed: $precessed, Updated: $updated.");
 }
 
 drush_print('Done!');
