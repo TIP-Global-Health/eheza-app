@@ -1380,30 +1380,80 @@ function hedley_stats_get_spv_data($health_center_id) {
       'nutrition_signs' => explode(',', $row->nutrition_signs),
       HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE => $administration_dates,
     ];
-
     if (!empty($row->field_well_child_encounter_type)) {
       $item['encounter_type'] = $row->field_well_child_encounter_type;
     }
-
     if (!empty($row->muac)) {
       $item['muac'] = $row->muac;
     }
-
     if (!empty($row->zscore_age)) {
-      $item['zscore_age'] = $row->zscore_age;
+      $item['zscore_age_weight'] = $row->zscore_age;
     }
-
     if (!empty($row->zscore_length)) {
       $item['zscore_length'] = $row->zscore_length;
     }
-
     $items[$row->field_individual_participant]['encounters'][$row->nid] = $item;
   }
 
   // Free up memory.
   drupal_static_reset();
 
-  foreach (HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES as $bundle) {
+  // Now we need to add zscore_age data from Well Child height activity,
+  // and remaining immunizations data.
+  // We'll run one query for zscore_age and one of immunizations, and
+  // then a query for each of remaining immunizations.
+  $immunization_bundles = HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IMMUNISATION_BUNDLES;
+  $first_immunization_bundle = array_shift($immunization_bundles);
+
+  $query = clone $base_query;
+  // Pull data of PCV immunization.
+  $query->leftJoin('field_data_field_administration_dates', 'administration_dates', "administration_dates.entity_id = well_child_encounter.entity_id");
+  $query->addField('administration_dates', 'field_administration_dates_value');
+  $query->condition(db_or()->isNull('administration_dates.bundle')->condition('administration_dates.bundle', $first_immunization_bundle));
+  $query->addExpression("GROUP_CONCAT(administration_dates.field_administration_dates_value)", 'administration_dates');
+
+  // Pull data of height for age z-score for determining 'Stunting'.
+  // Taken from Well Child height measurement.
+  // Note that there's similar field on height activity, so condition for
+  // bundle needs to be set.
+  $query->leftJoin('field_data_field_zscore_age', 'zscore_age', 'zscore_age.entity_id = well_child_encounter.entity_id');
+  $query->addField('zscore_age', 'field_zscore_age_value');
+  $query->condition(db_or()->isNull('administration_dates.bundle')->condition('administration_dates.bundle', HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE));
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_age.field_zscore_age_value)", 'zscore_age');
+
+  $query->groupBy('node.nid');
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  // Populate data of the encounters.
+  foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant]['encounters'][$row->nid])) {
+      // There's no encounter to associate measurement with.
+      // In theory, this should not be happening, but in fact this
+      // have occurred on live.
+      // Therefore, check was added to prevent decoder failure on client.
+      continue;
+    }
+
+    $administration_data = explode(',', $row->administration_dates);
+    $administration_dates = [];
+    foreach ($administration_data as $value) {
+      if (!empty($value)) {
+        $administration_dates[] = date_format(date_create($value), 'Y-m-d');
+      }
+    }
+
+    $items[$row->field_individual_participant]['encounters'][$row->nid][$first_immunization_bundle] = $administration_dates;
+    if (!empty($row->zscore_age)) {
+      $items[$row->field_individual_participant]['encounters'][$row->nid]['zscore_age_height'] = $row->zscore_age;
+    }
+  }
+
+  // Free up memory.
+  drupal_static_reset();
+
+  // Adding data for remaining immunizations.
+  foreach ($immunization_bundles as $bundle) {
     hedley_stats_add_immunization_dates_for_bundle($base_query, 'well_child', $bundle, $items);
   }
 
