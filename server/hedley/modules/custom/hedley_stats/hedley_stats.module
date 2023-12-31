@@ -28,6 +28,7 @@ define('HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE', 'acute-illness');
 define('HEDLEY_STATS_NCD_ENCOUNTER_TYPE', 'ncd');
 define('HEDLEY_STATS_SPV_ENCOUNTER_TYPE', 'well-child');
 define('HEDLEY_STATS_CHILD_SCOREBOARD_ENCOUNTER_TYPE', 'child-scoreboard');
+define('HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE', 'nutrition');
 
 // Statistics cache types.
 define('HEDLEY_STATS_NUTRITION', 'sync_stats_nutrition');
@@ -37,6 +38,7 @@ define('HEDLEY_STATS_NCD', 'sync_stats_ncd');
 define('HEDLEY_STATS_PMTCT', 'sync_stats_pmtct');
 define('HEDLEY_STATS_SPV', 'sync_stats_spv');
 define('HEDLEY_STATS_CHILD_SCOREBOARD', 'sync_stats_child_scoreboard');
+define('HEDLEY_STATS_NUTRITION_INDIVIDUAL', 'sync_stats_nutrition_individual');
 
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
@@ -51,6 +53,7 @@ define('HEDLEY_STATS_SYNC_NCD_DATA', 'sync_ncd_data');
 define('HEDLEY_STATS_SYNC_PMTCT_DATA', 'sync_pmtct_data');
 define('HEDLEY_STATS_SYNC_SPV_DATA', 'sync_spv_data');
 define('HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA', 'sync_child_scoreboard_data');
+define('HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA', 'sync_nutrition_individual_data');
 define('HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS', 'villages_with_residents');
 
 // Cache methods.
@@ -171,6 +174,10 @@ function hedley_stats_requires_statistics_recalculation($node) {
 
   if (hedley_stats_requires_child_scoreboard_statistics_recalculation($wrapper)) {
     return HEDLEY_STATS_CHILD_SCOREBOARD;
+  }
+
+  if (hedley_stats_requires_nutrition_individual_statistics_recalculation($wrapper)) {
+    return HEDLEY_STATS_NUTRITION_INDIVIDUAL;
   }
 
   return FALSE;
@@ -380,6 +387,39 @@ function hedley_stats_requires_child_scoreboard_statistics_recalculation($wrappe
   return FALSE;
 }
 
+
+/**
+ * Checks if entity requires Individual Nutrition statistics recalculation.
+ *
+ * @param object $wrapper
+ *   Entity metadata wrapper.
+ *
+ * @return bool
+ *   True, if statistics recalculation is required.
+ */
+function hedley_stats_requires_nutrition_individual_statistics_recalculation($wrapper) {
+  $triggering_types = [
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_MUAC_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_NUTRITION_CONTENT_TYPE,
+  ];
+
+  $bundle = $wrapper->getBundle();
+
+  if (in_array($bundle, $triggering_types)) {
+    return TRUE;
+  }
+
+  if ($bundle == HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE) {
+    $encounter_type = $wrapper->field_encounter_type->value();
+    return $encounter_type == HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE;
+  }
+
+  return FALSE;
+}
+
 /**
  * Clears all statistics related caches for a health center.
  *
@@ -413,6 +453,11 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
     case HEDLEY_STATS_CHILD_SCOREBOARD:
       hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA, $nid);
       return;
+  }
+
+  if ($cache_type_for_recalculation == HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA) {
+    // Note we do not return after, since we want to clear 'old' Nutrition caches as well.
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $nid);
   }
 
   // If we got this far, we need to clear Nutrition stats cache.
@@ -525,6 +570,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_get_pmtct_data($health_center_id, $pmtct_clinics);
   hedley_stats_get_spv_data($health_center_id);
   hedley_stats_get_child_scorecard_data($health_center_id);
+  hedley_stats_get_nutrition_individual_data($health_center_id);
 
   $stats_cache_hash = md5(time());
   // Store in cache only the hash. All statistics have their own cache.
@@ -627,6 +673,12 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   }
   $child_scoreboard_data = $cache_data;
 
+  $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_NUTRITION_INDIVIDUAL, $health_center_id);
+  if ($cache_data === NULL) {
+    return [];
+  }
+  $nutrition_individual_data = $cache_data;
+
   $wrapper = entity_metadata_wrapper('node', $health_center_id);
   $health_center_uuid = $wrapper->field_uuid->value();
 
@@ -646,6 +698,7 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
     'ncd_data' => $ncd_data,
     'pmtct_data' => $pmtct_data,
     'spv_data' => $spv_data,
+    'nutrition_individual_data' => $nutrition_individual_data,
     'child_scoreboard_data' => $child_scoreboard_data,
     'villages_with_residents' => $villages_with_residents,
   ];
@@ -724,7 +777,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
   // for all illnesses that had an encounter over past 6 months.
   $query = hedley_stats_get_base_query($health_center_id, 'acute_illness_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
-  // Resolve all illnesses associated with those encounters.
+  // Resolve all participants associated with those encounters.
   hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
   $query->groupBy('field_individual_participant.field_individual_participant_target_id');
 
@@ -739,7 +792,8 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
     return $result;
   }
 
-  // For each illness, pull the patient and outcome data.
+  // Pull all participants to which resolved encounters belong, including
+  // some patient data, outcome and concluded date.
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
   $query->condition('node.nid', $individual_participants, 'IN');
 
@@ -1051,7 +1105,7 @@ function hedley_stats_get_ncd_data($health_center_id) {
   // for all NCD participants that had an encounter over past 6 months.
   $query = hedley_stats_get_base_query($health_center_id, 'ncd_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
-  // Resolve all illnesses associated with those encounters.
+  // Resolve all participants associated with those encounters.
   hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
   $query->groupBy('field_individual_participant.field_individual_participant_target_id');
 
@@ -1066,7 +1120,8 @@ function hedley_stats_get_ncd_data($health_center_id) {
     return $result;
   }
 
-  // For each illness, pull the patient and outcome data.
+  // Pull all participants to which resolved encounters belong, including
+  // some patient data.
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
   $query->condition('node.nid', $individual_participants, 'IN');
 
@@ -1256,7 +1311,7 @@ function hedley_stats_get_spv_data($health_center_id) {
   // for all Well Child participants that had an encounter over past 6 months.
   $query = hedley_stats_get_base_query($health_center_id, 'well_child_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
-  // Resolve all illnesses associated with those encounters.
+  // Resolve all participants associated with those encounters.
   hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
   $query->groupBy('field_individual_participant.field_individual_participant_target_id');
 
@@ -1271,7 +1326,8 @@ function hedley_stats_get_spv_data($health_center_id) {
     return $result;
   }
 
-  // For each illness, pull the patient and outcome data.
+  // Pull all participants to which resolved encounters belong, including
+  // some patient data.
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
   $query->condition('node.nid', $individual_participants, 'IN');
 
@@ -1501,7 +1557,7 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
   // an encounter over past 6 months.
   $query = hedley_stats_get_base_query($health_center_id, 'child_scoreboard_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
-  // Resolve all illnesses associated with those encounters.
+  // Resolve all participants associated with those encounters.
   hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
   $query->groupBy('field_individual_participant.field_individual_participant_target_id');
 
@@ -1516,7 +1572,8 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
     return $result;
   }
 
-  // For each illness, pull the patient and outcome data.
+  // Pull all participants to which resolved encounters belong, including
+  // some patient data.
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
   $query->condition('node.nid', $individual_participants, 'IN');
 
@@ -1647,6 +1704,196 @@ function hedley_stats_add_immunization_dates_for_bundle(SelectQuery $base_query,
 
   // Free up memory.
   drupal_static_reset();
+}
+
+/**
+ * Return Nutrition data that is used to generate statistics.
+ *
+ * We get data of all encounters for patients that were active during
+ * past 6 months.
+ * We need to know when encounters were created, and several measurements.
+ * Also, we add patient ID, to be able to associate it with its village.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ *
+ * @return array
+ *   List of Nutrition participants data with its encounters.
+ *
+ * @throws Exception
+ */
+function hedley_stats_get_nutrition_individual_data($health_center_id) {
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $health_center_id)) {
+    return $cache_data;
+  }
+
+  // Pull all Nutrition encounters during past 6 months.
+  // Since dashboard presents data for past 6 months, we will be generating data
+  // for all Nutrition participants that had an encounter over past 6 months.
+  $query = hedley_stats_get_base_query($health_center_id, 'nutrition_encounter', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
+
+  // Resolve all participants associated with those encounters.
+  hedley_general_join_field_to_query($query, 'node', 'field_individual_participant');
+  $query->groupBy('field_individual_participant.field_individual_participant_target_id');
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('field_individual_participant');
+
+  $individual_participants = array_keys($result);
+  if (empty($individual_participants)) {
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $health_center_id, NULL, $result);
+    return $result;
+  }
+
+  // Pull all participants to which resolved encounters belong, including
+  // some patient data.
+  $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
+  $query->condition('node.nid', $individual_participants, 'IN');
+
+  $fields_to_join = [
+    'field_person',
+  ];
+  foreach ($fields_to_join as $field) {
+    hedley_general_join_field_to_query($query, 'node', $field, FALSE);
+  }
+
+  // Add patient birthdate, so we can calculate the age.
+  $query->leftJoin('field_data_field_birth_date', 'birth_date', 'birth_date.entity_id = field_person.field_person_target_id');
+  $query->addField('birth_date', 'field_birth_date_value');
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  $items = [];
+  // Prepare participant data to be consumed by client side.
+  foreach ($result as $row) {
+    $items[$row->nid] = [
+      'id' => $row->field_person,
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'created' => date_format(date_create($row->field_expected), 'Y-m-d'),
+      'birth_date' => date_format(date_create($row->field_birth_date_value), 'Y-m-d'),
+      'encounters' => [],
+    ];
+  }
+
+  // Free up memory.
+  drupal_static_reset();
+
+  // Resolve encounters data.
+  $base_query = hedley_stats_get_base_query($health_center_id, 'nutrition_encounter');
+  $fields_to_join = [
+    'field_individual_participant',
+    // @todo: add field and script that populates it.
+    'field_nutrition_encounter_type',
+  ];
+  foreach ($fields_to_join as $field) {
+    hedley_general_join_field_to_query($base_query, 'node', $field, FALSE);
+  }
+  $base_query->condition('field_individual_participant.field_individual_participant_target_id', $individual_participants, 'IN');
+
+  // Join with Nutrition Encounter table, through which we can
+  // join measurements data.
+  $base_query->leftJoin('field_data_field_nutrition_encounter', 'nutrition_encounter', 'nutrition_encounter.field_nutrition_encounter_target_id = node.nid');
+
+  $query = clone $base_query;
+
+  // Pull data of MUAC that was recorded during encounter.
+  $query->leftJoin('field_data_field_muac', 'muac', 'muac.entity_id = nutrition_encounter.entity_id');
+  $query->addField('muac', 'field_muac_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT muac.field_muac_value)", 'muac');
+
+  // Pull data of Nutrition Signs that was recorded during encounter.
+  $query->leftJoin('field_data_field_nutrition_signs', 'nutrition_signs', 'nutrition_signs.entity_id = nutrition_encounter.entity_id');
+  $query->addField('nutrition_signs', 'field_nutrition_signs_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT nutrition_signs.field_nutrition_signs_value)", 'nutrition_signs');
+
+  // Pull data of weight for height z-score for determining 'Wasting'.
+  // Taken from Nutrition weight measurement.
+  $query->leftJoin('field_data_field_zscore_length', 'zscore_length', 'zscore_length.entity_id = nutrition_encounter.entity_id');
+  $query->addField('zscore_length', 'field_zscore_length_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_length.field_zscore_length_value)", 'zscore_length');
+
+  // Pull data of weight for age z-score for determining 'Underweight'.
+  // Taken from Nutrition weight measurement.
+  // Note that there's similar field on height activity, so condition for
+  // bundle needs to be set.
+  $query->leftJoin('field_data_field_zscore_age', 'zscore_age', 'zscore_age.entity_id = nutrition_encounter.entity_id');
+  $query->addField('zscore_age', 'field_zscore_age_value');
+  $query->condition(db_or()->isNull('zscore_age.bundle')->condition('zscore_age.bundle', HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE));
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_age.field_zscore_age_value)", 'zscore_age');
+
+  $query->groupBy('node.nid');
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  // Populate data of the encounters.
+  foreach ($result as $row) {
+    $item = [
+      // Field for 'created' is added at hedley_stats_get_base_query().
+      'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
+      'nutrition_signs' => explode(',', $row->nutrition_signs),
+    ];
+    if (!empty($row->field_nutrition_encounter_type)) {
+      $item['encounter_type'] = $row->field_nutrition_encounter_type;
+    }
+    if (!empty($row->muac)) {
+      $item['muac'] = $row->muac;
+    }
+    if (!empty($row->zscore_age)) {
+      $item['zscore_underweight'] = $row->zscore_age;
+    }
+    if (!empty($row->zscore_length)) {
+      $item['zscore_wasting'] = $row->zscore_length;
+    }
+    $items[$row->field_individual_participant]['encounters'][$row->nid] = $item;
+  }
+
+  // Free up memory.
+  drupal_static_reset();
+
+  $query = clone $base_query;
+  // Pull data of height for age z-score for determining 'Stunting'.
+  // Taken from Well Child height measurement.
+  // Note that there's similar field on height activity, so condition for
+  // bundle needs to be set.
+  $query->leftJoin('field_data_field_zscore_age', 'zscore_age', 'zscore_age.entity_id = nutrition_encounter.entity_id');
+  $query->addField('zscore_age', 'field_zscore_age_value');
+  $query->condition(db_or()->isNull('zscore_age.bundle')->condition('zscore_age.bundle', HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE));
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_age.field_zscore_age_value)", 'zscore_age');
+
+  $query->groupBy('node.nid');
+
+  $result = hedley_stats_run_node_query_in_batches($query);
+
+  // Populate data of the encounters.
+  foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant]['encounters'][$row->nid])) {
+      // There's no encounter to associate measurement with.
+      // In theory, this should not be happening, but in fact this
+      // have occurred on live.
+      // Therefore, check was added to prevent decoder failure on client.
+      continue;
+    }
+
+    if (!empty($row->zscore_age)) {
+      $items[$row->field_individual_participant]['encounters'][$row->nid]['zscore_stunting'] = $row->zscore_age;
+    }
+  }
+
+  // Free up memory.
+  drupal_static_reset();
+
+  foreach ($items as &$item) {
+    $item['encounters'] = array_values($item['encounters']);
+  }
+  $values = array_values($items);
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $health_center_id, NULL, $values);
+
+  return $values;
 }
 
 /**
