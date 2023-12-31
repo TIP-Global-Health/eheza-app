@@ -10,6 +10,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, 
 import Backend.Measurement.Model
     exposing
         ( Call114Sign
+        , ChildNutritionSign
         , DangerSign
         , FamilyPlanningSign
         , Gender
@@ -346,6 +347,11 @@ type alias SPVEncounterDataItem =
     { startDate : NominalDate
     , encounterType : WellChildEncounterType
     , warnings : EverySet EncounterWarning
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
     , bcgImminizationDates : EverySet NominalDate
     , opvImminizationDates : EverySet NominalDate
     , dtpImminizationDates : EverySet NominalDate

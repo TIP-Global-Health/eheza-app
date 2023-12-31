@@ -9,6 +9,7 @@ import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLo
 import Backend.Measurement.Decoder
     exposing
         ( decodeCall114Sign
+        , decodeChildNutritionSign
         , decodeDangerSign
         , decodeFamilyPlanningSign
         , decodeHCContactSign
@@ -456,6 +457,11 @@ decodeSPVEncounterDataItem =
         |> required "start_date" decodeYYYYMMDD
         |> optional "encounter_type" decodeWellChildEncounterType PediatricCare
         |> optional "warnings" decodeWarnings (EverySet.singleton NoEncounterWarnings)
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
         |> required "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD)
         |> required "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD)
         |> required "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD)

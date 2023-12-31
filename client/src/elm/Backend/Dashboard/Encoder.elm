@@ -14,6 +14,7 @@ import Backend.Measurement.Encoder
         , encodeHCRecommendation
         , encodeIsolationSign
         , encodeMedicalCondition
+        , encodeNutritionSign
         , encodeRecommendation114
         , encodeSendToHCSign
         , encodeTestExecutionNote
@@ -402,18 +403,38 @@ encodeSPVDataItem item =
 encodeSPVEncounterDataItem : SPVEncounterDataItem -> Value
 encodeSPVEncounterDataItem item =
     let
-        --  , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
         warningsWithDefault warnings =
             if EverySet.isEmpty warnings then
                 List.singleton NoEncounterWarnings
 
             else
                 EverySet.toList warnings
+
+        zscoreStunting =
+            Maybe.map (\value -> [ ( "zscore_stunting", float value ) ])
+                item.zscoreStunting
+                |> Maybe.withDefault []
+
+        zscoreUnderweight =
+            Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
+                item.zscoreStunting
+                |> Maybe.withDefault []
+
+        zscoreWasting =
+            Maybe.map (\value -> [ ( "zscore_wasting", float value ) ])
+                item.zscoreWasting
+                |> Maybe.withDefault []
+
+        muac =
+            Maybe.map (\value -> [ ( "muac", float value ) ])
+                item.muac
+                |> Maybe.withDefault []
     in
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "encounter_type", encodeWellChildEncounterType item.encounterType )
         , ( "warnings", list encodeEncounterWarning (warningsWithDefault item.warnings) )
+        , ( "nutrition_signs", encodeEverySet encodeNutritionSign item.nutritionSigns )
         , ( "well_child_bcg_immunisation", encodeEverySet encodeYYYYMMDD item.bcgImminizationDates )
         , ( "well_child_opv_immunisation", encodeEverySet encodeYYYYMMDD item.opvImminizationDates )
         , ( "well_child_dtp_immunisation", encodeEverySet encodeYYYYMMDD item.dtpImminizationDates )
@@ -424,6 +445,10 @@ encodeSPVEncounterDataItem item =
         , ( "well_child_mr_immunisation", encodeEverySet encodeYYYYMMDD item.mrImminizationDates )
         , ( "well_child_hpv_immunisation", encodeEverySet encodeYYYYMMDD item.hpvImminizationDates )
         ]
+            ++ zscoreStunting
+            ++ zscoreUnderweight
+            ++ zscoreWasting
+            ++ muac
 
 
 encodeChildScoreboardData : List ChildScoreboardDataItem -> ( String, Value )
