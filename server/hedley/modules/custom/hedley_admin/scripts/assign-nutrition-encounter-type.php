@@ -15,9 +15,6 @@ if (!drupal_is_cli()) {
   return;
 }
 
-// Get the last node id.
-$fid = drush_get_option('nid', 0);
-
 // Get the number of nodes to be processed.
 $batch = drush_get_option('batch', 500);
 
@@ -42,33 +39,25 @@ $base_query->groupBy('ne.field_nutrition_encounter_target_id');
 $base_query->orderBy('entity_id');
 
 $count_query = clone $base_query;
-$count = $count_query->execute()->rowCount();
+$total = $count_query->execute()->rowCount();
 
-if ($count == 0) {
+if ($total == 0) {
   drush_print("There are no nutrition encounters with measurements in DB.");
   return;
 }
 
-drush_print("Located $count nutrition encounters with measurements.");
+drush_print("Located $total nutrition encounters with measurements.");
 
-while (TRUE) {
+$processed = 0;
+while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
 
   $query = clone $base_query;
-  if ($nid) {
-    $query->condition('entity_id', $nid, '>');
-  }
-
   $rows = $query
-    ->range(0, $batch)
+    ->range($processed, $batch)
     ->execute()
     ->fetchAll();
-
-  if (empty($rows)) {
-    // No more items left.
-    break;
-  }
 
   $measurements_ids = [];
   $encounters_ids = [];
@@ -84,20 +73,26 @@ while (TRUE) {
     $encounters_map[$encounter->nid] = $encounter;
   }
 
+  $updated = 0;
   foreach ($measurements as $measurement) {
     $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+    if (!empty($encounters_map[$encounter_id]->field_nutrition_encounter_type)) {
+      // Encounter type is already set.
+      continue;
+    }
+
     $nurse_id = $measurement->field_nurse[LANGUAGE_NONE][0]['target_id'];
     $encounter_type = in_array($nurse_id, $nurses_ids) ? 'nurse' : 'chw';
     $encounters_map[$encounter_id]->field_nutrition_encounter_type[LANGUAGE_NONE][0]['value'] = $encounter_type;
     node_save($encounters_map[$encounter_id]);
+    $updated++;
   }
 
-  $nid = end($measurements_ids);
-  $count = count($encounters_ids);
-  drush_print("Successfully updated $count encounters.");
+  $processed += count($rows);
+  drush_print("Successfully updated $updated encounters.");
 
   if (round(memory_get_usage() / 1048576) >= $memory_limit) {
-    drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
+    drush_print(dt('Stopped before out of memory. Processed: @processed.', ['@processed' => $processed]));
     return;
   }
 }
