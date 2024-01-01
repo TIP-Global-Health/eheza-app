@@ -1,4 +1,4 @@
-module Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter)
+module Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter, encodeNutritionEncounterType)
 
 import Backend.NutritionEncounter.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)

@@ -35,6 +35,8 @@ import Backend.Measurement.Model
         )
 import Backend.NCDEncounter.Decoder exposing (decodeNCDDiagnosis)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounterType)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -67,6 +69,7 @@ decodeDashboardStatsRaw =
         |> required "pmtct_data" (list decodePMTCTDataItem)
         |> required "spv_data" (list decodeSPVDataItem)
         |> required "child_scoreboard_data" (list decodeChildScoreboardDataItem)
+        |> required "nutrition_individual_data" (list decodeNutritionIndividualDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -495,3 +498,24 @@ decodeChildScoreboardEncounterDataItem =
         |> required "child_scoreboard_rotarix_iz" (decodeEverySet decodeYYYYMMDD)
         |> required "child_scoreboard_ipv_iz" (decodeEverySet decodeYYYYMMDD)
         |> required "child_scoreboard_mr_iz" (decodeEverySet decodeYYYYMMDD)
+
+
+decodeNutritionIndividualDataItem : Decoder NutritionIndividualDataItem
+decodeNutritionIndividualDataItem =
+    succeed NutritionIndividualDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "encounters" (list decodeNutritionIndividualEncounterDataItem)
+
+
+decodeNutritionIndividualEncounterDataItem : Decoder NutritionIndividualEncounterDataItem
+decodeNutritionIndividualEncounterDataItem =
+    succeed NutritionIndividualEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" decodeNutritionEncounterType NutritionEncounterUnknown
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty

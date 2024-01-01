@@ -24,6 +24,7 @@ import Backend.Measurement.Model
         , TestResult
         )
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning, WellChildEncounterType)
@@ -39,6 +40,7 @@ type alias AssembledData =
     , pmtctData : List PMTCTDataItem
     , spvData : List SPVDataItem
     , childScoreboardData : List ChildScoreboardDataItem
+    , nutritionIndividualData : List NutritionIndividualDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -72,6 +74,7 @@ type alias DashboardStatsRaw =
     , pmtctData : List PMTCTDataItem
     , spvData : List SPVDataItem
     , childScoreboardData : List ChildScoreboardDataItem
+    , nutritionIndividualData : List NutritionIndividualDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -96,6 +99,7 @@ emptyModel =
     , pmtctData = []
     , spvData = []
     , childScoreboardData = []
+    , nutritionIndividualData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -383,4 +387,23 @@ type alias ChildScoreboardEncounterDataItem =
     , rotarixImminizationDates : EverySet NominalDate
     , ipvImminizationDates : EverySet NominalDate
     , mrImminizationDates : EverySet NominalDate
+    }
+
+
+type alias NutritionIndividualDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , encounters : List NutritionIndividualEncounterDataItem
+    }
+
+
+type alias NutritionIndividualEncounterDataItem =
+    { startDate : NominalDate
+    , encounterType : NutritionEncounterType
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
     }
