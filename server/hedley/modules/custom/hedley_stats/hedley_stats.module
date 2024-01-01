@@ -455,7 +455,7 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
       return;
   }
 
-  if ($cache_type_for_recalculation == HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA) {
+  if ($cache_type_for_recalculation == HEDLEY_STATS_NUTRITION_INDIVIDUAL) {
     // Note we do not return after, since we want to clear 'old' Nutrition caches as well.
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $nid);
   }
@@ -673,7 +673,7 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   }
   $child_scoreboard_data = $cache_data;
 
-  $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_NUTRITION_INDIVIDUAL, $health_center_id);
+  $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $health_center_id);
   if ($cache_data === NULL) {
     return [];
   }
