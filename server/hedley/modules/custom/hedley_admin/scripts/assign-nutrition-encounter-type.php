@@ -76,6 +76,11 @@ while ($processed < $total) {
   $updated = 0;
   foreach ($measurements as $measurement) {
     $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+    if (empty($encounters_map[$encounter_id])) {
+      // Encounter can not be resolved.
+      continue;
+    }
+
     if (!empty($encounters_map[$encounter_id]->field_nutrition_encounter_type)) {
       // Encounter type is already set.
       continue;
@@ -89,7 +94,7 @@ while ($processed < $total) {
   }
 
   $processed += count($rows);
-  drush_print("Successfully updated $updated encounters.");
+  drush_print("Successfully updated $updated encounters. Processed so far: $processed.");
 
   if (round(memory_get_usage() / 1048576) >= $memory_limit) {
     drush_print(dt('Stopped before out of memory. Processed: @processed.', ['@processed' => $processed]));
