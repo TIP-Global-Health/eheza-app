@@ -190,7 +190,6 @@ function hedley_stats_requires_statistics_recalculation($node) {
     return HEDLEY_STATS_NUTRITION;
   }
 
-
   return FALSE;
 }
 
@@ -398,7 +397,6 @@ function hedley_stats_requires_child_scoreboard_statistics_recalculation($wrappe
   return FALSE;
 }
 
-
 /**
  * Checks if entity requires Individual Nutrition statistics recalculation.
  *
@@ -502,11 +500,13 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
   }
 
   if ($cache_type_for_recalculation == HEDLEY_STATS_NUTRITION_INDIVIDUAL) {
-    // Note we do not return after, since we want to clear 'old' Nutrition caches as well.
+    // Note we do not return after, since we want to clear 'old'
+    // Nutrition caches as well.
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA, $nid);
   }
-  else if ($cache_type_for_recalculation == HEDLEY_STATS_NUTRITION_GROUP) {
-    // Note we do not return after, since we want to clear 'old' Nutrition caches as well.
+  elseif ($cache_type_for_recalculation == HEDLEY_STATS_NUTRITION_GROUP) {
+    // Note we do not return after, since we want to clear 'old'
+    // Nutrition caches as well.
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA, $nid);
   }
 
@@ -621,6 +621,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_get_spv_data($health_center_id);
   hedley_stats_get_child_scorecard_data($health_center_id);
   hedley_stats_get_nutrition_individual_data($health_center_id);
+  hedley_stats_get_nutrition_group_data($health_center_id);
 
   $stats_cache_hash = md5(time());
   // Store in cache only the hash. All statistics have their own cache.
@@ -1764,7 +1765,7 @@ function hedley_stats_add_immunization_dates_for_bundle(SelectQuery $base_query,
 }
 
 /**
- * Return Nutrition data that is used to generate statistics.
+ * Return Nutrition individual data that is used to generate statistics.
  *
  * We get data of all encounters for patients that were active during
  * past 6 months.
@@ -1952,6 +1953,22 @@ function hedley_stats_get_nutrition_individual_data($health_center_id) {
   return $values;
 }
 
+/**
+ * Return Nutrition group that is used to generate statistics.
+ *
+ * We get data of all sessions for patients that were active during
+ * past 6 months.
+ * We need to know when encounters were created, and several measurements.
+ * Also, we add patient ID, to be able to associate it with its village.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ *
+ * @return array
+ *   List of Nutrition participants data with its encounters.
+ *
+ * @throws Exception
+ */
 function hedley_stats_get_nutrition_group_data($health_center_id) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA, $health_center_id)) {
@@ -1969,7 +1986,7 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
 
   if (empty($sessions_during_period)) {
     $result = [];
-     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA, $health_center_id, NULL, $result);
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA, $health_center_id, NULL, $result);
     return $result;
   }
 
@@ -1987,8 +2004,8 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
   foreach ($rows as $row) {
     $data[$row->clinic_type][$row->person_id][$row->session_id] = [
       'start_date' => date_format(date_create($row->field_date_measured), 'Y-m-d'),
-      'wasting' => $row->wasting,
-      'underweight' => $row->underweight,
+      'zscore_wasting' => $row->wasting,
+      'zscore_underweight' => $row->underweight,
     ];
   }
 
@@ -2000,7 +2017,7 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
   $rows = hedley_stats_run_node_query_in_batches($query);
   foreach ($rows as $row) {
     $data[$row->clinic_type][$row->person_id][$row->session_id]['start_date'] = date_format(date_create($row->field_date_measured), 'Y-m-d');
-    $data[$row->clinic_type][$row->person_id][$row->session_id]['stunting'] = $row->stunting;
+    $data[$row->clinic_type][$row->person_id][$row->session_id]['zscore_stunting'] = $row->stunting;
   }
 
   $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $sessions_during_period, HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE);
@@ -2054,13 +2071,28 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
   return $values;
 }
 
-function hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $sessions_during_period, $bundle) {
+/**
+ * Generates base query for Nutrition group data from single measurement type.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ * @param array $sessions_during_period
+ *   List of sessions to which measurements (od type) should belong.
+ * @param string $bundle
+ *   The type of the measurement.
+ *
+ * @return SelectQuery
+ *   Gemereated query.
+ *
+ * @throws Exception
+ */
+function hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, array $sessions_during_period, $bundle) {
   $base_query = hedley_stats_get_base_query($health_center_id, $bundle);
 
   $base_query->leftJoin('field_data_field_session', 'session', 'session.entity_id = node.nid');
   $base_query->addField('session', 'field_session_target_id', 'session_id');
 
-  $base_query->condition('session.field_session_target_id',  $sessions_during_period, 'IN');
+  $base_query->condition('session.field_session_target_id', $sessions_during_period, 'IN');
   $base_query->leftJoin('field_data_field_clinic', 'clinic', 'clinic.entity_id = session.field_session_target_id');
 
   $base_query->leftJoin('field_data_field_group_type', 'group_type', 'group_type.entity_id = clinic.field_clinic_target_id');

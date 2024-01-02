@@ -3,8 +3,9 @@
 /**
  * @file
  * Assigns Nutrition encounter type to all encounters that got measurements.
- * If measurement created by nurse - encounter type set to nurse.
- * If by CHW, set to chw.
+ *
+ * If measurement created by nurse - encounter type
+ * set to nurse. If by CHW, set to chw.
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/assign-nutrition-encounter-type.php.

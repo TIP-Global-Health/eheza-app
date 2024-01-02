@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Locates all Well child encounters where Head Circumferences value was set,
- * and checks if 'no-head-circumference-warning' warning is set (which is wrong,
+ * Locates all Well child encounters where Head Circumferences value was set.
+ *
+ * Checks if 'no-head-circumference-warning' warning is set (which is wrong,
  * as Head Circumferences has valid value).
  * If found, 'no-head-circumference-warning' warning is deleted.
  *
