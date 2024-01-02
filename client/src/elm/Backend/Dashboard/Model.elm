@@ -41,6 +41,7 @@ type alias AssembledData =
     , spvData : List SPVDataItem
     , childScoreboardData : List ChildScoreboardDataItem
     , nutritionIndividualData : List NutritionIndividualDataItem
+    , nutritionGroupData : List NutritionGroupDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -75,6 +76,7 @@ type alias DashboardStatsRaw =
     , spvData : List SPVDataItem
     , childScoreboardData : List ChildScoreboardDataItem
     , nutritionIndividualData : List NutritionIndividualDataItem
+    , nutritionGroupData : List NutritionGroupDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -100,6 +102,7 @@ emptyModel =
     , spvData = []
     , childScoreboardData = []
     , nutritionIndividualData = []
+    , nutritionGroupData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -401,6 +404,22 @@ type alias NutritionIndividualDataItem =
 type alias NutritionIndividualEncounterDataItem =
     { startDate : NominalDate
     , encounterType : NutritionEncounterType
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
+    }
+
+
+type alias NutritionGroupDataItem =
+    { identifier : PersonIdentifier
+    , encounters : List NutritionGroupEncounterDataItem
+    }
+
+
+type alias NutritionGroupEncounterDataItem =
+    { startDate : NominalDate
     , zscoreStunting : Maybe Float
     , zscoreUnderweight : Maybe Float
     , zscoreWasting : Maybe Float

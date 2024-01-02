@@ -146,6 +146,7 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     , spvData = generateFilteredData .spvData stats selectedVillageFilter
     , childScoreboardData = generateFilteredData .childScoreboardData stats selectedVillageFilter
     , nutritionIndividualData = generateFilteredData .nutritionIndividualData stats selectedVillageFilter
+    , nutritionGroupData = generateFilteredData .nutritionGroupData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 

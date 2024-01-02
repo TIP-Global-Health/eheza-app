@@ -70,6 +70,7 @@ decodeDashboardStatsRaw =
         |> required "spv_data" (list decodeSPVDataItem)
         |> required "child_scoreboard_data" (list decodeChildScoreboardDataItem)
         |> required "nutrition_individual_data" (list decodeNutritionIndividualDataItem)
+        |> required "nutrition_group_data" (list decodeNutritionGroupDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -514,6 +515,24 @@ decodeNutritionIndividualEncounterDataItem =
     succeed NutritionIndividualEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
         |> optional "encounter_type" decodeNutritionEncounterType NutritionEncounterUnknown
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
+
+
+decodeNutritionGroupDataItem : Decoder NutritionGroupDataItem
+decodeNutritionGroupDataItem =
+    succeed NutritionGroupDataItem
+        |> required "id" decodeInt
+        |> required "encounters" (list decodeNutritionGroupEncounterDataItem)
+
+
+decodeNutritionGroupEncounterDataItem : Decoder NutritionGroupEncounterDataItem
+decodeNutritionGroupEncounterDataItem =
+    succeed NutritionGroupEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
         |> optional "zscore_stunting" (nullable decodeFloat) Nothing
         |> optional "zscore_underweight" (nullable decodeFloat) Nothing
         |> optional "zscore_wasting" (nullable decodeFloat) Nothing
