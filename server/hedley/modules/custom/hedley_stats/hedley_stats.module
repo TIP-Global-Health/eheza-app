@@ -453,9 +453,11 @@ function hedley_stats_requires_nutrition_group_statistics_recalculation($wrapper
     return FALSE;
   }
 
-  $clinic_type = $wrapper->field_session->field_clinic->field_group_type->value();
   if ($bundle == HEDLEY_ACTIVITY_GROUP_ENCOUNTER_CONTENT_TYPE) {
     $clinic_type = $wrapper->field_clinic->field_group_type->value();
+  }
+  else {
+    $clinic_type = $wrapper->field_session->field_clinic->field_group_type->value();
   }
 
   // True for all triggering types which do not belong to CHW
@@ -1990,9 +1992,29 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
     return $result;
   }
 
+  // Now we need to resolve all patients (children) that have participated in one
+  // of those sessions. Patient is defined by person that had at least one
+  // nutrition measurement taken during one of sessions.
+  $nutrition_bundles = [
+    HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE,
+  ];
+  $query = hedley_stats_get_base_query($health_center_id, $nutrition_bundles);
+  $query->leftJoin('field_data_field_session', 'session', 'session.entity_id = node.nid');
+  $query->condition('session.field_session_target_id', $sessions_during_period, 'IN');
+  $query->leftJoin('field_data_field_person', 'person', 'person.entity_id = session.entity_id');
+  $query->addField('person', 'field_person_target_id', 'person_id');
+
+  $patients_ids = $query
+    ->execute()
+    ->fetchCol('person.person_id');
+  $patients_ids = array_unique($patients_ids);
+
   $data = [];
 
-  $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $sessions_during_period, HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE);
+  $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $patients_ids, HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE);
   // Pull data of weight for height z-score for determining 'Wasting'.
   $query->leftJoin('field_data_field_zscore_length', 'zscore_length', 'zscore_length.entity_id = session.entity_id');
   $query->addField('zscore_length', 'field_zscore_length_value', 'wasting');
@@ -2009,7 +2031,7 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
     ];
   }
 
-  $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $sessions_during_period, HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE);
+  $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $patients_ids, HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE);
   // Pull data of height for age z-score for determining 'Stunting'.
   $query->leftJoin('field_data_field_zscore_age', 'zscore_age', 'zscore_age.entity_id = session.entity_id');
   $query->addField('zscore_age', 'field_zscore_age_value', 'stunting');
@@ -2020,7 +2042,7 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
     $data[$row->clinic_type][$row->person_id][$row->session_id]['zscore_stunting'] = $row->stunting;
   }
 
-  $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $sessions_during_period, HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE);
+  $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $patients_ids, HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE);
   // Pull data of MUAC that was recorded during session.
   $query->leftJoin('field_data_field_muac', 'muac', 'muac.entity_id = session.entity_id');
   $query->addField('muac', 'field_muac_value');
@@ -2031,7 +2053,7 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
     $data[$row->clinic_type][$row->person_id][$row->session_id]['muac'] = $row->field_muac_value;
   }
 
-  $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $sessions_during_period, HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE);
+  $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $patients_ids, HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE);
   // Pull data of Nutrition Signs that was recorded during encounter.
   $query->leftJoin('field_data_field_nutrition_signs', 'nutrition_signs', 'nutrition_signs.entity_id = session.entity_id');
   $query->addField('nutrition_signs', 'field_nutrition_signs_value');
@@ -2076,8 +2098,8 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
  *
  * @param int $health_center_id
  *   The health center node ID.
- * @param array $sessions_during_period
- *   List of sessions to which measurements (od type) should belong.
+ * @param array $patients_ids
+ *   List of patients to which measurements (of type) should belong.
  * @param string $bundle
  *   The type of the measurement.
  *
@@ -2086,20 +2108,17 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
  *
  * @throws Exception
  */
-function hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, array $sessions_during_period, $bundle) {
+function hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, array $patients_ids, $bundle) {
   $base_query = hedley_stats_get_base_query($health_center_id, $bundle);
 
   $base_query->leftJoin('field_data_field_session', 'session', 'session.entity_id = node.nid');
   $base_query->addField('session', 'field_session_target_id', 'session_id');
-
-  $base_query->condition('session.field_session_target_id', $sessions_during_period, 'IN');
   $base_query->leftJoin('field_data_field_clinic', 'clinic', 'clinic.entity_id = session.field_session_target_id');
-
   $base_query->leftJoin('field_data_field_group_type', 'group_type', 'group_type.entity_id = clinic.field_clinic_target_id');
   $base_query->addField('group_type', 'field_group_type_value', 'clinic_type');
-
   $base_query->leftJoin('field_data_field_person', 'person', 'person.entity_id = session.entity_id');
   $base_query->addField('person', 'field_person_target_id', 'person_id');
+  $base_query->condition('person.field_person_target_id', $patients_ids, 'IN');
 
   return $base_query;
 }
