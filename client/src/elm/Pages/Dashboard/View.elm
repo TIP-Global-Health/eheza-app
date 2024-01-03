@@ -27,7 +27,7 @@ import Backend.Dashboard.Model
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
@@ -2862,13 +2862,19 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                 )
                 >> Dict.fromList
 
-        percentOfGoodNutrition =
-            -- @todo
-            0
+        encountersForSelectedMonth =
+            getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataItems
 
-        totalEncountersComplete =
-            -- @todo
-            0
+        percentOfGoodNutrition =
+            let
+                goodNutritionEncounters =
+                    List.filter isGoodNutritionEncounter encountersForSelectedMonth
+                        |> List.length
+            in
+            round (100 * toFloat goodNutritionEncounters / toFloat totalEncountersCompleted)
+
+        totalEncountersCompleted =
+            List.length encountersForSelectedMonth
 
         totalBeneficiariesWasting =
             -- @todo
@@ -2889,11 +2895,29 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         numberOfDiagnosedMalnorished =
             -- @todo
             0
+
+        isGoodNutritionEncounter encounter =
+            (case EverySet.toList encounter.nutritionSigns of
+                [] ->
+                    True
+
+                [ NormalChildNutrition ] ->
+                    True
+
+                _ ->
+                    False
+            )
+                && (Maybe.map (\muac -> muac > 12.5) encounter.muac
+                        |> Maybe.withDefault True
+                   )
+                && (Maybe.Extra.values [ encounter.zscoreStunting, encounter.zscoreUnderweight, encounter.zscoreWasting ]
+                        |> List.all (\zscore -> zscore >= -2)
+                   )
     in
     [ div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.GoodNutritionLabel) (String.fromInt percentOfGoodNutrition)
-            , chwCard language (Translate.Dashboard Translate.TotalEncountersLabel) (String.fromInt totalEncountersComplete)
+            , chwCard language (Translate.Dashboard Translate.TotalEncountersLabel) (String.fromInt totalEncountersCompleted)
             , chwCard language (Translate.Dashboard Translate.TotalBeneficiariesWasting) (String.fromInt totalBeneficiariesWasting)
             ]
         , div [ class "three column row" ]

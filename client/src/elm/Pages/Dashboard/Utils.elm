@@ -1426,7 +1426,7 @@ applyTotalBeneficiariesDenomination : Dict Int Int -> Dict Int TotalBeneficiarie
 applyTotalBeneficiariesDenomination beneficiariesPerMonthsDict totalBeneficiariesDict =
     let
         applyDenomination number denominator =
-            ceiling (100 * toFloat number / toFloat denominator)
+            round (100 * toFloat number / toFloat denominator)
     in
     totalBeneficiariesDict
         |> Dict.map
