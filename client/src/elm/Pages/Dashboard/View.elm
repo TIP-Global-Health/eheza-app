@@ -13,6 +13,8 @@ import Backend.Dashboard.Model
         , DashboardStats
         , NCDDataItem
         , Nutrition
+        , NutritionDataItem
+        , NutritionEncounterDataItem
         , NutritionPageData
         , NutritionValue
         , PMTCTDataItem
@@ -28,6 +30,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(.
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Utils exposing (getVillageById)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
@@ -79,7 +82,7 @@ import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Utils.Html exposing (spinner, viewModal)
-import Utils.NominalDate exposing (sortByDateDesc)
+import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
 
 
 view : Language -> DashboardPage -> NominalDate -> Site -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
@@ -2577,7 +2580,7 @@ viewChildWellnessPage language currentDate site healthCenterId activePage assemb
                     viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth assembled.spvData assembled.childScoreboardData
 
                 PageChildWellnessNutrition ->
-                    viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled.spvData
+                    viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled
     in
     [ viewChildWellnessMenu language activePage
     , monthSelector language dateLastDayOfSelectedMonth model
@@ -2762,9 +2765,103 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
     ]
 
 
-viewChildWellnessNutritionPage : Language -> NominalDate -> List SPVDataItem -> List (Html Msg)
-viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth dataItems =
+viewChildWellnessNutritionPage : Language -> NominalDate -> AssembledData -> List (Html Msg)
+viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
     let
+        dataItems =
+            mergeDicts spvDict nutritionIndividualDict
+                |> mergeDicts nutritionGroupDict
+                |> Dict.toList
+                |> List.map (\( identifier, encounters ) -> NutritionDataItem identifier encounters)
+
+        mergeDicts d1 d2 =
+            Dict.merge
+                (\key value -> Dict.insert key value)
+                -- In case we got both values for months, we give preference to
+                -- the one with more recent date.
+                (\key value1 value2 ->
+                    value1
+                        ++ value2
+                        |> List.sortWith (sortByDate .startDate)
+                        |> Dict.insert key
+                )
+                (\key value -> Dict.insert key value)
+                d1
+                d2
+                Dict.empty
+
+        spvDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (.encounterType >> (==) PediatricCare) .warnings item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.spvData
+                |> itemsToDict
+
+        nutritionIndividualDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (.encounterType >> (==) NutritionEncounterNurse) (always EverySet.empty) item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.nutritionIndividualData
+                |> itemsToDict
+
+        nutritionGroupDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (always True) (always EverySet.empty) item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.nutritionGroupData
+                |> itemsToDict
+
+        generateEncounters isNurseEncounterFunc resolveWarningsFunc =
+            List.filterMap
+                (\encounter ->
+                    if isNurseEncounterFunc encounter then
+                        Just <|
+                            NutritionEncounterDataItem encounter.startDate
+                                (resolveWarningsFunc encounter)
+                                encounter.zscoreStunting
+                                encounter.zscoreUnderweight
+                                encounter.zscoreWasting
+                                encounter.muac
+                                encounter.nutritionSigns
+
+                    else
+                        Nothing
+                )
+
+        itemsToDict =
+            List.map
+                (\item ->
+                    ( item.identifier, item.encounters )
+                )
+                >> Dict.fromList
+
         percentOfGoodNutrition =
             -- @todo
             0

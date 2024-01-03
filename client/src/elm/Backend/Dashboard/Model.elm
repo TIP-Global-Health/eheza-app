@@ -426,3 +426,20 @@ type alias NutritionGroupEncounterDataItem =
     , muac : Maybe Float
     , nutritionSigns : EverySet ChildNutritionSign
     }
+
+
+type alias NutritionDataItem =
+    { identifier : PersonIdentifier
+    , encounters : List NutritionEncounterDataItem
+    }
+
+
+type alias NutritionEncounterDataItem =
+    { startDate : NominalDate
+    , warnings : EverySet EncounterWarning
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
+    }
