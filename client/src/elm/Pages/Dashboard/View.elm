@@ -45,7 +45,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
@@ -82,7 +82,7 @@ import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Utils.Html exposing (spinner, viewModal)
-import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
+import Utils.NominalDate exposing (sortByDateDesc)
 
 
 view : Language -> DashboardPage -> NominalDate -> Site -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
@@ -2782,7 +2782,9 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                 (\key value1 value2 ->
                     value1
                         ++ value2
-                        |> List.sortWith (sortByDate .startDate)
+                        |> -- Sort DESC by date, so it will be easier to resolve l
+                           -- ast occurance of encounter values.
+                           List.sortWith (sortByDateDesc .startDate)
                         |> Dict.insert key
                 )
                 (\key value -> Dict.insert key value)
@@ -2876,25 +2878,49 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         totalEncountersCompleted =
             List.length encountersForSelectedMonth
 
+        itemsWithinOrBeforeSelectedMonth =
+            List.map
+                (\item ->
+                    let
+                        encounters =
+                            List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth) item.encounters
+                    in
+                    { item | encounters = encounters }
+                )
+                dataItems
+
         totalBeneficiariesWasting =
-            -- @todo
-            0
+            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < 2)
 
         incidentsOfWasting =
             -- @todo
             0
 
         numberOfStunting =
-            -- @todo
-            0
+            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < 2)
 
         numberOfCephaly =
-            -- @todo
-            0
+            countCurrentlyDiagnosedByValue
+                (\encounter ->
+                    if
+                        EverySet.isEmpty encounter.warnings
+                            || EverySet.member NoHeadCircumferenceWarning encounter.warnings
+                    then
+                        Nothing
+
+                    else
+                        Just encounter.warnings
+                )
+                (\warnings ->
+                    List.any
+                        (\warning ->
+                            EverySet.member warning warnings
+                        )
+                        [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly ]
+                )
 
         numberOfDiagnosedMalnorished =
-            -- @todo
-            0
+            countCurrentlyDiagnosedByValue Just (isGoodNutritionEncounter >> not)
 
         isGoodNutritionEncounter encounter =
             (case EverySet.toList encounter.nutritionSigns of
@@ -2913,6 +2939,32 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                 && (Maybe.Extra.values [ encounter.zscoreStunting, encounter.zscoreUnderweight, encounter.zscoreWasting ]
                         |> List.all (\zscore -> zscore >= -2)
                    )
+
+        countCurrentlyDiagnosedByValue valueMappingFunc valueConditionFunc =
+            List.filter
+                (\item ->
+                    let
+                        valuesWithDate =
+                            List.filterMap
+                                (\encounter ->
+                                    valueMappingFunc encounter
+                                        |> Maybe.map (\value -> ( encounter.startDate, value ))
+                                )
+                                item.encounters
+
+                        lastValueDate =
+                            List.head valuesWithDate
+                                |> Maybe.map Tuple.first
+
+                        lastDiagnosisDate =
+                            List.filter (Tuple.second >> valueConditionFunc) valuesWithDate
+                                |> List.head
+                                |> Maybe.map Tuple.first
+                    in
+                    isJust lastDiagnosisDate && lastValueDate == lastDiagnosisDate
+                )
+                itemsWithinOrBeforeSelectedMonth
+                |> List.length
     in
     [ div [ class "ui grid" ]
         [ div [ class "three column row" ]
