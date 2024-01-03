@@ -28,7 +28,7 @@ $query = db_select('field_data_field_role', 'r')
 $query->condition('field_role_value', 'nurse');
 $nurses_ids = $query
   ->execute()
-  ->fetchCol('entity_id');
+  ->fetchCol();
 
 // Load one measurement per nutrition encounter.
 // Measurement has a record of nurse that recorded it, so

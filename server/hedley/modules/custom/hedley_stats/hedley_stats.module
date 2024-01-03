@@ -1982,15 +1982,15 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
   // for all sessions that had an encounter over past 6 months.
   $query = hedley_stats_get_base_query($health_center_id, 'session', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
 
-  $sessions_during_period = $query
+  $result = $query
     ->execute()
-    ->fetchCol('nid');
-
-  if (empty($sessions_during_period)) {
+    ->fetchAllAssoc('nid');
+  if (empty($result)) {
     $result = [];
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA, $health_center_id, NULL, $result);
     return $result;
   }
+  $sessions_during_period = array_keys($result);
 
   // Now we need to resolve all patients (children) that have participated in one
   // of those sessions. Patient is defined by person that had at least one
@@ -2009,8 +2009,8 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
 
   $patients_ids = $query
     ->execute()
-    ->fetchCol('person.person_id');
-  $patients_ids = array_unique($patients_ids);
+    ->fetchAllAssoc('person_id');
+  $patients_ids = array_unique(array_keys($patients_ids));
 
   $data = [];
 

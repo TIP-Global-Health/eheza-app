@@ -30,7 +30,7 @@ $query = db_select('field_data_field_head_circumference', 'hc')
 $query->condition('field_head_circumference_value', 0, '<>');
 $head_circumferences = $query
   ->execute()
-  ->fetchCol('entity_id');
+  ->fetchCol();
 
 if (empty($head_circumferences)) {
   drush_print("There are no Head Circumferences measurements with set value.");
@@ -42,7 +42,7 @@ if (empty($head_circumferences)) {
 $query = db_select('field_data_field_well_child_encounter', 'wce')
   ->fields('wce', ['field_well_child_encounter_target_id']);
 $query->condition('entity_id', $head_circumferences, 'IN');
-$ids = $query->execute()->fetchCol('field_well_child_encounter_target_id');
+$ids = $query->execute()->fetchCol();
 
 $total = count($ids);
 
