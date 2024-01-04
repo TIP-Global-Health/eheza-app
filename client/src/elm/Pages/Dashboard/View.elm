@@ -2867,6 +2867,8 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
         encountersForSelectedMonth =
             getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataItems
 
+        -- Percent of good nutrition encounters from total encounters
+        -- performed during selected month.
         percentOfGoodNutrition =
             let
                 goodNutritionEncounters =
@@ -2875,30 +2877,51 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
             in
             round (100 * toFloat goodNutritionEncounters / toFloat totalEncountersCompleted)
 
+        -- Total Nutrition encounters performed during selected month.
         totalEncountersCompleted =
             List.length encountersForSelectedMonth
 
-        itemsWithinOrBeforeSelectedMonth =
-            List.map
-                (\item ->
-                    let
-                        encounters =
-                            List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth) item.encounters
-                    in
-                    { item | encounters = encounters }
-                )
-                dataItems
-
+        -- Number of children who had moderate or acute wasting diagnosed
+        -- at encounter during selected month or previously, and did not have
+        -- an encounter afterwards that indicated that condition was resolved.
         totalBeneficiariesWasting =
             countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < 2)
 
+        -- Number of children who are had firs diagnosis of wasting during
+        -- selected month.
         incidentsOfWasting =
-            -- @todo
-            0
+            List.filter
+                (\item ->
+                    let
+                        wastingDates =
+                            List.filterMap
+                                (\encounter ->
+                                    Maybe.andThen
+                                        (\zscore ->
+                                            if zscore < -2 then
+                                                Just encounter.startDate
 
+                                            else
+                                                Nothing
+                                        )
+                                        encounter.zscoreWasting
+                                )
+                                item.encounters
+                    in
+                    (not <| List.isEmpty wastingDates) && List.all (withinSelectedMonth dateLastDayOfSelectedMonth) wastingDates
+                )
+                itemsWithinOrBeforeSelectedMonth
+                |> List.length
+
+        -- Number of children who had moderate or acute stunting diagnosed at
+        -- encounter during selected month or previously, and did not have an
+        -- encounter afterwards that indicated that condition was resolved.
         numberOfStunting =
             countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < 2)
 
+        -- Number of Children who had either micro or macrocephaly diagnosed at
+        -- encounter during selected month or previously, and did not have an
+        -- encounter afterwards that indicated that condition was resolved.
         numberOfCephaly =
             countCurrentlyDiagnosedByValue
                 (\encounter ->
@@ -2919,8 +2942,22 @@ viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
                         [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly ]
                 )
 
+        -- Number children who had malnutrition diagnosed at encounter during
+        -- selected month or previously, and did not have an encounter
+        -- afterwards that indicated that condition was resolved.
         numberOfDiagnosedMalnorished =
             countCurrentlyDiagnosedByValue Just (isGoodNutritionEncounter >> not)
+
+        itemsWithinOrBeforeSelectedMonth =
+            List.map
+                (\item ->
+                    let
+                        encounters =
+                            List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth) item.encounters
+                    in
+                    { item | encounters = encounters }
+                )
+                dataItems
 
         isGoodNutritionEncounter encounter =
             (case EverySet.toList encounter.nutritionSigns of
