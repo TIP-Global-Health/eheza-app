@@ -466,15 +466,15 @@ decodeSPVEncounterDataItem =
         |> optional "zscore_wasting" (nullable decodeFloat) Nothing
         |> optional "muac" (nullable decodeFloat) Nothing
         |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
-        |> required "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_dtp_sa_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_pcv13_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_rotarix_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_ipv_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_mr_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_hpv_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> optional "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_dtp_sa_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_pcv13_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_rotarix_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_ipv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_mr_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_hpv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
 
 
 decodeChildScoreboardDataItem : Decoder ChildScoreboardDataItem
@@ -491,14 +491,14 @@ decodeChildScoreboardEncounterDataItem : Decoder ChildScoreboardEncounterDataIte
 decodeChildScoreboardEncounterDataItem =
     succeed ChildScoreboardEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
-        |> required "child_scoreboard_bcg_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_opv_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_dtp_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_dtp_sa_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_pcv13_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_rotarix_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_ipv_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_mr_iz" (decodeEverySet decodeYYYYMMDD)
+        |> optional "child_scoreboard_bcg_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_opv_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_dtp_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_dtp_sa_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_pcv13_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_rotarix_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_ipv_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_mr_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
 
 
 decodeNutritionIndividualDataItem : Decoder NutritionIndividualDataItem
