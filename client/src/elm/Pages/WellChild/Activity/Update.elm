@@ -460,7 +460,7 @@ update currentDate site isChw id db msg model =
                                 )
 
                             else
-                                -- Z-score value is within range, so not warning is
+                                -- Z-score value is within range, so no warning is
                                 -- shown / recorded on encounter.
                                 ( NoHeadCircumferenceWarning, [] )
                         )
