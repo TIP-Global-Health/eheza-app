@@ -24,7 +24,7 @@ $batch = drush_get_option('batch', 500);
 $memory_limit = drush_get_option('memory_limit', 200);
 
 // Locate all Head Circumferences measurements that got value.
-// Note: when skipped, value is ste to 0.
+// Note: when skipped, value is set to 0.
 $query = db_select('field_data_field_head_circumference', 'hc')
   ->fields('hc', ['entity_id']);
 $query->condition('field_head_circumference_value', 0, '<>');
