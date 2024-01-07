@@ -237,6 +237,7 @@ type Dashboard
     | ComplicatedMalariaReferredToHC
     | ComplicatedGIInfectionsReferredToHc
     | CurrentPregnancies
+    | DiabetesNewCases
     | DiagnosisUndetermined
     | DiagnosedCases
     | FamilyPlanningLabel
@@ -255,8 +256,11 @@ type Dashboard
     | HealthCenterLevelCases
     | HealthCenterReferrals
     | HospitalReferrals
+    | HypertensionCases
+    | HypertensionNewCases
     | IncidenceOf
     | LastUpdated
+    | ManagedByPMTCT
     | MissedSessionsLabel
     | Moderate
     | ModeratelyMalnourished
@@ -283,6 +287,8 @@ type Dashboard
     | TotalMalnourished
     | TotalEncountersLabel
     | TotalAssessment
+    | TotalCases
+    | TotalDiabeticCases
     | UncomplicatedMalariaByChws
     | UncomplicatedMalariaInPregnancyReferredToHc
     | UncomplicatedGIInfectionByCHWS
@@ -5260,9 +5266,6 @@ translationSet trans =
 
                 PageNCD subPage ->
                     case subPage of
-                        PageNCDOverview ->
-                            translationSet Overview
-
                         PageHypertension ->
                             translationSet Hypertension
 
@@ -22741,6 +22744,12 @@ translateDashboard trans =
             , kirundi = Just "Abagore bafise imbanyi ubu"
             }
 
+        DiabetesNewCases ->
+            { english = "Diabetes - New cases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         CommunityLevelCases ->
             { english = "Community Level Cases"
             , kinyarwanda = Just "Umubare w'ababonetse ku rwego rw'umudugudu"
@@ -22951,6 +22960,18 @@ translateDashboard trans =
             , kirundi = Nothing
             }
 
+        HypertensionCases ->
+            { english = "Hypertension Cases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HypertensionNewCases ->
+            { english = "Hypertension - New cases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         IncidenceOf ->
             { english = "Incidence of"
             , kinyarwanda = Just "Umubare w'abana bashya bafite"
@@ -22961,6 +22982,12 @@ translateDashboard trans =
             { english = "Last updated"
             , kinyarwanda = Just "Ivugurura riheruka"
             , kirundi = Just "Ivyashizwe ku gihe ubwanyuma"
+            }
+
+        ManagedByPMTCT ->
+            { english = "Managed by PMTCT"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Moderate ->
@@ -23171,6 +23198,18 @@ translateDashboard trans =
             { english = "Total # of Assessments"
             , kinyarwanda = Just "Umubare wose w'Amasuzuma Yakozwe"
             , kirundi = Just "igitigiri cy'Ivyasuzumwe vyose hamwe"
+            }
+
+        TotalCases ->
+            { english = "Total Cases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TotalDiabeticCases ->
+            { english = "Total Diabetic Cases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         UncomplicatedMalariaByChws ->

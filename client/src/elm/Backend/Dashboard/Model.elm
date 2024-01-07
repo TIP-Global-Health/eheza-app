@@ -16,9 +16,13 @@ import Backend.Measurement.Model
         , HCContactSign
         , HCRecommendation
         , IsolationSign
+        , MedicalCondition
         , Recommendation114
         , SendToHCSign
+        , TestExecutionNote
+        , TestResult
         )
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
@@ -29,6 +33,8 @@ type alias AssembledData =
     { stats : DashboardStats
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
+    , ncdData : List NCDDataItem
+    , pmtctData : List PMTCTDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -58,6 +64,8 @@ type alias DashboardStatsRaw =
     , totalEncounters : TotalEncountersData
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
+    , ncdData : List NCDDataItem
+    , pmtctData : List PMTCTDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -78,6 +86,8 @@ emptyModel =
     , totalEncounters = TotalEncountersData Dict.empty Dict.empty
     , acuteIllnessData = []
     , prenatalData = []
+    , ncdData = []
+    , pmtctData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -288,4 +298,28 @@ type alias AcuteIllnessEncounterDataItem =
     , recommendation114 : EverySet Recommendation114
     , hcContactSigns : EverySet HCContactSign
     , hcRecommendation : EverySet HCRecommendation
+    }
+
+
+type alias NCDDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , encounters : List NCDEncounterDataItem
+    }
+
+
+type alias NCDEncounterDataItem =
+    { startDate : NominalDate
+    , diagnoses : EverySet NCDDiagnosis
+    , medicalConditions : EverySet MedicalCondition
+    , coMorbidities : EverySet MedicalCondition
+    , hivTestResult : Maybe TestResult
+    , hivTestExecutionNote : Maybe TestExecutionNote
+    }
+
+
+type alias PMTCTDataItem =
+    { identifier : PersonIdentifier
+    , startDate : NominalDate
+    , endDate : NominalDate
     }

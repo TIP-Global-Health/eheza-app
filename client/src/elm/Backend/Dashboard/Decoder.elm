@@ -14,8 +14,11 @@ import Backend.Measurement.Decoder
         , decodeHCContactSign
         , decodeHCRecommendation
         , decodeIsolationSign
+        , decodeMedicalCondition
         , decodeRecommendation114
         , decodeSendToHCSign
+        , decodeTestExecutionNote
+        , decodeTestResult
         )
 import Backend.Measurement.Model
     exposing
@@ -24,9 +27,12 @@ import Backend.Measurement.Model
         , HCContactSign(..)
         , HCRecommendation(..)
         , IsolationSign(..)
+        , MedicalCondition(..)
         , Recommendation114(..)
         , SendToHCSign(..)
         )
+import Backend.NCDEncounter.Decoder exposing (decodeNCDDiagnosis)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -53,6 +59,8 @@ decodeDashboardStatsRaw =
         |> required "total_encounters" decodeTotalEncountersData
         |> required "acute_illness_data" (list decodeAcuteIllnessDataItem)
         |> required "prenatal_data" (list decodePrenatalDataItem)
+        |> required "ncd_data" (list decodeNCDDataItem)
+        |> required "pmtct_data" (list decodePMTCTDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -371,3 +379,43 @@ decodePrenatalEncounterDataItem =
         |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "muac" (nullable decodeFloat) Nothing
         |> required "send_to_hc" (decodeEverySet (decodeWithFallback NoSendToHCSigns decodeSendToHCSign))
+
+
+decodeNCDDataItem : Decoder NCDDataItem
+decodeNCDDataItem =
+    succeed NCDDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "encounters" (list decodeNCDEncounterDataItem)
+
+
+decodeNCDEncounterDataItem : Decoder NCDEncounterDataItem
+decodeNCDEncounterDataItem =
+    let
+        decodeDiagnoses =
+            map
+                (\items ->
+                    if List.isEmpty items then
+                        EverySet.singleton NoNCDDiagnosis
+
+                    else
+                        EverySet.fromList items
+                )
+            <|
+                list (decodeWithFallback NoNCDDiagnosis decodeNCDDiagnosis)
+    in
+    succeed NCDEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoNCDDiagnosis)
+        |> required "medical_conditions" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
+        |> required "co_morbidities" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
+        |> optional "hiv_test_result" (nullable decodeTestResult) Nothing
+        |> optional "hiv_test_execution_note" (nullable decodeTestExecutionNote) Nothing
+
+
+decodePMTCTDataItem : Decoder PMTCTDataItem
+decodePMTCTDataItem =
+    succeed PMTCTDataItem
+        |> required "id" decodeInt
+        |> required "start_date" decodeYYYYMMDD
+        |> required "end_date" decodeYYYYMMDD

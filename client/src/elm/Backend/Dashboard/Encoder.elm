@@ -13,9 +13,14 @@ import Backend.Measurement.Encoder
         , encodeHCContactSign
         , encodeHCRecommendation
         , encodeIsolationSign
+        , encodeMedicalCondition
         , encodeRecommendation114
         , encodeSendToHCSign
+        , encodeTestExecutionNote
+        , encodeTestResult
         )
+import Backend.NCDEncounter.Encoder exposing (encodeNCDDiagnosis)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -38,6 +43,8 @@ encodeDashboardStatsRaw stats =
     , encodeTotalEncountersData stats.totalEncounters
     , encodeAcuteIllnessData stats.acuteIllnessData
     , encodePrenatalData stats.prenatalData
+    , encodeNCDData stats.ncdData
+    , encodePMTCTData stats.pmtctData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
@@ -314,3 +321,59 @@ encodePrenatalEncounterDataItem item =
         , ( "send_to_hc", encodeEverySet encodeSendToHCSign item.sendToHCSigns )
         ]
             ++ muac
+
+
+encodeNCDData : List NCDDataItem -> ( String, Value )
+encodeNCDData itemsList =
+    ( "ncd_data", list (encodeNCDDataItem >> object) itemsList )
+
+
+encodeNCDDataItem : NCDDataItem -> List ( String, Value )
+encodeNCDDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "encounters", list encodeNCDEncounterDataItem item.encounters )
+    ]
+
+
+encodeNCDEncounterDataItem : NCDEncounterDataItem -> Value
+encodeNCDEncounterDataItem item =
+    let
+        diagnosesWithDefault diagnoses =
+            if EverySet.isEmpty diagnoses then
+                List.singleton NoNCDDiagnosis
+
+            else
+                EverySet.toList diagnoses
+
+        hivTestResult =
+            Maybe.map (\result -> [ ( "hiv_test_result", encodeTestResult result ) ])
+                item.hivTestResult
+                |> Maybe.withDefault []
+
+        hivTestExecutionNote =
+            Maybe.map (\note -> [ ( "hiv_test_execution_note", encodeTestExecutionNote note ) ])
+                item.hivTestExecutionNote
+                |> Maybe.withDefault []
+    in
+    object <|
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "diagnoses", list encodeNCDDiagnosis (diagnosesWithDefault item.diagnoses) )
+        , ( "medical_conditions", encodeEverySet encodeMedicalCondition item.medicalConditions )
+        , ( "co_morbidities", encodeEverySet encodeMedicalCondition item.coMorbidities )
+        ]
+            ++ hivTestResult
+            ++ hivTestExecutionNote
+
+
+encodePMTCTData : List PMTCTDataItem -> ( String, Value )
+encodePMTCTData itemsList =
+    ( "pmtct_data", list (encodePMTCTDataItem >> object) itemsList )
+
+
+encodePMTCTDataItem : PMTCTDataItem -> List ( String, Value )
+encodePMTCTDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "start_date", encodeYYYYMMDD item.startDate )
+    , ( "end_date", encodeYYYYMMDD item.endDate )
+    ]

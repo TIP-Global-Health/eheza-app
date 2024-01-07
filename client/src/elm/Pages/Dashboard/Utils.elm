@@ -13,10 +13,13 @@ import Backend.Dashboard.Model
         , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
+        , NCDDataItem
+        , NCDEncounterDataItem
         , Nutrition
         , NutritionPageData
         , NutritionStatus
         , NutritionValue
+        , PMTCTDataItem
         , Periods
         , PersonIdentifier
         , PrenatalDataItem
@@ -35,10 +38,14 @@ import Backend.Measurement.Model
         , FollowUpMeasurements
         , HCContactSign(..)
         , HCRecommendation(..)
+        , MedicalCondition(..)
         , Recommendation114(..)
         , SendToHCSign(..)
+        , TestExecutionNote(..)
+        , TestResult(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Model exposing (Village)
@@ -123,6 +130,8 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     { stats = filteredStats
     , acuteIllnessData = generateFilteredAcuteIllnessData stats selectedVillageFilter
     , prenatalData = generateFilteredPrenatalData stats selectedVillageFilter
+    , ncdData = generateFilteredNCDData stats selectedVillageFilter
+    , pmtctData = generateFilteredPMTCTData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 
@@ -171,6 +180,26 @@ generateFilteredPrenatalData stats selectedVillageFilter =
             (\villageId -> Dict.get villageId stats.villagesWithResidents)
         |> Maybe.map
             (\residents -> List.filter (\item -> List.member item.identifier residents) stats.prenatalData)
+        |> Maybe.withDefault []
+
+
+generateFilteredNCDData : DashboardStatsRaw -> Maybe VillageId -> List NCDDataItem
+generateFilteredNCDData stats selectedVillageFilter =
+    selectedVillageFilter
+        |> Maybe.andThen
+            (\villageId -> Dict.get villageId stats.villagesWithResidents)
+        |> Maybe.map
+            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.ncdData)
+        |> Maybe.withDefault []
+
+
+generateFilteredPMTCTData : DashboardStatsRaw -> Maybe VillageId -> List PMTCTDataItem
+generateFilteredPMTCTData stats selectedVillageFilter =
+    selectedVillageFilter
+        |> Maybe.andThen
+            (\villageId -> Dict.get villageId stats.villagesWithResidents)
+        |> Maybe.map
+            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.pmtctData)
         |> Maybe.withDefault []
 
 
@@ -1541,6 +1570,205 @@ applyGenderFilter model list =
         list
 
 
+{-| Counts all data items (representing NCD participants) that had Hypertension
+diagnosis recorded during any of it's encounters.
+-}
+countTotalNumberOfPatientsWithHypertension : NominalDate -> List NCDDataItem -> Int
+countTotalNumberOfPatientsWithHypertension selectedDate =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth selectedDate)
+            >> --  Generate dates of all encounters where Hypertension was diagnosed.
+               generateHypertensionDiagnosisEncountersDates True
+            >> List.isEmpty
+            >> not
+        )
+        >> List.length
+
+
+{-| Counts all data items (representing NCD participants) that had first Hypertension
+diagnosis recorded during selected month.
+Hypertension can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
+Outside care activities).
+-}
+countNewlyIdentifieHypertensionCasesForSelectedMonth : NominalDate -> List NCDDataItem -> Int
+countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate =
+    List.filter
+        (.encounters
+            >> --  Generate dates of all encounters where Hypertension was diagnosed.
+               generateHypertensionDiagnosisEncountersDates False
+            -- Take first date, which represents first diagnosis for Hypertension.
+            >> List.head
+            -- Check if it falls within selected month.
+            >> Maybe.map (withinSelectedMonth selectedDate)
+            >> Maybe.withDefault False
+        )
+        >> List.length
+
+
+{-| Generate dates of all encounters where Hypertension was diagnosed.
+Hypertension can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
+Outside care activities).
+-}
+generateHypertensionDiagnosisEncountersDates : Bool -> List NCDEncounterDataItem -> List NominalDate
+generateHypertensionDiagnosisEncountersDates includingMedicalConditions =
+    List.filterMap
+        (\encounter ->
+            let
+                byDiagnosis =
+                    List.any (\diagnosis -> EverySet.member diagnosis encounter.diagnoses)
+                        [ DiagnosisHypertensionStage1, DiagnosisHypertensionStage2, DiagnosisHypertensionStage3 ]
+
+                byMedicalConditions =
+                    if includingMedicalConditions then
+                        let
+                            medicalConditions =
+                                EverySet.union encounter.medicalConditions encounter.coMorbidities
+                        in
+                        List.any (\condition -> EverySet.member condition medicalConditions)
+                            [ MedicalConditionHypertension, MedicalConditionPregnancyRelatedHypertension ]
+
+                    else
+                        False
+            in
+            if byDiagnosis || byMedicalConditions then
+                Just encounter.startDate
+
+            else
+                Nothing
+        )
+        -- Sort by date ASC.
+        >> List.sortWith Date.compare
+
+
+{-| Counts all data items (representing NCD participants) that had Diabetes
+diagnosis recorded during any of it's encounters.
+-}
+countTotalNumberOfPatientsWithDiabetes : NominalDate -> List NCDDataItem -> Int
+countTotalNumberOfPatientsWithDiabetes selectedDate =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth selectedDate)
+            >> --  Generate dates of all encounters where Diabetes was diagnosed.
+               generateDiabetesDiagnosisEncountersDates True
+            >> List.isEmpty
+            >> not
+        )
+        >> List.length
+
+
+{-| Counts all data items (representing NCD participants) that had first Diabetes
+diagnosis recorded during selected month.
+-}
+countNewlyIdentifiedDiabetesCasesForSelectedMonth : NominalDate -> List NCDDataItem -> Int
+countNewlyIdentifiedDiabetesCasesForSelectedMonth selectedDate =
+    List.filter
+        (.encounters
+            >> --  Generate dates of all encounters where Diabetes was diagnosed.
+               generateDiabetesDiagnosisEncountersDates False
+            -- Take first date, which represents first diagnosis for Diabetes.
+            >> List.head
+            -- Check if it falls within selected month.
+            >> Maybe.map (withinSelectedMonth selectedDate)
+            >> Maybe.withDefault False
+        )
+        >> List.length
+
+
+{-| Counts all data items (representing ANC participants) that had Diabetes
+diagnosis recorded during any of it's encounters.
+-}
+countTotalNumberOfPatientsWithGestationalDiabetes : NominalDate -> List PrenatalDataItem -> Int
+countTotalNumberOfPatientsWithGestationalDiabetes selectedDate =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth selectedDate)
+            >> -- Check if any of them had Gestational Diabetes diagnosis.
+               List.any (.diagnoses >> EverySet.member DiagnosisGestationalDiabetes)
+        )
+        -- Since one woman may have multiple pregnancies, we make sure
+        -- that patient identifier is unique before we count the total.
+        >> List.map .identifier
+        >> EverySet.fromList
+        >> EverySet.size
+
+
+{-| Generate dates of all encounters where Diabetes was diagnosed.
+Diabetes can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
+Outside care activities).
+-}
+generateDiabetesDiagnosisEncountersDates : Bool -> List NCDEncounterDataItem -> List NominalDate
+generateDiabetesDiagnosisEncountersDates includingMedicalConditions =
+    List.filterMap
+        (\encounter ->
+            let
+                byDiagnosis =
+                    List.any (\diagnosis -> EverySet.member diagnosis encounter.diagnoses)
+                        [ DiagnosisDiabetesInitial, DiagnosisDiabetesRecurrent ]
+
+                byMedicalConditions =
+                    if includingMedicalConditions then
+                        let
+                            medicalConditions =
+                                EverySet.union encounter.medicalConditions encounter.coMorbidities
+                        in
+                        EverySet.member MedicalConditionDiabetes medicalConditions
+
+                    else
+                        False
+            in
+            if byDiagnosis || byMedicalConditions then
+                Just encounter.startDate
+
+            else
+                Nothing
+        )
+        -- Sort by date ASC.
+        >> List.sortWith Date.compare
+
+
+generatePatientsWithHIV : NominalDate -> List NCDDataItem -> List PersonIdentifier
+generatePatientsWithHIV selectedDate =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth selectedDate)
+            >> -- Generate dates of all encounters where Hypertension was diagnosed.
+               List.filter
+                (\encounter ->
+                    let
+                        byTestResult =
+                            Maybe.map ((==) TestPositive)
+                                encounter.hivTestResult
+                                |> Maybe.withDefault False
+
+                        byTestExecutionNote =
+                            Maybe.map ((==) TestNoteKnownAsPositive)
+                                encounter.hivTestExecutionNote
+                                |> Maybe.withDefault False
+
+                        byMedicalConditions =
+                            let
+                                medicalConditions =
+                                    EverySet.union encounter.medicalConditions encounter.coMorbidities
+                            in
+                            EverySet.member MedicalConditionHIV medicalConditions
+                    in
+                    byTestResult || byTestExecutionNote || byMedicalConditions
+                )
+            >> List.isEmpty
+            >> not
+        )
+        >> List.map .identifier
+
+
 
 --
 -- Helper functions.
@@ -1558,6 +1786,36 @@ withinSelectedMonth selectedDate date =
     in
     (Date.monthNumber date == month)
         && (Date.year date == year)
+
+
+withinOrBeforeSelectedMonth : NominalDate -> NominalDate -> Bool
+withinOrBeforeSelectedMonth selectedDate date =
+    let
+        month =
+            Date.monthNumber selectedDate
+
+        year =
+            Date.year selectedDate
+    in
+    (Date.year date < year)
+        || ((Date.year date == year)
+                && (Date.monthNumber date <= month)
+           )
+
+
+withinOrAfterSelectedMonth : NominalDate -> NominalDate -> Bool
+withinOrAfterSelectedMonth selectedDate date =
+    let
+        month =
+            Date.monthNumber selectedDate
+
+        year =
+            Date.year selectedDate
+    in
+    (Date.year date > year)
+        || ((Date.year date == year)
+                && (Date.monthNumber date >= month)
+           )
 
 
 getSelectedDate : NominalDate -> Model -> NominalDate

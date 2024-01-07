@@ -10,9 +10,11 @@ import Backend.Dashboard.Model
         , CaseManagement
         , CaseNutritionTotal
         , DashboardStats
+        , NCDDataItem
         , Nutrition
         , NutritionPageData
         , NutritionValue
+        , PMTCTDataItem
         , ParticipantStats
         , Periods
         , PrenatalDataItem
@@ -151,10 +153,10 @@ view language page currentDate healthCenterId isChw nurse model db =
                                         ( viewPrenatalPage language currentDate isChw assembled db model, "prenatal" )
 
                                     PageNCD subPage ->
-                                        ( viewNCDPage language currentDate healthCenterId isChw subPage assembled db model, "ncd" )
+                                        ( viewNCDPage language currentDate healthCenterId subPage assembled db model, "ncd" )
 
                                     PageChildWellness ->
-                                        ( viewChildWellnessPage language currentDate healthCenterId isChw assembled db model, "child-wellness" )
+                                        ( viewChildWellnessPage language currentDate healthCenterId assembled db model, "child-wellness" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
@@ -215,7 +217,7 @@ viewPageMainForChw language currentDate healthCenterId assembled db model =
 
         -- Prenatal
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth selectedDate isChw assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth selectedDate True assembled.prenatalData
 
         totalNewborn =
             countNewbornForSelectedMonth selectedDate assembled.prenatalData
@@ -618,13 +620,13 @@ viewFiltersPane language page db model =
 viewMenuForNurse : Language -> Html Msg
 viewMenuForNurse language =
     div []
-        [ div [ class "ui segment nurse-filters" ]
+        [ div [ class "ui segment page-filters nurse" ]
             [ viewMenuButton language PagePrenatal Nothing
             , viewMenuButton language (PageNutrition PageCharts) Nothing
             , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
             ]
-        , div [ class "ui segment nurse-filters center" ]
-            [ viewMenuButton language (PageNCD PageNCDOverview) Nothing
+        , div [ class "ui segment page-filters nurse center" ]
+            [ viewMenuButton language (PageNCD PageHypertension) Nothing
             , viewMenuButton language PageChildWellness Nothing
             ]
         ]
@@ -632,7 +634,7 @@ viewMenuForNurse language =
 
 viewMenuForChw : Language -> Html Msg
 viewMenuForChw language =
-    div [ class "ui segment chw-filters" ]
+    div [ class "ui segment page-filters" ]
         [ viewMenuButton language PagePrenatal Nothing
         , viewMenuButton language (PageNutrition PageCharts) Nothing
         , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
@@ -641,11 +643,20 @@ viewMenuForChw language =
 
 viewAcuteIllnessMenu : Language -> AcuteIllnessSubPage -> Html Msg
 viewAcuteIllnessMenu language activePage =
-    div [ class "ui segment chw-filters" ]
+    div [ class "ui segment page-filters" ]
         [ viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageCovid19) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageMalaria) (Just <| PageAcuteIllness activePage)
         , viewMenuButton language (PageAcuteIllness PageGastro) (Just <| PageAcuteIllness activePage)
+        ]
+
+
+viewNCDMenu : Language -> NCDSubPage -> Html Msg
+viewNCDMenu language activePage =
+    div [ class "ui segment page-filters" ]
+        [ viewMenuButton language (PageNCD PageHypertension) (Just <| PageNCD activePage)
+        , viewMenuButton language (PageNCD PageHIV) (Just <| PageNCD activePage)
+        , viewMenuButton language (PageNCD PageDiabetes) (Just <| PageNCD activePage)
         ]
 
 
@@ -658,7 +669,7 @@ viewMenuButton language targetPage activePage =
                     -- On Main page, and target is Acute Illness page.
                     Translate.AcuteIllness
 
-                ( Nothing, PageNCD PageNCDOverview ) ->
+                ( Nothing, PageNCD PageHypertension ) ->
                     -- On Main page, and target is Acute Illness page.
                     Translate.NCDs
 
@@ -2393,26 +2404,132 @@ viewNCDPage :
     Language
     -> NominalDate
     -> HealthCenterId
-    -> Bool
     -> NCDSubPage
     -> AssembledData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewNCDPage language currentDate healthCenterId isChw activePage assembled db model =
-    --@todo
-    [ text "viewNCDPage" ]
+viewNCDPage language currentDate healthCenterId activePage assembled db model =
+    let
+        selectedDate =
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
+
+        pageContent =
+            case activePage of
+                PageHypertension ->
+                    viewHypertensionPage language selectedDate assembled.ncdData model
+
+                PageHIV ->
+                    viewHIVPage language selectedDate assembled.ncdData assembled.pmtctData
+
+                PageDiabetes ->
+                    viewDiabetesPage language selectedDate assembled.ncdData assembled.prenatalData model
+    in
+    [ viewNCDMenu language activePage
+    , monthSelector language selectedDate model
+    ]
+        ++ pageContent
+
+
+viewHypertensionPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
+viewHypertensionPage language selectedDate dataItems model =
+    let
+        totalCases =
+            countTotalNumberOfPatientsWithHypertension selectedDate dataItems
+
+        newCases =
+            countNewlyIdentifieHypertensionCasesForSelectedMonth selectedDate dataItems
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "two column row" ]
+            [ chwCard language (Translate.Dashboard Translate.HypertensionCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.HypertensionNewCases) (String.fromInt newCases)
+            ]
+        ]
+    ]
+
+
+viewHIVPage : Language -> NominalDate -> List NCDDataItem -> List PMTCTDataItem -> List (Html Msg)
+viewHIVPage language selectedDate dataItems pmtctData =
+    let
+        patientsWithHIV =
+            generatePatientsWithHIV selectedDate dataItems
+
+        totalCases =
+            List.length patientsWithHIV
+
+        -- Patients with HIV that participate at PMTCT group.
+        managedByPMTCT =
+            List.filter
+                (\id ->
+                    List.any
+                        (\pmtctParticipant ->
+                            (pmtctParticipant.identifier == id)
+                                && -- PMTCT participation started at current month or before.
+                                   withinOrBeforeSelectedMonth selectedDate pmtctParticipant.startDate
+                                && -- PMTCT participation ends at current month or after.
+                                   withinOrAfterSelectedMonth selectedDate pmtctParticipant.endDate
+                        )
+                        pmtctData
+                )
+                patientsWithHIV
+                |> List.length
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "two column row" ]
+            [ chwCard language (Translate.Dashboard Translate.TotalCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.ManagedByPMTCT) (String.fromInt managedByPMTCT)
+            ]
+        ]
+    ]
+
+
+viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> List PrenatalDataItem -> Model -> List (Html Msg)
+viewDiabetesPage language selectedDate dataItems prenatalDataItems model =
+    let
+        totalCases =
+            countTotalNumberOfPatientsWithDiabetes selectedDate dataItems
+
+        newCases =
+            countNewlyIdentifiedDiabetesCasesForSelectedMonth selectedDate dataItems
+
+        gestationalCases =
+            let
+                dataForNurses =
+                    List.filterMap
+                        (\pregnancy ->
+                            let
+                                nurseEncounters =
+                                    List.filter isNurseEncounter pregnancy.encounters
+                            in
+                            if List.isEmpty nurseEncounters then
+                                Nothing
+
+                            else
+                                Just { pregnancy | encounters = nurseEncounters }
+                        )
+                        prenatalDataItems
+            in
+            countTotalNumberOfPatientsWithGestationalDiabetes selectedDate dataForNurses
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.TotalDiabeticCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.DiabetesNewCases) (String.fromInt newCases)
+            , chwCard language Translate.GestationalDiabetes (String.fromInt gestationalCases)
+            ]
+        ]
+    ]
 
 
 viewChildWellnessPage :
     Language
     -> NominalDate
     -> HealthCenterId
-    -> Bool
     -> AssembledData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewChildWellnessPage language currentDate healthCenterId isChw assembled db model =
+viewChildWellnessPage language currentDate healthCenterId assembled db model =
     --@todo
     [ text "viewChildWellnessPage" ]

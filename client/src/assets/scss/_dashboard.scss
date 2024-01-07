@@ -97,8 +97,7 @@
       }
     }
 
-    &.chw-filters,
-    &.nurse-filters {
+    &.page-filters {
       background-color: transparent;
       min-height: 40px;
       padding: 25px 0;
@@ -130,12 +129,12 @@
       }
     }
 
-    &.nurse-filters {
+    &.page-filters.nurse {
       border-bottom: none;
       margin-bottom: 0;
     }
 
-    &.nurse-filters.center {
+    &.page-filters.nurse.center {
       justify-content: center;
     }
 
