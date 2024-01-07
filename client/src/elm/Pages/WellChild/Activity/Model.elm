@@ -92,7 +92,7 @@ type Msg
     | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
-    | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
+    | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe NominalDate) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
       -- PHOTO
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl

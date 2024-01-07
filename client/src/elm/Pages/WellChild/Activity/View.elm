@@ -2395,8 +2395,16 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                                         let
                                             ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
                                                 resolveNextVisitDates currentDate site isChw assembled db nextVisitForm
+
+                                            asapImmunisationDate =
+                                                generateASAPImmunisationDate currentDate site assembled db
                                         in
-                                        SaveNextVisit personId measurements.nextVisit nextDateForImmunisationVisit nextDateForPediatricVisit nextTask
+                                        SaveNextVisit personId
+                                            measurements.nextVisit
+                                            nextDateForImmunisationVisit
+                                            nextDateForPediatricVisit
+                                            asapImmunisationDate
+                                            nextTask
 
                             disabled =
                                 if task == TaskNextVisit then

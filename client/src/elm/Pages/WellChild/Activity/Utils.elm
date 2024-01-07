@@ -1739,6 +1739,19 @@ generateNextDateForImmunisationVisit currentDate site assembled db =
         nextVisitDate
 
 
+{-| The purpose here is to find ou if patient is behind on immunisations.
+If so, what was the date from which the lag started.
+If not, on which date we'll need to administer next vaccination (of any type).
+-}
+generateASAPImmunisationDate : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
+generateASAPImmunisationDate currentDate site assembled db =
+    generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationProgress
+        |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
+        |> List.sortWith Date.compare
+        -- Get the most recent of all dates.
+        |> List.head
+
+
 fromNextVisitValue : Maybe NextVisitValue -> NextVisitForm
 fromNextVisitValue saved =
     { immunisationDate = Maybe.andThen .immunisationDate saved

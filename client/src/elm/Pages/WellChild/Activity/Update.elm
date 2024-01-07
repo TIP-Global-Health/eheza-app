@@ -1651,7 +1651,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveNextVisit personId saved nextDateForImmunisationVisit nextDateForPediatricVisit nextTask_ ->
+        SaveNextVisit personId saved nextDateForImmunisationVisit nextDateForPediatricVisit asapImmunisationDate nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1664,7 +1664,13 @@ update currentDate site isChw id db msg model =
 
                 appMsgs =
                     model.nextStepsData.nextVisitForm
-                        |> (\form -> { form | immunisationDate = nextDateForImmunisationVisit, pediatricVisitDate = nextDateForPediatricVisit })
+                        |> (\form ->
+                                { form
+                                    | immunisationDate = nextDateForImmunisationVisit
+                                    , asapImmunisationDate = asapImmunisationDate
+                                    , pediatricVisitDate = nextDateForPediatricVisit
+                                }
+                           )
                         |> toNextVisitValueWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveNextVisit personId measurementId
