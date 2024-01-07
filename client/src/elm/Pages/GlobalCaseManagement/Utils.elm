@@ -196,7 +196,7 @@ generateImmunizationFollowUps limitDate followUps =
                         else
                             Nothing
                     )
-                    followUp.value.immunisationDate
+                    followUp.value.asapImmunisationDate
             )
         |> List.foldl
             (\( dateMeasured, participantId, dueDate ) accum ->
