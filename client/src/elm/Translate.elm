@@ -240,6 +240,7 @@ type Dashboard
     | DiabetesNewCases
     | DiagnosisUndetermined
     | DiagnosedCases
+    | ECDOnTrackLabel
     | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | FeversByCause
@@ -259,6 +260,8 @@ type Dashboard
     | HypertensionCases
     | HypertensionNewCases
     | IncidenceOf
+    | ImmunizationOnTrackLabel
+    | IncidentsOfWasting
     | LastUpdated
     | ManagedByPMTCT
     | MissedSessionsLabel
@@ -271,6 +274,10 @@ type Dashboard
     | NewCasesPerMonth
     | NewPregnancy
     | NoDataForPeriod
+    | NumberOfCephaly
+    | NumberOfChildrenSeen
+    | NumberOfDiagnosedMalnourished
+    | NumberOfStunting
     | PatientsManagedAtHome
     | PatientCurrentlyUnderCare
     | PercentageLabel FilterPeriod
@@ -284,6 +291,7 @@ type Dashboard
     | StatisticsHelper
     | SubFilter DashboardSubFilter
     | TotalBeneficiaries
+    | TotalBeneficiariesWasting
     | TotalMalnourished
     | TotalEncountersLabel
     | TotalAssessment
@@ -408,6 +416,7 @@ type TranslationId
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
     | BeginNewEncounter
+    | Behind
     | BirthDefect BirthDefect
     | BirthDefectLabel
     | BirthDefectsPresentQuestion
@@ -1021,6 +1030,7 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | Nutrition
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | NutritionAssessment NutritionAssessment
@@ -1045,6 +1055,7 @@ type TranslationId
     | OnceYouEndYourGroupEncounter
     | OngoingTreatmentTask OngoingTreatmentTask
     | OnlySickChild
+    | OnTrack
     | Or
     | OutsideCareLabel
     | Overview
@@ -1082,6 +1093,7 @@ type TranslationId
     | PatientShowsNoSignsOfCovid
     | Patients
     | PediatricCareMilestone PediatricCareMilestone
+    | Pediatrics
     | PediatricVisit
     | People
     | Percentage
@@ -2750,10 +2762,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.NutritionSigns ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Just "Imirire"
-                    , kirundi = Just "Ugufungura"
-                    }
+                    translationSet Nutrition
 
                 ChildActivity Activity.Model.ChildPicture ->
                     { english = "Photo"
@@ -3215,6 +3224,12 @@ translationSet trans =
             { english = "Begin a New Encounter"
             , kinyarwanda = Just "Tangira igikorwa gishya"
             , kirundi = Just "Ugutangura kubonana bushasha"
+            }
+
+        Behind ->
+            { english = "Behind"
+            , kinyarwanda = Just "Biri inyuma"
+            , kirundi = Just "Inyuma"
             }
 
         BirthDefect defect ->
@@ -5070,16 +5085,10 @@ translationSet trans =
         ECDStatus status ->
             case status of
                 StatusOnTrack ->
-                    { english = "On Track"
-                    , kinyarwanda = Just "Biri ku gihe"
-                    , kirundi = Just "Ku mrurongo"
-                    }
+                    translationSet OnTrack
 
                 StatusECDBehind ->
-                    { english = "Behind"
-                    , kinyarwanda = Just "Biri inyuma"
-                    , kirundi = Just "Inyuma"
-                    }
+                    translationSet Behind
 
                 StatusOffTrack ->
                     { english = "Off Track"
@@ -5275,8 +5284,13 @@ translationSet trans =
                         PageDiabetes ->
                             translationSet Diabetes
 
-                PageChildWellness ->
-                    translationSet ChildWellness
+                PageChildWellness subPage ->
+                    case subPage of
+                        PageChildWellnessOverview ->
+                            translationSet Overview
+
+                        PageChildWellnessNutrition ->
+                            translationSet Nutrition
 
         EncounterWarningForDiagnosisPane warning suffix ->
             let
@@ -11463,6 +11477,12 @@ translationSet trans =
             , kirundi = Just "Urugendo kubw'urucanco ruzokurikira umunsi ruzobako"
             }
 
+        Pediatrics ->
+            { english = "Pediatrics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NextPediatricVisit ->
             { english = "Next pediatric visit"
             , kinyarwanda = Just "Isura ry'umwana rikurikira"
@@ -11913,6 +11933,12 @@ translationSet trans =
             , kirundi = Just "Igitigiri c'abavutse itarike itaragera/igihe kitarashika, bamaze gupfa"
             }
 
+        Nutrition ->
+            { english = "Nutrition"
+            , kinyarwanda = Just "Imirire"
+            , kirundi = Just "Ugufungura"
+            }
+
         NutritionActivityHelper activity ->
             case activity of
                 Backend.NutritionActivity.Model.Muac ->
@@ -11969,10 +11995,7 @@ translationSet trans =
                     }
 
                 Backend.NutritionActivity.Model.Nutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Just "Imirire"
-                    , kirundi = Just "Ugufungura"
-                    }
+                    translationSet Nutrition
 
                 Backend.NutritionActivity.Model.Photo ->
                     { english = "Photo"
@@ -12078,10 +12101,7 @@ translationSet trans =
                     }
 
                 TaskNutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Just "Imirire"
-                    , kirundi = Just "Ugufungura"
-                    }
+                    translationSet Nutrition
 
                 TaskWeight ->
                     { english = "Weight"
@@ -12433,6 +12453,12 @@ translationSet trans =
             { english = "Only Sick Child"
             , kinyarwanda = Just "Umwana urwaye gusa"
             , kirundi = Just "Umwana agwaye gusa"
+            }
+
+        OnTrack ->
+            { english = "On Track"
+            , kinyarwanda = Just "Biri ku gihe"
+            , kirundi = Just "Ku mrurongo"
             }
 
         Or ->
@@ -12829,10 +12855,7 @@ translationSet trans =
                     }
 
                 PhysicalExamNutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Just "Imirire"
-                    , kirundi = Just "Ugufungura"
-                    }
+                    translationSet Nutrition
 
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
@@ -20981,10 +21004,7 @@ translationSet trans =
         VaccinationStatus status ->
             case status of
                 StatusBehind ->
-                    { english = "Behind"
-                    , kinyarwanda = Just "Ntibyakozwe"
-                    , kirundi = Just "Inyuma"
-                    }
+                    translationSet Behind
 
                 StatusCompleted ->
                     { english = "Completed"
@@ -22780,6 +22800,12 @@ translateDashboard trans =
             , kirundi = Just "Ivyasuzumwe"
             }
 
+        ECDOnTrackLabel ->
+            { english = "% ECD on Track"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         FamilyPlanningLabel ->
             { english = "Family Planning"
             , kinyarwanda = Just "Kuboneza Urubyaro"
@@ -22919,7 +22945,7 @@ translateDashboard trans =
             }
 
         GoodNutritionLabel ->
-            { english = "% Good nutrition"
+            { english = "% Good Nutrition"
             , kinyarwanda = Just "% Abafite imirire myiza"
             , kirundi = Just "% vyo Gufungura neza"
             }
@@ -22976,6 +23002,18 @@ translateDashboard trans =
             { english = "Incidence of"
             , kinyarwanda = Just "Umubare w'abana bashya bafite"
             , kirundi = Just "icabaye"
+            }
+
+        ImmunizationOnTrackLabel ->
+            { english = "% Immunization on Track"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        IncidentsOfWasting ->
+            { english = "Incidents of Wasting"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         LastUpdated ->
@@ -23048,6 +23086,30 @@ translateDashboard trans =
             { english = "No data for the selected period."
             , kinyarwanda = Just "Nta bipimo bigaragara muri iki gihe wahisemo"
             , kirundi = Just "Nta makuru y'igihe catowe."
+            }
+
+        NumberOfCephaly ->
+            { english = "# of Micro/Macrocephaly"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NumberOfChildrenSeen ->
+            { english = "# of Children Seen"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NumberOfDiagnosedMalnourished ->
+            { english = "# of Diagnosed Malnourished"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NumberOfStunting ->
+            { english = "# of Stunting"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         PatientsManagedAtHome ->
@@ -23182,6 +23244,12 @@ translateDashboard trans =
             , kirundi = Just "Abagenerwabikorwa bose"
             }
 
+        TotalBeneficiariesWasting ->
+            { english = "Total Beneficiaries Wasting"
+            , kinyarwanda = Just "Umubare w'abana bose bafite"
+            , kirundi = Just "Abagenerwabikorwa bose"
+            }
+
         TotalMalnourished ->
             { english = "Total Malnourished"
             , kinyarwanda = Nothing
@@ -23189,7 +23257,7 @@ translateDashboard trans =
             }
 
         TotalEncountersLabel ->
-            { english = "Total encounters completed"
+            { english = "Total Encounters Completed"
             , kinyarwanda = Just "Ibikorwa byose byarangiye"
             , kirundi = Just "Icegeranyo c'imibonano yose yaheze"
             }

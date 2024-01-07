@@ -407,6 +407,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         Pages.Dashboard.View.view model.language
                             subPage
                             currentDate
+                            site
                             healthCenterId
                             isChw
                             (Tuple.second loggedInModel.nurse)

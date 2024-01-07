@@ -24,6 +24,7 @@ import Backend.Measurement.Model
     exposing
         ( Call114Sign(..)
         , DangerSign(..)
+        , ECDSign(..)
         , HCContactSign(..)
         , HCRecommendation(..)
         , IsolationSign(..)
@@ -37,6 +38,8 @@ import Backend.Person.Decoder exposing (decodeGender)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning, decodeWellChildEncounterType)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Dict as LegacyDict
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
@@ -61,6 +64,8 @@ decodeDashboardStatsRaw =
         |> required "prenatal_data" (list decodePrenatalDataItem)
         |> required "ncd_data" (list decodeNCDDataItem)
         |> required "pmtct_data" (list decodePMTCTDataItem)
+        |> required "spv_data" (list decodeSPVDataItem)
+        |> required "child_scoreboard_data" (list decodeChildScoreboardDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -386,6 +391,7 @@ decodeNCDDataItem =
     succeed NCDDataItem
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
         |> required "encounters" (list decodeNCDEncounterDataItem)
 
 
@@ -419,3 +425,67 @@ decodePMTCTDataItem =
         |> required "id" decodeInt
         |> required "start_date" decodeYYYYMMDD
         |> required "end_date" decodeYYYYMMDD
+
+
+decodeSPVDataItem : Decoder SPVDataItem
+decodeSPVDataItem =
+    succeed SPVDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "gender" decodeGender
+        |> required "encounters" (list decodeSPVEncounterDataItem)
+
+
+decodeSPVEncounterDataItem : Decoder SPVEncounterDataItem
+decodeSPVEncounterDataItem =
+    let
+        decodeWarnings =
+            map
+                (\items ->
+                    if List.isEmpty items then
+                        EverySet.singleton NoEncounterWarnings
+
+                    else
+                        EverySet.fromList items
+                )
+            <|
+                list (decodeWithFallback NoEncounterWarnings decodeEncounterWarning)
+    in
+    succeed SPVEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" decodeWellChildEncounterType PediatricCare
+        |> optional "warnings" decodeWarnings (EverySet.singleton NoEncounterWarnings)
+        |> required "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_dtp_sa_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_pcv13_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_rotarix_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_ipv_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_mr_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> required "well_child_hpv_immunisation" (decodeEverySet decodeYYYYMMDD)
+
+
+decodeChildScoreboardDataItem : Decoder ChildScoreboardDataItem
+decodeChildScoreboardDataItem =
+    succeed ChildScoreboardDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "gender" decodeGender
+        |> required "encounters" (list decodeChildScoreboardEncounterDataItem)
+
+
+decodeChildScoreboardEncounterDataItem : Decoder ChildScoreboardEncounterDataItem
+decodeChildScoreboardEncounterDataItem =
+    succeed ChildScoreboardEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> required "child_scoreboard_bcg_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_opv_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_dtp_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_dtp_sa_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_pcv13_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_rotarix_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_ipv_iz" (decodeEverySet decodeYYYYMMDD)
+        |> required "child_scoreboard_mr_iz" (decodeEverySet decodeYYYYMMDD)

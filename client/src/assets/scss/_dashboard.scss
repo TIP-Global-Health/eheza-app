@@ -8,6 +8,10 @@
     margin-top: 50px;
   }
 
+  .ui.grid .column.row.center {
+    justify-content: center;
+  }
+
   .ui.segment {
 
     .content .very.basic.table {
@@ -129,6 +133,10 @@
       }
     }
 
+    &.page-filters.center {
+      justify-content: center;
+    }
+
     &.page-filters.nurse {
       border-bottom: none;
       margin-bottom: 0;
@@ -206,14 +214,6 @@
             width: 400px;
           }
 
-          svg.pie-chart.fever {
-            height: 500px;
-            left: -235px;
-            position: absolute;
-            top: 4px;
-            width: 500px;
-          }
-
           .legend {
             width: 50%;
             display: flex;
@@ -241,7 +241,7 @@
       }
     }
 
-    &.donut-chart.fever {
+    &.donut-chart.left {
       min-height: 300px;
 
       .row .content {

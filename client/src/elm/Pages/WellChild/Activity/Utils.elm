@@ -676,7 +676,7 @@ expectImmunisationTask currentDate site isChw assembled task =
     else
         let
             futureVaccinations =
-                generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationHistory
+                generateFutureVaccinationsData currentDate site assembled.person.birthDate assembled.person.gender False assembled.vaccinationHistory
                     |> Dict.fromList
 
             ageInWeeks =
@@ -1729,7 +1729,7 @@ generateNextDateForImmunisationVisit : NominalDate -> Site -> AssembledData -> M
 generateNextDateForImmunisationVisit currentDate site assembled db =
     let
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate site assembled.person True assembled.vaccinationProgress
+            generateFutureVaccinationsData currentDate site assembled.person.birthDate assembled.person.gender True assembled.vaccinationProgress
 
         -- If there're only 6 months interval vaccines (which are given at older age),
         -- we'll suggested most recent date.

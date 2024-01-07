@@ -2461,7 +2461,7 @@ viewUniversalInterventionsPane language currentDate site child db nurseQuestionn
                                             vaccinationProgress
 
                                     futureVaccinations =
-                                        generateFutureVaccinationsData currentDate site child False vaccinationProgressOnReferrenceDate
+                                        generateFutureVaccinationsData currentDate site child.birthDate child.gender False vaccinationProgressOnReferrenceDate
 
                                     closestDateForVaccination =
                                         List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations

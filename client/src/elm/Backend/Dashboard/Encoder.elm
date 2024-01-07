@@ -24,6 +24,8 @@ import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning, encodeWellChildEncounterType)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Dict as LegacyDict
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -45,6 +47,8 @@ encodeDashboardStatsRaw stats =
     , encodePrenatalData stats.prenatalData
     , encodeNCDData stats.ncdData
     , encodePMTCTData stats.pmtctData
+    , encodeSPVData stats.spvData
+    , encodeChildScoreboardData stats.childScoreboardData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
@@ -332,6 +336,7 @@ encodeNCDDataItem : NCDDataItem -> List ( String, Value )
 encodeNCDDataItem item =
     [ ( "id", int item.identifier )
     , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
     , ( "encounters", list encodeNCDEncounterDataItem item.encounters )
     ]
 
@@ -377,3 +382,75 @@ encodePMTCTDataItem item =
     , ( "start_date", encodeYYYYMMDD item.startDate )
     , ( "end_date", encodeYYYYMMDD item.endDate )
     ]
+
+
+encodeSPVData : List SPVDataItem -> ( String, Value )
+encodeSPVData itemsList =
+    ( "spv_data", list (encodeSPVDataItem >> object) itemsList )
+
+
+encodeSPVDataItem : SPVDataItem -> List ( String, Value )
+encodeSPVDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
+    , ( "gender", encodeGender item.gender )
+    , ( "encounters", list encodeSPVEncounterDataItem item.encounters )
+    ]
+
+
+encodeSPVEncounterDataItem : SPVEncounterDataItem -> Value
+encodeSPVEncounterDataItem item =
+    let
+        --  , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
+        warningsWithDefault warnings =
+            if EverySet.isEmpty warnings then
+                List.singleton NoEncounterWarnings
+
+            else
+                EverySet.toList warnings
+    in
+    object <|
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "encounter_type", encodeWellChildEncounterType item.encounterType )
+        , ( "warnings", list encodeEncounterWarning (warningsWithDefault item.warnings) )
+        , ( "well_child_bcg_immunisation", encodeEverySet encodeYYYYMMDD item.bcgImminizationDates )
+        , ( "well_child_opv_immunisation", encodeEverySet encodeYYYYMMDD item.opvImminizationDates )
+        , ( "well_child_dtp_immunisation", encodeEverySet encodeYYYYMMDD item.dtpImminizationDates )
+        , ( "well_child_dtp_sa_immunisation", encodeEverySet encodeYYYYMMDD item.dtpStandaloneImminizationDates )
+        , ( "well_child_pcv13_immunisation", encodeEverySet encodeYYYYMMDD item.pcv13ImminizationDates )
+        , ( "well_child_rotarix_immunisation", encodeEverySet encodeYYYYMMDD item.rotarixImminizationDates )
+        , ( "well_child_ipv_immunisation", encodeEverySet encodeYYYYMMDD item.ipvImminizationDates )
+        , ( "well_child_mr_immunisation", encodeEverySet encodeYYYYMMDD item.mrImminizationDates )
+        , ( "well_child_hpv_immunisation", encodeEverySet encodeYYYYMMDD item.hpvImminizationDates )
+        ]
+
+
+encodeChildScoreboardData : List ChildScoreboardDataItem -> ( String, Value )
+encodeChildScoreboardData itemsList =
+    ( "child_scoreboard_data", list (encodeChildScoreboardDataItem >> object) itemsList )
+
+
+encodeChildScoreboardDataItem : ChildScoreboardDataItem -> List ( String, Value )
+encodeChildScoreboardDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
+    , ( "gender", encodeGender item.gender )
+    , ( "encounters", list encodeChildScoreboardEncounterDataItem item.encounters )
+    ]
+
+
+encodeChildScoreboardEncounterDataItem : ChildScoreboardEncounterDataItem -> Value
+encodeChildScoreboardEncounterDataItem item =
+    object <|
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "child_scoreboard_bcg_iz", encodeEverySet encodeYYYYMMDD item.bcgImminizationDates )
+        , ( "child_scoreboard_opv_iz", encodeEverySet encodeYYYYMMDD item.opvImminizationDates )
+        , ( "child_scoreboard_dtp_iz", encodeEverySet encodeYYYYMMDD item.dtpImminizationDates )
+        , ( "child_scoreboard_dtp_sa_iz", encodeEverySet encodeYYYYMMDD item.dtpStandaloneImminizationDates )
+        , ( "child_scoreboard_pcv13_iz", encodeEverySet encodeYYYYMMDD item.pcv13ImminizationDates )
+        , ( "child_scoreboard_rotarix_iz", encodeEverySet encodeYYYYMMDD item.rotarixImminizationDates )
+        , ( "child_scoreboard_ipv_iz", encodeEverySet encodeYYYYMMDD item.ipvImminizationDates )
+        , ( "child_scoreboard_mr_iz", encodeEverySet encodeYYYYMMDD item.mrImminizationDates )
+        ]

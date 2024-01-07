@@ -25,6 +25,7 @@ import Backend.Measurement.Model
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning, WellChildEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -35,6 +36,8 @@ type alias AssembledData =
     , prenatalData : List PrenatalDataItem
     , ncdData : List NCDDataItem
     , pmtctData : List PMTCTDataItem
+    , spvData : List SPVDataItem
+    , childScoreboardData : List ChildScoreboardDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -66,6 +69,8 @@ type alias DashboardStatsRaw =
     , prenatalData : List PrenatalDataItem
     , ncdData : List NCDDataItem
     , pmtctData : List PMTCTDataItem
+    , spvData : List SPVDataItem
+    , childScoreboardData : List ChildScoreboardDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -88,6 +93,8 @@ emptyModel =
     , prenatalData = []
     , ncdData = []
     , pmtctData = []
+    , spvData = []
+    , childScoreboardData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -304,6 +311,7 @@ type alias AcuteIllnessEncounterDataItem =
 type alias NCDDataItem =
     { identifier : PersonIdentifier
     , created : NominalDate
+    , birthDate : NominalDate
     , encounters : List NCDEncounterDataItem
     }
 
@@ -322,4 +330,51 @@ type alias PMTCTDataItem =
     { identifier : PersonIdentifier
     , startDate : NominalDate
     , endDate : NominalDate
+    }
+
+
+type alias SPVDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , gender : Gender
+    , encounters : List SPVEncounterDataItem
+    }
+
+
+type alias SPVEncounterDataItem =
+    { startDate : NominalDate
+    , encounterType : WellChildEncounterType
+    , warnings : EverySet EncounterWarning
+    , bcgImminizationDates : EverySet NominalDate
+    , opvImminizationDates : EverySet NominalDate
+    , dtpImminizationDates : EverySet NominalDate
+    , dtpStandaloneImminizationDates : EverySet NominalDate
+    , pcv13ImminizationDates : EverySet NominalDate
+    , rotarixImminizationDates : EverySet NominalDate
+    , ipvImminizationDates : EverySet NominalDate
+    , mrImminizationDates : EverySet NominalDate
+    , hpvImminizationDates : EverySet NominalDate
+    }
+
+
+type alias ChildScoreboardDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , gender : Gender
+    , encounters : List ChildScoreboardEncounterDataItem
+    }
+
+
+type alias ChildScoreboardEncounterDataItem =
+    { startDate : NominalDate
+    , bcgImminizationDates : EverySet NominalDate
+    , opvImminizationDates : EverySet NominalDate
+    , dtpImminizationDates : EverySet NominalDate
+    , dtpStandaloneImminizationDates : EverySet NominalDate
+    , pcv13ImminizationDates : EverySet NominalDate
+    , rotarixImminizationDates : EverySet NominalDate
+    , ipvImminizationDates : EverySet NominalDate
+    , mrImminizationDates : EverySet NominalDate
     }
