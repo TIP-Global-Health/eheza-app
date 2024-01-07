@@ -2386,6 +2386,7 @@ type alias WellChildNextVisit =
 
 type alias NextVisitValue =
     { immunisationDate : Maybe NominalDate
+    , asapImmunisationDate : Maybe NominalDate
     , pediatricVisitDate : Maybe NominalDate
     , resolutionDate : Maybe NominalDate
     }

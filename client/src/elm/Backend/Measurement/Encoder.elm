@@ -4235,6 +4235,11 @@ encodeNextVisitValue value =
             Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
                 value.resolutionDate
                 |> Maybe.withDefault []
+
+        asapImmunisationDate =
+            Maybe.map (\date -> [ ( "asap_immunisation_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.asapImmunisationDate
+                |> Maybe.withDefault []
     in
     [ ( "immunisation_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.immunisationDate )
     , ( "pediatric_visit_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pediatricVisitDate )
@@ -4242,6 +4247,7 @@ encodeNextVisitValue value =
     , ( "type", string "well_child_next_visit" )
     ]
         ++ resolutionDate
+        ++ asapImmunisationDate
 
 
 encodeWellChildBCGImmunisation : WellChildBCGImmunisation -> List ( String, Value )

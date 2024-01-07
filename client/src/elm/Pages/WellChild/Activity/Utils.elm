@@ -1742,6 +1742,7 @@ generateNextDateForImmunisationVisit currentDate site assembled db =
 fromNextVisitValue : Maybe NextVisitValue -> NextVisitForm
 fromNextVisitValue saved =
     { immunisationDate = Maybe.andThen .immunisationDate saved
+    , asapImmunisationDate = Maybe.andThen .asapImmunisationDate saved
     , pediatricVisitDate = Maybe.andThen .pediatricVisitDate saved
     , resolutionDate = Maybe.andThen .resolutionDate saved
     }
@@ -1754,6 +1755,7 @@ nextVisitFormWithDefault form saved =
             form
             (\value ->
                 { immunisationDate = or form.immunisationDate value.immunisationDate
+                , asapImmunisationDate = or form.asapImmunisationDate value.asapImmunisationDate
                 , pediatricVisitDate = or form.pediatricVisitDate value.pediatricVisitDate
                 , resolutionDate = or form.resolutionDate value.resolutionDate
                 }
@@ -1771,6 +1773,7 @@ toNextVisitValue form =
     Just <|
         NextVisitValue
             form.immunisationDate
+            form.asapImmunisationDate
             form.pediatricVisitDate
             form.resolutionDate
 
