@@ -1501,21 +1501,16 @@ vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled 
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =
-                    case assembled.encounter.encounterType of
-                        NewbornExam ->
-                            [ VaccineDoseFirst ]
-
-                        _ ->
-                            getAllDosesForVaccine initialOpvAdministered vaccineType
-                                |> List.filter
-                                    (\dose ->
-                                        expectVaccineDoseForPerson currentDate
-                                            site
-                                            assembled.person
-                                            initialOpvAdministered
-                                            assembled.vaccinationProgress
-                                            ( vaccineType, dose )
-                                    )
+                    getAllDosesForVaccine initialOpvAdministered vaccineType
+                        |> List.filter
+                            (\dose ->
+                                expectVaccineDoseForPerson currentDate
+                                    site
+                                    assembled.person
+                                    initialOpvAdministered
+                                    assembled.vaccinationProgress
+                                    ( vaccineType, dose )
+                            )
 
                 dosesFromPreviousEncountersData =
                     Dict.get vaccineType assembled.vaccinationHistory

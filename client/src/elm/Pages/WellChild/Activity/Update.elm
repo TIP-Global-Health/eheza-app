@@ -82,23 +82,8 @@ update currentDate site isChw id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildProgressReportPage id ]
 
         generateImmunisationMsgs nextTask =
-            let
-                defaultMsg =
-                    Dict.get id db.wellChildEncounters
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map
-                            (\encounter ->
-                                case encounter.encounterType of
-                                    NewbornExam ->
-                                        SetActivePage <| UserPage <| WellChildEncounterPage id
-
-                                    _ ->
-                                        SetActiveImmunisationTask TaskOverview
-                            )
-                        |> Maybe.withDefault (SetActivePage <| UserPage <| WellChildEncounterPage id)
-            in
             Maybe.map (\task -> [ SetActiveImmunisationTask task ]) nextTask
-                |> Maybe.withDefault [ defaultMsg ]
+                |> Maybe.withDefault [ SetActiveImmunisationTask TaskOverview ]
 
         generateHomeVisitMsgs nextTask =
             Maybe.map (\task -> [ SetActiveHomeVisitTask task ]) nextTask
