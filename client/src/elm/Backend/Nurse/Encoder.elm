@@ -54,6 +54,9 @@ encodeRole role =
         RoleNurse ->
             string "nurse"
 
+        RoleLabTech ->
+            string "lab-tech"
+
 
 encodeResilienceRole : ResilienceRole -> Value
 encodeResilienceRole =
