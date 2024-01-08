@@ -16,13 +16,29 @@ assignedToVillage villageId nurse =
     EverySet.member villageId nurse.villages
 
 
-isCommunityHealthWorker : Nurse -> Bool
-isCommunityHealthWorker nurse =
+resolveMainRole : Nurse -> Maybe Role
+resolveMainRole nurse =
     if EverySet.member RoleNurse nurse.roles then
-        False
+        Just RoleNurse
+
+    else if EverySet.member RoleCHW nurse.roles then
+        Just RoleCHW
+
+    else if EverySet.member RoleLabTech nurse.roles then
+        Just RoleLabTech
 
     else
-        EverySet.member RoleCHW nurse.roles
+        Nothing
+
+
+isCommunityHealthWorker : Nurse -> Bool
+isCommunityHealthWorker =
+    resolveMainRole >> (==) (Just RoleCHW)
+
+
+isLabTechnician : Nurse -> Bool
+isLabTechnician =
+    resolveMainRole >> (==) (Just RoleLabTech)
 
 
 isAuthorithedNurse : Clinic -> Nurse -> Bool
