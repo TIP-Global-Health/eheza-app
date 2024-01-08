@@ -1896,6 +1896,42 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                             )
                                 )
                             |> Maybe.withDefault []
+
+                processWellChildImmunisationRevision participantId encounterId after =
+                    if downloadingContent then
+                        []
+
+                    else
+                        Maybe.andThen
+                            (\id ->
+                                Pages.WellChild.Encounter.Utils.generateAssembledData site id after
+                                    |> RemoteData.toMaybe
+                                    |> Maybe.andThen
+                                        (\assembledAfter ->
+                                            Maybe.map
+                                                (\( measurementId, measurement ) ->
+                                                    let
+                                                        immunisationDate =
+                                                            Pages.WellChild.Activity.Utils.generateNextDateForImmunisationVisit currentDate site assembledAfter
+
+                                                        asapImmunisationDate =
+                                                            Pages.WellChild.Activity.Utils.generateASAPImmunisationDate currentDate site assembledAfter
+
+                                                        value =
+                                                            measurement.value
+                                                    in
+                                                    [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
+                                                        (Just measurementId)
+                                                        { value | immunisationDate = immunisationDate, asapImmunisationDate = asapImmunisationDate }
+                                                        |> Backend.Model.MsgWellChildEncounter id
+                                                        |> App.Model.MsgIndexedDb
+                                                    ]
+                                                )
+                                                assembledAfter.measurements.nextVisit
+                                        )
+                            )
+                            encounterId
+                            |> Maybe.withDefault []
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -2657,6 +2693,123 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         extraMsgs =
                             processWellChildECDRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildBCGImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildDTPImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildDTPStandaloneImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildHPVImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildIPVImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildMRImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildOPVImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildPCV13ImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildRotarixImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
                     in
                     ( newModel
                     , Cmd.none

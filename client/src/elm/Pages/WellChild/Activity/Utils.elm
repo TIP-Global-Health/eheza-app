@@ -1559,7 +1559,7 @@ generateNextVisitDates currentDate site assembled db =
         nextVisitDateForMedication =
             generateNextDateForMedicationVisit currentDate site assembled db
     in
-    ( generateNextDateForImmunisationVisit currentDate site assembled db
+    ( generateNextDateForImmunisationVisit currentDate site assembled
     , Maybe.Extra.values [ nextVisitDateForECD, nextVisitDateForMedication ]
         |> List.sortWith Date.compare
         |> List.head
@@ -1678,8 +1678,8 @@ generateNextDateForMedicationVisit currentDate site assembled db =
             )
 
 
-generateNextDateForImmunisationVisit : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateNextDateForImmunisationVisit currentDate site assembled db =
+generateNextDateForImmunisationVisit : NominalDate -> Site -> AssembledData -> Maybe NominalDate
+generateNextDateForImmunisationVisit currentDate site assembled =
     let
         futureVaccinationsData =
             generateFutureVaccinationsData currentDate site assembled.person True assembled.vaccinationProgress
@@ -1743,8 +1743,8 @@ generateNextDateForImmunisationVisit currentDate site assembled db =
 If so, what was the date from which the lag started.
 If not, on which date we'll need to administer next vaccination (of any type).
 -}
-generateASAPImmunisationDate : NominalDate -> Site -> AssembledData -> ModelIndexedDb -> Maybe NominalDate
-generateASAPImmunisationDate currentDate site assembled db =
+generateASAPImmunisationDate : NominalDate -> Site -> AssembledData -> Maybe NominalDate
+generateASAPImmunisationDate currentDate site assembled =
     generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationProgress
         |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
         |> List.sortWith Date.compare

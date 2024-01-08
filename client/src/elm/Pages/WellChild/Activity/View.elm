@@ -2392,7 +2392,7 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                                                 resolveNextVisitDates currentDate site isChw assembled db nextVisitForm
 
                                             asapImmunisationDate =
-                                                generateASAPImmunisationDate currentDate site assembled db
+                                                generateASAPImmunisationDate currentDate site assembled
                                         in
                                         SaveNextVisit personId
                                             measurements.nextVisit
