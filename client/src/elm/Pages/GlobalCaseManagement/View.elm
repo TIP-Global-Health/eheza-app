@@ -19,6 +19,8 @@ import Backend.Measurement.Model
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.NutritionEncounter.Utils
     exposing
         ( getHomeVisitEncountersForParticipant
@@ -54,8 +56,8 @@ import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate healthCenterId villageId syncManager db model =
+view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> Nurse -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate healthCenterId villageId nurse syncManager db model =
     let
         header =
             div
@@ -82,7 +84,7 @@ view language currentDate healthCenterId villageId syncManager db model =
                         )
                 )
                 villageId
-                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate model db) identity followUps)
+                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate nurse model db) identity followUps)
                 |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div [ class "wrap wrap-alt-2 page-case-management" ]
@@ -150,35 +152,48 @@ viewContentForChw language currentDate village model db followUps =
             :: panes
 
 
-viewContentForNurse : Language -> NominalDate -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForNurse language currentDate model db followUps =
+viewContentForNurse : Language -> NominalDate -> Nurse -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForNurse language currentDate nurse model db followUps =
     let
-        contactsTracingPane =
-            viewContactsTracingPane language currentDate followUps.traceContacts db model
+        ( panes, filters ) =
+            let
+                prenatalLabsPane =
+                    viewPrenatalLabsPane language currentDate followUps.prenatalLabs db model
+            in
+            if isLabTechnician nurse then
+                ( [ ( FilterPrenatalLabs, prenatalLabsPane ) ]
+                , labTechFilters
+                )
 
-        prenatalLabsPane =
-            viewPrenatalLabsPane language currentDate followUps.prenatalLabs db model
+            else
+                let
+                    contactsTracingPane =
+                        viewContactsTracingPane language currentDate followUps.traceContacts db model
 
-        ncdLabsPane =
-            viewNCDLabsPane language currentDate followUps.ncdLabs db model
+                    ncdLabsPane =
+                        viewNCDLabsPane language currentDate followUps.ncdLabs db model
+                in
+                ( [ ( FilterContactsTrace, contactsTracingPane )
+                  , ( FilterPrenatalLabs, prenatalLabsPane )
+                  , ( FilterNCDLabs, ncdLabsPane )
+                  ]
+                , nurseFilters
+                )
 
-        panes =
-            [ ( FilterContactsTrace, contactsTracingPane )
-            , ( FilterPrenatalLabs, prenatalLabsPane )
-            , ( FilterNCDLabs, ncdLabsPane )
-            ]
-                |> List.filterMap
-                    (\( type_, pane ) ->
-                        if isNothing model.filter || model.filter == Just type_ then
-                            Just pane
+        panesForView =
+            List.filterMap
+                (\( type_, pane ) ->
+                    if isNothing model.filter || model.filter == Just type_ then
+                        Just pane
 
-                        else
-                            Nothing
-                    )
+                    else
+                        Nothing
+                )
+                panes
     in
     div [ class "ui unstackable items" ] <|
-        viewFilters language nurseFilters model
-            :: panes
+        viewFilters language filters model
+            :: panesForView
 
 
 viewEntryPopUp : Language -> NominalDate -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)

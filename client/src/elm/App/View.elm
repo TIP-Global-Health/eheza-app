@@ -446,6 +446,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             currentDate
                             healthCenterId
                             model.villageId
+                            (Tuple.second loggedInModel.nurse)
                             model.syncManager
                             model.indexedDb
                             loggedInModel.globalCaseManagementPage

@@ -32,6 +32,11 @@ nurseFilters =
     [ FilterContactsTrace, FilterPrenatalLabs, FilterNCDLabs ]
 
 
+labTechFilters : List CaseManagementFilter
+labTechFilters =
+    [ FilterPrenatalLabs ]
+
+
 generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
 generateNutritionFollowUps limitDate followUps =
     let
