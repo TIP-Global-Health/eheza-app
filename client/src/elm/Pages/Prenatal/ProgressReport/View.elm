@@ -24,6 +24,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model exposing (Nurse)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
@@ -105,18 +106,19 @@ view :
     -> NominalDate
     -> Site
     -> EverySet SiteFeature
+    -> Nurse
     -> PrenatalEncounterId
     -> Bool
     -> PrenatalProgressReportInitiator
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate site features id isChw initiator db model =
+view language currentDate site features nurse id isChw initiator db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewContentAndHeader language currentDate site features isChw initiator model) identity assembled
+    viewWebData language (viewContentAndHeader language currentDate site features nurse isChw initiator model) identity assembled
 
 
 viewContentAndHeader :
@@ -124,12 +126,13 @@ viewContentAndHeader :
     -> NominalDate
     -> Site
     -> EverySet SiteFeature
+    -> Nurse
     -> Bool
     -> PrenatalProgressReportInitiator
     -> Model
     -> AssembledData
     -> Html Msg
-viewContentAndHeader language currentDate site features isChw initiator model assembled =
+viewContentAndHeader language currentDate site features nurse isChw initiator model assembled =
     let
         endEncounterDialog =
             if model.showEndEncounterDialog then
@@ -148,7 +151,7 @@ viewContentAndHeader language currentDate site features isChw initiator model as
     in
     div [ class "page-report clinical" ] <|
         [ viewHeader language assembled.id initiator model
-        , viewContent language currentDate site features isChw initiator model assembled
+        , viewContent language currentDate site features nurse isChw initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
@@ -245,12 +248,13 @@ viewContent :
     -> NominalDate
     -> Site
     -> EverySet SiteFeature
+    -> Nurse
     -> Bool
     -> PrenatalProgressReportInitiator
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate site features isChw initiator model assembled =
+viewContent language currentDate site features nurse isChw initiator model assembled =
     let
         derivedContent =
             let
@@ -341,7 +345,7 @@ viewContent language currentDate site features isChw initiator model assembled =
                                 InitiatorRecurrentEncounterPage _ ->
                                     let
                                         ( _, pendingActivities ) =
-                                            Pages.Prenatal.RecurrentEncounter.Utils.allActivities
+                                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities nurse
                                                 |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
 

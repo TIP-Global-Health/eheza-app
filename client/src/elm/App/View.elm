@@ -380,6 +380,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             currentDate
                             site
                             features
+                            (Tuple.second loggedInModel.nurse)
                             prenatalEncounterId
                             isChw
                             initiator
@@ -625,7 +626,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.prenatalRecurrentEncounterPages
                                     |> Maybe.withDefault Pages.Prenatal.RecurrentEncounter.Model.emptyModel
                         in
-                        Pages.Prenatal.RecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.Prenatal.RecurrentEncounter.View.view model.language currentDate (Tuple.second loggedInModel.nurse) id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id)
                             |> flexPageWrapper configured.config model
 

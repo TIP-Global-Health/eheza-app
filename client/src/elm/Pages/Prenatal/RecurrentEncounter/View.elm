@@ -3,6 +3,7 @@ module Pages.Prenatal.RecurrentEncounter.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model exposing (Nurse)
 import Backend.PrenatalActivity.Utils
     exposing
         ( getRecurrentActivityIcon
@@ -28,23 +29,23 @@ import Utils.Html exposing (activityCard, tabItem)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> Nurse -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate nurse id db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate nurse id model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id model assembled =
+viewHeaderAndContent : Language -> NominalDate -> Nurse -> PrenatalEncounterId -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate nurse id model assembled =
     let
         header =
             viewHeader language
 
         content =
-            viewContent language currentDate assembled model
+            viewContent language currentDate nurse assembled model
     in
     div [ class "page-encounter prenatal" ]
         [ header
@@ -69,18 +70,19 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> AssembledData -> Model -> Html Msg
-viewContent language currentDate assembled model =
+viewContent : Language -> NominalDate -> Nurse -> AssembledData -> Model -> Html Msg
+viewContent language currentDate nurse assembled model =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewMainPageContent language currentDate assembled model
+            ++ viewMainPageContent language currentDate nurse assembled model
 
 
-viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate assembled model =
+viewMainPageContent : Language -> NominalDate -> Nurse -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate nurse assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled) allActivities
+            getAllActivities nurse
+                |> List.filter (expectActivity currentDate assembled)
                 |> List.partition (activityCompleted currentDate assembled)
 
         pendingTabTitle =
