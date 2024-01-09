@@ -795,7 +795,7 @@ type TranslationId
     | LaboratoryASTLabel
     | LaboratoryPregnancyLabel
     | LaboratoryTest LaboratoryTest
-    | LabsEntryState LabsEntryState
+    | LabsEntryState Bool LabsEntryState
     | LabsHistoryCompletedQuestion
     | LaboratoryCreatinineCreatinineResult
     | LaboratoryCreatinineBUNResult
@@ -7877,13 +7877,20 @@ translationSet trans =
             , kirundi = Just "Ugusubiramwo ivyangombwa"
             }
 
-        LabsEntryState state ->
+        LabsEntryState isLabTech state ->
             case state of
                 LabsEntryPending ->
-                    { english = "Pending"
-                    , kinyarwanda = Just "Birategerejwe"
-                    , kirundi = Just "Kurindira"
-                    }
+                    if isLabTech then
+                        { english = "Ordered"
+                        , kinyarwanda = Nothing
+                        , kirundi = Nothing
+                        }
+
+                    else
+                        { english = "Pending"
+                        , kinyarwanda = Just "Birategerejwe"
+                        , kirundi = Just "Kurindira"
+                        }
 
                 LabsEntryClosingSoon ->
                     { english = "Closing Soon"

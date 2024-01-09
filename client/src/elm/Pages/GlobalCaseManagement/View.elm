@@ -158,7 +158,7 @@ viewContentForNurse language currentDate nurse model db followUps =
         ( panes, filters ) =
             let
                 prenatalLabsPane =
-                    viewPrenatalLabsPane language currentDate followUps.prenatalLabs db model
+                    viewPrenatalLabsPane language currentDate nurse followUps.prenatalLabs db model
             in
             if isLabTechnician nurse then
                 ( [ ( FilterPrenatalLabs, prenatalLabsPane ) ]
@@ -878,11 +878,12 @@ viewTraceContactEntry language currentDate db entry =
 viewPrenatalLabsPane :
     Language
     -> NominalDate
+    -> Nurse
     -> Dict PrenatalLabsResultsId PrenatalLabsResults
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewPrenatalLabsPane language currentDate itemsDict db model =
+viewPrenatalLabsPane language currentDate nurse itemsDict db model =
     let
         filteredItemsDict =
             Dict.filter
@@ -901,7 +902,11 @@ viewPrenatalLabsPane language currentDate itemsDict db model =
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                List.map (viewPrenatalLabsEntry language) entries
+                let
+                    isLabTech =
+                        isLabTechnician nurse
+                in
+                List.map (viewPrenatalLabsEntry language isLabTech) entries
     in
     div [ class "pane" ]
         [ viewItemHeading language FilterPrenatalLabs
@@ -967,10 +972,12 @@ generatePrenatalLabsEntryData language currentDate db item =
 
 viewPrenatalLabsEntry :
     Language
+    -> Bool
     -> PrenatalLabsEntryData
     -> Html Msg
-viewPrenatalLabsEntry language data =
+viewPrenatalLabsEntry language isLabTech data =
     viewLabsEntry language
+        isLabTech
         data.personName
         data.state
         data.label
@@ -979,12 +986,13 @@ viewPrenatalLabsEntry language data =
 
 viewLabsEntry :
     Language
+    -> Bool
     -> String
     -> LabsEntryState
     -> String
     -> UserPage
     -> Html Msg
-viewLabsEntry language personName state label targetPage =
+viewLabsEntry language isLabTech personName state label targetPage =
     let
         entryStateClass =
             "due "
@@ -998,7 +1006,7 @@ viewLabsEntry language personName state label targetPage =
     in
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text personName ]
-        , div [ class entryStateClass ] [ translateText language <| Translate.LabsEntryState state ]
+        , div [ class entryStateClass ] [ translateText language <| Translate.LabsEntryState isLabTech state ]
         , div [ class "assesment center" ] [ text label ]
         , div
             [ class "icon-forward"
@@ -1090,6 +1098,7 @@ viewNCDLabsEntry :
     -> Html Msg
 viewNCDLabsEntry language data =
     viewLabsEntry language
+        False
         data.personName
         data.state
         data.label
