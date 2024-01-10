@@ -20,6 +20,7 @@ import Measurement.Model
         , OutsideCareStep
         , PartnerHIVTestForm
         , RandomBloodSugarForm
+        , RandomBloodSugarForm2
         , UrineDipstickForm
         , VaccinationForm
         , VaccinationFormViewMode
@@ -32,6 +33,7 @@ import Measurement.Model
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarForm
+        , emptyRandomBloodSugarForm2
         , emptyUrineDipstickForm
         , emptyVaccinationForm
         , emptyVitalsForm
@@ -183,10 +185,9 @@ type Msg
     | SetHemoglobinTestExecutionDate NominalDate
     | SetHemoglobinTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
-    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarForm Msg -> RandomBloodSugarForm Msg) Bool
+    | SetRandomBloodSugarTestFormBoolInput2 (Bool -> RandomBloodSugarForm2 -> RandomBloodSugarForm2) Bool
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarTestExecutionDate NominalDate
-    | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetRandomBloodSugarResult String
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SetHIVPCRTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
@@ -506,13 +507,16 @@ emptyBirthPlanData =
 
 
 type alias LaboratoryData =
-    { pregnancyTestForm : PregnancyTestForm
+    { -- Only test taken by CHW.
+      pregnancyTestForm : PregnancyTestForm
+
+    -- Tests taken by nurses.
     , bloodGpRsTestForm : NonRDTForm Msg
     , hemoglobinTestForm : NonRDTForm Msg
     , hepatitisBTestForm : NonRDTForm Msg
     , hivTestForm : HIVTestForm Msg
     , malariaTestForm : MalariaTestForm Msg
-    , randomBloodSugarTestForm : RandomBloodSugarForm Msg
+    , randomBloodSugarTestForm : RandomBloodSugarForm2
     , syphilisTestForm : NonRDTForm Msg
     , urineDipstickTestForm : UrineDipstickForm Msg
     , hivPCRTestForm : NonRDTForm Msg
@@ -530,7 +534,7 @@ emptyLaboratoryData =
     , hepatitisBTestForm = emptyNonRDTForm
     , hivTestForm = emptyHIVTestForm
     , malariaTestForm = emptyMalariaTestForm
-    , randomBloodSugarTestForm = emptyRandomBloodSugarForm
+    , randomBloodSugarTestForm = emptyRandomBloodSugarForm2
     , syphilisTestForm = emptyNonRDTForm
     , urineDipstickTestForm = emptyUrineDipstickForm
     , hivPCRTestForm = emptyNonRDTForm

@@ -30,7 +30,9 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model
     exposing
         ( ContentAndTasksForPerformedLaboratoryTestConfig
+        , ContentAndTasksForPerformedLaboratoryTestConfig2
         , ContentAndTasksLaboratoryTestInitialConfig
+        , ContentAndTasksLaboratoryTestInitialConfig2
         , CorePhysicalExamForm
         , InvokationModule(..)
         , LaboratoryTask(..)
@@ -43,7 +45,9 @@ import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
+        , emptyContentAndTasksForPerformedLaboratoryTestConfig2
         , emptyContentAndTasksLaboratoryTestInitialConfig
+        , emptyContentAndTasksLaboratoryTestInitialConfig2
         , familyPlanningFormWithDefault
         , hivTestFormWithDefault
         , laboratoryTaskIconClass
@@ -53,6 +57,7 @@ import Measurement.Utils
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
         , randomBloodSugarFormWithDefault
+        , randomBloodSugarFormWithDefault2
         , urineDipstickFormWithDefault
         , vaccinationFormWithDefault
         , viewHIVTestForm
@@ -60,7 +65,7 @@ import Measurement.Utils
         , viewNonRDTForm
         , viewNonRDTFormCheckKnownAsPositive
         , viewPartnerHIVTestForm
-        , viewRandomBloodSugarForm
+        , viewRandomBloodSugarForm2
         , viewUrineDipstickForm
         , vitalsFormWithDefault
         )
@@ -1536,11 +1541,11 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> randomBloodSugarFormWithDefault data.randomBloodSugarTestForm
-                                |> viewRandomBloodSugarForm language
+                                |> randomBloodSugarFormWithDefault2 data.randomBloodSugarTestForm
+                                |> viewRandomBloodSugarForm2 language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig
-                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    contentAndTasksLaboratoryTestInitialConfig2
+                                    contentAndTasksForPerformedLaboratoryTestConfig2
 
                         TaskHIVPCRTest ->
                             measurements.hivPCRTest
@@ -3838,7 +3843,39 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
                     , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
                     , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
-                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
+                    , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
+                    , setPartnerHIVTestResultMsg = SetPartnerHIVTestResult
+                }
+           )
+
+
+contentAndTasksLaboratoryTestInitialConfig2 : ContentAndTasksLaboratoryTestInitialConfig2 Msg
+contentAndTasksLaboratoryTestInitialConfig2 =
+    emptyContentAndTasksLaboratoryTestInitialConfig2 NoOp
+        |> (\config ->
+                { config
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
+                    , setHIVTestResultMsg = SetHIVTestResult
+                    , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
+                    , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
+                    , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
+                    , setHepatitisBTestExecutionNoteMsg = SetHepatitisBTestExecutionNote
+                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
+                    , setMalariaTestResultMsg = SetMalariaTestResult
+                    , setBloodSmearResultMsg = SetBloodSmearResultMsg
+                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
+                    , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
+                    , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
+                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
+                    , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput2
                     , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
@@ -3875,9 +3912,42 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
                     , setHemoglobinTestExecutionDateMsg = SetHemoglobinTestExecutionDate
                     , setHemoglobinTestDateSelectorStateMsg = SetHemoglobinTestDateSelectorState
-                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
-                    , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
-                    , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
+                    , setHIVPCRTestExecutionDateMsg = SetHIVPCRTestExecutionDate
+                    , setHIVPCRTestDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
+                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    , setPartnerHIVTestExecutionDateMsg = SetPartnerHIVTestExecutionDate
+                    , setPartnerHIVTestDateSelectorStateMsg = SetPartnerHIVTestDateSelectorState
+                }
+           )
+
+
+contentAndTasksForPerformedLaboratoryTestConfig2 : ContentAndTasksForPerformedLaboratoryTestConfig2 Msg
+contentAndTasksForPerformedLaboratoryTestConfig2 =
+    emptyContentAndTasksForPerformedLaboratoryTestConfig2 NoOp
+        |> (\config ->
+                { config
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionDateMsg = SetHIVTestExecutionDate
+                    , setHIVTestDateSelectorStateMsg = SetHIVTestDateSelectorState
+                    , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
+                    , setSyphilisTestExecutionDateMsg = SetSyphilisTestExecutionDate
+                    , setSyphilisTestDateSelectorStateMsg = SetSyphilisTestDateSelectorState
+                    , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
+                    , setHepatitisBTestExecutionDateMsg = SetHepatitisBTestExecutionDate
+                    , setHepatitisBTestDateSelectorStateMsg = SetHepatitisBTestDateSelectorState
+                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
+                    , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
+                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
+                    , setBloodGpRsTestExecutionDateMsg = SetBloodGpRsTestExecutionDate
+                    , setBloodGpRsTestDateSelectorStateMsg = SetBloodGpRsTestDateSelectorState
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionDateMsg = SetUrineDipstickTestExecutionDate
+                    , setUrineDipstickTestDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
+                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
+                    , setHemoglobinTestExecutionDateMsg = SetHemoglobinTestExecutionDate
+                    , setHemoglobinTestDateSelectorStateMsg = SetHemoglobinTestDateSelectorState
                     , setRandomBloodSugarResultMsg = SetRandomBloodSugarResult
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionDateMsg = SetHIVPCRTestExecutionDate

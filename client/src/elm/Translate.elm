@@ -988,6 +988,7 @@ type TranslationId
     | NoActivitiesPendingForThisParticipant
     | NoContactReason NoContactReason
     | NoMatchesFound
+    | None
     | NormalRange
     | NotApplicable
     | NoTreatmentAdministered
@@ -1594,9 +1595,11 @@ type TranslationId
     | TestPerformedQuestion
     | TestPerformedTodayQuestion
     | TestPrerequisiteQuestion TestPrerequisite
+    | TestUniversalPrerequisiteQuestion TestPrerequisite
     | TestResultQuestion
     | TestResultsQuestion
     | TestVariantUrineDipstickQuestion
+    | TestWillBePerformedTodayQuestion
     | ThisGroupHasNoMothers
     | Time
     | To
@@ -3295,10 +3298,7 @@ translationSet trans =
                     }
 
                 NoBirthDefects ->
-                    { english = "None"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         BirthDefectLabel ->
             { english = "Birth Defect"
@@ -4176,10 +4176,7 @@ translationSet trans =
                     }
 
                 NoScar ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         Group ->
             { english = "Group"
@@ -4367,10 +4364,7 @@ translationSet trans =
                     }
 
                 Backend.Measurement.Model.None ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
                 Other ->
                     { english = "Other"
@@ -5044,10 +5038,7 @@ translationSet trans =
                     }
 
                 NoECDSigns ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         ECDStatus status ->
             case status of
@@ -10604,10 +10595,7 @@ translationSet trans =
                     }
 
                 NoNCDASigns ->
-                    { english = "None"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         NCDAUpdateVaccineRecordMessage ->
             { english = "Please update the child's vaccine record with information from the vaccine card at the end of this scorecard visit"
@@ -11631,6 +11619,12 @@ translationSet trans =
             , kirundi = Just "Nta nyishu yabonetse"
             }
 
+        None ->
+            { english = "None"
+            , kinyarwanda = Just "Ntabyo"
+            , kirundi = Just "Nta na kimwe"
+            }
+
         NormalRange ->
             { english = "Normal Range"
             , kinyarwanda = Just "Ibimeze neza"
@@ -12080,10 +12074,7 @@ translationSet trans =
                     }
 
                 NoNutritionAssessment ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         NutritionAssessmentLabel ->
             { english = "Nutrition Assessment"
@@ -12328,10 +12319,7 @@ translationSet trans =
                     }
 
                 NoNutritionSupplementType ->
-                    { english = "None"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         NitritionSigns ->
             { english = "Nutrition Signs"
@@ -13084,10 +13072,7 @@ translationSet trans =
                     }
 
                 NoPredecessors ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
@@ -13803,10 +13788,7 @@ translationSet trans =
                     }
 
                 NoPrenatalDiagnosis ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         PrenatalDiagnosisForProgressReport diagnosis ->
             case diagnosis of
@@ -14267,10 +14249,7 @@ translationSet trans =
                     }
 
                 NoPrenatalDiagnosis ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         PrenatalDiagnosisNonUrgentMessage diagnosis ->
             case diagnosis of
@@ -14688,10 +14667,7 @@ translationSet trans =
                     }
 
                 NoFlankPain ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         PrenatalHealthEducationSignsDiagnosis isInitial date sign ->
             case sign of
@@ -16069,10 +16045,7 @@ translationSet trans =
                     }
 
                 NoSymptomQuestions ->
-                    { english = "None"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta na kimwe"
-                    }
+                    translationSet None
 
         PrenatalSymptomQuestionsHeader ->
             { english = "The patient has noted symptoms that require follow up questions"
@@ -16350,15 +16323,35 @@ translationSet trans =
                     }
 
                 NoTestPrerequisites ->
-                    { english = "None"
-                    , kinyarwanda = Just "Ntabyo"
-                    , kirundi = Just "Nta na kimwe"
+                    translationSet None
+
+        TestUniversalPrerequisiteQuestion value ->
+            case value of
+                PrerequisiteFastFor12h ->
+                    { english = "Was this test performed before a meal"
+                    , kinyarwanda = Just "Umurwayi yafatiwe iki kizamini mbere yo kurya"
+                    , kirundi = Just "Mbega iki gipimo cabaye imbere yo gufungura"
                     }
+
+                PrerequisiteImmediateResult ->
+                    { english = "Where will this test be"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoTestPrerequisites ->
+                    translationSet None
 
         TestVariantUrineDipstickQuestion ->
             { english = "Which type of urine dipstick test was run"
             , kinyarwanda = Just "Ni ikihe kizamini cy'inkari cyakozwe"
             , kirundi = Just "Mbega ni ubuhe bwoko bw'igipimo c'umukoyo bwakozwe"
+            }
+
+        TestWillBePerformedTodayQuestion ->
+            { english = "Will this test be performed today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         TestResultQuestion ->

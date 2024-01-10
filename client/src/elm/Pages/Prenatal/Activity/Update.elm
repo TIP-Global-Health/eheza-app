@@ -59,6 +59,7 @@ import Measurement.Utils
         , toOutsideCareValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toRandomBloodSugarTestValueWithDefault
+        , toRandomBloodSugarTestValueWithDefault2
         , toSyphilisTestValueWithEmptyResults
         , toUrineDipstickTestValueWithDefault
         , toVaccinationValueWithDefault
@@ -2518,7 +2519,7 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetRandomBloodSugarTestFormBoolInput formUpdateFunc value ->
+        SetRandomBloodSugarTestFormBoolInput2 formUpdateFunc value ->
             let
                 form =
                     model.laboratoryData.randomBloodSugarTestForm
@@ -2569,26 +2570,6 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetRandomBloodSugarTestDateSelectorState state ->
-            let
-                form =
-                    model.laboratoryData.randomBloodSugarTestForm
-
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
-
-                updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetRandomBloodSugarResult value ->
             let
                 form =
@@ -2619,7 +2600,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.randomBloodSugarTestForm
-                        |> toRandomBloodSugarTestValueWithDefault measurement
+                        |> toRandomBloodSugarTestValueWithDefault2 measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
