@@ -480,6 +480,7 @@ decodeBloodGpRsTestValue =
     succeed BloodGpRsTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "blood_group" (nullable decodeBloodGroup) Nothing
         |> optional "rhesus" (nullable decodeRhesus) Nothing
         |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
@@ -517,6 +518,7 @@ decodeHemoglobinTestValue =
     succeed HemoglobinTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "hemoglobin_count" (nullable decodeFloat) Nothing
 
 
@@ -530,6 +532,7 @@ decodeHepatitisBTestValue =
     succeed HepatitisBTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
@@ -544,6 +547,7 @@ decodeHIVTestValue =
     succeed HIVTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
 
@@ -558,6 +562,7 @@ decodeHIVPCRTestValue =
     succeed HIVPCRTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "hiv_viral_load_status" (nullable decodeViralLoadStatus) Nothing
         |> optional "hiv_viral_load" (nullable decodeFloat) Nothing
 
@@ -572,6 +577,7 @@ decodePartnerHIVTestValue =
     succeed PartnerHIVTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "test_result" (nullable decodeTestResult) Nothing
 
 
@@ -615,6 +621,7 @@ decodeMalariaTestValue =
     succeed MalariaTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "blood_smear_result" decodeBloodSmearResult BloodSmearNotTaken
 
@@ -675,6 +682,7 @@ decodeSyphilisTestValue =
     succeed SyphilisTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "illness_symptoms" (nullable (decodeEverySet decodeIllnessSymptom)) Nothing
         |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
@@ -702,6 +710,7 @@ decodeUrineDipstickTestValue =
         |> optional "test_variant" (nullable decodeTestVariant) Nothing
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites" (nullable (decodeEverySet decodeTestPrerequisite)) Nothing
         |> optional "protein" (nullable decodeProteinValue) Nothing
         |> optional "ph" (nullable decodePHValue) Nothing
         |> optional "glucose" (nullable decodeGlucoseValue) Nothing
