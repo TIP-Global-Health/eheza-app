@@ -2722,16 +2722,22 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                         if isNothing form.executionDate then
                             emptySection
 
-                        else if form.immediateResult == Just True then
-                            randomBloodSugarResultInputAndTask language
-                                configPerformed.setRandomBloodSugarResultMsg
-                                form.sugarCount
-
                         else
-                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
-                            , 0
-                            , 0
-                            )
+                            Maybe.map
+                                (\immediateResult ->
+                                    if immediateResult == True then
+                                        randomBloodSugarResultInputAndTask language
+                                            configPerformed.setRandomBloodSugarResultMsg
+                                            form.sugarCount
+
+                                    else
+                                        ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                        , 0
+                                        , 0
+                                        )
+                                )
+                                form.immediateResult
+                                |> Maybe.withDefault emptySection
                 in
                 ( testPrerequisitesSection ++ performedTestSection ++ testResultSection
                 , performedTestTasksCompleted + testPrerequisitesTasksCompleted + testResultTasksCompleted
@@ -2800,19 +2806,21 @@ viewRandomBloodSugarForm2 language currentDate configInitial configPerformed for
                         )
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-                        if isNothing form.executionDate then
-                            emptySection
+                        Maybe.map
+                            (\immediateResult ->
+                                if immediateResult == True then
+                                    randomBloodSugarResultInputAndTask language
+                                        configPerformed.setRandomBloodSugarResultMsg
+                                        form.sugarCount
 
-                        else if form.immediateResult == Just True then
-                            randomBloodSugarResultInputAndTask language
-                                configPerformed.setRandomBloodSugarResultMsg
-                                form.sugarCount
-
-                        else
-                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
-                            , 0
-                            , 0
+                                else
+                                    ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                    , 0
+                                    , 0
+                                    )
                             )
+                            form.immediateResult
+                            |> Maybe.withDefault emptySection
                 in
                 ( testPrerequisitesSection ++ testResultSection
                 , testPrerequisitesTasksCompleted + testResultTasksCompleted
@@ -2877,18 +2885,24 @@ viewBloodGpRsTestForm language currentDate configInitial configPerformed form =
                         if isNothing form.executionDate then
                             emptySection
 
-                        else if form.immediateResult == Just True then
-                            bloodGpRsResultInputsAndTasks language
-                                configPerformed.setBloodGroupMsg
-                                configPerformed.setRhesusMsg
-                                form.bloodGroup
-                                form.rhesus
-
                         else
-                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
-                            , 0
-                            , 0
-                            )
+                            Maybe.map
+                                (\immediateResult ->
+                                    if immediateResult == True then
+                                        bloodGpRsResultInputsAndTasks language
+                                            configPerformed.setBloodGroupMsg
+                                            configPerformed.setRhesusMsg
+                                            form.bloodGroup
+                                            form.rhesus
+
+                                    else
+                                        ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                        , 0
+                                        , 0
+                                        )
+                                )
+                                form.immediateResult
+                                |> Maybe.withDefault emptySection
                 in
                 ( testPrerequisitesSection ++ testResultSection
                 , testPrerequisitesTasksCompleted + testResultTasksCompleted
