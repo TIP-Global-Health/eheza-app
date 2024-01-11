@@ -2070,6 +2070,68 @@ toRandomBloodSugarTestValue2 form =
         form.executionNote
 
 
+bloodGpRsTestFormWithDefault : BloodGpRsTestForm -> Maybe (BloodGpRsTestValue encounterId) -> BloodGpRsTestForm
+bloodGpRsTestFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    testPerformedValue =
+                        testPerformedByExecutionNote value.executionNote
+
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
+                in
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , immediateResult = or form.immediateResult immediateResultValue
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , bloodGroup = maybeValueConsideringIsDirtyField form.bloodGroupDirty form.bloodGroup value.bloodGroup
+                , bloodGroupDirty = form.bloodGroupDirty
+                , rhesus = maybeValueConsideringIsDirtyField form.rhesusDirty form.rhesus value.rhesus
+                , rhesusDirty = form.rhesusDirty
+                }
+            )
+
+
+toBloodGpRsTestValueWithDefault : Maybe (BloodGpRsTestValue encounterId) -> BloodGpRsTestForm -> Maybe (BloodGpRsTestValue encounterId)
+toBloodGpRsTestValueWithDefault saved form =
+    bloodGpRsTestFormWithDefault form saved
+        |> toBloodGpRsTestValue
+
+
+toBloodGpRsTestValue : BloodGpRsTestForm -> Maybe (BloodGpRsTestValue encounterId)
+toBloodGpRsTestValue form =
+    Maybe.map
+        (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\immediateResult ->
+                            if immediateResult then
+                                EverySet.singleton PrerequisiteImmediateResult
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.immediateResult
+            in
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
+            , bloodGroup = form.bloodGroup
+            , rhesus = form.rhesus
+            , originatingEncounter = Nothing
+            }
+        )
+        form.executionNote
+
+
 pregnancyTestFormWithDefault : PregnancyTestForm msg -> Maybe PregnancyTestValue -> PregnancyTestForm msg
 pregnancyTestFormWithDefault form saved =
     saved
@@ -2769,6 +2831,82 @@ viewRandomBloodSugarForm2 language currentDate configInitial configPerformed for
     )
 
 
+viewBloodGpRsTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> BloodGpRsTestForm
+    -> ( Html msg, Int, Int )
+viewBloodGpRsTestForm language currentDate configInitial configPerformed form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskBloodGpRsTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            let
+                emptySection =
+                    ( [], 0, 0 )
+            in
+            if form.testPerformed == Just True then
+                let
+                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
+                          , viewBoolInput
+                                language
+                                form.immediateResult
+                                (configInitial.setBloodGpRsTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , bloodGroup = Nothing
+                                            , bloodGroupDirty = True
+                                            , rhesus = Nothing
+                                            , rhesusDirty = True
+                                        }
+                                    )
+                                )
+                                "immediate-result"
+                                (Just ( Translate.PointOfCare, Translate.Lab ))
+                          ]
+                        , taskCompleted form.immediateResult
+                        , 1
+                        )
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            emptySection
+
+                        else if form.immediateResult == Just True then
+                            bloodGpRsResultInputsAndTasks language
+                                configPerformed.setBloodGroupMsg
+                                configPerformed.setRhesusMsg
+                                form.bloodGroup
+                                form.rhesus
+
+                        else
+                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                            , 0
+                            , 0
+                            )
+                in
+                ( testPrerequisitesSection ++ testResultSection
+                , testPrerequisitesTasksCompleted + testResultTasksCompleted
+                , testPrerequisitesTasksTotal + testResultTasksTotal
+                )
+
+            else
+                emptySection
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskBloodGpRsTest) "" "label header"
+            :: initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
 viewNonRDTFormCheckKnownAsPositive :
     Language
     -> NominalDate
@@ -3258,7 +3396,32 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
                     }
 
                 TaskBloodGpRsTest ->
-                    { setBoolInputMsg = config.setBloodGpRsTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                let
+                                    executionDate =
+                                        if value == True then
+                                            Just currentDate
+
+                                        else
+                                            Nothing
+                                in
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = executionDate
+                                    , executionDateDirty = True
+                                    , bloodGroup = Nothing
+                                    , bloodGroupDirty = True
+                                    , rhesus = Nothing
+                                    , rhesusDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setBloodGpRsTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setBloodGpRsTestExecutionNoteMsg
                     }
 
@@ -3799,9 +3962,8 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig2 noOpMsg =
     , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setMalariaTestExecutionDateMsg = always noOpMsg
     , setMalariaTestDateSelectorStateMsg = always noOpMsg
-    , setBloodGpRsTestFormBoolInputMsg = \_ _ -> noOpMsg
-    , setBloodGpRsTestExecutionDateMsg = always noOpMsg
-    , setBloodGpRsTestDateSelectorStateMsg = always noOpMsg
+    , setBloodGroupMsg = always noOpMsg
+    , setRhesusMsg = always noOpMsg
     , setUrineDipstickTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setUrineDipstickTestExecutionDateMsg = always noOpMsg
     , setUrineDipstickTestDateSelectorStateMsg = always noOpMsg
@@ -4508,29 +4670,40 @@ bloodGpRsResultFormAndTasks :
 bloodGpRsResultFormAndTasks language currentDate setBloodGroupMsg setRhesusMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( viewSelectInput language
-                Translate.LaboratoryBloodGroupTestResult
-                form.bloodGroup
-                Translate.LaboratoryBloodGroup
-                bloodGroupToString
-                [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
-                setBloodGroupMsg
-                ++ viewSelectInput language
-                    Translate.LaboratoryRhesusTestResult
-                    form.rhesus
-                    Translate.LaboratoryRhesus
-                    rhesusToString
-                    [ RhesusPositive, RhesusNegative ]
-                    setRhesusMsg
-            , taskCompleted form.bloodGroup + taskCompleted form.rhesus
-            , 2
-            )
+            bloodGpRsResultInputsAndTasks language setBloodGroupMsg setRhesusMsg form.bloodGroup form.rhesus
     in
     ( div [ class "ui form laboratory blood-group-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
+    )
+
+
+bloodGpRsResultInputsAndTasks :
+    Language
+    -> (String -> msg)
+    -> (String -> msg)
+    -> Maybe BloodGroup
+    -> Maybe Rhesus
+    -> ( List (Html msg), Int, Int )
+bloodGpRsResultInputsAndTasks language setBloodGroupMsg setRhesusMsg bloodGroup rhesus =
+    ( viewSelectInput language
+        Translate.LaboratoryBloodGroupTestResult
+        bloodGroup
+        Translate.LaboratoryBloodGroup
+        bloodGroupToString
+        [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
+        setBloodGroupMsg
+        ++ viewSelectInput language
+            Translate.LaboratoryRhesusTestResult
+            rhesus
+            Translate.LaboratoryRhesus
+            rhesusToString
+            [ RhesusPositive, RhesusNegative ]
+            setRhesusMsg
+    , taskCompleted bloodGroup + taskCompleted rhesus
+    , 2
     )
 
 

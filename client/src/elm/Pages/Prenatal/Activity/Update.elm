@@ -26,10 +26,12 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils
     exposing
-        ( bloodSmearResultFromString
+        ( bloodGroupFromString
+        , bloodSmearResultFromString
         , getMeasurementValueFunc
         , nonReferralReasonToSign
         , pregnancyTestResultFromString
+        , rhesusFromString
         , testResultFromString
         )
 import Backend.Model exposing (ModelIndexedDb)
@@ -47,6 +49,7 @@ import Measurement.Utils
         ( corePhysicalExamFormWithDefault
         , familyPlanningFormWithDefault
         , outsideCareFormWithDefault
+        , toBloodGpRsTestValueWithDefault
         , toBloodGpRsTestValueWithEmptyResults
         , toCorePhysicalExamValueWithDefault
         , toFamilyPlanningValueWithDefault
@@ -2239,13 +2242,13 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetBloodGpRsTestExecutionDate value ->
+        SetBloodGroup value ->
             let
                 form =
                     model.laboratoryData.bloodGpRsTestForm
 
                 updatedForm =
-                    { form | executionDate = Just value }
+                    { form | bloodGroup = bloodGroupFromString value, bloodGroupDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2256,16 +2259,13 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetBloodGpRsTestDateSelectorState state ->
+        SetRhesus value ->
             let
                 form =
                     model.laboratoryData.bloodGpRsTestForm
 
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
-
                 updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+                    { form | rhesus = rhesusFromString value, rhesusDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2289,7 +2289,8 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.bloodGpRsTestForm
-                        |> toNonRDTValueWithDefault measurement toBloodGpRsTestValueWithEmptyResults
+                        |> toBloodGpRsTestValueWithDefault measurement
+                        -- toBloodGpRsTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2519,7 +2520,7 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
-        SetRandomBloodSugarTestFormBoolInput2 formUpdateFunc value ->
+        SetRandomBloodSugarTestFormBoolInput formUpdateFunc value ->
             let
                 form =
                     model.laboratoryData.randomBloodSugarTestForm
@@ -2543,23 +2544,6 @@ update language currentDate id db msg model =
 
                 updatedForm =
                     { form | executionNote = Just value, executionNoteDirty = True }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetRandomBloodSugarTestExecutionDate value ->
-            let
-                form =
-                    model.laboratoryData.randomBloodSugarTestForm
-
-                updatedForm =
-                    { form | executionDate = Just value }
 
                 updatedData =
                     model.laboratoryData

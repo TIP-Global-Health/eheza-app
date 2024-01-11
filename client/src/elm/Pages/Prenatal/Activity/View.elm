@@ -43,7 +43,8 @@ import Measurement.Model
         )
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
+        ( bloodGpRsTestFormWithDefault
+        , corePhysicalExamFormWithDefault
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksForPerformedLaboratoryTestConfig2
         , emptyContentAndTasksLaboratoryTestInitialConfig
@@ -60,6 +61,7 @@ import Measurement.Utils
         , randomBloodSugarFormWithDefault2
         , urineDipstickFormWithDefault
         , vaccinationFormWithDefault
+        , viewBloodGpRsTestForm
         , viewHIVTestForm
         , viewMalariaTestForm
         , viewNonRDTForm
@@ -1512,12 +1514,11 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
                                 |> getMeasurementValueFunc
-                                |> nonRDTFormWithDefault data.bloodGpRsTestForm
-                                |> viewNonRDTForm language
+                                |> bloodGpRsTestFormWithDefault data.bloodGpRsTestForm
+                                |> viewBloodGpRsTestForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig
-                                    contentAndTasksForPerformedLaboratoryTestConfig
-                                    TaskBloodGpRsTest
+                                    contentAndTasksLaboratoryTestInitialConfig2
+                                    contentAndTasksForPerformedLaboratoryTestConfig2
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
@@ -3836,8 +3837,6 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
                     , setMalariaTestResultMsg = SetMalariaTestResult
                     , setBloodSmearResultMsg = SetBloodSmearResultMsg
-                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
-                    , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
                     , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
                     , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
                     , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
@@ -3875,7 +3874,7 @@ contentAndTasksLaboratoryTestInitialConfig2 =
                     , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
                     , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
                     , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
-                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput2
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
                     , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
@@ -3903,9 +3902,6 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
                     , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
                     , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
-                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
-                    , setBloodGpRsTestExecutionDateMsg = SetBloodGpRsTestExecutionDate
-                    , setBloodGpRsTestDateSelectorStateMsg = SetBloodGpRsTestDateSelectorState
                     , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
                     , setUrineDipstickTestExecutionDateMsg = SetUrineDipstickTestExecutionDate
                     , setUrineDipstickTestDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
@@ -3939,9 +3935,8 @@ contentAndTasksForPerformedLaboratoryTestConfig2 =
                     , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
                     , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
                     , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
-                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
-                    , setBloodGpRsTestExecutionDateMsg = SetBloodGpRsTestExecutionDate
-                    , setBloodGpRsTestDateSelectorStateMsg = SetBloodGpRsTestDateSelectorState
+                    , setBloodGroupMsg = SetBloodGroup
+                    , setRhesusMsg = SetRhesus
                     , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
                     , setUrineDipstickTestExecutionDateMsg = SetUrineDipstickTestExecutionDate
                     , setUrineDipstickTestDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState

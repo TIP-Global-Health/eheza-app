@@ -645,7 +645,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig2 msg =
     , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
     , setMalariaTestResultMsg : String -> msg
     , setBloodSmearResultMsg : String -> msg
-    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    , setBloodGpRsTestFormBoolInputMsg : (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) -> Bool -> msg
     , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
     , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
     , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
@@ -739,9 +739,8 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
     , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
     , setMalariaTestExecutionDateMsg : NominalDate -> msg
     , setMalariaTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
-    , setBloodGpRsTestExecutionDateMsg : NominalDate -> msg
-    , setBloodGpRsTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setBloodGroupMsg : String -> msg
+    , setRhesusMsg : String -> msg
     , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
     , setUrineDipstickTestExecutionDateMsg : NominalDate -> msg
     , setUrineDipstickTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
