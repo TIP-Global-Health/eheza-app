@@ -1667,6 +1667,10 @@ hivTestFormWithDefault form saved =
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
 
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
+
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
 
@@ -1693,6 +1697,7 @@ hivTestFormWithDefault form saved =
                 { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
                 , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
+                , immediateResult = or form.immediateResult immediateResultValue
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -1724,6 +1729,17 @@ toHIVTestValue form =
     Maybe.map
         (\executionNote ->
             let
+                testPrerequisites =
+                    Maybe.map
+                        (\immediateResult ->
+                            if immediateResult then
+                                EverySet.singleton PrerequisiteImmediateResult
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.immediateResult
+
                 hivSigns =
                     [ ifNullableTrue HIVProgramHC form.hivProgramHC
                     , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
@@ -1735,6 +1751,7 @@ toHIVTestValue form =
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
             , testResult = form.testResult
             , hivSigns = hivSigns
             }
@@ -1752,6 +1769,10 @@ malariaTestFormWithDefault form saved =
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
 
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
+
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
 
@@ -1763,6 +1784,7 @@ malariaTestFormWithDefault form saved =
                         form.testPerformed
                         testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
+                , immediateResult = or form.immediateResult immediateResultValue
                 , testPerformedToday =
                     valueConsideringIsDirtyField form.testPerformedTodayDirty
                         form.testPerformedToday
@@ -1804,8 +1826,21 @@ toMalariaTestValue : MalariaTestForm msg -> Maybe MalariaTestValue
 toMalariaTestValue form =
     Maybe.map
         (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\immediateResult ->
+                            if immediateResult then
+                                EverySet.singleton PrerequisiteImmediateResult
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.immediateResult
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
             , testResult = form.testResult
             , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
             }
@@ -1823,11 +1858,16 @@ urineDipstickFormWithDefault form saved =
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
 
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
+
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
                 { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
+                , immediateResult = or form.immediateResult immediateResultValue
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , testVariant = or form.testVariant value.testVariant
@@ -1850,9 +1890,22 @@ toUrineDipstickTestValue : UrineDipstickForm msg -> Maybe UrineDipstickTestValue
 toUrineDipstickTestValue form =
     Maybe.map
         (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\immediateResult ->
+                            if immediateResult then
+                                EverySet.singleton PrerequisiteImmediateResult
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.immediateResult
+            in
             { testVariant = form.testVariant
             , executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
             , protein = Nothing
             , ph = Nothing
             , glucose = Nothing
@@ -2115,27 +2168,27 @@ toNonRDTValueWithDefault saved withEmptyResultsFunc form =
 
 toHepatitisBTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HepatitisBTestValue encounterId
 toHepatitisBTestValueWithEmptyResults note date =
-    HepatitisBTestValue note date Nothing Nothing
+    HepatitisBTestValue note date Nothing Nothing Nothing
 
 
 toSyphilisTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> SyphilisTestValue encounterId
 toSyphilisTestValueWithEmptyResults note date =
-    SyphilisTestValue note date Nothing Nothing Nothing
+    SyphilisTestValue note date Nothing Nothing Nothing Nothing
 
 
 toHemoglobinTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HemoglobinTestValue
 toHemoglobinTestValueWithEmptyResults note date =
-    HemoglobinTestValue note date Nothing
+    HemoglobinTestValue note date Nothing Nothing
 
 
 toBloodGpRsTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> BloodGpRsTestValue encounterId
 toBloodGpRsTestValueWithEmptyResults note date =
-    BloodGpRsTestValue note date Nothing Nothing Nothing
+    BloodGpRsTestValue note date Nothing Nothing Nothing Nothing
 
 
 toHIVPCRTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HIVPCRTestValue
 toHIVPCRTestValueWithEmptyResults note date =
-    HIVPCRTestValue note date Nothing Nothing
+    HIVPCRTestValue note date Nothing Nothing Nothing
 
 
 toCreatinineTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> CreatinineTestValue
@@ -3842,6 +3895,7 @@ hepatitisBResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , testResult = or form.testResult value.testResult
                 , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
@@ -3860,6 +3914,7 @@ toHepatitisBResultsValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
             , originatingEncounter = form.originatingEncounter
             }
@@ -3875,6 +3930,7 @@ syphilisResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , testResult = or form.testResult value.testResult
                 , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
                 , symptomsDirty = form.symptomsDirty
@@ -3895,6 +3951,7 @@ toSyphilisResultValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
             , symptoms = Maybe.map EverySet.fromList form.symptoms
             , originatingEncounter = form.originatingEncounter
@@ -3911,6 +3968,7 @@ bloodGpRsResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , bloodGroup = or form.bloodGroup value.bloodGroup
                 , rhesus = or form.rhesus value.rhesus
                 , originatingEncounter = or form.originatingEncounter value.originatingEncounter
@@ -3930,6 +3988,7 @@ toBloodGpRsResultsValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , bloodGroup = form.bloodGroup
             , rhesus = form.rhesus
             , originatingEncounter = form.originatingEncounter
@@ -3946,6 +4005,7 @@ hemoglobinResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , hemoglobinCount = or form.hemoglobinCount value.hemoglobinCount
                 }
             )
@@ -3963,6 +4023,7 @@ toHemoglobinResultsValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , hemoglobinCount = form.hemoglobinCount
             }
         )
@@ -4013,6 +4074,7 @@ urineDipstickResultFormWithDefault form saved =
                 { testVariant = or form.testVariant value.testVariant
                 , executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , protein = or form.protein value.protein
                 , ph = or form.ph value.ph
                 , glucose = or form.glucose value.glucose
@@ -4039,6 +4101,7 @@ toUrineDipstickResultsValue form =
             { testVariant = form.testVariant
             , executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , protein = form.protein
             , ph = form.ph
             , glucose = form.glucose
@@ -4061,6 +4124,7 @@ hivPCRResultFormWithDefault form saved =
             (\value ->
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , hivViralLoadStatus = or form.hivViralLoadStatus value.hivViralLoadStatus
                 , hivViralLoad = or form.hivViralLoad value.hivViralLoad
                 }
@@ -4079,6 +4143,7 @@ toHIVPCRResultsValue form =
         (\executionNote ->
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
             , hivViralLoadStatus = form.hivViralLoadStatus
             , hivViralLoad = form.hivViralLoad
             }
@@ -4096,11 +4161,16 @@ partnerHIVTestFormWithDefault form saved =
                     testPerformedValue =
                         testPerformedByExecutionNote value.executionNote
 
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
+
                     testPerformedTodayFromValue =
                         value.executionNote == TestNoteRunToday
                 in
                 { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
+                , immediateResult = or form.immediateResult immediateResultValue
                 , testPerformedToday = valueConsideringIsDirtyField form.testPerformedTodayDirty form.testPerformedToday testPerformedTodayFromValue
                 , testPerformedTodayDirty = form.testPerformedTodayDirty
                 , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -4123,8 +4193,21 @@ toPartnerHIVTestValue : PartnerHIVTestForm msg -> Maybe PartnerHIVTestValue
 toPartnerHIVTestValue form =
     Maybe.map
         (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\immediateResult ->
+                            if immediateResult then
+                                EverySet.singleton PrerequisiteImmediateResult
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.immediateResult
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
             , testResult = form.testResult
             }
         )
