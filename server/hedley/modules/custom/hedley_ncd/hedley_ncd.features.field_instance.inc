@@ -3546,6 +3546,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_hiv_test-field_test_prerequisites'.
+  $field_instances['node-ncd_hiv_test-field_test_prerequisites'] = array(
+    'bundle' => 'ncd_hiv_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_hiv_test-field_test_result'.
   $field_instances['node-ncd_hiv_test-field_test_result'] = array(
     'bundle' => 'ncd_hiv_test',
@@ -3579,7 +3616,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 9,
+      'weight' => 10,
     ),
   );
 
@@ -8257,7 +8294,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 32,
+      'weight' => 19,
     ),
   );
 
@@ -8371,7 +8408,7 @@ function hedley_ncd_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 14,
+      'weight' => 9,
     ),
   );
 
@@ -8408,7 +8445,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 20,
+      'weight' => 13,
     ),
   );
 
@@ -8445,7 +8482,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 28,
+      'weight' => 17,
     ),
   );
 
@@ -8482,7 +8519,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 30,
+      'weight' => 18,
     ),
   );
 
@@ -8519,7 +8556,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 22,
+      'weight' => 14,
     ),
   );
 
@@ -8601,7 +8638,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 24,
+      'weight' => 15,
     ),
   );
 
@@ -8726,7 +8763,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 18,
+      'weight' => 12,
     ),
   );
 
@@ -8763,7 +8800,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 16,
+      'weight' => 11,
     ),
   );
 
@@ -8807,7 +8844,7 @@ function hedley_ncd_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 8,
+      'weight' => 6,
     ),
   );
 
@@ -8845,7 +8882,45 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 12,
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_urine_dipstick_test-field_test_prerequisites'.
+  $field_instances['node-ncd_urine_dipstick_test-field_test_prerequisites'] = array(
+    'bundle' => 'ncd_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 18,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
     ),
   );
 
@@ -8882,7 +8957,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 10,
+      'weight' => 7,
     ),
   );
 
@@ -8919,7 +8994,7 @@ function hedley_ncd_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 26,
+      'weight' => 16,
     ),
   );
 
@@ -8959,7 +9034,7 @@ function hedley_ncd_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 6,
+      'weight' => 5,
     ),
   );
 
