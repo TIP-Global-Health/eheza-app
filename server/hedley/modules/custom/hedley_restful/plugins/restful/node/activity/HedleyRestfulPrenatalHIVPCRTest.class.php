@@ -23,6 +23,13 @@ class HedleyRestfulPrenatalHIVPCRTest extends HedleyRestfulPrenatalActivityBase 
   /**
    * {@inheritdoc}
    */
+  protected $multiFields = [
+    'field_test_prerequisites',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $dateFields = [
     'field_execution_date',
   ];

@@ -24,6 +24,7 @@ class HedleyRestfulPrenatalHIVTest extends HedleyRestfulPrenatalActivityBase {
    */
   protected $multiFields = [
     'field_hiv_signs',
+    'field_test_prerequisites',
   ];
 
   /**
