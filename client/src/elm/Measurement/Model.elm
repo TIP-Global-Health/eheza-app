@@ -779,6 +779,7 @@ type alias HIVTestForm msg =
     { knownAsPositive : Maybe Bool
     , testPerformed : Maybe Bool
     , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
     , testPerformedToday : Maybe Bool
     , testPerformedTodayDirty : Bool
     , executionNote : Maybe TestExecutionNote
@@ -803,6 +804,7 @@ emptyHIVTestForm =
     { knownAsPositive = Nothing
     , testPerformed = Nothing
     , testPerformedDirty = False
+    , immediateResult = Nothing
     , testPerformedToday = Nothing
     , testPerformedTodayDirty = False
     , executionNote = Nothing
@@ -825,6 +827,7 @@ emptyHIVTestForm =
 type alias MalariaTestForm msg =
     { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
     , testPerformedToday : Maybe Bool
     , testPerformedTodayDirty : Bool
     , executionNote : Maybe TestExecutionNote
@@ -846,12 +849,13 @@ type alias MalariaTestForm msg =
 
 emptyMalariaTestForm : MalariaTestForm msg
 emptyMalariaTestForm =
-    MalariaTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing False Nothing False Nothing
+    MalariaTestForm Nothing False Nothing Nothing False Nothing False Nothing False Nothing Nothing False Nothing False Nothing
 
 
 type alias UrineDipstickForm msg =
     { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
     , testPerformedToday : Maybe Bool
     , testPerformedTodayDirty : Bool
     , testVariant : Maybe TestVariant
@@ -865,7 +869,7 @@ type alias UrineDipstickForm msg =
 
 emptyUrineDipstickForm : UrineDipstickForm msg
 emptyUrineDipstickForm =
-    UrineDipstickForm Nothing False Nothing False Nothing Nothing False Nothing False Nothing
+    UrineDipstickForm Nothing False Nothing Nothing False Nothing Nothing False Nothing False Nothing
 
 
 type alias RandomBloodSugarForm msg =
@@ -969,6 +973,52 @@ emptyPregnancyTestForm =
     }
 
 
+type alias BloodGpRsTestForm =
+    { testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+    , bloodGroup : Maybe BloodGroup
+    , bloodGroupDirty : Bool
+    , rhesus : Maybe Rhesus
+    , rhesusDirty : Bool
+    }
+
+
+emptyBloodGpRsTestForm : BloodGpRsTestForm
+emptyBloodGpRsTestForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , bloodGroup = Nothing
+    , bloodGroupDirty = False
+    , rhesus = Nothing
+    , rhesusDirty = False
+    }
+
+
+type alias BloodGpRsResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , bloodGroup : Maybe BloodGroup
+    , rhesus : Maybe Rhesus
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptyBloodGpRsResultForm : BloodGpRsResultForm encounterId
+emptyBloodGpRsResultForm =
+    BloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing Nothing
+
+
 type alias NonRDTForm msg =
     { knownAsPositive : Maybe Bool
     , testPerformed : Maybe Bool
@@ -991,6 +1041,7 @@ emptyNonRDTForm =
 type alias SyphilisResultForm encounterId =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , symptoms : Maybe (List IllnessSymptom)
     , symptomsDirty : Bool
@@ -1000,12 +1051,13 @@ type alias SyphilisResultForm encounterId =
 
 emptySyphilisResultForm : SyphilisResultForm encounterId
 emptySyphilisResultForm =
-    SyphilisResultForm Nothing Nothing Nothing Nothing False Nothing
+    SyphilisResultForm Nothing Nothing Nothing Nothing Nothing False Nothing
 
 
 type alias HepatitisBResultForm encounterId =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , originatingEncounter : Maybe encounterId
     }
@@ -1013,27 +1065,14 @@ type alias HepatitisBResultForm encounterId =
 
 emptyHepatitisBResultForm : HepatitisBResultForm encounterId
 emptyHepatitisBResultForm =
-    HepatitisBResultForm Nothing Nothing Nothing Nothing
-
-
-type alias BloodGpRsResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , bloodGroup : Maybe BloodGroup
-    , rhesus : Maybe Rhesus
-    , originatingEncounter : Maybe encounterId
-    }
-
-
-emptyBloodGpRsResultForm : BloodGpRsResultForm encounterId
-emptyBloodGpRsResultForm =
-    BloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing
+    HepatitisBResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias UrineDipstickResultForm =
     { testVariant : Maybe TestVariant
     , executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , protein : Maybe ProteinValue
     , ph : Maybe PHValue
     , glucose : Maybe GlucoseValue
@@ -1051,6 +1090,7 @@ emptyUrineDipstickResultForm =
     { testVariant = Nothing
     , executionNote = Nothing
     , executionDate = Nothing
+    , testPrerequisites = Nothing
     , protein = Nothing
     , ph = Nothing
     , glucose = Nothing
@@ -1066,13 +1106,14 @@ emptyUrineDipstickResultForm =
 type alias HemoglobinResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , hemoglobinCount : Maybe Float
     }
 
 
 emptyHemoglobinResultForm : HemoglobinResultForm
 emptyHemoglobinResultForm =
-    HemoglobinResultForm Nothing Nothing Nothing
+    HemoglobinResultForm Nothing Nothing Nothing Nothing
 
 
 type alias RandomBloodSugarResultForm encounterId =
@@ -1092,6 +1133,7 @@ emptyRandomBloodSugarResultForm =
 type alias HIVPCRResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , hivViralLoadStatus : Maybe ViralLoadStatus
     , hivViralLoad : Maybe Float
     }
@@ -1099,12 +1141,13 @@ type alias HIVPCRResultForm =
 
 emptyHIVPCRResultForm : HIVPCRResultForm
 emptyHIVPCRResultForm =
-    HIVPCRResultForm Nothing Nothing Nothing Nothing
+    HIVPCRResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias PartnerHIVTestForm msg =
     { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
     , testPerformedToday : Maybe Bool
     , testPerformedTodayDirty : Bool
     , executionNote : Maybe TestExecutionNote
@@ -1118,7 +1161,7 @@ type alias PartnerHIVTestForm msg =
 
 emptyPartnerHIVTestForm : PartnerHIVTestForm msg
 emptyPartnerHIVTestForm =
-    PartnerHIVTestForm Nothing False Nothing False Nothing False Nothing False Nothing Nothing
+    PartnerHIVTestForm Nothing False Nothing Nothing False Nothing False Nothing False Nothing Nothing
 
 
 type alias CreatinineResultForm =
