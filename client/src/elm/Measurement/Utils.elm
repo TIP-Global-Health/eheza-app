@@ -1920,6 +1920,94 @@ toUrineDipstickTestValue form =
         form.executionNote
 
 
+urineDipstickUniversalFormWithDefault : UrineDipstickUniversalForm -> Maybe UrineDipstickTestValue -> UrineDipstickUniversalForm
+urineDipstickUniversalFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    testPerformedValue =
+                        testPerformedByExecutionNote value.executionNote
+
+                    immediateResultValue =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
+
+                    testPerformedTodayFromValue =
+                        value.executionNote == TestNoteRunToday
+                in
+                { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+                , testPerformedDirty = form.testPerformedDirty
+                , immediateResult = or form.immediateResult immediateResultValue
+                , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+                , executionNoteDirty = form.executionNoteDirty
+                , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+                , executionDateDirty = form.executionDateDirty
+                , testVariant = maybeValueConsideringIsDirtyField form.testVariantDirty form.testVariant value.testVariant
+                , testVariantDirty = form.testVariantDirty
+                , protein = maybeValueConsideringIsDirtyField form.proteinDirty form.protein value.protein
+                , proteinDirty = form.proteinDirty
+                , ph = maybeValueConsideringIsDirtyField form.phDirty form.ph value.ph
+                , phDirty = form.phDirty
+                , glucose = maybeValueConsideringIsDirtyField form.glucoseDirty form.glucose value.glucose
+                , glucoseDirty = form.glucoseDirty
+                , leukocytes = maybeValueConsideringIsDirtyField form.leukocytesDirty form.leukocytes value.leukocytes
+                , leukocytesDirty = form.leukocytesDirty
+                , nitrite = maybeValueConsideringIsDirtyField form.nitriteDirty form.nitrite value.nitrite
+                , nitriteDirty = form.nitriteDirty
+                , urobilinogen = maybeValueConsideringIsDirtyField form.urobilinogenDirty form.urobilinogen value.urobilinogen
+                , urobilinogenDirty = form.urobilinogenDirty
+                , haemoglobin = maybeValueConsideringIsDirtyField form.haemoglobinDirty form.haemoglobin value.haemoglobin
+                , haemoglobinDirty = form.haemoglobinDirty
+                , ketone = maybeValueConsideringIsDirtyField form.ketoneDirty form.ketone value.ketone
+                , ketoneDirty = form.ketoneDirty
+                , bilirubin = maybeValueConsideringIsDirtyField form.bilirubinDirty form.bilirubin value.bilirubin
+                , bilirubinDirty = form.bilirubinDirty
+                }
+            )
+
+
+toUrineDipstickTestValueUniversalWithDefault : Maybe UrineDipstickTestValue -> UrineDipstickUniversalForm -> Maybe UrineDipstickTestValue
+toUrineDipstickTestValueUniversalWithDefault saved form =
+    urineDipstickUniversalFormWithDefault form saved
+        |> toUrineDipstickTestValueUniversal
+
+
+toUrineDipstickTestValueUniversal : UrineDipstickUniversalForm -> Maybe UrineDipstickTestValue
+toUrineDipstickTestValueUniversal form =
+    Maybe.map
+        (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\immediateResult ->
+                            if immediateResult then
+                                EverySet.singleton PrerequisiteImmediateResult
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.immediateResult
+            in
+            { testVariant = form.testVariant
+            , executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
+            , protein = form.protein
+            , ph = form.ph
+            , glucose = form.glucose
+            , leukocytes = form.leukocytes
+            , nitrite = form.nitrite
+            , urobilinogen = form.urobilinogen
+            , haemoglobin = form.haemoglobin
+            , ketone = form.ketone
+            , bilirubin = form.bilirubin
+            }
+        )
+        form.executionNote
+
+
 randomBloodSugarFormWithDefault : RandomBloodSugarForm msg -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarForm msg
 randomBloodSugarFormWithDefault form saved =
     saved
