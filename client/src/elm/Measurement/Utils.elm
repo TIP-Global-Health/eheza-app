@@ -2972,7 +2972,7 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
                             Maybe.map
                                 (\immediateResult ->
                                     if immediateResult == True then
-                                        randomBloodSugarResultInputAndTask language
+                                        randomBloodSugarResultInputsAndTasks language
                                             configPerformed.setRandomBloodSugarResultMsg
                                             form.sugarCount
 
@@ -3055,7 +3055,7 @@ viewRandomBloodSugarForm2 language currentDate configInitial configPerformed for
                         Maybe.map
                             (\immediateResult ->
                                 if immediateResult == True then
-                                    randomBloodSugarResultInputAndTask language
+                                    randomBloodSugarResultInputsAndTasks language
                                         configPerformed.setRandomBloodSugarResultMsg
                                         form.sugarCount
 
@@ -3082,6 +3082,43 @@ viewRandomBloodSugarForm2 language currentDate configInitial configPerformed for
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
+    )
+
+
+randomBloodSugarResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> RandomBloodSugarResultForm encounterId
+    -> ( Html msg, Int, Int )
+randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            randomBloodSugarResultInputsAndTasks language setRandomBloodSugarMsg form.sugarCount
+    in
+    ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+randomBloodSugarResultInputsAndTasks :
+    Language
+    -> (String -> msg)
+    -> Maybe Float
+    -> ( List (Html msg), Int, Int )
+randomBloodSugarResultInputsAndTasks language setRandomBloodSugarMsg sugarCount =
+    ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
+      , viewMeasurementInput language
+            sugarCount
+            setRandomBloodSugarMsg
+            "sugar-count"
+            Translate.UnitMilliGramsPerDeciliter
+      ]
+    , taskCompleted sugarCount
+    , 1
     )
 
 
@@ -3164,6 +3201,586 @@ viewBloodGpRsTestForm language currentDate configInitial configPerformed form =
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
+    )
+
+
+bloodGpRsResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> BloodGpRsResultForm encounterId
+    -> ( Html msg, Int, Int )
+bloodGpRsResultFormAndTasks language currentDate setBloodGroupMsg setRhesusMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            bloodGpRsResultInputsAndTasks language setBloodGroupMsg setRhesusMsg form.bloodGroup form.rhesus
+    in
+    ( div [ class "ui form laboratory blood-group-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+bloodGpRsResultInputsAndTasks :
+    Language
+    -> (String -> msg)
+    -> (String -> msg)
+    -> Maybe BloodGroup
+    -> Maybe Rhesus
+    -> ( List (Html msg), Int, Int )
+bloodGpRsResultInputsAndTasks language setBloodGroupMsg setRhesusMsg bloodGroup rhesus =
+    ( viewSelectInput language
+        Translate.LaboratoryBloodGroupTestResult
+        bloodGroup
+        Translate.LaboratoryBloodGroup
+        bloodGroupToString
+        [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
+        setBloodGroupMsg
+        ++ viewSelectInput language
+            Translate.LaboratoryRhesusTestResult
+            rhesus
+            Translate.LaboratoryRhesus
+            rhesusToString
+            [ RhesusPositive, RhesusNegative ]
+            setRhesusMsg
+    , taskCompleted bloodGroup + taskCompleted rhesus
+    , 2
+    )
+
+
+viewHemoglobinTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> HemoglobinTestForm
+    -> ( Html msg, Int, Int )
+viewHemoglobinTestForm language currentDate configInitial configPerformed form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskHemoglobinTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            let
+                emptySection =
+                    ( [], 0, 0 )
+            in
+            if form.testPerformed == Just True then
+                let
+                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
+                          , viewBoolInput
+                                language
+                                form.immediateResult
+                                (configInitial.setHemoglobinTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , hemoglobinCount = Nothing
+                                            , hemoglobinCountDirty = True
+                                        }
+                                    )
+                                )
+                                "immediate-result"
+                                (Just ( Translate.PointOfCare, Translate.Lab ))
+                          ]
+                        , taskCompleted form.immediateResult
+                        , 1
+                        )
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            emptySection
+
+                        else
+                            Maybe.map
+                                (\immediateResult ->
+                                    if immediateResult == True then
+                                        hemoglobinResultFormAndTasks language
+                                            configPerformed.setHemoglobinCountMsg
+                                            form.hemoglobinCount
+
+                                    else
+                                        ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                        , 0
+                                        , 0
+                                        )
+                                )
+                                form.immediateResult
+                                |> Maybe.withDefault emptySection
+                in
+                ( testPrerequisitesSection ++ testResultSection
+                , testPrerequisitesTasksCompleted + testResultTasksCompleted
+                , testPrerequisitesTasksTotal + testResultTasksTotal
+                )
+
+            else
+                emptySection
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHemoglobinTest) "" "label header"
+            :: initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+hemoglobinResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> HemoglobinResultForm
+    -> ( Html msg, Int, Int )
+hemoglobinResultFormAndTasks language currentDate setHemoglobinCountMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            hemoglobinResultFormAndTasks language setHemoglobinCountMsg form.hemoglobinCount
+    in
+    ( div [ class "ui form laboratory hemoglobin-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+hemoglobinResultInputsAndTasks :
+    Language
+    -> (String -> msg)
+    -> Maybe Float
+    -> ( List (Html msg), Int, Int )
+hemoglobinResultInputsAndTasks language setHemoglobinCountMsg hemoglobinCount =
+    ( [ viewLabel language Translate.LaboratoryHemoglobinTestResult
+      , viewMeasurementInput language
+            hemoglobinCount
+            setHemoglobinCountMsg
+            "hemoglobin-count"
+            Translate.UnitGramsPerDeciliter
+      ]
+    , taskCompleted hemoglobinCount
+    , 1
+    )
+
+
+viewHepatitisBTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> HepatitisBTestForm
+    -> ( Html msg, Int, Int )
+viewHepatitisBTestForm language currentDate configInitial configPerformed form =
+    let
+        ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
+            contentAndTasksLaboratoryTestKnownAsPositive2 language currentDate configInitial TaskHepatitisBTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            let
+                emptySection =
+                    ( [], 0, 0 )
+            in
+            if form.knownAsPositive == Just False then
+                let
+                    ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+                        contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskHepatitisBTest form
+                in
+                if form.testPerformed == Just True then
+                    let
+                        ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                            ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
+                              , viewBoolInput
+                                    language
+                                    form.immediateResult
+                                    (configInitial.setHepatitisBTestFormBoolInputMsg
+                                        (\value form_ ->
+                                            { form_
+                                                | immediateResult = Just value
+                                                , testResult = Nothing
+                                                , testResultDirty = True
+                                            }
+                                        )
+                                    )
+                                    "immediate-result"
+                                    (Just ( Translate.PointOfCare, Translate.Lab ))
+                              ]
+                            , taskCompleted form.immediateResult
+                            , 1
+                            )
+
+                        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                            if isNothing form.executionDate then
+                                emptySection
+
+                            else
+                                Maybe.map
+                                    (\immediateResult ->
+                                        if immediateResult == True then
+                                            hepatitisBResultInputsAndTasks language
+                                                configPerformed.setHepatitisBTestResultMsg
+                                                form.testResult
+
+                                        else
+                                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                            , 0
+                                            , 0
+                                            )
+                                    )
+                                    form.immediateResult
+                                    |> Maybe.withDefault emptySection
+                    in
+                    ( initialSection ++ testPrerequisitesSection ++ testResultSection
+                    , initialTasksCompleted + testPrerequisitesTasksCompleted + testResultTasksCompleted
+                    , initialTasksTotal + testPrerequisitesTasksTotal + testResultTasksTotal
+                    )
+
+                else
+                    ( initialSection, initialTasksCompleted, initialTasksTotal )
+
+            else
+                emptySection
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHepatitisBTest) "" "label header"
+            :: initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+hepatitisBResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> HepatitisBResultForm encounterId
+    -> ( Html msg, Int, Int )
+hepatitisBResultFormAndTasks language currentDate setHepatitisBTestResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            hepatitisBResultInputsAndTasks language setHepatitisBTestResultMsg form.testResult
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHepatitisBTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+hepatitisBResultInputsAndTasks :
+    Language
+    -> (String -> msg)
+    -> Maybe TestResult
+    -> ( List (Html msg), Int, Int )
+hepatitisBResultInputsAndTasks language setHepatitisBTestResultMsg testResult =
+    ( viewSelectInput language
+        (Translate.LaboratoryTaskResult TaskHepatitisBTest)
+        testResult
+        Translate.TestResult
+        testResultToString
+        [ TestPositive, TestNegative, TestIndeterminate ]
+        setHepatitisBTestResultMsg
+    , taskCompleted testResult
+    , 1
+    )
+
+
+viewHIVPCRTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> HIVPCRTestForm
+    -> ( Html msg, Int, Int )
+viewHIVPCRTestForm language currentDate configInitial configPerformed form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskHIVPCRTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            let
+                emptySection =
+                    ( [], 0, 0 )
+            in
+            if form.testPerformed == Just True then
+                let
+                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
+                          , viewBoolInput
+                                language
+                                form.immediateResult
+                                (configInitial.setHIVPCRTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , hivViralLoadStatus = Nothing
+                                            , hivViralLoadStatusDirty = True
+                                            , hivViralLoad = Nothing
+                                            , hivViralLoadDirty = True
+                                        }
+                                    )
+                                )
+                                "immediate-result"
+                                (Just ( Translate.PointOfCare, Translate.Lab ))
+                          ]
+                        , taskCompleted form.immediateResult
+                        , 1
+                        )
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            emptySection
+
+                        else
+                            Maybe.map
+                                (\immediateResult ->
+                                    if immediateResult == True then
+                                        hivPCRResultInputsAndTasks language
+                                            setHIVViralLoadMsg
+                                            setHIVViralLoadUndetectableMsg
+                                            form.hivViralLoadStatus
+                                            form.hivViralLoad
+
+                                    else
+                                        ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                        , 0
+                                        , 0
+                                        )
+                                )
+                                form.immediateResult
+                                |> Maybe.withDefault emptySection
+                in
+                ( testPrerequisitesSection ++ testResultSection
+                , testPrerequisitesTasksCompleted + testResultTasksCompleted
+                , testPrerequisitesTasksTotal + testResultTasksTotal
+                )
+
+            else
+                emptySection
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHIVPCRTest) "" "label header"
+            :: initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+hivPCRResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (Bool -> msg)
+    -> HIVPCRResultForm
+    -> ( Html msg, Int, Int )
+hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoadUndetectableMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            hivPCRResultInputsAndTasks language
+                setHIVViralLoadMsg
+                setHIVViralLoadUndetectableMsg
+                form.hivViralLoadStatus
+                form.hivViralLoad
+    in
+    ( div [ class "ui form laboratory hiv-prc-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+hivPCRResultInputsAndTasks :
+    Language
+    -> (String -> msg)
+    -> (Bool -> msg)
+    -> Maybe ViralLoadStatus
+    -> Maybe Float
+    -> ( Html msg, Int, Int )
+hivPCRResultInputsAndTasks language setHIVViralLoadMsg setHIVViralLoadUndetectableMsg hivViralLoadStatus hivViralLoad =
+    let
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if hivViralLoadStatus == Just ViralLoadDetectable then
+                ( [ viewLabel language Translate.LaboratoryHIVPCRTestResult
+                  , viewMeasurementInput language
+                        hivViralLoad
+                        setHIVViralLoadMsg
+                        "hiv-viral-load"
+                        Translate.UnitCopiesPerMM3
+                  ]
+                , taskCompleted hivViralLoad
+                , 1
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( [ viewQuestionLabel language Translate.LaboratoryHIVPCRViralLoadStatusQuestion
+      , viewBoolInput language
+            (Maybe.map ((==) ViralLoadUndetectable) hivViralLoadStatus)
+            setHIVViralLoadUndetectableMsg
+            "hiv-level-undetectable"
+            Nothing
+      ]
+        ++ derivedSection
+    , taskCompleted hivViralLoadStatus + derivedTasksCompleted
+    , 1 + derivedTasksTotal
+    )
+
+
+viewSyphilisTestForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> SyphilisTestForm
+    -> ( Html msg, Int, Int )
+viewSyphilisTestForm language currentDate configInitial configPerformed form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskSyphilisTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            let
+                emptySection =
+                    ( [], 0, 0 )
+            in
+            if form.testPerformed == Just True then
+                let
+                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
+                          , viewBoolInput
+                                language
+                                form.immediateResult
+                                (configInitial.setSyphilisTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , testResult = Nothing
+                                            , testResultDirty = True
+                                            , symptoms = Nothing
+                                            , symptomsDirty = True
+                                        }
+                                    )
+                                )
+                                "immediate-result"
+                                (Just ( Translate.PointOfCare, Translate.Lab ))
+                          ]
+                        , taskCompleted form.immediateResult
+                        , 1
+                        )
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            emptySection
+
+                        else
+                            Maybe.map
+                                (\immediateResult ->
+                                    if immediateResult == True then
+                                        syphilisResultInputsAndTasks language
+                                            configPerformed.setIllnessSymptomMsg
+                                            configPerformed.setSyphilisTestResultMsg
+                                            form.testResult
+                                            form.symptoms
+
+                                    else
+                                        ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                        , 0
+                                        , 0
+                                        )
+                                )
+                                form.immediateResult
+                                |> Maybe.withDefault emptySection
+                in
+                ( testPrerequisitesSection ++ testResultSection
+                , testPrerequisitesTasksCompleted + testResultTasksCompleted
+                , testPrerequisitesTasksTotal + testResultTasksTotal
+                )
+
+            else
+                emptySection
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskSyphilisTest) "" "label header"
+            :: initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+syphilisResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (IllnessSymptom -> msg)
+    -> (String -> msg)
+    -> SyphilisResultForm encounterId
+    -> ( Html msg, Int, Int )
+syphilisResultFormAndTasks language currentDate setIllnessSymptomMsg setSyphilisTestResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            syphilisResultInputsAndTasks language
+                setIllnessSymptomMsg
+                setSyphilisTestResultMsg
+                form.testResult
+                form.symptoms
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskSyphilisTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+syphilisResultInputsAndTasks :
+    Language
+    -> (IllnessSymptom -> msg)
+    -> (String -> msg)
+    -> Maybe TestResult
+    -> Maybe (List IllnessSymptom)
+    -> ( Html msg, Int, Int )
+syphilisResultInputsAndTasks language setIllnessSymptomMsg setSyphilisTestResultMsg testResult symptoms =
+    let
+        ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
+            if testResult == Just TestPositive then
+                ( [ viewLabel language Translate.SelectIllnessSymptoms
+                  , viewCheckBoxMultipleSelectInput language
+                        [ IllnessSymptomHeadache
+                        , IllnessSymptomVisionChanges
+                        , IllnessSymptomRash
+                        , IllnessSymptomPainlessUlcerMouth
+                        , IllnessSymptomPainlessUlcerGenitals
+                        ]
+                        []
+                        (Maybe.withDefault [] symptoms)
+                        (Just NoIllnessSymptoms)
+                        setIllnessSymptomMsg
+                        Translate.IllnessSymptom
+                  ]
+                , taskCompleted symptoms
+                , 1
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( viewSelectInput language
+        (Translate.LaboratoryTaskResult TaskSyphilisTest)
+        testResult
+        Translate.TestResult
+        testResultToString
+        [ TestPositive, TestNegative, TestIndeterminate ]
+        setSyphilisTestResultMsg
+        ++ symptomsSection
+    , taskCompleted testResult + symptomsTasksCompleted
+    , 1 + symptomsTasksTotal
     )
 
 
@@ -3607,8 +4224,6 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
                 { form_
                     | testPerformed = Just value
                     , testPerformedDirty = True
-                    , testPerformedToday = Nothing
-                    , testPerformedTodayDirty = True
                     , executionNote = Nothing
                     , executionNoteDirty = True
                     , executionDate = Nothing
@@ -3623,12 +4238,60 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
                     }
 
                 TaskSyphilisTest ->
-                    { setBoolInputMsg = config.setSyphilisTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                let
+                                    executionDate =
+                                        if value == True then
+                                            Just currentDate
+
+                                        else
+                                            Nothing
+                                in
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = executionDate
+                                    , executionDateDirty = True
+                                    , testResult = Nothing
+                                    , testResultDirty = True
+                                    , symptoms = Nothing
+                                    , symptomsDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setSyphilisTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setSyphilisTestExecutionNoteMsg
                     }
 
                 TaskHepatitisBTest ->
-                    { setBoolInputMsg = config.setHepatitisBTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                let
+                                    executionDate =
+                                        if value == True then
+                                            Just currentDate
+
+                                        else
+                                            Nothing
+                                in
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = executionDate
+                                    , executionDateDirty = True
+                                    , testResult = Nothing
+                                    , testResultDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setHepatitisBTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setHepatitisBTestExecutionNoteMsg
                     }
 
@@ -3691,7 +4354,30 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
                     }
 
                 TaskHemoglobinTest ->
-                    { setBoolInputMsg = config.setHemoglobinTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                let
+                                    executionDate =
+                                        if value == True then
+                                            Just currentDate
+
+                                        else
+                                            Nothing
+                                in
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = executionDate
+                                    , executionDateDirty = True
+                                    , hemoglobinCount = Nothing
+                                    , hemoglobinCountDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setHemoglobinTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setHemoglobinTestExecutionNoteMsg
                     }
 
@@ -3725,7 +4411,32 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
                     }
 
                 TaskHIVPCRTest ->
-                    { setBoolInputMsg = config.setHIVPCRTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                let
+                                    executionDate =
+                                        if value == True then
+                                            Just currentDate
+
+                                        else
+                                            Nothing
+                                in
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = executionDate
+                                    , executionDateDirty = True
+                                    , hivViralLoadStatus = Nothing
+                                    , hivViralLoadStatusDirty = True
+                                    , hivViralLoad = Nothing
+                                    , hivViralLoadDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setHIVPCRTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setHIVPCRTestExecutionNoteMsg
                     }
 
@@ -3806,6 +4517,122 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
         ++ derivedSection
     , taskCompleted form.testPerformed + derivedTasksCompleted
     , 1 + derivedTasksTotal
+    )
+
+
+contentAndTasksLaboratoryTestKnownAsPositive :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> LaboratoryTask
+    -> { f | knownAsPositive : Maybe Bool }
+    -> ( List (Html msg), Int, Int )
+contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task form =
+    let
+        updateFunc =
+            \knownAsPositive form_ ->
+                let
+                    executionNote =
+                        if knownAsPositive then
+                            Just TestNoteKnownAsPositive
+
+                        else
+                            Nothing
+                in
+                { form_
+                    | knownAsPositive = Just knownAsPositive
+                    , testPerformed = Nothing
+                    , testPerformedDirty = True
+                    , testPerformedToday = Nothing
+                    , testPerformedTodayDirty = True
+                    , executionNote = executionNote
+                    , executionNoteDirty = True
+                    , executionDate = Nothing
+                    , executionDateDirty = True
+                }
+
+        setMsg =
+            case task of
+                TaskHIVTest ->
+                    config.setHIVTestFormBoolInputMsg updateFunc
+
+                TaskHepatitisBTest ->
+                    config.setHepatitisBTestFormBoolInputMsg updateFunc
+
+                TaskPregnancyTest ->
+                    config.setPregnancyTestFormBoolInputMsg updateFunc
+
+                -- Known as positive is not applicable for other tests.
+                _ ->
+                    always config.noOpMsg
+    in
+    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
+      , viewBoolInput
+            language
+            form.knownAsPositive
+            setMsg
+            "known-as-positive"
+            Nothing
+      ]
+    , taskCompleted form.knownAsPositive
+    , 1
+    )
+
+
+contentAndTasksLaboratoryTestKnownAsPositive2 :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> LaboratoryTask
+    -> { f | knownAsPositive : Maybe Bool }
+    -> ( List (Html msg), Int, Int )
+contentAndTasksLaboratoryTestKnownAsPositive2 language currentDate config task form =
+    let
+        updateFunc =
+            \knownAsPositive form_ ->
+                let
+                    executionNote =
+                        if knownAsPositive then
+                            Just TestNoteKnownAsPositive
+
+                        else
+                            Nothing
+                in
+                { form_
+                    | knownAsPositive = Just knownAsPositive
+                    , testPerformed = Nothing
+                    , testPerformedDirty = True
+                    , executionNote = executionNote
+                    , executionNoteDirty = True
+                    , executionDate = Nothing
+                    , executionDateDirty = True
+                }
+
+        setMsg =
+            case task of
+                TaskHIVTest ->
+                    config.setHIVTestFormBoolInputMsg updateFunc
+
+                TaskHepatitisBTest ->
+                    config.setHepatitisBTestFormBoolInputMsg updateFunc
+
+                TaskPregnancyTest ->
+                    config.setPregnancyTestFormBoolInputMsg updateFunc
+
+                -- Known as positive is not applicable for other tests.
+                _ ->
+                    always config.noOpMsg
+    in
+    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
+      , viewBoolInput
+            language
+            form.knownAsPositive
+            setMsg
+            "known-as-positive"
+            Nothing
+      ]
+    , taskCompleted form.knownAsPositive
+    , 1
     )
 
 
@@ -4007,68 +4834,6 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
         , taskCompleted form.testPerformedToday + derivedTasksCompleted
         , 1 + derivedTasksTotal
         )
-
-
-contentAndTasksLaboratoryTestKnownAsPositive :
-    Language
-    -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig msg
-    -> LaboratoryTask
-    -> { f | knownAsPositive : Maybe Bool }
-    -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task form =
-    let
-        updateFunc =
-            \knownAsPositive form_ ->
-                let
-                    executionNote =
-                        if knownAsPositive then
-                            Just TestNoteKnownAsPositive
-
-                        else
-                            Nothing
-                in
-                { form_
-                    | knownAsPositive = Just knownAsPositive
-                    , testPerformed = Nothing
-                    , testPerformedDirty = True
-                    , testPerformedToday = Nothing
-                    , testPerformedTodayDirty = True
-                    , executionNote = executionNote
-                    , executionNoteDirty = True
-                    , executionDate = Nothing
-                    , executionDateDirty = True
-                }
-
-        setMsg =
-            case task of
-                TaskHIVTest ->
-                    config.setHIVTestFormBoolInputMsg updateFunc
-
-                TaskSyphilisTest ->
-                    config.setSyphilisTestFormBoolInputMsg updateFunc
-
-                TaskHepatitisBTest ->
-                    config.setHepatitisBTestFormBoolInputMsg updateFunc
-
-                TaskPregnancyTest ->
-                    config.setPregnancyTestFormBoolInputMsg updateFunc
-
-                -- Known as positive is not applicable for other tests.
-                _ ->
-                    always config.noOpMsg
-    in
-    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
-      , viewBoolInput
-            language
-            form.knownAsPositive
-            setMsg
-            "known-as-positive"
-            Nothing
-      ]
-    , taskCompleted form.knownAsPositive
-    , 1
-    )
 
 
 emptyContentAndTasksLaboratoryTestInitialConfig : msg -> ContentAndTasksLaboratoryTestInitialConfig msg
@@ -4832,135 +5597,6 @@ toHbA1cTestValue form =
         form.executionNote
 
 
-syphilisResultFormAndTasks :
-    Language
-    -> NominalDate
-    -> (IllnessSymptom -> msg)
-    -> (String -> msg)
-    -> SyphilisResultForm encounterId
-    -> ( Html msg, Int, Int )
-syphilisResultFormAndTasks language currentDate setIllnessSymptomMsg setSyphilisTestResultMsg form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            let
-                ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
-                    if form.testResult == Just TestPositive then
-                        ( [ viewLabel language Translate.SelectIllnessSymptoms
-                          , viewCheckBoxMultipleSelectInput language
-                                [ IllnessSymptomHeadache
-                                , IllnessSymptomVisionChanges
-                                , IllnessSymptomRash
-                                , IllnessSymptomPainlessUlcerMouth
-                                , IllnessSymptomPainlessUlcerGenitals
-                                ]
-                                []
-                                (form.symptoms |> Maybe.withDefault [])
-                                (Just NoIllnessSymptoms)
-                                setIllnessSymptomMsg
-                                Translate.IllnessSymptom
-                          ]
-                        , taskCompleted form.symptoms
-                        , 1
-                        )
-
-                    else
-                        ( [], 0, 0 )
-            in
-            ( viewSelectInput language
-                (Translate.LaboratoryTaskResult TaskSyphilisTest)
-                form.testResult
-                Translate.TestResult
-                testResultToString
-                [ TestPositive, TestNegative, TestIndeterminate ]
-                setSyphilisTestResultMsg
-                ++ symptomsSection
-            , taskCompleted form.testResult + symptomsTasksCompleted
-            , 1 + symptomsTasksTotal
-            )
-    in
-    ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskSyphilisTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-hepatitisBResultFormAndTasks :
-    Language
-    -> NominalDate
-    -> (String -> msg)
-    -> HepatitisBResultForm encounterId
-    -> ( Html msg, Int, Int )
-hepatitisBResultFormAndTasks language currentDate setHepatitisBTestResultMsg form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( viewSelectInput language
-                (Translate.LaboratoryTaskResult TaskHepatitisBTest)
-                form.testResult
-                Translate.TestResult
-                testResultToString
-                [ TestPositive, TestNegative, TestIndeterminate ]
-                setHepatitisBTestResultMsg
-            , taskCompleted form.testResult
-            , 1
-            )
-    in
-    ( div [ class "ui form laboratory prenatal-test-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHepatitisBTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-bloodGpRsResultFormAndTasks :
-    Language
-    -> NominalDate
-    -> (String -> msg)
-    -> (String -> msg)
-    -> BloodGpRsResultForm encounterId
-    -> ( Html msg, Int, Int )
-bloodGpRsResultFormAndTasks language currentDate setBloodGroupMsg setRhesusMsg form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            bloodGpRsResultInputsAndTasks language setBloodGroupMsg setRhesusMsg form.bloodGroup form.rhesus
-    in
-    ( div [ class "ui form laboratory blood-group-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-bloodGpRsResultInputsAndTasks :
-    Language
-    -> (String -> msg)
-    -> (String -> msg)
-    -> Maybe BloodGroup
-    -> Maybe Rhesus
-    -> ( List (Html msg), Int, Int )
-bloodGpRsResultInputsAndTasks language setBloodGroupMsg setRhesusMsg bloodGroup rhesus =
-    ( viewSelectInput language
-        Translate.LaboratoryBloodGroupTestResult
-        bloodGroup
-        Translate.LaboratoryBloodGroup
-        bloodGroupToString
-        [ BloodGroupA, BloodGroupB, BloodGroupAB, BloodGroupO ]
-        setBloodGroupMsg
-        ++ viewSelectInput language
-            Translate.LaboratoryRhesusTestResult
-            rhesus
-            Translate.LaboratoryRhesus
-            rhesusToString
-            [ RhesusPositive, RhesusNegative ]
-            setRhesusMsg
-    , taskCompleted bloodGroup + taskCompleted rhesus
-    , 2
-    )
-
-
 urineDipstickResultFormAndTasks :
     Language
     -> NominalDate
@@ -5119,118 +5755,6 @@ urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setG
     in
     ( div [ class "ui form laboratory urine-dipstick-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-hemoglobinResultFormAndTasks :
-    Language
-    -> NominalDate
-    -> (String -> msg)
-    -> HemoglobinResultForm
-    -> ( Html msg, Int, Int )
-hemoglobinResultFormAndTasks language currentDate setHemoglobinMsg form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            ( [ viewLabel language Translate.LaboratoryHemoglobinTestResult
-              , viewMeasurementInput language
-                    form.hemoglobinCount
-                    setHemoglobinMsg
-                    "hemoglobin-count"
-                    Translate.UnitGramsPerDeciliter
-              ]
-            , taskCompleted form.hemoglobinCount
-            , 1
-            )
-    in
-    ( div [ class "ui form laboratory hemoglobin-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-randomBloodSugarResultFormAndTasks :
-    Language
-    -> NominalDate
-    -> (String -> msg)
-    -> RandomBloodSugarResultForm encounterId
-    -> ( Html msg, Int, Int )
-randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            randomBloodSugarResultInputAndTask language setRandomBloodSugarMsg form.sugarCount
-    in
-    ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
-
-
-randomBloodSugarResultInputAndTask :
-    Language
-    -> (String -> msg)
-    -> Maybe Float
-    -> ( List (Html msg), Int, Int )
-randomBloodSugarResultInputAndTask language setRandomBloodSugarMsg sugarCount =
-    ( [ viewLabel language Translate.LaboratoryRandomBloodSugarTestResult
-      , viewMeasurementInput language
-            sugarCount
-            setRandomBloodSugarMsg
-            "sugar-count"
-            Translate.UnitMilliGramsPerDeciliter
-      ]
-    , taskCompleted sugarCount
-    , 1
-    )
-
-
-hivPCRResultFormAndTasks :
-    Language
-    -> NominalDate
-    -> (String -> msg)
-    -> (Bool -> msg)
-    -> HIVPCRResultForm
-    -> ( Html msg, Int, Int )
-hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoadUndetectableMsg form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            let
-                ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-                    if form.hivViralLoadStatus == Just ViralLoadDetectable then
-                        ( [ viewLabel language Translate.LaboratoryHIVPCRTestResult
-                          , viewMeasurementInput language
-                                form.hivViralLoad
-                                setHIVViralLoadMsg
-                                "hiv-viral-load"
-                                Translate.UnitCopiesPerMM3
-                          ]
-                        , taskCompleted form.hivViralLoad
-                        , 1
-                        )
-
-                    else
-                        ( [], 0, 0 )
-            in
-            ( [ viewQuestionLabel language Translate.LaboratoryHIVPCRViralLoadStatusQuestion
-              , viewBoolInput language
-                    (Maybe.map ((==) ViralLoadUndetectable) form.hivViralLoadStatus)
-                    setHIVViralLoadUndetectableMsg
-                    "hiv-level-undetectable"
-                    Nothing
-              ]
-                ++ derivedSection
-            , taskCompleted form.hivViralLoadStatus + derivedTasksCompleted
-            , 1 + derivedTasksTotal
-            )
-    in
-    ( div [ class "ui form laboratory hiv-prc-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
