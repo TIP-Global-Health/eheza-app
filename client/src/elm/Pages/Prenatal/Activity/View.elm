@@ -63,7 +63,6 @@ import Measurement.Utils
         , randomBloodSugarFormWithDefault
         , randomBloodSugarFormWithDefault2
         , syphilisTestFormWithDefault
-        , urineDipstickFormWithDefault
         , urineDipstickUniversalFormWithDefault
         , vaccinationFormWithDefault
         , viewBloodGpRsTestForm
@@ -77,7 +76,6 @@ import Measurement.Utils
         , viewPartnerHIVTestForm
         , viewRandomBloodSugarForm2
         , viewSyphilisTestForm
-        , viewUrineDipstickForm
         , viewUrineDipstickUniversalForm
         , vitalsFormWithDefault
         )

@@ -2325,7 +2325,28 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | testVariant = Just value }
+                    { form
+                        | testVariant = Just value
+                        , testVariantDirty = True
+                        , protein = Nothing
+                        , proteinDirty = True
+                        , ph = Nothing
+                        , phDirty = True
+                        , glucose = Nothing
+                        , glucoseDirty = True
+                        , leukocytes = Nothing
+                        , leukocytesDirty = True
+                        , nitrite = Nothing
+                        , nitriteDirty = True
+                        , urobilinogen = Nothing
+                        , urobilinogenDirty = True
+                        , haemoglobin = Nothing
+                        , haemoglobinDirty = True
+                        , ketone = Nothing
+                        , ketoneDirty = True
+                        , bilirubin = Nothing
+                        , bilirubinDirty = True
+                    }
 
                 updatedData =
                     model.laboratoryData
