@@ -19,7 +19,6 @@ import Measurement.Model
         , HepatitisBTestForm
         , LaboratoryTask
         , MalariaTestForm
-        , NonRDTForm
         , OutsideCareForm
         , OutsideCareStep
         , PartnerHIVTestForm
@@ -37,7 +36,6 @@ import Measurement.Model
         , emptyHemoglobinTestForm
         , emptyHepatitisBTestForm
         , emptyMalariaTestForm
-        , emptyNonRDTForm
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarForm2
@@ -160,12 +158,12 @@ type Msg
     | SetHIVTestResult String
     | SetHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHIVTest PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
-    | SetSyphilisTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetSyphilisTestFormBoolInput (Bool -> SyphilisTestForm -> SyphilisTestForm) Bool
     | SetSyphilisTestExecutionNote TestExecutionNote
     | SetSyphilisTestResult String
     | SetIllnessSymptom IllnessSymptom
     | SaveSyphilisTest PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
-    | SetHepatitisBTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetHepatitisBTestFormBoolInput (Bool -> HepatitisBTestForm -> HepatitisBTestForm) Bool
     | SetHepatitisBTestExecutionNote TestExecutionNote
     | SetHepatitisBTestResult String
     | SaveHepatitisBTest PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
@@ -187,7 +185,7 @@ type Msg
     | SetUrineDipstickTestExecutionDate NominalDate
     | SetUrineDipstickTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveUrineDipstickTest PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
-    | SetHemoglobinTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetHemoglobinTestFormBoolInput (Bool -> HemoglobinTestForm -> HemoglobinTestForm) Bool
     | SetHemoglobinTestExecutionNote TestExecutionNote
     | SetHemoglobinCount String
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
@@ -195,7 +193,7 @@ type Msg
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarResult String
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
-    | SetHIVPCRTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
+    | SetHIVPCRTestFormBoolInput (Bool -> HIVPCRTestForm -> HIVPCRTestForm) Bool
     | SetHIVPCRTestExecutionNote TestExecutionNote
     | SetHIVViralLoadUndetectable Bool
     | SetHIVViralLoad String

@@ -2472,31 +2472,6 @@ toNonRDTValueWithDefault saved withEmptyResultsFunc form =
         formWithDefault.executionNote
 
 
-toHepatitisBTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HepatitisBTestValue encounterId
-toHepatitisBTestValueWithEmptyResults note date =
-    HepatitisBTestValue note date Nothing Nothing Nothing
-
-
-toSyphilisTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> SyphilisTestValue encounterId
-toSyphilisTestValueWithEmptyResults note date =
-    SyphilisTestValue note date Nothing Nothing Nothing Nothing
-
-
-toHemoglobinTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HemoglobinTestValue
-toHemoglobinTestValueWithEmptyResults note date =
-    HemoglobinTestValue note date Nothing Nothing
-
-
-toBloodGpRsTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> BloodGpRsTestValue encounterId
-toBloodGpRsTestValueWithEmptyResults note date =
-    BloodGpRsTestValue note date Nothing Nothing Nothing Nothing
-
-
-toHIVPCRTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> HIVPCRTestValue
-toHIVPCRTestValueWithEmptyResults note date =
-    HIVPCRTestValue note date Nothing Nothing Nothing
-
-
 toCreatinineTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> CreatinineTestValue
 toCreatinineTestValueWithEmptyResults note date =
     CreatinineTestValue note date Nothing Nothing

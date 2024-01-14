@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , DangerSign(..)
         , FamilyPlanningSign(..)
         , HandsCPESign(..)
+        , IllnessSymptom(..)
         , ImageUrl(..)
         , LegsCPESign(..)
         , LungsCPESign(..)
@@ -23,6 +24,7 @@ import Backend.Measurement.Model
         , PostpartumMotherDangerSign(..)
         , PrenatalSymptom(..)
         , VaginalExamSign(..)
+        , ViralLoadStatus(..)
         )
 import Backend.Measurement.Utils
     exposing
@@ -51,20 +53,18 @@ import Measurement.Utils
         , outsideCareFormWithDefault
         , syphilisTestFormWithDefault
         , toBloodGpRsTestValueWithDefault
-        , toBloodGpRsTestValueWithEmptyResults
         , toCorePhysicalExamValueWithDefault
         , toFamilyPlanningValueWithDefault
-        , toHIVPCRTestValueWithEmptyResults
+        , toHIVPCRTestValueWithDefault
         , toHIVTestValueWithDefault
-        , toHemoglobinTestValueWithEmptyResults
-        , toHepatitisBTestValueWithEmptyResults
+        , toHemoglobinTestValueWithDefault
+        , toHepatitisBTestValueWithDefault
         , toMalariaTestValueWithDefault
-        , toNonRDTValueWithDefault
         , toOutsideCareValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toRandomBloodSugarTestValueWithDefault
         , toRandomBloodSugarTestValueWithDefault2
-        , toSyphilisTestValueWithEmptyResults
+        , toSyphilisTestValueWithDefault
         , toUrineDipstickTestValueWithDefault
         , toVaccinationValueWithDefault
         , toVitalsValueWithDefault
@@ -1965,7 +1965,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.syphilisTestForm
-                        |> toNonRDTValueWithDefault measurement toSyphilisTestValueWithEmptyResults
+                        |> toSyphilisTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2044,7 +2044,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hepatitisBTestForm
-                        |> toNonRDTValueWithDefault measurement toHepatitisBTestValueWithEmptyResults
+                        |> toHepatitisBTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2279,7 +2279,6 @@ update language currentDate id db msg model =
                 appMsgs =
                     model.laboratoryData.bloodGpRsTestForm
                         |> toBloodGpRsTestValueWithDefault measurement
-                        -- toBloodGpRsTestValueWithEmptyResults
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveBloodGpRsTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2474,7 +2473,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hemoglobinTestForm
-                        |> toNonRDTValueWithDefault measurement toHemoglobinTestValueWithEmptyResults
+                        |> toHemoglobinTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHemoglobinTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -2656,7 +2655,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hivPCRTestForm
-                        |> toNonRDTValueWithDefault measurement toHIVPCRTestValueWithEmptyResults
+                        |> toHIVPCRTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVPCRTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
