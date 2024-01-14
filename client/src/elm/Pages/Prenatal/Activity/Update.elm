@@ -1906,13 +1906,13 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetSyphilisTestExecutionDate value ->
+        SetSyphilisTestResult value ->
             let
                 form =
                     model.laboratoryData.syphilisTestForm
 
                 updatedForm =
-                    { form | executionDate = Just value }
+                    { form | testResult = testResultFromString value, testResultDirty = True, symptoms = Nothing, symptomsDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -1923,16 +1923,24 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetSyphilisTestDateSelectorState state ->
+        SetIllnessSymptom symptom ->
             let
                 form =
-                    model.laboratoryData.syphilisTestForm
-
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.syphilisTest
+                                >> getMeasurementValueFunc
+                                >> syphilisTestFormWithDefault model.laboratoryData.syphilisTestForm
+                            )
+                        |> Maybe.withDefault model.laboratoryData.syphilisTestForm
 
                 updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+                    setMultiSelectInputValue .symptoms
+                        (\symptoms -> { form | symptoms = symptoms, symptomsDirty = True })
+                        NoIllnessSymptoms
+                        symptom
+                        form
 
                 updatedData =
                     model.laboratoryData
@@ -2005,33 +2013,13 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetHepatitisBTestExecutionDate value ->
+        SetHepatitisBTestResult value ->
             let
                 form =
                     model.laboratoryData.hepatitisBTestForm
 
                 updatedForm =
-                    { form | executionDate = Just value }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | hepatitisBTestForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHepatitisBTestDateSelectorState state ->
-            let
-                form =
-                    model.laboratoryData.hepatitisBTestForm
-
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
-
-                updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+                    { form | testResult = testResultFromString value, testResultDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2455,33 +2443,13 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetHemoglobinTestExecutionDate value ->
+        SetHemoglobinCount value ->
             let
                 form =
                     model.laboratoryData.hemoglobinTestForm
 
                 updatedForm =
-                    { form | executionDate = Just value }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | hemoglobinTestForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHemoglobinTestDateSelectorState state ->
-            let
-                form =
-                    model.laboratoryData.hemoglobinTestForm
-
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
-
-                updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+                    { form | hemoglobinCount = String.toFloat value, hemoglobinCountDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2633,13 +2601,20 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetHIVPCRTestExecutionDate value ->
+        SetHIVViralLoadUndetectable undetectable ->
             let
                 form =
                     model.laboratoryData.hivPCRTestForm
 
+                status =
+                    if undetectable then
+                        ViralLoadUndetectable
+
+                    else
+                        ViralLoadDetectable
+
                 updatedForm =
-                    { form | executionDate = Just value }
+                    { form | hivViralLoadStatus = Just status, hivViralLoadStatusDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2650,16 +2625,13 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetHIVPCRTestDateSelectorState state ->
+        SetHIVViralLoad value ->
             let
                 form =
                     model.laboratoryData.hivPCRTestForm
 
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
-
                 updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+                    { form | hivViralLoad = String.toFloat value, hivViralLoadDirty = True }
 
                 updatedData =
                     model.laboratoryData

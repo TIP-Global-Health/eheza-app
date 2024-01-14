@@ -13,7 +13,10 @@ import Measurement.Model
         , CorePhysicalExamForm
         , DropZoneFile
         , FamilyPlanningForm
+        , HIVPCRTestForm
         , HIVTestForm
+        , HemoglobinTestForm
+        , HepatitisBTestForm
         , LaboratoryTask
         , MalariaTestForm
         , NonRDTForm
@@ -21,6 +24,7 @@ import Measurement.Model
         , OutsideCareStep
         , PartnerHIVTestForm
         , RandomBloodSugarForm2
+        , SyphilisTestForm
         , UrineDipstickForm
         , VaccinationForm
         , VaccinationFormViewMode
@@ -28,12 +32,16 @@ import Measurement.Model
         , emptyBloodGpRsTestForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
+        , emptyHIVPCRTestForm
         , emptyHIVTestForm
+        , emptyHemoglobinTestForm
+        , emptyHepatitisBTestForm
         , emptyMalariaTestForm
         , emptyNonRDTForm
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarForm2
+        , emptySyphilisTestForm
         , emptyUrineDipstickForm
         , emptyVaccinationForm
         , emptyVitalsForm
@@ -154,13 +162,12 @@ type Msg
     | SaveHIVTest PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
     | SetSyphilisTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
     | SetSyphilisTestExecutionNote TestExecutionNote
-    | SetSyphilisTestExecutionDate NominalDate
-    | SetSyphilisTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetSyphilisTestResult String
+    | SetIllnessSymptom IllnessSymptom
     | SaveSyphilisTest PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
     | SetHepatitisBTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
     | SetHepatitisBTestExecutionNote TestExecutionNote
-    | SetHepatitisBTestExecutionDate NominalDate
-    | SetHepatitisBTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetHepatitisBTestResult String
     | SaveHepatitisBTest PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
     | SetMalariaTestFormBoolInput (Bool -> MalariaTestForm Msg -> MalariaTestForm Msg) Bool
     | SetMalariaTestExecutionNote TestExecutionNote
@@ -169,13 +176,11 @@ type Msg
     | SetBloodSmearResultMsg String
     | SetMalariaTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
-      ---
     | SetBloodGpRsTestFormBoolInput (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) Bool
     | SetBloodGpRsTestExecutionNote TestExecutionNote
     | SetBloodGroup String
     | SetRhesus String
     | SaveBloodGpRsTest PersonId (Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )) (Maybe LaboratoryTask)
-      ---
     | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickForm Msg -> UrineDipstickForm Msg) Bool
     | SetUrineDipstickTestExecutionNote TestExecutionNote
     | SetUrineDipstickTestVariant TestVariant
@@ -184,8 +189,7 @@ type Msg
     | SaveUrineDipstickTest PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
     | SetHemoglobinTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
     | SetHemoglobinTestExecutionNote TestExecutionNote
-    | SetHemoglobinTestExecutionDate NominalDate
-    | SetHemoglobinTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetHemoglobinCount String
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
     | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarForm2 -> RandomBloodSugarForm2) Bool
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
@@ -193,8 +197,8 @@ type Msg
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
     | SetHIVPCRTestFormBoolInput (Bool -> NonRDTForm Msg -> NonRDTForm Msg) Bool
     | SetHIVPCRTestExecutionNote TestExecutionNote
-    | SetHIVPCRTestExecutionDate NominalDate
-    | SetHIVPCRTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetHIVViralLoadUndetectable Bool
+    | SetHIVViralLoad String
     | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
     | SetLabsHistoryCompleted Bool
     | SaveLabsHistory
@@ -513,16 +517,16 @@ type alias LaboratoryData =
 
     -- Tests taken by nurses.
     , bloodGpRsTestForm : BloodGpRsTestForm
-    , hemoglobinTestForm : NonRDTForm Msg
-    , hepatitisBTestForm : NonRDTForm Msg
+    , hemoglobinTestForm : HemoglobinTestForm
+    , hepatitisBTestForm : HepatitisBTestForm
+    , hivPCRTestForm : HIVPCRTestForm
     , hivTestForm : HIVTestForm Msg
     , malariaTestForm : MalariaTestForm Msg
-    , randomBloodSugarTestForm : RandomBloodSugarForm2
-    , syphilisTestForm : NonRDTForm Msg
-    , urineDipstickTestForm : UrineDipstickForm Msg
-    , hivPCRTestForm : NonRDTForm Msg
-    , labsHistoryForm : LabsHistoryForm
     , partnerHIVTestForm : PartnerHIVTestForm Msg
+    , randomBloodSugarTestForm : RandomBloodSugarForm2
+    , syphilisTestForm : SyphilisTestForm
+    , urineDipstickTestForm : UrineDipstickForm Msg
+    , labsHistoryForm : LabsHistoryForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -531,16 +535,16 @@ emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { pregnancyTestForm = PregnancyTestForm Nothing
     , bloodGpRsTestForm = emptyBloodGpRsTestForm
-    , hemoglobinTestForm = emptyNonRDTForm
-    , hepatitisBTestForm = emptyNonRDTForm
+    , hemoglobinTestForm = emptyHemoglobinTestForm
+    , hepatitisBTestForm = emptyHepatitisBTestForm
+    , hivPCRTestForm = emptyHIVPCRTestForm
     , hivTestForm = emptyHIVTestForm
     , malariaTestForm = emptyMalariaTestForm
-    , randomBloodSugarTestForm = emptyRandomBloodSugarForm2
-    , syphilisTestForm = emptyNonRDTForm
-    , urineDipstickTestForm = emptyUrineDipstickForm
-    , hivPCRTestForm = emptyNonRDTForm
-    , labsHistoryForm = emptyLabsHistoryForm
     , partnerHIVTestForm = emptyPartnerHIVTestForm
+    , randomBloodSugarTestForm = emptyRandomBloodSugarForm2
+    , syphilisTestForm = emptySyphilisTestForm
+    , urineDipstickTestForm = emptyUrineDipstickForm
+    , labsHistoryForm = emptyLabsHistoryForm
     , activeTask = Nothing
     }
 
