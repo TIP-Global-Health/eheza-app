@@ -1055,6 +1055,107 @@ emptySyphilisResultForm =
     SyphilisResultForm Nothing Nothing Nothing Nothing Nothing False Nothing
 
 
+type alias UrineDipstickUniversalForm =
+    { -- If true, test will be performed today.
+      testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , testVariant : Maybe TestVariant
+    , testVariantDirty : Bool
+    , protein : Maybe ProteinValue
+    , proteinDirty : Bool
+    , ph : Maybe PHValue
+    , phDirty : Bool
+    , glucose : Maybe GlucoseValue
+    , glucoseDirty : Bool
+    , leukocytes : Maybe LeukocytesValue
+    , leukocytesDirty : Bool
+    , nitrite : Maybe NitriteValue
+    , nitriteDirty : Bool
+    , urobilinogen : Maybe UrobilinogenValue
+    , urobilinogenDirty : Bool
+    , haemoglobin : Maybe HaemoglobinValue
+    , haemoglobinDirty : Bool
+    , ketone : Maybe KetoneValue
+    , ketoneDirty : Bool
+    , bilirubin : Maybe BilirubinValue
+    , bilirubinDirty : Bool
+    }
+
+
+emptyUrineDipstickUniversalForm : UrineDipstickUniversalForm
+emptyUrineDipstickUniversalForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testVariant = Nothing
+    , testVariantDirty = False
+    , protein = Nothing
+    , proteinDirty = False
+    , ph = Nothing
+    , phDirty = False
+    , glucose = Nothing
+    , glucoseDirty = False
+    , leukocytes = Nothing
+    , leukocytesDirty = False
+    , nitrite = Nothing
+    , nitriteDirty = False
+    , urobilinogen = Nothing
+    , urobilinogenDirty = False
+    , haemoglobin = Nothing
+    , haemoglobinDirty = False
+    , ketone = Nothing
+    , ketoneDirty = False
+    , bilirubin = Nothing
+    , bilirubinDirty = False
+    }
+
+
+type alias UrineDipstickResultForm =
+    { testVariant : Maybe TestVariant
+    , executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , protein : Maybe ProteinValue
+    , ph : Maybe PHValue
+    , glucose : Maybe GlucoseValue
+    , leukocytes : Maybe LeukocytesValue
+    , nitrite : Maybe NitriteValue
+    , urobilinogen : Maybe UrobilinogenValue
+    , haemoglobin : Maybe HaemoglobinValue
+    , ketone : Maybe KetoneValue
+    , bilirubin : Maybe BilirubinValue
+    }
+
+
+emptyUrineDipstickResultForm : UrineDipstickResultForm
+emptyUrineDipstickResultForm =
+    { testVariant = Nothing
+    , executionNote = Nothing
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , protein = Nothing
+    , ph = Nothing
+    , glucose = Nothing
+    , leukocytes = Nothing
+    , nitrite = Nothing
+    , urobilinogen = Nothing
+    , haemoglobin = Nothing
+    , ketone = Nothing
+    , bilirubin = Nothing
+    }
+
+
 
 -- Universal Lab forms    - end
 
@@ -1242,41 +1343,6 @@ type alias NonRDTForm msg =
 emptyNonRDTForm : NonRDTForm msg
 emptyNonRDTForm =
     NonRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing
-
-
-type alias UrineDipstickResultForm =
-    { testVariant : Maybe TestVariant
-    , executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testPrerequisites : Maybe (EverySet TestPrerequisite)
-    , protein : Maybe ProteinValue
-    , ph : Maybe PHValue
-    , glucose : Maybe GlucoseValue
-    , leukocytes : Maybe LeukocytesValue
-    , nitrite : Maybe NitriteValue
-    , urobilinogen : Maybe UrobilinogenValue
-    , haemoglobin : Maybe HaemoglobinValue
-    , ketone : Maybe KetoneValue
-    , bilirubin : Maybe BilirubinValue
-    }
-
-
-emptyUrineDipstickResultForm : UrineDipstickResultForm
-emptyUrineDipstickResultForm =
-    { testVariant = Nothing
-    , executionNote = Nothing
-    , executionDate = Nothing
-    , testPrerequisites = Nothing
-    , protein = Nothing
-    , ph = Nothing
-    , glucose = Nothing
-    , leukocytes = Nothing
-    , nitrite = Nothing
-    , urobilinogen = Nothing
-    , haemoglobin = Nothing
-    , ketone = Nothing
-    , bilirubin = Nothing
-    }
 
 
 type alias PartnerHIVTestForm msg =
