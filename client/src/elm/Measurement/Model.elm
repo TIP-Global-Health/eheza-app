@@ -774,6 +774,297 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
     }
 
 
+
+-- Universal Lab forms    - start
+
+
+type alias BloodGpRsTestForm =
+    { -- If true, test will be performed today.
+      testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , bloodGroup : Maybe BloodGroup
+    , bloodGroupDirty : Bool
+    , rhesus : Maybe Rhesus
+    , rhesusDirty : Bool
+    }
+
+
+emptyBloodGpRsTestForm : BloodGpRsTestForm
+emptyBloodGpRsTestForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , bloodGroup = Nothing
+    , bloodGroupDirty = False
+    , rhesus = Nothing
+    , rhesusDirty = False
+    }
+
+
+type alias BloodGpRsResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , bloodGroup : Maybe BloodGroup
+    , rhesus : Maybe Rhesus
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptyBloodGpRsResultForm : BloodGpRsResultForm encounterId
+emptyBloodGpRsResultForm =
+    BloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing Nothing
+
+
+type alias HemoglobinTestForm =
+    { -- If true, test will be performed today.
+      testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , hemoglobinCount : Maybe Float
+    , hemoglobinCountDirty : Bool
+    }
+
+
+emptyHemoglobinTestForm : HemoglobinTestForm
+emptyHemoglobinTestForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , hemoglobinCount = Nothing
+    , hemoglobinCountDirty = False
+    }
+
+
+type alias HemoglobinResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , hemoglobinCount : Maybe Float
+    }
+
+
+emptyHemoglobinResultForm : HemoglobinResultForm
+emptyHemoglobinResultForm =
+    HemoglobinResultForm Nothing Nothing Nothing Nothing
+
+
+type alias HepatitisBTestForm =
+    { knownAsPositive : Maybe Bool
+
+    -- If true, test will be performed today.
+    , testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , testResult : Maybe TestResult
+    , testResultDirty : Bool
+    }
+
+
+emptyHepatitisBTestForm : HepatitisBTestForm
+emptyHepatitisBTestForm =
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , testResultDirty = False
+    }
+
+
+type alias HepatitisBResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , testResult : Maybe TestResult
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptyHepatitisBResultForm : HepatitisBResultForm encounterId
+emptyHepatitisBResultForm =
+    HepatitisBResultForm Nothing Nothing Nothing Nothing Nothing
+
+
+type alias HIVPCRTestForm =
+    { -- If true, test will be performed today.
+      testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , hivViralLoadStatus : Maybe ViralLoadStatus
+    , hivViralLoadStatusDirty : Bool
+    , hivViralLoad : Maybe Float
+    , hivViralLoadDirty : Bool
+    }
+
+
+emptyHIVPCRTestForm : HIVPCRTestForm
+emptyHIVPCRTestForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , hivViralLoadStatus = Nothing
+    , hivViralLoadStatusDirty = False
+    , hivViralLoad = Nothing
+    , hivViralLoadDirty = False
+    }
+
+
+type alias HIVPCRResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , hivViralLoadStatus : Maybe ViralLoadStatus
+    , hivViralLoad : Maybe Float
+    }
+
+
+emptyHIVPCRResultForm : HIVPCRResultForm
+emptyHIVPCRResultForm =
+    HIVPCRResultForm Nothing Nothing Nothing Nothing Nothing
+
+
+type alias RandomBloodSugarForm2 =
+    { -- If true, test will be performed today.
+      testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , patientFasted : Maybe Bool
+    , sugarCount : Maybe Float
+    , sugarCountDirty : Bool
+    }
+
+
+emptyRandomBloodSugarForm2 : RandomBloodSugarForm2
+emptyRandomBloodSugarForm2 =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , patientFasted = Nothing
+    , sugarCount = Nothing
+    , sugarCountDirty = False
+    }
+
+
+type alias RandomBloodSugarResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , sugarCount : Maybe Float
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptyRandomBloodSugarResultForm : RandomBloodSugarResultForm encounterId
+emptyRandomBloodSugarResultForm =
+    RandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
+
+
+type alias SyphilisTestForm =
+    { -- If true, test will be performed today.
+      testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , testResult : Maybe TestResult
+    , testResultDirty : Bool
+    , symptoms : Maybe (List IllnessSymptom)
+    , symptomsDirty : Bool
+    }
+
+
+emptySyphilisTestForm : SyphilisTestForm
+emptySyphilisTestForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , testResultDirty = False
+    , symptoms = Nothing
+    , symptomsDirty = False
+    }
+
+
+type alias SyphilisResultForm encounterId =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , testResult : Maybe TestResult
+    , symptoms : Maybe (List IllnessSymptom)
+    , symptomsDirty : Bool
+    , originatingEncounter : Maybe encounterId
+    }
+
+
+emptySyphilisResultForm : SyphilisResultForm encounterId
+emptySyphilisResultForm =
+    SyphilisResultForm Nothing Nothing Nothing Nothing Nothing False Nothing
+
+
+
+-- Universal Lab forms    - end
+
+
 type alias HIVTestForm msg =
     { knownAsPositive : Maybe Bool
     , testPerformed : Maybe Bool
@@ -909,38 +1200,6 @@ emptyRandomBloodSugarForm =
     }
 
 
-type alias RandomBloodSugarForm2 =
-    { -- If true, test will be performed today.
-      testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , immediateResult : Maybe Bool
-    , executionNote : Maybe TestExecutionNote
-    , executionNoteDirty : Bool
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-
-    -- Test specific fields.
-    , patientFasted : Maybe Bool
-    , sugarCount : Maybe Float
-    , sugarCountDirty : Bool
-    }
-
-
-emptyRandomBloodSugarForm2 : RandomBloodSugarForm2
-emptyRandomBloodSugarForm2 =
-    { testPerformed = Nothing
-    , testPerformedDirty = False
-    , immediateResult = Nothing
-    , executionNote = Nothing
-    , executionNoteDirty = False
-    , executionDate = Nothing
-    , executionDateDirty = False
-    , patientFasted = Nothing
-    , sugarCount = Nothing
-    , sugarCountDirty = False
-    }
-
-
 type alias PregnancyTestForm msg =
     { knownAsPositive : Maybe Bool
     , testPerformed : Maybe Bool
@@ -972,52 +1231,6 @@ emptyPregnancyTestForm =
     }
 
 
-type alias BloodGpRsTestForm =
-    { testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , immediateResult : Maybe Bool
-    , executionNote : Maybe TestExecutionNote
-    , executionNoteDirty : Bool
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-    , bloodGroup : Maybe BloodGroup
-    , bloodGroupDirty : Bool
-    , rhesus : Maybe Rhesus
-    , rhesusDirty : Bool
-    }
-
-
-emptyBloodGpRsTestForm : BloodGpRsTestForm
-emptyBloodGpRsTestForm =
-    { testPerformed = Nothing
-    , testPerformedDirty = False
-    , immediateResult = Nothing
-    , executionNote = Nothing
-    , executionNoteDirty = False
-    , executionDate = Nothing
-    , executionDateDirty = False
-    , bloodGroup = Nothing
-    , bloodGroupDirty = False
-    , rhesus = Nothing
-    , rhesusDirty = False
-    }
-
-
-type alias BloodGpRsResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testPrerequisites : Maybe (EverySet TestPrerequisite)
-    , bloodGroup : Maybe BloodGroup
-    , rhesus : Maybe Rhesus
-    , originatingEncounter : Maybe encounterId
-    }
-
-
-emptyBloodGpRsResultForm : BloodGpRsResultForm encounterId
-emptyBloodGpRsResultForm =
-    BloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing Nothing
-
-
 type alias NonRDTForm msg =
     { knownAsPositive : Maybe Bool
     , testPerformed : Maybe Bool
@@ -1035,36 +1248,6 @@ type alias NonRDTForm msg =
 emptyNonRDTForm : NonRDTForm msg
 emptyNonRDTForm =
     NonRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing
-
-
-type alias SyphilisResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testPrerequisites : Maybe (EverySet TestPrerequisite)
-    , testResult : Maybe TestResult
-    , symptoms : Maybe (List IllnessSymptom)
-    , symptomsDirty : Bool
-    , originatingEncounter : Maybe encounterId
-    }
-
-
-emptySyphilisResultForm : SyphilisResultForm encounterId
-emptySyphilisResultForm =
-    SyphilisResultForm Nothing Nothing Nothing Nothing Nothing False Nothing
-
-
-type alias HepatitisBResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testPrerequisites : Maybe (EverySet TestPrerequisite)
-    , testResult : Maybe TestResult
-    , originatingEncounter : Maybe encounterId
-    }
-
-
-emptyHepatitisBResultForm : HepatitisBResultForm encounterId
-emptyHepatitisBResultForm =
-    HepatitisBResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias UrineDipstickResultForm =
@@ -1100,47 +1283,6 @@ emptyUrineDipstickResultForm =
     , ketone = Nothing
     , bilirubin = Nothing
     }
-
-
-type alias HemoglobinResultForm =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testPrerequisites : Maybe (EverySet TestPrerequisite)
-    , hemoglobinCount : Maybe Float
-    }
-
-
-emptyHemoglobinResultForm : HemoglobinResultForm
-emptyHemoglobinResultForm =
-    HemoglobinResultForm Nothing Nothing Nothing Nothing
-
-
-type alias RandomBloodSugarResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testPrerequisites : Maybe (EverySet TestPrerequisite)
-    , sugarCount : Maybe Float
-    , originatingEncounter : Maybe encounterId
-    }
-
-
-emptyRandomBloodSugarResultForm : RandomBloodSugarResultForm encounterId
-emptyRandomBloodSugarResultForm =
-    RandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
-
-
-type alias HIVPCRResultForm =
-    { executionNote : Maybe TestExecutionNote
-    , executionDate : Maybe NominalDate
-    , testPrerequisites : Maybe (EverySet TestPrerequisite)
-    , hivViralLoadStatus : Maybe ViralLoadStatus
-    , hivViralLoad : Maybe Float
-    }
-
-
-emptyHIVPCRResultForm : HIVPCRResultForm
-emptyHIVPCRResultForm =
-    HIVPCRResultForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias PartnerHIVTestForm msg =
