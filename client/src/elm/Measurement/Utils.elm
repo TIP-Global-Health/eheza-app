@@ -2973,6 +2973,330 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
     )
 
 
+viewUrineDipstickUniversalForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> UrineDipstickUniversalForm
+    -> ( Html msg, Int, Int )
+viewUrineDipstickUniversalForm language currentDate configInitial configPerformed form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskUrineDipstickTest form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            let
+                emptySection =
+                    ( [], 0, 0 )
+            in
+            if form.testPerformed == Just True then
+                let
+                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
+                          , viewBoolInput
+                                language
+                                form.immediateResult
+                                (configInitial.setUrineDipstickTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , testVariant = Nothing
+                                            , testVariantDirty = True
+                                            , protein = Nothing
+                                            , proteinDirty = True
+                                            , ph = Nothing
+                                            , phDirty = True
+                                            , glucose = Nothing
+                                            , glucoseDirty = True
+                                            , leukocytes = Nothing
+                                            , leukocytesDirty = True
+                                            , nitrite = Nothing
+                                            , nitriteDirty = True
+                                            , urobilinogen = Nothing
+                                            , urobilinogenDirty = True
+                                            , haemoglobin = Nothing
+                                            , haemoglobinDirty = True
+                                            , ketone = Nothing
+                                            , ketoneDirty = True
+                                            , bilirubin = Nothing
+                                            , bilirubinDirty = True
+                                        }
+                                    )
+                                )
+                                "immediate-result"
+                                (Just ( Translate.PointOfCare, Translate.Lab ))
+                          , viewQuestionLabel language Translate.TestVariantUrineDipstickQuestion
+                          , viewCheckBoxSelectInput language
+                                [ VariantShortTest ]
+                                [ VariantLongTest ]
+                                form.testVariant
+                                configInitial.setUrineDipstickTestVariantMsg
+                                Translate.UrineDipstickTestVariant
+                          ]
+                        , taskCompleted form.immediateResult + taskCompleted form.testVariant
+                        , 2
+                        )
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        Maybe.map
+                            (\immediateResult ->
+                                if immediateResult == True then
+                                    urineDipstickResultInputsAndTasks language
+                                        configPerformed.setProteinMsg
+                                        configPerformed.setPHMsg
+                                        configPerformed.setGlucoseMsg
+                                        configPerformed.setLeukocytesMsg
+                                        configPerformed.setNitriteMsg
+                                        configPerformed.setUrobilinogenMsg
+                                        configPerformed.setHaemoglobinMsg
+                                        configPerformed.setKetoneMsg
+                                        configPerformed.setBilirubinMsg
+                                        form.protein
+                                        form.ph
+                                        form.glucose
+                                        form.leukocytes
+                                        form.nitrite
+                                        form.urobilinogen
+                                        form.haemoglobin
+                                        form.ketone
+                                        form.bilirubin
+                                        form.testVariant
+
+                                else
+                                    ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                    , 0
+                                    , 0
+                                    )
+                            )
+                            form.immediateResult
+                            |> Maybe.withDefault emptySection
+                in
+                ( testPrerequisitesSection ++ testResultSection
+                , testPrerequisitesTasksCompleted + testResultTasksCompleted
+                , testPrerequisitesTasksTotal + testResultTasksTotal
+                )
+
+            else
+                emptySection
+    in
+    ( div [ class "ui form laboratory urine-dipstick" ] <|
+        viewCustomLabel language (Translate.LaboratoryTaskLabel TaskUrineDipstickTest) "" "label header"
+            :: initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+urineDipstickResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> UrineDipstickResultForm
+    -> ( Html msg, Int, Int )
+urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setGlucoseMsg setLeukocytesMsg setNitriteMsg setUrobilinogenMsg setHaemoglobinMsg setKetoneMsg setBilirubinMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            urineDipstickResultInputsAndTasks language
+                setProteinMsg
+                setPHMsg
+                setGlucoseMsg
+                setLeukocytesMsg
+                setNitriteMsg
+                setUrobilinogenMsg
+                setHaemoglobinMsg
+                setKetoneMsg
+                setBilirubinMsg
+                form.protein
+                form.ph
+                form.glucose
+                form.leukocytes
+                form.nitrite
+                form.urobilinogen
+                form.haemoglobin
+                form.ketone
+                form.bilirubin
+                form.testVariant
+    in
+    ( div [ class "ui form laboratory urine-dipstick-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
+urineDipstickResultInputsAndTasks :
+    Language
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> (String -> msg)
+    -> Maybe ProteinValue
+    -> Maybe PHValue
+    -> Maybe GlucoseValue
+    -> Maybe LeukocytesValue
+    -> Maybe NitriteValue
+    -> Maybe UrobilinogenValue
+    -> Maybe HaemoglobinValue
+    -> Maybe KetoneValue
+    -> Maybe BilirubinValue
+    -> Maybe TestVariant
+    -> ( List (Html msg), Int, Int )
+urineDipstickResultInputsAndTasks language setProteinMsg setPHMsg setGlucoseMsg setLeukocytesMsg setNitriteMsg setUrobilinogenMsg setHaemoglobinMsg setKetoneMsg setBilirubinMsg protein ph glucose leukocytes nitrite urobilinogen haemoglobin ketone bilirubin =
+    Maybe.map
+        (\testVariant ->
+            let
+                ( commonSection, commonTasksCompleted, commonTasksTotal ) =
+                    ( viewSelectInput language
+                        Translate.LaboratoryProteinTestResult
+                        protein
+                        Translate.LaboratoryProteinValue
+                        proteinValueToString
+                        [ Protein0
+                        , ProteinPlus1
+                        , ProteinPlus2
+                        , ProteinPlus3
+                        , ProteinPlus4
+                        ]
+                        setProteinMsg
+                        ++ viewSelectInput language
+                            Translate.LaboratoryPHTestResult
+                            ph
+                            Translate.LaboratoryPHValue
+                            phValueToString
+                            [ Ph40
+                            , Ph45
+                            , Ph50
+                            , Ph60
+                            , Ph65
+                            , Ph70
+                            , Ph75
+                            , Ph80
+                            , Ph85
+                            ]
+                            setPHMsg
+                        ++ viewSelectInput language
+                            Translate.LaboratoryGlucoseTestResult
+                            glucose
+                            Translate.LaboratoryGlucoseValue
+                            glucoseValueToString
+                            [ Glucose0
+                            , GlucosePlus1
+                            , GlucosePlus2
+                            , GlucosePlus3
+                            , GlucosePlus4
+                            ]
+                            setGlucoseMsg
+                    , taskCompleted protein + taskCompleted ph + taskCompleted glucose
+                    , 3
+                    )
+            in
+            case testVariant of
+                VariantShortTest ->
+                    ( commonSection, commonTasksCompleted, commonTasksTotal )
+
+                VariantLongTest ->
+                    ( commonSection
+                        ++ viewSelectInput language
+                            Translate.LaboratoryLeukocytesTestResult
+                            leukocytes
+                            Translate.LaboratoryLeukocytesValue
+                            leukocytesValueToString
+                            [ LeukocytesNegative
+                            , LeukocytesSmall
+                            , LeukocytesMedium
+                            , LeukocytesLarge
+                            ]
+                            setLeukocytesMsg
+                        ++ viewSelectInput language
+                            Translate.LaboratoryNitriteTestResult
+                            nitrite
+                            Translate.LaboratoryNitriteValue
+                            nitriteValueToString
+                            [ NitriteNegative
+                            , NitritePlus
+                            , NitritePlusPlus
+                            ]
+                            setNitriteMsg
+                        ++ viewSelectInput language
+                            Translate.LaboratoryUrobilinogenTestResult
+                            urobilinogen
+                            Translate.LaboratoryUrobilinogenValue
+                            urobilinogenValueToString
+                            [ Urobilinogen002
+                            , Urobilinogen10
+                            , Urobilinogen20
+                            , Urobilinogen40
+                            , Urobilinogen80
+                            ]
+                            setUrobilinogenMsg
+                        ++ viewSelectInput language
+                            Translate.LaboratoryHaemoglobinTestResult
+                            haemoglobin
+                            Translate.LaboratoryHaemoglobinValue
+                            haemoglobinValueToString
+                            [ HaemoglobinNegative
+                            , HaemoglobinNonHemolyzedTrace
+                            , HaemoglobinNonHemolyzedModerate
+                            , HaemoglobinHemolyzedTrace
+                            , HaemoglobinSmall
+                            , HaemoglobinModerate
+                            , HaemoglobinLarge
+                            ]
+                            setHaemoglobinMsg
+                        ++ viewSelectInput language
+                            Translate.LaboratoryKetoneTestResult
+                            ketone
+                            Translate.LaboratoryKetoneValue
+                            ketoneValueToString
+                            [ KetoneNegative
+                            , Ketone5
+                            , Ketone10
+                            , Ketone15
+                            , Ketone40
+                            , Ketone80
+                            , Ketone100
+                            ]
+                            setKetoneMsg
+                        ++ viewSelectInput language
+                            Translate.LaboratoryBilirubinTestResult
+                            bilirubin
+                            Translate.LaboratoryBilirubinValue
+                            bilirubinValueToString
+                            [ BilirubinNegative
+                            , BilirubinSmall
+                            , BilirubinMedium
+                            , BilirubinLarge
+                            ]
+                            setBilirubinMsg
+                    , commonTasksCompleted
+                        + taskCompleted leukocytes
+                        + taskCompleted nitrite
+                        + taskCompleted urobilinogen
+                        + taskCompleted haemoglobin
+                        + taskCompleted ketone
+                        + taskCompleted bilirubin
+                    , commonTasksTotal + 6
+                    )
+        )
+        >> Maybe.withDefault ( [], 0, 0 )
+
+
 viewRandomBloodSugarForm :
     Language
     -> NominalDate
@@ -4410,7 +4734,48 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
                     }
 
                 TaskUrineDipstickTest ->
-                    { setBoolInputMsg = config.setUrineDipstickTestFormBoolInputMsg boolInputUpdateFunc
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                let
+                                    executionDate =
+                                        if value == True then
+                                            Just currentDate
+
+                                        else
+                                            Nothing
+                                in
+                                { form_
+                                    | testPerformed = Just value
+                                    , testPerformedDirty = True
+                                    , immediateResult = Nothing
+                                    , executionNote = Nothing
+                                    , executionNoteDirty = True
+                                    , executionDate = executionDate
+                                    , executionDateDirty = True
+                                    , testVariant = Nothing
+                                    , testVariantDirty = True
+                                    , protein = Nothing
+                                    , proteinDirty = True
+                                    , ph = Nothing
+                                    , phDirty = True
+                                    , glucose = Nothing
+                                    , glucoseDirty = True
+                                    , leukocytes = Nothing
+                                    , leukocytesDirty = True
+                                    , nitrite = Nothing
+                                    , nitriteDirty = True
+                                    , urobilinogen = Nothing
+                                    , urobilinogenDirty = True
+                                    , haemoglobin = Nothing
+                                    , haemoglobinDirty = True
+                                    , ketone = Nothing
+                                    , ketoneDirty = True
+                                    , bilirubin = Nothing
+                                    , bilirubinDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setUrineDipstickTestFormBoolInputMsg updateFunc
                     , setExecutionNoteMsg = config.setUrineDipstickTestExecutionNoteMsg
                     }
 
@@ -5662,170 +6027,6 @@ toHbA1cTestValue form =
             }
         )
         form.executionNote
-
-
-urineDipstickResultFormAndTasks :
-    Language
-    -> NominalDate
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> (String -> msg)
-    -> UrineDipstickResultForm
-    -> ( Html msg, Int, Int )
-urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setGlucoseMsg setLeukocytesMsg setNitriteMsg setUrobilinogenMsg setHaemoglobinMsg setKetoneMsg setBilirubinMsg form =
-    let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            Maybe.map
-                (\testVariant ->
-                    let
-                        ( commonSection, commonTasksCompleted, commonTasksTotal ) =
-                            ( viewSelectInput language
-                                Translate.LaboratoryProteinTestResult
-                                form.protein
-                                Translate.LaboratoryProteinValue
-                                proteinValueToString
-                                [ Protein0
-                                , ProteinPlus1
-                                , ProteinPlus2
-                                , ProteinPlus3
-                                , ProteinPlus4
-                                ]
-                                setProteinMsg
-                                ++ viewSelectInput language
-                                    Translate.LaboratoryPHTestResult
-                                    form.ph
-                                    Translate.LaboratoryPHValue
-                                    phValueToString
-                                    [ Ph40
-                                    , Ph45
-                                    , Ph50
-                                    , Ph60
-                                    , Ph65
-                                    , Ph70
-                                    , Ph75
-                                    , Ph80
-                                    , Ph85
-                                    ]
-                                    setPHMsg
-                                ++ viewSelectInput language
-                                    Translate.LaboratoryGlucoseTestResult
-                                    form.glucose
-                                    Translate.LaboratoryGlucoseValue
-                                    glucoseValueToString
-                                    [ Glucose0
-                                    , GlucosePlus1
-                                    , GlucosePlus2
-                                    , GlucosePlus3
-                                    , GlucosePlus4
-                                    ]
-                                    setGlucoseMsg
-                            , taskCompleted form.protein + taskCompleted form.ph + taskCompleted form.glucose
-                            , 3
-                            )
-                    in
-                    case testVariant of
-                        VariantShortTest ->
-                            ( commonSection, commonTasksCompleted, commonTasksTotal )
-
-                        VariantLongTest ->
-                            ( commonSection
-                                ++ viewSelectInput language
-                                    Translate.LaboratoryLeukocytesTestResult
-                                    form.leukocytes
-                                    Translate.LaboratoryLeukocytesValue
-                                    leukocytesValueToString
-                                    [ LeukocytesNegative
-                                    , LeukocytesSmall
-                                    , LeukocytesMedium
-                                    , LeukocytesLarge
-                                    ]
-                                    setLeukocytesMsg
-                                ++ viewSelectInput language
-                                    Translate.LaboratoryNitriteTestResult
-                                    form.nitrite
-                                    Translate.LaboratoryNitriteValue
-                                    nitriteValueToString
-                                    [ NitriteNegative
-                                    , NitritePlus
-                                    , NitritePlusPlus
-                                    ]
-                                    setNitriteMsg
-                                ++ viewSelectInput language
-                                    Translate.LaboratoryUrobilinogenTestResult
-                                    form.urobilinogen
-                                    Translate.LaboratoryUrobilinogenValue
-                                    urobilinogenValueToString
-                                    [ Urobilinogen002
-                                    , Urobilinogen10
-                                    , Urobilinogen20
-                                    , Urobilinogen40
-                                    , Urobilinogen80
-                                    ]
-                                    setUrobilinogenMsg
-                                ++ viewSelectInput language
-                                    Translate.LaboratoryHaemoglobinTestResult
-                                    form.haemoglobin
-                                    Translate.LaboratoryHaemoglobinValue
-                                    haemoglobinValueToString
-                                    [ HaemoglobinNegative
-                                    , HaemoglobinNonHemolyzedTrace
-                                    , HaemoglobinNonHemolyzedModerate
-                                    , HaemoglobinHemolyzedTrace
-                                    , HaemoglobinSmall
-                                    , HaemoglobinModerate
-                                    , HaemoglobinLarge
-                                    ]
-                                    setHaemoglobinMsg
-                                ++ viewSelectInput language
-                                    Translate.LaboratoryKetoneTestResult
-                                    form.ketone
-                                    Translate.LaboratoryKetoneValue
-                                    ketoneValueToString
-                                    [ KetoneNegative
-                                    , Ketone5
-                                    , Ketone10
-                                    , Ketone15
-                                    , Ketone40
-                                    , Ketone80
-                                    , Ketone100
-                                    ]
-                                    setKetoneMsg
-                                ++ viewSelectInput language
-                                    Translate.LaboratoryBilirubinTestResult
-                                    form.bilirubin
-                                    Translate.LaboratoryBilirubinValue
-                                    bilirubinValueToString
-                                    [ BilirubinNegative
-                                    , BilirubinSmall
-                                    , BilirubinMedium
-                                    , BilirubinLarge
-                                    ]
-                                    setBilirubinMsg
-                            , commonTasksCompleted
-                                + taskCompleted form.leukocytes
-                                + taskCompleted form.nitrite
-                                + taskCompleted form.urobilinogen
-                                + taskCompleted form.haemoglobin
-                                + taskCompleted form.ketone
-                                + taskCompleted form.bilirubin
-                            , commonTasksTotal + 6
-                            )
-                )
-                form.testVariant
-                |> Maybe.withDefault ( [], 0, 0 )
-    in
-    ( div [ class "ui form laboratory urine-dipstick-result" ] <|
-        resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
-            ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
-    )
 
 
 creatinineResultFormAndTasks :

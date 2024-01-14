@@ -64,6 +64,7 @@ import Measurement.Utils
         , randomBloodSugarFormWithDefault2
         , syphilisTestFormWithDefault
         , urineDipstickFormWithDefault
+        , urineDipstickUniversalFormWithDefault
         , vaccinationFormWithDefault
         , viewBloodGpRsTestForm
         , viewHIVPCRTestForm
@@ -77,6 +78,7 @@ import Measurement.Utils
         , viewRandomBloodSugarForm2
         , viewSyphilisTestForm
         , viewUrineDipstickForm
+        , viewUrineDipstickUniversalForm
         , vitalsFormWithDefault
         )
 import Measurement.View
@@ -1529,11 +1531,11 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
-                                |> urineDipstickFormWithDefault data.urineDipstickTestForm
-                                |> viewUrineDipstickForm language
+                                |> urineDipstickUniversalFormWithDefault data.urineDipstickTestForm
+                                |> viewUrineDipstickUniversalForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig
-                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    contentAndTasksLaboratoryTestInitialConfig2
+                                    contentAndTasksForPerformedLaboratoryTestConfig2
 
                         TaskHemoglobinTest ->
                             measurements.hemoglobinTest
