@@ -2132,7 +2132,7 @@ toBloodGpRsTestValue form =
         form.executionNote
 
 
-hemoglobinTestFormWithDefault : HemoglobinTestForm -> Maybe (HemoglobinTestValue encounterId) -> HemoglobinTestForm
+hemoglobinTestFormWithDefault : HemoglobinTestForm -> Maybe HemoglobinTestValue -> HemoglobinTestForm
 hemoglobinTestFormWithDefault form saved =
     saved
         |> unwrap
@@ -2159,13 +2159,13 @@ hemoglobinTestFormWithDefault form saved =
             )
 
 
-toHemoglobinTestValueWithDefault : Maybe (HemoglobinTestValue encounterId) -> HemoglobinTestForm -> Maybe (HemoglobinTestValue encounterId)
+toHemoglobinTestValueWithDefault : Maybe HemoglobinTestValue -> HemoglobinTestForm -> Maybe HemoglobinTestValue
 toHemoglobinTestValueWithDefault saved form =
     hemoglobinTestFormWithDefault form saved
         |> toHemoglobinTestValue
 
 
-toHemoglobinTestValue : HemoglobinTestForm -> Maybe (HemoglobinTestValue encounterId)
+toHemoglobinTestValue : HemoglobinTestForm -> Maybe HemoglobinTestValue
 toHemoglobinTestValue form =
     Maybe.map
         (\executionNote ->
@@ -2185,13 +2185,12 @@ toHemoglobinTestValue form =
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisites
             , hemoglobinCount = form.hemoglobinCount
-            , originatingEncounter = Nothing
             }
         )
         form.executionNote
 
 
-hepatitisBTestFormWithDefault : BloodGpRsTestForm -> Maybe (BloodGpRsTestValue encounterId) -> BloodGpRsTestForm
+hepatitisBTestFormWithDefault : HepatitisBTestForm -> Maybe (HepatitisBTestValue encounterId) -> HepatitisBTestForm
 hepatitisBTestFormWithDefault form saved =
     saved
         |> unwrap
@@ -2254,7 +2253,7 @@ toHepatitisBTestValue form =
         form.executionNote
 
 
-hivPCRTestFormWithDefault : HIVPCRTestForm -> Maybe (HIVPCRTestValue encounterId) -> HIVPCRTestForm
+hivPCRTestFormWithDefault : HIVPCRTestForm -> Maybe HIVPCRTestValue -> HIVPCRTestForm
 hivPCRTestFormWithDefault form saved =
     saved
         |> unwrap
@@ -2283,13 +2282,13 @@ hivPCRTestFormWithDefault form saved =
             )
 
 
-toHIVPCRTestValueWithDefault : Maybe (HIVPCRTestValue encounterId) -> HIVPCRTestForm -> Maybe (HIVPCRTestValue encounterId)
+toHIVPCRTestValueWithDefault : Maybe HIVPCRTestValue -> HIVPCRTestForm -> Maybe HIVPCRTestValue
 toHIVPCRTestValueWithDefault saved form =
     hivPCRTestFormWithDefault form saved
         |> toHIVPCRTestValue
 
 
-toHIVPCRTestValue : HIVPCRTestForm -> Maybe (HIVPCRTestValue encounterId)
+toHIVPCRTestValue : HIVPCRTestForm -> Maybe HIVPCRTestValue
 toHIVPCRTestValue form =
     Maybe.map
         (\executionNote ->
@@ -2310,7 +2309,6 @@ toHIVPCRTestValue form =
             , testPrerequisites = testPrerequisites
             , hivViralLoadStatus = form.hivViralLoadStatus
             , hivViralLoad = form.hivViralLoad
-            , originatingEncounter = Nothing
             }
         )
         form.executionNote
@@ -2339,7 +2337,7 @@ syphilisTestFormWithDefault form saved =
                 , executionDateDirty = form.executionDateDirty
                 , testResult = maybeValueConsideringIsDirtyField form.testResultDirty form.testResult value.testResult
                 , testResultDirty = form.testResultDirty
-                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms value.symptoms
+                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
                 , symptomsDirty = form.symptomsDirty
                 }
             )
@@ -2371,7 +2369,7 @@ toSyphilisTestValue form =
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisites
             , testResult = form.testResult
-            , symptoms = form.symptoms
+            , symptoms = Maybe.map EverySet.fromList form.symptoms
             , originatingEncounter = Nothing
             }
         )
@@ -3299,7 +3297,7 @@ viewHemoglobinTestForm language currentDate configInitial configPerformed form =
                             Maybe.map
                                 (\immediateResult ->
                                     if immediateResult == True then
-                                        hemoglobinResultFormAndTasks language
+                                        hemoglobinResultInputsAndTasks language
                                             configPerformed.setHemoglobinCountMsg
                                             form.hemoglobinCount
 
@@ -3338,7 +3336,7 @@ hemoglobinResultFormAndTasks :
 hemoglobinResultFormAndTasks language currentDate setHemoglobinCountMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            hemoglobinResultFormAndTasks language setHemoglobinCountMsg form.hemoglobinCount
+            hemoglobinResultInputsAndTasks language setHemoglobinCountMsg form.hemoglobinCount
     in
     ( div [ class "ui form laboratory hemoglobin-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
@@ -3445,10 +3443,10 @@ viewHepatitisBTestForm language currentDate configInitial configPerformed form =
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
         viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHepatitisBTest) "" "label header"
-            :: initialSection
+            :: knownAsPositiveSection
             ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
+    , knownAsPositiveTasksCompleted + derivedTasksCompleted
+    , knownAsPositiveTasksTotal + derivedTasksTotal
     )
 
 
@@ -3540,8 +3538,8 @@ viewHIVPCRTestForm language currentDate configInitial configPerformed form =
                                 (\immediateResult ->
                                     if immediateResult == True then
                                         hivPCRResultInputsAndTasks language
-                                            setHIVViralLoadMsg
-                                            setHIVViralLoadUndetectableMsg
+                                            configPerformed.setHIVViralLoadMsg
+                                            configPerformed.setHIVViralLoadUndetectableMsg
                                             form.hivViralLoadStatus
                                             form.hivViralLoad
 
@@ -3601,7 +3599,7 @@ hivPCRResultInputsAndTasks :
     -> (Bool -> msg)
     -> Maybe ViralLoadStatus
     -> Maybe Float
-    -> ( Html msg, Int, Int )
+    -> ( List (Html msg), Int, Int )
 hivPCRResultInputsAndTasks language setHIVViralLoadMsg setHIVViralLoadUndetectableMsg hivViralLoadStatus hivViralLoad =
     let
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -3745,7 +3743,7 @@ syphilisResultInputsAndTasks :
     -> (String -> msg)
     -> Maybe TestResult
     -> Maybe (List IllnessSymptom)
-    -> ( Html msg, Int, Int )
+    -> ( List (Html msg), Int, Int )
 syphilisResultInputsAndTasks language setIllnessSymptomMsg setSyphilisTestResultMsg testResult symptoms =
     let
         ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
