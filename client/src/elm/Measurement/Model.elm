@@ -729,6 +729,7 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
 type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
     { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
     , setHIVTestExecutionDateMsg : NominalDate -> msg
+    , setHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setSyphilisTestResultMsg : String -> msg
     , setIllnessSymptomMsg : IllnessSymptom -> msg
     , setHepatitisBTestResultMsg : String -> msg
