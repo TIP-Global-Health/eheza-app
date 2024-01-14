@@ -647,7 +647,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig2 msg =
     , setBloodSmearResultMsg : String -> msg
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) -> Bool -> msg
     , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickUniversalForm -> UrineDipstickUniversalForm) -> Bool -> msg
     , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
     , setUrineDipstickTestVariantMsg : TestVariant -> msg
     , setHemoglobinTestFormBoolInputMsg : (Bool -> HemoglobinTestForm -> HemoglobinTestForm) -> Bool -> msg
@@ -738,13 +738,19 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
     , setMalariaTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setBloodGroupMsg : String -> msg
     , setRhesusMsg : String -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
-    , setUrineDipstickTestExecutionDateMsg : NominalDate -> msg
-    , setUrineDipstickTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setHemoglobinCountMsg : String -> msg
     , setRandomBloodSugarResultMsg : String -> msg
     , setHIVViralLoadMsg : String -> msg
     , setHIVViralLoadUndetectableMsg : Bool -> msg
+    , setProteinMsg : String -> msg
+    , setPHMsg : String -> msg
+    , setGlucoseMsg : String -> msg
+    , setLeukocytesMsg : String -> msg
+    , setNitriteMsg : String -> msg
+    , setUrobilinogenMsg : String -> msg
+    , setHaemoglobinMsg : String -> msg
+    , setKetoneMsg : String -> msg
+    , setBilirubinMsg : String -> msg
     , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
     , setPregnancyTestExecutionDateMsg : NominalDate -> msg
     , setPregnancyTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg

@@ -3837,9 +3837,6 @@ contentAndTasksLaboratoryTestInitialConfig =
                     , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
                     , setMalariaTestResultMsg = SetMalariaTestResult
                     , setBloodSmearResultMsg = SetBloodSmearResultMsg
-                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
-                    , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
-                    , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
                     , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
                     , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
                     , setPartnerHIVTestResultMsg = SetPartnerHIVTestResult
@@ -3864,6 +3861,9 @@ contentAndTasksLaboratoryTestInitialConfig2 =
                     , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
                     , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
                     , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
+                    , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
                 }
            )
 
@@ -3879,9 +3879,6 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                     , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
                     , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
                     , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
-                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
-                    , setUrineDipstickTestExecutionDateMsg = SetUrineDipstickTestExecutionDate
-                    , setUrineDipstickTestDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
                     , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
                     , setPartnerHIVTestExecutionDateMsg = SetPartnerHIVTestExecutionDate
                     , setPartnerHIVTestDateSelectorStateMsg = SetPartnerHIVTestDateSelectorState
@@ -3894,27 +3891,24 @@ contentAndTasksForPerformedLaboratoryTestConfig2 =
     emptyContentAndTasksForPerformedLaboratoryTestConfig2 NoOp
         |> (\config ->
                 { config
-                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
-                    , setHIVTestExecutionDateMsg = SetHIVTestExecutionDate
-                    , setHIVTestDateSelectorStateMsg = SetHIVTestDateSelectorState
-                    , setSyphilisTestResultMsg = SetSyphilisTestResult
+                    | setSyphilisTestResultMsg = SetSyphilisTestResult
                     , setIllnessSymptomMsg = SetIllnessSymptom
                     , setHepatitisBTestResultMsg = SetHepatitisBTestResult
-                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
-                    , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
-                    , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
                     , setBloodGroupMsg = SetBloodGroup
                     , setRhesusMsg = SetRhesus
-                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
-                    , setUrineDipstickTestExecutionDateMsg = SetUrineDipstickTestExecutionDate
-                    , setUrineDipstickTestDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
                     , setHemoglobinCountMsg = SetHemoglobinCount
                     , setRandomBloodSugarResultMsg = SetRandomBloodSugarResult
                     , setHIVViralLoadMsg = SetHIVViralLoad
                     , setHIVViralLoadUndetectableMsg = SetHIVViralLoadUndetectable
-                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
-                    , setPartnerHIVTestExecutionDateMsg = SetPartnerHIVTestExecutionDate
-                    , setPartnerHIVTestDateSelectorStateMsg = SetPartnerHIVTestDateSelectorState
+                    , setProteinMsg = SetProtein
+                    , setPHMsg = SetPH
+                    , setGlucoseMsg = SetGlucose
+                    , setLeukocytesMsg = SetLeukocytes
+                    , setNitriteMsg = SetNitrite
+                    , setUrobilinogenMsg = SetUrobilinogen
+                    , setHaemoglobinMsg = SetHaemoglobin
+                    , setKetoneMsg = SetKetone
+                    , setBilirubinMsg = SetBilirubin
                 }
            )
 

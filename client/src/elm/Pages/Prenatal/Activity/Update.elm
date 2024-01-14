@@ -26,16 +26,7 @@ import Backend.Measurement.Model
         , VaginalExamSign(..)
         , ViralLoadStatus(..)
         )
-import Backend.Measurement.Utils
-    exposing
-        ( bloodGroupFromString
-        , bloodSmearResultFromString
-        , getMeasurementValueFunc
-        , nonReferralReasonToSign
-        , pregnancyTestResultFromString
-        , rhesusFromString
-        , testResultFromString
-        )
+import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -2344,13 +2335,13 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetUrineDipstickTestExecutionDate value ->
+        SetProtein value ->
             let
                 form =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | executionDate = Just value }
+                    { form | protein = proteinValueFromString value }
 
                 updatedData =
                     model.laboratoryData
@@ -2361,16 +2352,132 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetUrineDipstickTestDateSelectorState state ->
+        SetPH value ->
             let
                 form =
                     model.laboratoryData.urineDipstickTestForm
 
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
+                updatedForm =
+                    { form | ph = phValueFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetGlucose value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
+                    { form | glucose = glucoseValueFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLeukocytes value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | leukocytes = leukocytesValueFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNitrite value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | nitrite = nitriteValueFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetUrobilinogen value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | urobilinogen = urobilinogenValueFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHaemoglobin value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | haemoglobin = haemoglobinValueFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetKetone value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | ketone = ketoneValueFromString value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBilirubin value ->
+            let
+                form =
+                    model.laboratoryData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | bilirubin = bilirubinValueFromString value }
 
                 updatedData =
                     model.laboratoryData

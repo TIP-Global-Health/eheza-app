@@ -24,7 +24,7 @@ import Measurement.Model
         , PartnerHIVTestForm
         , RandomBloodSugarForm2
         , SyphilisTestForm
-        , UrineDipstickForm
+        , UrineDipstickUniversalForm
         , VaccinationForm
         , VaccinationFormViewMode
         , VitalsForm
@@ -40,7 +40,7 @@ import Measurement.Model
         , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarForm2
         , emptySyphilisTestForm
-        , emptyUrineDipstickForm
+        , emptyUrineDipstickUniversalForm
         , emptyVaccinationForm
         , emptyVitalsForm
         )
@@ -179,11 +179,18 @@ type Msg
     | SetBloodGroup String
     | SetRhesus String
     | SaveBloodGpRsTest PersonId (Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )) (Maybe LaboratoryTask)
-    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickForm Msg -> UrineDipstickForm Msg) Bool
+    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickUniversalForm -> UrineDipstickUniversalForm) Bool
     | SetUrineDipstickTestExecutionNote TestExecutionNote
     | SetUrineDipstickTestVariant TestVariant
-    | SetUrineDipstickTestExecutionDate NominalDate
-    | SetUrineDipstickTestDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetProtein String
+    | SetPH String
+    | SetGlucose String
+    | SetLeukocytes String
+    | SetNitrite String
+    | SetUrobilinogen String
+    | SetHaemoglobin String
+    | SetKetone String
+    | SetBilirubin String
     | SaveUrineDipstickTest PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
     | SetHemoglobinTestFormBoolInput (Bool -> HemoglobinTestForm -> HemoglobinTestForm) Bool
     | SetHemoglobinTestExecutionNote TestExecutionNote
@@ -523,7 +530,7 @@ type alias LaboratoryData =
     , partnerHIVTestForm : PartnerHIVTestForm Msg
     , randomBloodSugarTestForm : RandomBloodSugarForm2
     , syphilisTestForm : SyphilisTestForm
-    , urineDipstickTestForm : UrineDipstickForm Msg
+    , urineDipstickTestForm : UrineDipstickUniversalForm
     , labsHistoryForm : LabsHistoryForm
     , activeTask : Maybe LaboratoryTask
     }
@@ -541,7 +548,7 @@ emptyLaboratoryData =
     , partnerHIVTestForm = emptyPartnerHIVTestForm
     , randomBloodSugarTestForm = emptyRandomBloodSugarForm2
     , syphilisTestForm = emptySyphilisTestForm
-    , urineDipstickTestForm = emptyUrineDipstickForm
+    , urineDipstickTestForm = emptyUrineDipstickUniversalForm
     , labsHistoryForm = emptyLabsHistoryForm
     , activeTask = Nothing
     }
