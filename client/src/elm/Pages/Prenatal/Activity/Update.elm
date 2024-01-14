@@ -49,6 +49,7 @@ import Measurement.Utils
         ( corePhysicalExamFormWithDefault
         , familyPlanningFormWithDefault
         , outsideCareFormWithDefault
+        , syphilisTestFormWithDefault
         , toBloodGpRsTestValueWithDefault
         , toBloodGpRsTestValueWithEmptyResults
         , toCorePhysicalExamValueWithDefault
