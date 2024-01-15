@@ -633,7 +633,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     }
 
 
-type alias ContentAndTasksLaboratoryTestInitialConfig2 msg =
+type alias ContentAndTasksLaboratoryUniversalTestInitialConfig msg =
     { setHIVTestFormBoolInputMsg : (Bool -> HIVTestUniversalForm -> HIVTestUniversalForm) -> Bool -> msg
     , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
     , setSyphilisTestFormBoolInputMsg : (Bool -> SyphilisTestForm -> SyphilisTestForm) -> Bool -> msg
@@ -649,7 +649,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig2 msg =
     , setUrineDipstickTestVariantMsg : TestVariant -> msg
     , setHemoglobinTestFormBoolInputMsg : (Bool -> HemoglobinTestForm -> HemoglobinTestForm) -> Bool -> msg
     , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm2 -> RandomBloodSugarForm2) -> Bool -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarUniversalForm -> RandomBloodSugarUniversalForm) -> Bool -> msg
     , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHIVPCRTestFormBoolInputMsg : (Bool -> HIVPCRTestForm -> HIVPCRTestForm) -> Bool -> msg
     , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
@@ -722,7 +722,7 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     }
 
 
-type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
+type alias ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg =
     { setHIVTestResultMsg : String -> msg
     , setSyphilisTestResultMsg : String -> msg
     , setIllnessSymptomMsg : IllnessSymptom -> msg
@@ -956,7 +956,7 @@ emptyHIVPCRResultForm =
     HIVPCRResultForm Nothing Nothing Nothing Nothing Nothing
 
 
-type alias RandomBloodSugarForm2 =
+type alias RandomBloodSugarUniversalForm =
     { -- If true, test will be performed today.
       testPerformed : Maybe Bool
     , testPerformedDirty : Bool
@@ -973,8 +973,8 @@ type alias RandomBloodSugarForm2 =
     }
 
 
-emptyRandomBloodSugarForm2 : RandomBloodSugarForm2
-emptyRandomBloodSugarForm2 =
+emptyRandomBloodSugarUniversalForm : RandomBloodSugarUniversalForm
+emptyRandomBloodSugarUniversalForm =
     { testPerformed = Nothing
     , testPerformedDirty = False
     , immediateResult = Nothing

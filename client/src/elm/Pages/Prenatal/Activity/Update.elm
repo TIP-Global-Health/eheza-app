@@ -53,8 +53,8 @@ import Measurement.Utils
         , toMalariaTestValueWithDefault
         , toOutsideCareValueWithDefault
         , toPartnerHIVTestValueWithDefault
+        , toRandomBloodSugarTestValueUniversalWithDefault
         , toRandomBloodSugarTestValueWithDefault
-        , toRandomBloodSugarTestValueWithDefault2
         , toSyphilisTestValueWithDefault
         , toUrineDipstickTestValueUniversalWithDefault
         , toUrineDipstickTestValueWithDefault
@@ -2607,7 +2607,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.randomBloodSugarTestForm
-                        |> toRandomBloodSugarTestValueWithDefault2 measurement
+                        |> toRandomBloodSugarTestValueUniversalWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

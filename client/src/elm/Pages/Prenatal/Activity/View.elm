@@ -30,9 +30,9 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model
     exposing
         ( ContentAndTasksForPerformedLaboratoryTestConfig
-        , ContentAndTasksForPerformedLaboratoryTestConfig2
+        , ContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , ContentAndTasksLaboratoryTestInitialConfig
-        , ContentAndTasksLaboratoryTestInitialConfig2
+        , ContentAndTasksLaboratoryUniversalTestInitialConfig
         , CorePhysicalExamForm
         , InvokationModule(..)
         , LaboratoryTask(..)
@@ -46,9 +46,9 @@ import Measurement.Utils
         ( bloodGpRsTestFormWithDefault
         , corePhysicalExamFormWithDefault
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
-        , emptyContentAndTasksForPerformedLaboratoryTestConfig2
+        , emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
-        , emptyContentAndTasksLaboratoryTestInitialConfig2
+        , emptyContentAndTasksLaboratoryUniversalTestInitialConfig
         , familyPlanningFormWithDefault
         , hemoglobinTestFormWithDefault
         , hepatitisBTestFormWithDefault
@@ -61,7 +61,7 @@ import Measurement.Utils
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
         , randomBloodSugarFormWithDefault
-        , randomBloodSugarFormWithDefault2
+        , randomBloodSugarUniversalFormWithDefault
         , syphilisTestFormWithDefault
         , urineDipstickUniversalFormWithDefault
         , vaccinationFormWithDefault
@@ -74,7 +74,7 @@ import Measurement.Utils
         , viewNonRDTForm
         , viewNonRDTFormCheckKnownAsPositive
         , viewPartnerHIVTestForm
-        , viewRandomBloodSugarForm2
+        , viewRandomBloodSugarUniversalForm
         , viewSyphilisTestForm
         , viewUrineDipstickUniversalForm
         , vitalsFormWithDefault
@@ -1547,8 +1547,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> randomBloodSugarFormWithDefault2 data.randomBloodSugarTestForm
-                                |> viewRandomBloodSugarForm2 language
+                                |> randomBloodSugarUniversalFormWithDefault data.randomBloodSugarTestForm
+                                |> viewRandomBloodSugarUniversalForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
@@ -3825,9 +3825,9 @@ viewNewbornEnrolmentForm language currentDate assembled =
         ]
 
 
-contentAndTasksLaboratoryTestInitialConfig : ContentAndTasksLaboratoryTestInitialConfig2 Msg
+contentAndTasksLaboratoryTestInitialConfig : ContentAndTasksLaboratoryUniversalTestInitialConfig Msg
 contentAndTasksLaboratoryTestInitialConfig =
-    emptyContentAndTasksLaboratoryTestInitialConfig2 NoOp
+    emptyContentAndTasksLaboratoryUniversalTestInitialConfig NoOp
         |> (\config ->
                 { config
                     | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
@@ -3855,9 +3855,9 @@ contentAndTasksLaboratoryTestInitialConfig =
            )
 
 
-contentAndTasksForPerformedLaboratoryTestConfig : ContentAndTasksForPerformedLaboratoryTestConfig2 Msg
+contentAndTasksForPerformedLaboratoryTestConfig : ContentAndTasksForPerformedLaboratoryUniversalTestConfig Msg
 contentAndTasksForPerformedLaboratoryTestConfig =
-    emptyContentAndTasksForPerformedLaboratoryTestConfig2 NoOp
+    emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig NoOp
         |> (\config ->
                 { config
                     | setHIVTestResultMsg = SetHIVTestResult

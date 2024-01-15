@@ -2176,8 +2176,8 @@ toRandomBloodSugarTestValue form =
         form.executionNote
 
 
-randomBloodSugarFormWithDefault2 : RandomBloodSugarForm2 -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarForm2
-randomBloodSugarFormWithDefault2 form saved =
+randomBloodSugarUniversalFormWithDefault : RandomBloodSugarUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarUniversalForm
+randomBloodSugarUniversalFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -2208,14 +2208,14 @@ randomBloodSugarFormWithDefault2 form saved =
             )
 
 
-toRandomBloodSugarTestValueWithDefault2 : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarForm2 -> Maybe (RandomBloodSugarTestValue encounterId)
-toRandomBloodSugarTestValueWithDefault2 saved form =
-    randomBloodSugarFormWithDefault2 form saved
-        |> toRandomBloodSugarTestValue2
+toRandomBloodSugarTestValueUniversalWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarTestValueUniversalWithDefault saved form =
+    randomBloodSugarUniversalFormWithDefault form saved
+        |> toRandomBloodSugarTestValueUniversal
 
 
-toRandomBloodSugarTestValue2 : RandomBloodSugarForm2 -> Maybe (RandomBloodSugarTestValue encounterId)
-toRandomBloodSugarTestValue2 form =
+toRandomBloodSugarTestValueUniversal : RandomBloodSugarUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarTestValueUniversal form =
     Maybe.map
         (\executionNote ->
             let
@@ -2810,14 +2810,14 @@ viewHIVTestForm language currentDate configInitial configPerformed form =
 viewHIVTestUniversalForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> HIVTestUniversalForm
     -> ( Html msg, Int, Int )
 viewHIVTestUniversalForm language currentDate configInitial configPerformed form =
     let
         ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive2 language currentDate configInitial TaskHIVTest form
+            contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskHIVTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -2827,7 +2827,7 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed form
             if form.knownAsPositive == Just False then
                 let
                     ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-                        contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskHIVTest form
+                        contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskHIVTest form
                 in
                 if form.testPerformed == Just True then
                     let
@@ -3062,14 +3062,14 @@ hivResultInputsAndTasks language setHIVTestResultMsg setHIVTestFormBoolInputMsg 
 viewMalariaTestForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> MalariaTestForm
     -> ( Html msg, Int, Int )
 viewMalariaTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskMalariaTest form
+            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskMalariaTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -3276,14 +3276,14 @@ viewPregnancyTestForm language currentDate configInitial configPerformed form =
 viewPartnerHIVTestForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> PartnerHIVTestForm
     -> ( Html msg, Int, Int )
 viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskPartnerHIVTest form
+            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskPartnerHIVTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -3492,14 +3492,14 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
 viewUrineDipstickUniversalForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> UrineDipstickUniversalForm
     -> ( Html msg, Int, Int )
 viewUrineDipstickUniversalForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskUrineDipstickTest form
+            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskUrineDipstickTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -3903,17 +3903,17 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
     )
 
 
-viewRandomBloodSugarForm2 :
+viewRandomBloodSugarUniversalForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
-    -> RandomBloodSugarForm2
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
+    -> RandomBloodSugarUniversalForm
     -> ( Html msg, Int, Int )
-viewRandomBloodSugarForm2 language currentDate configInitial configPerformed form =
+viewRandomBloodSugarUniversalForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskRandomBloodSugarTest form
+            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskRandomBloodSugarTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -4026,14 +4026,14 @@ randomBloodSugarResultInputsAndTasks language setRandomBloodSugarMsg sugarCount 
 viewBloodGpRsTestForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> BloodGpRsTestForm
     -> ( Html msg, Int, Int )
 viewBloodGpRsTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskBloodGpRsTest form
+            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskBloodGpRsTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -4155,14 +4155,14 @@ bloodGpRsResultInputsAndTasks language setBloodGroupMsg setRhesusMsg bloodGroup 
 viewHemoglobinTestForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> HemoglobinTestForm
     -> ( Html msg, Int, Int )
 viewHemoglobinTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskHemoglobinTest form
+            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskHemoglobinTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -4270,14 +4270,14 @@ hemoglobinResultInputsAndTasks language setHemoglobinCountMsg hemoglobinCount =
 viewHepatitisBTestForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> HepatitisBTestForm
     -> ( Html msg, Int, Int )
 viewHepatitisBTestForm language currentDate configInitial configPerformed form =
     let
         ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive2 language currentDate configInitial TaskHepatitisBTest form
+            contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskHepatitisBTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -4287,7 +4287,7 @@ viewHepatitisBTestForm language currentDate configInitial configPerformed form =
             if form.knownAsPositive == Just False then
                 let
                     ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-                        contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskHepatitisBTest form
+                        contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskHepatitisBTest form
                 in
                 if form.testPerformed == Just True then
                     let
@@ -4376,14 +4376,14 @@ hepatitisBResultFormAndTasks language currentDate setHepatitisBTestResultMsg for
 viewHIVPCRTestForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> HIVPCRTestForm
     -> ( Html msg, Int, Int )
 viewHIVPCRTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskHIVPCRTest form
+            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskHIVPCRTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -4520,14 +4520,14 @@ hivPCRResultInputsAndTasks language setHIVViralLoadMsg setHIVViralLoadUndetectab
 viewSyphilisTestForm :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
     -> SyphilisTestForm
     -> ( Html msg, Int, Int )
 viewSyphilisTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial2 language currentDate configInitial TaskSyphilisTest form
+            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskSyphilisTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
@@ -4960,14 +4960,14 @@ contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task fo
     )
 
 
-contentAndTasksLaboratoryTestKnownAsPositive2 :
+contentAndTasksLaboratoryUniversalTestKnownAsPositive :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
     -> LaboratoryTask
     -> { f | knownAsPositive : Maybe Bool }
     -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryTestKnownAsPositive2 language currentDate config task form =
+contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate config task form =
     let
         updateFunc =
             \knownAsPositive form_ ->
@@ -5148,10 +5148,10 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
     )
 
 
-contentAndTasksLaboratoryTestInitial2 :
+contentAndTasksLaboratoryUniversalTestInitial :
     Language
     -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
     -> LaboratoryTask
     ->
         { f
@@ -5159,7 +5159,7 @@ contentAndTasksLaboratoryTestInitial2 :
             , executionNote : Maybe TestExecutionNote
         }
     -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
+contentAndTasksLaboratoryUniversalTestInitial language currentDate config task form =
     let
         boolInputUpdateFunc =
             \value form_ ->
@@ -5727,8 +5727,8 @@ emptyContentAndTasksLaboratoryTestInitialConfig noOpMsg =
     }
 
 
-emptyContentAndTasksLaboratoryTestInitialConfig2 : msg -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-emptyContentAndTasksLaboratoryTestInitialConfig2 noOpMsg =
+emptyContentAndTasksLaboratoryUniversalTestInitialConfig : msg -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
+emptyContentAndTasksLaboratoryUniversalTestInitialConfig noOpMsg =
     { setHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHIVTestExecutionNoteMsg = always noOpMsg
     , setSyphilisTestFormBoolInputMsg = \_ _ -> noOpMsg
@@ -5818,8 +5818,8 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
     }
 
 
-emptyContentAndTasksForPerformedLaboratoryTestConfig2 : msg -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
-emptyContentAndTasksForPerformedLaboratoryTestConfig2 noOpMsg =
+emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig : msg -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
+emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig noOpMsg =
     { setHIVTestResultMsg = always noOpMsg
     , setSyphilisTestResultMsg = always noOpMsg
     , setIllnessSymptomMsg = always noOpMsg

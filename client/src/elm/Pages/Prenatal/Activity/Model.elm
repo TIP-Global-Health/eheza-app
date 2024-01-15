@@ -22,7 +22,7 @@ import Measurement.Model
         , OutsideCareForm
         , OutsideCareStep
         , PartnerHIVTestForm
-        , RandomBloodSugarForm2
+        , RandomBloodSugarUniversalForm
         , SyphilisTestForm
         , UrineDipstickUniversalForm
         , VaccinationForm
@@ -38,7 +38,7 @@ import Measurement.Model
         , emptyMalariaTestForm
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
-        , emptyRandomBloodSugarForm2
+        , emptyRandomBloodSugarUniversalForm
         , emptySyphilisTestForm
         , emptyUrineDipstickUniversalForm
         , emptyVaccinationForm
@@ -192,7 +192,7 @@ type Msg
     | SetHemoglobinTestExecutionNote TestExecutionNote
     | SetHemoglobinCount String
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
-    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarForm2 -> RandomBloodSugarForm2) Bool
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarUniversalForm -> RandomBloodSugarUniversalForm) Bool
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarResult String
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
@@ -522,7 +522,7 @@ type alias LaboratoryData =
     , hivTestForm : HIVTestUniversalForm
     , malariaTestForm : MalariaTestForm
     , partnerHIVTestForm : PartnerHIVTestForm
-    , randomBloodSugarTestForm : RandomBloodSugarForm2
+    , randomBloodSugarTestForm : RandomBloodSugarUniversalForm
     , syphilisTestForm : SyphilisTestForm
     , urineDipstickTestForm : UrineDipstickUniversalForm
     , labsHistoryForm : LabsHistoryForm
@@ -540,7 +540,7 @@ emptyLaboratoryData =
     , hivTestForm = emptyHIVTestUniversalForm
     , malariaTestForm = emptyMalariaTestForm
     , partnerHIVTestForm = emptyPartnerHIVTestForm
-    , randomBloodSugarTestForm = emptyRandomBloodSugarForm2
+    , randomBloodSugarTestForm = emptyRandomBloodSugarUniversalForm
     , syphilisTestForm = emptySyphilisTestForm
     , urineDipstickTestForm = emptyUrineDipstickUniversalForm
     , labsHistoryForm = emptyLabsHistoryForm
