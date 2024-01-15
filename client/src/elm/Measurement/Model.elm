@@ -1160,9 +1160,9 @@ emptyUrineDipstickResultForm =
 
 
 type alias HIVTestUniversalForm =
-    { -- If true, test will be performed today.
-      knownAsPositive : Maybe Bool
-    , testPerformed : Maybe Bool
+    { knownAsPositive : Maybe Bool
+    , -- If true, test will be performed today.
+      testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , immediateResult : Maybe Bool
     , executionNote : Maybe TestExecutionNote
@@ -1204,6 +1204,74 @@ emptyHIVTestUniversalForm =
     , partnerTakingARVDirty = False
     , partnerSurpressedViralLoad = Nothing
     , partnerSurpressedViralLoadDirty = False
+    }
+
+
+type alias MalariaTestForm =
+    { -- If true, test will be performed today.
+      testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+
+    -- Holds the date of Malaria RDT execution.
+    -- If Malaria RDT was not performed, but blood smear was,
+    -- will hold the date of blood smear.
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , testResult : Maybe TestResult
+    , bloodSmearTaken : Maybe Bool
+    , bloodSmearTakenDirty : Bool
+    , bloodSmearResult : Maybe BloodSmearResult
+    , bloodSmearResultDirty : Bool
+    }
+
+
+emptyMalariaTestForm : MalariaTestForm
+emptyMalariaTestForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
+    , bloodSmearTaken = Nothing
+    , bloodSmearTakenDirty = False
+    , bloodSmearResult = Nothing
+    , bloodSmearResultDirty = False
+    }
+
+
+type alias PartnerHIVTestForm =
+    { -- If true, test will be performed today.
+      testPerformed : Maybe Bool
+    , testPerformedDirty : Bool
+    , immediateResult : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
+    , executionDate : Maybe NominalDate
+    , executionDateDirty : Bool
+
+    -- Test specific fields.
+    , testResult : Maybe TestResult
+    }
+
+
+emptyPartnerHIVTestForm : PartnerHIVTestForm
+emptyPartnerHIVTestForm =
+    { testPerformed = Nothing
+    , testPerformedDirty = False
+    , immediateResult = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , executionDateDirty = False
+    , testResult = Nothing
     }
 
 
@@ -1258,34 +1326,6 @@ emptyHIVTestForm =
     , partnerSurpressedViralLoadDirty = False
     , dateSelectorPopupState = Nothing
     }
-
-
-type alias MalariaTestForm msg =
-    { testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , immediateResult : Maybe Bool
-    , testPerformedToday : Maybe Bool
-    , testPerformedTodayDirty : Bool
-    , executionNote : Maybe TestExecutionNote
-    , executionNoteDirty : Bool
-
-    -- Holds the date of Malaria RDT execution.
-    -- If Malaria RDT was not performed, but blood smear was,
-    -- will hold the date of blood smear.
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-    , testResult : Maybe TestResult
-    , bloodSmearTaken : Maybe Bool
-    , bloodSmearTakenDirty : Bool
-    , bloodSmearResult : Maybe BloodSmearResult
-    , bloodSmearResultDirty : Bool
-    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
-    }
-
-
-emptyMalariaTestForm : MalariaTestForm msg
-emptyMalariaTestForm =
-    MalariaTestForm Nothing False Nothing Nothing False Nothing False Nothing False Nothing Nothing False Nothing False Nothing
 
 
 type alias UrineDipstickForm msg =
@@ -1394,26 +1434,6 @@ type alias NonRDTForm msg =
 emptyNonRDTForm : NonRDTForm msg
 emptyNonRDTForm =
     NonRDTForm Nothing Nothing False Nothing False Nothing False Nothing False Nothing
-
-
-type alias PartnerHIVTestForm msg =
-    { testPerformed : Maybe Bool
-    , testPerformedDirty : Bool
-    , immediateResult : Maybe Bool
-    , testPerformedToday : Maybe Bool
-    , testPerformedTodayDirty : Bool
-    , executionNote : Maybe TestExecutionNote
-    , executionNoteDirty : Bool
-    , executionDate : Maybe NominalDate
-    , executionDateDirty : Bool
-    , testResult : Maybe TestResult
-    , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
-    }
-
-
-emptyPartnerHIVTestForm : PartnerHIVTestForm msg
-emptyPartnerHIVTestForm =
-    PartnerHIVTestForm Nothing False Nothing Nothing False Nothing False Nothing False Nothing Nothing
 
 
 type alias CreatinineResultForm =
