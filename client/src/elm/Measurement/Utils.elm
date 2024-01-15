@@ -4901,6 +4901,122 @@ nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task
     )
 
 
+contentAndTasksLaboratoryTestKnownAsPositive :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> LaboratoryTask
+    -> { f | knownAsPositive : Maybe Bool }
+    -> ( List (Html msg), Int, Int )
+contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task form =
+    let
+        updateFunc =
+            \knownAsPositive form_ ->
+                let
+                    executionNote =
+                        if knownAsPositive then
+                            Just TestNoteKnownAsPositive
+
+                        else
+                            Nothing
+                in
+                { form_
+                    | knownAsPositive = Just knownAsPositive
+                    , testPerformed = Nothing
+                    , testPerformedDirty = True
+                    , testPerformedToday = Nothing
+                    , testPerformedTodayDirty = True
+                    , executionNote = executionNote
+                    , executionNoteDirty = True
+                    , executionDate = Nothing
+                    , executionDateDirty = True
+                }
+
+        setMsg =
+            case task of
+                TaskHIVTest ->
+                    config.setHIVTestFormBoolInputMsg updateFunc
+
+                TaskHepatitisBTest ->
+                    config.setHepatitisBTestFormBoolInputMsg updateFunc
+
+                TaskPregnancyTest ->
+                    config.setPregnancyTestFormBoolInputMsg updateFunc
+
+                -- Known as positive is not applicable for other tests.
+                _ ->
+                    always config.noOpMsg
+    in
+    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
+      , viewBoolInput
+            language
+            form.knownAsPositive
+            setMsg
+            "known-as-positive"
+            Nothing
+      ]
+    , taskCompleted form.knownAsPositive
+    , 1
+    )
+
+
+contentAndTasksLaboratoryTestKnownAsPositive2 :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
+    -> LaboratoryTask
+    -> { f | knownAsPositive : Maybe Bool }
+    -> ( List (Html msg), Int, Int )
+contentAndTasksLaboratoryTestKnownAsPositive2 language currentDate config task form =
+    let
+        updateFunc =
+            \knownAsPositive form_ ->
+                let
+                    executionNote =
+                        if knownAsPositive then
+                            Just TestNoteKnownAsPositive
+
+                        else
+                            Nothing
+                in
+                { form_
+                    | knownAsPositive = Just knownAsPositive
+                    , testPerformed = Nothing
+                    , testPerformedDirty = True
+                    , executionNote = executionNote
+                    , executionNoteDirty = True
+                    , executionDate = Nothing
+                    , executionDateDirty = True
+                }
+
+        setMsg =
+            case task of
+                TaskHIVTest ->
+                    config.setHIVTestFormBoolInputMsg updateFunc
+
+                TaskHepatitisBTest ->
+                    config.setHepatitisBTestFormBoolInputMsg updateFunc
+
+                TaskPregnancyTest ->
+                    config.setPregnancyTestFormBoolInputMsg updateFunc
+
+                -- Known as positive is not applicable for other tests.
+                _ ->
+                    always config.noOpMsg
+    in
+    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
+      , viewBoolInput
+            language
+            form.knownAsPositive
+            setMsg
+            "known-as-positive"
+            Nothing
+      ]
+    , taskCompleted form.knownAsPositive
+    , 1
+    )
+
+
 contentAndTasksLaboratoryTestInitial :
     Language
     -> NominalDate
@@ -4934,36 +5050,6 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     , setExecutionNoteMsg = config.setHIVTestExecutionNoteMsg
                     }
 
-                TaskSyphilisTest ->
-                    { setBoolInputMsg = config.setSyphilisTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setSyphilisTestExecutionNoteMsg
-                    }
-
-                TaskHepatitisBTest ->
-                    { setBoolInputMsg = config.setHepatitisBTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setHepatitisBTestExecutionNoteMsg
-                    }
-
-                TaskMalariaTest ->
-                    { setBoolInputMsg = always config.noOpMsg
-                    , setExecutionNoteMsg = always config.noOpMsg
-                    }
-
-                TaskBloodGpRsTest ->
-                    { setBoolInputMsg = config.setBloodGpRsTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setBloodGpRsTestExecutionNoteMsg
-                    }
-
-                TaskUrineDipstickTest ->
-                    { setBoolInputMsg = config.setUrineDipstickTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setUrineDipstickTestExecutionNoteMsg
-                    }
-
-                TaskHemoglobinTest ->
-                    { setBoolInputMsg = config.setHemoglobinTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setHemoglobinTestExecutionNoteMsg
-                    }
-
                 TaskRandomBloodSugarTest ->
                     let
                         updateFunc =
@@ -4987,9 +5073,9 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     , setExecutionNoteMsg = config.setRandomBloodSugarTestExecutionNoteMsg
                     }
 
-                TaskHIVPCRTest ->
-                    { setBoolInputMsg = config.setHIVPCRTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setHIVPCRTestExecutionNoteMsg
+                TaskUrineDipstickTest ->
+                    { setBoolInputMsg = config.setUrineDipstickTestFormBoolInputMsg boolInputUpdateFunc
+                    , setExecutionNoteMsg = config.setUrineDipstickTestExecutionNoteMsg
                     }
 
                 TaskPregnancyTest ->
@@ -5012,19 +5098,9 @@ contentAndTasksLaboratoryTestInitial language currentDate config task form =
                     , setExecutionNoteMsg = config.setLipidPanelTestExecutionNoteMsg
                     }
 
-                TaskHbA1cTest ->
-                    -- Not in use, as this task got a proprietary form.
-                    { setBoolInputMsg = always config.noOpMsg
-                    , setExecutionNoteMsg = always config.noOpMsg
-                    }
-
-                TaskPartnerHIVTest ->
-                    { setBoolInputMsg = always config.noOpMsg
-                    , setExecutionNoteMsg = always config.noOpMsg
-                    }
-
-                TaskCompletePreviousTests ->
-                    -- Not in use, as this task got a proprietary form.
+                _ ->
+                    -- Other tasks do not use this config, as they either
+                    -- have only 'universal form' variant, or a proprietary form.
                     { setBoolInputMsg = always config.noOpMsg
                     , setExecutionNoteMsg = always config.noOpMsg
                     }
@@ -5407,34 +5483,9 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
                     , setExecutionNoteMsg = config.setPartnerHIVTestExecutionNoteMsg
                     }
 
-                TaskPregnancyTest ->
-                    { setBoolInputMsg = config.setPregnancyTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setPregnancyTestExecutionNoteMsg
-                    }
-
-                TaskCreatinineTest ->
-                    { setBoolInputMsg = config.setCreatinineTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setCreatinineTestExecutionNoteMsg
-                    }
-
-                TaskLiverFunctionTest ->
-                    { setBoolInputMsg = config.setLiverFunctionTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setLiverFunctionTestExecutionNoteMsg
-                    }
-
-                TaskLipidPanelTest ->
-                    { setBoolInputMsg = config.setLipidPanelTestFormBoolInputMsg boolInputUpdateFunc
-                    , setExecutionNoteMsg = config.setLipidPanelTestExecutionNoteMsg
-                    }
-
-                TaskHbA1cTest ->
-                    -- Not in use, as this task got a proprietary form.
-                    { setBoolInputMsg = always config.noOpMsg
-                    , setExecutionNoteMsg = always config.noOpMsg
-                    }
-
-                TaskCompletePreviousTests ->
-                    -- Not in use, as this task got a proprietary form.
+                _ ->
+                    -- Other tasks do not use this config, as they either
+                    -- have only 'non universal form' variant, or a proprietary form.
                     { setBoolInputMsg = always config.noOpMsg
                     , setExecutionNoteMsg = always config.noOpMsg
                     }
@@ -5479,122 +5530,6 @@ contentAndTasksLaboratoryTestInitial2 language currentDate config task form =
         ++ derivedSection
     , taskCompleted form.testPerformed + derivedTasksCompleted
     , 1 + derivedTasksTotal
-    )
-
-
-contentAndTasksLaboratoryTestKnownAsPositive :
-    Language
-    -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig msg
-    -> LaboratoryTask
-    -> { f | knownAsPositive : Maybe Bool }
-    -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryTestKnownAsPositive language currentDate config task form =
-    let
-        updateFunc =
-            \knownAsPositive form_ ->
-                let
-                    executionNote =
-                        if knownAsPositive then
-                            Just TestNoteKnownAsPositive
-
-                        else
-                            Nothing
-                in
-                { form_
-                    | knownAsPositive = Just knownAsPositive
-                    , testPerformed = Nothing
-                    , testPerformedDirty = True
-                    , testPerformedToday = Nothing
-                    , testPerformedTodayDirty = True
-                    , executionNote = executionNote
-                    , executionNoteDirty = True
-                    , executionDate = Nothing
-                    , executionDateDirty = True
-                }
-
-        setMsg =
-            case task of
-                TaskHIVTest ->
-                    config.setHIVTestFormBoolInputMsg updateFunc
-
-                TaskHepatitisBTest ->
-                    config.setHepatitisBTestFormBoolInputMsg updateFunc
-
-                TaskPregnancyTest ->
-                    config.setPregnancyTestFormBoolInputMsg updateFunc
-
-                -- Known as positive is not applicable for other tests.
-                _ ->
-                    always config.noOpMsg
-    in
-    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
-      , viewBoolInput
-            language
-            form.knownAsPositive
-            setMsg
-            "known-as-positive"
-            Nothing
-      ]
-    , taskCompleted form.knownAsPositive
-    , 1
-    )
-
-
-contentAndTasksLaboratoryTestKnownAsPositive2 :
-    Language
-    -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig2 msg
-    -> LaboratoryTask
-    -> { f | knownAsPositive : Maybe Bool }
-    -> ( List (Html msg), Int, Int )
-contentAndTasksLaboratoryTestKnownAsPositive2 language currentDate config task form =
-    let
-        updateFunc =
-            \knownAsPositive form_ ->
-                let
-                    executionNote =
-                        if knownAsPositive then
-                            Just TestNoteKnownAsPositive
-
-                        else
-                            Nothing
-                in
-                { form_
-                    | knownAsPositive = Just knownAsPositive
-                    , testPerformed = Nothing
-                    , testPerformedDirty = True
-                    , executionNote = executionNote
-                    , executionNoteDirty = True
-                    , executionDate = Nothing
-                    , executionDateDirty = True
-                }
-
-        setMsg =
-            case task of
-                TaskHIVTest ->
-                    config.setHIVTestFormBoolInputMsg updateFunc
-
-                TaskHepatitisBTest ->
-                    config.setHepatitisBTestFormBoolInputMsg updateFunc
-
-                TaskPregnancyTest ->
-                    config.setPregnancyTestFormBoolInputMsg updateFunc
-
-                -- Known as positive is not applicable for other tests.
-                _ ->
-                    always config.noOpMsg
-    in
-    ( [ viewQuestionLabel language <| Translate.KnownAsPositiveQuestion task
-      , viewBoolInput
-            language
-            form.knownAsPositive
-            setMsg
-            "known-as-positive"
-            Nothing
-      ]
-    , taskCompleted form.knownAsPositive
-    , 1
     )
 
 
@@ -5645,52 +5580,16 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         , setDateSelectorStateMsg = config.setHIVTestDateSelectorStateMsg
                         }
 
-                    TaskSyphilisTest ->
-                        { setBoolInputMsg = config.setSyphilisTestFormBoolInputMsg boolInputUpdateFunc
-                        , setExecutionDateMsg = config.setSyphilisTestExecutionDateMsg
-                        , setDateSelectorStateMsg = config.setSyphilisTestDateSelectorStateMsg
-                        }
-
-                    TaskHepatitisBTest ->
-                        { setBoolInputMsg = config.setHepatitisBTestFormBoolInputMsg boolInputUpdateFunc
-                        , setExecutionDateMsg = config.setHepatitisBTestExecutionDateMsg
-                        , setDateSelectorStateMsg = config.setHepatitisBTestDateSelectorStateMsg
-                        }
-
-                    TaskMalariaTest ->
-                        { setBoolInputMsg = always config.noOpMsg
-                        , setExecutionDateMsg = always config.noOpMsg
-                        , setDateSelectorStateMsg = always config.noOpMsg
-                        }
-
-                    TaskBloodGpRsTest ->
-                        { setBoolInputMsg = config.setBloodGpRsTestFormBoolInputMsg boolInputUpdateFunc
-                        , setExecutionDateMsg = config.setBloodGpRsTestExecutionDateMsg
-                        , setDateSelectorStateMsg = config.setBloodGpRsTestDateSelectorStateMsg
-                        }
-
-                    TaskUrineDipstickTest ->
-                        { setBoolInputMsg = config.setUrineDipstickTestFormBoolInputMsg boolInputUpdateFunc
-                        , setExecutionDateMsg = config.setUrineDipstickTestExecutionDateMsg
-                        , setDateSelectorStateMsg = config.setUrineDipstickTestDateSelectorStateMsg
-                        }
-
-                    TaskHemoglobinTest ->
-                        { setBoolInputMsg = config.setHemoglobinTestFormBoolInputMsg boolInputUpdateFunc
-                        , setExecutionDateMsg = config.setHemoglobinTestExecutionDateMsg
-                        , setDateSelectorStateMsg = config.setHemoglobinTestDateSelectorStateMsg
-                        }
-
                     TaskRandomBloodSugarTest ->
                         { setBoolInputMsg = config.setRandomBloodSugarTestFormBoolInputMsg boolInputUpdateFunc
                         , setExecutionDateMsg = config.setRandomBloodSugarTestExecutionDateMsg
                         , setDateSelectorStateMsg = config.setRandomBloodSugarTestDateSelectorStateMsg
                         }
 
-                    TaskHIVPCRTest ->
-                        { setBoolInputMsg = config.setHIVPCRTestFormBoolInputMsg boolInputUpdateFunc
-                        , setExecutionDateMsg = config.setHIVPCRTestExecutionDateMsg
-                        , setDateSelectorStateMsg = config.setHIVPCRTestDateSelectorStateMsg
+                    TaskUrineDipstickTest ->
+                        { setBoolInputMsg = config.setUrineDipstickTestFormBoolInputMsg boolInputUpdateFunc
+                        , setExecutionDateMsg = config.setUrineDipstickTestExecutionDateMsg
+                        , setDateSelectorStateMsg = config.setUrineDipstickTestDateSelectorStateMsg
                         }
 
                     TaskPregnancyTest ->
@@ -5717,21 +5616,9 @@ contentAndTasksForPerformedLaboratoryTest language currentDate config task form 
                         , setDateSelectorStateMsg = config.setLipidPanelTestDateSelectorStateMsg
                         }
 
-                    TaskHbA1cTest ->
-                        -- Not in use, as this task got a proprietary form.
-                        { setBoolInputMsg = always config.noOpMsg
-                        , setExecutionDateMsg = always config.noOpMsg
-                        , setDateSelectorStateMsg = always config.noOpMsg
-                        }
-
-                    TaskPartnerHIVTest ->
-                        { setBoolInputMsg = always config.noOpMsg
-                        , setExecutionDateMsg = always config.noOpMsg
-                        , setDateSelectorStateMsg = always config.noOpMsg
-                        }
-
-                    TaskCompletePreviousTests ->
-                        -- Not in use, as this task got a proprietary form.
+                    _ ->
+                        -- Other tasks do not use this config, as they either
+                        -- have only 'universal form' variant, or a proprietary form.
                         { setBoolInputMsg = always config.noOpMsg
                         , setExecutionDateMsg = always config.noOpMsg
                         , setDateSelectorStateMsg = always config.noOpMsg
