@@ -1938,7 +1938,7 @@ toMalariaTestValue form =
         form.executionNote
 
 
-urineDipstickFormWithDefault : UrineDipstickForm msg -> Maybe UrineDipstickTestValue -> UrineDipstickForm msg
+urineDipstickFormWithDefault : UrineDipstickTestForm msg -> Maybe UrineDipstickTestValue -> UrineDipstickTestForm msg
 urineDipstickFormWithDefault form saved =
     saved
         |> unwrap
@@ -1970,13 +1970,13 @@ urineDipstickFormWithDefault form saved =
             )
 
 
-toUrineDipstickTestValueWithDefault : Maybe UrineDipstickTestValue -> UrineDipstickForm msg -> Maybe UrineDipstickTestValue
+toUrineDipstickTestValueWithDefault : Maybe UrineDipstickTestValue -> UrineDipstickTestForm msg -> Maybe UrineDipstickTestValue
 toUrineDipstickTestValueWithDefault saved form =
     urineDipstickFormWithDefault form saved
         |> toUrineDipstickTestValue
 
 
-toUrineDipstickTestValue : UrineDipstickForm msg -> Maybe UrineDipstickTestValue
+toUrineDipstickTestValue : UrineDipstickTestForm msg -> Maybe UrineDipstickTestValue
 toUrineDipstickTestValue form =
     Maybe.map
         (\executionNote ->
@@ -2010,7 +2010,7 @@ toUrineDipstickTestValue form =
         form.executionNote
 
 
-urineDipstickUniversalFormWithDefault : UrineDipstickUniversalForm -> Maybe UrineDipstickTestValue -> UrineDipstickUniversalForm
+urineDipstickUniversalFormWithDefault : UrineDipstickTestUniversalForm -> Maybe UrineDipstickTestValue -> UrineDipstickTestUniversalForm
 urineDipstickUniversalFormWithDefault form saved =
     saved
         |> unwrap
@@ -2058,13 +2058,13 @@ urineDipstickUniversalFormWithDefault form saved =
             )
 
 
-toUrineDipstickTestValueUniversalWithDefault : Maybe UrineDipstickTestValue -> UrineDipstickUniversalForm -> Maybe UrineDipstickTestValue
+toUrineDipstickTestValueUniversalWithDefault : Maybe UrineDipstickTestValue -> UrineDipstickTestUniversalForm -> Maybe UrineDipstickTestValue
 toUrineDipstickTestValueUniversalWithDefault saved form =
     urineDipstickUniversalFormWithDefault form saved
         |> toUrineDipstickTestValueUniversal
 
 
-toUrineDipstickTestValueUniversal : UrineDipstickUniversalForm -> Maybe UrineDipstickTestValue
+toUrineDipstickTestValueUniversal : UrineDipstickTestUniversalForm -> Maybe UrineDipstickTestValue
 toUrineDipstickTestValueUniversal form =
     Maybe.map
         (\executionNote ->
@@ -2098,7 +2098,7 @@ toUrineDipstickTestValueUniversal form =
         form.executionNote
 
 
-randomBloodSugarFormWithDefault : RandomBloodSugarForm msg -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarForm msg
+randomBloodSugarFormWithDefault : RandomBloodSugarTestForm msg -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarTestForm msg
 randomBloodSugarFormWithDefault form saved =
     saved
         |> unwrap
@@ -2136,13 +2136,13 @@ randomBloodSugarFormWithDefault form saved =
             )
 
 
-toRandomBloodSugarTestValueWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarForm msg -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarTestValueWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarTestForm msg -> Maybe (RandomBloodSugarTestValue encounterId)
 toRandomBloodSugarTestValueWithDefault saved form =
     randomBloodSugarFormWithDefault form saved
         |> toRandomBloodSugarTestValue
 
 
-toRandomBloodSugarTestValue : RandomBloodSugarForm msg -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarTestValue : RandomBloodSugarTestForm msg -> Maybe (RandomBloodSugarTestValue encounterId)
 toRandomBloodSugarTestValue form =
     Maybe.map
         (\executionNote ->
@@ -2176,7 +2176,7 @@ toRandomBloodSugarTestValue form =
         form.executionNote
 
 
-randomBloodSugarUniversalFormWithDefault : RandomBloodSugarUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarUniversalForm
+randomBloodSugarUniversalFormWithDefault : RandomBloodSugarTestUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarTestUniversalForm
 randomBloodSugarUniversalFormWithDefault form saved =
     saved
         |> unwrap
@@ -2208,13 +2208,13 @@ randomBloodSugarUniversalFormWithDefault form saved =
             )
 
 
-toRandomBloodSugarTestValueUniversalWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarTestValueUniversalWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarTestUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId)
 toRandomBloodSugarTestValueUniversalWithDefault saved form =
     randomBloodSugarUniversalFormWithDefault form saved
         |> toRandomBloodSugarTestValueUniversal
 
 
-toRandomBloodSugarTestValueUniversal : RandomBloodSugarUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarTestValueUniversal : RandomBloodSugarTestUniversalForm -> Maybe (RandomBloodSugarTestValue encounterId)
 toRandomBloodSugarTestValueUniversal form =
     Maybe.map
         (\executionNote ->
@@ -3434,14 +3434,14 @@ prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed
     )
 
 
-viewUrineDipstickForm :
+viewUrineDipstickTestForm :
     Language
     -> NominalDate
     -> ContentAndTasksLaboratoryTestInitialConfig msg
     -> ContentAndTasksForPerformedLaboratoryTestConfig msg
-    -> UrineDipstickForm msg
+    -> UrineDipstickTestForm msg
     -> ( Html msg, Int, Int )
-viewUrineDipstickForm language currentDate configInitial configPerformed form =
+viewUrineDipstickTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate configInitial TaskUrineDipstickTest form
@@ -3489,14 +3489,14 @@ viewUrineDipstickForm language currentDate configInitial configPerformed form =
     )
 
 
-viewUrineDipstickUniversalForm :
+viewUrineDipstickTestUniversalForm :
     Language
     -> NominalDate
     -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
     -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
-    -> UrineDipstickUniversalForm
+    -> UrineDipstickTestUniversalForm
     -> ( Html msg, Int, Int )
-viewUrineDipstickUniversalForm language currentDate configInitial configPerformed form =
+viewUrineDipstickTestUniversalForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskUrineDipstickTest form
@@ -3813,14 +3813,14 @@ urineDipstickResultInputsAndTasks language setProteinMsg setPHMsg setGlucoseMsg 
         >> Maybe.withDefault ( [], 0, 0 )
 
 
-viewRandomBloodSugarForm :
+viewRandomBloodSugarTestForm :
     Language
     -> NominalDate
     -> ContentAndTasksLaboratoryTestInitialConfig msg
     -> ContentAndTasksForPerformedLaboratoryTestConfig msg
-    -> RandomBloodSugarForm msg
+    -> RandomBloodSugarTestForm msg
     -> ( Html msg, Int, Int )
-viewRandomBloodSugarForm language currentDate configInitial configPerformed form =
+viewRandomBloodSugarTestForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryTestInitial language currentDate configInitial TaskRandomBloodSugarTest form
@@ -3903,14 +3903,14 @@ viewRandomBloodSugarForm language currentDate configInitial configPerformed form
     )
 
 
-viewRandomBloodSugarUniversalForm :
+viewRandomBloodSugarTestUniversalForm :
     Language
     -> NominalDate
     -> ContentAndTasksLaboratoryUniversalTestInitialConfig msg
     -> ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg
-    -> RandomBloodSugarUniversalForm
+    -> RandomBloodSugarTestUniversalForm
     -> ( Html msg, Int, Int )
-viewRandomBloodSugarUniversalForm language currentDate configInitial configPerformed form =
+viewRandomBloodSugarTestUniversalForm language currentDate configInitial configPerformed form =
     let
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskRandomBloodSugarTest form

@@ -74,9 +74,9 @@ import Measurement.Utils
         , viewNonRDTForm
         , viewNonRDTFormCheckKnownAsPositive
         , viewPartnerHIVTestForm
-        , viewRandomBloodSugarUniversalForm
+        , viewRandomBloodSugarTestUniversalForm
         , viewSyphilisTestForm
-        , viewUrineDipstickUniversalForm
+        , viewUrineDipstickTestUniversalForm
         , vitalsFormWithDefault
         )
 import Measurement.View
@@ -1530,7 +1530,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
                                 |> urineDipstickUniversalFormWithDefault data.urineDipstickTestForm
-                                |> viewUrineDipstickUniversalForm language
+                                |> viewUrineDipstickTestUniversalForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
@@ -1548,7 +1548,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
                                 |> randomBloodSugarUniversalFormWithDefault data.randomBloodSugarTestForm
-                                |> viewRandomBloodSugarUniversalForm language
+                                |> viewRandomBloodSugarTestUniversalForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig

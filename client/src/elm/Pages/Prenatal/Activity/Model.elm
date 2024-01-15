@@ -22,9 +22,9 @@ import Measurement.Model
         , OutsideCareForm
         , OutsideCareStep
         , PartnerHIVTestForm
-        , RandomBloodSugarUniversalForm
+        , RandomBloodSugarTestUniversalForm
         , SyphilisTestForm
-        , UrineDipstickUniversalForm
+        , UrineDipstickTestUniversalForm
         , VaccinationForm
         , VaccinationFormViewMode
         , VitalsForm
@@ -38,9 +38,9 @@ import Measurement.Model
         , emptyMalariaTestForm
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
-        , emptyRandomBloodSugarUniversalForm
+        , emptyRandomBloodSugarTestUniversalForm
         , emptySyphilisTestForm
-        , emptyUrineDipstickUniversalForm
+        , emptyUrineDipstickTestUniversalForm
         , emptyVaccinationForm
         , emptyVitalsForm
         )
@@ -175,7 +175,7 @@ type Msg
     | SetBloodGroup String
     | SetRhesus String
     | SaveBloodGpRsTest PersonId (Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )) (Maybe LaboratoryTask)
-    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickUniversalForm -> UrineDipstickUniversalForm) Bool
+    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickTestUniversalForm -> UrineDipstickTestUniversalForm) Bool
     | SetUrineDipstickTestExecutionNote TestExecutionNote
     | SetUrineDipstickTestVariant TestVariant
     | SetProtein String
@@ -192,7 +192,7 @@ type Msg
     | SetHemoglobinTestExecutionNote TestExecutionNote
     | SetHemoglobinCount String
     | SaveHemoglobinTest PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
-    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarUniversalForm -> RandomBloodSugarUniversalForm) Bool
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarTestUniversalForm -> RandomBloodSugarTestUniversalForm) Bool
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarResult String
     | SaveRandomBloodSugarTest PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
@@ -522,9 +522,9 @@ type alias LaboratoryData =
     , hivTestForm : HIVTestUniversalForm
     , malariaTestForm : MalariaTestForm
     , partnerHIVTestForm : PartnerHIVTestForm
-    , randomBloodSugarTestForm : RandomBloodSugarUniversalForm
+    , randomBloodSugarTestForm : RandomBloodSugarTestUniversalForm
     , syphilisTestForm : SyphilisTestForm
-    , urineDipstickTestForm : UrineDipstickUniversalForm
+    , urineDipstickTestForm : UrineDipstickTestUniversalForm
     , labsHistoryForm : LabsHistoryForm
     , activeTask : Maybe LaboratoryTask
     }
@@ -540,9 +540,9 @@ emptyLaboratoryData =
     , hivTestForm = emptyHIVTestUniversalForm
     , malariaTestForm = emptyMalariaTestForm
     , partnerHIVTestForm = emptyPartnerHIVTestForm
-    , randomBloodSugarTestForm = emptyRandomBloodSugarUniversalForm
+    , randomBloodSugarTestForm = emptyRandomBloodSugarTestUniversalForm
     , syphilisTestForm = emptySyphilisTestForm
-    , urineDipstickTestForm = emptyUrineDipstickUniversalForm
+    , urineDipstickTestForm = emptyUrineDipstickTestUniversalForm
     , labsHistoryForm = emptyLabsHistoryForm
     , activeTask = Nothing
     }

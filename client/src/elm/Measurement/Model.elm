@@ -606,12 +606,12 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setBloodSmearResultMsg : String -> msg
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickTestForm msg -> UrineDipstickTestForm msg) -> Bool -> msg
     , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
     , setUrineDipstickTestVariantMsg : TestVariant -> msg
     , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarTestForm msg -> RandomBloodSugarTestForm msg) -> Bool -> msg
     , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHIVPCRTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
@@ -644,12 +644,12 @@ type alias ContentAndTasksLaboratoryUniversalTestInitialConfig msg =
     , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) -> Bool -> msg
     , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickUniversalForm -> UrineDipstickUniversalForm) -> Bool -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickTestUniversalForm -> UrineDipstickTestUniversalForm) -> Bool -> msg
     , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
     , setUrineDipstickTestVariantMsg : TestVariant -> msg
     , setHemoglobinTestFormBoolInputMsg : (Bool -> HemoglobinTestForm -> HemoglobinTestForm) -> Bool -> msg
     , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarUniversalForm -> RandomBloodSugarUniversalForm) -> Bool -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarTestUniversalForm -> RandomBloodSugarTestUniversalForm) -> Bool -> msg
     , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHIVPCRTestFormBoolInputMsg : (Bool -> HIVPCRTestForm -> HIVPCRTestForm) -> Bool -> msg
     , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
@@ -686,13 +686,13 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setBloodGpRsTestExecutionDateMsg : NominalDate -> msg
     , setBloodGpRsTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickForm msg -> UrineDipstickForm msg) -> Bool -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickTestForm msg -> UrineDipstickTestForm msg) -> Bool -> msg
     , setUrineDipstickTestExecutionDateMsg : NominalDate -> msg
     , setUrineDipstickTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setHemoglobinTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHemoglobinTestExecutionDateMsg : NominalDate -> msg
     , setHemoglobinTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarForm msg -> RandomBloodSugarForm msg) -> Bool -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarTestForm msg -> RandomBloodSugarTestForm msg) -> Bool -> msg
     , setRandomBloodSugarTestExecutionDateMsg : NominalDate -> msg
     , setRandomBloodSugarTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setRandomBloodSugarResultMsg : String -> msg
@@ -956,7 +956,7 @@ emptyHIVPCRResultForm =
     HIVPCRResultForm Nothing Nothing Nothing Nothing Nothing
 
 
-type alias RandomBloodSugarUniversalForm =
+type alias RandomBloodSugarTestUniversalForm =
     { -- If true, test will be performed today.
       testPerformed : Maybe Bool
     , testPerformedDirty : Bool
@@ -973,8 +973,8 @@ type alias RandomBloodSugarUniversalForm =
     }
 
 
-emptyRandomBloodSugarUniversalForm : RandomBloodSugarUniversalForm
-emptyRandomBloodSugarUniversalForm =
+emptyRandomBloodSugarTestUniversalForm : RandomBloodSugarTestUniversalForm
+emptyRandomBloodSugarTestUniversalForm =
     { testPerformed = Nothing
     , testPerformedDirty = False
     , immediateResult = Nothing
@@ -1052,7 +1052,7 @@ emptySyphilisResultForm =
     SyphilisResultForm Nothing Nothing Nothing Nothing Nothing False Nothing
 
 
-type alias UrineDipstickUniversalForm =
+type alias UrineDipstickTestUniversalForm =
     { -- If true, test will be performed today.
       testPerformed : Maybe Bool
     , testPerformedDirty : Bool
@@ -1086,8 +1086,8 @@ type alias UrineDipstickUniversalForm =
     }
 
 
-emptyUrineDipstickUniversalForm : UrineDipstickUniversalForm
-emptyUrineDipstickUniversalForm =
+emptyUrineDipstickTestUniversalForm : UrineDipstickTestUniversalForm
+emptyUrineDipstickTestUniversalForm =
     { testPerformed = Nothing
     , testPerformedDirty = False
     , immediateResult = Nothing
@@ -1326,7 +1326,7 @@ emptyHIVTestForm =
     }
 
 
-type alias UrineDipstickForm msg =
+type alias UrineDipstickTestForm msg =
     { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , immediateResult : Maybe Bool
@@ -1341,12 +1341,12 @@ type alias UrineDipstickForm msg =
     }
 
 
-emptyUrineDipstickForm : UrineDipstickForm msg
-emptyUrineDipstickForm =
-    UrineDipstickForm Nothing False Nothing Nothing False Nothing Nothing False Nothing False Nothing
+emptyUrineDipstickTestForm : UrineDipstickTestForm msg
+emptyUrineDipstickTestForm =
+    UrineDipstickTestForm Nothing False Nothing Nothing False Nothing Nothing False Nothing False Nothing
 
 
-type alias RandomBloodSugarForm msg =
+type alias RandomBloodSugarTestForm msg =
     { testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , patientFasted : Maybe Bool
@@ -1363,8 +1363,8 @@ type alias RandomBloodSugarForm msg =
     }
 
 
-emptyRandomBloodSugarForm : RandomBloodSugarForm msg
-emptyRandomBloodSugarForm =
+emptyRandomBloodSugarTestForm : RandomBloodSugarTestForm msg
+emptyRandomBloodSugarTestForm =
     { testPerformed = Nothing
     , testPerformedDirty = False
     , patientFasted = Nothing
