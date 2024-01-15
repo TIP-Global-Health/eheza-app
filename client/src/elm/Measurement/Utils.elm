@@ -5696,8 +5696,6 @@ emptyContentAndTasksLaboratoryTestInitialConfig2 noOpMsg =
     , setHepatitisBTestExecutionNoteMsg = always noOpMsg
     , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setMalariaTestExecutionNoteMsg = always noOpMsg
-    , setMalariaTestResultMsg = always noOpMsg
-    , setBloodSmearResultMsg = always noOpMsg
     , setBloodGpRsTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setBloodGpRsTestExecutionNoteMsg = always noOpMsg
     , setUrineDipstickTestFormBoolInputMsg = \_ _ -> noOpMsg
@@ -5722,7 +5720,6 @@ emptyContentAndTasksLaboratoryTestInitialConfig2 noOpMsg =
     , setHbA1cTestExecutionNoteMsg = always noOpMsg
     , setPartnerHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setPartnerHIVTestExecutionNoteMsg = always noOpMsg
-    , setPartnerHIVTestResultMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -5786,9 +5783,8 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig2 noOpMsg =
     , setSyphilisTestResultMsg = always noOpMsg
     , setIllnessSymptomMsg = always noOpMsg
     , setHepatitisBTestResultMsg = always noOpMsg
-    , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
-    , setMalariaTestExecutionDateMsg = always noOpMsg
-    , setMalariaTestDateSelectorStateMsg = always noOpMsg
+    , setMalariaTestResultMsg = always noOpMsg
+    , setBloodSmearResultMsg = always noOpMsg
     , setBloodGroupMsg = always noOpMsg
     , setRhesusMsg = always noOpMsg
     , setProteinMsg = always noOpMsg
@@ -5804,6 +5800,7 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig2 noOpMsg =
     , setRandomBloodSugarResultMsg = always noOpMsg
     , setHIVViralLoadMsg = always noOpMsg
     , setHIVViralLoadUndetectableMsg = always noOpMsg
+    , setPartnerHIVTestResultMsg = always noOpMsg
     , setPregnancyTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setPregnancyTestExecutionDateMsg = always noOpMsg
     , setPregnancyTestDateSelectorStateMsg = always noOpMsg
@@ -5820,9 +5817,6 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig2 noOpMsg =
     , setHbA1cTestExecutionDateMsg = always noOpMsg
     , setHbA1cTestDateSelectorStateMsg = always noOpMsg
     , setHbA1cTestResultMsg = always noOpMsg
-    , setPartnerHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
-    , setPartnerHIVTestExecutionDateMsg = always noOpMsg
-    , setPartnerHIVTestDateSelectorStateMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 

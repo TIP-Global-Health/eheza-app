@@ -640,10 +640,8 @@ type alias ContentAndTasksLaboratoryTestInitialConfig2 msg =
     , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHepatitisBTestFormBoolInputMsg : (Bool -> HepatitisBTestForm -> HepatitisBTestForm) -> Bool -> msg
     , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
+    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm -> MalariaTestForm) -> Bool -> msg
     , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setMalariaTestResultMsg : String -> msg
-    , setBloodSmearResultMsg : String -> msg
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) -> Bool -> msg
     , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
     , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickUniversalForm -> UrineDipstickUniversalForm) -> Bool -> msg
@@ -666,9 +664,8 @@ type alias ContentAndTasksLaboratoryTestInitialConfig2 msg =
     , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
     , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm -> PartnerHIVTestForm) -> Bool -> msg
     , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setPartnerHIVTestResultMsg : String -> msg
     , noOpMsg : msg
     }
 
@@ -730,9 +727,8 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
     , setSyphilisTestResultMsg : String -> msg
     , setIllnessSymptomMsg : IllnessSymptom -> msg
     , setHepatitisBTestResultMsg : String -> msg
-    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
-    , setMalariaTestExecutionDateMsg : NominalDate -> msg
-    , setMalariaTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
+    , setMalariaTestResultMsg : String -> msg
+    , setBloodSmearResultMsg : String -> msg
     , setBloodGroupMsg : String -> msg
     , setRhesusMsg : String -> msg
     , setHemoglobinCountMsg : String -> msg
@@ -748,6 +744,7 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
     , setHaemoglobinMsg : String -> msg
     , setKetoneMsg : String -> msg
     , setBilirubinMsg : String -> msg
+    , setPartnerHIVTestResultMsg : String -> msg
     , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
     , setPregnancyTestExecutionDateMsg : NominalDate -> msg
     , setPregnancyTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
@@ -764,9 +761,6 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
     , setHbA1cTestExecutionDateMsg : NominalDate -> msg
     , setHbA1cTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setHbA1cTestResultMsg : String -> msg
-    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
-    , setPartnerHIVTestExecutionDateMsg : NominalDate -> msg
-    , setPartnerHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , noOpMsg : msg
     }
 

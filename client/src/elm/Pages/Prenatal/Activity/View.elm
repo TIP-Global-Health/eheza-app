@@ -1487,8 +1487,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> hivTestUniversalFormWithDefault data.hivTestForm
                                 |> viewHIVTestUniversalForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig2
-                                    contentAndTasksForPerformedLaboratoryTestConfig2
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest
@@ -1496,8 +1496,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> syphilisTestFormWithDefault data.syphilisTestForm
                                 |> viewSyphilisTestForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig2
-                                    contentAndTasksForPerformedLaboratoryTestConfig2
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
@@ -1505,8 +1505,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> hepatitisBTestFormWithDefault data.hepatitisBTestForm
                                 |> viewHepatitisBTestForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig2
-                                    contentAndTasksForPerformedLaboratoryTestConfig2
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskMalariaTest ->
                             measurements.malariaTest
@@ -1523,8 +1523,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> bloodGpRsTestFormWithDefault data.bloodGpRsTestForm
                                 |> viewBloodGpRsTestForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig2
-                                    contentAndTasksForPerformedLaboratoryTestConfig2
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
@@ -1532,8 +1532,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> urineDipstickUniversalFormWithDefault data.urineDipstickTestForm
                                 |> viewUrineDipstickUniversalForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig2
-                                    contentAndTasksForPerformedLaboratoryTestConfig2
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskHemoglobinTest ->
                             measurements.hemoglobinTest
@@ -1541,8 +1541,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> hemoglobinTestFormWithDefault data.hemoglobinTestForm
                                 |> viewHemoglobinTestForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig2
-                                    contentAndTasksForPerformedLaboratoryTestConfig2
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
@@ -1550,8 +1550,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> randomBloodSugarFormWithDefault2 data.randomBloodSugarTestForm
                                 |> viewRandomBloodSugarForm2 language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig2
-                                    contentAndTasksForPerformedLaboratoryTestConfig2
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskHIVPCRTest ->
                             measurements.hivPCRTest
@@ -1559,8 +1559,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                 |> hivPCRTestFormWithDefault data.hivPCRTestForm
                                 |> viewHIVPCRTestForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig2
-                                    contentAndTasksForPerformedLaboratoryTestConfig2
+                                    contentAndTasksLaboratoryTestInitialConfig
+                                    contentAndTasksForPerformedLaboratoryTestConfig
 
                         TaskPartnerHIVTest ->
                             measurements.partnerHIVTest
@@ -3825,29 +3825,15 @@ viewNewbornEnrolmentForm language currentDate assembled =
         ]
 
 
-contentAndTasksLaboratoryTestInitialConfig : ContentAndTasksLaboratoryTestInitialConfig Msg
+contentAndTasksLaboratoryTestInitialConfig : ContentAndTasksLaboratoryTestInitialConfig2 Msg
 contentAndTasksLaboratoryTestInitialConfig =
-    emptyContentAndTasksLaboratoryTestInitialConfig NoOp
-        |> (\config ->
-                { config
-                    | setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
-                    , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
-                    , setMalariaTestResultMsg = SetMalariaTestResult
-                    , setBloodSmearResultMsg = SetBloodSmearResultMsg
-                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
-                    , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
-                    , setPartnerHIVTestResultMsg = SetPartnerHIVTestResult
-                }
-           )
-
-
-contentAndTasksLaboratoryTestInitialConfig2 : ContentAndTasksLaboratoryTestInitialConfig2 Msg
-contentAndTasksLaboratoryTestInitialConfig2 =
     emptyContentAndTasksLaboratoryTestInitialConfig2 NoOp
         |> (\config ->
                 { config
                     | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
                     , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
+                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
                     , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
                     , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
                     , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
@@ -3863,31 +3849,20 @@ contentAndTasksLaboratoryTestInitialConfig2 =
                     , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
                     , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
                     , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
-                }
-           )
-
-
-contentAndTasksForPerformedLaboratoryTestConfig : ContentAndTasksForPerformedLaboratoryTestConfig Msg
-contentAndTasksForPerformedLaboratoryTestConfig =
-    emptyContentAndTasksForPerformedLaboratoryTestConfig NoOp
-        |> (\config ->
-                { config
-                    | setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
-                    , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
-                    , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
                     , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
-                    , setPartnerHIVTestExecutionDateMsg = SetPartnerHIVTestExecutionDate
-                    , setPartnerHIVTestDateSelectorStateMsg = SetPartnerHIVTestDateSelectorState
+                    , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
                 }
            )
 
 
-contentAndTasksForPerformedLaboratoryTestConfig2 : ContentAndTasksForPerformedLaboratoryTestConfig2 Msg
-contentAndTasksForPerformedLaboratoryTestConfig2 =
+contentAndTasksForPerformedLaboratoryTestConfig : ContentAndTasksForPerformedLaboratoryTestConfig2 Msg
+contentAndTasksForPerformedLaboratoryTestConfig =
     emptyContentAndTasksForPerformedLaboratoryTestConfig2 NoOp
         |> (\config ->
                 { config
                     | setHIVTestResultMsg = SetHIVTestResult
+                    , setMalariaTestResultMsg = SetMalariaTestResult
+                    , setBloodSmearResultMsg = SetBloodSmearResultMsg
                     , setSyphilisTestResultMsg = SetSyphilisTestResult
                     , setIllnessSymptomMsg = SetIllnessSymptom
                     , setHepatitisBTestResultMsg = SetHepatitisBTestResult
@@ -3906,6 +3881,7 @@ contentAndTasksForPerformedLaboratoryTestConfig2 =
                     , setHaemoglobinMsg = SetHaemoglobin
                     , setKetoneMsg = SetKetone
                     , setBilirubinMsg = SetBilirubin
+                    , setPartnerHIVTestResultMsg = SetPartnerHIVTestResult
                 }
            )
 
