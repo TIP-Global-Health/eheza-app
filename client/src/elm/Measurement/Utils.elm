@@ -1654,6 +1654,10 @@ viewOutsideCareMedicationOptionWithDosage language medication =
         ]
 
 
+
+--- Labs tests Form <=> Value functions   START  ---
+
+
 hivTestFormWithDefault : HIVTestForm msg -> Maybe HIVTestValue -> HIVTestForm msg
 hivTestFormWithDefault form saved =
     saved
@@ -1729,17 +1733,6 @@ toHIVTestValue form =
     Maybe.map
         (\executionNote ->
             let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-
                 hivSigns =
                     [ ifNullableTrue HIVProgramHC form.hivProgramHC
                     , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
@@ -1751,7 +1744,7 @@ toHIVTestValue form =
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
             , hivSigns = hivSigns
             }
@@ -1828,17 +1821,6 @@ toHIVTestValueUniversal form =
     Maybe.map
         (\executionNote ->
             let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-
                 hivSigns =
                     [ ifNullableTrue HIVProgramHC form.hivProgramHC
                     , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
@@ -1850,7 +1832,7 @@ toHIVTestValueUniversal form =
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
             , hivSigns = hivSigns
             }
@@ -1916,21 +1898,9 @@ toMalariaTestValue : MalariaTestForm -> Maybe MalariaTestValue
 toMalariaTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
             , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
             }
@@ -1980,22 +1950,10 @@ toUrineDipstickTestValue : UrineDipstickTestForm msg -> Maybe UrineDipstickTestV
 toUrineDipstickTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { testVariant = form.testVariant
             , executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , protein = Nothing
             , ph = Nothing
             , glucose = Nothing
@@ -2068,22 +2026,10 @@ toUrineDipstickTestValueUniversal : UrineDipstickTestUniversalForm -> Maybe Urin
 toUrineDipstickTestValueUniversal form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { testVariant = form.testVariant
             , executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , protein = form.protein
             , ph = form.ph
             , glucose = form.glucose
@@ -2287,21 +2233,9 @@ toBloodGpRsTestValue : BloodGpRsTestForm -> Maybe (BloodGpRsTestValue encounterI
 toBloodGpRsTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , bloodGroup = form.bloodGroup
             , rhesus = form.rhesus
             , originatingEncounter = Nothing
@@ -2347,21 +2281,9 @@ toHemoglobinTestValue : HemoglobinTestForm -> Maybe HemoglobinTestValue
 toHemoglobinTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , hemoglobinCount = form.hemoglobinCount
             }
         )
@@ -2409,21 +2331,9 @@ toHepatitisBTestValue : HepatitisBTestForm -> Maybe (HepatitisBTestValue encount
 toHepatitisBTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
             , originatingEncounter = Nothing
             }
@@ -2470,21 +2380,9 @@ toHIVPCRTestValue : HIVPCRTestForm -> Maybe HIVPCRTestValue
 toHIVPCRTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , hivViralLoadStatus = form.hivViralLoadStatus
             , hivViralLoad = form.hivViralLoad
             }
@@ -2531,21 +2429,9 @@ toSyphilisTestValue : SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
 toSyphilisTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
             , symptoms = Maybe.map EverySet.fromList form.symptoms
             , originatingEncounter = Nothing
@@ -2663,6 +2549,42 @@ toLiverFunctionTestValueWithEmptyResults note date =
 toLipidPanelTestValueWithEmptyResults : TestExecutionNote -> Maybe NominalDate -> LipidPanelTestValue
 toLipidPanelTestValueWithEmptyResults note date =
     LipidPanelTestValue note date Nothing Nothing Nothing Nothing Nothing
+
+
+testPrerequisitesByImmediateResult : Maybe Bool -> Maybe (EverySet TestPrerequisite)
+testPrerequisitesByImmediateResult =
+    Maybe.map
+        (\immediateResult ->
+            if immediateResult then
+                EverySet.singleton PrerequisiteImmediateResult
+
+            else
+                EverySet.singleton NoTestPrerequisites
+        )
+
+
+
+--- Labs tests Form <=> Value functions   END  ---
+--- Labs tests View functions   START  ---
+
+
+prerequisiteByImmediateResultInputsAndTasks :
+    Language
+    -> (Bool -> msg)
+    -> Maybe Bool
+    -> ( List (Html msg), Int, Int )
+prerequisiteByImmediateResultInputsAndTasks language setFormBoolInputMsg immediateResult =
+    ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
+      , viewBoolInput
+            language
+            immediateResult
+            setFormBoolInputMsg
+            "immediate-result"
+            (Just ( Translate.PointOfCare, Translate.Lab ))
+      ]
+    , taskCompleted immediateResult
+    , 1
+    )
 
 
 viewHIVTestForm :
@@ -2832,33 +2754,25 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed form
                 if form.testPerformed == Just True then
                     let
                         ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                            ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                              , viewBoolInput
-                                    language
-                                    form.immediateResult
-                                    (configInitial.setHIVTestFormBoolInputMsg
-                                        (\value form_ ->
-                                            { form_
-                                                | immediateResult = Just value
-                                                , testResult = Nothing
-                                                , testResultDirty = True
-                                                , hivProgramHC = Nothing
-                                                , hivProgramHCDirty = True
-                                                , partnerHIVPositive = Nothing
-                                                , partnerHIVPositiveDirty = True
-                                                , partnerTakingARV = Nothing
-                                                , partnerTakingARVDirty = True
-                                                , partnerSurpressedViralLoad = Nothing
-                                                , partnerSurpressedViralLoadDirty = True
-                                            }
-                                        )
+                            prerequisiteByImmediateResultInputsAndTasks language
+                                (configInitial.setHIVTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , testResult = Nothing
+                                            , testResultDirty = True
+                                            , hivProgramHC = Nothing
+                                            , hivProgramHCDirty = True
+                                            , partnerHIVPositive = Nothing
+                                            , partnerHIVPositiveDirty = True
+                                            , partnerTakingARV = Nothing
+                                            , partnerTakingARVDirty = True
+                                            , partnerSurpressedViralLoad = Nothing
+                                            , partnerSurpressedViralLoadDirty = True
+                                        }
                                     )
-                                    "immediate-result"
-                                    (Just ( Translate.PointOfCare, Translate.Lab ))
-                              ]
-                            , taskCompleted form.immediateResult
-                            , 1
-                            )
+                                )
+                                form.immediateResult
 
                         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                             if isNothing form.executionDate then
@@ -3074,29 +2988,21 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
                 ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                    ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                      , viewBoolInput
-                            language
-                            form.immediateResult
-                            (configInitial.setMalariaTestFormBoolInputMsg
-                                (\value form_ ->
-                                    { form_
-                                        | immediateResult = Just value
-                                        , testResult = Nothing
-                                        , testResultDirty = True
-                                        , bloodSmearTaken = Nothing
-                                        , bloodSmearTakenDirty = True
-                                        , bloodSmearResult = Nothing
-                                        , bloodSmearResultDirty = True
-                                    }
-                                )
+                    prerequisiteByImmediateResultInputsAndTasks language
+                        (configInitial.setMalariaTestFormBoolInputMsg
+                            (\value form_ ->
+                                { form_
+                                    | immediateResult = Just value
+                                    , testResult = Nothing
+                                    , testResultDirty = True
+                                    , bloodSmearTaken = Nothing
+                                    , bloodSmearTakenDirty = True
+                                    , bloodSmearResult = Nothing
+                                    , bloodSmearResultDirty = True
+                                }
                             )
-                            "immediate-result"
-                            (Just ( Translate.PointOfCare, Translate.Lab ))
-                      ]
-                    , taskCompleted form.immediateResult
-                    , 1
-                    )
+                        )
+                        form.immediateResult
 
                 emptySection =
                     ( [], 0, 0 )
@@ -3293,25 +3199,17 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
             if form.testPerformed == Just True then
                 let
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                          , viewBoolInput
-                                language
-                                form.immediateResult
-                                (configInitial.setPartnerHIVTestFormBoolInputMsg
-                                    (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , testResult = Nothing
-                                            , testResultDirty = True
-                                        }
-                                    )
+                        prerequisiteByImmediateResultInputsAndTasks language
+                            (configInitial.setPartnerHIVTestFormBoolInputMsg
+                                (\value form_ ->
+                                    { form_
+                                        | immediateResult = Just value
+                                        , testResult = Nothing
+                                        , testResultDirty = True
+                                    }
                                 )
-                                "immediate-result"
-                                (Just ( Translate.PointOfCare, Translate.Lab ))
-                          ]
-                        , taskCompleted form.immediateResult
-                        , 1
-                        )
+                            )
+                            form.immediateResult
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
@@ -3509,40 +3407,38 @@ viewUrineDipstickTestUniversalForm language currentDate configInitial configPerf
             if form.testPerformed == Just True then
                 let
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                          , viewBoolInput
-                                language
-                                form.immediateResult
-                                (configInitial.setUrineDipstickTestFormBoolInputMsg
-                                    (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , testVariant = Nothing
-                                            , testVariantDirty = True
-                                            , protein = Nothing
-                                            , proteinDirty = True
-                                            , ph = Nothing
-                                            , phDirty = True
-                                            , glucose = Nothing
-                                            , glucoseDirty = True
-                                            , leukocytes = Nothing
-                                            , leukocytesDirty = True
-                                            , nitrite = Nothing
-                                            , nitriteDirty = True
-                                            , urobilinogen = Nothing
-                                            , urobilinogenDirty = True
-                                            , haemoglobin = Nothing
-                                            , haemoglobinDirty = True
-                                            , ketone = Nothing
-                                            , ketoneDirty = True
-                                            , bilirubin = Nothing
-                                            , bilirubinDirty = True
-                                        }
-                                    )
+                        prerequisiteByImmediateResultInputsAndTasks language
+                            (configInitial.setUrineDipstickTestFormBoolInputMsg
+                                (\value form_ ->
+                                    { form_
+                                        | immediateResult = Just value
+                                        , testVariant = Nothing
+                                        , testVariantDirty = True
+                                        , protein = Nothing
+                                        , proteinDirty = True
+                                        , ph = Nothing
+                                        , phDirty = True
+                                        , glucose = Nothing
+                                        , glucoseDirty = True
+                                        , leukocytes = Nothing
+                                        , leukocytesDirty = True
+                                        , nitrite = Nothing
+                                        , nitriteDirty = True
+                                        , urobilinogen = Nothing
+                                        , urobilinogenDirty = True
+                                        , haemoglobin = Nothing
+                                        , haemoglobinDirty = True
+                                        , ketone = Nothing
+                                        , ketoneDirty = True
+                                        , bilirubin = Nothing
+                                        , bilirubinDirty = True
+                                    }
                                 )
-                                "immediate-result"
-                                (Just ( Translate.PointOfCare, Translate.Lab ))
-                          , viewQuestionLabel language Translate.TestVariantUrineDipstickQuestion
+                            )
+                            form.immediateResult
+
+                    ( testVariantSection, testVariantTasksCompleted, testVariantTasksTotal ) =
+                        ( [ viewQuestionLabel language Translate.TestVariantUrineDipstickQuestion
                           , viewCheckBoxSelectInput language
                                 [ VariantShortTest ]
                                 [ VariantLongTest ]
@@ -3550,8 +3446,8 @@ viewUrineDipstickTestUniversalForm language currentDate configInitial configPerf
                                 configInitial.setUrineDipstickTestVariantMsg
                                 Translate.UrineDipstickTestVariant
                           ]
-                        , taskCompleted form.immediateResult + taskCompleted form.testVariant
-                        , 2
+                        , taskCompleted form.testVariant
+                        , 1
                         )
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
@@ -3588,9 +3484,9 @@ viewUrineDipstickTestUniversalForm language currentDate configInitial configPerf
                             form.immediateResult
                             |> Maybe.withDefault emptySection
                 in
-                ( testPrerequisitesSection ++ testResultSection
-                , testPrerequisitesTasksCompleted + testResultTasksCompleted
-                , testPrerequisitesTasksTotal + testResultTasksTotal
+                ( testPrerequisitesSection ++ testVariantSection ++ testResultSection
+                , testPrerequisitesTasksCompleted + testVariantTasksCompleted + testResultTasksCompleted
+                , testPrerequisitesTasksTotal + testVariantTasksTotal + testResultTasksTotal
                 )
 
             else
@@ -3836,34 +3732,10 @@ viewRandomBloodSugarTestForm language currentDate configInitial configPerformed 
                         contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed TaskRandomBloodSugarTest form
 
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteImmediateResult
-                          , viewBoolInput
-                                language
-                                form.immediateResult
-                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
-                                    (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , sugarCount = Nothing
-                                            , sugarCountDirty = True
-                                        }
-                                    )
-                                )
-                                "immediate-result"
-                                (Just ( Translate.PointOfCare, Translate.Lab ))
-                          , viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
-                          , viewBoolInput
-                                language
-                                form.patientFasted
-                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
-                                    (\value form_ -> { form_ | patientFasted = Just value })
-                                )
-                                "patient-fasted"
-                                Nothing
-                          ]
-                        , taskCompleted form.patientFasted + taskCompleted form.immediateResult
-                        , 2
-                        )
+                        randomBloodSugarTestPrerequisitesInputsAndTasks language
+                            configInitial.setRandomBloodSugarTestFormBoolInputMsg
+                            form.immediateResult
+                            form.patientFasted
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
@@ -3923,34 +3795,10 @@ viewRandomBloodSugarTestUniversalForm language currentDate configInitial configP
             if form.testPerformed == Just True then
                 let
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                          , viewBoolInput
-                                language
-                                form.immediateResult
-                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
-                                    (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , sugarCount = Nothing
-                                            , sugarCountDirty = True
-                                        }
-                                    )
-                                )
-                                "immediate-result"
-                                (Just ( Translate.PointOfCare, Translate.Lab ))
-                          , viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteFastFor12h
-                          , viewBoolInput
-                                language
-                                form.patientFasted
-                                (configInitial.setRandomBloodSugarTestFormBoolInputMsg
-                                    (\value form_ -> { form_ | patientFasted = Just value })
-                                )
-                                "patient-fasted"
-                                Nothing
-                          ]
-                        , taskCompleted form.patientFasted + taskCompleted form.immediateResult
-                        , 2
-                        )
+                        randomBloodSugarTestPrerequisitesInputsAndTasks language
+                            configInitial.setRandomBloodSugarTestFormBoolInputMsg
+                            form.immediateResult
+                            form.patientFasted
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         Maybe.map
@@ -3983,6 +3831,42 @@ viewRandomBloodSugarTestUniversalForm language currentDate configInitial configP
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
+    )
+
+
+randomBloodSugarTestPrerequisitesInputsAndTasks language setRandomBloodSugarTestFormBoolInputMsg immediateResult patientFasted =
+    let
+        ( immediateResultSection, immediateResultTasksCompleted, immediateResultTasksTotal ) =
+            prerequisiteByImmediateResultInputsAndTasks language
+                (setRandomBloodSugarTestFormBoolInputMsg
+                    (\value form_ ->
+                        { form_
+                            | immediateResult = Just value
+                            , sugarCount = Nothing
+                            , sugarCountDirty = True
+                        }
+                    )
+                )
+                immediateResult
+
+        ( patientFastedSection, patientFastedTasksCompleted, patientFastedTasksTotal ) =
+            ( [ viewQuestionLabel language <| Translate.TestPrerequisiteQuestion PrerequisiteFastFor12h
+              , viewBoolInput
+                    language
+                    patientFasted
+                    (setRandomBloodSugarTestFormBoolInputMsg
+                        (\value form_ -> { form_ | patientFasted = Just value })
+                    )
+                    "patient-fasted"
+                    Nothing
+              ]
+            , taskCompleted patientFasted
+            , 1
+            )
+    in
+    ( immediateResultSection ++ patientFastedSection
+    , immediateResultTasksCompleted + patientFastedTasksCompleted
+    , immediateResultTasksTotal + patientFastedTasksTotal
     )
 
 
@@ -4043,27 +3927,19 @@ viewBloodGpRsTestForm language currentDate configInitial configPerformed form =
             if form.testPerformed == Just True then
                 let
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                          , viewBoolInput
-                                language
-                                form.immediateResult
-                                (configInitial.setBloodGpRsTestFormBoolInputMsg
-                                    (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , bloodGroup = Nothing
-                                            , bloodGroupDirty = True
-                                            , rhesus = Nothing
-                                            , rhesusDirty = True
-                                        }
-                                    )
+                        prerequisiteByImmediateResultInputsAndTasks language
+                            (configInitial.setBloodGpRsTestFormBoolInputMsg
+                                (\value form_ ->
+                                    { form_
+                                        | immediateResult = Just value
+                                        , bloodGroup = Nothing
+                                        , bloodGroupDirty = True
+                                        , rhesus = Nothing
+                                        , rhesusDirty = True
+                                    }
                                 )
-                                "immediate-result"
-                                (Just ( Translate.PointOfCare, Translate.Lab ))
-                          ]
-                        , taskCompleted form.immediateResult
-                        , 1
-                        )
+                            )
+                            form.immediateResult
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
@@ -4172,25 +4048,17 @@ viewHemoglobinTestForm language currentDate configInitial configPerformed form =
             if form.testPerformed == Just True then
                 let
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                          , viewBoolInput
-                                language
-                                form.immediateResult
-                                (configInitial.setHemoglobinTestFormBoolInputMsg
-                                    (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , hemoglobinCount = Nothing
-                                            , hemoglobinCountDirty = True
-                                        }
-                                    )
+                        prerequisiteByImmediateResultInputsAndTasks language
+                            (configInitial.setHemoglobinTestFormBoolInputMsg
+                                (\value form_ ->
+                                    { form_
+                                        | immediateResult = Just value
+                                        , hemoglobinCount = Nothing
+                                        , hemoglobinCountDirty = True
+                                    }
                                 )
-                                "immediate-result"
-                                (Just ( Translate.PointOfCare, Translate.Lab ))
-                          ]
-                        , taskCompleted form.immediateResult
-                        , 1
-                        )
+                            )
+                            form.immediateResult
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
@@ -4292,25 +4160,17 @@ viewHepatitisBTestForm language currentDate configInitial configPerformed form =
                 if form.testPerformed == Just True then
                     let
                         ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                            ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                              , viewBoolInput
-                                    language
-                                    form.immediateResult
-                                    (configInitial.setHepatitisBTestFormBoolInputMsg
-                                        (\value form_ ->
-                                            { form_
-                                                | immediateResult = Just value
-                                                , testResult = Nothing
-                                                , testResultDirty = True
-                                            }
-                                        )
+                            prerequisiteByImmediateResultInputsAndTasks language
+                                (configInitial.setHepatitisBTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , testResult = Nothing
+                                            , testResultDirty = True
+                                        }
                                     )
-                                    "immediate-result"
-                                    (Just ( Translate.PointOfCare, Translate.Lab ))
-                              ]
-                            , taskCompleted form.immediateResult
-                            , 1
-                            )
+                                )
+                                form.immediateResult
 
                         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                             if isNothing form.executionDate then
@@ -4393,27 +4253,19 @@ viewHIVPCRTestForm language currentDate configInitial configPerformed form =
             if form.testPerformed == Just True then
                 let
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                          , viewBoolInput
-                                language
-                                form.immediateResult
-                                (configInitial.setHIVPCRTestFormBoolInputMsg
-                                    (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , hivViralLoadStatus = Nothing
-                                            , hivViralLoadStatusDirty = True
-                                            , hivViralLoad = Nothing
-                                            , hivViralLoadDirty = True
-                                        }
-                                    )
+                        prerequisiteByImmediateResultInputsAndTasks language
+                            (configInitial.setHIVPCRTestFormBoolInputMsg
+                                (\value form_ ->
+                                    { form_
+                                        | immediateResult = Just value
+                                        , hivViralLoadStatus = Nothing
+                                        , hivViralLoadStatusDirty = True
+                                        , hivViralLoad = Nothing
+                                        , hivViralLoadDirty = True
+                                    }
                                 )
-                                "immediate-result"
-                                (Just ( Translate.PointOfCare, Translate.Lab ))
-                          ]
-                        , taskCompleted form.immediateResult
-                        , 1
-                        )
+                            )
+                            form.immediateResult
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
@@ -4537,27 +4389,19 @@ viewSyphilisTestForm language currentDate configInitial configPerformed form =
             if form.testPerformed == Just True then
                 let
                     ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        ( [ viewQuestionLabel language <| Translate.TestUniversalPrerequisiteQuestion PrerequisiteImmediateResult
-                          , viewBoolInput
-                                language
-                                form.immediateResult
-                                (configInitial.setSyphilisTestFormBoolInputMsg
-                                    (\value form_ ->
-                                        { form_
-                                            | immediateResult = Just value
-                                            , testResult = Nothing
-                                            , testResultDirty = True
-                                            , symptoms = Nothing
-                                            , symptomsDirty = True
-                                        }
-                                    )
+                        prerequisiteByImmediateResultInputsAndTasks language
+                            (configInitial.setSyphilisTestFormBoolInputMsg
+                                (\value form_ ->
+                                    { form_
+                                        | immediateResult = Just value
+                                        , testResult = Nothing
+                                        , testResultDirty = True
+                                        , symptoms = Nothing
+                                        , symptomsDirty = True
+                                    }
                                 )
-                                "immediate-result"
-                                (Just ( Translate.PointOfCare, Translate.Lab ))
-                          ]
-                        , taskCompleted form.immediateResult
-                        , 1
-                        )
+                            )
+                            form.immediateResult
 
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         if isNothing form.executionDate then
@@ -6214,21 +6058,9 @@ toPartnerHIVTestValue : PartnerHIVTestForm -> Maybe PartnerHIVTestValue
 toPartnerHIVTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                testPrerequisites =
-                    Maybe.map
-                        (\immediateResult ->
-                            if immediateResult then
-                                EverySet.singleton PrerequisiteImmediateResult
-
-                            else
-                                EverySet.singleton NoTestPrerequisites
-                        )
-                        form.immediateResult
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
-            , testPrerequisites = testPrerequisites
+            , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
             }
         )
