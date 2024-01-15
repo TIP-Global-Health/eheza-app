@@ -1759,6 +1759,108 @@ toHIVTestValue form =
         form.executionNote
 
 
+
+---
+
+
+hivTestUniversalFormWithDefault : HIVTestUniversalForm -> Maybe HIVTestValue -> HIVTestUniversalForm
+hivTestUniversalFormWithDefault form =
+    unwrap
+        form
+        (\value ->
+            let
+                knownAsPositiveValue =
+                    value.executionNote == TestNoteKnownAsPositive
+
+                testPerformedValue =
+                    testPerformedByExecutionNote value.executionNote
+
+                immediateResultValue =
+                    Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                        value.testPrerequisites
+
+                hivProgramHCValue =
+                    Maybe.map (EverySet.member HIVProgramHC)
+                        value.hivSigns
+                        |> Maybe.withDefault False
+
+                partnerHIVPositiveValue =
+                    Maybe.map (EverySet.member PartnerHIVPositive)
+                        value.hivSigns
+                        |> Maybe.withDefault False
+
+                partnerTakingARVValue =
+                    Maybe.map (EverySet.member PartnerTakingARV)
+                        value.hivSigns
+                        |> Maybe.withDefault False
+
+                partnerSurpressedViralLoadValue =
+                    Maybe.map (EverySet.member PartnerSurpressedViralLoad)
+                        value.hivSigns
+                        |> Maybe.withDefault False
+            in
+            { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+            , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+            , testPerformedDirty = form.testPerformedDirty
+            , immediateResult = or form.immediateResult immediateResultValue
+            , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
+            , executionNoteDirty = form.executionNoteDirty
+            , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
+            , executionDateDirty = form.executionDateDirty
+            , testResult = or form.testResult value.testResult
+            , hivProgramHC = valueConsideringIsDirtyField form.hivProgramHCDirty form.hivProgramHC hivProgramHCValue
+            , hivProgramHCDirty = form.hivProgramHCDirty
+            , partnerHIVPositive = valueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive partnerHIVPositiveValue
+            , partnerHIVPositiveDirty = form.partnerHIVPositiveDirty
+            , partnerTakingARV = valueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV partnerTakingARVValue
+            , partnerTakingARVDirty = form.partnerTakingARVDirty
+            , partnerSurpressedViralLoad = valueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
+            , partnerSurpressedViralLoadDirty = form.partnerSurpressedViralLoadDirty
+            }
+        )
+
+
+toHIVTestValueWithDefault : Maybe HIVTestValue -> HIVTestUniversalForm -> Maybe HIVTestValue
+toHIVTestValueWithDefault saved form =
+    hivTestUniversalFormWithDefault form saved
+        |> toHIVTestValue
+
+
+toHIVTestValue : HIVTestUniversalForm -> Maybe HIVTestValue
+toHIVTestValue form =
+    Maybe.map
+        (\executionNote ->
+            let
+                testPrerequisites =
+                    Maybe.map
+                        (\immediateResult ->
+                            if immediateResult then
+                                EverySet.singleton PrerequisiteImmediateResult
+
+                            else
+                                EverySet.singleton NoTestPrerequisites
+                        )
+                        form.immediateResult
+
+                hivSigns =
+                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
+                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
+                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                    ]
+                        |> Maybe.Extra.combine
+                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+            in
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = testPrerequisites
+            , testResult = form.testResult
+            , hivSigns = hivSigns
+            }
+        )
+        form.executionNote
+
+
 malariaTestFormWithDefault : MalariaTestForm msg -> Maybe MalariaTestValue -> MalariaTestForm msg
 malariaTestFormWithDefault form saved =
     saved
