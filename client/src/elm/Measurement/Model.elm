@@ -634,7 +634,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
 
 
 type alias ContentAndTasksLaboratoryTestInitialConfig2 msg =
-    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
+    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestUniversalForm -> HIVTestUniversalForm) -> Bool -> msg
     , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHIVTestResultMsg : String -> msg
     , setSyphilisTestFormBoolInputMsg : (Bool -> SyphilisTestForm -> SyphilisTestForm) -> Bool -> msg
@@ -727,10 +727,7 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
 
 
 type alias ContentAndTasksForPerformedLaboratoryTestConfig2 msg =
-    { setHIVTestFormBoolInputMsg : (Bool -> HIVTestForm msg -> HIVTestForm msg) -> Bool -> msg
-    , setHIVTestExecutionDateMsg : NominalDate -> msg
-    , setHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setSyphilisTestResultMsg : String -> msg
+    { setSyphilisTestResultMsg : String -> msg
     , setIllnessSymptomMsg : IllnessSymptom -> msg
     , setHepatitisBTestResultMsg : String -> msg
     , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg

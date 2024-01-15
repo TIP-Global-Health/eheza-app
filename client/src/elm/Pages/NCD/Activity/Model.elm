@@ -93,9 +93,7 @@ type Msg
     | SetActiveLaboratoryTask LaboratoryTask
     | SetHIVTestFormBoolInput (Bool -> HIVTestForm Msg -> HIVTestForm Msg) Bool
     | SetHIVTestExecutionNote TestExecutionNote
-    | SetHIVTestExecutionDate NominalDate
     | SetHIVTestResult String
-    | SetHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHIVTest PersonId (Maybe ( NCDHIVTestId, NCDHIVTest )) (Maybe LaboratoryTask)
     | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickForm Msg -> UrineDipstickForm Msg) Bool
     | SetUrineDipstickTestExecutionNote TestExecutionNote

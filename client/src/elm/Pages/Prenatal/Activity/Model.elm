@@ -14,7 +14,7 @@ import Measurement.Model
         , DropZoneFile
         , FamilyPlanningForm
         , HIVPCRTestForm
-        , HIVTestForm
+        , HIVTestUniversalForm
         , HemoglobinTestForm
         , HepatitisBTestForm
         , LaboratoryTask
@@ -32,7 +32,7 @@ import Measurement.Model
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
         , emptyHIVPCRTestForm
-        , emptyHIVTestForm
+        , emptyHIVTestUniversalForm
         , emptyHemoglobinTestForm
         , emptyHepatitisBTestForm
         , emptyMalariaTestForm
@@ -152,11 +152,9 @@ type Msg
     | SetActiveLaboratoryTask LaboratoryTask
     | SetPregnancyTestResult String
     | SavePregnancyTest PersonId (Maybe ( PregnancyTestId, PregnancyTest ))
-    | SetHIVTestFormBoolInput (Bool -> HIVTestForm Msg -> HIVTestForm Msg) Bool
+    | SetHIVTestFormBoolInput (Bool -> HIVTestUniversalForm -> HIVTestUniversalForm) Bool
     | SetHIVTestExecutionNote TestExecutionNote
-    | SetHIVTestExecutionDate NominalDate
     | SetHIVTestResult String
-    | SetHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHIVTest PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
     | SetSyphilisTestFormBoolInput (Bool -> SyphilisTestForm -> SyphilisTestForm) Bool
     | SetSyphilisTestExecutionNote TestExecutionNote
@@ -525,7 +523,7 @@ type alias LaboratoryData =
     , hemoglobinTestForm : HemoglobinTestForm
     , hepatitisBTestForm : HepatitisBTestForm
     , hivPCRTestForm : HIVPCRTestForm
-    , hivTestForm : HIVTestForm Msg
+    , hivTestForm : HIVTestUniversalForm
     , malariaTestForm : MalariaTestForm Msg
     , partnerHIVTestForm : PartnerHIVTestForm Msg
     , randomBloodSugarTestForm : RandomBloodSugarForm2
@@ -543,7 +541,7 @@ emptyLaboratoryData =
     , hemoglobinTestForm = emptyHemoglobinTestForm
     , hepatitisBTestForm = emptyHepatitisBTestForm
     , hivPCRTestForm = emptyHIVPCRTestForm
-    , hivTestForm = emptyHIVTestForm
+    , hivTestForm = emptyHIVTestUniversalForm
     , malariaTestForm = emptyMalariaTestForm
     , partnerHIVTestForm = emptyPartnerHIVTestForm
     , randomBloodSugarTestForm = emptyRandomBloodSugarForm2

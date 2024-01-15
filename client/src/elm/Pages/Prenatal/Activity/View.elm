@@ -3830,10 +3830,7 @@ contentAndTasksLaboratoryTestInitialConfig =
     emptyContentAndTasksLaboratoryTestInitialConfig NoOp
         |> (\config ->
                 { config
-                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
-                    , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
-                    , setHIVTestResultMsg = SetHIVTestResult
-                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    | setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
                     , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
                     , setMalariaTestResultMsg = SetMalariaTestResult
                     , setBloodSmearResultMsg = SetBloodSmearResultMsg
@@ -3849,7 +3846,10 @@ contentAndTasksLaboratoryTestInitialConfig2 =
     emptyContentAndTasksLaboratoryTestInitialConfig2 NoOp
         |> (\config ->
                 { config
-                    | setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
+                    , setHIVTestResultMsg = SetHIVTestResult
+                    , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
                     , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
                     , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
                     , setHepatitisBTestExecutionNoteMsg = SetHepatitisBTestExecutionNote
@@ -3873,10 +3873,7 @@ contentAndTasksForPerformedLaboratoryTestConfig =
     emptyContentAndTasksForPerformedLaboratoryTestConfig NoOp
         |> (\config ->
                 { config
-                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
-                    , setHIVTestExecutionDateMsg = SetHIVTestExecutionDate
-                    , setHIVTestDateSelectorStateMsg = SetHIVTestDateSelectorState
-                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    | setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
                     , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
                     , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
                     , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput

@@ -5401,10 +5401,7 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
 
 emptyContentAndTasksForPerformedLaboratoryTestConfig2 : msg -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
 emptyContentAndTasksForPerformedLaboratoryTestConfig2 noOpMsg =
-    { setHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
-    , setHIVTestExecutionDateMsg = always noOpMsg
-    , setHIVTestDateSelectorStateMsg = always noOpMsg
-    , setSyphilisTestResultMsg = always noOpMsg
+    { setSyphilisTestResultMsg = always noOpMsg
     , setIllnessSymptomMsg = always noOpMsg
     , setHepatitisBTestResultMsg = always noOpMsg
     , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
