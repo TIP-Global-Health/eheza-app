@@ -165,12 +165,10 @@ type Msg
     | SetHepatitisBTestExecutionNote TestExecutionNote
     | SetHepatitisBTestResult String
     | SaveHepatitisBTest PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
-    | SetMalariaTestFormBoolInput (Bool -> MalariaTestForm Msg -> MalariaTestForm Msg) Bool
+    | SetMalariaTestFormBoolInput (Bool -> MalariaTestForm -> MalariaTestForm) Bool
     | SetMalariaTestExecutionNote TestExecutionNote
-    | SetMalariaTestExecutionDate NominalDate
     | SetMalariaTestResult String
     | SetBloodSmearResultMsg String
-    | SetMalariaTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
     | SetBloodGpRsTestFormBoolInput (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) Bool
     | SetBloodGpRsTestExecutionNote TestExecutionNote
@@ -205,11 +203,9 @@ type Msg
     | SaveHIVPCRTest PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
     | SetLabsHistoryCompleted Bool
     | SaveLabsHistory
-    | SetPartnerHIVTestFormBoolInput (Bool -> PartnerHIVTestForm Msg -> PartnerHIVTestForm Msg) Bool
+    | SetPartnerHIVTestFormBoolInput (Bool -> PartnerHIVTestForm -> PartnerHIVTestForm) Bool
     | SetPartnerHIVTestExecutionNote TestExecutionNote
-    | SetPartnerHIVTestExecutionDate NominalDate
     | SetPartnerHIVTestResult String
-    | SetPartnerHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SavePartnerHIVTest PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)
       -- HealtEducationMsgs
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
@@ -524,8 +520,8 @@ type alias LaboratoryData =
     , hepatitisBTestForm : HepatitisBTestForm
     , hivPCRTestForm : HIVPCRTestForm
     , hivTestForm : HIVTestUniversalForm
-    , malariaTestForm : MalariaTestForm Msg
-    , partnerHIVTestForm : PartnerHIVTestForm Msg
+    , malariaTestForm : MalariaTestForm
+    , partnerHIVTestForm : PartnerHIVTestForm
     , randomBloodSugarTestForm : RandomBloodSugarForm2
     , syphilisTestForm : SyphilisTestForm
     , urineDipstickTestForm : UrineDipstickUniversalForm

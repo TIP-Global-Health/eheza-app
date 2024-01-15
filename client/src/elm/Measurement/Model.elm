@@ -600,7 +600,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
+    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm -> MalariaTestForm) -> Bool -> msg
     , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
     , setMalariaTestResultMsg : String -> msg
     , setBloodSmearResultMsg : String -> msg
@@ -626,7 +626,7 @@ type alias ContentAndTasksLaboratoryTestInitialConfig msg =
     , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
     , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
     , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
-    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm -> PartnerHIVTestForm) -> Bool -> msg
     , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
     , setPartnerHIVTestResultMsg : String -> msg
     , noOpMsg : msg
@@ -680,7 +680,7 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setHepatitisBTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
     , setHepatitisBTestExecutionDateMsg : NominalDate -> msg
     , setHepatitisBTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
-    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm msg -> MalariaTestForm msg) -> Bool -> msg
+    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm -> MalariaTestForm) -> Bool -> msg
     , setMalariaTestExecutionDateMsg : NominalDate -> msg
     , setMalariaTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setBloodGpRsTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
@@ -715,7 +715,7 @@ type alias ContentAndTasksForPerformedLaboratoryTestConfig msg =
     , setHbA1cTestExecutionDateMsg : NominalDate -> msg
     , setHbA1cTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , setHbA1cTestResultMsg : String -> msg
-    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm msg -> PartnerHIVTestForm msg) -> Bool -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm -> PartnerHIVTestForm) -> Bool -> msg
     , setPartnerHIVTestExecutionDateMsg : NominalDate -> msg
     , setPartnerHIVTestDateSelectorStateMsg : Maybe (DateSelectorConfig msg) -> msg
     , noOpMsg : msg
