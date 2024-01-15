@@ -2363,7 +2363,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | protein = proteinValueFromString value }
+                    { form | protein = proteinValueFromString value, proteinDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2380,7 +2380,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | ph = phValueFromString value }
+                    { form | ph = phValueFromString value, phDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2397,7 +2397,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | glucose = glucoseValueFromString value }
+                    { form | glucose = glucoseValueFromString value, glucoseDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2414,7 +2414,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | leukocytes = leukocytesValueFromString value }
+                    { form | leukocytes = leukocytesValueFromString value, leukocytesDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2431,7 +2431,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | nitrite = nitriteValueFromString value }
+                    { form | nitrite = nitriteValueFromString value, nitriteDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2448,7 +2448,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | urobilinogen = urobilinogenValueFromString value }
+                    { form | urobilinogen = urobilinogenValueFromString value, urobilinogenDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2465,7 +2465,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | haemoglobin = haemoglobinValueFromString value }
+                    { form | haemoglobin = haemoglobinValueFromString value, haemoglobinDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2482,7 +2482,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | ketone = ketoneValueFromString value }
+                    { form | ketone = ketoneValueFromString value, ketoneDirty = True }
 
                 updatedData =
                     model.laboratoryData
@@ -2499,7 +2499,7 @@ update language currentDate id db msg model =
                     model.laboratoryData.urineDipstickTestForm
 
                 updatedForm =
-                    { form | bilirubin = bilirubinValueFromString value }
+                    { form | bilirubin = bilirubinValueFromString value, bilirubinDirty = True }
 
                 updatedData =
                     model.laboratoryData
