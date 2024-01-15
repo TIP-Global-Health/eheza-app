@@ -53,7 +53,7 @@ import Measurement.Utils
         , hemoglobinTestFormWithDefault
         , hepatitisBTestFormWithDefault
         , hivPCRTestFormWithDefault
-        , hivTestFormWithDefault
+        , hivTestUniversalFormWithDefault
         , laboratoryTaskIconClass
         , malariaTestFormWithDefault
         , nonRDTFormWithDefault
@@ -67,7 +67,7 @@ import Measurement.Utils
         , vaccinationFormWithDefault
         , viewBloodGpRsTestForm
         , viewHIVPCRTestForm
-        , viewHIVTestForm
+        , viewHIVTestUniversalForm
         , viewHemoglobinTestForm
         , viewHepatitisBTestForm
         , viewMalariaTestForm
@@ -1484,11 +1484,11 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskHIVTest ->
                             measurements.hivTest
                                 |> getMeasurementValueFunc
-                                |> hivTestFormWithDefault data.hivTestForm
-                                |> viewHIVTestForm language
+                                |> hivTestUniversalFormWithDefault data.hivTestForm
+                                |> viewHIVTestUniversalForm language
                                     currentDate
-                                    contentAndTasksLaboratoryTestInitialConfig
-                                    contentAndTasksForPerformedLaboratoryTestConfig
+                                    contentAndTasksLaboratoryTestInitialConfig2
+                                    contentAndTasksForPerformedLaboratoryTestConfig2
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest

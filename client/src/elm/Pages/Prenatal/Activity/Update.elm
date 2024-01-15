@@ -47,7 +47,7 @@ import Measurement.Utils
         , toCorePhysicalExamValueWithDefault
         , toFamilyPlanningValueWithDefault
         , toHIVPCRTestValueWithDefault
-        , toHIVTestValueWithDefault
+        , toHIVTestValueUniversalWithDefault
         , toHemoglobinTestValueWithDefault
         , toHepatitisBTestValueWithDefault
         , toMalariaTestValueWithDefault
@@ -1813,7 +1813,7 @@ update language currentDate id db msg model =
 
                 appMsgs =
                     model.laboratoryData.hivTestForm
-                        |> toHIVTestValueWithDefault measurement
+                        |> toHIVTestValueUniversalWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
