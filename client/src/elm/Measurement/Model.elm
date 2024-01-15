@@ -1172,6 +1172,7 @@ type alias HIVTestUniversalForm =
 
     -- Test specific fields.
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     , hivProgramHC : Maybe Bool
     , hivProgramHCDirty : Bool
     , partnerHIVPositive : Maybe Bool
@@ -1194,6 +1195,7 @@ emptyHIVTestUniversalForm =
     , executionDate = Nothing
     , executionDateDirty = False
     , testResult = Nothing
+    , testResultDirty = False
     , hivProgramHC = Nothing
     , hivProgramHCDirty = False
     , partnerHIVPositive = Nothing
