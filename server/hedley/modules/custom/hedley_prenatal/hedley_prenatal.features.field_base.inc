@@ -209,6 +209,9 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'hiv' => 'HIV',
+        'partner-hiv' => 'Partner HIV',
+        'malaria' => 'Malaria',
         'syphilis' => 'Syphilis',
         'hepatitis-b' => 'Hepatitis B',
         'blood-group' => 'Blood Group and Rhesus',
@@ -832,6 +835,9 @@ function hedley_prenatal_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'hiv' => 'HIV',
+        'partner-hiv' => 'Partner HIV',
+        'malaria' => 'Malaria',
         'syphilis' => 'Syphilis',
         'hepatitis-b' => 'Hepatitis B',
         'blood-group' => 'Blood Group and Rhesus',

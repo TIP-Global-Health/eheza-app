@@ -3306,6 +3306,18 @@ laboratoryTestToString value =
         TestHepatitisB ->
             "hepatitis-b"
 
+        TestHIV ->
+            "hiv"
+
+        TestPartnerHIV ->
+            "partner-hiv"
+
+        TestHIVPCR ->
+            "hiv-pcr"
+
+        TestMalaria ->
+            "malaria"
+
         TestRandomBloodSugar ->
             "random-blood-sugar"
 
@@ -3317,9 +3329,6 @@ laboratoryTestToString value =
 
         TestVitalsRecheck ->
             "vitals-recheck"
-
-        TestHIVPCR ->
-            "hiv-pcr"
 
         TestCreatinine ->
             "creatinine"
@@ -3343,6 +3352,18 @@ laboratoryTestFromString value =
         "hepatitis-b" ->
             Just TestHepatitisB
 
+        "hiv" ->
+            Just TestHIV
+
+        "partner-hiv" ->
+            Just TestPartnerHIV
+
+        "hiv-pcr" ->
+            Just TestHIVPCR
+
+        "malaria" ->
+            Just TestMalaria
+
         "random-blood-sugar" ->
             Just TestRandomBloodSugar
 
@@ -3354,9 +3375,6 @@ laboratoryTestFromString value =
 
         "vitals-recheck" ->
             Just TestVitalsRecheck
-
-        "hiv-pcr" ->
-            Just TestHIVPCR
 
         "creatinine" ->
             Just TestCreatinine

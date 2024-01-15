@@ -1325,12 +1325,15 @@ type alias LabsResultsValue =
 type LaboratoryTest
     = TestBloodGpRs
     | TestHemoglobin
+    | TestHIV
+    | TestPartnerHIV
+    | TestMalaria
+    | TestHIVPCR
     | TestHepatitisB
     | TestRandomBloodSugar
     | TestSyphilis
     | TestUrineDipstick
     | TestVitalsRecheck
-    | TestHIVPCR
     | TestCreatinine
     | TestLiverFunction
     | TestLipidPanel

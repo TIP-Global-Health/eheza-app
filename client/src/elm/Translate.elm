@@ -854,6 +854,7 @@ type TranslationId
     | MainWaterPreparationOption WaterPreparationOption
     | MainWaterSourceQuestion
     | MainWaterPreparationQuestion
+    | Malaria
     | MalariaRapidDiagnosticTest
     | MalariaRecommendedTreatmentHeader
     | MalariaRecommendedTreatmentHelper
@@ -1053,6 +1054,7 @@ type TranslationId
     | ParticipantReviewed
     | ParticipantSignature
     | ParticipantDemographicInformation
+    | PartnerHIV
     | PartnerReceivedHivCounseling
     | PastDiagnosisReportReason
     | PatientDiagnosedWithLabel
@@ -2944,10 +2946,7 @@ translationSet trans =
         AILaboratoryTask task ->
             case task of
                 LaboratoryMalariaTesting ->
-                    { english = "Malaria"
-                    , kinyarwanda = Just "Malariya"
-                    , kirundi = Just "Malariya"
-                    }
+                    translationSet Malaria
 
                 LaboratoryCovidTesting ->
                     { english = "Covid Rapid Test"
@@ -4229,10 +4228,7 @@ translationSet trans =
                     }
 
                 ComplicationHiv ->
-                    { english = "HIV"
-                    , kinyarwanda = Just "Virusi itera SIDA"
-                    , kirundi = Just "Umugera wa SIDA"
-                    }
+                    translationSet HIV
 
                 ComplicationMaternalDeath ->
                     { english = "Maternal Death"
@@ -5217,10 +5213,7 @@ translationSet trans =
                             }
 
                         MalariaPage ->
-                            { english = "Malaria"
-                            , kinyarwanda = Just "Malariya"
-                            , kirundi = Just "Malariya"
-                            }
+                            translationSet Malaria
 
                         GastroPage ->
                             { english = "Gastro"
@@ -7793,6 +7786,15 @@ translationSet trans =
 
         LaboratoryTest value ->
             case value of
+                TestHIV ->
+                    translationSet HIV
+
+                TestPartnerHIV ->
+                    translationSet PartnerHIV
+
+                TestMalaria ->
+                    translationSet Malaria
+
                 TestBloodGpRs ->
                     { english = "Blood Group"
                     , kinyarwanda = Just "Ubwoko bw'Amaraso"
@@ -7952,10 +7954,7 @@ translationSet trans =
         LaboratoryTask task ->
             case task of
                 TaskHIVTest ->
-                    { english = "HIV"
-                    , kinyarwanda = Just "Virusi itera SIDA"
-                    , kirundi = Just "Umugera wa SIDA"
-                    }
+                    translationSet HIV
 
                 TaskSyphilisTest ->
                     { english = "Syphilis - RPR"
@@ -7970,10 +7969,7 @@ translationSet trans =
                     }
 
                 TaskMalariaTest ->
-                    { english = "Malaria"
-                    , kinyarwanda = Just "Malariya"
-                    , kirundi = Just "Malariya"
-                    }
+                    translationSet Malaria
 
                 TaskBloodGpRsTest ->
                     { english = "Blood Group"
@@ -8033,10 +8029,7 @@ translationSet trans =
                     }
 
                 TaskPartnerHIVTest ->
-                    { english = "Partner HIV"
-                    , kinyarwanda = Just "Ikizamini cya Virusi itera SIDA k'umugabo we"
-                    , kirundi = Just "Igipimo co kuraba umugera wa SIDA k'umushingantahe"
-                    }
+                    translationSet PartnerHIV
 
                 TaskCompletePreviousTests ->
                     translationSet History
@@ -8125,10 +8118,7 @@ translationSet trans =
                     }
 
                 TaskPartnerHIVTest ->
-                    { english = "Partner HIV"
-                    , kinyarwanda = Just "Ikizamini cya Virusi itera SIDA k'umugabo we"
-                    , kirundi = Just "Igipimo co kuraba umugera wa SIDA k'umushingantahe"
-                    }
+                    translationSet PartnerHIV
 
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
@@ -9223,6 +9213,12 @@ translationSet trans =
             , kirundi = Just "Mbega amazi yo kunywa ategurwa gute"
             }
 
+        Malaria ->
+            { english = "Malaria"
+            , kinyarwanda = Just "Malariya"
+            , kirundi = Just "Malariya"
+            }
+
         MalariaRapidDiagnosticTest ->
             { english = "Malaria Rapid Diagnostic Test"
             , kinyarwanda = Just "Igikoresho gipima Malariya ku buryo bwihuse"
@@ -9398,10 +9394,7 @@ translationSet trans =
         MedicalCondition condition ->
             case condition of
                 MedicalConditionHIV ->
-                    { english = "HIV"
-                    , kinyarwanda = Just "Virusi itera SIDA"
-                    , kirundi = Just "Umugera wa SIDA"
-                    }
+                    translationSet HIV
 
                 MedicalConditionDiabetes ->
                     { english = "Diabetes"
@@ -9452,10 +9445,7 @@ translationSet trans =
                     }
 
                 MedicalConditionMalaria ->
-                    { english = "Malaria"
-                    , kinyarwanda = Just "Malariya"
-                    , kirundi = Just "Malariya"
-                    }
+                    translationSet Malaria
 
                 MedicalConditionTuberculosis ->
                     { english = "Tuberculosis"
@@ -9656,10 +9646,7 @@ translationSet trans =
                     }
 
                 DiagnosisKnownHIV ->
-                    { english = "HIV"
-                    , kinyarwanda = Just "Virus itera SIDA"
-                    , kirundi = Just "Umugera wa SIDA"
-                    }
+                    translationSet HIV
 
                 DiagnosisMentalHealthHistory ->
                     { english = "History of Mental Health Problems"
@@ -12547,6 +12534,12 @@ translationSet trans =
             , kirundi = Just "Amakuru y'ibiharuro vy'abitavye"
             }
 
+        PartnerHIV ->
+            { english = "Partner HIV"
+            , kinyarwanda = Just "Ikizamini cya Virusi itera SIDA k'umugabo we"
+            , kirundi = Just "Igipimo co kuraba umugera wa SIDA k'umushingantahe"
+            }
+
         PartnerReceivedHivCounseling ->
             { english = "Did partner receive HIV Counseling during this pregnancy"
             , kinyarwanda = Just "Umugabo yahawe ubujyanama kuri Virusi itera SIDA"
@@ -13386,10 +13379,7 @@ translationSet trans =
                     }
 
                 DiagnosisHIV ->
-                    { english = "HIV"
-                    , kinyarwanda = Just "Virusi itera SIDA"
-                    , kirundi = Just "Umugera wa SIDA"
-                    }
+                    translationSet HIV
 
                 DiagnosisHIVDetectableViralLoad ->
                     { english = "Detectable HIV Viral Load"
@@ -13428,10 +13418,7 @@ translationSet trans =
                     }
 
                 DiagnosisMalaria ->
-                    { english = "Malaria"
-                    , kinyarwanda = Just "Malariya"
-                    , kirundi = Just "Malariya"
-                    }
+                    translationSet Malaria
 
                 DiagnosisMalariaMedicatedContinued ->
                     { english = "Malaria Continued"
@@ -13847,10 +13834,7 @@ translationSet trans =
                     }
 
                 DiagnosisHIV ->
-                    { english = "HIV"
-                    , kinyarwanda = Just "Virusi Itera SIDA"
-                    , kirundi = Just "Umugera wa SIDA"
-                    }
+                    translationSet HIV
 
                 DiagnosisHIVDetectableViralLoad ->
                     { english = "Detectable HIV Viral Load"
@@ -13889,10 +13873,7 @@ translationSet trans =
                     }
 
                 DiagnosisMalaria ->
-                    { english = "Malaria"
-                    , kinyarwanda = Just "Malariya"
-                    , kirundi = Just "Malariya"
-                    }
+                    translationSet Malaria
 
                 DiagnosisMalariaMedicatedContinued ->
                     { english = "Malaria Continued"
@@ -22857,10 +22838,7 @@ translateDashboard trans =
                     }
 
                 FeverCauseMalaria ->
-                    { english = "Malaria"
-                    , kinyarwanda = Just "Malariya"
-                    , kirundi = Just "Malariya"
-                    }
+                    translationSet Malaria
 
                 FeverCauseRespiratory ->
                     { english = "Respiratory"
