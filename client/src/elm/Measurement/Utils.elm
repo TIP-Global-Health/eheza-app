@@ -1858,70 +1858,61 @@ toHIVTestValueUniversal form =
         form.executionNote
 
 
-malariaTestFormWithDefault : MalariaTestForm msg -> Maybe MalariaTestValue -> MalariaTestForm msg
-malariaTestFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                let
-                    testPerformedValue =
-                        testPerformedByExecutionNote value.executionNote
+malariaTestFormWithDefault : MalariaTestForm -> Maybe MalariaTestValue -> MalariaTestForm
+malariaTestFormWithDefault form =
+    unwrap
+        form
+        (\value ->
+            let
+                testPerformedValue =
+                    testPerformedByExecutionNote value.executionNote
 
-                    immediateResultValue =
-                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
-                            value.testPrerequisites
+                immediateResultValue =
+                    Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                        value.testPrerequisites
 
-                    testPerformedTodayFromValue =
-                        value.executionNote == TestNoteRunToday
-
-                    bloodSmearTakenByValue =
-                        value.bloodSmearResult /= BloodSmearNotTaken
-                in
-                { testPerformed =
-                    valueConsideringIsDirtyField form.testPerformedDirty
-                        form.testPerformed
-                        testPerformedValue
-                , testPerformedDirty = form.testPerformedDirty
-                , immediateResult = or form.immediateResult immediateResultValue
-                , testPerformedToday =
-                    valueConsideringIsDirtyField form.testPerformedTodayDirty
-                        form.testPerformedToday
-                        testPerformedTodayFromValue
-                , testPerformedTodayDirty = form.testPerformedTodayDirty
-                , executionNote =
-                    valueConsideringIsDirtyField form.executionNoteDirty
-                        form.executionNote
-                        value.executionNote
-                , executionNoteDirty = form.executionNoteDirty
-                , executionDate =
-                    maybeValueConsideringIsDirtyField form.executionDateDirty
-                        form.executionDate
-                        value.executionDate
-                , executionDateDirty = form.executionDateDirty
-                , testResult = or form.testResult value.testResult
-                , bloodSmearTaken =
-                    maybeValueConsideringIsDirtyField form.bloodSmearTakenDirty
-                        form.bloodSmearTaken
-                        (Just bloodSmearTakenByValue)
-                , bloodSmearTakenDirty = form.bloodSmearTakenDirty
-                , bloodSmearResult =
-                    maybeValueConsideringIsDirtyField form.bloodSmearResultDirty
-                        form.bloodSmearResult
-                        (Just value.bloodSmearResult)
-                , bloodSmearResultDirty = form.bloodSmearResultDirty
-                , dateSelectorPopupState = form.dateSelectorPopupState
-                }
-            )
+                bloodSmearTakenByValue =
+                    value.bloodSmearResult /= BloodSmearNotTaken
+            in
+            { testPerformed =
+                valueConsideringIsDirtyField form.testPerformedDirty
+                    form.testPerformed
+                    testPerformedValue
+            , testPerformedDirty = form.testPerformedDirty
+            , immediateResult = or form.immediateResult immediateResultValue
+            , executionNote =
+                valueConsideringIsDirtyField form.executionNoteDirty
+                    form.executionNote
+                    value.executionNote
+            , executionNoteDirty = form.executionNoteDirty
+            , executionDate =
+                maybeValueConsideringIsDirtyField form.executionDateDirty
+                    form.executionDate
+                    value.executionDate
+            , executionDateDirty = form.executionDateDirty
+            , testResult = maybeValueConsideringIsDirtyField form.testResultDirty form.testResult value.testResult
+            , testResultDirty = form.testResultDirty
+            , bloodSmearTaken =
+                maybeValueConsideringIsDirtyField form.bloodSmearTakenDirty
+                    form.bloodSmearTaken
+                    (Just bloodSmearTakenByValue)
+            , bloodSmearTakenDirty = form.bloodSmearTakenDirty
+            , bloodSmearResult =
+                maybeValueConsideringIsDirtyField form.bloodSmearResultDirty
+                    form.bloodSmearResult
+                    (Just value.bloodSmearResult)
+            , bloodSmearResultDirty = form.bloodSmearResultDirty
+            }
+        )
 
 
-toMalariaTestValueWithDefault : Maybe MalariaTestValue -> MalariaTestForm msg -> Maybe MalariaTestValue
+toMalariaTestValueWithDefault : Maybe MalariaTestValue -> MalariaTestForm -> Maybe MalariaTestValue
 toMalariaTestValueWithDefault saved form =
     malariaTestFormWithDefault form saved
         |> toMalariaTestValue
 
 
-toMalariaTestValue : MalariaTestForm msg -> Maybe MalariaTestValue
+toMalariaTestValue : MalariaTestForm -> Maybe MalariaTestValue
 toMalariaTestValue form =
     Maybe.map
         (\executionNote ->
