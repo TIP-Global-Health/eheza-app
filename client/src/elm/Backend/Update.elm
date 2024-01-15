@@ -22,7 +22,8 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model
     exposing
-        ( ChildMeasurements
+        ( BloodSmearResult(..)
+        , ChildMeasurements
         , HistoricalMeasurements
         , Measurements
         , WellChildSymptom(..)
@@ -2374,7 +2375,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processVitalsRevisionAndUpdateLabsResults
                                 data.participantId
@@ -2391,19 +2392,45 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                 [ PrenatalHIVTestRevision _ data ] ->
                     let
-                        ( newModel, extraMsgs ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHIV
+                                data.value.executionNote
+                                (isJust data.value.testResult)
+
+                        ( newModel, extraMsgsForAssessment ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgs
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalPartnerHIVTestRevision _ data ] ->
+                    let
+                        ( newModel, extraMsg ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHIV
+                                data.value.executionNote
+                                (isJust data.value.testResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsg
                     )
 
                 [ PrenatalHIVPCRTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2424,7 +2451,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2450,7 +2477,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2472,19 +2499,32 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                 [ PrenatalMalariaTestRevision _ data ] ->
                     let
-                        ( newModel, extraMsgs ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestMalaria
+                                data.value.executionNote
+                                (isJust data.value.testResult
+                                    || (data.value.bloodSmearResult /= BloodSmearNotTaken)
+                                )
+
+                        ( newModel, extraMsgsForAssessment ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgs
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ PrenatalUrineDipstickTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2505,7 +2545,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to the model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2529,7 +2569,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2550,7 +2590,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2820,7 +2860,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
@@ -2841,7 +2881,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
@@ -2862,7 +2902,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
@@ -6102,7 +6142,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                             (testExecuted && (not <| EverySet.member test measurement.value.performedTests))
                                 || (not testExecuted && EverySet.member test measurement.value.performedTests)
                         then
-                            -- Update value only when really needed, as it may be set up properly already.
+                            -- Update value only when realy needed, as it may be set up properly already.
                             [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
 
                         else
