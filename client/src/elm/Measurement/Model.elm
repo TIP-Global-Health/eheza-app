@@ -1215,14 +1215,15 @@ type alias MalariaTestForm =
     , executionNote : Maybe TestExecutionNote
     , executionNoteDirty : Bool
 
-    -- Holds the date of Malaria RDT execution.
-    -- If Malaria RDT was not performed, but blood smear was,
+    -- Holds the date of Malaria test execution.
+    -- If Malaria test was not performed, but Blood smear was,
     -- will hold the date of blood smear.
     , executionDate : Maybe NominalDate
     , executionDateDirty : Bool
 
     -- Test specific fields.
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     , bloodSmearTaken : Maybe Bool
     , bloodSmearTakenDirty : Bool
     , bloodSmearResult : Maybe BloodSmearResult
@@ -1240,6 +1241,7 @@ emptyMalariaTestForm =
     , executionDate = Nothing
     , executionDateDirty = False
     , testResult = Nothing
+    , testResultDirty = False
     , bloodSmearTaken = Nothing
     , bloodSmearTakenDirty = False
     , bloodSmearResult = Nothing
@@ -1259,6 +1261,7 @@ type alias PartnerHIVTestForm =
 
     -- Test specific fields.
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     }
 
 
@@ -1272,6 +1275,7 @@ emptyPartnerHIVTestForm =
     , executionDate = Nothing
     , executionDateDirty = False
     , testResult = Nothing
+    , testResultDirty = False
     }
 
 
