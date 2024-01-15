@@ -1773,23 +1773,6 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetHIVTestExecutionDate value ->
-            let
-                form =
-                    model.laboratoryData.hivTestForm
-
-                updatedForm =
-                    { form | executionDate = Just value }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | hivTestForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetHIVTestResult value ->
             let
                 form =
@@ -1807,26 +1790,6 @@ update language currentDate id db msg model =
                         , partnerSurpressedViralLoad = Nothing
                         , partnerSurpressedViralLoadDirty = True
                     }
-
-                updatedData =
-                    model.laboratoryData
-                        |> (\data -> { data | hivTestForm = updatedForm })
-            in
-            ( { model | laboratoryData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHIVTestDateSelectorState state ->
-            let
-                form =
-                    model.laboratoryData.hivTestForm
-
-                defaultSelection =
-                    Maybe.Extra.or form.executionDate (Maybe.andThen .dateDefault state)
-
-                updatedForm =
-                    { form | dateSelectorPopupState = state, executionDate = defaultSelection }
 
                 updatedData =
                     model.laboratoryData

@@ -1807,7 +1807,8 @@ hivTestUniversalFormWithDefault form =
             , executionNoteDirty = form.executionNoteDirty
             , executionDate = maybeValueConsideringIsDirtyField form.executionDateDirty form.executionDate value.executionDate
             , executionDateDirty = form.executionDateDirty
-            , testResult = or form.testResult value.testResult
+            , testResult = maybeValueConsideringIsDirtyField form.testResultDirty form.testResult value.testResult
+            , testResultDirty = form.testResultDirty
             , hivProgramHC = valueConsideringIsDirtyField form.hivProgramHCDirty form.hivProgramHC hivProgramHCValue
             , hivProgramHCDirty = form.hivProgramHCDirty
             , partnerHIVPositive = valueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive partnerHIVPositiveValue
@@ -5410,7 +5411,6 @@ emptyContentAndTasksLaboratoryTestInitialConfig2 : msg -> ContentAndTasksLaborat
 emptyContentAndTasksLaboratoryTestInitialConfig2 noOpMsg =
     { setHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHIVTestExecutionNoteMsg = always noOpMsg
-    , setHIVTestResultMsg = always noOpMsg
     , setSyphilisTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setSyphilisTestExecutionNoteMsg = always noOpMsg
     , setHepatitisBTestFormBoolInputMsg = \_ _ -> noOpMsg
@@ -5503,7 +5503,8 @@ emptyContentAndTasksForPerformedLaboratoryTestConfig noOpMsg =
 
 emptyContentAndTasksForPerformedLaboratoryTestConfig2 : msg -> ContentAndTasksForPerformedLaboratoryTestConfig2 msg
 emptyContentAndTasksForPerformedLaboratoryTestConfig2 noOpMsg =
-    { setSyphilisTestResultMsg = always noOpMsg
+    { setHIVTestResultMsg = always noOpMsg
+    , setSyphilisTestResultMsg = always noOpMsg
     , setIllnessSymptomMsg = always noOpMsg
     , setHepatitisBTestResultMsg = always noOpMsg
     , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg

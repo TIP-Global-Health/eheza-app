@@ -3848,7 +3848,6 @@ contentAndTasksLaboratoryTestInitialConfig2 =
                 { config
                     | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
                     , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
-                    , setHIVTestResultMsg = SetHIVTestResult
                     , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
                     , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
                     , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
@@ -3888,7 +3887,8 @@ contentAndTasksForPerformedLaboratoryTestConfig2 =
     emptyContentAndTasksForPerformedLaboratoryTestConfig2 NoOp
         |> (\config ->
                 { config
-                    | setSyphilisTestResultMsg = SetSyphilisTestResult
+                    | setHIVTestResultMsg = SetHIVTestResult
+                    , setSyphilisTestResultMsg = SetSyphilisTestResult
                     , setIllnessSymptomMsg = SetIllnessSymptom
                     , setHepatitisBTestResultMsg = SetHepatitisBTestResult
                     , setBloodGroupMsg = SetBloodGroup
