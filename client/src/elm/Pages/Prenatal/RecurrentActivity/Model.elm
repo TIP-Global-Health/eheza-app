@@ -10,6 +10,7 @@ import Measurement.Model
         , HemoglobinResultForm
         , HepatitisBResultForm
         , LaboratoryTask
+        , PartnerHIVResultForm
         , RandomBloodSugarResultForm
         , SyphilisResultForm
         , UrineDipstickResultForm
@@ -19,6 +20,7 @@ import Measurement.Model
         , emptyHIVResultForm
         , emptyHemoglobinResultForm
         , emptyHepatitisBResultForm
+        , emptyPartnerHIVResultForm
         , emptyRandomBloodSugarResultForm
         , emptySyphilisResultForm
         , emptyUrineDipstickResultForm
@@ -68,6 +70,8 @@ type Msg
     | SetHIVTestFormBoolInput (Bool -> HIVResultForm -> HIVResultForm) Bool
     | SetHIVTestResult String
     | SaveHIVTestResult PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
+    | SetPartnerHIVTestResult String
+    | SavePartnerHIVTestResult PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)
       -- MalariaPreventionMsgs
     | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
     | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
@@ -128,6 +132,7 @@ type alias LabResultsData =
     , urineDipstickTestForm : UrineDipstickResultForm
     , hivPCRTestForm : HIVPCRResultForm
     , hivTestForm : HIVResultForm
+    , partnerHIVTestForm : PartnerHIVResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -142,6 +147,7 @@ emptyLabResultsData =
     , urineDipstickTestForm = emptyUrineDipstickResultForm
     , hivPCRTestForm = emptyHIVPCRResultForm
     , hivTestForm = emptyHIVResultForm
+    , partnerHIVTestForm = emptyPartnerHIVResultForm
     , activeTask = Nothing
     }
 

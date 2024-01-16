@@ -18,7 +18,8 @@ import Measurement.Utils
         , toHIVPCRResultsValueWithDefault
         , toHIVResultValueWithDefault
         , toHemoglobinResultsValueWithDefault
-        , toHepatitisBResultsValueWithDefault
+        , toHepatitisBResultValueWithDefault
+        , toPartnerHIVResultValueWithDefault
         , toRandomBloodSugarResultsValueWithDefault
         , toSyphilisResultValueWithDefault
         , toUrineDipstickResultsValueWithDefault
@@ -268,7 +269,7 @@ update language currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toHepatitisBResultsValueWithDefault measurement model.labResultsData.hepatitisBTestForm
+                    toHepatitisBResultValueWithDefault measurement model.labResultsData.hepatitisBTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -752,6 +753,51 @@ update language currentDate id db msg model =
             )
                 |> sequenceExtra (update language currentDate id db) extraMsgs
 
+        SetPartnerHIVTestResult value ->
+            let
+                form =
+                    model.labResultsData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SavePartnerHIVTestResult personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLabResultsMsgs nextTask
+
+                appMsgs =
+                    model.labResultsData.partnerHIVTestForm
+                        |> toPartnerHIVResultValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
         SetActiveNextStepsTask task ->
             let
                 updatedData =
@@ -1149,7 +1195,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.hepatitisBTestForm
 
                 appMsgs =
-                    toHepatitisBResultsValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
+                    toHepatitisBResultValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHepatitisBTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId

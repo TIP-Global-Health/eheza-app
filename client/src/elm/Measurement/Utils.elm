@@ -3333,6 +3333,25 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
     )
 
 
+partnerHIVResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> PartnerHIVResultForm
+    -> ( Html msg, Int, Int )
+partnerHIVResultFormAndTasks language currentDate setPartnerHIVTestResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            standardTestResultInputsAndTasks language setPartnerHIVTestResultMsg form.testResult TaskPartnerHIVTest
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskPartnerHIVTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
 prenatalRDTFormInputsAndTasks :
     Language
     -> NominalDate
@@ -5821,14 +5840,14 @@ hepatitisBResultFormWithDefault form saved =
             )
 
 
-toHepatitisBResultsValueWithDefault : Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId)
-toHepatitisBResultsValueWithDefault saved form =
+toHepatitisBResultValueWithDefault : Maybe (HepatitisBTestValue encounterId) -> HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId)
+toHepatitisBResultValueWithDefault saved form =
     hepatitisBResultFormWithDefault form saved
-        |> toHepatitisBResultsValue
+        |> toHepatitisBResultValue
 
 
-toHepatitisBResultsValue : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId)
-toHepatitisBResultsValue form =
+toHepatitisBResultValue : HepatitisBResultForm encounterId -> Maybe (HepatitisBTestValue encounterId)
+toHepatitisBResultValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
@@ -6137,6 +6156,39 @@ toHIVResultValue form =
             , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
             , hivSigns = hivSigns
+            }
+        )
+        form.executionNote
+
+
+partnerHIVResultFormWithDefault : PartnerHIVResultForm -> Maybe PartnerHIVTestValue -> PartnerHIVResultForm
+partnerHIVResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
+                , testResult = or form.testResult value.testResult
+                }
+            )
+
+
+toPartnerHIVResultValueWithDefault : Maybe PartnerHIVTestValue -> PartnerHIVResultForm -> Maybe PartnerHIVTestValue
+toPartnerHIVResultValueWithDefault saved form =
+    partnerHIVResultFormWithDefault form saved
+        |> toPartnerHIVResultsValue
+
+
+toPartnerHIVResultsValue : PartnerHIVResultForm -> Maybe PartnerHIVTestValue
+toPartnerHIVResultsValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
+            , testResult = form.testResult
             }
         )
         form.executionNote

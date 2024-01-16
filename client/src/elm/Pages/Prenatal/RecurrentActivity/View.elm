@@ -26,6 +26,8 @@ import Measurement.Utils
         , hivResultFormAndTasks
         , hivResultFormWithDefault
         , laboratoryTaskIconClass
+        , partnerHIVResultFormAndTasks
+        , partnerHIVResultFormWithDefault
         , randomBloodSugarResultFormAndTasks
         , randomBloodSugarResultFormWithDefault
         , syphilisResultFormAndTasks
@@ -162,7 +164,9 @@ viewLabResultsContent language currentDate assembled model =
                     ( task
                     , case task of
                         TaskPartnerHIVTest ->
-                            ( emptyNode, 0, 0 )
+                            getMeasurementValueFunc measurements.partnerHIVTest
+                                |> partnerHIVResultFormWithDefault model.labResultsData.partnerHIVTestForm
+                                |> partnerHIVResultFormAndTasks language currentDate SetPartnerHIVTestResult
 
                         TaskHIVTest ->
                             getMeasurementValueFunc measurements.hivTest
