@@ -2651,6 +2651,178 @@ prerequisiteByImmediateResultInputsAndTasks language setFormBoolInputMsg immedia
     )
 
 
+prenatalRDTFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> LaboratoryTask
+    ->
+        { f
+            | testPerformed : Maybe Bool
+            , testPerformedToday : Maybe Bool
+            , executionNote : Maybe TestExecutionNote
+            , executionDate : Maybe NominalDate
+            , testResult : Maybe TestResult
+            , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
+        }
+    -> ( List (Html msg), Int, Int )
+prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial language currentDate configInitial task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.testPerformed == Just True then
+                let
+                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
+                        contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed task form
+
+                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                        if isNothing form.executionDate then
+                            ( [], 0, 0 )
+
+                        else
+                            let
+                                setTestResultMsg =
+                                    case task of
+                                        TaskHIVTest ->
+                                            Just configInitial.setHIVTestResultMsg
+
+                                        TaskMalariaTest ->
+                                            Just configInitial.setMalariaTestResultMsg
+
+                                        TaskPregnancyTest ->
+                                            Just configInitial.setPregnancyTestResultMsg
+
+                                        TaskPartnerHIVTest ->
+                                            Just configInitial.setPartnerHIVTestResultMsg
+
+                                        _ ->
+                                            Nothing
+                            in
+                            Maybe.map
+                                (\setResultMsg ->
+                                    ( [ viewLabel language <| Translate.LaboratoryTaskResult task
+                                      , viewCustomSelectListInput form.testResult
+                                            [ TestPositive, TestNegative, TestIndeterminate ]
+                                            testResultToString
+                                            setResultMsg
+                                            (Translate.TestResult >> translate language)
+                                            "form-input select"
+                                            (isNothing form.testResult)
+                                      ]
+                                    , taskCompleted form.testResult
+                                    , 1
+                                    )
+                                )
+                                setTestResultMsg
+                                |> Maybe.withDefault ( [], 0, 0 )
+                in
+                ( performedTestSection ++ testResultSection
+                , performedTestTasksCompleted + testResultTasksCompleted
+                , performedTestTasksTotal + testResultTasksTotal
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( initialSection ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+viewNonRDTFormCheckKnownAsPositive :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> LaboratoryTask
+    -> NonRDTForm msg
+    -> ( Html msg, Int, Int )
+viewNonRDTFormCheckKnownAsPositive language currentDate configInitial configPerformed task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestKnownAsPositive language currentDate configInitial task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.knownAsPositive /= Just False then
+                ( [], 0, 0 )
+
+            else
+                nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
+    in
+    ( div [ class "ui form laboratory non-rdt" ] <|
+        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
+            :: initialSection
+            ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
+viewNonRDTForm :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> LaboratoryTask
+    -> NonRDTForm msg
+    -> ( Html msg, Int, Int )
+viewNonRDTForm language currentDate configInitial configPerformed task form =
+    let
+        ( inputs, tasksCompleted, tasksTotal ) =
+            nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
+    in
+    ( div [ class "ui form laboratory non-rdt" ] <|
+        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
+            :: inputs
+    , tasksCompleted
+    , tasksTotal
+    )
+
+
+nonRDTFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryTestInitialConfig msg
+    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
+    -> LaboratoryTask
+    -> NonRDTForm msg
+    -> ( List (Html msg), Int, Int )
+nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form =
+    let
+        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+            contentAndTasksLaboratoryTestInitial language currentDate configInitial task form
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            if form.testPerformed == Just True then
+                let
+                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
+                        contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed task form
+
+                    testResultSection =
+                        if isNothing form.executionDate then
+                            []
+
+                        else
+                            [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                in
+                ( performedTestSection ++ testResultSection
+                , performedTestTasksCompleted
+                , performedTestTasksTotal
+                )
+
+            else
+                ( [], 0, 0 )
+    in
+    ( initialSection ++ derivedSection
+    , initialTasksCompleted + derivedTasksCompleted
+    , initialTasksTotal + derivedTasksTotal
+    )
+
+
 viewHIVTestForm :
     Language
     -> NominalDate
@@ -3349,88 +3521,6 @@ partnerHIVResultFormAndTasks language currentDate setPartnerHIVTestResultMsg for
             ++ testResultSection
     , testResultTasksCompleted
     , testResultTasksTotal
-    )
-
-
-prenatalRDTFormInputsAndTasks :
-    Language
-    -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
-    -> LaboratoryTask
-    ->
-        { f
-            | testPerformed : Maybe Bool
-            , testPerformedToday : Maybe Bool
-            , executionNote : Maybe TestExecutionNote
-            , executionDate : Maybe NominalDate
-            , testResult : Maybe TestResult
-            , dateSelectorPopupState : Maybe (DateSelectorConfig msg)
-        }
-    -> ( List (Html msg), Int, Int )
-prenatalRDTFormInputsAndTasks language currentDate configInitial configPerformed task form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate configInitial task form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.testPerformed == Just True then
-                let
-                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
-                        contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed task form
-
-                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-                        if isNothing form.executionDate then
-                            ( [], 0, 0 )
-
-                        else
-                            let
-                                setTestResultMsg =
-                                    case task of
-                                        TaskHIVTest ->
-                                            Just configInitial.setHIVTestResultMsg
-
-                                        TaskMalariaTest ->
-                                            Just configInitial.setMalariaTestResultMsg
-
-                                        TaskPregnancyTest ->
-                                            Just configInitial.setPregnancyTestResultMsg
-
-                                        TaskPartnerHIVTest ->
-                                            Just configInitial.setPartnerHIVTestResultMsg
-
-                                        _ ->
-                                            Nothing
-                            in
-                            Maybe.map
-                                (\setResultMsg ->
-                                    ( [ viewLabel language <| Translate.LaboratoryTaskResult task
-                                      , viewCustomSelectListInput form.testResult
-                                            [ TestPositive, TestNegative, TestIndeterminate ]
-                                            testResultToString
-                                            setResultMsg
-                                            (Translate.TestResult >> translate language)
-                                            "form-input select"
-                                            (isNothing form.testResult)
-                                      ]
-                                    , taskCompleted form.testResult
-                                    , 1
-                                    )
-                                )
-                                setTestResultMsg
-                                |> Maybe.withDefault ( [], 0, 0 )
-                in
-                ( performedTestSection ++ testResultSection
-                , performedTestTasksCompleted + testResultTasksCompleted
-                , performedTestTasksTotal + testResultTasksTotal
-                )
-
-            else
-                ( [], 0, 0 )
-    in
-    ( initialSection ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
     )
 
 
@@ -4614,56 +4704,6 @@ syphilisResultInputsAndTasks language setIllnessSymptomMsg setSyphilisTestResult
     )
 
 
-viewNonRDTFormCheckKnownAsPositive :
-    Language
-    -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
-    -> LaboratoryTask
-    -> NonRDTForm msg
-    -> ( Html msg, Int, Int )
-viewNonRDTFormCheckKnownAsPositive language currentDate configInitial configPerformed task form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestKnownAsPositive language currentDate configInitial task form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.knownAsPositive /= Just False then
-                ( [], 0, 0 )
-
-            else
-                nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
-    in
-    ( div [ class "ui form laboratory non-rdt" ] <|
-        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
-            :: initialSection
-            ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
-
-
-viewNonRDTForm :
-    Language
-    -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
-    -> LaboratoryTask
-    -> NonRDTForm msg
-    -> ( Html msg, Int, Int )
-viewNonRDTForm language currentDate configInitial configPerformed task form =
-    let
-        ( inputs, tasksCompleted, tasksTotal ) =
-            nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form
-    in
-    ( div [ class "ui form laboratory non-rdt" ] <|
-        viewCustomLabel language (Translate.LaboratoryTaskLabel task) "" "label header"
-            :: inputs
-    , tasksCompleted
-    , tasksTotal
-    )
-
-
 viewHbA1cTestForm :
     Language
     -> NominalDate
@@ -4802,46 +4842,6 @@ viewHbA1cTestForm language currentDate configInitial configPerformed previousTes
         viewCustomLabel language (Translate.LaboratoryTaskLabel TaskHbA1cTest) "" "label header"
             :: initialSection
             ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
-    )
-
-
-nonRDTFormInputsAndTasks :
-    Language
-    -> NominalDate
-    -> ContentAndTasksLaboratoryTestInitialConfig msg
-    -> ContentAndTasksForPerformedLaboratoryTestConfig msg
-    -> LaboratoryTask
-    -> NonRDTForm msg
-    -> ( List (Html msg), Int, Int )
-nonRDTFormInputsAndTasks language currentDate configInitial configPerformed task form =
-    let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryTestInitial language currentDate configInitial task form
-
-        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
-            if form.testPerformed == Just True then
-                let
-                    ( performedTestSection, performedTestTasksCompleted, performedTestTasksTotal ) =
-                        contentAndTasksForPerformedLaboratoryTest language currentDate configPerformed task form
-
-                    testResultSection =
-                        if isNothing form.executionDate then
-                            []
-
-                        else
-                            [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
-                in
-                ( performedTestSection ++ testResultSection
-                , performedTestTasksCompleted
-                , performedTestTasksTotal
-                )
-
-            else
-                ( [], 0, 0 )
-    in
-    ( initialSection ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
     )
@@ -5914,14 +5914,14 @@ bloodGpRsResultFormWithDefault form saved =
             )
 
 
-toBloodGpRsResultsValueWithDefault : Maybe (BloodGpRsTestValue encounterId) -> BloodGpRsResultForm encounterId -> Maybe (BloodGpRsTestValue encounterId)
-toBloodGpRsResultsValueWithDefault saved form =
+toBloodGpRsResultValueWithDefault : Maybe (BloodGpRsTestValue encounterId) -> BloodGpRsResultForm encounterId -> Maybe (BloodGpRsTestValue encounterId)
+toBloodGpRsResultValueWithDefault saved form =
     bloodGpRsResultFormWithDefault form saved
-        |> toBloodGpRsResultsValue
+        |> toBloodGpRsResultValue
 
 
-toBloodGpRsResultsValue : BloodGpRsResultForm encounterId -> Maybe (BloodGpRsTestValue encounterId)
-toBloodGpRsResultsValue form =
+toBloodGpRsResultValue : BloodGpRsResultForm encounterId -> Maybe (BloodGpRsTestValue encounterId)
+toBloodGpRsResultValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
@@ -5949,14 +5949,14 @@ hemoglobinResultFormWithDefault form saved =
             )
 
 
-toHemoglobinResultsValueWithDefault : Maybe HemoglobinTestValue -> HemoglobinResultForm -> Maybe HemoglobinTestValue
-toHemoglobinResultsValueWithDefault saved form =
+toHemoglobinResultValueWithDefault : Maybe HemoglobinTestValue -> HemoglobinResultForm -> Maybe HemoglobinTestValue
+toHemoglobinResultValueWithDefault saved form =
     hemoglobinResultFormWithDefault form saved
-        |> toHemoglobinResultsValue
+        |> toHemoglobinResultValue
 
 
-toHemoglobinResultsValue : HemoglobinResultForm -> Maybe HemoglobinTestValue
-toHemoglobinResultsValue form =
+toHemoglobinResultValue : HemoglobinResultForm -> Maybe HemoglobinTestValue
+toHemoglobinResultValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
@@ -5983,14 +5983,14 @@ randomBloodSugarResultFormWithDefault form saved =
             )
 
 
-toRandomBloodSugarResultsValueWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarResultForm encounterId -> Maybe (RandomBloodSugarTestValue encounterId)
-toRandomBloodSugarResultsValueWithDefault saved form =
+toRandomBloodSugarResultValueWithDefault : Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarResultForm encounterId -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarResultValueWithDefault saved form =
     randomBloodSugarResultFormWithDefault form saved
-        |> toRandomBloodSugarResultsValue
+        |> toRandomBloodSugarResultValue
 
 
-toRandomBloodSugarResultsValue : RandomBloodSugarResultForm encounterId -> Maybe (RandomBloodSugarTestValue encounterId)
-toRandomBloodSugarResultsValue form =
+toRandomBloodSugarResultValue : RandomBloodSugarResultForm encounterId -> Maybe (RandomBloodSugarTestValue encounterId)
+toRandomBloodSugarResultValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
@@ -6026,14 +6026,14 @@ urineDipstickResultFormWithDefault form saved =
             )
 
 
-toUrineDipstickResultsValueWithDefault : Maybe UrineDipstickTestValue -> UrineDipstickResultForm -> Maybe UrineDipstickTestValue
-toUrineDipstickResultsValueWithDefault saved form =
+toUrineDipstickResultValueWithDefault : Maybe UrineDipstickTestValue -> UrineDipstickResultForm -> Maybe UrineDipstickTestValue
+toUrineDipstickResultValueWithDefault saved form =
     urineDipstickResultFormWithDefault form saved
-        |> toUrineDipstickResultsValue
+        |> toUrineDipstickResultValue
 
 
-toUrineDipstickResultsValue : UrineDipstickResultForm -> Maybe UrineDipstickTestValue
-toUrineDipstickResultsValue form =
+toUrineDipstickResultValue : UrineDipstickResultForm -> Maybe UrineDipstickTestValue
+toUrineDipstickResultValue form =
     Maybe.map
         (\executionNote ->
             { testVariant = form.testVariant
@@ -6069,14 +6069,14 @@ hivPCRResultFormWithDefault form saved =
             )
 
 
-toHIVPCRResultsValueWithDefault : Maybe HIVPCRTestValue -> HIVPCRResultForm -> Maybe HIVPCRTestValue
-toHIVPCRResultsValueWithDefault saved form =
+toHIVPCRResultValueWithDefault : Maybe HIVPCRTestValue -> HIVPCRResultForm -> Maybe HIVPCRTestValue
+toHIVPCRResultValueWithDefault saved form =
     hivPCRResultFormWithDefault form saved
-        |> toHIVPCRResultsValue
+        |> toHIVPCRResultValue
 
 
-toHIVPCRResultsValue : HIVPCRResultForm -> Maybe HIVPCRTestValue
-toHIVPCRResultsValue form =
+toHIVPCRResultValue : HIVPCRResultForm -> Maybe HIVPCRTestValue
+toHIVPCRResultValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
@@ -6178,11 +6178,11 @@ partnerHIVResultFormWithDefault form saved =
 toPartnerHIVResultValueWithDefault : Maybe PartnerHIVTestValue -> PartnerHIVResultForm -> Maybe PartnerHIVTestValue
 toPartnerHIVResultValueWithDefault saved form =
     partnerHIVResultFormWithDefault form saved
-        |> toPartnerHIVResultsValue
+        |> toPartnerHIVResultValue
 
 
-toPartnerHIVResultsValue : PartnerHIVResultForm -> Maybe PartnerHIVTestValue
-toPartnerHIVResultsValue form =
+toPartnerHIVResultValue : PartnerHIVResultForm -> Maybe PartnerHIVTestValue
+toPartnerHIVResultValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
@@ -6208,14 +6208,14 @@ creatinineResultFormWithDefault form saved =
             )
 
 
-toCreatinineResultsValueWithDefault : Maybe CreatinineTestValue -> CreatinineResultForm -> Maybe CreatinineTestValue
-toCreatinineResultsValueWithDefault saved form =
+toCreatinineResultValueWithDefault : Maybe CreatinineTestValue -> CreatinineResultForm -> Maybe CreatinineTestValue
+toCreatinineResultValueWithDefault saved form =
     creatinineResultFormWithDefault form saved
-        |> toCreatinineResultsValue
+        |> toCreatinineResultValue
 
 
-toCreatinineResultsValue : CreatinineResultForm -> Maybe CreatinineTestValue
-toCreatinineResultsValue form =
+toCreatinineResultValue : CreatinineResultForm -> Maybe CreatinineTestValue
+toCreatinineResultValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
@@ -6241,14 +6241,14 @@ liverFunctionResultFormWithDefault form saved =
             )
 
 
-toLiverFunctionResultsValueWithDefault : Maybe LiverFunctionTestValue -> LiverFunctionResultForm -> Maybe LiverFunctionTestValue
-toLiverFunctionResultsValueWithDefault saved form =
+toLiverFunctionResultValueWithDefault : Maybe LiverFunctionTestValue -> LiverFunctionResultForm -> Maybe LiverFunctionTestValue
+toLiverFunctionResultValueWithDefault saved form =
     liverFunctionResultFormWithDefault form saved
-        |> toLiverFunctionResultsValue
+        |> toLiverFunctionResultValue
 
 
-toLiverFunctionResultsValue : LiverFunctionResultForm -> Maybe LiverFunctionTestValue
-toLiverFunctionResultsValue form =
+toLiverFunctionResultValue : LiverFunctionResultForm -> Maybe LiverFunctionTestValue
+toLiverFunctionResultValue form =
     Maybe.map
         (\executionNote ->
             { executionNote = executionNote
@@ -6310,14 +6310,14 @@ lipidPanelResultFormWithDefault form saved =
             )
 
 
-toLipidPanelResultsValueWithDefault : Maybe LipidPanelTestValue -> LipidPanelResultForm -> Maybe LipidPanelTestValue
-toLipidPanelResultsValueWithDefault saved form =
+toLipidPanelResultValueWithDefault : Maybe LipidPanelTestValue -> LipidPanelResultForm -> Maybe LipidPanelTestValue
+toLipidPanelResultValueWithDefault saved form =
     lipidPanelResultFormWithDefault form saved
-        |> toLipidPanelResultsValue
+        |> toLipidPanelResultValue
 
 
-toLipidPanelResultsValue : LipidPanelResultForm -> Maybe LipidPanelTestValue
-toLipidPanelResultsValue form =
+toLipidPanelResultValue : LipidPanelResultForm -> Maybe LipidPanelTestValue
+toLipidPanelResultValue form =
     Maybe.map
         (\executionNote ->
             let
