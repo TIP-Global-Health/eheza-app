@@ -1201,6 +1201,39 @@ emptyHIVTestUniversalForm =
     }
 
 
+type alias HIVResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , testResult : Maybe TestResult
+    , hivProgramHC : Maybe Bool
+    , hivProgramHCDirty : Bool
+    , partnerHIVPositive : Maybe Bool
+    , partnerHIVPositiveDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
+    }
+
+
+emptyHIVResultForm : HIVResultForm
+emptyHIVResultForm =
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , testResult = Nothing
+    , hivProgramHC = Nothing
+    , hivProgramHCDirty = False
+    , partnerHIVPositive = Nothing
+    , partnerHIVPositiveDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
+    }
+
+
 type alias MalariaTestForm =
     { -- If true, test will be performed today.
       testPerformed : Maybe Bool
