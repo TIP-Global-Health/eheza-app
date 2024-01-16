@@ -1276,6 +1276,25 @@ emptyMalariaTestForm =
     }
 
 
+type alias MalariaResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , testResult : Maybe TestResult
+    , bloodSmearResult : Maybe BloodSmearResult
+    }
+
+
+emptyMalariaResultForm : MalariaResultForm
+emptyMalariaResultForm =
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , testResult = Nothing
+    , bloodSmearResult = Nothing
+    }
+
+
 type alias PartnerHIVTestForm =
     { -- If true, test will be performed today.
       testPerformed : Maybe Bool
