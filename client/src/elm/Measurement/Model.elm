@@ -1306,6 +1306,23 @@ emptyPartnerHIVTestForm =
     }
 
 
+type alias PartnerHIVResultForm =
+    { executionNote : Maybe TestExecutionNote
+    , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , testResult : Maybe TestResult
+    }
+
+
+emptyPartnerHIVResultForm : PartnerHIVResultForm
+emptyPartnerHIVResultForm =
+    { executionNote = Nothing
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , testResult = Nothing
+    }
+
+
 
 -- Universal Lab forms    - end
 
