@@ -726,7 +726,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveHIVTestResult personId saved nextTask ->
+        SaveHIVResult personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -771,7 +771,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SavePartnerHIVTestResult personId saved nextTask ->
+        SavePartnerHIVResult personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -833,7 +833,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SaveMalariaTest personId saved nextTask ->
+        SaveMalariaResult personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved

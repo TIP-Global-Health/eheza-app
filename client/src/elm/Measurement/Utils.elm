@@ -1899,7 +1899,7 @@ malariaTestFormWithDefault form =
                         value.testPrerequisites
 
                 bloodSmearTakenByValue =
-                    not <| bloodSmearResultNotSet value.bloodSmearResult
+                    bloodSmearResultSet value.bloodSmearResult
             in
             { testPerformed =
                 valueConsideringIsDirtyField form.testPerformedDirty
@@ -1931,6 +1931,11 @@ malariaTestFormWithDefault form =
             , bloodSmearResultDirty = form.bloodSmearResultDirty
             }
         )
+
+
+bloodSmearResultSet : BloodSmearResult -> Bool
+bloodSmearResultSet =
+    bloodSmearResultNotSet >> not
 
 
 bloodSmearResultNotSet : BloodSmearResult -> Bool

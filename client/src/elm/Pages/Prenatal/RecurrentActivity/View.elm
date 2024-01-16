@@ -265,8 +265,11 @@ viewLabResultsContent language currentDate assembled model =
 
                         saveMsg =
                             case task of
+                                TaskPartnerHIVTest ->
+                                    SavePartnerHIVResult personId measurements.partnerHIVTest nextTask |> Just
+
                                 TaskHIVTest ->
-                                    Nothing
+                                    SaveHIVResult personId measurements.hivTest nextTask |> Just
 
                                 TaskSyphilisTest ->
                                     SaveSyphilisResult personId measurements.syphilisTest nextTask |> Just
@@ -275,7 +278,7 @@ viewLabResultsContent language currentDate assembled model =
                                     SaveHepatitisBResult personId measurements.hepatitisBTest nextTask |> Just
 
                                 TaskMalariaTest ->
-                                    Nothing
+                                    SaveMalariaResult personId measurements.malariaTest nextTask |> Just
 
                                 TaskBloodGpRsTest ->
                                     SaveBloodGpRsResult personId measurements.bloodGpRsTest nextTask |> Just
@@ -291,9 +294,6 @@ viewLabResultsContent language currentDate assembled model =
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRResult personId measurements.hivPCRTest nextTask |> Just
-
-                                TaskPartnerHIVTest ->
-                                    Nothing
 
                                 TaskCompletePreviousTests ->
                                     Nothing
