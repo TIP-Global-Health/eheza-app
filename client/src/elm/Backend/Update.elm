@@ -2417,7 +2417,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
-                                Backend.Measurement.Model.TestHIV
+                                Backend.Measurement.Model.TestPartnerHIV
                                 data.value.executionNote
                                 (isJust data.value.testResult)
                     in

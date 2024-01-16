@@ -5010,24 +5010,28 @@ contentAndTasksLaboratoryUniversalTestInitial :
 contentAndTasksLaboratoryUniversalTestInitial language currentDate config task form =
     let
         msgs =
+            let
+                resolveNoteAndDate value =
+                    if value == True then
+                        ( Just TestNoteRunToday, Just currentDate )
+
+                    else
+                        ( Nothing, Nothing )
+            in
             case task of
                 TaskHIVTest ->
                     let
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5052,18 +5056,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5082,18 +5082,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5110,18 +5106,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5142,18 +5134,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5172,18 +5160,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5218,18 +5202,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5246,18 +5226,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5275,18 +5251,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
@@ -5305,18 +5277,14 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         updateFunc =
                             \value form_ ->
                                 let
-                                    executionDate =
-                                        if value == True then
-                                            Just currentDate
-
-                                        else
-                                            Nothing
+                                    ( executionNote, executionDate ) =
+                                        resolveNoteAndDate value
                                 in
                                 { form_
                                     | testPerformed = Just value
                                     , testPerformedDirty = True
                                     , immediateResult = Nothing
-                                    , executionNote = Nothing
+                                    , executionNote = executionNote
                                     , executionNoteDirty = True
                                     , executionDate = executionDate
                                     , executionDateDirty = True
