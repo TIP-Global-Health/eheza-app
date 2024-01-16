@@ -5860,6 +5860,41 @@ toHepatitisBResultValue form =
         form.executionNote
 
 
+malariaResultFormWithDefault : MalariaResultForm -> Maybe MalariaTestValue -> MalariaResultForm
+malariaResultFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { executionNote = or form.executionNote (Just value.executionNote)
+                , executionDate = or form.executionDate value.executionDate
+                , testPrerequisites = or form.testPrerequisites value.testPrerequisites
+                , testResult = or form.testResult value.testResult
+                , bloodSmearResult = or form.bloodSmearResult (Just value.bloodSmearResult)
+                }
+            )
+
+
+toMalariaResultValueWithDefault : Maybe MalariaTestValue -> MalariaResultForm -> Maybe MalariaTestValue
+toMalariaResultValueWithDefault saved form =
+    malariaResultFormWithDefault form saved
+        |> toMalariaResultValue
+
+
+toMalariaResultValue : MalariaResultForm -> Maybe MalariaTestValue
+toMalariaResultValue form =
+    Maybe.map
+        (\executionNote ->
+            { executionNote = executionNote
+            , executionDate = form.executionDate
+            , testPrerequisites = form.testPrerequisites
+            , testResult = form.testResult
+            , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
+            }
+        )
+        form.executionNote
+
+
 syphilisResultFormWithDefault : SyphilisResultForm encounterId -> Maybe (SyphilisTestValue encounterId) -> SyphilisResultForm encounterId
 syphilisResultFormWithDefault form saved =
     saved
