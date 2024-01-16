@@ -2613,6 +2613,25 @@ testPrerequisitesByImmediateResult =
 --- Labs tests View functions   START  ---
 
 
+standardTestResultInputsAndTasks :
+    Language
+    -> (String -> msg)
+    -> Maybe TestResult
+    -> LaboratoryTask
+    -> ( List (Html msg), Int, Int )
+standardTestResultInputsAndTasks language setTestResultMsg testResult task =
+    ( viewSelectInput language
+        (Translate.LaboratoryTaskResult task)
+        testResult
+        Translate.TestResult
+        testResultToString
+        [ TestPositive, TestNegative, TestIndeterminate ]
+        setTestResultMsg
+    , taskCompleted testResult
+    , 1
+    )
+
+
 prerequisiteByImmediateResultInputsAndTasks :
     Language
     -> (Bool -> msg)
@@ -2865,30 +2884,64 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed form
     )
 
 
-
--- hivResultFormAndTasks :
---     Language
---     -> NominalDate
---     -> (String -> msg)
---     -> HIVResultForm encounterId
---     -> ( Html msg, Int, Int )
--- hivResultFormAndTasks language currentDate setHIVTestResultMsg form =
---     let
---         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
---             hivResultInputsAndTasks language setHIVTestResultMsg form.testResult
---     in
---     ( div [ class "ui form laboratory prenatal-test-result" ] <|
---         resultFormHeaderSection language currentDate form.executionDate TaskHIVTest
---             ++ testResultSection
---     , testResultTasksCompleted
---     , testResultTasksTotal
---     )
+hivResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> ((Bool -> HIVResultForm -> HIVResultForm) -> Bool -> msg)
+    -> HIVResultForm
+    -> ( Html msg, Int, Int )
+hivResultFormAndTasks language currentDate setHIVTestResultMsg setHIVTestFormBoolInputMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            hivResultInputsAndTasks language
+                setHIVTestResultMsg
+                setHIVTestFormBoolInputMsg
+                form.testResult
+                form.hivProgramHC
+                form.partnerHIVPositive
+                form.partnerTakingARV
+                form.partnerSurpressedViralLoad
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHIVTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
 
 
 hivResultInputsAndTasks :
     Language
     -> (String -> msg)
-    -> ((Bool -> HIVTestUniversalForm -> HIVTestUniversalForm) -> Bool -> msg)
+    ->
+        ((Bool
+          ->
+            { f
+                | hivProgramHC : Maybe Bool
+                , hivProgramHCDirty : Bool
+                , partnerHIVPositive : Maybe Bool
+                , partnerHIVPositiveDirty : Bool
+                , partnerSurpressedViralLoad : Maybe Bool
+                , partnerSurpressedViralLoadDirty : Bool
+                , partnerTakingARV : Maybe Bool
+                , partnerTakingARVDirty : Bool
+            }
+          ->
+            { f
+                | hivProgramHC : Maybe Bool
+                , hivProgramHCDirty : Bool
+                , partnerHIVPositive : Maybe Bool
+                , partnerHIVPositiveDirty : Bool
+                , partnerSurpressedViralLoad : Maybe Bool
+                , partnerSurpressedViralLoadDirty : Bool
+                , partnerTakingARV : Maybe Bool
+                , partnerTakingARVDirty : Bool
+            }
+         )
+         -> Bool
+         -> msg
+        )
     -> Maybe TestResult
     -> Maybe Bool
     -> Maybe Bool
@@ -3156,25 +3209,6 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
             ++ derivedSection
     , initialTasksCompleted + derivedTasksCompleted
     , initialTasksTotal + derivedTasksTotal
-    )
-
-
-standardTestResultInputsAndTasks :
-    Language
-    -> (String -> msg)
-    -> Maybe TestResult
-    -> LaboratoryTask
-    -> ( List (Html msg), Int, Int )
-standardTestResultInputsAndTasks language setTestResultMsg testResult task =
-    ( viewSelectInput language
-        (Translate.LaboratoryTaskResult task)
-        testResult
-        Translate.TestResult
-        testResultToString
-        [ TestPositive, TestNegative, TestIndeterminate ]
-        setTestResultMsg
-    , taskCompleted testResult
-    , 1
     )
 
 

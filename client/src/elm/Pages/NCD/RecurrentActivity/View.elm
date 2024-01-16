@@ -100,7 +100,7 @@ viewLabResultsContent language currentDate assembled model =
             assembled.measurements
 
         tasks =
-            resolveLaboratoryResultTask currentDate assembled
+            resolveLaboratoryResultTasks currentDate assembled
 
         activeTask =
             Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)

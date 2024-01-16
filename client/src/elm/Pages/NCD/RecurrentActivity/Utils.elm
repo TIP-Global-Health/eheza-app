@@ -18,7 +18,7 @@ expectActivity : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool
 expectActivity currentDate assembled activity =
     case activity of
         LabResults ->
-            resolveLaboratoryResultTask currentDate assembled
+            resolveLaboratoryResultTasks currentDate assembled
                 |> List.isEmpty
                 |> not
 
@@ -34,7 +34,7 @@ activityCompleted currentDate assembled activity =
     case activity of
         LabResults ->
             (not <| expectActivity currentDate assembled LabResults)
-                || (resolveLaboratoryResultTask currentDate assembled
+                || (resolveLaboratoryResultTasks currentDate assembled
                         |> List.all (laboratoryResultTaskCompleted currentDate assembled)
                    )
 
@@ -143,8 +143,8 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             )
 
 
-resolveLaboratoryResultTask : NominalDate -> AssembledData -> List LaboratoryTask
-resolveLaboratoryResultTask currentDate assembled =
+resolveLaboratoryResultTasks : NominalDate -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTasks currentDate assembled =
     List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
 
 
