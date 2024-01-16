@@ -79,13 +79,16 @@ activityCompleted currentDate assembled activity =
 
 laboratoryResultTasks : List LaboratoryTask
 laboratoryResultTasks =
-    [ TaskSyphilisTest
+    [ TaskPartnerHIVTest
+    , TaskHIVTest
+    , TaskHIVPCRTest
+    , TaskSyphilisTest
     , TaskHepatitisBTest
+    , TaskMalariaTest
     , TaskBloodGpRsTest
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
-    , TaskHIVPCRTest
     ]
 
 
@@ -155,7 +158,10 @@ expectLaboratoryResultTask currentDate assembled task =
     in
     case task of
         TaskHIVTest ->
-            False
+            wasTestPerformed .hivTest
+
+        TaskPartnerHIVTest ->
+            wasTestPerformed .partnerHIVTest
 
         TaskSyphilisTest ->
             wasTestPerformed .syphilisTest
@@ -164,7 +170,7 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hepatitisBTest
 
         TaskMalariaTest ->
-            False
+            wasTestPerformed .malariaTest
 
         TaskBloodGpRsTest ->
             wasTestPerformed .bloodGpRsTest
@@ -182,9 +188,6 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
-
-        TaskPartnerHIVTest ->
-            False
 
         TaskCompletePreviousTests ->
             False
