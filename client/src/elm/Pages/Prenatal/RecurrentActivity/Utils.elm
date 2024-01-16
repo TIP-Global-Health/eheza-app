@@ -181,7 +181,6 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hepatitisBTest
 
         TaskMalariaTest ->
-            -- @todo : apply special logic for blood smear.
             wasTestPerformed .malariaTest
 
         TaskBloodGpRsTest ->

@@ -4828,7 +4828,7 @@ generatePendingLabsFromPreviousEncounters assembled =
                             pendingTests =
                                 EverySet.diff value.performedTests value.completedTests
                                     |> EverySet.toList
-                                    |> -- Vitals recheck should ne completed on same day
+                                    |> -- Vitals recheck should be completed on same day
                                        -- it was scheduled, and therefore we're not
                                        -- catching up with it.
                                        List.filter ((/=) TestVitalsRecheck)

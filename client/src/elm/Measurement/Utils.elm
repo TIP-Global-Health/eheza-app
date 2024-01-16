@@ -6670,16 +6670,11 @@ testPerformedByExecutionNote executionNote =
 
 expectUniversalTestResultTask : { v | testPrerequisites : Maybe (EverySet TestPrerequisite), executionNote : TestExecutionNote } -> Bool
 expectUniversalTestResultTask value =
-    let
-        -- It's possible to enter the result immediatly (and not from
-        -- Case management).
-        -- If this is the case, we do not expect to see results task.
-        immediateResult =
-            Maybe.map (EverySet.member PrerequisiteImmediateResult) value.testPrerequisites
-                |> Maybe.withDefault False
-    in
-    not immediateResult
-        && testPerformedByExecutionNote value.executionNote
+    -- It's possible to enter the result immediatly (and not from
+    -- Case management).
+    -- If this is the case, we do not expect to see results task.
+    Maybe.map (EverySet.member PrerequisiteImmediateResult >> not) value.testPrerequisites
+        |> Maybe.withDefault False
 
 
 viewSelectInput :
