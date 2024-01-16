@@ -6663,8 +6663,8 @@ testPerformedByExecutionNote executionNote =
     List.member executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
 
 
-expectRandomBloodSugarResultTask : RandomBloodSugarTestValue encounterId -> Bool
-expectRandomBloodSugarResultTask value =
+expectUniversalTestResultTask : { v | testPrerequisites : Maybe (EverySet TestPrerequisite), executionNote : TestExecutionNote } -> Bool
+expectUniversalTestResultTask value =
     let
         -- It's possible to enter the result immediatly (and not from
         -- Case management).

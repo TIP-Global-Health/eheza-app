@@ -6,7 +6,7 @@ import Backend.NCDActivity.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue)
+import Measurement.Utils exposing (expectUniversalTestResultTask, testPerformedByValue)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
@@ -201,7 +201,7 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskRandomBloodSugarTest ->
             getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
-                |> Maybe.map expectRandomBloodSugarResultTask
+                |> Maybe.map expectUniversalTestResultTask
                 |> Maybe.withDefault False
 
         TaskUrineDipstickTest ->

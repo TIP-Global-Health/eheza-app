@@ -10,7 +10,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue, vitalsFormWithDefault)
+import Measurement.Utils exposing (expectUniversalTestResultTask, testPerformedByValue, vitalsFormWithDefault)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
@@ -154,7 +154,8 @@ expectLaboratoryResultTask currentDate assembled task =
         wasTestPerformed getMeasurementFunc =
             getMeasurementFunc assembled.measurements
                 |> getMeasurementValueFunc
-                |> testPerformedByValue
+                |> Maybe.map expectUniversalTestResultTask
+                |> Maybe.withDefault False
     in
     case task of
         TaskHIVTest ->
@@ -170,6 +171,7 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hepatitisBTest
 
         TaskMalariaTest ->
+            -- @todo : apply special logic for blood smear.
             wasTestPerformed .malariaTest
 
         TaskBloodGpRsTest ->
@@ -182,9 +184,7 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hemoglobinTest
 
         TaskRandomBloodSugarTest ->
-            getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
-                |> Maybe.map expectRandomBloodSugarResultTask
-                |> Maybe.withDefault False
+            wasTestPerformed .randomBloodSugarTest
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
