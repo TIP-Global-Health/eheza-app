@@ -3862,7 +3862,7 @@ contentAndTasksForPerformedLaboratoryTestConfig =
                 { config
                     | setHIVTestResultMsg = SetHIVTestResult
                     , setMalariaTestResultMsg = SetMalariaTestResult
-                    , setBloodSmearResultMsg = SetBloodSmearResultMsg
+                    , setBloodSmearResultMsg = SetBloodSmearResult
                     , setSyphilisTestResultMsg = SetSyphilisTestResult
                     , setIllnessSymptomMsg = SetIllnessSymptom
                     , setHepatitisBTestResultMsg = SetHepatitisBTestResult

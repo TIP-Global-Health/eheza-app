@@ -168,7 +168,7 @@ type Msg
     | SetMalariaTestFormBoolInput (Bool -> MalariaTestForm -> MalariaTestForm) Bool
     | SetMalariaTestExecutionNote TestExecutionNote
     | SetMalariaTestResult String
-    | SetBloodSmearResultMsg String
+    | SetBloodSmearResult String
     | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
     | SetBloodGpRsTestFormBoolInput (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) Bool
     | SetBloodGpRsTestExecutionNote TestExecutionNote

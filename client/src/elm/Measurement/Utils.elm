@@ -3346,6 +3346,7 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                                         (\immediateResult ->
                                             if immediateResult == True then
                                                 bloodSmearResultInputsAndTasks language
+                                                    Translate.TestResultQuestion
                                                     configPerformed.setBloodSmearResultMsg
                                                     form.bloodSmearResult
 
@@ -3401,14 +3402,42 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
     )
 
 
+malariaResultFormAndTasks :
+    Language
+    -> NominalDate
+    -> (String -> msg)
+    -> (String -> msg)
+    -> MalariaResultForm
+    -> ( Html msg, Int, Int )
+malariaResultFormAndTasks language currentDate setMalariaTestResultMsg setBloodSmearResultMsg form =
+    let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            if form.bloodSmearTaken then
+                bloodSmearResultInputsAndTasks language
+                    Translate.BloodSmearTestResult
+                    setBloodSmearResultMsg
+                    form.bloodSmearResult
+
+            else
+                standardTestResultInputsAndTasks language setMalariaTestResultMsg form.testResult TaskMalariaTest
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskMalariaTest
+            ++ testResultSection
+    , testResultTasksCompleted
+    , testResultTasksTotal
+    )
+
+
 bloodSmearResultInputsAndTasks :
     Language
+    -> TranslationId
     -> (String -> msg)
     -> Maybe BloodSmearResult
     -> ( List (Html msg), Int, Int )
-bloodSmearResultInputsAndTasks language setBloodSmearResultMsg bloodSmearResult =
+bloodSmearResultInputsAndTasks language questionTransId setBloodSmearResultMsg bloodSmearResult =
     ( viewSelectInput language
-        Translate.TestResultQuestion
+        questionTransId
         bloodSmearResult
         Translate.BloodSmearResult
         bloodSmearResultToString

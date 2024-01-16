@@ -2065,7 +2065,7 @@ update language currentDate id db msg model =
             , []
             )
 
-        SetBloodSmearResultMsg value ->
+        SetBloodSmearResult value ->
             let
                 form =
                     model.laboratoryData.malariaTestForm

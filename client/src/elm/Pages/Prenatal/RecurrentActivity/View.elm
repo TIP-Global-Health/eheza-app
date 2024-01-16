@@ -26,6 +26,8 @@ import Measurement.Utils
         , hivResultFormAndTasks
         , hivResultFormWithDefault
         , laboratoryTaskIconClass
+        , malariaResultFormAndTasks
+        , malariaResultFormWithDefault
         , partnerHIVResultFormAndTasks
         , partnerHIVResultFormWithDefault
         , randomBloodSugarResultFormAndTasks
@@ -184,7 +186,9 @@ viewLabResultsContent language currentDate assembled model =
                                 |> hepatitisBResultFormAndTasks language currentDate SetHepatitisBTestResult
 
                         TaskMalariaTest ->
-                            ( emptyNode, 0, 0 )
+                            getMeasurementValueFunc measurements.malariaTest
+                                |> malariaResultFormWithDefault model.labResultsData.malariaTestForm
+                                |> malariaResultFormAndTasks language currentDate SetMalariaTestResult SetBloodSmearResult
 
                         TaskBloodGpRsTest ->
                             getMeasurementValueFunc measurements.bloodGpRsTest

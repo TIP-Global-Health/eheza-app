@@ -10,6 +10,7 @@ import Measurement.Model
         , HemoglobinResultForm
         , HepatitisBResultForm
         , LaboratoryTask
+        , MalariaResultForm
         , PartnerHIVResultForm
         , RandomBloodSugarResultForm
         , SyphilisResultForm
@@ -20,6 +21,7 @@ import Measurement.Model
         , emptyHIVResultForm
         , emptyHemoglobinResultForm
         , emptyHepatitisBResultForm
+        , emptyMalariaResultForm
         , emptyPartnerHIVResultForm
         , emptyRandomBloodSugarResultForm
         , emptySyphilisResultForm
@@ -72,6 +74,9 @@ type Msg
     | SaveHIVTestResult PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
     | SetPartnerHIVTestResult String
     | SavePartnerHIVTestResult PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)
+    | SetMalariaTestResult String
+    | SetBloodSmearResult String
+    | SaveMalariaTest PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
       -- MalariaPreventionMsgs
     | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
     | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
@@ -133,6 +138,7 @@ type alias LabResultsData =
     , hivPCRTestForm : HIVPCRResultForm
     , hivTestForm : HIVResultForm
     , partnerHIVTestForm : PartnerHIVResultForm
+    , malariaTestForm : MalariaResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -148,6 +154,7 @@ emptyLabResultsData =
     , hivPCRTestForm = emptyHIVPCRResultForm
     , hivTestForm = emptyHIVResultForm
     , partnerHIVTestForm = emptyPartnerHIVResultForm
+    , malariaTestForm = emptyMalariaResultForm
     , activeTask = Nothing
     }
 

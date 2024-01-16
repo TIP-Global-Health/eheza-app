@@ -412,6 +412,7 @@ type TranslationId
     | BloodSmearQuestion
     | BloodSmearLabel
     | BloodSmearResult BloodSmearResult
+    | BloodSmearTestResult
     | BMI
     | BMIHelper
     | BodyTemperature
@@ -3387,6 +3388,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+        BloodSmearTestResult ->
+            { english = "Malaria Blood Test Result"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         BMI ->
             { english = "BMI"

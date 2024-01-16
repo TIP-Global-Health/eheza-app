@@ -19,6 +19,7 @@ import Measurement.Utils
         , toHIVResultValueWithDefault
         , toHemoglobinResultValueWithDefault
         , toHepatitisBResultValueWithDefault
+        , toMalariaResultValueWithDefault
         , toPartnerHIVResultValueWithDefault
         , toRandomBloodSugarResultValueWithDefault
         , toSyphilisResultValueWithDefault
@@ -786,6 +787,68 @@ update language currentDate id db msg model =
                         |> toPartnerHIVResultValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id db) extraMsgs
+
+        SetMalariaTestResult value ->
+            let
+                form =
+                    model.labResultsData.malariaTestForm
+
+                updatedForm =
+                    { form | testResult = testResultFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBloodSmearResult value ->
+            let
+                form =
+                    model.labResultsData.malariaTestForm
+
+                updatedForm =
+                    { form | bloodSmearResult = bloodSmearResultFromString value }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMalariaTest personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateLabResultsMsgs nextTask
+
+                appMsgs =
+                    model.labResultsData.malariaTestForm
+                        |> toMalariaResultValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMalariaTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton
