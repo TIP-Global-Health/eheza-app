@@ -678,27 +678,38 @@ viewLab language currentDate lab assembled data =
 
         ( viewForm, tasksCompleted, totalTasks ) =
             case lab of
+                TestPartnerHIV ->
+                    getMeasurementValueFunc measurements.partnerHIVTest
+                        |> partnerHIVResultFormWithDefault data.partnerHIVTestForm
+                        |> partnerHIVResultFormAndTasks language currentDate SetPartnerHIVTestResult
+
+                TestHIV ->
+                    getMeasurementValueFunc measurements.hivTest
+                        |> hivResultFormWithDefault data.hivTestForm
+                        |> hivResultFormAndTasks language currentDate SetHIVTestResult SetHIVTestFormBoolInput
+
                 TestSyphilis ->
-                    measurements.syphilisTest
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.syphilisTest
                         |> syphilisResultFormWithDefault data.syphilisTestForm
                         |> syphilisResultFormAndTasks language currentDate SetIllnessSymptom SetSyphilisTestResult
 
                 TestHepatitisB ->
-                    measurements.hepatitisBTest
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.hepatitisBTest
                         |> hepatitisBResultFormWithDefault data.hepatitisBTestForm
                         |> hepatitisBResultFormAndTasks language currentDate SetHepatitisBTestResult
 
+                TestMalaria ->
+                    getMeasurementValueFunc measurements.malariaTest
+                        |> malariaResultFormWithDefault data.malariaTestForm
+                        |> malariaResultFormAndTasks language currentDate SetMalariaTestResult SetBloodSmearResult
+
                 TestBloodGpRs ->
-                    measurements.bloodGpRsTest
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.bloodGpRsTest
                         |> bloodGpRsResultFormWithDefault data.bloodGpRsTestForm
                         |> bloodGpRsResultFormAndTasks language currentDate SetBloodGroup SetRhesus
 
                 TestUrineDipstick ->
-                    measurements.urineDipstickTest
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.urineDipstickTest
                         |> urineDipstickResultFormWithDefault data.urineDipstickTestForm
                         |> urineDipstickResultFormAndTasks language
                             currentDate
@@ -713,20 +724,17 @@ viewLab language currentDate lab assembled data =
                             SetBilirubin
 
                 TestHemoglobin ->
-                    measurements.hemoglobinTest
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.hemoglobinTest
                         |> hemoglobinResultFormWithDefault data.hemoglobinTestForm
                         |> hemoglobinResultFormAndTasks language currentDate SetHemoglobin
 
                 TestRandomBloodSugar ->
-                    measurements.randomBloodSugarTest
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.randomBloodSugarTest
                         |> randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
                         |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
 
                 TestHIVPCR ->
-                    measurements.hivPCRTest
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.hivPCRTest
                         |> hivPCRResultFormWithDefault data.hivPCRTestForm
                         |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
 
@@ -744,11 +752,20 @@ viewLab language currentDate lab assembled data =
 
                 saveMsg =
                     case lab of
+                        TestPartnerHIV ->
+                            SavePartnerHIVResult personId measurements.partnerHIVTest Nothing
+
+                        TestHIV ->
+                            SaveHIVResult personId measurements.hivTest Nothing
+
                         TestSyphilis ->
                             SaveSyphilisResult personId measurements.syphilisTest Nothing
 
                         TestHepatitisB ->
                             SaveHepatitisBResult personId measurements.hepatitisBTest Nothing
+
+                        TestMalaria ->
+                            SaveMalariaResult personId measurements.malariaTest Nothing
 
                         TestBloodGpRs ->
                             SaveBloodGpRsResult personId measurements.bloodGpRsTest Nothing
