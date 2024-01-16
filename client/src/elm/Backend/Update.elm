@@ -86,6 +86,7 @@ import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust)
 import Measurement.Model
+import Measurement.Utils exposing (bloodSmearResultNotSet)
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Types
 import Pages.AcuteIllness.Activity.Utils
@@ -2509,7 +2510,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Backend.Measurement.Model.TestMalaria
                                 data.value.executionNote
                                 (isJust data.value.testResult
-                                    || (data.value.bloodSmearResult /= BloodSmearNotTaken)
+                                    || bloodSmearResultNotSet data.value.bloodSmearResult
                                 )
 
                         ( newModel, extraMsgsForAssessment ) =

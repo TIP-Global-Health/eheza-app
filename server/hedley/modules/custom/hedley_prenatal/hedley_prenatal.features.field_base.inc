@@ -150,6 +150,7 @@ function hedley_prenatal_field_default_field_bases() {
         '++' => '++',
         '+++' => '+++',
         'not-taken' => 'Not taken',
+        'pending' => 'pending',
       ),
       'allowed_values_function' => '',
     ),

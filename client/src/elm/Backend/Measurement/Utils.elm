@@ -3849,6 +3849,9 @@ bloodSmearResultToString value =
         BloodSmearNotTaken ->
             "not-taken"
 
+        BloodSmearPending ->
+            "pending"
+
 
 bloodSmearResultFromString : String -> Maybe BloodSmearResult
 bloodSmearResultFromString value =
@@ -3867,6 +3870,9 @@ bloodSmearResultFromString value =
 
         "not-taken" ->
             Just BloodSmearNotTaken
+
+        "pending" ->
+            Just BloodSmearPending
 
         _ ->
             Nothing

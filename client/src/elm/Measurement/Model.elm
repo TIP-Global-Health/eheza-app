@@ -1280,6 +1280,10 @@ type alias MalariaResultForm =
     { executionNote : Maybe TestExecutionNote
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
+
+    -- Set to True, if Malaria test was not
+    -- taken, and blood smear was ordered at lab.
+    , bloodSmearTaken : Bool
     , testResult : Maybe TestResult
     , bloodSmearResult : Maybe BloodSmearResult
     }
@@ -1290,6 +1294,7 @@ emptyMalariaResultForm =
     { executionNote = Nothing
     , executionDate = Nothing
     , testPrerequisites = Nothing
+    , bloodSmearTaken = False
     , testResult = Nothing
     , bloodSmearResult = Nothing
     }

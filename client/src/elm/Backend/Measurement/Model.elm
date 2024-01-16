@@ -1069,6 +1069,9 @@ type BloodSmearResult
     | BloodSmearPlusPlus
     | BloodSmearPlusPlusPlus
     | BloodSmearNotTaken
+      -- Set on initial phase, when Malaria test is not
+      -- taken, and blood smear is ordered at lab.
+    | BloodSmearPending
 
 
 type alias PrenatalHIVTest =

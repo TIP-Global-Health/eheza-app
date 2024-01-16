@@ -1899,7 +1899,7 @@ malariaTestFormWithDefault form =
                         value.testPrerequisites
 
                 bloodSmearTakenByValue =
-                    value.bloodSmearResult /= BloodSmearNotTaken
+                    not <| bloodSmearResultNotSet value.bloodSmearResult
             in
             { testPerformed =
                 valueConsideringIsDirtyField form.testPerformedDirty
@@ -1933,6 +1933,11 @@ malariaTestFormWithDefault form =
         )
 
 
+bloodSmearResultNotSet : BloodSmearResult -> Bool
+bloodSmearResultNotSet value =
+    List.member value [ BloodSmearPending, BloodSmearNotTaken ]
+
+
 toMalariaTestValueWithDefault : Maybe MalariaTestValue -> MalariaTestForm -> Maybe MalariaTestValue
 toMalariaTestValueWithDefault saved form =
     malariaTestFormWithDefault form saved
@@ -1943,11 +1948,23 @@ toMalariaTestValue : MalariaTestForm -> Maybe MalariaTestValue
 toMalariaTestValue form =
     Maybe.map
         (\executionNote ->
+            let
+                defaultBloodSmearResult =
+                    if
+                        (form.testPerformed == Just False)
+                            && (form.bloodSmearTaken == Just True)
+                            && (form.immediateResult == Just False)
+                    then
+                        BloodSmearPending
+
+                    else
+                        BloodSmearNotTaken
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
-            , bloodSmearResult = Maybe.withDefault BloodSmearNotTaken form.bloodSmearResult
+            , bloodSmearResult = Maybe.withDefault defaultBloodSmearResult form.bloodSmearResult
             }
         )
         form.executionNote
@@ -5866,11 +5883,25 @@ malariaResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    bloodSmearTakenByValue =
+                        value.bloodSmearResult == BloodSmearPending
+
+                    -- If we have an indication that Blood Smear test was
+                    -- ordered on initail phase, empty it's value.
+                    bloodSmearResultByValue =
+                        if bloodSmearTakenByValue then
+                            Nothing
+
+                        else
+                            Just value.bloodSmearResult
+                in
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
+                , bloodSmearTaken = bloodSmearTakenByValue
                 , testResult = or form.testResult value.testResult
-                , bloodSmearResult = or form.bloodSmearResult (Just value.bloodSmearResult)
+                , bloodSmearResult = or form.bloodSmearResult bloodSmearResultByValue
                 }
             )
 

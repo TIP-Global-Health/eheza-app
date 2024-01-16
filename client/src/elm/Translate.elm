@@ -3382,6 +3382,12 @@ translationSet trans =
                     , kirundi = Just "Nticafashwe"
                     }
 
+                BloodSmearPending ->
+                    { english = "Pending"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         BMI ->
             { english = "BMI"
             , kinyarwanda = Nothing
