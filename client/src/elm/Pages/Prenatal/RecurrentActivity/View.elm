@@ -5,6 +5,8 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -60,20 +62,29 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> Nurse -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate nurse id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate nurse id activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity db model assembled =
+viewHeaderAndContent :
+    Language
+    -> NominalDate
+    -> Nurse
+    -> PrenatalEncounterId
+    -> PrenatalRecurrentActivity
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewHeaderAndContent language currentDate nurse id activity db model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language (PrenatalRecurrentEncounterPage id) (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
-        , viewContent language currentDate activity db model assembled
+        , viewContent language currentDate nurse activity db model assembled
         , viewModal <|
             warningPopup language currentDate False assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
@@ -93,18 +104,18 @@ viewHeader language goBackPage labelTransId assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity db model assembled =
+viewContent : Language -> NominalDate -> Nurse -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate nurse activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate activity assembled db model
+            ++ viewActivity language currentDate nurse activity assembled db model
 
 
-viewActivity : Language -> NominalDate -> PrenatalRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate activity assembled db model =
+viewActivity : Language -> NominalDate -> Nurse -> PrenatalRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate nurse activity assembled db model =
     case activity of
         LabResults ->
-            viewLabResultsContent language currentDate assembled model
+            viewLabResultsContent language currentDate nurse assembled model
 
         RecurrentNextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
@@ -121,9 +132,12 @@ viewActivity language currentDate activity assembled db model =
                 model.malariaPreventionData
 
 
-viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewLabResultsContent language currentDate assembled model =
+viewLabResultsContent : Language -> NominalDate -> Nurse -> AssembledData -> Model -> List (Html Msg)
+viewLabResultsContent language currentDate nurse assembled model =
     let
+        isLabTech =
+            isLabTechnician nurse
+
         measurements =
             assembled.measurements
 
@@ -173,12 +187,12 @@ viewLabResultsContent language currentDate assembled model =
                         TaskHIVTest ->
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
-                                |> hivResultFormAndTasks language currentDate SetHIVTestResult SetHIVTestFormBoolInput
+                                |> hivResultFormAndTasks language currentDate isLabTech SetHIVTestResult SetHIVTestFormBoolInput
 
                         TaskSyphilisTest ->
                             getMeasurementValueFunc measurements.syphilisTest
                                 |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
-                                |> syphilisResultFormAndTasks language currentDate SetIllnessSymptom SetSyphilisTestResult
+                                |> syphilisResultFormAndTasks language currentDate isLabTech SetSyphilisTestResult SetIllnessSymptom
 
                         TaskHepatitisBTest ->
                             getMeasurementValueFunc measurements.hepatitisBTest
@@ -673,6 +687,10 @@ viewLabsHistoryContent language currentDate lab db data assembled =
 viewLab : Language -> NominalDate -> LaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
 viewLab language currentDate lab assembled data =
     let
+        isLabTech =
+            -- Labs history can be filled only by nurses.
+            False
+
         measurements =
             assembled.measurements
 
@@ -686,12 +704,12 @@ viewLab language currentDate lab assembled data =
                 TestHIV ->
                     getMeasurementValueFunc measurements.hivTest
                         |> hivResultFormWithDefault data.hivTestForm
-                        |> hivResultFormAndTasks language currentDate SetHIVTestResult SetHIVTestFormBoolInput
+                        |> hivResultFormAndTasks language currentDate isLabTech SetHIVTestResult SetHIVTestFormBoolInput
 
                 TestSyphilis ->
                     getMeasurementValueFunc measurements.syphilisTest
                         |> syphilisResultFormWithDefault data.syphilisTestForm
-                        |> syphilisResultFormAndTasks language currentDate SetIllnessSymptom SetSyphilisTestResult
+                        |> syphilisResultFormAndTasks language currentDate isLabTech SetSyphilisTestResult SetIllnessSymptom
 
                 TestHepatitisB ->
                     getMeasurementValueFunc measurements.hepatitisBTest

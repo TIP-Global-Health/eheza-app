@@ -636,7 +636,13 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.prenatalRecurrentActivityPages
                                     |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyModel
                         in
-                        Pages.Prenatal.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.Prenatal.RecurrentActivity.View.view model.language
+                            currentDate
+                            (Tuple.second loggedInModel.nurse)
+                            id
+                            activity
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity)
                             |> flexPageWrapper configured.config model
 
