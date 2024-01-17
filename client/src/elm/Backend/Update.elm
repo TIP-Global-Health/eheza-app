@@ -6182,59 +6182,70 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test id =
             (\assembled ->
                 Maybe.map
                     (\( resultsId, results ) ->
-                        if EverySet.member test results.value.completedTests then
+                        if
+                            EverySet.member test results.value.completedTests
+                                && EverySet.member test results.value.performedTests
+                        then
                             -- Do not update value if we have it set up properly already.
                             []
 
                         else
                             let
                                 ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.prenatalLabsResultsTestData currentDate results
+                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
 
                                 ( updatedValue, navigateToProgressReportMsg ) =
-                                    results.value
-                                        |> (\value ->
-                                                let
-                                                    updatedCompletedTests =
-                                                        test :: completedTests
+                                    (\value ->
+                                        let
+                                            -- Since lab results can be entered right away (at poit of care),
+                                            -- or at latter stage (after test was ordered at lab), we
+                                            -- update both performed and completed tests.
+                                            -- Since data structure is EverySet, it will not create duplicacies.
+                                            updatedPerformedTests =
+                                                EverySet.insert test performedTests
 
-                                                    allActivitiesCompleted =
-                                                        -- All performed tests are completed, and Next Steps are either
-                                                        -- completed, or not required,
-                                                        (List.length updatedCompletedTests == List.length performedTests)
-                                                            && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
-                                                                currentDate
-                                                                assembled
-                                                                Backend.PrenatalActivity.Model.RecurrentNextSteps
+                                            updatedCompletedTests =
+                                                EverySet.insert test completedTests
 
-                                                    resolutionDate =
-                                                        -- When all performed tests are completed, and Next Steps are either
-                                                        -- completed, or not required, setting today as resolution date.
-                                                        if allActivitiesCompleted then
-                                                            currentDate
+                                            allActivitiesCompleted =
+                                                -- All performed tests are completed, and Next Steps are either
+                                                -- completed, or not required,
+                                                (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
+                                                    && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
+                                                        currentDate
+                                                        assembled
+                                                        Backend.PrenatalActivity.Model.RecurrentNextSteps
 
-                                                        else
-                                                            value.resolutionDate
-                                                in
-                                                ( { value
-                                                    | completedTests = EverySet.fromList updatedCompletedTests
-                                                    , resolutionDate = resolutionDate
-                                                  }
-                                                , if allActivitiesCompleted then
-                                                    -- When all activities are completed, we show progress report.
-                                                    -- Here we handle added Lab results, so, similar logic is applied
-                                                    -- at Pages.Prenatal.RecurrentActivity.Update, for Next Steps activities.
-                                                    [ App.Model.SetActivePage <|
-                                                        UserPage <|
-                                                            ClinicalProgressReportPage
-                                                                (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
-                                                                id
-                                                    ]
+                                            resolutionDate =
+                                                -- When all performed tests are completed, and Next Steps are either
+                                                -- completed, or not required, setting today as resolution date.
+                                                if allActivitiesCompleted then
+                                                    currentDate
 
-                                                  else
-                                                    []
-                                                )
-                                           )
+                                                else
+                                                    value.resolutionDate
+                                        in
+                                        ( { value
+                                            | performedTests = updatedPerformedTests
+                                            , completedTests = updatedCompletedTests
+                                            , resolutionDate = resolutionDate
+                                          }
+                                        , if allActivitiesCompleted then
+                                            -- When all activities are completed, we show progress report.
+                                            -- Here we handle added Lab results, so, similar logic is applied
+                                            -- at Pages.Prenatal.RecurrentActivity.Update, for Next Steps activities.
+                                            [ App.Model.SetActivePage <|
+                                                UserPage <|
+                                                    ClinicalProgressReportPage
+                                                        (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
+                                                        id
+                                            ]
+
+                                          else
+                                            []
+                                        )
+                                    )
+                                        results.value
                             in
                             savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue
                                 :: navigateToProgressReportMsg
@@ -6364,42 +6375,53 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
             (\assembled ->
                 Maybe.map
                     (\( resultsId, results ) ->
-                        if EverySet.member test results.value.completedTests then
+                        if
+                            EverySet.member test results.value.completedTests
+                                && EverySet.member test results.value.performedTests
+                        then
                             -- Do not update value if we have it set up properly already.
                             []
 
                         else
                             let
                                 ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.ncdLabsResultsTestData currentDate results
+                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
 
                                 updatedValue =
-                                    results.value
-                                        |> (\value ->
-                                                let
-                                                    updatedCompletedTests =
-                                                        test :: completedTests
+                                    (\value ->
+                                        let
+                                            -- Since lab results can be entered right away (at poit of care),
+                                            -- or at latter stage (after test was ordered at lab), we
+                                            -- update both performed and completed tests.
+                                            -- Since data structure is EverySet, it will not create duplicacies.
+                                            updatedPerformedTests =
+                                                EverySet.insert test performedTests
 
-                                                    resolutionDate =
-                                                        -- When all performed tests are completed, and Next Steps are either
-                                                        -- completed, or not required, setting today as resolution date.
-                                                        if
-                                                            (List.length updatedCompletedTests == List.length performedTests)
-                                                                && Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                                    currentDate
-                                                                    assembled
-                                                                    Backend.NCDActivity.Model.RecurrentNextSteps
-                                                        then
+                                            updatedCompletedTests =
+                                                EverySet.insert test completedTests
+
+                                            resolutionDate =
+                                                -- When all performed tests are completed, and Next Steps are either
+                                                -- completed, or not required, setting today as resolution date.
+                                                if
+                                                    (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
+                                                        && Pages.NCD.RecurrentActivity.Utils.activityCompleted
                                                             currentDate
+                                                            assembled
+                                                            Backend.NCDActivity.Model.RecurrentNextSteps
+                                                then
+                                                    currentDate
 
-                                                        else
-                                                            value.resolutionDate
-                                                in
-                                                { value
-                                                    | completedTests = EverySet.fromList updatedCompletedTests
-                                                    , resolutionDate = resolutionDate
-                                                }
-                                           )
+                                                else
+                                                    value.resolutionDate
+                                        in
+                                        { value
+                                            | performedTests = updatedPerformedTests
+                                            , completedTests = updatedCompletedTests
+                                            , resolutionDate = resolutionDate
+                                        }
+                                    )
+                                        results.value
                             in
                             [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )

@@ -17,7 +17,7 @@ import Measurement.Utils
         , toRandomBloodSugarResultValueWithDefault
         , toUrineDipstickResultValueWithDefault
         )
-import Pages.GlobalCaseManagement.Utils exposing (ncdLabsResultsTestData)
+import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -56,9 +56,9 @@ update currentDate id db msg model =
                                     (\( labsResultsId, results ) ->
                                         let
                                             ( performedTests, completedTests ) =
-                                                ncdLabsResultsTestData currentDate results
+                                                labsResultsTestData currentDate results
                                         in
-                                        if List.length performedTests == List.length completedTests then
+                                        if EverySet.size performedTests == EverySet.size completedTests then
                                             let
                                                 updatedValue =
                                                     results.value

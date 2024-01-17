@@ -26,7 +26,7 @@ import Measurement.Utils
         , toUrineDipstickResultValueWithDefault
         , toVitalsValueWithDefault
         )
-import Pages.GlobalCaseManagement.Utils exposing (prenatalLabsResultsTestData)
+import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)
@@ -67,9 +67,9 @@ update language currentDate id db msg model =
                                     (\( labsResultsId, results ) ->
                                         let
                                             ( performedTests, completedTests ) =
-                                                prenatalLabsResultsTestData currentDate results
+                                                labsResultsTestData currentDate results
                                         in
-                                        if List.length performedTests == List.length completedTests then
+                                        if EverySet.size performedTests == EverySet.size completedTests then
                                             let
                                                 updatedValue =
                                                     results.value
