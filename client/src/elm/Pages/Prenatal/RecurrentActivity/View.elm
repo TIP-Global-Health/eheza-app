@@ -82,9 +82,20 @@ viewHeaderAndContent :
     -> AssembledData
     -> Html Msg
 viewHeaderAndContent language currentDate nurse id activity db model assembled =
+    let
+        isLabTech =
+            isLabTechnician nurse
+
+        goBackPage =
+            if isLabTech then
+                GlobalCaseManagementPage
+
+            else
+                PrenatalRecurrentEncounterPage id
+    in
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language (PrenatalRecurrentEncounterPage id) (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
-        , viewContent language currentDate nurse activity db model assembled
+        [ viewHeader language goBackPage (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
+        , viewContent language currentDate isLabTech activity db model assembled
         , viewModal <|
             warningPopup language currentDate False assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
@@ -104,18 +115,18 @@ viewHeader language goBackPage labelTransId assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Nurse -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate nurse activity db model assembled =
+viewContent : Language -> NominalDate -> Bool -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isLabTech activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate nurse activity assembled db model
+            ++ viewActivity language currentDate isLabTech activity assembled db model
 
 
-viewActivity : Language -> NominalDate -> Nurse -> PrenatalRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate nurse activity assembled db model =
+viewActivity : Language -> NominalDate -> Bool -> PrenatalRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate isLabTech activity assembled db model =
     case activity of
         LabResults ->
-            viewLabResultsContent language currentDate nurse assembled model
+            viewLabResultsContent language currentDate isLabTech assembled model
 
         RecurrentNextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
@@ -132,12 +143,9 @@ viewActivity language currentDate nurse activity assembled db model =
                 model.malariaPreventionData
 
 
-viewLabResultsContent : Language -> NominalDate -> Nurse -> AssembledData -> Model -> List (Html Msg)
-viewLabResultsContent language currentDate nurse assembled model =
+viewLabResultsContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewLabResultsContent language currentDate isLabTech assembled model =
     let
-        isLabTech =
-            isLabTechnician nurse
-
         measurements =
             assembled.measurements
 

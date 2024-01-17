@@ -567,6 +567,7 @@ type TranslationId
     | Edd
     | EddHeader
     | Edema
+    | EditResults
     | Ega
     | EgaHeader
     | EgaWeeks
@@ -1547,6 +1548,7 @@ type TranslationId
     | StockSupplierAbbrev StockSupplier
     | StuntingLevelLabel
     | StuntingLevel StuntingLevel
+    | SubmitResults
     | SubsequentEncounter
     | SubsequentEncounterReferral AcuteIllnessEncounterType
     | SuccessiveAbortions
@@ -5091,6 +5093,12 @@ translationSet trans =
             { english = "Edema"
             , kinyarwanda = Just "Kubyimba"
             , kirundi = Just "Ukuvyimba amaguru"
+            }
+
+        EditResults ->
+            { english = "Edit Results"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Ega ->
@@ -19945,6 +19953,12 @@ translationSet trans =
 
                 LevelRed ->
                     translationSet ColorRed
+
+        SubmitResults ->
+            { english = "Submit Results"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         SubsequentEncounter ->
             { english = "Subsequent Encounter"

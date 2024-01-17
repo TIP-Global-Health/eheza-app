@@ -197,6 +197,10 @@ viewContent language currentDate site features initiator db model assembled =
     let
         derivedContent =
             let
+                isLabTech =
+                    -- For now, NCD does not allow access for lab technicians.
+                    False
+
                 labResultsConfig =
                     { hivPCR = False
                     , partnerHIV = False
@@ -217,7 +221,7 @@ viewContent language currentDate site features initiator db model assembled =
                     case mode of
                         LabResultsCurrent currentMode ->
                             [ generateLabsResultsPaneData currentDate assembled
-                                |> viewLabResultsPane language currentDate currentMode SetLabResultsMode labResultsConfig
+                                |> viewLabResultsPane language currentDate isLabTech currentMode SetLabResultsMode labResultsConfig
                             ]
 
                         LabResultsHistory historyMode ->
@@ -270,7 +274,7 @@ viewContent language currentDate site features initiator db model assembled =
                                     Maybe.map
                                         (\_ ->
                                             generateLabsResultsPaneData currentDate assembled
-                                                |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
+                                                |> viewLabResultsPane language currentDate isLabTech LabResultsCurrentMain SetLabResultsMode labResultsConfig
                                                 |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDLabsResults)
                                         )
                                         model.components

@@ -13,6 +13,7 @@ import Backend.PrenatalEncounter.Model
     exposing
         ( PrenatalProgressReportInitiator(..)
         )
+import Gizra.Html exposing (showIf)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -103,6 +104,7 @@ viewMainPageContent language currentDate nurse assembled model =
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
+                    |> showIf (not isLabTech)
                 ]
 
         viewCard activity =

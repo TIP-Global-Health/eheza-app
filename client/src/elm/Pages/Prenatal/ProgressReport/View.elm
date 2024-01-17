@@ -31,6 +31,7 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
+        , PrenatalRecurrentActivity(..)
         , allMedicalDiagnoses
         , allObstetricalDiagnoses
         , allRiskFactors
@@ -174,74 +175,90 @@ viewHeader : Language -> PrenatalEncounterId -> Bool -> PrenatalProgressReportIn
 viewHeader language id isLabTech initiator model =
     let
         label =
-            Maybe.map
-                (\mode ->
-                    case mode of
-                        LabResultsCurrent _ ->
-                            Translate.LabResults
-
-                        LabResultsHistory _ ->
-                            Translate.LabHistory
-                )
-                model.labResultsMode
-                |> Maybe.withDefault Translate.AntenatalProgressReport
-
-        backIcon =
             if isLabTech then
-                emptyNode
+                Translate.LabResults
 
             else
-                let
-                    iconForView action =
-                        span
-                            [ class "link-back" ]
-                            [ span
-                                [ class "icon-back"
-                                , onClick action
-                                ]
-                                []
-                            ]
+                Maybe.map
+                    (\mode ->
+                        case mode of
+                            LabResultsCurrent _ ->
+                                Translate.LabResults
 
-                    goBackActionByLabResultsState defaultAction =
-                        Maybe.map
-                            (\mode ->
-                                let
-                                    backToCurrentMsg targetMode =
-                                        SetLabResultsMode (Just (LabResultsCurrent targetMode))
-                                in
-                                case mode of
-                                    LabResultsCurrent currentMode ->
-                                        case currentMode of
-                                            LabResultsCurrentMain ->
+                            LabResultsHistory _ ->
+                                Translate.LabHistory
+                    )
+                    model.labResultsMode
+                    |> Maybe.withDefault Translate.AntenatalProgressReport
+
+        backIcon =
+            let
+                iconForView action =
+                    span
+                        [ class "link-back" ]
+                        [ span
+                            [ class "icon-back"
+                            , onClick action
+                            ]
+                            []
+                        ]
+
+                goBackActionByLabResultsState defaultAction =
+                    Maybe.map
+                        (\mode ->
+                            let
+                                backToCurrentMsg targetMode =
+                                    SetLabResultsMode (Just (LabResultsCurrent targetMode))
+                            in
+                            case mode of
+                                LabResultsCurrent currentMode ->
+                                    case currentMode of
+                                        LabResultsCurrentMain ->
+                                            if isLabTech then
+                                                defaultAction
+
+                                            else
                                                 SetLabResultsMode Nothing
 
-                                            LabResultsCurrentDipstickShort ->
-                                                backToCurrentMsg LabResultsCurrentMain
+                                        LabResultsCurrentDipstickShort ->
+                                            backToCurrentMsg LabResultsCurrentMain
 
-                                            LabResultsCurrentDipstickLong ->
-                                                backToCurrentMsg LabResultsCurrentMain
+                                        LabResultsCurrentDipstickLong ->
+                                            backToCurrentMsg LabResultsCurrentMain
 
-                                            LabResultsCurrentLipidPanel ->
-                                                backToCurrentMsg LabResultsCurrentMain
+                                        LabResultsCurrentLipidPanel ->
+                                            backToCurrentMsg LabResultsCurrentMain
 
-                                    LabResultsHistory _ ->
-                                        SetLabResultsMode model.labResultsHistoryOrigin
-                            )
-                            model.labResultsMode
-                            |> Maybe.withDefault defaultAction
-                in
-                case initiator of
-                    InitiatorEncounterPage prenatalEncounterId ->
-                        iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId)
+                                LabResultsHistory _ ->
+                                    SetLabResultsMode model.labResultsHistoryOrigin
+                        )
+                        model.labResultsMode
+                        |> Maybe.withDefault defaultAction
+            in
+            case initiator of
+                InitiatorEncounterPage prenatalEncounterId ->
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId)
 
-                    InitiatorRecurrentEncounterPage prenatalEncounterId ->
-                        iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage prenatalEncounterId)
+                InitiatorRecurrentEncounterPage prenatalEncounterId ->
+                    let
+                        action =
+                            if isLabTech then
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalRecurrentActivityPage prenatalEncounterId LabResults
 
-                    InitiatorNewEncounter _ ->
-                        emptyNode
+                            else
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalRecurrentEncounterPage prenatalEncounterId
+                    in
+                    iconForView <| goBackActionByLabResultsState action
 
-                    Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
-                        iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId)
+                InitiatorNewEncounter _ ->
+                    emptyNode
+
+                Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
+                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId)
     in
     div
         [ class "ui basic segment head" ]
@@ -280,17 +297,56 @@ viewContent language currentDate site features isChw isLabTech initiator model a
                     , hba1c = False
                     , lipidPanel = False
                     }
-            in
-            case model.labResultsMode of
-                Just mode ->
-                    case mode of
-                        LabResultsCurrent currentMode ->
-                            [ generateLabsResultsPaneData currentDate assembled
-                                |> viewLabResultsPane language currentDate currentMode SetLabResultsMode labResultsConfig
-                            ]
 
-                        LabResultsHistory historyMode ->
-                            [ viewLabResultsHistoryPane language currentDate historyMode ]
+                labResultsMode =
+                    if isLabTech then
+                        -- Lab thechnician goes straight to main page of lab results.
+                        Maybe.Extra.or model.labResultsMode (Just <| LabResultsCurrent LabResultsCurrentMain)
+
+                    else
+                        model.labResultsMode
+            in
+            case labResultsMode of
+                Just mode ->
+                    let
+                        resultsPane =
+                            case mode of
+                                LabResultsCurrent currentMode ->
+                                    generateLabsResultsPaneData currentDate assembled
+                                        |> viewLabResultsPane language currentDate isLabTech currentMode SetLabResultsMode labResultsConfig
+
+                                LabResultsHistory historyMode ->
+                                    viewLabResultsHistoryPane language currentDate historyMode
+
+                        bottomActions =
+                            case initiator of
+                                InitiatorRecurrentEncounterPage id ->
+                                    if isLabTech then
+                                        div [ class "two ui buttons" ]
+                                            [ button
+                                                [ class "ui primary fluid button"
+                                                , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
+                                                ]
+                                                [ text <| translate language Translate.SubmitResults ]
+                                            , button
+                                                [ class "ui primary fluid button"
+                                                , onClick <|
+                                                    SetActivePage <|
+                                                        UserPage <|
+                                                            PrenatalRecurrentActivityPage id LabResults
+                                                ]
+                                                [ text <| translate language Translate.EditResults ]
+                                            ]
+
+                                    else
+                                        emptyNode
+
+                                _ ->
+                                    emptyNode
+                    in
+                    [ resultsPane
+                    , bottomActions
+                    ]
 
                 Nothing ->
                     let
@@ -301,7 +357,7 @@ viewContent language currentDate site features isChw isLabTech initiator model a
                             Maybe.map
                                 (\_ ->
                                     generateLabsResultsPaneData currentDate assembled
-                                        |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
+                                        |> viewLabResultsPane language currentDate isLabTech LabResultsCurrentMain SetLabResultsMode labResultsConfig
                                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalLabsResults)
                                 )
                                 model.components
