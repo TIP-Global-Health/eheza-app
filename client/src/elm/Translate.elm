@@ -8050,10 +8050,7 @@ translationSet trans =
         LaboratoryTaskLabel task ->
             case task of
                 TaskHIVTest ->
-                    { english = "HIV RDT"
-                    , kinyarwanda = Just "Ikizamini cyihuse Gipima Virusi Itera SIDA"
-                    , kirundi = Just "RDT ya VIH"
-                    }
+                    translationSet HIV
 
                 TaskSyphilisTest ->
                     { english = "Syphilis - RPR"
@@ -8068,10 +8065,7 @@ translationSet trans =
                     }
 
                 TaskMalariaTest ->
-                    { english = "Malaria RDT"
-                    , kinyarwanda = Just "Ikizamini cyihuse cya Malariya"
-                    , kirundi = Just "Igipimo kinyaruka ca Malariya "
-                    }
+                    translationSet Malaria
 
                 TaskBloodGpRsTest ->
                     { english = "Blood Group + Rhesus"
@@ -8161,7 +8155,7 @@ translationSet trans =
                     }
 
                 TaskMalariaTest ->
-                    { english = "Malaria RDT Test Date"
+                    { english = "Malaria Test Date"
                     , kinyarwanda = Just "Itariki yakoreweho ikizamini cya Malariya"
                     , kirundi = Just "Itarike y'igipimo kinyaruka ca Malariya "
                     }
@@ -8260,7 +8254,7 @@ translationSet trans =
                     }
 
                 TaskMalariaTest ->
-                    { english = "Malaria RDT Test Result"
+                    { english = "Malaria Test Result"
                     , kinyarwanda = Just "Ibisubizo by'ikizamini cya Malariya"
                     , kirundi = Nothing
                     }
