@@ -25,6 +25,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
@@ -134,6 +135,9 @@ viewContentAndHeader :
     -> Html Msg
 viewContentAndHeader language currentDate site features nurse isChw initiator model assembled =
     let
+        isLabTech =
+            isLabTechnician nurse
+
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
@@ -150,8 +154,8 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
             Just { setReportComponentsMsg = SetReportComponents }
     in
     div [ class "page-report clinical" ] <|
-        [ viewHeader language assembled.id initiator model
-        , viewContent language currentDate site features nurse isChw initiator model assembled
+        [ viewHeader language assembled.id isLabTech initiator model
+        , viewContent language currentDate site features isChw isLabTech initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
@@ -166,8 +170,8 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> PrenatalProgressReportInitiator -> Model -> Html Msg
-viewHeader language id initiator model =
+viewHeader : Language -> PrenatalEncounterId -> Bool -> PrenatalProgressReportInitiator -> Model -> Html Msg
+viewHeader language id isLabTech initiator model =
     let
         label =
             Maybe.map
@@ -183,57 +187,61 @@ viewHeader language id initiator model =
                 |> Maybe.withDefault Translate.AntenatalProgressReport
 
         backIcon =
-            let
-                iconForView action =
-                    span
-                        [ class "link-back" ]
-                        [ span
-                            [ class "icon-back"
-                            , onClick action
+            if isLabTech then
+                emptyNode
+
+            else
+                let
+                    iconForView action =
+                        span
+                            [ class "link-back" ]
+                            [ span
+                                [ class "icon-back"
+                                , onClick action
+                                ]
+                                []
                             ]
-                            []
-                        ]
 
-                goBackActionByLabResultsState defaultAction =
-                    Maybe.map
-                        (\mode ->
-                            let
-                                backToCurrentMsg targetMode =
-                                    SetLabResultsMode (Just (LabResultsCurrent targetMode))
-                            in
-                            case mode of
-                                LabResultsCurrent currentMode ->
-                                    case currentMode of
-                                        LabResultsCurrentMain ->
-                                            SetLabResultsMode Nothing
+                    goBackActionByLabResultsState defaultAction =
+                        Maybe.map
+                            (\mode ->
+                                let
+                                    backToCurrentMsg targetMode =
+                                        SetLabResultsMode (Just (LabResultsCurrent targetMode))
+                                in
+                                case mode of
+                                    LabResultsCurrent currentMode ->
+                                        case currentMode of
+                                            LabResultsCurrentMain ->
+                                                SetLabResultsMode Nothing
 
-                                        LabResultsCurrentDipstickShort ->
-                                            backToCurrentMsg LabResultsCurrentMain
+                                            LabResultsCurrentDipstickShort ->
+                                                backToCurrentMsg LabResultsCurrentMain
 
-                                        LabResultsCurrentDipstickLong ->
-                                            backToCurrentMsg LabResultsCurrentMain
+                                            LabResultsCurrentDipstickLong ->
+                                                backToCurrentMsg LabResultsCurrentMain
 
-                                        LabResultsCurrentLipidPanel ->
-                                            backToCurrentMsg LabResultsCurrentMain
+                                            LabResultsCurrentLipidPanel ->
+                                                backToCurrentMsg LabResultsCurrentMain
 
-                                LabResultsHistory _ ->
-                                    SetLabResultsMode model.labResultsHistoryOrigin
-                        )
-                        model.labResultsMode
-                        |> Maybe.withDefault defaultAction
-            in
-            case initiator of
-                InitiatorEncounterPage prenatalEncounterId ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId)
+                                    LabResultsHistory _ ->
+                                        SetLabResultsMode model.labResultsHistoryOrigin
+                            )
+                            model.labResultsMode
+                            |> Maybe.withDefault defaultAction
+                in
+                case initiator of
+                    InitiatorEncounterPage prenatalEncounterId ->
+                        iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId)
 
-                InitiatorRecurrentEncounterPage prenatalEncounterId ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage prenatalEncounterId)
+                    InitiatorRecurrentEncounterPage prenatalEncounterId ->
+                        iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage prenatalEncounterId)
 
-                InitiatorNewEncounter _ ->
-                    emptyNode
+                    InitiatorNewEncounter _ ->
+                        emptyNode
 
-                Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId)
+                    Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
+                        iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId)
     in
     div
         [ class "ui basic segment head" ]
@@ -248,13 +256,13 @@ viewContent :
     -> NominalDate
     -> Site
     -> EverySet SiteFeature
-    -> Nurse
+    -> Bool
     -> Bool
     -> PrenatalProgressReportInitiator
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate site features nurse isChw initiator model assembled =
+viewContent language currentDate site features isChw isLabTech initiator model assembled =
     let
         derivedContent =
             let
@@ -345,7 +353,7 @@ viewContent language currentDate site features nurse isChw initiator model assem
                                 InitiatorRecurrentEncounterPage _ ->
                                     let
                                         ( _, pendingActivities ) =
-                                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities nurse
+                                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
                                                 |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
 

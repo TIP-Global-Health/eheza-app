@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.PrenatalActivity.Utils
     exposing
         ( getRecurrentActivityIcon
@@ -80,8 +81,11 @@ viewContent language currentDate nurse assembled model =
 viewMainPageContent : Language -> NominalDate -> Nurse -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate nurse assembled model =
     let
+        isLabTech =
+            isLabTechnician nurse
+
         ( completedActivities, pendingActivities ) =
-            getAllActivities nurse
+            getAllActivities isLabTech
                 |> List.filter (expectActivity currentDate assembled)
                 |> List.partition (activityCompleted currentDate assembled)
 
