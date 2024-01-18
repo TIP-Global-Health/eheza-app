@@ -645,7 +645,7 @@ encodeRandomBloodSugarTestValue type_ value =
                     [ ( "sugar_count", float sugarCount ) ]
                 )
                 value.sugarCount
-                |> Maybe.withDefault []
+                |> Maybe.withDefault [ ( "sugar_count", Json.Encode.null ) ]
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
