@@ -140,6 +140,7 @@ features[field_instance][] = node-ncd_labs_results-field_ncd_encounter
 features[field_instance][] = node-ncd_labs_results-field_nurse
 features[field_instance][] = node-ncd_labs_results-field_performed_tests
 features[field_instance][] = node-ncd_labs_results-field_person
+features[field_instance][] = node-ncd_labs_results-field_review_state
 features[field_instance][] = node-ncd_labs_results-field_shards
 features[field_instance][] = node-ncd_labs_results-field_uuid
 features[field_instance][] = node-ncd_lipid_panel_test-field_date_measured
