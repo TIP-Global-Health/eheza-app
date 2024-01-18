@@ -17,10 +17,9 @@ import Backend.Measurement.Model
         , NCDLabsResults
         , NutritionAssessment(..)
         , PrenatalLabsResults
+        , ReviewState(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.NutritionEncounter.Utils
     exposing
         ( getHomeVisitEncountersForParticipant
@@ -57,8 +56,8 @@ import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> Nurse -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate healthCenterId villageId nurse syncManager db model =
+view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> Bool -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate healthCenterId villageId isLabTech syncManager db model =
     let
         header =
             div
@@ -85,7 +84,7 @@ view language currentDate healthCenterId villageId nurse syncManager db model =
                         )
                 )
                 villageId
-                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate nurse model db) identity followUps)
+                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate isLabTech model db) identity followUps)
                 |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div [ class "wrap wrap-alt-2 page-case-management" ]
@@ -153,15 +152,15 @@ viewContentForChw language currentDate village model db followUps =
             :: panes
 
 
-viewContentForNurse : Language -> NominalDate -> Nurse -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForNurse language currentDate nurse model db followUps =
+viewContentForNurse : Language -> NominalDate -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForNurse language currentDate isLabTech model db followUps =
     let
         ( panes, filters ) =
             let
                 prenatalLabsPane =
-                    viewPrenatalLabsPane language currentDate nurse followUps.prenatalLabs db model
+                    viewPrenatalLabsPane language currentDate isLabTech followUps.prenatalLabs db model
             in
-            if isLabTechnician nurse then
+            if isLabTech then
                 ( [ ( FilterPrenatalLabs, prenatalLabsPane ) ]
                 , labTechFilters
                 )
@@ -879,34 +878,40 @@ viewTraceContactEntry language currentDate db entry =
 viewPrenatalLabsPane :
     Language
     -> NominalDate
-    -> Nurse
+    -> Bool
     -> Dict PrenatalLabsResultsId PrenatalLabsResults
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewPrenatalLabsPane language currentDate nurse itemsDict db model =
+viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
     let
         filteredItemsDict =
             Dict.filter
                 (\_ item ->
+                    let
+                        roleBasedCondition =
+                            -- If review was requested (by lab technician), we do
+                            -- not display entry for lab technician.
+                            if isLabTech then
+                                isNothing item.value.reviewState
+
+                            else
+                                True
+                    in
                     -- We know that item is not resolved, if resolution
                     -- date is a future date.
-                    Date.compare currentDate item.value.resolutionDate == LT
+                    Date.compare currentDate item.value.resolutionDate == LT && roleBasedCondition
                 )
                 itemsDict
 
         entries =
-            generatePrenatalLabsEntries language currentDate filteredItemsDict db
+            generatePrenatalLabsEntries language currentDate isLabTech filteredItemsDict db
 
         content =
             if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                let
-                    isLabTech =
-                        isLabTechnician nurse
-                in
                 List.map (viewPrenatalLabsEntry language isLabTech) entries
     in
     div [ class "pane" ]
@@ -919,22 +924,24 @@ viewPrenatalLabsPane language currentDate nurse itemsDict db model =
 generatePrenatalLabsEntries :
     Language
     -> NominalDate
+    -> Bool
     -> Dict PrenatalLabsResultsId PrenatalLabsResults
     -> ModelIndexedDb
     -> List PrenatalLabsEntryData
-generatePrenatalLabsEntries language currentDate itemsDict db =
+generatePrenatalLabsEntries language currentDate isLabTech itemsDict db =
     Dict.values itemsDict
-        |> List.map (generatePrenatalLabsEntryData language currentDate db)
+        |> List.map (generatePrenatalLabsEntryData language currentDate isLabTech db)
         |> Maybe.Extra.values
 
 
 generatePrenatalLabsEntryData :
     Language
     -> NominalDate
+    -> Bool
     -> ModelIndexedDb
     -> PrenatalLabsResults
     -> Maybe PrenatalLabsEntryData
-generatePrenatalLabsEntryData language currentDate db item =
+generatePrenatalLabsEntryData language currentDate isLabTech db item =
     Maybe.map
         (\encounterId ->
             let
@@ -947,6 +954,9 @@ generatePrenatalLabsEntryData language currentDate db item =
                 state =
                     if Date.diff Days currentDate item.value.resolutionDate < 8 then
                         LabsEntryClosingSoon
+
+                    else if not isLabTech && (item.value.reviewState == Just ReviewRequested) then
+                        LabsEntryReadyForReview
 
                     else
                         LabsEntryPending
@@ -1010,6 +1020,10 @@ viewLabsEntry language isLabTech personName state label targetPage =
                             "overdue"
 
                         LabsEntryPending ->
+                            "this-week"
+
+                        LabsEntryReadyForReview ->
+                            -- @todo: needs styling?
                             "this-week"
                    )
     in

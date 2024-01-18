@@ -26,6 +26,7 @@ import Backend.Measurement.Model
         , ChildMeasurements
         , HistoricalMeasurements
         , Measurements
+        , ReviewState(..)
         , TestPrerequisite(..)
         , WellChildSymptom(..)
         )
@@ -85,7 +86,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model
 import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
 import Pages.AcuteIllness.Activity.Model
@@ -149,12 +150,13 @@ updateIndexedDb :
     -> Maybe HealthCenterId
     -> Maybe VillageId
     -> Bool
+    -> Bool
     -> Page
     -> SyncManager.Model.Model
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime zscores site features nurseId healthCenterId villageId isChw activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime zscores site features nurseId healthCenterId villageId isChw isLabTech activePage syncManager msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -323,6 +325,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         healthCenterId
                         villageId
                         isChw
+                        isLabTech
                         activePage
                         syncManager
                     )
@@ -1667,7 +1670,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Maybe.map
                                     (\encounterId_ ->
                                         if resultsAdded then
-                                            generatePrenatalLabsResultsAddedMsgs currentDate newModel test testPrerequisites encounterId_
+                                            generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
 
                                         else
                                             generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
@@ -1698,6 +1701,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                 if resultsAdded then
                                                     generatePrenatalLabsResultsAddedMsgs
                                                         currentDate
+                                                        isLabTech
                                                         newModel
                                                         Backend.Measurement.Model.TestVitalsRecheck
                                                         Nothing
@@ -3575,6 +3579,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         healthCenterId
                         villageId
                         isChw
+                        isLabTech
                         activePage
                         syncManager
                     )
@@ -3782,6 +3787,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         healthCenterId
                         villageId
                         isChw
+                        isLabTech
                         activePage
                         syncManager
                     )
@@ -6185,12 +6191,13 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
 
 generatePrenatalLabsResultsAddedMsgs :
     NominalDate
+    -> Bool
     -> ModelIndexedDb
     -> Backend.Measurement.Model.LaboratoryTest
     -> Maybe (EverySet TestPrerequisite)
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalLabsResultsAddedMsgs currentDate after test testPrerequisites id =
+generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrerequisites id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.andThen
@@ -6222,10 +6229,13 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test testPrerequisites id
                                             updatedCompletedTests =
                                                 EverySet.insert test completedTests
 
+                                            allLabsCompleted =
+                                                EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
+
                                             allActivitiesCompleted =
-                                                -- All performed tests are completed, and Next Steps are either
+                                                -- All performed labs are completed, and Next Steps are either
                                                 -- completed, or not required,
-                                                (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
+                                                allLabsCompleted
                                                     && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
                                                         currentDate
                                                         assembled
@@ -6236,18 +6246,29 @@ generatePrenatalLabsResultsAddedMsgs currentDate after test testPrerequisites id
                                                     |> Maybe.withDefault False
 
                                             resolutionDate =
-                                                -- When all performed tests are completed, and Next Steps are either
-                                                -- completed, or not required, setting today as resolution date.
-                                                if allActivitiesCompleted then
+                                                -- Form nurses, when all performed tests are completed, and Next Steps
+                                                -- are either completed, or not required, setting today as resolution date,
+                                                -- thus resolving the entr, so it does not appear again.
+                                                if allActivitiesCompleted && not isLabTech then
                                                     currentDate
 
                                                 else
                                                     value.resolutionDate
+
+                                            reviewState =
+                                                -- For lab technician, request review if all labs were
+                                                -- completed, and review state was not set previously.
+                                                if isLabTech && isNothing value.reviewState && allLabsCompleted then
+                                                    Just ReviewRequested
+
+                                                else
+                                                    value.reviewState
                                         in
                                         ( { value
                                             | performedTests = updatedPerformedTests
                                             , completedTests = updatedCompletedTests
                                             , resolutionDate = resolutionDate
+                                            , reviewState = reviewState
                                           }
                                         , if
                                             -- Navigation is performed only when all activit were completed,

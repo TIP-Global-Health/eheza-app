@@ -1197,6 +1197,7 @@ type TranslationId
     | RandomBloodSugarResultNormalRange RandomBloodSugarResult
     | Read
     | ReadToggle Bool
+    | ReadyForReview
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
@@ -7911,6 +7912,9 @@ translationSet trans =
                     , kinyarwanda = Just "Birafunga vuba"
                     , kirundi = Just "Agiye kugara vuba"
                     }
+
+                LabsEntryReadyForReview ->
+                    translationSet ReadyForReview
 
         LabsHistoryCompletedQuestion ->
             { english = "Have you updated all results that have been returned for this patient"
@@ -16422,6 +16426,12 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 , kirundi = Just "Ivyasomwe"
                 }
+
+        ReadyForReview ->
+            { english = "Ready for Review"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         RandomBloodSugarResultNormalRange type_ ->
             case type_ of

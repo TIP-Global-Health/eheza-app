@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
 import Config.Model
@@ -346,9 +346,11 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     currentDate =
                         fromLocalDateTime model.currentTime
 
-                    isChw =
+                    ( isChw, isLabTech ) =
                         Tuple.second loggedInModel.nurse
-                            |> isCommunityHealthWorker
+                            |> (\nurse ->
+                                    ( isCommunityHealthWorker nurse, isLabTechnician nurse )
+                               )
                 in
                 case page of
                     MyAccountPage ->
@@ -447,7 +449,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             currentDate
                             healthCenterId
                             model.villageId
-                            (Tuple.second loggedInModel.nurse)
+                            isLabTech
                             model.syncManager
                             model.indexedDb
                             loggedInModel.globalCaseManagementPage

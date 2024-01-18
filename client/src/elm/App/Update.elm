@@ -266,6 +266,7 @@ update msg model =
                         model.healthCenterId
                         model.villageId
                         isChw
+                        isLabTech
                         model.activePage
                         model.syncManager
                         subMsg
