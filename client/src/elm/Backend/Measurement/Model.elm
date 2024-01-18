@@ -1322,6 +1322,7 @@ type alias LabsResultsValue =
     , completedTests : EverySet LaboratoryTest
     , resolutionDate : NominalDate
     , patientNotified : Bool
+    , reviewState : Maybe ReviewState
     }
 
 
@@ -1340,6 +1341,11 @@ type LaboratoryTest
     | TestCreatinine
     | TestLiverFunction
     | TestLipidPanel
+
+
+type ReviewState
+    = ReviewRequested
+    | ReviewCompleted
 
 
 type alias PrenatalMedicationDistribution =

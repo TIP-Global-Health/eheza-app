@@ -3389,6 +3389,29 @@ laboratoryTestFromString value =
             Nothing
 
 
+reviewStateToString : ReviewState -> String
+reviewStateToString state =
+    case state of
+        ReviewRequested ->
+            "requested"
+
+        ReviewCompleted ->
+            "completed"
+
+
+reviewStateFromString : String -> Maybe ReviewState
+reviewStateFromString state =
+    case state of
+        "requested" ->
+            Just ReviewRequested
+
+        "completed" ->
+            Just ReviewCompleted
+
+        _ ->
+            Nothing
+
+
 {-| Referal to facility is completed when we mark that facility was referred to,
 or, reason was set for not referring to that facility.
 -}

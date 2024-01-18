@@ -949,6 +949,7 @@ decodeLabsResultsValue =
         |> required "completed_tests" (decodeEverySet decodeLaboratoryTest)
         |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "patient_notified" bool False
+        |> optional "review_state" (nullable decodeReviewState) Nothing
 
 
 decodeLaboratoryTest : Decoder LaboratoryTest
@@ -957,6 +958,17 @@ decodeLaboratoryTest =
         |> andThen
             (\s ->
                 laboratoryTestFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized LaboratoryTest")
+            )
+
+
+decodeReviewState : Decoder ReviewState
+decodeReviewState =
+    string
+        |> andThen
+            (\s ->
+                reviewStateFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized LaboratoryTest")
             )

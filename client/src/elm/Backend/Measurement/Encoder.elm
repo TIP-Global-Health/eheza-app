@@ -660,6 +660,7 @@ encodeLabsResultsValue type_ value =
     , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
     ]
         ++ patientNotified
+        ++ encodeNullable "review_state" value.reviewState encodeReviewState
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]
@@ -668,6 +669,11 @@ encodeLabsResultsValue type_ value =
 encodeLaboratoryTest : LaboratoryTest -> Value
 encodeLaboratoryTest =
     laboratoryTestToString >> string
+
+
+encodeReviewState : ReviewState -> Value
+encodeReviewState =
+    reviewStateToString >> string
 
 
 encodePrenatalMentalHealth : PrenatalMentalHealth -> List ( String, Value )
