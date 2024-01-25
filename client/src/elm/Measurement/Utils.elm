@@ -1855,25 +1855,36 @@ hivTestUniversalFormWithDefault form =
         )
 
 
-toHIVTestValueUniversalWithDefault : Maybe HIVTestValue -> HIVTestUniversalForm -> Maybe HIVTestValue
-toHIVTestValueUniversalWithDefault saved form =
+toHIVTestValueUniversalWithDefault : Bool -> Maybe HIVTestValue -> HIVTestUniversalForm -> Maybe HIVTestValue
+toHIVTestValueUniversalWithDefault isLabTech saved form =
     hivTestUniversalFormWithDefault form saved
-        |> toHIVTestValueUniversal
+        |> toHIVTestValueUniversal isLabTech
 
 
-toHIVTestValueUniversal : HIVTestUniversalForm -> Maybe HIVTestValue
-toHIVTestValueUniversal form =
+toHIVTestValueUniversal : Bool -> HIVTestUniversalForm -> Maybe HIVTestValue
+toHIVTestValueUniversal isLabTech form =
     Maybe.map
         (\executionNote ->
             let
                 hivSigns =
-                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
-                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
-                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
-                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-                    ]
-                        |> Maybe.Extra.combine
-                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+                    if isLabTech then
+                        -- Lab technician can activate this function only from
+                        -- recurrent phase, where they set lab results.
+                        -- hivSigns field is used for follow-up questions after
+                        -- result is entered, and can not be set by lab tach.
+                        -- Therefore, we can safely set it to 'input pending'
+                        -- value, indicating that nurse will have to fill it in
+                        -- the follow up questions.
+                        Just <| EverySet.singleton PrenatalHIVSignPendingInput
+
+                    else
+                        [ ifNullableTrue HIVProgramHC form.hivProgramHC
+                        , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
+                        , ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                        , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                        ]
+                            |> Maybe.Extra.combine
+                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
@@ -1940,7 +1951,7 @@ bloodSmearResultSet =
 
 bloodSmearResultNotSet : BloodSmearResult -> Bool
 bloodSmearResultNotSet value =
-    List.member value [ BloodSmearPending, BloodSmearNotTaken ]
+    List.member value [ BloodSmearPendingInput, BloodSmearNotTaken ]
 
 
 toMalariaTestValueWithDefault : Maybe MalariaTestValue -> MalariaTestForm -> Maybe MalariaTestValue
@@ -1960,7 +1971,7 @@ toMalariaTestValue form =
                             && (form.bloodSmearTaken == Just True)
                             && (form.immediateResult == Just False)
                     then
-                        BloodSmearPending
+                        BloodSmearPendingInput
 
                     else
                         BloodSmearNotTaken
@@ -2486,21 +2497,36 @@ syphilisTestFormWithDefault form saved =
             )
 
 
-toSyphilisTestValueWithDefault : Maybe (SyphilisTestValue encounterId) -> SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
-toSyphilisTestValueWithDefault saved form =
+toSyphilisTestValueWithDefault : Bool -> Maybe (SyphilisTestValue encounterId) -> SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
+toSyphilisTestValueWithDefault isLabTech saved form =
     syphilisTestFormWithDefault form saved
-        |> toSyphilisTestValue
+        |> toSyphilisTestValue isLabTech
 
 
-toSyphilisTestValue : SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
-toSyphilisTestValue form =
+toSyphilisTestValue : Bool -> SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
+toSyphilisTestValue isLabTech form =
     Maybe.map
         (\executionNote ->
+            let
+                symptoms =
+                    if isLabTech then
+                        -- Lab technician can activate this function only from
+                        -- recurrent phase, where they set lab results.
+                        -- symptoms field is used for follow-up question after
+                        -- result is entered, and can not be set by lab tach.
+                        -- Therefore, we can safely set it to 'input pending'
+                        -- value, indicating that nurse will have to fill it in
+                        -- the follow up questions.
+                        Just <| EverySet.singleton IllnessSymptomPendingInput
+
+                    else
+                        Maybe.map EverySet.fromList form.symptoms
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
-            , symptoms = Maybe.map EverySet.fromList form.symptoms
+            , symptoms = symptoms
             , originatingEncounter = Nothing
             }
         )
@@ -6083,7 +6109,7 @@ malariaResultFormWithDefault form saved =
             (\value ->
                 let
                     bloodSmearTakenByValue =
-                        value.bloodSmearResult == BloodSmearPending
+                        value.bloodSmearResult == BloodSmearPendingInput
 
                     -- If we have an indication that Blood Smear test was
                     -- ordered on initail phase, empty it's value.

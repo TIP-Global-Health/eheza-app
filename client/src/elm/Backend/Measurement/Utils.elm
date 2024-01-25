@@ -1388,6 +1388,9 @@ prenatalHIVSignToString sign =
         PartnerSurpressedViralLoad ->
             "partner-surpressed-viral-load"
 
+        PrenatalHIVSignPendingInput ->
+            "pending-input"
+
         NoPrenatalHIVSign ->
             "none"
 
@@ -1406,6 +1409,9 @@ prenatalHIVSignFromString sign =
 
         "partner-surpressed-viral-load" ->
             Just PartnerSurpressedViralLoad
+
+        "pending-input" ->
+            Just PrenatalHIVSignPendingInput
 
         "none" ->
             Just NoPrenatalHIVSign
@@ -1754,6 +1760,9 @@ illnessSymptomToString symptom =
         IllnessSymptomPainlessUlcerGenitals ->
             "painless-ulcer-genitals"
 
+        IllnessSymptomPendingInput ->
+            "pending-input"
+
         NoIllnessSymptoms ->
             "none"
 
@@ -1775,6 +1784,9 @@ illnessSymptomFromString symptom =
 
         "painless-ulcer-genitals" ->
             Just IllnessSymptomPainlessUlcerGenitals
+
+        "pending-input" ->
+            Just IllnessSymptomPendingInput
 
         "none" ->
             Just NoIllnessSymptoms
@@ -3872,8 +3884,8 @@ bloodSmearResultToString value =
         BloodSmearNotTaken ->
             "not-taken"
 
-        BloodSmearPending ->
-            "pending"
+        BloodSmearPendingInput ->
+            "pending-input"
 
 
 bloodSmearResultFromString : String -> Maybe BloodSmearResult
@@ -3894,8 +3906,8 @@ bloodSmearResultFromString value =
         "not-taken" ->
             Just BloodSmearNotTaken
 
-        "pending" ->
-            Just BloodSmearPending
+        "pending-input" ->
+            Just BloodSmearPendingInput
 
         _ ->
             Nothing

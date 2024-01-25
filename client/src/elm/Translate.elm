@@ -3386,11 +3386,10 @@ translationSet trans =
                     , kirundi = Just "Nticafashwe"
                     }
 
-                BloodSmearPending ->
-                    { english = "Pending"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                -- This option is an indicator - not meant to be
+                -- displayed with UI.
+                BloodSmearPendingInput ->
+                    translationSet EmptyString
 
         BloodSmearTestResult ->
             { english = "Malaria Blood Test Result"
@@ -6720,6 +6719,11 @@ translationSet trans =
                     , kinyarwanda = Just "Agasebe kataryana mu myanya ndangagitsina"
                     , kirundi = Just "Igikomere kitababaza mu bihimba vy'irondoka"
                     }
+
+                -- This option is an indicator - not meant to be
+                -- displayed with UI.
+                IllnessSymptomPendingInput ->
+                    translationSet EmptyString
 
                 NoIllnessSymptoms ->
                     { english = "None of these"
@@ -15154,11 +15158,16 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                NoPrenatalHIVSign ->
-                    { english = ""
+                PrenatalHIVSignPendingInput ->
+                    { english = "Pending Input"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+                -- This option is an indicator - not meant to be
+                -- displayed with UI.
+                NoPrenatalHIVSign ->
+                    translationSet EmptyString
 
         PrenatalImmunisationTask task ->
             case task of
