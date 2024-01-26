@@ -25,6 +25,7 @@ import Backend.Measurement.Model
         ( BloodSmearResult(..)
         , ChildMeasurements
         , HistoricalMeasurements
+        , LaboratoryTest(..)
         , Measurements
         , ReviewState(..)
         , TestPrerequisite(..)
@@ -6246,15 +6247,15 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
                                                 Maybe.map (EverySet.member PrerequisiteImmediateResult >> not) testPrerequisites
                                                     |> Maybe.withDefault False
 
-                                            resolutionDate =
-                                                -- Form nurses, when all performed tests are completed, and Next Steps
-                                                -- are either completed, or not required, setting today as resolution date,
-                                                -- thus resolving the entr, so it does not appear again.
-                                                if allActivitiesCompleted && not isLabTech then
-                                                    currentDate
+                                            updatedTestsWithFollowUp =
+                                                -- Mark tests which results were enetered by Lab Tech, and got
+                                                -- follow up questions that will have to be completed by nurse.
+                                                if isLabTech && List.member test [ TestHIV, TestSyphilis ] then
+                                                    Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
+                                                        |> Maybe.withDefault (Just <| EverySet.singleton test)
 
                                                 else
-                                                    value.resolutionDate
+                                                    value.testsWithFollowUp
 
                                             reviewState =
                                                 -- For lab technician, request review if all labs were
@@ -6264,11 +6265,22 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
 
                                                 else
                                                     value.reviewState
+
+                                            resolutionDate =
+                                                -- Form nurses, when all performed tests are completed, and Next Steps
+                                                -- are either completed, or not required, setting today as resolution date,
+                                                -- thus resolving the entr, so it does not appear again.
+                                                if allActivitiesCompleted && not isLabTech then
+                                                    currentDate
+
+                                                else
+                                                    value.resolutionDate
                                         in
                                         ( { value
                                             | performedTests = updatedPerformedTests
                                             , completedTests = updatedCompletedTests
                                             , resolutionDate = resolutionDate
+                                            , testsWithFollowUp = updatedTestsWithFollowUp
                                             , reviewState = reviewState
                                           }
                                         , if
