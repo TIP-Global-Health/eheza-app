@@ -6179,6 +6179,7 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                                         (Date.add Days labExpirationPeriod currentDate)
                                         False
                                         Nothing
+                                        Nothing
                             in
                             [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
 
@@ -6394,6 +6395,7 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
                                         EverySet.empty
                                         (Date.add Days labExpirationPeriod currentDate)
                                         False
+                                        Nothing
                                         Nothing
                             in
                             [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]

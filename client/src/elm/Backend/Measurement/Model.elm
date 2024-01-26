@@ -1333,6 +1333,7 @@ type alias LabsResultsValue =
     , resolutionDate : NominalDate
     , patientNotified : Bool
     , reviewState : Maybe ReviewState
+    , testsWithFollowUp : Maybe (EverySet LaboratoryTest)
     }
 
 

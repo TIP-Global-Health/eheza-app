@@ -950,6 +950,7 @@ decodeLabsResultsValue =
         |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "patient_notified" bool False
         |> optional "review_state" (nullable decodeReviewState) Nothing
+        |> optional "tests_with_follow_up" (nullable (decodeEverySet decodeLaboratoryTest)) Nothing
 
 
 decodeLaboratoryTest : Decoder LaboratoryTest

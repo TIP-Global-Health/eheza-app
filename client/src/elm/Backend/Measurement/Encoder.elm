@@ -660,6 +660,7 @@ encodeLabsResultsValue type_ value =
     , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
     ]
         ++ patientNotified
+        ++ encodeEverySetNullable "tests_with_follow_up" value.testsWithFollowUp encodeLaboratoryTest
         ++ encodeNullable "review_state" value.reviewState encodeReviewState
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
