@@ -57,6 +57,11 @@ expectActivity currentDate assembled activity =
         RecurrentMalariaPrevention ->
             expectMalariaPreventionActivity PhaseRecurrent assembled
 
+        LabsResultsFollowUps ->
+            resolveLaboratoryResultFollowUpsTasks currentDate assembled
+                |> List.isEmpty
+                |> not
+
 
 activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
 activityCompleted currentDate assembled activity =
@@ -82,6 +87,12 @@ activityCompleted currentDate assembled activity =
         RecurrentMalariaPrevention ->
             (not <| expectActivity currentDate assembled RecurrentMalariaPrevention)
                 || isJust assembled.measurements.malariaPrevention
+
+        LabsResultsFollowUps ->
+            (not <| expectActivity currentDate assembled LabsResultsFollowUps)
+                || (resolveLaboratoryResultTasks currentDate assembled
+                        |> List.all (laboratoryResultFollowUpsTaskCompleted currentDate assembled)
+                   )
 
 
 laboratoryResultTasks : List LaboratoryTask
@@ -211,6 +222,64 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskCompletePreviousTests ->
             False
+
+        -- Others are not in use for Prenatal.
+        _ ->
+            False
+
+
+laboratoryResultFollowUpsTasks : List LaboratoryTask
+laboratoryResultFollowUpsTasks =
+    [ TaskHIVTest
+    , TaskSyphilisTest
+    ]
+
+
+resolveLaboratoryResultFollowUpsTasks : NominalDate -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultFollowUpsTasks currentDate assembled =
+    List.filter (expectLaboratoryResultFollowUpsTask currentDate assembled) laboratoryResultFollowUpsTasks
+
+
+laboratoryResultFollowUpsTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
+laboratoryResultFollowUpsTaskCompleted currentDate assembled task =
+    let
+        taskExpected =
+            expectLaboratoryResultFollowUpsTask currentDate assembled
+
+        testFollowUpCompleted getMeasurementFunc getResultFieldFunc pendingValue =
+            getMeasurementFunc assembled.measurements
+                |> getMeasurementValueFunc
+                |> Maybe.andThen getResultFieldFunc
+                |> Maybe.map (EverySet.member pendingValue >> not)
+                |> Maybe.withDefault False
+    in
+    case task of
+        TaskHIVTest ->
+            (not <| taskExpected TaskHIVTest) || testFollowUpCompleted .hivTest .hivSigns PrenatalHIVSignPendingInput
+
+        TaskSyphilisTest ->
+            (not <| taskExpected TaskSyphilisTest) || testFollowUpCompleted .syphilisTest .symptoms IllnessSymptomPendingInput
+
+        -- Others are not in use for Prenatal.
+        _ ->
+            False
+
+
+expectLaboratoryResultFollowUpsTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryResultFollowUpsTask currentDate assembled task =
+    let
+        wasFollowUpScheduled test =
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.andThen .testsWithFollowUp
+                |> Maybe.map (EverySet.member test)
+                |> Maybe.withDefault False
+    in
+    case task of
+        TaskHIVTest ->
+            wasFollowUpScheduled TestHIV
+
+        TaskSyphilisTest ->
+            wasFollowUpScheduled TestSyphilis
 
         -- Others are not in use for Prenatal.
         _ ->

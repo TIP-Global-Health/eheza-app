@@ -13331,6 +13331,12 @@ translationSet trans =
                     , kirundi = Just "Kwikingira Malariya"
                     }
 
+                Backend.PrenatalActivity.Model.LabsResultsFollowUps ->
+                    { english = "Lab Results Follow Ups"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->

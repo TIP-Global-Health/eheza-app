@@ -142,6 +142,10 @@ viewActivity language currentDate isLabTech activity assembled db model =
                 SaveMalariaPrevention
                 model.malariaPreventionData
 
+        LabsResultsFollowUps ->
+            -- @todo:
+            []
+
 
 viewLabResultsContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate isLabTech assembled model =

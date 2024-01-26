@@ -175,6 +175,9 @@ recurrentActivityToString activity =
         RecurrentMalariaPrevention ->
             "malaria"
 
+        LabsResultsFollowUps ->
+            recurrentActivityToString LabResults
+
 
 recurrentActivityFromString : String -> Maybe PrenatalRecurrentActivity
 recurrentActivityFromString s =
