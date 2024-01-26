@@ -6248,7 +6248,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
                                                     |> Maybe.withDefault False
 
                                             updatedTestsWithFollowUp =
-                                                -- Mark tests which results were enetered by Lab Tech, and got
+                                                -- Mark tests which results were entered by Lab Tech, and got
                                                 -- follow up questions that will have to be completed by nurse.
                                                 if isLabTech && List.member test [ TestHIV, TestSyphilis ] then
                                                     Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
