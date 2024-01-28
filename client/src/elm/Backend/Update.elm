@@ -1749,7 +1749,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         in
                         ( newModel, extraMsgs )
 
-                processMalariaPreventionRevision participantId encounterId =
+                processRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
                     if downloadingContent || (not <| atPrenatalRecurrentPhase activePage) then
                         ( model, [] )
 
@@ -2423,7 +2423,37 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ MalariaPreventionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processMalariaPreventionRevision data.participantId data.encounterId
+                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalHealthEducationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalSendToHCRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalMedicationDistributionRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none

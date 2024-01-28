@@ -65,51 +65,7 @@ update language currentDate id isLabTech db msg model =
 
         generateNextStepsMsgs personId nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
-                |> Maybe.withDefault
-                    (let
-                        -- When Next steps are completed, and all lab results were
-                        -- entered, we close the entry.
-                        closeLabsResultsMsg =
-                            Dict.get id db.prenatalMeasurements
-                                |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.andThen .labsResults
-                                |> Maybe.andThen
-                                    (\( labsResultsId, results ) ->
-                                        let
-                                            ( performedTests, completedTests ) =
-                                                labsResultsTestData currentDate results
-                                        in
-                                        if EverySet.size performedTests == EverySet.size completedTests then
-                                            let
-                                                updatedValue =
-                                                    results.value
-                                                        |> (\value ->
-                                                                { value | resolutionDate = currentDate }
-                                                           )
-                                            in
-                                            Just <| CloseLabsResultsEntry personId labsResultsId updatedValue
-
-                                        else
-                                            Nothing
-                                    )
-                     in
-                     Maybe.map
-                        (\closeMsg ->
-                            -- We're closing labs results enrty, which means that all results
-                            -- were entered and Next steps are completed.
-                            -- Therefore, we navigate to Progress report page.
-                            [ closeMsg
-                            , SetActivePage <|
-                                UserPage <|
-                                    ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id) id
-                            ]
-                        )
-                        closeLabsResultsMsg
-                        |> Maybe.withDefault
-                            -- Not all labs results are completed, therefore,
-                            -- we navigate to encounter page.
-                            [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
-                    )
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage id ]
     in
     case msg of
         NoOp ->
