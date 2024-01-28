@@ -9,4 +9,4 @@ getAllActivities isLabTech =
         [ LabResults ]
 
     else
-        [ RecurrentExamination, RecurrentMalariaPrevention, LabResults, RecurrentNextSteps ]
+        [ RecurrentExamination, RecurrentMalariaPrevention, LabResults, LabsResultsFollowUps, RecurrentNextSteps ]

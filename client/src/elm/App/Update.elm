@@ -594,6 +594,7 @@ update msg model =
                                             currentDate
                                             originEncounterId
                                             labEncounterId
+                                            isLabTech
                                             model.indexedDb
                                             subMsg
                             in

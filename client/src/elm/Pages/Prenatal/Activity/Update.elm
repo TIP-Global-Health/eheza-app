@@ -1813,7 +1813,7 @@ update language currentDate id isLabTech db msg model =
 
                 appMsgs =
                     model.laboratoryData.hivTestForm
-                        |> toHIVTestValueUniversalWithDefault isLabTech measurement
+                        |> toHIVTestValueUniversalWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -1920,7 +1920,7 @@ update language currentDate id isLabTech db msg model =
 
                 appMsgs =
                     model.laboratoryData.syphilisTestForm
-                        |> toSyphilisTestValueWithDefault isLabTech measurement
+                        |> toSyphilisTestValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id

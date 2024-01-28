@@ -1855,36 +1855,25 @@ hivTestUniversalFormWithDefault form =
         )
 
 
-toHIVTestValueUniversalWithDefault : Bool -> Maybe HIVTestValue -> HIVTestUniversalForm -> Maybe HIVTestValue
-toHIVTestValueUniversalWithDefault isLabTech saved form =
+toHIVTestValueUniversalWithDefault : Maybe HIVTestValue -> HIVTestUniversalForm -> Maybe HIVTestValue
+toHIVTestValueUniversalWithDefault saved form =
     hivTestUniversalFormWithDefault form saved
-        |> toHIVTestValueUniversal isLabTech
+        |> toHIVTestValueUniversal
 
 
-toHIVTestValueUniversal : Bool -> HIVTestUniversalForm -> Maybe HIVTestValue
-toHIVTestValueUniversal isLabTech form =
+toHIVTestValueUniversal : HIVTestUniversalForm -> Maybe HIVTestValue
+toHIVTestValueUniversal form =
     Maybe.map
         (\executionNote ->
             let
                 hivSigns =
-                    if isLabTech then
-                        -- Lab technician can activate this function only from
-                        -- recurrent phase, where they set lab results.
-                        -- hivSigns field is used for follow-up questions after
-                        -- result is entered, and can not be set by lab tach.
-                        -- Therefore, we can safely set it to 'input pending'
-                        -- value, indicating that nurse will have to fill it in
-                        -- the follow up questions.
-                        Just <| EverySet.singleton PrenatalHIVSignPendingInput
-
-                    else
-                        [ ifNullableTrue HIVProgramHC form.hivProgramHC
-                        , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
-                        , ifNullableTrue PartnerTakingARV form.partnerTakingARV
-                        , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-                        ]
-                            |> Maybe.Extra.combine
-                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
+                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
+                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                    ]
+                        |> Maybe.Extra.combine
+                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
             in
             { executionNote = executionNote
             , executionDate = form.executionDate
@@ -2497,36 +2486,21 @@ syphilisTestFormWithDefault form saved =
             )
 
 
-toSyphilisTestValueWithDefault : Bool -> Maybe (SyphilisTestValue encounterId) -> SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
-toSyphilisTestValueWithDefault isLabTech saved form =
+toSyphilisTestValueWithDefault : Maybe (SyphilisTestValue encounterId) -> SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
+toSyphilisTestValueWithDefault saved form =
     syphilisTestFormWithDefault form saved
-        |> toSyphilisTestValue isLabTech
+        |> toSyphilisTestValue
 
 
-toSyphilisTestValue : Bool -> SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
-toSyphilisTestValue isLabTech form =
+toSyphilisTestValue : SyphilisTestForm -> Maybe (SyphilisTestValue encounterId)
+toSyphilisTestValue form =
     Maybe.map
         (\executionNote ->
-            let
-                symptoms =
-                    if isLabTech then
-                        -- Lab technician can activate this function only from
-                        -- recurrent phase, where they set lab results.
-                        -- symptoms field is used for follow-up question after
-                        -- result is entered, and can not be set by lab tach.
-                        -- Therefore, we can safely set it to 'input pending'
-                        -- value, indicating that nurse will have to fill it in
-                        -- the follow up questions.
-                        Just <| EverySet.singleton IllnessSymptomPendingInput
-
-                    else
-                        Maybe.map EverySet.fromList form.symptoms
-            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = testPrerequisitesByImmediateResult form.immediateResult
             , testResult = form.testResult
-            , symptoms = symptoms
+            , symptoms = Maybe.map EverySet.fromList form.symptoms
             , originatingEncounter = Nothing
             }
         )
@@ -3138,6 +3112,31 @@ hivResultFormAndTasks language currentDate isLabTech setHIVTestResultMsg setHIVT
     )
 
 
+hivResultFollowUpsFormAndTasks :
+    Language
+    -> NominalDate
+    -> ((Bool -> HIVResultForm -> HIVResultForm) -> Bool -> msg)
+    -> HIVResultForm
+    -> ( Html msg, Int, Int )
+hivResultFollowUpsFormAndTasks language currentDate setHIVTestFormBoolInputMsg form =
+    let
+        ( followUpsSection, followUpsTasksCompleted, followUpsTasksTotal ) =
+            hivResultFollowUpInputsAndTasks language
+                setHIVTestFormBoolInputMsg
+                form.testResult
+                form.hivProgramHC
+                form.partnerHIVPositive
+                form.partnerTakingARV
+                form.partnerSurpressedViralLoad
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskHIVTest
+            ++ followUpsSection
+    , followUpsTasksCompleted
+    , followUpsTasksTotal
+    )
+
+
 hivResultInputsAndTasks :
     Language
     -> Bool
@@ -3182,112 +3181,17 @@ hivResultInputsAndTasks language isLabTech setTestResultMsg setHIVTestFormBoolIn
             standardTestResultInputsAndTasks language setTestResultMsg testResult TaskHIVTest
 
         ( hivSignsSection, hivSignsTasksCompleted, hivSignsTasksTotal ) =
-            let
-                emptySection =
-                    ( [], 0, 0 )
-            in
-            Maybe.map
-                (\testResult_ ->
-                    case testResult_ of
-                        TestPositive ->
-                            let
-                                updateFunc =
-                                    \value form_ ->
-                                        { form_ | hivProgramHC = Just value, hivProgramHCDirty = True }
-                            in
-                            ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion HIVProgramHC
-                              , viewBoolInput
-                                    language
-                                    hivProgramHC
-                                    (setHIVTestFormBoolInputMsg updateFunc)
-                                    "hiv-program"
-                                    Nothing
-                              ]
-                            , taskCompleted hivProgramHC
-                            , 1
-                            )
+            if not isLabTech then
+                hivResultFollowUpInputsAndTasks language
+                    setHIVTestFormBoolInputMsg
+                    testResult
+                    hivProgramHC
+                    partnerHIVPositive
+                    partnerTakingARV
+                    partnerSurpressedViralLoad
 
-                        TestNegative ->
-                            let
-                                partnerHIVPositiveUpdateFunc =
-                                    \value form_ ->
-                                        { form_
-                                            | partnerHIVPositive = Just value
-                                            , partnerHIVPositiveDirty = True
-                                            , partnerTakingARV = Nothing
-                                            , partnerTakingARVDirty = True
-                                            , partnerSurpressedViralLoad = Nothing
-                                            , partnerSurpressedViralLoadDirty = True
-                                        }
-
-                                ( partnerHIVStatusSection, partnerHIVStatusTasksCompleted, partnerHIVStatusTasksTotal ) =
-                                    if partnerHIVPositive == Just True then
-                                        let
-                                            partnerTakingARVUpdateFunc =
-                                                \value form_ ->
-                                                    { form_
-                                                        | partnerTakingARV = Just value
-                                                        , partnerTakingARVDirty = True
-                                                        , partnerSurpressedViralLoad = Nothing
-                                                        , partnerSurpressedViralLoadDirty = True
-                                                    }
-
-                                            ( partnerARVSection, partnerARVTasksCompleted, partnerARVTasksTotal ) =
-                                                if partnerTakingARV == Just True then
-                                                    let
-                                                        partnerSurpressedViralLoadUpdateFunc =
-                                                            \value form_ ->
-                                                                { form_ | partnerSurpressedViralLoad = Just value, partnerSurpressedViralLoadDirty = True }
-                                                    in
-                                                    ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerSurpressedViralLoad
-                                                      , viewBoolInput
-                                                            language
-                                                            partnerSurpressedViralLoad
-                                                            (setHIVTestFormBoolInputMsg partnerSurpressedViralLoadUpdateFunc)
-                                                            "partner-surpressed-viral-load"
-                                                            Nothing
-                                                      ]
-                                                    , taskCompleted partnerSurpressedViralLoad
-                                                    , 1
-                                                    )
-
-                                                else
-                                                    emptySection
-                                        in
-                                        ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerTakingARV
-                                          , viewBoolInput
-                                                language
-                                                partnerTakingARV
-                                                (setHIVTestFormBoolInputMsg partnerTakingARVUpdateFunc)
-                                                "partner-taking-arv"
-                                                Nothing
-                                          ]
-                                            ++ partnerARVSection
-                                        , taskCompleted partnerTakingARV + partnerARVTasksCompleted
-                                        , 1 + partnerARVTasksTotal
-                                        )
-
-                                    else
-                                        emptySection
-                            in
-                            ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerHIVPositive
-                              , viewBoolInput
-                                    language
-                                    partnerHIVPositive
-                                    (setHIVTestFormBoolInputMsg partnerHIVPositiveUpdateFunc)
-                                    "partner-hiv-positive"
-                                    Nothing
-                              ]
-                                ++ partnerHIVStatusSection
-                            , taskCompleted partnerHIVPositive + partnerHIVStatusTasksCompleted
-                            , 1 + partnerHIVStatusTasksTotal
-                            )
-
-                        TestIndeterminate ->
-                            emptySection
-                )
-                testResult
-                |> Maybe.withDefault emptySection
+            else
+                ( [], 0, 0 )
     in
     ( testResultSection
         ++ hivSignsSection
@@ -4893,6 +4797,27 @@ syphilisResultFormAndTasks language currentDate isLabTech setTestResultMsg setIl
     )
 
 
+syphilisResultFollowUpsFormAndTasks :
+    Language
+    -> NominalDate
+    -> (IllnessSymptom -> msg)
+    -> SyphilisResultForm encounterId
+    -> ( Html msg, Int, Int )
+syphilisResultFollowUpsFormAndTasks language currentDate setIllnessSymptomMsg form =
+    let
+        ( followUpsSection, followUpsTasksCompleted, followUpsTasksTotal ) =
+            syphilisResultFollowUpInputsAndTasks language
+                setIllnessSymptomMsg
+                form.symptoms
+    in
+    ( div [ class "ui form laboratory prenatal-test-result" ] <|
+        resultFormHeaderSection language currentDate form.executionDate TaskSyphilisTest
+            ++ followUpsSection
+    , followUpsTasksCompleted
+    , followUpsTasksTotal
+    )
+
+
 syphilisResultInputsAndTasks :
     Language
     -> Bool
@@ -6156,32 +6081,62 @@ syphilisResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    symptomsByValue =
+                        Maybe.andThen
+                            (\symptoms_ ->
+                                if EverySet.member IllnessSymptomPendingInput symptoms_ then
+                                    -- When 'pending input' is set, we know it's an indecation
+                                    -- that symptoms are yet to be set (since it was Lab tech
+                                    -- filling the results of the test).
+                                    Nothing
+
+                                else
+                                    Just <| EverySet.toList symptoms_
+                            )
+                            value.symptoms
+                in
                 { executionNote = or form.executionNote (Just value.executionNote)
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
                 , testResult = or form.testResult value.testResult
-                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms (Maybe.map EverySet.toList value.symptoms)
+                , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms symptomsByValue
                 , symptomsDirty = form.symptomsDirty
                 , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
 
 
-toSyphilisResultValueWithDefault : Maybe (SyphilisTestValue encounterId) -> SyphilisResultForm encounterId -> Maybe (SyphilisTestValue encounterId)
-toSyphilisResultValueWithDefault saved form =
+toSyphilisResultValueWithDefault : Bool -> Maybe (SyphilisTestValue encounterId) -> SyphilisResultForm encounterId -> Maybe (SyphilisTestValue encounterId)
+toSyphilisResultValueWithDefault isLabTech saved form =
     syphilisResultFormWithDefault form saved
-        |> toSyphilisResultValue
+        |> toSyphilisResultValue isLabTech
 
 
-toSyphilisResultValue : SyphilisResultForm encounterId -> Maybe (SyphilisTestValue encounterId)
-toSyphilisResultValue form =
+toSyphilisResultValue : Bool -> SyphilisResultForm encounterId -> Maybe (SyphilisTestValue encounterId)
+toSyphilisResultValue isLabTech form =
     Maybe.map
         (\executionNote ->
+            let
+                symptoms =
+                    if isLabTech then
+                        -- Lab technician can activate this function only from
+                        -- recurrent phase, where they set lab results.
+                        -- symptoms field is used for follow-up question after
+                        -- result is entered, and can not be set by lab tach.
+                        -- Therefore, we can safely set it to 'input pending'
+                        -- value, indicating that nurse will have to fill it in
+                        -- the follow up questions.
+                        Just <| EverySet.singleton IllnessSymptomPendingInput
+
+                    else
+                        Maybe.map EverySet.fromList form.symptoms
+            in
             { executionNote = executionNote
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
-            , symptoms = Maybe.map EverySet.fromList form.symptoms
+            , symptoms = symptoms
             , originatingEncounter = form.originatingEncounter
             }
         )
@@ -6385,61 +6340,92 @@ hivResultFormWithDefault form =
         form
         (\value ->
             let
-                hivProgramHCValue =
-                    Maybe.map (EverySet.member HIVProgramHC)
-                        value.hivSigns
-                        |> Maybe.withDefault False
+                signsByValue =
+                    Maybe.map
+                        (\signs ->
+                            if EverySet.member PrenatalHIVSignPendingInput signs then
+                                -- When 'pending input' is set, we know it's an indecation
+                                -- that signs are yet to be set (since it was Lab tech
+                                -- filling the results of the test).
+                                { hivProgramHCValue = Nothing
+                                , partnerHIVPositiveValue = Nothing
+                                , partnerTakingARVValue = Nothing
+                                , partnerSurpressedViralLoadValue = Nothing
+                                }
 
-                partnerHIVPositiveValue =
-                    Maybe.map (EverySet.member PartnerHIVPositive)
+                            else
+                                { hivProgramHCValue = EverySet.member HIVProgramHC signs |> Just
+                                , partnerHIVPositiveValue = EverySet.member PartnerHIVPositive signs |> Just
+                                , partnerTakingARVValue = EverySet.member PartnerTakingARV signs |> Just
+                                , partnerSurpressedViralLoadValue = EverySet.member PartnerSurpressedViralLoad signs |> Just
+                                }
+                        )
                         value.hivSigns
-                        |> Maybe.withDefault False
-
-                partnerTakingARVValue =
-                    Maybe.map (EverySet.member PartnerTakingARV)
-                        value.hivSigns
-                        |> Maybe.withDefault False
-
-                partnerSurpressedViralLoadValue =
-                    Maybe.map (EverySet.member PartnerSurpressedViralLoad)
-                        value.hivSigns
-                        |> Maybe.withDefault False
+                        |> Maybe.withDefault
+                            { hivProgramHCValue = Nothing
+                            , partnerHIVPositiveValue = Nothing
+                            , partnerTakingARVValue = Nothing
+                            , partnerSurpressedViralLoadValue = Nothing
+                            }
             in
             { executionNote = or form.executionNote (Just value.executionNote)
             , executionDate = or form.executionDate value.executionDate
             , testPrerequisites = or form.testPrerequisites value.testPrerequisites
             , testResult = or form.testResult value.testResult
-            , hivProgramHC = valueConsideringIsDirtyField form.hivProgramHCDirty form.hivProgramHC hivProgramHCValue
+            , hivProgramHC =
+                maybeValueConsideringIsDirtyField form.hivProgramHCDirty
+                    form.hivProgramHC
+                    signsByValue.hivProgramHCValue
             , hivProgramHCDirty = form.hivProgramHCDirty
-            , partnerHIVPositive = valueConsideringIsDirtyField form.partnerHIVPositiveDirty form.partnerHIVPositive partnerHIVPositiveValue
+            , partnerHIVPositive =
+                maybeValueConsideringIsDirtyField form.partnerHIVPositiveDirty
+                    form.partnerHIVPositive
+                    signsByValue.partnerHIVPositiveValue
             , partnerHIVPositiveDirty = form.partnerHIVPositiveDirty
-            , partnerTakingARV = valueConsideringIsDirtyField form.partnerTakingARVDirty form.partnerTakingARV partnerTakingARVValue
+            , partnerTakingARV =
+                maybeValueConsideringIsDirtyField form.partnerTakingARVDirty
+                    form.partnerTakingARV
+                    signsByValue.partnerTakingARVValue
             , partnerTakingARVDirty = form.partnerTakingARVDirty
-            , partnerSurpressedViralLoad = valueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty form.partnerSurpressedViralLoad partnerSurpressedViralLoadValue
+            , partnerSurpressedViralLoad =
+                maybeValueConsideringIsDirtyField form.partnerSurpressedViralLoadDirty
+                    form.partnerSurpressedViralLoad
+                    signsByValue.partnerSurpressedViralLoadValue
             , partnerSurpressedViralLoadDirty = form.partnerSurpressedViralLoadDirty
             }
         )
 
 
-toHIVResultValueWithDefault : Maybe HIVTestValue -> HIVResultForm -> Maybe HIVTestValue
-toHIVResultValueWithDefault saved form =
+toHIVResultValueWithDefault : Bool -> Maybe HIVTestValue -> HIVResultForm -> Maybe HIVTestValue
+toHIVResultValueWithDefault isLabTech saved form =
     hivResultFormWithDefault form saved
-        |> toHIVResultValue
+        |> toHIVResultValue isLabTech
 
 
-toHIVResultValue : HIVResultForm -> Maybe HIVTestValue
-toHIVResultValue form =
+toHIVResultValue : Bool -> HIVResultForm -> Maybe HIVTestValue
+toHIVResultValue isLabTech form =
     Maybe.map
         (\executionNote ->
             let
                 hivSigns =
-                    [ ifNullableTrue HIVProgramHC form.hivProgramHC
-                    , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
-                    , ifNullableTrue PartnerTakingARV form.partnerTakingARV
-                    , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
-                    ]
-                        |> Maybe.Extra.combine
-                        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
+                    if isLabTech then
+                        -- Lab technician can activate this function only from
+                        -- recurrent phase, where they set lab results.
+                        -- hivSigns field is used for follow-up questions after
+                        -- result is entered, and can not be set by lab tach.
+                        -- Therefore, we can safely set it to 'input pending'
+                        -- value, indicating that nurse will have to fill it in
+                        -- the follow up questions.
+                        Just <| EverySet.singleton PrenatalHIVSignPendingInput
+
+                    else
+                        [ ifNullableTrue HIVProgramHC form.hivProgramHC
+                        , ifNullableTrue PartnerHIVPositive form.partnerHIVPositive
+                        , ifNullableTrue PartnerTakingARV form.partnerTakingARV
+                        , ifNullableTrue PartnerSurpressedViralLoad form.partnerSurpressedViralLoad
+                        ]
+                            |> Maybe.Extra.combine
+                            |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
             in
             { executionNote = executionNote
             , executionDate = form.executionDate

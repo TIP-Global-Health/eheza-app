@@ -236,7 +236,7 @@ update language currentDate id isLabTech db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toSyphilisResultValueWithDefault measurement model.labResultsData.syphilisTestForm
+                    toSyphilisResultValueWithDefault isLabTech measurement model.labResultsData.syphilisTestForm
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -749,7 +749,7 @@ update language currentDate id isLabTech db msg model =
 
                 appMsgs =
                     model.labResultsData.hivTestForm
-                        |> toHIVResultValueWithDefault measurement
+                        |> toHIVResultValueWithDefault isLabTech measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveHIVTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
@@ -1163,11 +1163,12 @@ updateLabsHistory :
     -> NominalDate
     -> PrenatalEncounterId
     -> PrenatalEncounterId
+    -> Bool
     -> ModelIndexedDb
     -> Msg
     -> LabResultsData
     -> ( LabResultsData, Cmd Msg, List App.Model.Msg )
-updateLabsHistory language currentDate originEncounterId labEncounterId db msg data =
+updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db msg data =
     let
         extraMsgs =
             [ SetActivePage <| UserPage <| PrenatalActivityPage originEncounterId Backend.PrenatalActivity.Model.Laboratory ]
@@ -1228,7 +1229,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
                     data.syphilisTestForm
 
                 appMsgs =
-                    toSyphilisResultValueWithDefault measurement { form | originatingEncounter = Just originEncounterId }
+                    toSyphilisResultValueWithDefault isLabTech measurement { form | originatingEncounter = Just originEncounterId }
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveSyphilisTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter labEncounterId
@@ -1241,7 +1242,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetHepatitisBTestResult value ->
             let
@@ -1281,7 +1282,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetBloodGroup value ->
             let
@@ -1334,7 +1335,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetProtein value ->
             let
@@ -1475,7 +1476,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetHemoglobin value ->
             let
@@ -1512,7 +1513,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetRandomBloodSugar value ->
             let
@@ -1552,7 +1553,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
 
         SetHIVViralLoadUndetectable undetectable ->
             let
@@ -1609,7 +1610,7 @@ updateLabsHistory language currentDate originEncounterId labEncounterId db msg d
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId db) extraMsgs
+                |> sequenceExtra (updateLabsHistory language currentDate originEncounterId labEncounterId isLabTech db) extraMsgs
 
         -- Other messages are not related to Labs History, and will not be sent.
         _ ->

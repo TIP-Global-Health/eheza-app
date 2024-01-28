@@ -90,7 +90,7 @@ activityCompleted currentDate assembled activity =
 
         LabsResultsFollowUps ->
             (not <| expectActivity currentDate assembled LabsResultsFollowUps)
-                || (resolveLaboratoryResultTasks currentDate assembled
+                || (resolveLaboratoryResultFollowUpsTasks currentDate assembled
                         |> List.all (laboratoryResultFollowUpsTaskCompleted currentDate assembled)
                    )
 
@@ -188,16 +188,25 @@ expectLaboratoryResultTask currentDate assembled task =
                 |> getMeasurementValueFunc
                 |> Maybe.map expectUniversalTestResultTask
                 |> Maybe.withDefault False
+
+        -- We don't want to show laboratory task if its results were
+        -- set by Lab tech, and it got follow up questions (filled by nurse),
+        -- as that task will be shown at Lab Results follow ups activity.
+        followUpWasNotScheduled test =
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.andThen .testsWithFollowUp
+                |> Maybe.map (EverySet.member test >> not)
+                |> Maybe.withDefault True
     in
     case task of
         TaskHIVTest ->
-            wasTestPerformed .hivTest
+            wasTestPerformed .hivTest && followUpWasNotScheduled TestHIV
 
         TaskPartnerHIVTest ->
             wasTestPerformed .partnerHIVTest
 
         TaskSyphilisTest ->
-            wasTestPerformed .syphilisTest
+            wasTestPerformed .syphilisTest && followUpWasNotScheduled TestSyphilis
 
         TaskHepatitisBTest ->
             wasTestPerformed .hepatitisBTest

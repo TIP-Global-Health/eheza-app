@@ -125,6 +125,7 @@ import Pages.Prenatal.Encounter.Model
 import Pages.Prenatal.Encounter.Utils
 import Pages.Prenatal.RecurrentActivity.Model
 import Pages.Prenatal.RecurrentActivity.Utils
+import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
@@ -1672,6 +1673,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                     (\encounterId_ ->
                                         if resultsAdded then
                                             generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
+                                                ++ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
 
                                         else
                                             generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
@@ -1707,6 +1709,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                         Backend.Measurement.Model.TestVitalsRecheck
                                                         Nothing
                                                         encounterId_
+                                                        ++ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
 
                                                 else
                                                     let
@@ -1742,6 +1745,25 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                     )
                                     value.dia
                                     value.sys
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
+                processMalariaPreventionRevision participantId encounterId =
+                    if downloadingContent || (not <| atPrenatalRecurrentPhase activePage) then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map
+                                    (\encounterId_ ->
+                                        generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+                                    )
+                                    encounterId
                                     |> Maybe.withDefault []
                         in
                         ( newModel, extraMsgs )
@@ -2398,6 +2420,16 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
+                [ MalariaPreventionRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processMalariaPreventionRevision data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 [ PrenatalHIVTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
@@ -2605,9 +2637,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                 [ PrenatalRandomBloodSugarTestRevision _ data ] ->
                     let
-                        _ =
-                            Debug.log "" (isJust data.value.sugarCount)
-
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes bellow.
@@ -6218,7 +6247,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
                                 ( performedTests, completedTests ) =
                                     Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
 
-                                ( updatedValue, navigateToProgressReportMsg ) =
+                                updatedValue =
                                     (\value ->
                                         let
                                             -- Since lab results can be entered right away (at poit of care),
@@ -6233,19 +6262,6 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
 
                                             allLabsCompleted =
                                                 EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
-
-                                            allActivitiesCompleted =
-                                                -- All performed labs are completed, and Next Steps are either
-                                                -- completed, or not required,
-                                                allLabsCompleted
-                                                    && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
-                                                        currentDate
-                                                        assembled
-                                                        Backend.PrenatalActivity.Model.RecurrentNextSteps
-
-                                            notImmediateResult =
-                                                Maybe.map (EverySet.member PrerequisiteImmediateResult >> not) testPrerequisites
-                                                    |> Maybe.withDefault False
 
                                             updatedTestsWithFollowUp =
                                                 -- Mark tests which results were entered by Lab Tech, and got
@@ -6265,51 +6281,78 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
 
                                                 else
                                                     value.reviewState
-
-                                            resolutionDate =
-                                                -- Form nurses, when all performed tests are completed, and Next Steps
-                                                -- are either completed, or not required, setting today as resolution date,
-                                                -- thus resolving the entr, so it does not appear again.
-                                                if allActivitiesCompleted && not isLabTech then
-                                                    currentDate
-
-                                                else
-                                                    value.resolutionDate
                                         in
-                                        ( { value
+                                        { value
                                             | performedTests = updatedPerformedTests
                                             , completedTests = updatedCompletedTests
-                                            , resolutionDate = resolutionDate
                                             , testsWithFollowUp = updatedTestsWithFollowUp
                                             , reviewState = reviewState
-                                          }
-                                        , if
-                                            -- Navigation is performed only when all activit were completed,
-                                            allActivitiesCompleted
-                                                && -- and lab results were entered on recurrent phase of encounter.
-                                                   notImmediateResult
-                                          then
-                                            -- Here we handle added Lab results, so, similar logic is applied
-                                            -- at Pages.Prenatal.RecurrentActivity.Update, for Next Steps activities.
-                                            [ App.Model.SetActivePage <|
-                                                UserPage <|
-                                                    ClinicalProgressReportPage
-                                                        (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
-                                                        id
-                                            ]
-
-                                          else
-                                            []
-                                        )
+                                        }
                                     )
                                         results.value
                             in
-                            savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue
-                                :: navigateToProgressReportMsg
+                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )
                     assembled.measurements.labsResults
             )
         |> Maybe.withDefault []
+
+
+generatePrenatalRecurrentPhaseCompletedMsgs :
+    NominalDate
+    -> Bool
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
+    if isLabTech then
+        []
+
+    else
+        Pages.Prenatal.Encounter.Utils.generateAssembledData id after
+            |> RemoteData.toMaybe
+            |> Maybe.andThen
+                (\assembled ->
+                    let
+                        ( _, pendingActivities ) =
+                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities False
+                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
+                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+                    in
+                    if List.isEmpty pendingActivities then
+                        Maybe.map
+                            (\( resultsId, results ) ->
+                                let
+                                    value =
+                                        results.value
+                                in
+                                [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) { value | resolutionDate = currentDate }
+                                , App.Model.SetActivePage <|
+                                    UserPage <|
+                                        ClinicalProgressReportPage
+                                            (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
+                                            id
+                                ]
+                            )
+                            assembled.measurements.labsResults
+
+                    else
+                        Nothing
+                )
+            |> Maybe.withDefault []
+
+
+atPrenatalRecurrentPhase : Page -> Bool
+atPrenatalRecurrentPhase activePage =
+    case activePage of
+        UserPage (PrenatalRecurrentEncounterPage _) ->
+            True
+
+        UserPage (PrenatalRecurrentActivityPage _ _) ->
+            True
+
+        _ ->
+            False
 
 
 savePrenatalLabsResultsMsg :
