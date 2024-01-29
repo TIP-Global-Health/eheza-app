@@ -87,8 +87,8 @@ viewMainPageContent language currentDate nurse assembled model =
 
         ( completedActivities, pendingActivities ) =
             getAllActivities isLabTech
-                |> List.filter (expectActivity currentDate assembled)
-                |> List.partition (activityCompleted currentDate assembled)
+                |> List.filter (expectActivity currentDate isLabTech assembled)
+                |> List.partition (activityCompleted currentDate isLabTech assembled)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

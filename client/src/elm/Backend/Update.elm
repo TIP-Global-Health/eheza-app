@@ -6346,8 +6346,8 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                     let
                         ( _, pendingActivities ) =
                             Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities False
-                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
+                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
                     in
                     if List.isEmpty pendingActivities then
                         Maybe.map

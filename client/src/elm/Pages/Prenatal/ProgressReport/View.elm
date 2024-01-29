@@ -455,8 +455,8 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                                     let
                                         ( _, pendingActivities ) =
                                             Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
-                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
+                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
 
                                         allowEndEncounter =
                                             List.isEmpty pendingActivities

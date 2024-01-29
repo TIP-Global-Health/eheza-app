@@ -155,7 +155,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
             assembled.measurements
 
         tasks =
-            resolveLaboratoryResultTasks currentDate assembled
+            resolveLaboratoryResultTasks currentDate isLabTech assembled
 
         activeTask =
             Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
@@ -169,7 +169,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                     activeTask == Just task
 
                 isCompleted =
-                    laboratoryResultTaskCompleted currentDate assembled task
+                    laboratoryResultTaskCompleted currentDate isLabTech assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]

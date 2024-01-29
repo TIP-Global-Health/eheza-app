@@ -890,8 +890,8 @@ viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
                 (\_ item ->
                     let
                         roleBasedCondition =
-                            -- If review was requested (by lab technician), we do
-                            -- not display entry for lab technician.
+                            -- If review was requested (by lab technician), or completed
+                            -- (by nurse) we do not display entry for lab technician.
                             if isLabTech then
                                 isNothing item.value.reviewState
 

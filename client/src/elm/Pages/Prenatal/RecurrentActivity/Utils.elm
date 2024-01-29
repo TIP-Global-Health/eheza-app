@@ -36,11 +36,11 @@ import Translate
 import Translate.Model exposing (Language(..))
 
 
-expectActivity : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
-expectActivity currentDate assembled activity =
+expectActivity : NominalDate -> Bool -> AssembledData -> PrenatalRecurrentActivity -> Bool
+expectActivity currentDate isLabTech assembled activity =
     case activity of
         LabResults ->
-            resolveLaboratoryResultTasks currentDate assembled
+            resolveLaboratoryResultTasks currentDate isLabTech assembled
                 |> List.isEmpty
                 |> not
 
@@ -63,33 +63,33 @@ expectActivity currentDate assembled activity =
                 |> not
 
 
-activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
-activityCompleted currentDate assembled activity =
+activityCompleted : NominalDate -> Bool -> AssembledData -> PrenatalRecurrentActivity -> Bool
+activityCompleted currentDate isLabTech assembled activity =
     case activity of
         LabResults ->
-            (not <| expectActivity currentDate assembled LabResults)
-                || (resolveLaboratoryResultTasks currentDate assembled
-                        |> List.all (laboratoryResultTaskCompleted currentDate assembled)
+            (not <| expectActivity currentDate isLabTech assembled LabResults)
+                || (resolveLaboratoryResultTasks currentDate isLabTech assembled
+                        |> List.all (laboratoryResultTaskCompleted currentDate isLabTech assembled)
                    )
 
         RecurrentNextSteps ->
-            (not <| expectActivity currentDate assembled RecurrentNextSteps)
+            (not <| expectActivity currentDate isLabTech assembled RecurrentNextSteps)
                 || (resolveNextStepsTasks currentDate assembled
                         |> List.all (nextStepsTaskCompleted currentDate assembled)
                    )
 
         RecurrentExamination ->
-            (not <| expectActivity currentDate assembled RecurrentExamination)
+            (not <| expectActivity currentDate isLabTech assembled RecurrentExamination)
                 || (resolveExaminationTasks currentDate assembled
                         |> List.all (examinationMeasurementTaken assembled)
                    )
 
         RecurrentMalariaPrevention ->
-            (not <| expectActivity currentDate assembled RecurrentMalariaPrevention)
+            (not <| expectActivity currentDate isLabTech assembled RecurrentMalariaPrevention)
                 || isJust assembled.measurements.malariaPrevention
 
         LabsResultsFollowUps ->
-            (not <| expectActivity currentDate assembled LabsResultsFollowUps)
+            (not <| expectActivity currentDate isLabTech assembled LabsResultsFollowUps)
                 || (resolveLaboratoryResultFollowUpsTasks currentDate assembled
                         |> List.all (laboratoryResultFollowUpsTaskCompleted currentDate assembled)
                    )
@@ -110,16 +110,16 @@ laboratoryResultTasks =
     ]
 
 
-resolveLaboratoryResultTasks : NominalDate -> AssembledData -> List LaboratoryTask
-resolveLaboratoryResultTasks currentDate assembled =
-    List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
+resolveLaboratoryResultTasks : NominalDate -> Bool -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTasks currentDate isLabTech assembled =
+    List.filter (expectLaboratoryResultTask currentDate isLabTech assembled) laboratoryResultTasks
 
 
-laboratoryResultTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
-laboratoryResultTaskCompleted currentDate assembled task =
+laboratoryResultTaskCompleted : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
+laboratoryResultTaskCompleted currentDate isLabTech assembled task =
     let
         taskExpected =
-            expectLaboratoryResultTask currentDate assembled
+            expectLaboratoryResultTask currentDate isLabTech assembled
 
         testResultsCompleted getMeasurementFunc getResultFieldFunc =
             getMeasurementFunc assembled.measurements
@@ -180,8 +180,8 @@ laboratoryResultTaskCompleted currentDate assembled task =
             False
 
 
-expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
-expectLaboratoryResultTask currentDate assembled task =
+expectLaboratoryResultTask : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryResultTask currentDate isLabTech assembled task =
     let
         wasTestPerformed getMeasurementFunc =
             getMeasurementFunc assembled.measurements
@@ -189,9 +189,9 @@ expectLaboratoryResultTask currentDate assembled task =
                 |> Maybe.map expectUniversalTestResultTask
                 |> Maybe.withDefault False
 
-        -- We don't want to show laboratory task if its results were
+        -- For nurses, we don't want to show laboratory task if its results were
         -- set by Lab tech, and it got follow up questions (filled by nurse),
-        -- as that task will be shown at Lab Results follow ups activity.
+        -- as that task will be shown at Lab Results Follow Ups activity.
         followUpWasNotScheduled test =
             getMeasurementValueFunc assembled.measurements.labsResults
                 |> Maybe.andThen .testsWithFollowUp
@@ -200,13 +200,14 @@ expectLaboratoryResultTask currentDate assembled task =
     in
     case task of
         TaskHIVTest ->
-            wasTestPerformed .hivTest && followUpWasNotScheduled TestHIV
+            wasTestPerformed .hivTest
+                && (isLabTech || followUpWasNotScheduled TestHIV)
 
         TaskPartnerHIVTest ->
             wasTestPerformed .partnerHIVTest
 
         TaskSyphilisTest ->
-            wasTestPerformed .syphilisTest && followUpWasNotScheduled TestSyphilis
+            wasTestPerformed .syphilisTest && (isLabTech || followUpWasNotScheduled TestSyphilis)
 
         TaskHepatitisBTest ->
             wasTestPerformed .hepatitisBTest
