@@ -1443,6 +1443,7 @@ type TranslationId
     | ResultOfContactingRecommendedSite RecommendationSite
     | ResultsMissing
     | ResultsPending
+    | ReviewAndAccept
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
@@ -7919,6 +7920,9 @@ translationSet trans =
 
                 LabsEntryReadyForReview ->
                     translationSet ReadyForReview
+
+                LabsEntryReviewed ->
+                    translationSet Reviewed
 
         LabsHistoryCompletedQuestion ->
             { english = "Have you updated all results that have been returned for this patient"
@@ -19095,6 +19099,12 @@ translationSet trans =
             { english = "Results Pending"
             , kinyarwanda = Just "Ibisubizo birategerejwe"
             , kirundi = Just "Inyishu zirarindiriwe"
+            }
+
+        ReviewAndAccept ->
+            { english = "Review & Accept"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         ReviewCaseWith144Respondent ->

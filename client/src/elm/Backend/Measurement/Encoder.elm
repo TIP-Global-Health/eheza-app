@@ -661,7 +661,7 @@ encodeLabsResultsValue type_ value =
     ]
         ++ patientNotified
         ++ encodeEverySetNullable "tests_with_follow_up" value.testsWithFollowUp encodeLaboratoryTest
-        ++ encodeNullable "review_state" value.reviewState encodeReviewState
+        ++ encodeNullable "review_state" value.reviewState encodeLabsResultsReviewState
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]
@@ -672,8 +672,8 @@ encodeLaboratoryTest =
     laboratoryTestToString >> string
 
 
-encodeReviewState : ReviewState -> Value
-encodeReviewState =
+encodeLabsResultsReviewState : LabsResultsReviewState -> Value
+encodeLabsResultsReviewState =
     reviewStateToString >> string
 
 

@@ -949,7 +949,7 @@ decodeLabsResultsValue =
         |> required "completed_tests" (decodeEverySet decodeLaboratoryTest)
         |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "patient_notified" bool False
-        |> optional "review_state" (nullable decodeReviewState) Nothing
+        |> optional "review_state" (nullable decodeLabsResultsReviewState) Nothing
         |> optional "tests_with_follow_up" (nullable (decodeEverySet decodeLaboratoryTest)) Nothing
 
 
@@ -964,8 +964,8 @@ decodeLaboratoryTest =
             )
 
 
-decodeReviewState : Decoder ReviewState
-decodeReviewState =
+decodeLabsResultsReviewState : Decoder LabsResultsReviewState
+decodeLabsResultsReviewState =
     string
         |> andThen
             (\s ->

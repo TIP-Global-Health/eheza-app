@@ -59,6 +59,9 @@ progressReportInitiatorToUrlFragment initiator =
         InitiatorPatientRecord personId ->
             "patient-record-" ++ fromEntityUuid personId
 
+        InitiatorCaseManagement encounterId ->
+            "case-management-" ++ fromEntityUuid encounterId
+
 
 progressReportInitiatorFromUrlFragment : String -> Maybe PrenatalProgressReportInitiator
 progressReportInitiatorFromUrlFragment s =
@@ -84,6 +87,12 @@ progressReportInitiatorFromUrlFragment s =
         String.dropLeft 15 s
             |> toEntityUuid
             |> InitiatorPatientRecord
+            |> Just
+
+    else if String.startsWith "case-management-" s then
+        String.dropLeft 16 s
+            |> toEntityUuid
+            |> InitiatorCaseManagement
             |> Just
 
     else

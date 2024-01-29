@@ -3401,24 +3401,24 @@ laboratoryTestFromString value =
             Nothing
 
 
-reviewStateToString : ReviewState -> String
+reviewStateToString : LabsResultsReviewState -> String
 reviewStateToString state =
     case state of
-        ReviewRequested ->
+        LabsResultsReviewRequested ->
             "requested"
 
-        ReviewCompleted ->
+        LabsResultsReviewCompleted ->
             "completed"
 
 
-reviewStateFromString : String -> Maybe ReviewState
+reviewStateFromString : String -> Maybe LabsResultsReviewState
 reviewStateFromString state =
     case state of
         "requested" ->
-            Just ReviewRequested
+            Just LabsResultsReviewRequested
 
         "completed" ->
-            Just ReviewCompleted
+            Just LabsResultsReviewCompleted
 
         _ ->
             Nothing

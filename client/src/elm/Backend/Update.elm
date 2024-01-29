@@ -26,8 +26,8 @@ import Backend.Measurement.Model
         , ChildMeasurements
         , HistoricalMeasurements
         , LaboratoryTest(..)
+        , LabsResultsReviewState(..)
         , Measurements
-        , ReviewState(..)
         , TestPrerequisite(..)
         , WellChildSymptom(..)
         )
@@ -6307,7 +6307,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
                                                 -- For lab technician, request review if all labs were
                                                 -- completed, and review state was not set previously.
                                                 if isLabTech && isNothing value.reviewState && allLabsCompleted then
-                                                    Just ReviewRequested
+                                                    Just LabsResultsReviewRequested
 
                                                 else
                                                     value.reviewState

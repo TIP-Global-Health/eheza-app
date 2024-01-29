@@ -14,10 +14,10 @@ import Backend.Measurement.Model
         ( AcuteIllnessTraceContact
         , FollowUpMeasurements
         , LaboratoryTest(..)
+        , LabsResultsReviewState(..)
         , NCDLabsResults
         , NutritionAssessment(..)
         , PrenatalLabsResults
-        , ReviewState(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
@@ -955,8 +955,11 @@ generatePrenatalLabsEntryData language currentDate isLabTech db item =
                     if Date.diff Days currentDate item.value.resolutionDate < 8 then
                         LabsEntryClosingSoon
 
-                    else if not isLabTech && (item.value.reviewState == Just ReviewRequested) then
+                    else if not isLabTech && (item.value.reviewState == Just LabsResultsReviewRequested) then
                         LabsEntryReadyForReview
+
+                    else if not isLabTech && (item.value.reviewState == Just LabsResultsReviewCompleted) then
+                        LabsEntryReviewed
 
                     else
                         LabsEntryPending
@@ -992,6 +995,9 @@ viewPrenatalLabsEntry language isLabTech data =
             if isLabTech then
                 PrenatalRecurrentActivityPage data.encounterId LabResults
 
+            else if data.state == LabsEntryReadyForReview then
+                ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorCaseManagement data.encounterId) data.encounterId
+
             else
                 PrenatalRecurrentEncounterPage data.encounterId
     in
@@ -1023,6 +1029,10 @@ viewLabsEntry language isLabTech personName state label targetPage =
                             "this-week"
 
                         LabsEntryReadyForReview ->
+                            -- @todo: needs styling?
+                            "this-week"
+
+                        LabsEntryReviewed ->
                             -- @todo: needs styling?
                             "this-week"
                    )

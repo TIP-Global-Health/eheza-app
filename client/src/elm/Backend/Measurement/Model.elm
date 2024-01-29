@@ -1332,7 +1332,7 @@ type alias LabsResultsValue =
     , completedTests : EverySet LaboratoryTest
     , resolutionDate : NominalDate
     , patientNotified : Bool
-    , reviewState : Maybe ReviewState
+    , reviewState : Maybe LabsResultsReviewState
     , testsWithFollowUp : Maybe (EverySet LaboratoryTest)
     }
 
@@ -1354,9 +1354,9 @@ type LaboratoryTest
     | TestLipidPanel
 
 
-type ReviewState
-    = ReviewRequested
-    | ReviewCompleted
+type LabsResultsReviewState
+    = LabsResultsReviewRequested
+    | LabsResultsReviewCompleted
 
 
 type alias PrenatalMedicationDistribution =
