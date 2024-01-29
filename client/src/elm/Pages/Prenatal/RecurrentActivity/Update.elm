@@ -1061,15 +1061,6 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
-        CloseLabsResultsEntry personId labsResultsId value ->
-            ( model
-            , Cmd.none
-            , [ Backend.PrenatalEncounter.Model.SaveLabsResults personId (Just labsResultsId) value
-                    |> Backend.Model.MsgPrenatalEncounter id
-                    |> App.Model.MsgIndexedDb
-              ]
-            )
-
         SetMalariaPreventionBoolInput formUpdateFunc value ->
             let
                 updatedForm =
