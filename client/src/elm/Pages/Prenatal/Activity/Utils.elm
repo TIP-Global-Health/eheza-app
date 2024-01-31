@@ -1488,7 +1488,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 37)
-                            && moderatePreeclampsiaByMeasurements measurements
+                            && moderatePreeclampsiaByMeasurementsInitialPhase measurements
                     )
 
         DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus ->
@@ -1512,7 +1512,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             resolveEGAWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks >= 37)
-                        && severePreeclampsiaByDangerSigns signs
+                        && severePreeclampsiaInitialPhase signs measurements
                 )
 
         DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
@@ -1721,10 +1721,16 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
                 |> Maybe.withDefault False
 
+        immediateResult getMeasurementFunc =
+            getMeasurementFunc measurements
+                |> getMeasurementValueFunc
+                |> Maybe.map (.testPrerequisites >> EverySet.member PrerequisiteImmediateResult)
+                |> Maybe.withDefault False
+
         hemoglobinCount =
             resolveHemoglobinCount measurements
 
-        malariaDiagnosed =
+        malariaConditionsMatch =
             positiveMalariaTest
                 && ((-- Either hemoglobin test was not performed, or,
                      -- hemoglobin count is within normal ranges.
@@ -1738,7 +1744,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                            severeAnemiaWithComplicationsDiagnosed dangerSigns measurements
                    )
 
-        malariaWithAnemiaDiagnosed =
+        malariaWithAnemiaConditionsMatch =
             positiveMalariaTest
                 && (-- Hemoglobin test was performed, and,
                     -- hemoglobin count indicates mild to moderate anemia.
@@ -1746,13 +1752,14 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         |> Maybe.withDefault False
                    )
 
-        diabetesDiagnosed =
+        diabetesDiagnosedInitialPhase =
             getMeasurementValueFunc measurements.randomBloodSugarTest
                 |> Maybe.map
                     (\value ->
                         let
                             bySugarCount =
                                 diabetesBySugarCount value
+                                    && immediateResult .randomBloodSugarTest
 
                             byUrineGlucose =
                                 if testPerformedByExecutionNote value.executionNote then
@@ -1762,12 +1769,161 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                 else
                                     -- If random blood sugar test was not perfomed, we determine by
                                     -- glucose level at urine dipstick test.
-                                    getMeasurementValueFunc measurements.urineDipstickTest
+                                    (getMeasurementValueFunc measurements.urineDipstickTest
                                         |> Maybe.map diabetesByUrineGlucose
                                         |> Maybe.withDefault False
+                                    )
+                                        && immediateResult .urineDipstickTest
                         in
                         bySugarCount || byUrineGlucose
                     )
+                |> Maybe.withDefault False
+
+        diabetesDiagnosedRecurrentPhase =
+            getMeasurementValueFunc measurements.randomBloodSugarTest
+                |> Maybe.map
+                    (\value ->
+                        let
+                            bySugarCount =
+                                diabetesBySugarCount value
+                                    && (not <| immediateResult .randomBloodSugarTest)
+
+                            byUrineGlucose =
+                                if testPerformedByExecutionNote value.executionNote then
+                                    -- If random blood sugar test was perfomed, we determine by its results.
+                                    False
+
+                                else
+                                    -- If random blood sugar test was not perfomed, we determine by
+                                    -- glucose level at urine dipstick test.
+                                    (getMeasurementValueFunc measurements.urineDipstickTest
+                                        |> Maybe.map diabetesByUrineGlucose
+                                        |> Maybe.withDefault False
+                                    )
+                                        && (not <| immediateResult .urineDipstickTest)
+                        in
+                        bySugarCount || byUrineGlucose
+                    )
+                |> Maybe.withDefault False
+
+        hivDetectableViralLoadDiagnosed =
+            getMeasurementValueFunc measurements.hivPCRTest
+                |> Maybe.andThen
+                    (.hivViralLoad >> Maybe.map (\viralLoad -> viralLoad >= 20))
+                |> Maybe.withDefault False
+
+        discordantPartnershipDiagnosed =
+            getMeasurementValueFunc measurements.hivTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is HIV positive.
+                        EverySet.member PartnerHIVPositive hivSigns
+                            && (-- Partner is not taking ARVs.
+                                (not <| EverySet.member PartnerTakingARV hivSigns)
+                                    || -- Partner is taking ARVs, but did not
+                                       -- reach surpressed viral load.
+                                       (EverySet.member PartnerTakingARV hivSigns
+                                            && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
+                                       )
+                               )
+                    )
+                |> Maybe.withDefault False
+
+        syphilisDiagnosed =
+            positiveSyphilisTest
+                && -- No symptoms were reported.
+                   (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                EverySet.isEmpty symptoms || (EverySet.toList symptoms == [ NoIllnessSymptoms ])
+                            )
+                        |> Maybe.withDefault True
+                   )
+
+        syphilisWithComplicationDiagnosed =
+            positiveSyphilisTest
+                && (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                (EverySet.member IllnessSymptomRash symptoms
+                                    || EverySet.member IllnessSymptomPainlessUlcerMouth symptoms
+                                    || EverySet.member IllnessSymptomPainlessUlcerGenitals symptoms
+                                )
+                                    -- Exclude Neurosyphilis conditions.
+                                    && (not <| EverySet.member IllnessSymptomHeadache symptoms)
+                                    && (not <| EverySet.member IllnessSymptomVisionChanges symptoms)
+                            )
+                        |> Maybe.withDefault False
+                   )
+
+        neurosyphilisDiagnosed =
+            positiveSyphilisTest
+                && (getMeasurementValueFunc measurements.syphilisTest
+                        |> Maybe.andThen .symptoms
+                        |> Maybe.map
+                            (\symptoms ->
+                                EverySet.member IllnessSymptomHeadache symptoms
+                                    || EverySet.member IllnessSymptomVisionChanges symptoms
+                            )
+                        |> Maybe.withDefault False
+                   )
+
+        malariaDiagnosed =
+            malariaConditionsMatch
+                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
+                        || (not <| diagnosedPreviously DiagnosisMalaria assembled)
+                   )
+
+        malariaMedicatedContinuedDiagnosed =
+            malariaConditionsMatch
+                && (isJust <| latestMedicationTreatmentForMalaria assembled)
+                && diagnosedPreviously DiagnosisMalaria assembled
+
+        malariaWithAnemiaDiagnosed =
+            malariaWithAnemiaConditionsMatch
+                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
+                        || (not <| diagnosedPreviously DiagnosisMalariaWithAnemia assembled)
+                   )
+
+        malariaWithAnemiaMedicatedContinuedDiagnosed =
+            malariaWithAnemiaConditionsMatch
+                && (isJust <| latestMedicationTreatmentForMalaria assembled)
+                && diagnosedPreviously DiagnosisMalariaWithAnemia assembled
+
+        malariaWithSevereAnemiaDiagnosed =
+            positiveMalariaTest
+                && (-- Hemoglobin test was performed, and,
+                    -- hemoglobin count indicates severe anemia.
+                    Maybe.map (\count -> count < 7) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
+
+        moderateAnemiaDiagnosed =
+            not positiveMalariaTest
+                && (-- No indication for being positive for malaria,
+                    -- Hemoglobin test was performed, and, hemoglobin
+                    -- count indicates mild to moderate anemia.
+                    Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
+
+        severeAnemiaDiagnosed =
+            not positiveMalariaTest
+                && (-- No indication for being positive for malaria,
+                    -- Hemoglobin test was performed, and, hemoglobin
+                    -- count indicates severe anemia.
+                    Maybe.map (\count -> count < 7) hemoglobinCount
+                        |> Maybe.withDefault False
+                   )
+                && (not <| anemiaComplicationSignsPresent dangerSigns measurements)
+
+        rhesusNegativeDiagnosed =
+            getMeasurementValueFunc measurements.bloodGpRsTest
+                |> Maybe.andThen .rhesus
+                |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
         resolveEGAWeeksAndThen func =
@@ -1837,7 +1993,8 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\egaWeeks ->
                         (egaWeeks >= 20)
                             && (egaWeeks < 37)
-                            && moderatePreeclampsiaByMeasurements measurements
+                            && moderatePreeclampsiaByMeasurementsInitialPhase
+                                measurements
                     )
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
@@ -1861,7 +2018,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             resolveEGAWeeksAndThen
                 (\egaWeeks ->
                     (egaWeeks < 37)
-                        && severePreeclampsiaByDangerSigns dangerSigns
+                        && severePreeclampsiaInitialPhase dangerSigns measurements
                 )
 
         DiagnosisSeverePreeclampsiaRecurrentPhase ->
@@ -1875,145 +2032,125 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             && severePreeclampsiaRecurrentPhase dangerSigns measurements
                     )
 
-        DiagnosisHIV ->
-            testedPositiveAt .hivTest
+        DiagnosisHIVInitialPhase ->
+            testedPositiveAt .hivTest && immediateResult .hivTest
 
-        DiagnosisHIVDetectableViralLoad ->
-            getMeasurementValueFunc measurements.hivPCRTest
-                |> Maybe.andThen
-                    (.hivViralLoad >> Maybe.map (\viralLoad -> viralLoad >= 20))
-                |> Maybe.withDefault False
+        DiagnosisHIVRecurrentPhase ->
+            testedPositiveAt .hivTest && (not <| immediateResult .hivTest)
 
-        DiagnosisDiscordantPartnership ->
-            getMeasurementValueFunc measurements.hivTest
-                |> Maybe.andThen .hivSigns
-                |> Maybe.map
-                    (\hivSigns ->
-                        -- Partner is HIV positive.
-                        EverySet.member PartnerHIVPositive hivSigns
-                            && (-- Partner is not taking ARVs.
-                                (not <| EverySet.member PartnerTakingARV hivSigns)
-                                    || -- Partner is taking ARVs, but did not
-                                       -- reach surpressed viral load.
-                                       (EverySet.member PartnerTakingARV hivSigns
-                                            && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
-                                       )
-                               )
-                    )
-                |> Maybe.withDefault False
+        DiagnosisHIVDetectableViralLoadInitialPhase ->
+            hivDetectableViralLoadDiagnosed && immediateResult .hivPCRTest
 
-        DiagnosisSyphilis ->
-            positiveSyphilisTest
-                && -- No symptoms were reported.
-                   (getMeasurementValueFunc measurements.syphilisTest
-                        |> Maybe.andThen .symptoms
-                        |> Maybe.map
-                            (\symptoms ->
-                                EverySet.isEmpty symptoms || (EverySet.toList symptoms == [ NoIllnessSymptoms ])
-                            )
-                        |> Maybe.withDefault True
-                   )
+        DiagnosisHIVDetectableViralLoadRecurrentPhase ->
+            hivDetectableViralLoadDiagnosed && (not <| immediateResult .hivPCRTest)
 
-        DiagnosisSyphilisWithComplications ->
-            positiveSyphilisTest
-                && (getMeasurementValueFunc measurements.syphilisTest
-                        |> Maybe.andThen .symptoms
-                        |> Maybe.map
-                            (\symptoms ->
-                                (EverySet.member IllnessSymptomRash symptoms
-                                    || EverySet.member IllnessSymptomPainlessUlcerMouth symptoms
-                                    || EverySet.member IllnessSymptomPainlessUlcerGenitals symptoms
-                                )
-                                    -- Exclude Neurosyphilis conditions.
-                                    && (not <| EverySet.member IllnessSymptomHeadache symptoms)
-                                    && (not <| EverySet.member IllnessSymptomVisionChanges symptoms)
-                            )
-                        |> Maybe.withDefault False
-                   )
+        DiagnosisDiscordantPartnershipInitialPhase ->
+            discordantPartnershipDiagnosed && immediateResult .hivPCRTest
 
-        DiagnosisNeurosyphilis ->
-            positiveSyphilisTest
-                && (getMeasurementValueFunc measurements.syphilisTest
-                        |> Maybe.andThen .symptoms
-                        |> Maybe.map
-                            (\symptoms ->
-                                EverySet.member IllnessSymptomHeadache symptoms
-                                    || EverySet.member IllnessSymptomVisionChanges symptoms
-                            )
-                        |> Maybe.withDefault False
-                   )
+        DiagnosisDiscordantPartnershipRecurrentPhase ->
+            discordantPartnershipDiagnosed && (not <| immediateResult .hivPCRTest)
 
-        DiagnosisHepatitisB ->
-            testedPositiveAt .hepatitisBTest
+        DiagnosisSyphilisInitialPhase ->
+            syphilisDiagnosed && immediateResult .syphilisTest
 
-        DiagnosisMalaria ->
+        DiagnosisSyphilisRecurrentPhase ->
+            syphilisDiagnosed (not <| immediateResult .syphilisTest)
+
+        DiagnosisSyphilisWithComplicationsInitialPhase ->
+            syphilisWithComplicationDiagnosed && immediateResult .syphilisTest
+
+        DiagnosisSyphilisWithComplicationsRecurrentPhase ->
+            syphilisWithComplicationDiagnosed (not <| immediateResult .syphilisTest)
+
+        DiagnosisNeurosyphilisInitialPhase ->
+            neurosyphilisDiagnosed && immediateResult .syphilisTest
+
+        DiagnosisNeurosyphilisRecurrentPhase ->
+            neurosyphilisDiagnosed && (not <| immediateResult .syphilisTest)
+
+        DiagnosisHepatitisBInitialPhase ->
+            testedPositiveAt .hepatitisBTest && immediateResult .hepatitisBTest
+
+        DiagnosisHepatitisBRecurrentPhase ->
+            testedPositiveAt .hepatitisBTest && (not <| immediateResult .hepatitisBTest)
+
+        DiagnosisMalariaInitialPhase ->
             malariaDiagnosed
-                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
-                        || (not <| diagnosedPreviously DiagnosisMalaria assembled)
-                   )
+                && immediateResult .malariaTest
 
-        DiagnosisMalariaMedicatedContinued ->
+        DiagnosisMalariaRecurrentPhase ->
             malariaDiagnosed
-                && (isJust <| latestMedicationTreatmentForMalaria assembled)
-                && diagnosedPreviously DiagnosisMalaria assembled
+                && (not <| immediateResult .malariaTest)
 
-        DiagnosisMalariaWithAnemia ->
-            malariaWithAnemiaDiagnosed
-                && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
-                        || (not <| diagnosedPreviously DiagnosisMalariaWithAnemia assembled)
-                   )
+        DiagnosisMalariaMedicatedContinuedInitialPhase ->
+            malariaMedicatedContinuedDiagnosed && immediateResult .malariaTest
 
-        DiagnosisMalariaWithAnemiaMedicatedContinued ->
-            malariaWithAnemiaDiagnosed
-                && (isJust <| latestMedicationTreatmentForMalaria assembled)
-                && diagnosedPreviously DiagnosisMalariaWithAnemia assembled
+        DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
+            malariaMedicatedContinuedDiagnosed && (not <| immediateResult .malariaTest)
 
-        DiagnosisMalariaWithSevereAnemia ->
-            positiveMalariaTest
-                && (-- Hemoglobin test was performed, and,
-                    -- hemoglobin count indicates severe anemia.
-                    Maybe.map (\count -> count < 7) hemoglobinCount
-                        |> Maybe.withDefault False
-                   )
+        DiagnosisMalariaWithAnemiaInitialPhase ->
+            malariaWithAnemiaDiagnosed && immediateResult .malariaTest
 
-        DiagnosisModerateAnemia ->
-            not positiveMalariaTest
-                && (-- No indication for being positive for malaria,
-                    -- Hemoglobin test was performed, and, hemoglobin
-                    -- count indicates mild to moderate anemia.
-                    Maybe.map (\count -> count >= 7 && count < 11) hemoglobinCount
-                        |> Maybe.withDefault False
-                   )
+        DiagnosisMalariaWithAnemiaRecurrentPhase ->
+            malariaWithAnemiaDiagnosed && (not <| immediateResult .malariaTest)
 
-        DiagnosisSevereAnemia ->
-            not positiveMalariaTest
-                && (-- No indication for being positive for malaria,
-                    -- Hemoglobin test was performed, and, hemoglobin
-                    -- count indicates severe anemia.
-                    Maybe.map (\count -> count < 7) hemoglobinCount
-                        |> Maybe.withDefault False
-                   )
-                && (not <| anemiaComplicationSignsPresent dangerSigns measurements)
+        DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
+            malariaWithAnemiaMedicatedContinuedDiagnosed && immediateResult .malariaTest
 
-        Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+        DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
+            malariaWithAnemiaMedicatedContinuedDiagnosed && (not <| immediateResult .malariaTest)
+
+        DiagnosisMalariaWithSevereAnemiaInitialPhase ->
+            malariaWithSevereAnemiaDiagnosed && immediateResult .malariaTest
+
+        DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
+            malariaWithSevereAnemiaDiagnosed && (not <| immediateResult .malariaTest)
+
+        DiagnosisModerateAnemiaInitialPhase ->
+            moderateAnemiaDiagnosed && immediateResult .hemoglobinTest
+
+        DiagnosisModerateAnemiaRecurrentPhase ->
+            moderateAnemiaDiagnosed && (not <| immediateResult .hemoglobinTest)
+
+        DiagnosisSevereAnemiaInitialPhase ->
+            severeAnemiaDiagnosed && immediateResult .hemoglobinTest
+
+        DiagnosisSevereAnemiaRecurrentPhase ->
+            severeAnemiaDiagnose && (not <| immediateResult .hemoglobinTest)
+
+        Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
-                        egaWeeks <= 20 && diabetesDiagnosed
+                        egaWeeks <= 20 && diabetesDiagnosedInitialPhase
                     )
 
-        Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+        Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
-                        egaWeeks > 20 && diabetesDiagnosed
+                        egaWeeks <= 20 && diabetesDiagnosedRecurrentPhase
                     )
 
-        DiagnosisRhesusNegative ->
-            getMeasurementValueFunc measurements.bloodGpRsTest
-                |> Maybe.andThen .rhesus
-                |> Maybe.map ((==) RhesusNegative)
-                |> Maybe.withDefault False
+        Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase ->
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks > 20 && diabetesDiagnosedInitialPhase
+                    )
+
+        Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
+            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+                && resolveEGAWeeksAndThen
+                    (\egaWeeks ->
+                        egaWeeks > 20 && diabetesDiagnosedRecurrentPhase
+                    )
+
+        DiagnosisRhesusNegativeInitialPhase ->
+            rhesusNegativeDiagnosed && immediateResult .bloodGpRsTest
+
+        DiagnosisRhesusNegativeRecurrentPhase ->
+            rhesusNegativeDiagnosed && (not <| immediateResult .bloodGpRsTest)
 
         -- If criterias for DiagnosisPostpartumMastitis also matches, this
         -- diagnosis will be filtered out when applying diagnoses hierarchy.
@@ -2352,10 +2489,14 @@ gestationalHypertensionByMeasurementsAfterRecheck measurements egaWeeks =
     egaWeeks >= 20 && repeatedTestForMarginalBloodPressure measurements
 
 
-moderatePreeclampsiaByMeasurements : PrenatalMeasurements -> Bool
-moderatePreeclampsiaByMeasurements measurements =
+moderatePreeclampsiaByMeasurementsInitialPhase : PrenatalMeasurements -> Bool
+moderatePreeclampsiaByMeasurementsInitialPhase measurements =
+    let
+        highProtein =
+            highUrineProteinInitialPhase measurements
+    in
     highBloodPressure measurements
-        && edemaOnHandOrLegs measurements
+        && (highProtein || edemaOnHandOrLegs measurements)
 
 
 moderatePreeclampsiaByMeasurementsRecurrentPhase : PrenatalMeasurements -> Bool
@@ -2370,9 +2511,25 @@ moderatePreeclampsiaByMeasurementsRecurrentPhase measurements =
            )
 
 
-severePreeclampsiaByDangerSigns : List DangerSign -> Bool
-severePreeclampsiaByDangerSigns =
-    List.member HeadacheBlurredVision
+severePreeclampsiaInitialPhase : List DangerSign -> PrenatalMeasurements -> Bool
+severePreeclampsiaInitialPhase dangerSigns measurements =
+    let
+        byBloodPressure =
+            getMeasurementValueFunc measurements.vitals
+                |> Maybe.andThen
+                    (\value ->
+                        Maybe.map2
+                            (\dia sys -> dia >= 110 && sys >= 160)
+                            value.dia
+                            value.sys
+                    )
+                |> Maybe.withDefault False
+    in
+    List.member HeadacheBlurredVision dangerSigns
+        || (byBloodPressure
+                && highUrineProtein measurements
+                && severePreeclampsiaSigns measurements
+           )
 
 
 severePreeclampsiaRecurrentPhase : List DangerSign -> PrenatalMeasurements -> Bool
@@ -2487,6 +2644,30 @@ highUrineProtein measurements =
                     , ProteinPlus3
                     , ProteinPlus4
                     ]
+            )
+        |> Maybe.withDefault False
+
+
+highUrineProteinInitialPhase : PrenatalMeasurements -> Bool
+highUrineProteinInitialPhase measurements =
+    getMeasurementValueFunc measurements.urineDipstickTest
+        |> Maybe.map
+            (\value ->
+                let
+                    highProtein =
+                        Maybe.map
+                            (\protein ->
+                                List.member protein
+                                    [ ProteinPlus1
+                                    , ProteinPlus2
+                                    , ProteinPlus3
+                                    , ProteinPlus4
+                                    ]
+                            )
+                            value.protein
+                            |> Maybe.withDefault False
+                in
+                highProtein && List.member PrerequisiteImmediateResult value.testPrerequisites
             )
         |> Maybe.withDefault False
 

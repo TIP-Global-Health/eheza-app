@@ -299,10 +299,10 @@ decodePrenatalDiagnosis =
                         succeed DiagnosisTuberculosis
 
                     "diabetes-initial" ->
-                        succeed DiagnosisInitialPhase
+                        succeed DiagnosisDiabetesInitialPhase
 
                     "diabetes" ->
-                        succeed DiagnosisRecurrentPhase
+                        succeed DiagnosisDiabetesRecurrentPhase
 
                     "gestational-diabetes-initial" ->
                         succeed DiagnosisGestationalDiabetesInitialPhase

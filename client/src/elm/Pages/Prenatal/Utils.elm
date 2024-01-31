@@ -2942,33 +2942,44 @@ resolvePreviousDiabetesDiagnosis nursePreviousEncountersData =
 diagnosedMalaria : AssembledData -> Bool
 diagnosedMalaria =
     diagnosedAnyOf
-        [ DiagnosisMalaria
-        , DiagnosisMalariaWithAnemia
-        , DiagnosisMalariaWithSevereAnemia
+        [ DiagnosisMalariaInitialPhase
+        , DiagnosisMalariaRecurrentPhase
+        , DiagnosisMalariaWithAnemiaInitialPhase
+        , DiagnosisMalariaWithAnemiaRecurrentPhase
+        , DiagnosisMalariaWithSevereAnemiaInitialPhase
+        , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
         ]
 
 
 diagnosedSyphilis : AssembledData -> Bool
 diagnosedSyphilis =
-    diagnosedAnyOf
-        [ DiagnosisSyphilis
-        , DiagnosisSyphilisWithComplications
-        ]
+    diagnosedAnyOf syphilisDiagnoses
 
 
 syphilisDiagnosesIncludingNeurosyphilis : List PrenatalDiagnosis
 syphilisDiagnosesIncludingNeurosyphilis =
-    DiagnosisNeurosyphilis :: syphilisDiagnoses
+    [ DiagnosisNeurosyphilisInitialPhase
+    , DiagnosisNeurosyphilisRecurrentPhase
+    ]
+        ++ syphilisDiagnoses
 
 
 syphilisDiagnoses : List PrenatalDiagnosis
 syphilisDiagnoses =
-    [ DiagnosisSyphilis, DiagnosisSyphilisWithComplications ]
+    [ DiagnosisSyphilisInitialPhase
+    , DiagnosisSyphilisRecurrentPhase
+    , DiagnosisSyphilisWithComplicationsInitialPhase
+    , DiagnosisSyphilisWithComplicationsRecurrentPhase
+    ]
 
 
 diabetesDiagnoses : List PrenatalDiagnosis
 diabetesDiagnoses =
-    [ DiagnosisDiabetes, DiagnosisGestationalDiabetes ]
+    [ DiagnosisDiabetesInitialPhase
+    , DiagnosisDiabetesRecurrentPhase
+    , DiagnosisGestationalDiabetesInitialPhase
+    , DiagnosisGestationalDiabetesRecurrentPhase
+    ]
 
 
 outsideCareDiagnoses : List PrenatalDiagnosis
@@ -2978,13 +2989,13 @@ outsideCareDiagnoses =
 
 outsideCareDiagnosesLeftColumn : List PrenatalDiagnosis
 outsideCareDiagnosesLeftColumn =
-    [ DiagnosisHIV
-    , DiagnosisSyphilis
-    , DiagnosisNeurosyphilis
-    , DiagnosisMalaria
-    , DiagnosisHepatitisB
-    , DiagnosisModerateAnemia
-    , DiagnosisSevereAnemia
+    [ DiagnosisHIVInitialPhase
+    , DiagnosisSyphilisInitialPhase
+    , DiagnosisNeurosyphilisInitialPhase
+    , DiagnosisMalariaInitialPhase
+    , DiagnosisHepatitisBInitialPhase
+    , DiagnosisModerateAnemiaInitialPhase
+    , DiagnosisSevereAnemiaInitialPhase
     , DiagnosisPelvicPainIntense
     , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
     ]
@@ -3005,10 +3016,10 @@ outsideCareDiagnosesRightColumn =
 
 outsideCareDiagnosesWithPossibleMedication : List PrenatalDiagnosis
 outsideCareDiagnosesWithPossibleMedication =
-    [ DiagnosisHIV
-    , DiagnosisSyphilis
-    , DiagnosisMalaria
-    , DiagnosisModerateAnemia
+    [ DiagnosisHIVInitialPhase
+    , DiagnosisSyphilisInitialPhase
+    , DiagnosisMalariaInitialPhase
+    , DiagnosisModerateAnemiaInitialPhase
     , DiagnosisGestationalHypertensionImmediate
     , DiagnosisChronicHypertensionImmediate
     , DiagnosisModeratePreeclampsiaInitialPhase
