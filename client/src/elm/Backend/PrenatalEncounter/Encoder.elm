@@ -112,49 +112,94 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisEclampsia ->
                 "eclampsia"
 
-            DiagnosisHIV ->
+            DiagnosisHIVInitialPhase ->
                 "hiv"
 
-            DiagnosisHIVDetectableViralLoad ->
+            DiagnosisHIVRecurrentPhase ->
+                "hiv-recurrent"
+
+            DiagnosisHIVDetectableViralLoadInitialPhase ->
+                "hiv-detectable-viral-load-initial"
+
+            DiagnosisHIVDetectableViralLoadRecurrentPhase ->
                 "hiv-detectable-viral-load"
 
-            DiagnosisDiscordantPartnership ->
+            DiagnosisDiscordantPartnershipInitialPhase ->
                 "partner-hiv"
 
-            DiagnosisSyphilis ->
+            DiagnosisDiscordantPartnershipRecurrentPhase ->
+                "partner-hiv-recurrent"
+
+            DiagnosisSyphilisInitialPhase ->
+                "syphilis-initial"
+
+            DiagnosisSyphilisRecurrentPhase ->
                 "syphilis"
 
-            DiagnosisSyphilisWithComplications ->
+            DiagnosisSyphilisWithComplicationsInitialPhase ->
+                "syphilis-complications-initial"
+
+            DiagnosisSyphilisWithComplicationsRecurrentPhase ->
                 "syphilis-complications"
 
-            DiagnosisNeurosyphilis ->
+            DiagnosisNeurosyphilisInitialPhase ->
+                "neurosyphilis-initial"
+
+            DiagnosisNeurosyphilisRecurrentPhase ->
                 "neurosyphilis"
 
-            DiagnosisHepatitisB ->
+            DiagnosisHepatitisBInitialPhase ->
+                "hepatitis-b-initial"
+
+            DiagnosisHepatitisBRecurrentPhase ->
                 "hepatitis-b"
 
-            DiagnosisMalaria ->
+            DiagnosisMalariaInitialPhase ->
                 "malaria"
 
-            DiagnosisMalariaMedicatedContinued ->
+            DiagnosisMalariaRecurrentPhase ->
+                "malaria-recurrent"
+
+            DiagnosisMalariaMedicatedContinuedInitialPhase ->
                 "malaria-continued"
 
-            DiagnosisMalariaWithAnemia ->
+            DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
+                "malaria-continued-recurrent"
+
+            DiagnosisMalariaWithAnemiaInitialPhase ->
                 "malaria-anemia"
 
-            DiagnosisMalariaWithAnemiaMedicatedContinued ->
+            DiagnosisMalariaWithAnemiaRecurrentPhase ->
+                "malaria-anemia-recurrent"
+
+            DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
                 "malaria-anemia-continued"
 
-            DiagnosisMalariaWithSevereAnemia ->
+            DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
+                "malaria-anemia-continued-recurrent"
+
+            DiagnosisMalariaWithSevereAnemiaInitialPhase ->
                 "malaria-severe-anemia"
 
-            DiagnosisModerateAnemia ->
+            DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
+                "malaria-severe-anemia-recurrent"
+
+            DiagnosisModerateAnemiaInitialPhase ->
+                "anemia-initial"
+
+            DiagnosisModerateAnemiaRecurrentPhase ->
                 "anemia"
 
-            DiagnosisSevereAnemia ->
+            DiagnosisSevereAnemiaInitialPhase ->
+                "severe-anemia-initial"
+
+            DiagnosisSevereAnemiaRecurrentPhase ->
                 "severe-anemia"
 
-            DiagnosisSevereAnemiaWithComplications ->
+            DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
+                "severe-anemia-complications-initial"
+
+            DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
                 "severe-anemia-complications"
 
             DiagnosisMiscarriage ->
@@ -256,13 +301,22 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisTuberculosis ->
                 "tuberculosis"
 
-            DiagnosisDiabetes ->
+            DiagnosisDiabetesInitialPhase ->
+                "diabetes-initial"
+
+            DiagnosisDiabetesRecurrentPhase ->
                 "diabetes"
 
-            DiagnosisGestationalDiabetes ->
+            DiagnosisGestationalDiabetesInitialPhase ->
+                "gestational-diabetes-initial"
+
+            DiagnosisGestationalDiabetesRecurrentPhase ->
                 "gestational-diabetes"
 
-            DiagnosisRhesusNegative ->
+            DiagnosisRhesusNegativeInitialPhase ->
+                "rhesus-negative-initial"
+
+            DiagnosisRhesusNegativeRecurrentPhase ->
                 "rhesus-negative"
 
             DiagnosisDepressionNotLikely ->

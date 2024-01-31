@@ -6018,7 +6018,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                     List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
                                         |> EverySet.fromList
 
-                                diabetesDiagnoses =
+                                diabetesDiagnosed =
                                     EverySet.toList reportedDiagnoses
                                         |> List.any
                                             (\diagnosis ->
@@ -6040,7 +6040,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                      -- On next occasions, no next steps are required.
                                      -- Therefore, if we know that Diabetes was already diagnosed, we will not
                                      -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
-                                     diabetesDiagnoses
+                                     diabetesDiagnosed
                                         && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
                                     )
                                         || (-- Reporting back about previous diagnosis results in hospital referral

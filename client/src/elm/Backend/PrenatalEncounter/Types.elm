@@ -15,21 +15,51 @@ type PrenatalDiagnosis
     | DiagnosisSeverePreeclampsiaRecurrentPhase
     | DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     | DiagnosisEclampsia
-    | DiagnosisHIV
-    | DiagnosisHIVDetectableViralLoad
-    | DiagnosisDiscordantPartnership
-    | DiagnosisSyphilis
-    | DiagnosisSyphilisWithComplications
-    | DiagnosisNeurosyphilis
-    | DiagnosisHepatitisB
-    | DiagnosisMalaria
-    | DiagnosisMalariaMedicatedContinued
-    | DiagnosisMalariaWithAnemia
-    | DiagnosisMalariaWithAnemiaMedicatedContinued
-    | DiagnosisMalariaWithSevereAnemia
-    | DiagnosisModerateAnemia
-    | DiagnosisSevereAnemia
-    | DiagnosisSevereAnemiaWithComplications
+      -- | DiagnosisHIV
+    | DiagnosisHIVInitialPhase
+    | DiagnosisHIVRecurrentPhase
+      -- | DiagnosisHIVDetectableViralLoad
+    | DiagnosisHIVDetectableViralLoadInitialPhase
+    | DiagnosisHIVDetectableViralLoadRecurrentPhase
+      -- | DiagnosisDiscordantPartnership
+    | DiagnosisDiscordantPartnershipInitialPhase
+    | DiagnosisDiscordantPartnershipRecurrentPhase
+      -- | DiagnosisSyphilis
+    | DiagnosisSyphilisInitialPhase
+    | DiagnosisSyphilisRecurrentPhase
+      -- | DiagnosisSyphilisWithComplications
+    | DiagnosisSyphilisWithComplicationsInitialPhase
+    | DiagnosisSyphilisWithComplicationsRecurrentPhase
+      -- | DiagnosisNeurosyphilis
+    | DiagnosisNeurosyphilisInitialPhase
+    | DiagnosisNeurosyphilisRecurrentPhase
+      -- | DiagnosisHepatitisB
+    | DiagnosisHepatitisBInitialPhase
+    | DiagnosisHepatitisBRecurrentPhase
+      -- | DiagnosisMalaria
+    | DiagnosisMalariaInitialPhase
+    | DiagnosisMalariaRecurrentPhase
+      -- | DiagnosisMalariaMedicatedContinued
+    | DiagnosisMalariaMedicatedContinuedInitialPhase
+    | DiagnosisMalariaMedicatedContinuedRecurrentPhase
+      -- | DiagnosisMalariaWithAnemia
+    | DiagnosisMalariaWithAnemiaInitialPhase
+    | DiagnosisMalariaWithAnemiaRecurrentPhase
+      -- | DiagnosisMalariaWithAnemiaMedicatedContinued
+    | DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+    | DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
+      -- | DiagnosisMalariaWithSevereAnemia
+    | DiagnosisMalariaWithSevereAnemiaInitialPhase
+    | DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+      -- | DiagnosisModerateAnemia
+    | DiagnosisModerateAnemiaInitialPhase
+    | DiagnosisModerateAnemiaRecurrentPhase
+      -- | DiagnosisSevereAnemia
+    | DiagnosisSevereAnemiaInitialPhase
+    | DiagnosisSevereAnemiaRecurrentPhase
+      -- | DiagnosisSevereAnemiaWithComplications
+    | DiagnosisSevereAnemiaWithComplicationsInitialPhase
+    | DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
     | DiagnosisMiscarriage
     | DiagnosisMolarPregnancy
     | DiagnosisPlacentaPrevia
@@ -63,9 +93,15 @@ type PrenatalDiagnosis
     | DiagnosisTrichomonasOrBacterialVaginosis
     | DiagnosisTrichomonasOrBacterialVaginosisContinued
     | DiagnosisTuberculosis
-    | DiagnosisDiabetes
-    | DiagnosisGestationalDiabetes
-    | DiagnosisRhesusNegative
+      -- | DiagnosisDiabetes
+    | DiagnosisDiabetesInitialPhase
+    | DiagnosisDiabetesRecurrentPhase
+      -- | DiagnosisGestationalDiabetes
+    | DiagnosisGestationalDiabetesInitialPhase
+    | DiagnosisGestationalDiabetesRecurrentPhase
+      -- | DiagnosisRhesusNegative
+    | DiagnosisRhesusNegativeInitialPhase
+    | DiagnosisRhesusNegativeRecurrentPhase
     | DiagnosisDepressionNotLikely
     | DiagnosisDepressionPossible
     | DiagnosisDepressionHighlyPossible

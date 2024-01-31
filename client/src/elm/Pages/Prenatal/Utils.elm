@@ -155,16 +155,17 @@ diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalD
 diagnosesCausingHospitalReferralByOtherReasons assembled =
     let
         malaria =
+            let
+                severeMalariaTreatment =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
+                        |> Maybe.withDefault False
+            in
             if diagnosedMalaria assembled && severeMalariaTreatment then
                 [ DiagnosisMalaria ]
 
             else
                 []
-
-        severeMalariaTreatment =
-            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
-                |> Maybe.withDefault False
 
         hypertension =
             let
