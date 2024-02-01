@@ -2763,19 +2763,34 @@ resolveParacetamolDosageAndIcon currentDate person =
 medicationsInitialPhase : List MedicationDistributionSign
 medicationsInitialPhase =
     [ Mebendezole
-    , TDF3TC
-    , Dolutegravir
-    , Ceftriaxone
-    , Azithromycin
-    , Metronidazole
     , VitaminA
     , Paracetamol
+
+    -- Gonorhea medication
+    , Ceftriaxone
+    , Azithromycin
+
+    -- Trichomonas / Bacterial Vaginosis medication
+    , Metronidazole
+
+    -- HIV
+    , TDF3TC
+    , Dolutegravir
+
+    -- Anemia
+    , Iron
+    , FolicAcid
     ]
 
 
 medicationsRecurrentPhase : List MedicationDistributionSign
 medicationsRecurrentPhase =
-    [ Iron
+    [ -- HIV
+      TDF3TC
+    , Dolutegravir
+
+    -- Anemia
+    , Iron
     , FolicAcid
     ]
 

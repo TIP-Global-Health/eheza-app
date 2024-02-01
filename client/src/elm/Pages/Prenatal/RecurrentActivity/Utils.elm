@@ -357,6 +357,13 @@ nextStepsTaskCompleted currentDate assembled task =
                     else
                         True
 
+                malariaTreatmentCompleted =
+                    if diagnosedMalariaByPhase PrenatalEncounterPhaseRecurrent assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
+
+                    else
+                        True
+
                 syphilisTreatmentCompleted =
                     if diagnosedSyphilisByPhase PrenatalEncounterPhaseRecurrent assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForSyphilis assembled.measurements
@@ -372,6 +379,7 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
             in
             medicationDistributionCompleted
+                && malariaTreatmentCompleted
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
 

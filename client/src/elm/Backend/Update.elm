@@ -1671,12 +1671,22 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                             extraMsgs =
                                 Maybe.map
                                     (\encounterId_ ->
-                                        if resultsAdded then
-                                            generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
-                                                ++ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+                                        let
+                                            labsResultsMsgs =
+                                                if resultsAdded then
+                                                    generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
 
-                                        else
-                                            generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+                                                else
+                                                    generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+
+                                            possibleEndEncounterMsgs =
+                                                if atPrenatalRecurrentPhase activePage then
+                                                    generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+
+                                                else
+                                                    generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
+                                        in
+                                        labsResultsMsgs ++ possibleEndEncounterMsgs
                                     )
                                     encounterId
                                     |> Maybe.withDefault []
@@ -1700,45 +1710,54 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                 let
                                                     resultsAdded =
                                                         isJust value.diaRepeated
+
+                                                    labsResultsMsgs =
+                                                        if resultsAdded then
+                                                            generatePrenatalLabsResultsAddedMsgs
+                                                                currentDate
+                                                                isLabTech
+                                                                newModel
+                                                                Backend.Measurement.Model.TestVitalsRecheck
+                                                                Nothing
+                                                                encounterId_
+
+                                                        else
+                                                            let
+                                                                executionNote =
+                                                                    if Pages.Prenatal.Activity.Utils.highBloodPressureCondition dia sys then
+                                                                        -- When we have diagnosed Hypertension, we'll try to unschedule
+                                                                        -- vitals recheck (as we do not know if it was scheduled before).
+                                                                        -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                        Backend.Measurement.Model.TestNoteNotIndicated
+
+                                                                    else
+                                                                    -- When we suspect hypertension, we'll try to schedule vitals recheck.
+                                                                    -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
+                                                                    if
+                                                                        Pages.Prenatal.Utils.marginalBloodPressureCondition dia sys
+                                                                    then
+                                                                        Backend.Measurement.Model.TestNoteRunToday
+
+                                                                    else
+                                                                        -- Otherwise, we try to unschedule vitals recheck.
+                                                                        -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                        Backend.Measurement.Model.TestNoteNotIndicated
+                                                            in
+                                                            generatePrenatalLabsTestAddedMsgs
+                                                                currentDate
+                                                                newModel
+                                                                Backend.Measurement.Model.TestVitalsRecheck
+                                                                executionNote
+                                                                encounterId_
+
+                                                    possibleEndEncounterMsgs =
+                                                        if atPrenatalRecurrentPhase activePage then
+                                                            generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+
+                                                        else
+                                                            generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
                                                 in
-                                                if resultsAdded then
-                                                    generatePrenatalLabsResultsAddedMsgs
-                                                        currentDate
-                                                        isLabTech
-                                                        newModel
-                                                        Backend.Measurement.Model.TestVitalsRecheck
-                                                        Nothing
-                                                        encounterId_
-                                                        ++ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
-
-                                                else
-                                                    let
-                                                        executionNote =
-                                                            if Pages.Prenatal.Activity.Utils.highBloodPressureCondition dia sys then
-                                                                -- When we have diagnosed Hypertension, we'll try to unschedule
-                                                                -- vitals recheck (as we do not know if it was scheduled before).
-                                                                -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
-                                                                Backend.Measurement.Model.TestNoteNotIndicated
-
-                                                            else
-                                                            -- When we suspect hypertension, we'll try to schedule vitals recheck.
-                                                            -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
-                                                            if
-                                                                Pages.Prenatal.Utils.marginalBloodPressureCondition dia sys
-                                                            then
-                                                                Backend.Measurement.Model.TestNoteRunToday
-
-                                                            else
-                                                                -- Otherwise, we try to unschedule vitals recheck.
-                                                                -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
-                                                                Backend.Measurement.Model.TestNoteNotIndicated
-                                                    in
-                                                    generatePrenatalLabsTestAddedMsgs
-                                                        currentDate
-                                                        newModel
-                                                        Backend.Measurement.Model.TestVitalsRecheck
-                                                        executionNote
-                                                        encounterId_
+                                                labsResultsMsgs ++ possibleEndEncounterMsgs
                                             )
                                             encounterId
                                             |> Maybe.withDefault []
@@ -6334,6 +6353,37 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
         |> Maybe.withDefault []
 
 
+generatePrenatalInitialPhaseCompletedMsgs :
+    NominalDate
+    -> Site
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
+    Pages.Prenatal.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    ( _, pendingActivities ) =
+                        Pages.Prenatal.Encounter.Utils.getAllActivities assembled
+                            |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
+                            |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site assembled)
+                in
+                if List.isEmpty pendingActivities then
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            ClinicalProgressReportPage
+                                (Backend.PrenatalEncounter.Model.InitiatorEncounterPage id)
+                                id
+                    ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []
+
+
 generatePrenatalRecurrentPhaseCompletedMsgs :
     NominalDate
     -> Bool
@@ -6362,7 +6412,10 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                                     value =
                                         results.value
                                 in
-                                [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) { value | resolutionDate = currentDate }
+                                [ savePrenatalLabsResultsMsg id
+                                    assembled.participant.person
+                                    (Just resultsId)
+                                    { value | resolutionDate = currentDate }
                                 , App.Model.SetActivePage <|
                                     UserPage <|
                                         ClinicalProgressReportPage
