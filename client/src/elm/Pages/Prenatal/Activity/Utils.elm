@@ -984,11 +984,6 @@ historyTaskCompleted assembled task =
             isJust assembled.measurements.outsideCare
 
 
-referToHospital : AssembledData -> Bool
-referToHospital =
-    diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial >> EverySet.isEmpty >> not
-
-
 referToMentalHealthSpecialist : AssembledData -> Bool
 referToMentalHealthSpecialist assembled =
     mentalHealthSpecialistAtHC assembled && diagnosedAnyOf mentalHealthDiagnosesRequiringTreatment assembled
@@ -996,15 +991,8 @@ referToMentalHealthSpecialist assembled =
 
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
-    (diagnosedAnyOf [ DiagnosisHIVInitialPhase, DiagnosisHIVRecurrentPhase ] assembled && hivProgramAtHC assembled.measurements)
+    (diagnosed DiagnosisHIVInitialPhase assembled && hivProgramAtHC assembled.measurements)
         || referredToSpecialityCareProgram EnrolledToARVProgram assembled
-
-
-referredToSpecialityCareProgram : SpecialityCareSign -> AssembledData -> Bool
-referredToSpecialityCareProgram program assembled =
-    getMeasurementValueFunc assembled.measurements.specialityCare
-        |> Maybe.map (EverySet.member program >> not)
-        |> Maybe.withDefault False
 
 
 referToUltrasound : AssembledData -> Bool
@@ -6310,7 +6298,9 @@ matchRequiredReferralFacility : AssembledData -> ReferralFacility -> Bool
 matchRequiredReferralFacility assembled facility =
     case facility of
         FacilityHospital ->
-            referToHospital assembled
+            diagnosesCausingHospitalReferralByPhase PrenatalEncounterPhaseInitial assembled
+                |> EverySet.isEmpty
+                |> not
 
         FacilityMentalHealthSpecialist ->
             referToMentalHealthSpecialist assembled

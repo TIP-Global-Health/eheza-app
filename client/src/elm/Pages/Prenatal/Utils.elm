@@ -108,9 +108,10 @@ diagnosesCausingHospitalReferralByPhase phase assembled =
                     general =
                         diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseInitial assembled
                             ++ diagnosesCausingHospitalReferralByMentalHealth assembled
-                            ++ diagnosesCausingHospitalReferralByOtherReasons assembled
+                            ++ diagnosesCausingHospitalReferralByOtherReasons PrenatalEncounterPhaseInitial assembled
 
                     byAdverseEvent =
+                        -- Can be only on first phase, as that's where we record past treatment.
                         diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
 
                     byPastDiagnoses =
@@ -123,6 +124,7 @@ diagnosesCausingHospitalReferralByPhase phase assembled =
 
             PrenatalEncounterPhaseRecurrent ->
                 diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseRecurrent assembled
+                    ++ diagnosesCausingHospitalReferralByOtherReasons PrenatalEncounterPhaseRecurrent assembled
                     |> EverySet.fromList
 
 
@@ -151,8 +153,8 @@ mentalHealthDiagnosesRequiringTreatment =
     ]
 
 
-diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByOtherReasons assembled =
+diagnosesCausingHospitalReferralByOtherReasons : PrenatalEncounterPhase -> AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByOtherReasons phase assembled =
     let
         malaria =
             let
@@ -162,7 +164,12 @@ diagnosesCausingHospitalReferralByOtherReasons assembled =
                         |> Maybe.withDefault False
             in
             if diagnosedMalaria assembled && severeMalariaTreatment then
-                [ DiagnosisMalariaInitialPhase ]
+                case phase of
+                    PrenatalEncounterPhaseInitial ->
+                        [ DiagnosisMalariaInitialPhase ]
+
+                    PrenatalEncounterPhaseRecurrent ->
+                        [ DiagnosisMalariaRecurrentPhase ]
 
             else
                 []
@@ -191,7 +198,12 @@ diagnosesCausingHospitalReferralByOtherReasons assembled =
                 else
                     []
     in
-    malaria ++ hypertension
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            malaria ++ hypertension
+
+        PrenatalEncounterPhaseRecurrent ->
+            malaria
 
 
 moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis : AssembledData -> Bool
@@ -3681,4 +3693,11 @@ labTestWithImmediateResult getMeasurementFunc measurements =
         |> getMeasurementValueFunc
         |> Maybe.andThen .testPrerequisites
         |> Maybe.map (EverySet.member PrerequisiteImmediateResult)
+        |> Maybe.withDefault False
+
+
+referredToSpecialityCareProgram : SpecialityCareSign -> AssembledData -> Bool
+referredToSpecialityCareProgram program assembled =
+    getMeasurementValueFunc assembled.measurements.specialityCare
+        |> Maybe.map (EverySet.member program >> not)
         |> Maybe.withDefault False

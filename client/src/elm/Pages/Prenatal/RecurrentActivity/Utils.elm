@@ -661,9 +661,12 @@ matchRequiredReferralFacility assembled facility =
             False
 
         FacilityARVProgram ->
-            False
+            referToARVProgram assembled
 
         FacilityNCDProgram ->
+            -- NCD proram referral is based on diagnoses made at
+            -- previous encounters, and therefore, can appear
+            -- only on initial phase.
             False
 
         -- Explicit NCD facility.
@@ -679,6 +682,14 @@ matchRequiredReferralFacility assembled facility =
             False
 
 
+referToARVProgram : AssembledData -> Bool
+referToARVProgram assembled =
+    (diagnosed DiagnosisHIVRecurrentPhase assembled && hivProgramAtHC assembled.measurements)
+        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+
+
 referralFacilities : List ReferralFacility
 referralFacilities =
-    [ FacilityHospital ]
+    [ FacilityHospital
+    , FacilityARVProgram
+    ]
