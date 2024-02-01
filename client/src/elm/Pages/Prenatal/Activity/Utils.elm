@@ -491,9 +491,10 @@ expectNextStepsTask currentDate assembled task =
                                 |> List.isEmpty
                                 |> not
                             )
-                                || (diagnosedMalaria assembled
+                                || (diagnosedMalariaByPhase PrenatalEncounterPhaseInitial assembled
                                         && (not <| referToHospitalDueToAdverseEventForMalariaTreatment assembled)
                                    )
+                                || diagnosedSyphilisByPhase PrenatalEncounterPhaseInitial assembled
                                 || diagnosedHypertension PrenatalEncounterPhaseInitial assembled
                                 || diagnosedAnyOf
                                     [ DiagnosisHeartburn
@@ -592,7 +593,7 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
 
                 malariaTreatmentCompleted =
-                    if diagnosedMalaria assembled then
+                    if diagnosedMalariaByPhase PrenatalEncounterPhaseInitial assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
 
                     else

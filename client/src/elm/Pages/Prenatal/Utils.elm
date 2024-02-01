@@ -163,7 +163,7 @@ diagnosesCausingHospitalReferralByOtherReasons phase assembled =
                         |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
                         |> Maybe.withDefault False
             in
-            if diagnosedMalaria assembled && severeMalariaTreatment then
+            if diagnosedMalariaByPhase phase assembled && severeMalariaTreatment then
                 case phase of
                     PrenatalEncounterPhaseInitial ->
                         [ DiagnosisMalariaInitialPhase ]
@@ -725,7 +725,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                 PrenatalEncounterPhaseInitial ->
                     let
                         ( malariaInputs, malariaCompleted, malariaActive ) =
-                            if diagnosedMalaria assembled then
+                            if diagnosedMalariaByPhase PrenatalEncounterPhaseInitial assembled then
                                 resolveRecommendedTreatmentForMalariaInputsAndTasks language
                                     currentDate
                                     setRecommendedTreatmentSignMsg
@@ -808,7 +808,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                 PrenatalEncounterPhaseRecurrent ->
                     let
                         ( syphilisInputs, syphilisCompleted, syphilisActive ) =
-                            if diagnosedSyphilis assembled then
+                            if diagnosedSyphilisByPhase PrenatalEncounterPhaseRecurrent assembled then
                                 resolveRecommendedTreatmentForSyphilisInputsAndTasks language
                                     currentDate
                                     setRecommendedTreatmentSignMsg
@@ -2996,21 +2996,34 @@ resolvePreviousDiabetesDiagnosis nursePreviousEncountersData =
         |> List.head
 
 
-diagnosedMalaria : AssembledData -> Bool
-diagnosedMalaria =
-    diagnosedAnyOf
-        [ DiagnosisMalariaInitialPhase
-        , DiagnosisMalariaRecurrentPhase
-        , DiagnosisMalariaWithAnemiaInitialPhase
-        , DiagnosisMalariaWithAnemiaRecurrentPhase
-        , DiagnosisMalariaWithSevereAnemiaInitialPhase
-        , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
-        ]
+diagnosedMalariaByPhase : PrenatalEncounterPhase -> AssembledData -> Bool
+diagnosedMalariaByPhase phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            diagnosedAnyOf
+                [ DiagnosisMalariaInitialPhase
+                , DiagnosisMalariaWithAnemiaInitialPhase
+                , DiagnosisMalariaWithSevereAnemiaInitialPhase
+                ]
+                assembled
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosedAnyOf
+                [ DiagnosisMalariaRecurrentPhase
+                , DiagnosisMalariaWithAnemiaRecurrentPhase
+                , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+                ]
+                assembled
 
 
-diagnosedSyphilis : AssembledData -> Bool
-diagnosedSyphilis =
-    diagnosedAnyOf syphilisDiagnoses
+diagnosedSyphilisByPhase : PrenatalEncounterPhase -> AssembledData -> Bool
+diagnosedSyphilisByPhase phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            diagnosedAnyOf syphilisDiagnosesInitialPhase assembled
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosedAnyOf syphilisDiagnosesRecurrentPhase assembled
 
 
 syphilisDiagnosesIncludingNeurosyphilis : List PrenatalDiagnosis
