@@ -411,22 +411,25 @@ expectNextStepsTask currentDate assembled task =
         NextStepsHealthEducation ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
+                    let
+                        triggeringDiagnoses =
+                            [ DiagnosisHeartburn
+                            , DiagnosisCandidiasis
+                            , DiagnosisGonorrhea
+                            , DiagnosisTrichomonasOrBacterialVaginosis
+                            , DiagnosisHIVDetectableViralLoadInitialPhase
+                            ]
+                                ++ diabetesDiagnosesInitialPhase
+                    in
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
-                        && (-- HIV education appears whenever HIV test was performed.
-                            isJust assembled.measurements.hivTest
+                        && (provideHIVEducation PrenatalEncounterPhaseInitial assembled.measurements
                                 || provideNauseaAndVomitingEducation assembled
                                 || List.any (symptomRecorded assembled.measurements)
                                     [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
                                 || provideLegPainRednessEducation assembled
                                 || providePelvicPainEducation assembled
-                                || diagnosedAnyOf
-                                    [ DiagnosisHeartburn
-                                    , DiagnosisCandidiasis
-                                    , DiagnosisGonorrhea
-                                    , DiagnosisTrichomonasOrBacterialVaginosis
-                                    ]
-                                    assembled
+                                || diagnosedAnyOf triggeringDiagnoses assembled
                                 || provideMentalHealthEducation assembled
                            )
 

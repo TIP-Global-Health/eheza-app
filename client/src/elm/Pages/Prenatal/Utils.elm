@@ -3701,3 +3701,27 @@ referredToSpecialityCareProgram program assembled =
     getMeasurementValueFunc assembled.measurements.specialityCare
         |> Maybe.map (EverySet.member program >> not)
         |> Maybe.withDefault False
+
+
+provideHIVEducation : PrenatalEncounterPhase -> PrenatalMeasurements -> Bool
+provideHIVEducation phase measurements =
+    getMeasurementValueFunc measurements.hivTest
+        |> Maybe.map
+            (\value ->
+                let
+                    phaseCondition =
+                        Maybe.map
+                            (\testPrerequisites ->
+                                case phase of
+                                    PrenatalEncounterPhaseInitial ->
+                                        EverySet.member PrerequisiteImmediateResult testPrerequisites
+
+                                    PrenatalEncounterPhaseRecurrent ->
+                                        not <| EverySet.member PrerequisiteImmediateResult testPrerequisites
+                            )
+                            value.testPrerequisites
+                            |> Maybe.withDefault False
+                in
+                isJust value.testResult && phaseCondition
+            )
+        |> Maybe.withDefault False

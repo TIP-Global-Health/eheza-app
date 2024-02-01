@@ -323,7 +323,10 @@ expectNextStepsTask currentDate assembled task =
                    )
 
         NextStepsHealthEducation ->
-            diagnosedAnyOf (DiagnosisHIVDetectableViralLoadRecurrentPhase :: diabetesDiagnosesRecurrentPhase) assembled
+            -- Emergency referral is not required.
+            (not <| emergencyReferalRequired assembled)
+                && provideHIVEducation PrenatalEncounterPhaseRecurrent assembled.measurements
+                && diagnosedAnyOf (DiagnosisHIVDetectableViralLoadRecurrentPhase :: diabetesDiagnosesRecurrentPhase) assembled
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
