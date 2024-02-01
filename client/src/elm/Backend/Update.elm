@@ -2537,7 +2537,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
                                 (\originatingEncounterId ->
-                                    ( originatingEncounterId, Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilis )
+                                    ( originatingEncounterId
+                                    , Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase
+                                    )
                                 )
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
@@ -2563,7 +2565,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisB ] ))
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisBRecurrentPhase ] ))
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
@@ -2634,7 +2636,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegative ] ))
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegativeRecurrentPhase ] ))
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
@@ -2681,7 +2683,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnoses ))
+                                (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnosesRecurrentPhase ))
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
@@ -6031,7 +6033,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                             else
                                 let
                                     rhNegativeDiagnosis =
-                                        EverySet.member DiagnosisRhesusNegative reportedDiagnoses
+                                        EverySet.member DiagnosisRhesusNegativeRecurrentPhase reportedDiagnoses
                                 in
                                 if
                                     (-- Reporting back about previous diagnosis results in hospital referral
@@ -6052,7 +6054,11 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                             -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
                                             -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
                                             rhNegativeDiagnosis
-                                                && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
+                                                && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf
+                                                    [ DiagnosisRhesusNegativeInitialPhase
+                                                    , DiagnosisRhesusNegativeRecurrentPhase
+                                                    ]
+                                                    assembledAfter
                                            )
                                 then
                                     []

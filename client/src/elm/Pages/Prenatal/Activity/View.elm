@@ -709,16 +709,16 @@ viewHistoryContent language currentDate assembled data =
             , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
             , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
             , setHIVMedicationMsg = SetOutsideCareHIVMedication
-            , malariaDiagnoses = [ DiagnosisMalaria ]
+            , malariaDiagnoses = [ DiagnosisMalariaInitialPhase ]
             , hypertensionDiagnoses =
                 [ DiagnosisGestationalHypertensionImmediate
                 , DiagnosisChronicHypertensionImmediate
                 , DiagnosisModeratePreeclampsiaInitialPhase
                 ]
-            , syphilisDiagnoses = [ DiagnosisSyphilis ]
-            , anemiaDiagnoses = [ DiagnosisModerateAnemia ]
-            , hivDiagnoses = [ DiagnosisHIV ]
-            , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalaria
+            , syphilisDiagnoses = [ DiagnosisSyphilisRecurrentPhase ]
+            , anemiaDiagnoses = [ DiagnosisModerateAnemiaRecurrentPhase ]
+            , hivDiagnoses = [ DiagnosisHIVInitialPhase ]
+            , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalariaInitialPhase
             , resolveHypertensionHeaderTransId =
                 \diagnoses ->
                     if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
@@ -726,9 +726,9 @@ viewHistoryContent language currentDate assembled data =
 
                     else
                         Translate.Hypertension
-            , syphilisHeaderTransId = Translate.PrenatalDiagnosis DiagnosisSyphilis
-            , anemiaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisModerateAnemia
-            , hivHeaderTransId = Translate.PrenatalDiagnosis DiagnosisHIV
+            , syphilisHeaderTransId = Translate.PrenatalDiagnosis DiagnosisSyphilisRecurrentPhase
+            , anemiaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisModerateAnemiaRecurrentPhase
+            , hivHeaderTransId = Translate.PrenatalDiagnosis DiagnosisHIVInitialPhase
             , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
             , diagnosesRightColumn = outsideCareDiagnosesRightColumn
             , otherDiagnosis = DiagnosisOther

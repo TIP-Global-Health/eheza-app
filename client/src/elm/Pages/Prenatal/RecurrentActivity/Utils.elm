@@ -323,7 +323,7 @@ expectNextStepsTask currentDate assembled task =
                    )
 
         NextStepsHealthEducation ->
-            diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
+            diagnosedAnyOf (DiagnosisHIVDetectableViralLoadRecurrentPhase :: diabetesDiagnosesRecurrentPhase) assembled
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -505,7 +505,7 @@ healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducation
 healthEducationFormInputsAndTasks language assembled form =
     let
         detectableViralLoad =
-            if diagnosed DiagnosisHIVDetectableViralLoad assembled then
+            if diagnosed DiagnosisHIVDetectableViralLoadRecurrentPhase assembled then
                 ( [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
                   , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
@@ -523,14 +523,14 @@ healthEducationFormInputsAndTasks language assembled form =
                 ( [], Nothing )
 
         diabetes =
-            if diagnosedAnyOf diabetesDiagnoses assembled then
+            if diagnosedAnyOf diabetesDiagnosesRecurrentPhase assembled then
                 let
                     header =
-                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetes assembled then
-                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetes
+                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase assembled then
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
 
                         else
-                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
                 in
                 ( [ viewCustomLabel language header "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationDiabetesInform "." "label paragraph"

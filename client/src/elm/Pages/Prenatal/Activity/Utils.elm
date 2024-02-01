@@ -848,7 +848,10 @@ referredToHIVProgramPreviously : AssembledData -> Bool
 referredToHIVProgramPreviously assembled =
     List.filterMap
         (\data ->
-            if EverySet.member DiagnosisHIV data.diagnoses then
+            if
+                List.any (\diagnosis -> EverySet.member diagnosis data.diagnoses)
+                    [ DiagnosisHIVInitialPhase, DiagnosisHIVRecurrentPhase ]
+            then
                 Just data.measurements
 
             else
@@ -993,7 +996,7 @@ referToMentalHealthSpecialist assembled =
 
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
-    (diagnosed DiagnosisHIV assembled && hivProgramAtHC assembled.measurements)
+    (diagnosedAnyOf [ DiagnosisHIVInitialPhase, DiagnosisHIVRecurrentPhase ] assembled && hivProgramAtHC assembled.measurements)
         || referredToSpecialityCareProgram EnrolledToARVProgram assembled
 
 
@@ -1626,8 +1629,13 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
         DiagnosisLaborAndDelivery ->
             List.member Labor signs
 
-        DiagnosisSevereAnemiaWithComplications ->
+        DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
             severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
+                && labTestWithImmediateResult .bloodGpRsTest assembled.measurements
+
+        DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
+            severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
+                && (not <| labTestWithImmediateResult .bloodGpRsTest assembled.measurements)
 
         -- Non Emergency Referral diagnoses.
         _ ->
@@ -1722,10 +1730,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.withDefault False
 
         immediateResult getMeasurementFunc =
-            getMeasurementFunc measurements
-                |> getMeasurementValueFunc
-                |> Maybe.map (.testPrerequisites >> EverySet.member PrerequisiteImmediateResult)
-                |> Maybe.withDefault False
+            labTestWithImmediateResult getMeasurementFunc measurements
 
         hemoglobinCount =
             resolveHemoglobinCount measurements
@@ -1874,24 +1879,34 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         malariaDiagnosed =
             malariaConditionsMatch
                 && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
-                        || (not <| diagnosedPreviously DiagnosisMalaria assembled)
+                        || (not <| diagnosedPreviouslyAnyOf [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ] assembled)
                    )
 
         malariaMedicatedContinuedDiagnosed =
             malariaConditionsMatch
                 && (isJust <| latestMedicationTreatmentForMalaria assembled)
-                && diagnosedPreviously DiagnosisMalaria assembled
+                && diagnosedPreviouslyAnyOf [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ] assembled
 
         malariaWithAnemiaDiagnosed =
             malariaWithAnemiaConditionsMatch
                 && ((isNothing <| latestMedicationTreatmentForMalaria assembled)
-                        || (not <| diagnosedPreviously DiagnosisMalariaWithAnemia assembled)
+                        || (not <|
+                                diagnosedPreviouslyAnyOf
+                                    [ DiagnosisMalariaWithAnemiaInitialPhase
+                                    , DiagnosisMalariaWithAnemiaRecurrentPhase
+                                    ]
+                                    assembled
+                           )
                    )
 
         malariaWithAnemiaMedicatedContinuedDiagnosed =
             malariaWithAnemiaConditionsMatch
                 && (isJust <| latestMedicationTreatmentForMalaria assembled)
-                && diagnosedPreviously DiagnosisMalariaWithAnemia assembled
+                && diagnosedPreviouslyAnyOf
+                    [ DiagnosisMalariaWithAnemiaInitialPhase
+                    , DiagnosisMalariaWithAnemiaRecurrentPhase
+                    ]
+                    assembled
 
         malariaWithSevereAnemiaDiagnosed =
             positiveMalariaTest
@@ -2054,13 +2069,13 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             syphilisDiagnosed && immediateResult .syphilisTest
 
         DiagnosisSyphilisRecurrentPhase ->
-            syphilisDiagnosed (not <| immediateResult .syphilisTest)
+            syphilisDiagnosed && (not <| immediateResult .syphilisTest)
 
         DiagnosisSyphilisWithComplicationsInitialPhase ->
             syphilisWithComplicationDiagnosed && immediateResult .syphilisTest
 
         DiagnosisSyphilisWithComplicationsRecurrentPhase ->
-            syphilisWithComplicationDiagnosed (not <| immediateResult .syphilisTest)
+            syphilisWithComplicationDiagnosed && (not <| immediateResult .syphilisTest)
 
         DiagnosisNeurosyphilisInitialPhase ->
             neurosyphilisDiagnosed && immediateResult .syphilisTest
@@ -2116,7 +2131,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             severeAnemiaDiagnosed && immediateResult .hemoglobinTest
 
         DiagnosisSevereAnemiaRecurrentPhase ->
-            severeAnemiaDiagnose && (not <| immediateResult .hemoglobinTest)
+            severeAnemiaDiagnosed && (not <| immediateResult .hemoglobinTest)
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
@@ -2651,7 +2666,7 @@ highUrineProtein measurements =
 highUrineProteinInitialPhase : PrenatalMeasurements -> Bool
 highUrineProteinInitialPhase measurements =
     getMeasurementValueFunc measurements.urineDipstickTest
-        |> Maybe.map
+        |> Maybe.andThen
             (\value ->
                 let
                     highProtein =
@@ -2665,9 +2680,14 @@ highUrineProteinInitialPhase measurements =
                                     ]
                             )
                             value.protein
-                            |> Maybe.withDefault False
+
+                    immediateResult =
+                        Maybe.map (EverySet.member PrerequisiteImmediateResult)
+                            value.testPrerequisites
                 in
-                highProtein && List.member PrerequisiteImmediateResult value.testPrerequisites
+                Maybe.map2 (&&)
+                    highProtein
+                    immediateResult
             )
         |> Maybe.withDefault False
 
@@ -2705,24 +2725,42 @@ labResultsAndExaminationDiagnoses =
     , DiagnosisModeratePreeclampsiaRecurrentPhase
     , DiagnosisSeverePreeclampsiaInitialPhase
     , DiagnosisSeverePreeclampsiaRecurrentPhase
-    , DiagnosisHIV
-    , DiagnosisHIVDetectableViralLoad
-    , DiagnosisDiscordantPartnership
-    , DiagnosisSyphilis
-    , DiagnosisSyphilisWithComplications
-    , DiagnosisNeurosyphilis
-    , DiagnosisHepatitisB
-    , DiagnosisMalaria
-    , DiagnosisMalariaMedicatedContinued
-    , DiagnosisMalariaWithAnemia
-    , DiagnosisMalariaWithAnemiaMedicatedContinued
-    , DiagnosisMalariaWithSevereAnemia
-    , DiagnosisModerateAnemia
-    , DiagnosisSevereAnemia
-    , DiagnosisSevereAnemiaWithComplications
-    , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
-    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
-    , DiagnosisRhesusNegative
+    , DiagnosisHIVInitialPhase
+    , DiagnosisHIVRecurrentPhase
+    , DiagnosisHIVDetectableViralLoadInitialPhase
+    , DiagnosisHIVDetectableViralLoadRecurrentPhase
+    , DiagnosisDiscordantPartnershipInitialPhase
+    , DiagnosisDiscordantPartnershipRecurrentPhase
+    , DiagnosisSyphilisInitialPhase
+    , DiagnosisSyphilisRecurrentPhase
+    , DiagnosisSyphilisWithComplicationsInitialPhase
+    , DiagnosisSyphilisWithComplicationsRecurrentPhase
+    , DiagnosisNeurosyphilisInitialPhase
+    , DiagnosisNeurosyphilisRecurrentPhase
+    , DiagnosisHepatitisBInitialPhase
+    , DiagnosisHepatitisBRecurrentPhase
+    , DiagnosisMalariaInitialPhase
+    , DiagnosisMalariaRecurrentPhase
+    , DiagnosisMalariaMedicatedContinuedInitialPhase
+    , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+    , DiagnosisMalariaWithAnemiaInitialPhase
+    , DiagnosisMalariaWithAnemiaRecurrentPhase
+    , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+    , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
+    , DiagnosisMalariaWithSevereAnemiaInitialPhase
+    , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+    , DiagnosisModerateAnemiaInitialPhase
+    , DiagnosisModerateAnemiaRecurrentPhase
+    , DiagnosisSevereAnemiaInitialPhase
+    , DiagnosisSevereAnemiaRecurrentPhase
+    , DiagnosisSevereAnemiaWithComplicationsInitialPhase
+    , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
+    , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+    , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
+    , DiagnosisRhesusNegativeInitialPhase
+    , DiagnosisRhesusNegativeRecurrentPhase
     , DiagnosisPostpartumEarlyMastitisOrEngorgment
     , DiagnosisPostpartumMastitis
     , DiagnosisPostpartumInfection
@@ -3151,7 +3189,15 @@ healthEducationFormInputsAndTasksForHIV language assembled form =
         header =
             viewCustomLabel language Translate.HIV "" "label header"
     in
-    if diagnosedAnyOf [ DiagnosisHIV, DiagnosisDiscordantPartnership ] assembled then
+    if
+        diagnosedAnyOf
+            [ DiagnosisHIVInitialPhase
+            , DiagnosisHIVRecurrentPhase
+            , DiagnosisDiscordantPartnershipInitialPhase
+            , DiagnosisDiscordantPartnershipRecurrentPhase
+            ]
+            assembled
+    then
         let
             positiveHIVInput =
                 [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPositiveHIV
@@ -4961,7 +5007,8 @@ expectLaboratoryTask currentDate assembled task =
 
                 TaskHepatitisBTest ->
                     (not <| isKnownAsPositive .hepatitisBTest)
-                        && (not <| EverySet.member DiagnosisHepatitisB assembled.encounter.pastDiagnoses)
+                        && (not <| EverySet.member DiagnosisHepatitisBInitialPhase assembled.encounter.pastDiagnoses)
+                        && (not <| EverySet.member DiagnosisHepatitisBRecurrentPhase assembled.encounter.pastDiagnoses)
                         && isInitialTest TaskHepatitisBTest
 
                 TaskMalariaTest ->
@@ -4981,7 +5028,12 @@ expectLaboratoryTask currentDate assembled task =
                         diabetesDiagnoses
 
                 TaskHIVPCRTest ->
-                    isKnownAsPositive .hivTest || diagnosedPreviously DiagnosisHIV assembled
+                    isKnownAsPositive .hivTest
+                        || diagnosedPreviouslyAnyOf
+                            [ DiagnosisHIVInitialPhase
+                            , DiagnosisHIVRecurrentPhase
+                            ]
+                            assembled
 
                 TaskPartnerHIVTest ->
                     isInitialTest TaskPartnerHIVTest

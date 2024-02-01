@@ -162,7 +162,7 @@ diagnosesCausingHospitalReferralByOtherReasons assembled =
                         |> Maybe.withDefault False
             in
             if diagnosedMalaria assembled && severeMalariaTreatment then
-                [ DiagnosisMalaria ]
+                [ DiagnosisMalariaInitialPhase ]
 
             else
                 []
@@ -236,8 +236,6 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                            , DiagnosisPelvicPainIntense
                            , DiagnosisPelvicPainContinued
                            , DiagnosisPyelonephritis
-                           , DiagnosisMalariaMedicatedContinued
-                           , DiagnosisMalariaWithAnemiaMedicatedContinued
                            , DiagnosisUrinaryTractInfectionContinued
                            , DiagnosisCandidiasisContinued
                            , DiagnosisGonorrheaContinued
@@ -245,19 +243,34 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                            , DiagnosisPostpartumUrinaryIncontinence
                            , DiagnosisPostpartumInfection
                            , DiagnosisPostpartumExcessiveBleeding
+
+                           -- Possible diagnoses on both phases:
+                           , DiagnosisHepatitisBInitialPhase
+                           , DiagnosisNeurosyphilisInitialPhase
+                           , DiagnosisMalariaWithSevereAnemiaInitialPhase
+                           , DiagnosisSevereAnemiaInitialPhase
+                           , DiagnosisModeratePreeclampsiaInitialPhase
+                           , DiagnosisSeverePreeclampsiaInitialPhase
+                           , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+                           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+                           , DiagnosisRhesusNegativeInitialPhase
+                           , DiagnosisMalariaMedicatedContinuedInitialPhase
+                           , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
                            ]
 
                 PrenatalEncounterPhaseRecurrent ->
                     emergencyReferralDiagnosesRecurrent
-                        ++ [ DiagnosisHepatitisB
-                           , DiagnosisNeurosyphilis
-                           , DiagnosisMalariaWithSevereAnemia
-                           , DiagnosisSevereAnemia
+                        ++ [ DiagnosisHepatitisBRecurrentPhase
+                           , DiagnosisNeurosyphilisRecurrentPhase
+                           , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+                           , DiagnosisSevereAnemiaRecurrentPhase
                            , DiagnosisModeratePreeclampsiaRecurrentPhase
                            , DiagnosisSeverePreeclampsiaRecurrentPhase
-                           , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
-                           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
-                           , DiagnosisRhesusNegative
+                           , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+                           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
+                           , DiagnosisRhesusNegativeRecurrentPhase
+                           , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+                           , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
                            ]
     in
     List.filter (\diagnosis -> diagnosed diagnosis assembled)
@@ -289,6 +302,7 @@ emergencyReferralDiagnosesInitial =
     , DiagnosisLaborAndDelivery
     , DiagnosisHyperemesisGravidum
     , DiagnosisSevereVomiting
+    , DiagnosisSevereAnemiaWithComplicationsInitialPhase
 
     -- Infection diagnosis will be available at latter phase.
     -- , DiagnosisInfection
@@ -299,7 +313,7 @@ emergencyReferralDiagnosesRecurrent : List PrenatalDiagnosis
 emergencyReferralDiagnosesRecurrent =
     [ DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
     , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
-    , DiagnosisSevereAnemiaWithComplications
+    , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
     ]
 
 
@@ -1652,6 +1666,67 @@ resolveRequiredMedicationsSet :
     -> AssembledData
     -> List ( TranslationId, List MedicationDistributionSign, List (Html any) )
 resolveRequiredMedicationsSet language currentDate phase assembled =
+    let
+        resolveHIVPositiveSet diagnosis =
+            let
+                hivDiagnosed =
+                    diagnosed diagnosis assembled
+
+                hivProgramHC =
+                    hivProgramAtHC assembled.measurements
+            in
+            if
+                (hivDiagnosed && not hivProgramHC)
+                    || patientReportedNoMedicineRecievedFromPMTCT assembled.measurements
+            then
+                Just
+                    ( Translate.MedicationDistributionHelperHIV
+                    , [ TDF3TC, Dolutegravir ]
+                    , []
+                    )
+
+            else
+                Nothing
+
+        resolveDiscordantPartnershipSet diagnosis =
+            if diagnosed diagnosis assembled then
+                let
+                    partnerTakingARVs =
+                        getMeasurementValueFunc assembled.measurements.hivTest
+                            |> Maybe.andThen .hivSigns
+                            |> Maybe.map (EverySet.member PartnerTakingARV)
+                            |> Maybe.withDefault False
+
+                    helper =
+                        if partnerTakingARVs then
+                            Translate.MedicationDistributionHelperDiscordantPartnership
+
+                        else
+                            Translate.MedicationDistributionHelperDiscordantPartnershipNoARVs
+                in
+                Just
+                    ( helper
+                    , [ TDF3TC ]
+                    , []
+                    )
+
+            else
+                Nothing
+
+        resolveModerateAnemiaSet diagnosis =
+            if
+                diagnosed diagnosis assembled
+                    && (not <| referToHospitalDueToAdverseEventForAnemiaTreatment assembled)
+            then
+                Just
+                    ( Translate.MedicationDistributionHelperAnemia
+                    , [ Iron, FolicAcid ]
+                    , []
+                    )
+
+            else
+                Nothing
+    in
     case phase of
         -- Not for Postpartum encounter.
         PrenatalEncounterPhaseInitial ->
@@ -1671,52 +1746,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                         Just
                             ( Translate.MedicationDistributionHelperMebendazole
                             , [ Mebendezole ]
-                            , []
-                            )
-
-                    else
-                        Nothing
-
-                hivPositiveSet =
-                    let
-                        hivDiagnosed =
-                            diagnosed DiagnosisHIV assembled
-
-                        hivProgramHC =
-                            hivProgramAtHC assembled.measurements
-                    in
-                    if
-                        (hivDiagnosed && not hivProgramHC)
-                            || patientReportedNoMedicineRecievedFromPMTCT assembled.measurements
-                    then
-                        Just
-                            ( Translate.MedicationDistributionHelperHIV
-                            , [ TDF3TC, Dolutegravir ]
-                            , []
-                            )
-
-                    else
-                        Nothing
-
-                discordantPartnershipSet =
-                    if diagnosed DiagnosisDiscordantPartnership assembled then
-                        let
-                            partnerTakingARVs =
-                                getMeasurementValueFunc assembled.measurements.hivTest
-                                    |> Maybe.andThen .hivSigns
-                                    |> Maybe.map (EverySet.member PartnerTakingARV)
-                                    |> Maybe.withDefault False
-
-                            helper =
-                                if partnerTakingARVs then
-                                    Translate.MedicationDistributionHelperDiscordantPartnership
-
-                                else
-                                    Translate.MedicationDistributionHelperDiscordantPartnershipNoARVs
-                        in
-                        Just
-                            ( helper
-                            , [ TDF3TC ]
                             , []
                             )
 
@@ -1782,38 +1811,36 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
             in
             Maybe.Extra.values
                 [ mebendazoleSet
-                , hivPositiveSet
-                , discordantPartnershipSet
+                , resolveHIVPositiveSet DiagnosisHIVInitialPhase
+                , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipInitialPhase
+                , resolveModerateAnemiaSet DiagnosisModerateAnemiaInitialPhase
                 , gonorheaSet
                 , trichomonasOrBVSet
                 , vitaminASet
                 ]
 
         PrenatalEncounterPhaseRecurrent ->
-            if
-                diagnosed DiagnosisModerateAnemia assembled
-                    && (not <| referToHospitalDueToAdverseEventForAnemiaTreatment assembled)
-            then
-                [ ( Translate.MedicationDistributionHelperAnemia
-                  , [ Iron, FolicAcid ]
-                  , []
-                  )
+            Maybe.Extra.values
+                [ resolveHIVPositiveSet DiagnosisHIVRecurrentPhase
+                , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipRecurrentPhase
+                , resolveModerateAnemiaSet DiagnosisModerateAnemiaRecurrentPhase
                 ]
-
-            else
-                []
 
 
 diagnosesCausingHospitalReferralByAdverseEventForTreatment : AssembledData -> List PrenatalDiagnosis
 diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled =
     filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
-        [ DiagnosisHIV
+        [ DiagnosisHIVInitialPhase
+        , DiagnosisHIVRecurrentPhase
         , -- Since treatment for Hypertension and Moderate Preeclampsia
           -- is identical, we use this indicator for both.
           DiagnosisChronicHypertensionImmediate
-        , DiagnosisMalaria
-        , DiagnosisModerateAnemia
-        , DiagnosisSyphilis
+        , DiagnosisMalariaInitialPhase
+        , DiagnosisMalariaRecurrentPhase
+        , DiagnosisModerateAnemiaInitialPhase
+        , DiagnosisModerateAnemiaRecurrentPhase
+        , DiagnosisSyphilisInitialPhase
+        , DiagnosisSyphilisRecurrentPhase
         ]
         assembled
 
@@ -1836,7 +1863,7 @@ referToHospitalDueToAdverseEventForHypertensionTreatment =
 referToHospitalDueToAdverseEventForAnemiaTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForAnemiaTreatment =
     filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
-        [ DiagnosisModerateAnemia ]
+        [ DiagnosisModerateAnemiaInitialPhase, DiagnosisModerateAnemiaRecurrentPhase ]
         >> List.isEmpty
         >> not
 
@@ -1844,7 +1871,7 @@ referToHospitalDueToAdverseEventForAnemiaTreatment =
 referToHospitalDueToAdverseEventForMalariaTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForMalariaTreatment =
     filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
-        [ DiagnosisMalaria ]
+        [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ]
         >> List.isEmpty
         >> not
 
@@ -1857,21 +1884,33 @@ filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment diagnoses assem
                 let
                     conditionByDiagnosis diagnosis =
                         case diagnosis of
-                            DiagnosisHIV ->
+                            DiagnosisHIVInitialPhase ->
                                 Maybe.map (EverySet.member HIVTreatmentAdverseEventsHospitalization) value.hivTreatment
                                     |> Maybe.withDefault False
+
+                            DiagnosisHIVRecurrentPhase ->
+                                conditionByDiagnosis DiagnosisHIVInitialPhase
 
                             DiagnosisChronicHypertensionImmediate ->
                                 referByTreatment value.hypertensionTreatment
 
-                            DiagnosisMalaria ->
+                            DiagnosisMalariaInitialPhase ->
                                 referByTreatment value.malariaTreatment
 
-                            DiagnosisModerateAnemia ->
+                            DiagnosisMalariaRecurrentPhase ->
+                                conditionByDiagnosis DiagnosisMalariaInitialPhase
+
+                            DiagnosisModerateAnemiaInitialPhase ->
                                 referByTreatment value.anemiaTreatment
 
-                            DiagnosisSyphilis ->
+                            DiagnosisModerateAnemiaRecurrentPhase ->
+                                conditionByDiagnosis DiagnosisModerateAnemiaInitialPhase
+
+                            DiagnosisSyphilisInitialPhase ->
                                 referByTreatment value.syphilisTreatment
+
+                            DiagnosisSyphilisRecurrentPhase ->
+                                conditionByDiagnosis DiagnosisSyphilisInitialPhase
 
                             -- There's no other diagnosis treatment we revise
                             -- at Treatment Review activity.
@@ -1893,7 +1932,7 @@ diagnosesCausingHospitalReferralByPastDiagnoses assembled =
         allowedPastDiagnoses =
             syphilisDiagnosesIncludingNeurosyphilis
                 ++ diabetesDiagnoses
-                ++ [ DiagnosisHepatitisB, DiagnosisRhesusNegative ]
+                ++ [ DiagnosisHepatitisBRecurrentPhase, DiagnosisRhesusNegativeRecurrentPhase ]
     in
     EverySet.toList assembled.encounter.pastDiagnoses
         |> List.filter (\diagnosis -> List.member diagnosis allowedPastDiagnoses)
@@ -2868,11 +2907,17 @@ resolveARVReferralDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagno
 resolveARVReferralDiagnosis nursePreviousEncountersData =
     List.filterMap
         (\data ->
-            if EverySet.member DiagnosisHIV data.diagnoses || knownAsHIVPositive data.measurements then
-                Just DiagnosisHIV
+            if EverySet.member DiagnosisHIVInitialPhase data.diagnoses || knownAsHIVPositive data.measurements then
+                Just DiagnosisHIVInitialPhase
 
-            else if EverySet.member DiagnosisDiscordantPartnership data.diagnoses then
-                Just DiagnosisDiscordantPartnership
+            else if EverySet.member DiagnosisHIVRecurrentPhase data.diagnoses || knownAsHIVPositive data.measurements then
+                Just DiagnosisHIVRecurrentPhase
+
+            else if EverySet.member DiagnosisDiscordantPartnershipInitialPhase data.diagnoses then
+                Just DiagnosisDiscordantPartnershipInitialPhase
+
+            else if EverySet.member DiagnosisDiscordantPartnershipRecurrentPhase data.diagnoses then
+                Just DiagnosisDiscordantPartnershipRecurrentPhase
 
             else
                 Nothing
@@ -2958,26 +3003,54 @@ diagnosedSyphilis =
 
 syphilisDiagnosesIncludingNeurosyphilis : List PrenatalDiagnosis
 syphilisDiagnosesIncludingNeurosyphilis =
-    [ DiagnosisNeurosyphilisInitialPhase
-    , DiagnosisNeurosyphilisRecurrentPhase
-    ]
-        ++ syphilisDiagnoses
+    syphilisDiagnosesIncludingNeurosyphilisInitialPhase
+        ++ syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase
+
+
+syphilisDiagnosesIncludingNeurosyphilisInitialPhase : List PrenatalDiagnosis
+syphilisDiagnosesIncludingNeurosyphilisInitialPhase =
+    DiagnosisNeurosyphilisInitialPhase :: syphilisDiagnosesInitialPhase
+
+
+syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase : List PrenatalDiagnosis
+syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase =
+    DiagnosisNeurosyphilisRecurrentPhase :: syphilisDiagnosesRecurrentPhase
 
 
 syphilisDiagnoses : List PrenatalDiagnosis
 syphilisDiagnoses =
+    syphilisDiagnosesInitialPhase ++ syphilisDiagnosesRecurrentPhase
+
+
+syphilisDiagnosesInitialPhase : List PrenatalDiagnosis
+syphilisDiagnosesInitialPhase =
     [ DiagnosisSyphilisInitialPhase
-    , DiagnosisSyphilisRecurrentPhase
     , DiagnosisSyphilisWithComplicationsInitialPhase
+    ]
+
+
+syphilisDiagnosesRecurrentPhase : List PrenatalDiagnosis
+syphilisDiagnosesRecurrentPhase =
+    [ DiagnosisSyphilisRecurrentPhase
     , DiagnosisSyphilisWithComplicationsRecurrentPhase
     ]
 
 
 diabetesDiagnoses : List PrenatalDiagnosis
 diabetesDiagnoses =
+    diabetesDiagnosesInitialPhase ++ diabetesDiagnosesRecurrentPhase
+
+
+diabetesDiagnosesInitialPhase : List PrenatalDiagnosis
+diabetesDiagnosesInitialPhase =
     [ DiagnosisDiabetesInitialPhase
-    , DiagnosisDiabetesRecurrentPhase
     , DiagnosisGestationalDiabetesInitialPhase
+    ]
+
+
+diabetesDiagnosesRecurrentPhase : List PrenatalDiagnosis
+diabetesDiagnosesRecurrentPhase =
+    [ DiagnosisDiabetesRecurrentPhase
     , DiagnosisGestationalDiabetesRecurrentPhase
     ]
 
@@ -2990,12 +3063,12 @@ outsideCareDiagnoses =
 outsideCareDiagnosesLeftColumn : List PrenatalDiagnosis
 outsideCareDiagnosesLeftColumn =
     [ DiagnosisHIVInitialPhase
-    , DiagnosisSyphilisInitialPhase
-    , DiagnosisNeurosyphilisInitialPhase
+    , DiagnosisSyphilisRecurrentPhase
+    , DiagnosisNeurosyphilisRecurrentPhase
     , DiagnosisMalariaInitialPhase
-    , DiagnosisHepatitisBInitialPhase
-    , DiagnosisModerateAnemiaInitialPhase
-    , DiagnosisSevereAnemiaInitialPhase
+    , DiagnosisHepatitisBRecurrentPhase
+    , DiagnosisModerateAnemiaRecurrentPhase
+    , DiagnosisSevereAnemiaRecurrentPhase
     , DiagnosisPelvicPainIntense
     , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
     ]
@@ -3601,3 +3674,11 @@ toMalariaPreventionValue phaseRecorded form =
             }
         )
         form.receivedMosquitoNet
+
+
+labTestWithImmediateResult getMeasurementFunc measurements =
+    getMeasurementFunc measurements
+        |> getMeasurementValueFunc
+        |> Maybe.andThen .testPrerequisites
+        |> Maybe.map (EverySet.member PrerequisiteImmediateResult)
+        |> Maybe.withDefault False

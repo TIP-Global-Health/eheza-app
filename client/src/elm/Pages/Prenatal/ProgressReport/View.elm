@@ -2399,7 +2399,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisNeurosyphilisInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisNeurosyphilisR ->
+        DiagnosisNeurosyphilisRecurrentPhase ->
             referredToHospitalMessage
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
@@ -2722,25 +2722,37 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                     ++ " "
         in
         case diagnosis of
-            DiagnosisHIV ->
+            DiagnosisHIVInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsHIV NoOutsideCareMedicationForMalaria
                     |> Just
                     |> completePhrase
 
-            DiagnosisSyphilis ->
+            DiagnosisHIVRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisHIVInitialPhase
+
+            DiagnosisSyphilisInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsSyphilis NoOutsideCareMedicationForSyphilis
                     |> Just
                     |> completePhrase
 
-            DiagnosisMalaria ->
+            DiagnosisSyphilisRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisSyphilisInitialPhase
+
+            DiagnosisMalariaInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsMalaria NoOutsideCareMedicationForMalaria
                     |> Just
                     |> completePhrase
 
-            DiagnosisModerateAnemia ->
+            DiagnosisMalariaRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisMalariaInitialPhase
+
+            DiagnosisModerateAnemiaInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsAnemia NoOutsideCareMedicationForAnemia
                     |> Just
                     |> completePhrase
+
+            DiagnosisModerateAnemiaRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisModerateAnemiaInitialPhase
 
             DiagnosisGestationalHypertensionImmediate ->
                 treatmentForHypertensionMessage
