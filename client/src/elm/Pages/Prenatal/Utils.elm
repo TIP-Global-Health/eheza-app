@@ -3774,7 +3774,7 @@ healthEducationFormInputsAndTasksForNurse language phase setBoolInputMsg assembl
                 ( [], [] )
 
         detectableViralLoad triggeringDiagnosis =
-            if diagnosed DiagnosisHIVDetectableViralLoadRecurrentPhase assembled then
+            if diagnosed triggeringDiagnosis assembled then
                 ( [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
                   , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
@@ -3792,7 +3792,7 @@ healthEducationFormInputsAndTasksForNurse language phase setBoolInputMsg assembl
                 ( [], Nothing )
 
         diabetes triggeringDiagnoses =
-            if diagnosedAnyOf diabetesDiagnosesRecurrentPhase assembled then
+            if diagnosedAnyOf triggeringDiagnoses assembled then
                 let
                     header =
                         if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase assembled then
