@@ -1975,10 +1975,10 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             hivDetectableViralLoadDiagnosed && (not <| immediateResult .hivPCRTest)
 
         DiagnosisDiscordantPartnershipInitialPhase ->
-            discordantPartnershipDiagnosed && immediateResult .hivPCRTest
+            discordantPartnershipDiagnosed && immediateResult .hivTest
 
         DiagnosisDiscordantPartnershipRecurrentPhase ->
-            discordantPartnershipDiagnosed && (not <| immediateResult .hivPCRTest)
+            discordantPartnershipDiagnosed && (not <| immediateResult .hivTest)
 
         DiagnosisSyphilisInitialPhase ->
             syphilisDiagnosed && immediateResult .syphilisTest
