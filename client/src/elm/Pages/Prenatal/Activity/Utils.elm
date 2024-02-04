@@ -1018,28 +1018,6 @@ referToUltrasound assembled =
         |> Maybe.withDefault False
 
 
-provideNauseaAndVomitingEducation : AssembledData -> Bool
-provideNauseaAndVomitingEducation assembled =
-    let
-        -- NauseaAndVomiting reported at current encounter, and
-        -- all follow up questions were answered No.
-        byCurrentEncounter =
-            getMeasurementValueFunc assembled.measurements.symptomReview
-                |> Maybe.map
-                    (\value ->
-                        EverySet.member NauseaAndVomiting value.symptoms
-                            && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
-                                [ SymptomQuestionDizziness, SymptomQuestionLowUrineOutput, SymptomQuestionDarkUrine ]
-                    )
-                |> Maybe.withDefault False
-
-        -- NauseaAndVomiting was not reported at any of previous encounters.
-        byPreviousEncounters =
-            not <| symptomRecordedPreviously assembled NauseaAndVomiting
-    in
-    byCurrentEncounter && byPreviousEncounters
-
-
 hospitalizeDueToNauseaAndVomiting : AssembledData -> Bool
 hospitalizeDueToNauseaAndVomiting assembled =
     let
@@ -1063,20 +1041,6 @@ hospitalizeDueToNauseaAndVomiting assembled =
     byCurrentEncounter || byPreviousEncounters
 
 
-provideLegPainRednessEducation : AssembledData -> Bool
-provideLegPainRednessEducation assembled =
-    -- LegPainRedness reported at current encounter, and
-    -- all follow up questions were answered No.
-    getMeasurementValueFunc assembled.measurements.symptomReview
-        |> Maybe.map
-            (\value ->
-                EverySet.member LegPainRedness value.symptoms
-                    && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
-                        [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
-            )
-        |> Maybe.withDefault False
-
-
 hospitalizeDueToLegPainRedness : AssembledData -> Bool
 hospitalizeDueToLegPainRedness assembled =
     -- LegPainRedness reported at current encounter, and
@@ -1091,37 +1055,6 @@ hospitalizeDueToLegPainRedness assembled =
         |> Maybe.withDefault False
 
 
-providePelvicPainEducation : AssembledData -> Bool
-providePelvicPainEducation assembled =
-    let
-        -- PelvicPain reported at current encounter, and
-        -- all follow up questions were answered No.
-        byCurrentEncounter =
-            getMeasurementValueFunc assembled.measurements.symptomReview
-                |> Maybe.map
-                    (\value ->
-                        EverySet.member PelvicPain value.symptoms
-                            && (not <| EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions)
-                    )
-                |> Maybe.withDefault False
-
-        -- PelvicPain was not reported at any of previous encounters.
-        byPreviousEncounters =
-            not <| symptomRecordedPreviously assembled PelvicPain
-    in
-    byCurrentEncounter && byPreviousEncounters
-
-
-provideMentalHealthEducation : AssembledData -> Bool
-provideMentalHealthEducation assembled =
-    -- Mental health survey was taken and none of
-    -- mental health diagnoses was determined.
-    -- No need to display at Postpartum encounter.
-    (assembled.encounter.encounterType == NurseEncounter)
-        && isJust assembled.measurements.mentalHealth
-        && diagnosedNoneOf mentalHealthDiagnosesRequiringTreatment assembled
-
-
 hospitalizeDueToPelvicPain : AssembledData -> Bool
 hospitalizeDueToPelvicPain assembled =
     -- PelvicPain reported at current encounter, and
@@ -1133,24 +1066,6 @@ hospitalizeDueToPelvicPain assembled =
                     && EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions
             )
         |> Maybe.withDefault False
-
-
-symptomRecorded : PrenatalMeasurements -> PrenatalSymptom -> Bool
-symptomRecorded measurements symptom =
-    getMeasurementValueFunc measurements.symptomReview
-        |> Maybe.map (.symptoms >> EverySet.member symptom)
-        |> Maybe.withDefault False
-
-
-symptomRecordedPreviously : AssembledData -> PrenatalSymptom -> Bool
-symptomRecordedPreviously assembled symptom =
-    assembled.nursePreviousEncountersData
-        |> List.filter
-            (\data ->
-                symptomRecorded data.measurements symptom
-            )
-        |> List.isEmpty
-        |> not
 
 
 mandatoryActivitiesForAssessmentCompleted : NominalDate -> Site -> AssembledData -> Bool
@@ -2811,436 +2726,21 @@ healthEducationFormInputsAndTasks language assembled healthEducationForm =
     in
     case assembled.encounter.encounterType of
         NurseEncounter ->
-            healthEducationFormInputsAndTasksForNurse language assembled form
+            healthEducationFormInputsAndTasksForNurse language
+                PrenatalEncounterPhaseInitial
+                SetHealthEducationSubActivityBoolInput
+                assembled
+                form
 
         NursePostpartumEncounter ->
-            healthEducationFormInputsAndTasksForNurse language assembled form
+            healthEducationFormInputsAndTasksForNurse language
+                PrenatalEncounterPhaseInitial
+                SetHealthEducationSubActivityBoolInput
+                assembled
+                form
 
         _ ->
             healthEducationFormInputsAndTasksForChw language assembled form
-
-
-healthEducationFormInputsAndTasksForNurse : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForNurse language assembled form =
-    let
-        ( hivInputs, hivTasks ) =
-            if isJust assembled.measurements.hivTest then
-                healthEducationFormInputsAndTasksForHIV language assembled form
-
-            else
-                ( [], [] )
-
-        nauseaVomiting =
-            if provideNauseaAndVomitingEducation assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNauseaVomiting) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingInform "." "label paragraph"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingAdvise "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.nauseaVomiting
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | nauseaVomiting = Just value }))
-                        "nausea-vomiting"
-                        Nothing
-                  ]
-                , Just form.nauseaVomiting
-                )
-
-            else
-                ( [], Nothing )
-
-        legCramps =
-            if symptomRecorded assembled.measurements LegCramps then
-                let
-                    reliefMethods =
-                        List.map
-                            (Translate.LegCrampsReliefMethod
-                                >> translate language
-                                >> String.toLower
-                                >> text
-                                >> List.singleton
-                                >> li []
-                            )
-                            [ ReliefMethodMuscleStretching
-                            , ReliefMethodDorsiflexion
-                            , ReliefMethodRelaxation
-                            , ReliefMethodSleepWithPillowBetweenLegs
-                            , ReliefMethodHeatTherapy
-                            , ReliefMethodMassage
-                            ]
-                            |> ul []
-                in
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegCramps) "" "label header"
-                  , viewLabel language Translate.PrenatalHealthEducationLegCrampsInform
-                  , reliefMethods
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.legCramps
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | legCramps = Just value }))
-                        "leg-cramps"
-                        Nothing
-                  ]
-                , Just form.legCramps
-                )
-
-            else
-                ( [], Nothing )
-
-        lowBackPain =
-            if symptomRecorded assembled.measurements LowBackPain then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLowBackPain) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationLowBackPainInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.lowBackPain
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | lowBackPain = Just value }))
-                        "low-back-pain"
-                        Nothing
-                  ]
-                , Just form.lowBackPain
-                )
-
-            else
-                ( [], Nothing )
-
-        constipation =
-            if symptomRecorded assembled.measurements Constipation then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationConstipation) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationConstipationInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.constipation
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | constipation = Just value }))
-                        "constipation"
-                        Nothing
-                  ]
-                , Just form.constipation
-                )
-
-            else
-                ( [], Nothing )
-
-        heartburn =
-            if diagnosed DiagnosisHeartburn assembled then
-                let
-                    reliefMethods =
-                        List.map
-                            (Translate.HeartburnReliefMethod
-                                >> translate language
-                                >> String.toLower
-                                >> text
-                                >> List.singleton
-                                >> li []
-                            )
-                            [ ReliefMethodAvoidLargeMeals
-                            , ReliefMethodCeaseSmoking
-                            , ReliefMethodAvoidAlcohom
-                            , ReliefMethodSleepWithHeadRaised
-                            ]
-                            |> ul []
-                in
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationHeartburn) "" "label header"
-                  , viewLabel language Translate.PrenatalHealthEducationHeartburnInform
-                  , reliefMethods
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.heartburn
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | heartburn = Just value }))
-                        "heartburn"
-                        Nothing
-                  ]
-                , Just form.heartburn
-                )
-
-            else
-                ( [], Nothing )
-
-        varicoseVeins =
-            if symptomRecorded assembled.measurements VaricoseVeins then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationVaricoseVeins) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationVaricoseVeinsInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.varicoseVeins
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | varicoseVeins = Just value }))
-                        "varicose-veins"
-                        Nothing
-                  ]
-                , Just form.varicoseVeins
-                )
-
-            else
-                ( [], Nothing )
-
-        legPainRedness =
-            if provideLegPainRednessEducation assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegPainRedness) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationLegPainRednessInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.legPainRedness
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | legPainRedness = Just value }))
-                        "leg-pain-redness"
-                        Nothing
-                  ]
-                , Just form.legPainRedness
-                )
-
-            else
-                ( [], Nothing )
-
-        pelvicPain =
-            if providePelvicPainEducation assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationPelvicPain) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationPelvicPainInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.pelvicPain
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | pelvicPain = Just value }))
-                        "pelvic-pain"
-                        Nothing
-                  ]
-                , Just form.pelvicPain
-                )
-
-            else
-                ( [], Nothing )
-
-        saferSex =
-            let
-                saferSexDiagnoses =
-                    List.filter
-                        (\diagnosis ->
-                            EverySet.member diagnosis assembled.encounter.diagnoses
-                        )
-                        -- Diagnoses that require safer sex practices education.
-                        [ DiagnosisCandidiasis, DiagnosisGonorrhea, DiagnosisTrichomonasOrBacterialVaginosis ]
-            in
-            if not <| List.isEmpty saferSexDiagnoses then
-                let
-                    label =
-                        List.filter (symptomRecorded assembled.measurements)
-                            -- Symptoms that may  require safer sex practices education.
-                            [ BurningWithUrination, AbnormalVaginalDischarge ]
-                            |> List.map (Translate.PrenatalSymptom >> translate language)
-                            |> String.join ", "
-                in
-                ( [ div [ class "label header" ] [ text label ]
-                  , viewCustomLabel language Translate.PrenatalHealthEducationSaferSexInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.saferSex
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | saferSex = Just value }))
-                        "safer-sex"
-                        Nothing
-                  ]
-                , Just form.saferSex
-                )
-
-            else
-                ( [], Nothing )
-
-        mentalHealth =
-            if provideMentalHealthEducation assembled then
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationMentalHealth) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationMentalHealthInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.mentalHealth
-                        (SetHealthEducationSubActivityBoolInput (\value form_ -> { form_ | mentalHealth = Just value }))
-                        "mental-health"
-                        Nothing
-                  ]
-                , Just form.mentalHealth
-                )
-
-            else
-                ( [], Nothing )
-
-        hierarchalMastitis =
-            if diagnosedAnyOf [ DiagnosisPostpartumEarlyMastitisOrEngorgment, DiagnosisPostpartumMastitis ] assembled then
-                let
-                    reliefMethods =
-                        List.map
-                            (Translate.EarlyMastitisOrEngorgmentReliefMethod
-                                >> translate language
-                                >> String.toLower
-                                >> text
-                                >> List.singleton
-                                >> li []
-                            )
-                            [ ReliefMethodBreastMassage
-                            , ReliefMethodIncreaseFluid
-                            , ReliefMethodBreastfeedingOrHandExpression
-                            ]
-                            |> ul []
-
-                    ( eudcationSign, formField, updateFunc ) =
-                        if diagnosed DiagnosisPostpartumMastitis assembled then
-                            ( EducationMastitis
-                            , form.mastitis
-                            , \value form_ -> { form_ | mastitis = Just value }
-                            )
-
-                        else
-                            ( EducationEarlyMastitisOrEngorgment
-                            , form.earlyMastitisOrEngorgment
-                            , \value form_ -> { form_ | earlyMastitisOrEngorgment = Just value }
-                            )
-                in
-                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel eudcationSign) "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ":" "label paragraph"
-                  , reliefMethods
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        formField
-                        (SetHealthEducationSubActivityBoolInput updateFunc)
-                        "mastitis"
-                        Nothing
-                  ]
-                , Just formField
-                )
-
-            else
-                ( [], Nothing )
-
-        inputsAndTasks =
-            [ nauseaVomiting
-            , legCramps
-            , lowBackPain
-            , constipation
-            , heartburn
-            , varicoseVeins
-            , legPainRedness
-            , pelvicPain
-            , saferSex
-            , mentalHealth
-            , hierarchalMastitis
-            ]
-    in
-    ( hivInputs
-        ++ List.concatMap Tuple.first inputsAndTasks
-    , hivTasks
-        ++ (List.map Tuple.second inputsAndTasks
-                |> Maybe.Extra.values
-           )
-    )
-
-
-healthEducationFormInputsAndTasksForHIV : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForHIV language assembled form =
-    let
-        translatePrenatalHealthEducationQuestion =
-            Translate.PrenatalHealthEducationQuestion False
-
-        positiveHIVUpdateFunc value form_ =
-            { form_ | positiveHIV = Just value }
-
-        saferSexHIVUpdateFunc value form_ =
-            { form_ | saferSexHIV = Just value }
-
-        saferSexHIVInput =
-            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSexHIV
-            , viewBoolInput
-                language
-                form.saferSexHIV
-                (SetHealthEducationSubActivityBoolInput saferSexHIVUpdateFunc)
-                "safer-sex-hiv"
-                Nothing
-            ]
-
-        partnerTestingUpdateFunc value form_ =
-            { form_ | partnerTesting = Just value }
-
-        partnerTestingInput =
-            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPartnerTesting
-            , viewBoolInput
-                language
-                form.partnerTesting
-                (SetHealthEducationSubActivityBoolInput partnerTestingUpdateFunc)
-                "partner-testing"
-                Nothing
-            ]
-
-        partnerSurpressedViralLoad =
-            getMeasurementValueFunc assembled.measurements.hivTest
-                |> Maybe.andThen .hivSigns
-                |> Maybe.map
-                    (\hivSigns ->
-                        -- Partner is HIV positive.
-                        EverySet.member PartnerHIVPositive hivSigns
-                            -- Partner is taking ARVs.
-                            && EverySet.member PartnerTakingARV hivSigns
-                            -- Partner reached surpressed viral load.
-                            && EverySet.member PartnerSurpressedViralLoad hivSigns
-                    )
-                |> Maybe.withDefault False
-
-        header =
-            viewCustomLabel language Translate.HIV "" "label header"
-    in
-    if
-        diagnosedAnyOf
-            [ DiagnosisHIVInitialPhase
-            , DiagnosisHIVRecurrentPhase
-            , DiagnosisDiscordantPartnershipInitialPhase
-            , DiagnosisDiscordantPartnershipRecurrentPhase
-            ]
-            assembled
-    then
-        let
-            positiveHIVInput =
-                [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPositiveHIV
-                , viewBoolInput
-                    language
-                    form.positiveHIV
-                    (SetHealthEducationSubActivityBoolInput positiveHIVUpdateFunc)
-                    "positive-hiv"
-                    Nothing
-                ]
-
-            familyPlanningInput =
-                healthEducationFormFamilyPlanningInput language False form
-        in
-        ( header :: positiveHIVInput ++ saferSexHIVInput ++ partnerTestingInput ++ familyPlanningInput
-        , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
-        )
-
-    else if partnerSurpressedViralLoad then
-        ( header :: saferSexHIVInput
-        , [ form.saferSexHIV ]
-        )
-
-    else
-        ( header :: saferSexHIVInput ++ partnerTestingInput
-        , [ form.saferSexHIV, form.partnerTesting ]
-        )
-
-
-healthEducationFormFamilyPlanningInput : Language -> Bool -> HealthEducationForm -> List (Html Msg)
-healthEducationFormFamilyPlanningInput language isChw form =
-    let
-        familyPlanningUpdateFunc value form_ =
-            { form_ | familyPlanning = Just value }
-    in
-    [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion isChw EducationFamilyPlanning
-    , viewBoolInput
-        language
-        form.familyPlanning
-        (SetHealthEducationSubActivityBoolInput familyPlanningUpdateFunc)
-        "family-planning"
-        Nothing
-    ]
 
 
 healthEducationFormInputsAndTasksForChw : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -3391,7 +2891,7 @@ healthEducationFormInputsAndTasksForChw language assembled form =
             -- so, we do not need to add them explicitly.
             let
                 familyPlanningInput =
-                    healthEducationFormFamilyPlanningInput language True form
+                    healthEducationFormFamilyPlanningInput language SetHealthEducationSubActivityBoolInput True form
 
                 thirdEnconterInputs =
                     [ hemorrhagingInput, familyPlanningInput, breastfeedingInput ]
@@ -5898,10 +5398,8 @@ healthEducationFormWithDefault form saved =
                 , mentalHealth = or form.mentalHealth (EverySet.member EducationMentalHealth value.signs |> Just)
                 , earlyMastitisOrEngorgment = or form.earlyMastitisOrEngorgment (EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just)
                 , mastitis = or form.mastitis (EverySet.member EducationMastitis value.signs |> Just)
-
-                -- Signs that do not participate at initial phase. Resolved directly from value.
-                , hivDetectableViralLoad = Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2
-                , diabetes = Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2
+                , hivDetectableViralLoad = or form.hivDetectableViralLoad (EverySet.member EducationHIVDetectableViralLoad value.signs |> Just)
+                , diabetes = or form.diabetes (EverySet.member EducationDiabetes value.signs |> Just)
                 }
             )
 
@@ -5931,6 +5429,8 @@ toHealthEducationValue saved form =
     , ifNullableTrue EducationMentalHealth form.mentalHealth
     , ifNullableTrue EducationEarlyMastitisOrEngorgment form.earlyMastitisOrEngorgment
     , ifNullableTrue EducationMastitis form.mastitis
+    , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
+    , ifNullableTrue EducationDiabetes form.diabetes
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

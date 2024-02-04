@@ -110,16 +110,19 @@ import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderType(..))
 import Pages.Prenatal.Activity.Types
     exposing
-        ( EarlyMastitisOrEngorgmentReliefMethod(..)
-        , ExaminationTask(..)
-        , HeartburnReliefMethod(..)
+        ( ExaminationTask(..)
         , HistoryTask(..)
-        , LegCrampsReliefMethod(..)
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.RecurrentActivity.Types
+import Pages.Prenatal.Types
+    exposing
+        ( EarlyMastitisOrEngorgmentReliefMethod(..)
+        , HeartburnReliefMethod(..)
+        , LegCrampsReliefMethod(..)
+        )
 import Pages.Report.Model
     exposing
         ( LabResultsCurrentMode(..)

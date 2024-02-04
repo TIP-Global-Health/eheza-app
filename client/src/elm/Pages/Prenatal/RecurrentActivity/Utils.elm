@@ -517,60 +517,11 @@ examinationTasksCompletedFromTotal assembled data task =
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled form =
-    let
-        detectableViralLoad =
-            if diagnosed DiagnosisHIVDetectableViralLoadRecurrentPhase assembled then
-                ( [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.hivDetectableViralLoad
-                        (SetHealthEducationBoolInput (\value form_ -> { form_ | hivDetectableViralLoad = Just value }))
-                        "hiv-detectable-viral-load"
-                        Nothing
-                  ]
-                , Just form.hivDetectableViralLoad
-                )
-
-            else
-                ( [], Nothing )
-
-        diabetes =
-            if diagnosedAnyOf diabetesDiagnosesRecurrentPhase assembled then
-                let
-                    header =
-                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase assembled then
-                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
-
-                        else
-                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
-                in
-                ( [ viewCustomLabel language header "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationDiabetesInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.diabetes
-                        (SetHealthEducationBoolInput (\value form_ -> { form_ | diabetes = Just value }))
-                        "diabetes"
-                        Nothing
-                  ]
-                , Just form.diabetes
-                )
-
-            else
-                ( [], Nothing )
-
-        inputsAndTasks =
-            [ detectableViralLoad
-            , diabetes
-            ]
-    in
-    ( List.concatMap Tuple.first inputsAndTasks
-    , List.map Tuple.second inputsAndTasks
-        |> Maybe.Extra.values
-    )
+    healthEducationFormInputsAndTasksForNurse language
+        PrenatalEncounterPhaseRecurrent
+        SetHealthEducationBoolInput
+        assembled
+        form
 
 
 toHealthEducationValueWithDefault : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
@@ -590,19 +541,19 @@ healthEducationFormWithDefault form saved =
             (\value ->
                 { hivDetectableViralLoad = or form.hivDetectableViralLoad (Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2)
                 , diabetes = or form.diabetes (Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2)
+                , positiveHIV = or form.positiveHIV (Maybe.map (EverySet.member EducationPositiveHIV) value.signsPhase2)
+                , saferSexHIV = or form.saferSexHIV (Maybe.map (EverySet.member EducationSaferSexHIV) value.signsPhase2)
+                , partnerTesting = or form.partnerTesting (Maybe.map (EverySet.member EducationPartnerTesting) value.signsPhase2)
+                , familyPlanning = or form.familyPlanning (Maybe.map (EverySet.member EducationFamilyPlanning) value.signsPhase2)
 
                 -- Signs that do not participate at recurrent phase. Resolved directly from value.
                 , expectations = EverySet.member EducationExpectations value.signs |> Just
                 , visitsReview = EverySet.member EducationVisitsReview value.signs |> Just
                 , warningSigns = EverySet.member EducationWarningSigns value.signs |> Just
                 , hemorrhaging = EverySet.member EducationHemorrhaging value.signs |> Just
-                , familyPlanning = EverySet.member EducationFamilyPlanning value.signs |> Just
                 , breastfeeding = EverySet.member EducationBreastfeeding value.signs |> Just
                 , immunization = EverySet.member EducationImmunization value.signs |> Just
                 , hygiene = EverySet.member EducationHygiene value.signs |> Just
-                , positiveHIV = EverySet.member EducationPositiveHIV value.signs |> Just
-                , saferSexHIV = EverySet.member EducationSaferSexHIV value.signs |> Just
-                , partnerTesting = EverySet.member EducationPartnerTesting value.signs |> Just
                 , nauseaVomiting = EverySet.member EducationNauseaVomiting value.signs |> Just
                 , legCramps = EverySet.member EducationLegCramps value.signs |> Just
                 , lowBackPain = EverySet.member EducationLowBackPain value.signs |> Just
@@ -621,7 +572,11 @@ healthEducationFormWithDefault form saved =
 
 toHealthEducationValue : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
 toHealthEducationValue saved form =
-    [ ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
+    [ ifNullableTrue EducationPositiveHIV form.positiveHIV
+    , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
+    , ifNullableTrue EducationPartnerTesting form.partnerTesting
+    , ifNullableTrue EducationFamilyPlanning form.familyPlanning
+    , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
     , ifNullableTrue EducationDiabetes form.diabetes
     ]
         |> Maybe.Extra.combine
