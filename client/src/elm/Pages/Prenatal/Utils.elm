@@ -512,11 +512,8 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , metronidazole = or form.metronidazole (medicationDistributionResolveFromValue allowedSigns value Metronidazole)
                 , vitaminA = or form.vitaminA (medicationDistributionResolveFromValue allowedSigns value VitaminA)
                 , paracetamol = or form.paracetamol (medicationDistributionResolveFromValue allowedSigns value Paracetamol)
-
-                -- Following 2 do not participate at initial phase, therefore,
-                -- resolved directly from value.
-                , iron = EverySet.member Iron value.distributionSigns |> Just
-                , folicAcid = EverySet.member FolicAcid value.distributionSigns |> Just
+                , iron = or form.iron (medicationDistributionResolveFromValue allowedSigns value Iron)
+                , folicAcid = or form.folicAcid (medicationDistributionResolveFromValue allowedSigns value FolicAcid)
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
@@ -540,14 +537,14 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 in
                 { iron = or form.iron (medicationDistributionResolveFromValue allowedSigns value Iron)
                 , folicAcid = or form.folicAcid (medicationDistributionResolveFromValue allowedSigns value FolicAcid)
+                , dolutegravir = or form.dolutegravir (medicationDistributionResolveFromValue allowedSigns value Dolutegravir)
+                , tdf3tc = or form.tdf3tc (medicationDistributionResolveFromValue allowedSigns value TDF3TC)
 
-                -- Following 9 do not participate at recurrent phase, therefore,
+                -- Following 7 do not participate at recurrent phase, therefore,
                 -- resolved directly from value.
                 , mebendezole = EverySet.member Mebendezole value.distributionSigns |> Just
                 , tenofovir = EverySet.member Tenofovir value.distributionSigns |> Just
                 , lamivudine = EverySet.member Lamivudine value.distributionSigns |> Just
-                , dolutegravir = EverySet.member Dolutegravir value.distributionSigns |> Just
-                , tdf3tc = EverySet.member TDF3TC value.distributionSigns |> Just
                 , ceftriaxone = EverySet.member Ceftriaxone value.distributionSigns |> Just
                 , azithromycin = EverySet.member Azithromycin value.distributionSigns |> Just
                 , metronidazole = EverySet.member Metronidazole value.distributionSigns |> Just
@@ -722,21 +719,33 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
 
                     else
                         ( [], 0, 0 )
+
+                ( malariaInputs, malariaCompleted, malariaActive ) =
+                    if diagnosedMalariaByPhase phase assembled then
+                        resolveRecommendedTreatmentForMalariaInputsAndTasks language
+                            currentDate
+                            setRecommendedTreatmentSignMsg
+                            assembled
+                            form
+
+                    else
+                        ( [], 0, 0 )
+
+                ( syphilisInputs, syphilisCompleted, syphilisActive ) =
+                    if diagnosedSyphilisByPhase phase assembled then
+                        resolveRecommendedTreatmentForSyphilisInputsAndTasks language
+                            currentDate
+                            setRecommendedTreatmentSignMsg
+                            recommendedTreatmentSignsForSyphilis
+                            assembled
+                            form
+
+                    else
+                        ( [], 0, 0 )
             in
             case phase of
                 PrenatalEncounterPhaseInitial ->
                     let
-                        ( malariaInputs, malariaCompleted, malariaActive ) =
-                            if diagnosedMalariaByPhase PrenatalEncounterPhaseInitial assembled then
-                                resolveRecommendedTreatmentForMalariaInputsAndTasks language
-                                    currentDate
-                                    setRecommendedTreatmentSignMsg
-                                    assembled
-                                    form
-
-                            else
-                                ( [], 0, 0 )
-
                         ( heartburnInputs, heartburnCompleted, heartburnActive ) =
                             if diagnosed DiagnosisHeartburn assembled then
                                 resolveRecommendedTreatmentForHeartburnInputsAndTasks language
@@ -788,42 +797,32 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                                 ( [], 0, 0 )
                     in
                     ( malariaInputs
-                        ++ heartburnInputs
                         ++ hypertensionInputs
+                        ++ syphilisInputs
+                        ++ heartburnInputs
                         ++ urinaryTractInfectionInputs
                         ++ candidiasisInputs
                         ++ mastitisInputs
                     , malariaCompleted
-                        + heartburnCompleted
                         + hypertensionCompleted
+                        + syphilisCompleted
+                        + heartburnCompleted
                         + urinaryTractInfectionCompleted
                         + candidiasisCompleted
                         + mastitisCompleted
                     , malariaActive
-                        + heartburnActive
+                        + syphilisActive
                         + hypertensionActive
+                        + heartburnActive
                         + urinaryTractInfectionActive
                         + candidiasisActive
                         + mastitisActive
                     )
 
                 PrenatalEncounterPhaseRecurrent ->
-                    let
-                        ( syphilisInputs, syphilisCompleted, syphilisActive ) =
-                            if diagnosedSyphilisByPhase PrenatalEncounterPhaseRecurrent assembled then
-                                resolveRecommendedTreatmentForSyphilisInputsAndTasks language
-                                    currentDate
-                                    setRecommendedTreatmentSignMsg
-                                    recommendedTreatmentSignsForSyphilis
-                                    assembled
-                                    form
-
-                            else
-                                ( [], 0, 0 )
-                    in
-                    ( syphilisInputs ++ hypertensionInputs
-                    , syphilisCompleted + hypertensionCompleted
-                    , syphilisActive + hypertensionActive
+                    ( malariaInputs ++ syphilisInputs ++ hypertensionInputs
+                    , malariaCompleted + syphilisCompleted + hypertensionCompleted
+                    , malariaActive + syphilisActive + hypertensionActive
                     )
     in
     ( inputsByMedications ++ inputsByDiagnoses

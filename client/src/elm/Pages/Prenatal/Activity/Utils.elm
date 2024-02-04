@@ -576,12 +576,13 @@ nextStepsTaskCompleted currentDate assembled task =
 
         NextStepsMedicationDistribution ->
             let
-                medicationDistributionRequired =
-                    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
-                        |> List.isEmpty
-                        |> not
-
                 medicationDistributionCompleted =
+                    let
+                        medicationDistributionRequired =
+                            resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
+                                |> List.isEmpty
+                                |> not
+                    in
                     if medicationDistributionRequired then
                         let
                             allowedSigns =
@@ -659,8 +660,8 @@ nextStepsTaskCompleted currentDate assembled task =
             medicationDistributionCompleted
                 && malariaTreatmentCompleted
                 && syphilisTreatmentCompleted
-                && heartburnTreatmentCompleted
                 && hypertensionTreatmentCompleted
+                && heartburnTreatmentCompleted
                 && candidiasisTreatmentCompleted
                 && urinaryTractInfectionTreatmentCompleted
                 && mastitisTreatmentCompleted

@@ -342,12 +342,13 @@ nextStepsTaskCompleted currentDate assembled task =
 
         NextStepsMedicationDistribution ->
             let
-                medicationDistributionRequired =
-                    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
-                        |> List.isEmpty
-                        |> not
-
                 medicationDistributionCompleted =
+                    let
+                        medicationDistributionRequired =
+                            resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
+                                |> List.isEmpty
+                                |> not
+                    in
                     if medicationDistributionRequired then
                         let
                             allowedSigns =
