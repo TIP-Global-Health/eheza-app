@@ -20,6 +20,7 @@ import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -213,7 +214,7 @@ viewStepRecordSymptoms language currentDate contact data =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
