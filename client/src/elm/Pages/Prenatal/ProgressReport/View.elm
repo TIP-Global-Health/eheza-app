@@ -143,6 +143,14 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
         isResultsReviewer =
             -- A nurse.
             (not isChw && not isLabTech)
+                && -- Access was perfomed from case  managament.
+                   (case initiator of
+                        InitiatorCaseManagement _ ->
+                            True
+
+                        _ ->
+                            False
+                   )
                 && -- Labs results review was requested.
                    (getMeasurementValueFunc assembled.measurements.labsResults
                         |> Maybe.map (.reviewState >> (==) (Just LabsResultsReviewRequested))
