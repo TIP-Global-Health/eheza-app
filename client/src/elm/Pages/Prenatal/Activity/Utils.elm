@@ -1818,6 +1818,8 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 && diagnosedPreviouslyAnyOf
                     [ DiagnosisMalariaWithAnemiaInitialPhase
                     , DiagnosisMalariaWithAnemiaRecurrentPhase
+                    , DiagnosisMalariaWithSevereAnemiaInitialPhase
+                    , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
                     ]
                     assembled
 
