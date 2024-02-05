@@ -37,7 +37,6 @@ type alias Person =
 type HIVStatus
     = HIVExposedInfant
     | Negative
-    | NegativeDiscordantCouple
     | Positive
     | Unknown
 
@@ -46,7 +45,6 @@ allHivStatuses : List HIVStatus
 allHivStatuses =
     [ HIVExposedInfant
     , Negative
-    , NegativeDiscordantCouple
     , Positive
     , Unknown
     ]

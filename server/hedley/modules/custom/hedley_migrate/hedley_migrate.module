@@ -557,7 +557,6 @@ function _hedley_migrate_preprocess_mother($node, Generator $faker) {
   $hiv_status = [
     'hiv-exposed-infant',
     'negative',
-    'negative-dc',
     'positive',
     'unknown',
   ];
