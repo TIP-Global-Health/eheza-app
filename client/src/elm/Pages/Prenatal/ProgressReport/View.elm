@@ -25,11 +25,13 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
+        , PrenatalRecurrentActivity(..)
         , allMedicalDiagnoses
         , allObstetricalDiagnoses
         , allRiskFactors
@@ -134,6 +136,9 @@ viewContentAndHeader :
     -> Html Msg
 viewContentAndHeader language currentDate site features nurse isChw initiator model assembled =
     let
+        isLabTech =
+            isLabTechnician nurse
+
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
@@ -150,8 +155,8 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
             Just { setReportComponentsMsg = SetReportComponents }
     in
     div [ class "page-report clinical" ] <|
-        [ viewHeader language assembled.id initiator model
-        , viewContent language currentDate site features nurse isChw initiator model assembled
+        [ viewHeader language assembled.id isLabTech initiator model
+        , viewContent language currentDate site features isChw isLabTech initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
@@ -166,21 +171,25 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> PrenatalProgressReportInitiator -> Model -> Html Msg
-viewHeader language id initiator model =
+viewHeader : Language -> PrenatalEncounterId -> Bool -> PrenatalProgressReportInitiator -> Model -> Html Msg
+viewHeader language id isLabTech initiator model =
     let
         label =
-            Maybe.map
-                (\mode ->
-                    case mode of
-                        LabResultsCurrent _ ->
-                            Translate.LabResults
+            if isLabTech then
+                Translate.LabResults
 
-                        LabResultsHistory _ ->
-                            Translate.LabHistory
-                )
-                model.labResultsMode
-                |> Maybe.withDefault Translate.AntenatalProgressReport
+            else
+                Maybe.map
+                    (\mode ->
+                        case mode of
+                            LabResultsCurrent _ ->
+                                Translate.LabResults
+
+                            LabResultsHistory _ ->
+                                Translate.LabHistory
+                    )
+                    model.labResultsMode
+                    |> Maybe.withDefault Translate.AntenatalProgressReport
 
         backIcon =
             let
@@ -205,7 +214,11 @@ viewHeader language id initiator model =
                                 LabResultsCurrent currentMode ->
                                     case currentMode of
                                         LabResultsCurrentMain ->
-                                            SetLabResultsMode Nothing
+                                            if isLabTech then
+                                                defaultAction
+
+                                            else
+                                                SetLabResultsMode Nothing
 
                                         LabResultsCurrentDipstickShort ->
                                             backToCurrentMsg LabResultsCurrentMain
@@ -227,7 +240,19 @@ viewHeader language id initiator model =
                     iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId)
 
                 InitiatorRecurrentEncounterPage prenatalEncounterId ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage prenatalEncounterId)
+                    let
+                        action =
+                            if isLabTech then
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalRecurrentActivityPage prenatalEncounterId LabResults
+
+                            else
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalRecurrentEncounterPage prenatalEncounterId
+                    in
+                    iconForView <| goBackActionByLabResultsState action
 
                 InitiatorNewEncounter _ ->
                     emptyNode
@@ -248,13 +273,13 @@ viewContent :
     -> NominalDate
     -> Site
     -> EverySet SiteFeature
-    -> Nurse
+    -> Bool
     -> Bool
     -> PrenatalProgressReportInitiator
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate site features nurse isChw initiator model assembled =
+viewContent language currentDate site features isChw isLabTech initiator model assembled =
     let
         derivedContent =
             let
@@ -272,17 +297,56 @@ viewContent language currentDate site features nurse isChw initiator model assem
                     , hba1c = False
                     , lipidPanel = False
                     }
-            in
-            case model.labResultsMode of
-                Just mode ->
-                    case mode of
-                        LabResultsCurrent currentMode ->
-                            [ generateLabsResultsPaneData currentDate assembled
-                                |> viewLabResultsPane language currentDate currentMode SetLabResultsMode labResultsConfig
-                            ]
 
-                        LabResultsHistory historyMode ->
-                            [ viewLabResultsHistoryPane language currentDate historyMode ]
+                labResultsMode =
+                    if isLabTech then
+                        -- Lab thechnician goes straight to main page of lab results.
+                        Maybe.Extra.or model.labResultsMode (Just <| LabResultsCurrent LabResultsCurrentMain)
+
+                    else
+                        model.labResultsMode
+            in
+            case labResultsMode of
+                Just mode ->
+                    let
+                        resultsPane =
+                            case mode of
+                                LabResultsCurrent currentMode ->
+                                    generateLabsResultsPaneData currentDate assembled
+                                        |> viewLabResultsPane language currentDate isLabTech currentMode SetLabResultsMode labResultsConfig
+
+                                LabResultsHistory historyMode ->
+                                    viewLabResultsHistoryPane language currentDate historyMode
+
+                        bottomActions =
+                            case initiator of
+                                InitiatorRecurrentEncounterPage id ->
+                                    if isLabTech then
+                                        div [ class "two ui buttons" ]
+                                            [ button
+                                                [ class "ui primary fluid button"
+                                                , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
+                                                ]
+                                                [ text <| translate language Translate.SubmitResults ]
+                                            , button
+                                                [ class "ui primary fluid button"
+                                                , onClick <|
+                                                    SetActivePage <|
+                                                        UserPage <|
+                                                            PrenatalRecurrentActivityPage id LabResults
+                                                ]
+                                                [ text <| translate language Translate.EditResults ]
+                                            ]
+
+                                    else
+                                        emptyNode
+
+                                _ ->
+                                    emptyNode
+                    in
+                    [ resultsPane
+                    , bottomActions
+                    ]
 
                 Nothing ->
                     let
@@ -293,7 +357,7 @@ viewContent language currentDate site features nurse isChw initiator model assem
                             Maybe.map
                                 (\_ ->
                                     generateLabsResultsPaneData currentDate assembled
-                                        |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
+                                        |> viewLabResultsPane language currentDate isLabTech LabResultsCurrentMain SetLabResultsMode labResultsConfig
                                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalLabsResults)
                                 )
                                 model.components
@@ -345,7 +409,7 @@ viewContent language currentDate site features nurse isChw initiator model assem
                                 InitiatorRecurrentEncounterPage _ ->
                                     let
                                         ( _, pendingActivities ) =
-                                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities nurse
+                                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
                                                 |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
                                                 |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
 

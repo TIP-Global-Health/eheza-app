@@ -27,6 +27,7 @@ import Backend.NutritionEncounter.Utils
         , getWellChildEncountersForParticipant
         )
 import Backend.Person.Utils exposing (generateFullName)
+import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
@@ -976,12 +977,20 @@ viewPrenatalLabsEntry :
     -> PrenatalLabsEntryData
     -> Html Msg
 viewPrenatalLabsEntry language isLabTech data =
+    let
+        targetPage =
+            if isLabTech then
+                PrenatalRecurrentActivityPage data.encounterId LabResults
+
+            else
+                PrenatalRecurrentEncounterPage data.encounterId
+    in
     viewLabsEntry language
         isLabTech
         data.personName
         data.state
         data.label
-        (PrenatalRecurrentEncounterPage data.encounterId)
+        targetPage
 
 
 viewLabsEntry :

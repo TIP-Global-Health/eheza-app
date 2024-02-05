@@ -2996,6 +2996,10 @@ viewHIVTestUniversalForm :
     -> ( Html msg, Int, Int )
 viewHIVTestUniversalForm language currentDate configInitial configPerformed form =
     let
+        isLabTech =
+            -- Only nurses perform initial phase of prenatal encounter.
+            False
+
         ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
             contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskHIVTest form
 
@@ -3041,6 +3045,7 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed form
                                     (\immediateResult ->
                                         if immediateResult == True then
                                             hivResultInputsAndTasks language
+                                                isLabTech
                                                 configPerformed.setHIVTestResultMsg
                                                 configInitial.setHIVTestFormBoolInputMsg
                                                 form.testResult
@@ -3081,14 +3086,16 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed form
 hivResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
     -> (String -> msg)
     -> ((Bool -> HIVResultForm -> HIVResultForm) -> Bool -> msg)
     -> HIVResultForm
     -> ( Html msg, Int, Int )
-hivResultFormAndTasks language currentDate setHIVTestResultMsg setHIVTestFormBoolInputMsg form =
+hivResultFormAndTasks language currentDate isLabTech setHIVTestResultMsg setHIVTestFormBoolInputMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             hivResultInputsAndTasks language
+                isLabTech
                 setHIVTestResultMsg
                 setHIVTestFormBoolInputMsg
                 form.testResult
@@ -3107,6 +3114,7 @@ hivResultFormAndTasks language currentDate setHIVTestResultMsg setHIVTestFormBoo
 
 hivResultInputsAndTasks :
     Language
+    -> Bool
     -> (String -> msg)
     ->
         ((Bool
@@ -3142,8 +3150,11 @@ hivResultInputsAndTasks :
     -> Maybe Bool
     -> Maybe Bool
     -> ( List (Html msg), Int, Int )
-hivResultInputsAndTasks language setHIVTestResultMsg setHIVTestFormBoolInputMsg testResult hivProgramHC partnerHIVPositive partnerTakingARV partnerSurpressedViralLoad =
+hivResultInputsAndTasks language isLabTech setTestResultMsg setHIVTestFormBoolInputMsg testResult hivProgramHC partnerHIVPositive partnerTakingARV partnerSurpressedViralLoad =
     let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            standardTestResultInputsAndTasks language setTestResultMsg testResult TaskHIVTest
+
         ( hivSignsSection, hivSignsTasksCompleted, hivSignsTasksTotal ) =
             let
                 emptySection =
@@ -3252,17 +3263,156 @@ hivResultInputsAndTasks language setHIVTestResultMsg setHIVTestFormBoolInputMsg 
                 testResult
                 |> Maybe.withDefault emptySection
     in
-    ( viewSelectInput language
-        (Translate.LaboratoryTaskResult TaskHIVTest)
-        testResult
-        Translate.TestResult
-        testResultToString
-        [ TestPositive, TestNegative, TestIndeterminate ]
-        setHIVTestResultMsg
+    ( testResultSection
         ++ hivSignsSection
-    , taskCompleted testResult + hivSignsTasksCompleted
-    , 1 + hivSignsTasksTotal
+    , testResultTasksCompleted + hivSignsTasksCompleted
+    , testResultTasksTotal + hivSignsTasksTotal
     )
+
+
+hivResultFollowUpInputsAndTasks :
+    Language
+    ->
+        ((Bool
+          ->
+            { f
+                | hivProgramHC : Maybe Bool
+                , hivProgramHCDirty : Bool
+                , partnerHIVPositive : Maybe Bool
+                , partnerHIVPositiveDirty : Bool
+                , partnerSurpressedViralLoad : Maybe Bool
+                , partnerSurpressedViralLoadDirty : Bool
+                , partnerTakingARV : Maybe Bool
+                , partnerTakingARVDirty : Bool
+            }
+          ->
+            { f
+                | hivProgramHC : Maybe Bool
+                , hivProgramHCDirty : Bool
+                , partnerHIVPositive : Maybe Bool
+                , partnerHIVPositiveDirty : Bool
+                , partnerSurpressedViralLoad : Maybe Bool
+                , partnerSurpressedViralLoadDirty : Bool
+                , partnerTakingARV : Maybe Bool
+                , partnerTakingARVDirty : Bool
+            }
+         )
+         -> Bool
+         -> msg
+        )
+    -> Maybe TestResult
+    -> Maybe Bool
+    -> Maybe Bool
+    -> Maybe Bool
+    -> Maybe Bool
+    -> ( List (Html msg), Int, Int )
+hivResultFollowUpInputsAndTasks language setHIVTestFormBoolInputMsg testResult hivProgramHC partnerHIVPositive partnerTakingARV partnerSurpressedViralLoad =
+    let
+        emptySection =
+            ( [], 0, 0 )
+    in
+    Maybe.map
+        (\testResult_ ->
+            case testResult_ of
+                TestPositive ->
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                { form_ | hivProgramHC = Just value, hivProgramHCDirty = True }
+                    in
+                    ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion HIVProgramHC
+                      , viewBoolInput
+                            language
+                            hivProgramHC
+                            (setHIVTestFormBoolInputMsg updateFunc)
+                            "hiv-program"
+                            Nothing
+                      ]
+                    , taskCompleted hivProgramHC
+                    , 1
+                    )
+
+                TestNegative ->
+                    let
+                        partnerHIVPositiveUpdateFunc =
+                            \value form_ ->
+                                { form_
+                                    | partnerHIVPositive = Just value
+                                    , partnerHIVPositiveDirty = True
+                                    , partnerTakingARV = Nothing
+                                    , partnerTakingARVDirty = True
+                                    , partnerSurpressedViralLoad = Nothing
+                                    , partnerSurpressedViralLoadDirty = True
+                                }
+
+                        ( partnerHIVStatusSection, partnerHIVStatusTasksCompleted, partnerHIVStatusTasksTotal ) =
+                            if partnerHIVPositive == Just True then
+                                let
+                                    partnerTakingARVUpdateFunc =
+                                        \value form_ ->
+                                            { form_
+                                                | partnerTakingARV = Just value
+                                                , partnerTakingARVDirty = True
+                                                , partnerSurpressedViralLoad = Nothing
+                                                , partnerSurpressedViralLoadDirty = True
+                                            }
+
+                                    ( partnerARVSection, partnerARVTasksCompleted, partnerARVTasksTotal ) =
+                                        if partnerTakingARV == Just True then
+                                            let
+                                                partnerSurpressedViralLoadUpdateFunc =
+                                                    \value form_ ->
+                                                        { form_ | partnerSurpressedViralLoad = Just value, partnerSurpressedViralLoadDirty = True }
+                                            in
+                                            ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerSurpressedViralLoad
+                                              , viewBoolInput
+                                                    language
+                                                    partnerSurpressedViralLoad
+                                                    (setHIVTestFormBoolInputMsg partnerSurpressedViralLoadUpdateFunc)
+                                                    "partner-surpressed-viral-load"
+                                                    Nothing
+                                              ]
+                                            , taskCompleted partnerSurpressedViralLoad
+                                            , 1
+                                            )
+
+                                        else
+                                            emptySection
+                                in
+                                ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerTakingARV
+                                  , viewBoolInput
+                                        language
+                                        partnerTakingARV
+                                        (setHIVTestFormBoolInputMsg partnerTakingARVUpdateFunc)
+                                        "partner-taking-arv"
+                                        Nothing
+                                  ]
+                                    ++ partnerARVSection
+                                , taskCompleted partnerTakingARV + partnerARVTasksCompleted
+                                , 1 + partnerARVTasksTotal
+                                )
+
+                            else
+                                emptySection
+                    in
+                    ( [ viewQuestionLabel language <| Translate.PrenatalHIVSignQuestion PartnerHIVPositive
+                      , viewBoolInput
+                            language
+                            partnerHIVPositive
+                            (setHIVTestFormBoolInputMsg partnerHIVPositiveUpdateFunc)
+                            "partner-hiv-positive"
+                            Nothing
+                      ]
+                        ++ partnerHIVStatusSection
+                    , taskCompleted partnerHIVPositive + partnerHIVStatusTasksCompleted
+                    , 1 + partnerHIVStatusTasksTotal
+                    )
+
+                TestIndeterminate ->
+                    emptySection
+        )
+        testResult
+        |> Maybe.withDefault emptySection
 
 
 viewMalariaTestForm :
@@ -4621,6 +4771,10 @@ viewSyphilisTestForm :
     -> ( Html msg, Int, Int )
 viewSyphilisTestForm language currentDate configInitial configPerformed form =
     let
+        isLabTech =
+            -- Only nurses perform initial phase of prenatal encounter.
+            False
+
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskSyphilisTest form
 
@@ -4655,8 +4809,9 @@ viewSyphilisTestForm language currentDate configInitial configPerformed form =
                                 (\immediateResult ->
                                     if immediateResult == True then
                                         syphilisResultInputsAndTasks language
-                                            configPerformed.setIllnessSymptomMsg
+                                            isLabTech
                                             configPerformed.setSyphilisTestResultMsg
+                                            configPerformed.setIllnessSymptomMsg
                                             form.testResult
                                             form.symptoms
 
@@ -4689,16 +4844,18 @@ viewSyphilisTestForm language currentDate configInitial configPerformed form =
 syphilisResultFormAndTasks :
     Language
     -> NominalDate
-    -> (IllnessSymptom -> msg)
+    -> Bool
     -> (String -> msg)
+    -> (IllnessSymptom -> msg)
     -> SyphilisResultForm encounterId
     -> ( Html msg, Int, Int )
-syphilisResultFormAndTasks language currentDate setIllnessSymptomMsg setSyphilisTestResultMsg form =
+syphilisResultFormAndTasks language currentDate isLabTech setTestResultMsg setIllnessSymptomMsg form =
     let
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
             syphilisResultInputsAndTasks language
+                isLabTech
+                setTestResultMsg
                 setIllnessSymptomMsg
-                setSyphilisTestResultMsg
                 form.testResult
                 form.symptoms
     in
@@ -4712,46 +4869,53 @@ syphilisResultFormAndTasks language currentDate setIllnessSymptomMsg setSyphilis
 
 syphilisResultInputsAndTasks :
     Language
-    -> (IllnessSymptom -> msg)
+    -> Bool
     -> (String -> msg)
+    -> (IllnessSymptom -> msg)
     -> Maybe TestResult
     -> Maybe (List IllnessSymptom)
     -> ( List (Html msg), Int, Int )
-syphilisResultInputsAndTasks language setIllnessSymptomMsg setSyphilisTestResultMsg testResult symptoms =
+syphilisResultInputsAndTasks language isLabTech setTestResultMsg setIllnessSymptomMsg testResult symptoms =
     let
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            standardTestResultInputsAndTasks language setTestResultMsg testResult TaskSyphilisTest
+
         ( symptomsSection, symptomsTasksCompleted, symptomsTasksTotal ) =
-            if testResult == Just TestPositive then
-                ( [ viewLabel language Translate.SelectIllnessSymptoms
-                  , viewCheckBoxMultipleSelectInput language
-                        [ IllnessSymptomHeadache
-                        , IllnessSymptomVisionChanges
-                        , IllnessSymptomRash
-                        , IllnessSymptomPainlessUlcerMouth
-                        , IllnessSymptomPainlessUlcerGenitals
-                        ]
-                        []
-                        (Maybe.withDefault [] symptoms)
-                        (Just NoIllnessSymptoms)
-                        setIllnessSymptomMsg
-                        Translate.IllnessSymptom
-                  ]
-                , taskCompleted symptoms
-                , 1
-                )
+            if testResult == Just TestPositive && not isLabTech then
+                syphilisResultFollowUpInputsAndTasks language setIllnessSymptomMsg symptoms
 
             else
                 ( [], 0, 0 )
     in
-    ( viewSelectInput language
-        (Translate.LaboratoryTaskResult TaskSyphilisTest)
-        testResult
-        Translate.TestResult
-        testResultToString
-        [ TestPositive, TestNegative, TestIndeterminate ]
-        setSyphilisTestResultMsg
+    ( testResultSection
         ++ symptomsSection
-    , taskCompleted testResult + symptomsTasksCompleted
-    , 1 + symptomsTasksTotal
+    , testResultTasksCompleted + symptomsTasksCompleted
+    , testResultTasksTotal + symptomsTasksTotal
+    )
+
+
+syphilisResultFollowUpInputsAndTasks :
+    Language
+    -> (IllnessSymptom -> msg)
+    -> Maybe (List IllnessSymptom)
+    -> ( List (Html msg), Int, Int )
+syphilisResultFollowUpInputsAndTasks language setIllnessSymptomMsg symptoms =
+    ( [ viewLabel language Translate.SelectIllnessSymptoms
+      , viewCheckBoxMultipleSelectInput language
+            [ IllnessSymptomHeadache
+            , IllnessSymptomVisionChanges
+            , IllnessSymptomRash
+            , IllnessSymptomPainlessUlcerMouth
+            , IllnessSymptomPainlessUlcerGenitals
+            ]
+            []
+            (Maybe.withDefault [] symptoms)
+            (Just NoIllnessSymptoms)
+            setIllnessSymptomMsg
+            Translate.IllnessSymptom
+      ]
+    , taskCompleted symptoms
+    , 1
     )
 
 

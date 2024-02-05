@@ -10,7 +10,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (bloodSmearResultSet, expectUniversalTestResultTask, testPerformedByValue, vitalsFormWithDefault)
+import Measurement.Utils
+    exposing
+        ( bloodSmearResultSet
+        , expectUniversalTestResultTask
+        , testPerformedByExecutionNote
+        , testPerformedByValue
+        , vitalsFormWithDefault
+        )
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
@@ -106,15 +113,19 @@ laboratoryResultTaskCompleted currentDate assembled task =
         testResultsCompleted getMeasurementFunc getResultFieldFunc =
             getMeasurementFunc assembled.measurements
                 |> getMeasurementValueFunc
-                |> Maybe.andThen getResultFieldFunc
-                |> isJust
+                |> Maybe.map
+                    (\value ->
+                        testPerformedByExecutionNote value.executionNote
+                            && (isJust <| getResultFieldFunc value)
+                    )
+                |> Maybe.withDefault False
     in
     case task of
         TaskPartnerHIVTest ->
-            not <| taskExpected TaskPartnerHIVTest || testResultsCompleted .partnerHIVTest .testResult
+            (not <| taskExpected TaskPartnerHIVTest) || testResultsCompleted .partnerHIVTest .testResult
 
         TaskHIVTest ->
-            not <| taskExpected TaskHIVTest || testResultsCompleted .hivTest .testResult
+            (not <| taskExpected TaskHIVTest) || testResultsCompleted .hivTest .testResult
 
         TaskSyphilisTest ->
             (not <| taskExpected TaskSyphilisTest) || testResultsCompleted .syphilisTest .testResult
@@ -128,12 +139,12 @@ laboratoryResultTaskCompleted currentDate assembled task =
                     getMeasurementValueFunc assembled.measurements.malariaTest
                         |> Maybe.map
                             (\value ->
-                                isJust value.testResult
+                                (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
                                     || bloodSmearResultSet value.bloodSmearResult
                             )
                         |> Maybe.withDefault False
             in
-            not <| taskExpected TaskMalariaTest || resultSet
+            (not <| taskExpected TaskMalariaTest) || resultSet
 
         TaskBloodGpRsTest ->
             (not <| taskExpected TaskBloodGpRsTest) || testResultsCompleted .bloodGpRsTest .bloodGroup

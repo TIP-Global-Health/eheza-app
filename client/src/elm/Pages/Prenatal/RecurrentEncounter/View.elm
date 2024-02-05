@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.PrenatalActivity.Utils
     exposing
         ( getRecurrentActivityIcon
@@ -12,6 +13,7 @@ import Backend.PrenatalEncounter.Model
     exposing
         ( PrenatalProgressReportInitiator(..)
         )
+import Gizra.Html exposing (showIf)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -80,8 +82,11 @@ viewContent language currentDate nurse assembled model =
 viewMainPageContent : Language -> NominalDate -> Nurse -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate nurse assembled model =
     let
+        isLabTech =
+            isLabTechnician nurse
+
         ( completedActivities, pendingActivities ) =
-            getAllActivities nurse
+            getAllActivities isLabTech
                 |> List.filter (expectActivity currentDate assembled)
                 |> List.partition (activityCompleted currentDate assembled)
 
@@ -99,6 +104,7 @@ viewMainPageContent language currentDate nurse assembled model =
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
                 , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
+                    |> showIf (not isLabTech)
                 ]
 
         viewCard activity =
