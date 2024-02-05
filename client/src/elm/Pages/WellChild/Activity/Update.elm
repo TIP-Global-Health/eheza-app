@@ -440,26 +440,37 @@ update currentDate site isChw id db msg model =
 
         PreSaveHeadCircumference personId maybeZscore saved nextTask ->
             let
-                warning =
+                ( warning, warningMessage ) =
+                    let
+                        setEncounterWarningMsg encounterWarning =
+                            Backend.WellChildEncounter.Model.SetWellChildEncounterWarning encounterWarning
+                                |> Backend.Model.MsgWellChildEncounter id
+                                |> App.Model.MsgIndexedDb
+                    in
                     Maybe.map
                         (\zscore ->
                             if zscore > 3 then
-                                WarningHeadCircumferenceMacrocephaly
+                                ( WarningHeadCircumferenceMacrocephaly
+                                , [ setEncounterWarningMsg WarningHeadCircumferenceMacrocephaly ]
+                                )
 
                             else if zscore < -3 then
-                                WarningHeadCircumferenceMicrocephaly
+                                ( WarningHeadCircumferenceMicrocephaly
+                                , [ setEncounterWarningMsg WarningHeadCircumferenceMicrocephaly ]
+                                )
 
                             else
-                                NoHeadCircumferenceWarning
+                                -- Z-score value is within range, so no warning is
+                                -- shown / recorded on encounter.
+                                ( NoHeadCircumferenceWarning, [] )
                         )
                         maybeZscore
-                        |> Maybe.withDefault NoHeadCircumferenceWarning
-
-                setEncounterWarningMsg =
-                    [ Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
-                        |> Backend.Model.MsgWellChildEncounter id
-                        |> App.Model.MsgIndexedDb
-                    ]
+                        |> Maybe.withDefault
+                            ( NoHeadCircumferenceWarning
+                            , -- There's no z-score, meaning that measurement was not taken.
+                              -- Therefore, we set appropriate encounter warning.
+                              [ setEncounterWarningMsg NoHeadCircumferenceWarning ]
+                            )
 
                 extraMsgs =
                     -- If there's a warning, we show warning popup.
@@ -483,7 +494,7 @@ update currentDate site isChw id db msg model =
             in
             ( model
             , Cmd.none
-            , setEncounterWarningMsg
+            , warningMessage
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 

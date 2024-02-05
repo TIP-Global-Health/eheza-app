@@ -10,6 +10,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, 
 import Backend.Measurement.Model
     exposing
         ( Call114Sign
+        , ChildNutritionSign
         , DangerSign
         , FamilyPlanningSign
         , Gender
@@ -23,6 +24,7 @@ import Backend.Measurement.Model
         , TestResult
         )
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning, WellChildEncounterType)
@@ -38,6 +40,8 @@ type alias AssembledData =
     , pmtctData : List PMTCTDataItem
     , spvData : List SPVDataItem
     , childScoreboardData : List ChildScoreboardDataItem
+    , nutritionIndividualData : List NutritionIndividualDataItem
+    , nutritionGroupData : List NutritionGroupDataItem
     , nutritionPageData : NutritionPageData
     }
 
@@ -71,6 +75,8 @@ type alias DashboardStatsRaw =
     , pmtctData : List PMTCTDataItem
     , spvData : List SPVDataItem
     , childScoreboardData : List ChildScoreboardDataItem
+    , nutritionIndividualData : List NutritionIndividualDataItem
+    , nutritionGroupData : List NutritionGroupDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
@@ -95,6 +101,8 @@ emptyModel =
     , pmtctData = []
     , spvData = []
     , childScoreboardData = []
+    , nutritionIndividualData = []
+    , nutritionGroupData = []
     , villagesWithResidents = Dict.empty
     , timestamp = ""
     , cacheHash = ""
@@ -346,6 +354,11 @@ type alias SPVEncounterDataItem =
     { startDate : NominalDate
     , encounterType : WellChildEncounterType
     , warnings : EverySet EncounterWarning
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
     , bcgImminizationDates : EverySet NominalDate
     , opvImminizationDates : EverySet NominalDate
     , dtpImminizationDates : EverySet NominalDate
@@ -377,4 +390,56 @@ type alias ChildScoreboardEncounterDataItem =
     , rotarixImminizationDates : EverySet NominalDate
     , ipvImminizationDates : EverySet NominalDate
     , mrImminizationDates : EverySet NominalDate
+    }
+
+
+type alias NutritionIndividualDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , encounters : List NutritionIndividualEncounterDataItem
+    }
+
+
+type alias NutritionIndividualEncounterDataItem =
+    { startDate : NominalDate
+    , encounterType : NutritionEncounterType
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
+    }
+
+
+type alias NutritionGroupDataItem =
+    { identifier : PersonIdentifier
+    , encounters : List NutritionGroupEncounterDataItem
+    }
+
+
+type alias NutritionGroupEncounterDataItem =
+    { startDate : NominalDate
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
+    }
+
+
+type alias NutritionDataItem =
+    { identifier : PersonIdentifier
+    , encounters : List NutritionEncounterDataItem
+    }
+
+
+type alias NutritionEncounterDataItem =
+    { startDate : NominalDate
+    , warnings : EverySet EncounterWarning
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
     }

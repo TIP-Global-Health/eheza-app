@@ -145,6 +145,8 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     , pmtctData = generateFilteredData .pmtctData stats selectedVillageFilter
     , spvData = generateFilteredData .spvData stats selectedVillageFilter
     , childScoreboardData = generateFilteredData .childScoreboardData stats selectedVillageFilter
+    , nutritionIndividualData = generateFilteredData .nutritionIndividualData stats selectedVillageFilter
+    , nutritionGroupData = generateFilteredData .nutritionGroupData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 
@@ -1424,7 +1426,7 @@ applyTotalBeneficiariesDenomination : Dict Int Int -> Dict Int TotalBeneficiarie
 applyTotalBeneficiariesDenomination beneficiariesPerMonthsDict totalBeneficiariesDict =
     let
         applyDenomination number denominator =
-            ceiling (100 * toFloat number / toFloat denominator)
+            round (100 * toFloat number / toFloat denominator)
     in
     totalBeneficiariesDict
         |> Dict.map
