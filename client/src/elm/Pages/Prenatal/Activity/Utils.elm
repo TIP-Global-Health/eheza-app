@@ -1700,14 +1700,13 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
                 |> Maybe.withDefault False
 
-        diabetesDiagnosedRecurrentPhase =
+        diabetesDiagnosedAnyPhase =
             getMeasurementValueFunc measurements.randomBloodSugarTest
                 |> Maybe.map
                     (\value ->
                         let
                             bySugarCount =
                                 diabetesBySugarCount value
-                                    && (not <| immediateResult .randomBloodSugarTest)
 
                             byUrineGlucose =
                                 if testPerformedByExecutionNote value.executionNote then
@@ -1717,11 +1716,9 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                                 else
                                     -- If random blood sugar test was not perfomed, we determine by
                                     -- glucose level at urine dipstick test.
-                                    (getMeasurementValueFunc measurements.urineDipstickTest
+                                    getMeasurementValueFunc measurements.urineDipstickTest
                                         |> Maybe.map diabetesByUrineGlucose
                                         |> Maybe.withDefault False
-                                    )
-                                        && (not <| immediateResult .urineDipstickTest)
                         in
                         bySugarCount || byUrineGlucose
                     )
@@ -1967,43 +1964,50 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             testedPositiveAt .hivTest && immediateResult .hivTest
 
         DiagnosisHIVRecurrentPhase ->
-            testedPositiveAt .hivTest && (not <| immediateResult .hivTest)
+            testedPositiveAt .hivTest
+                && (not <| diagnosed DiagnosisHIVInitialPhase assembled)
 
         DiagnosisHIVDetectableViralLoadInitialPhase ->
             hivDetectableViralLoadDiagnosed && immediateResult .hivPCRTest
 
         DiagnosisHIVDetectableViralLoadRecurrentPhase ->
-            hivDetectableViralLoadDiagnosed && (not <| immediateResult .hivPCRTest)
+            hivDetectableViralLoadDiagnosed
+                && (not <| diagnosed DiagnosisHIVDetectableViralLoadInitialPhase assembled)
 
         DiagnosisDiscordantPartnershipInitialPhase ->
             discordantPartnershipDiagnosed && immediateResult .hivTest
 
         DiagnosisDiscordantPartnershipRecurrentPhase ->
-            discordantPartnershipDiagnosed && (not <| immediateResult .hivTest)
+            discordantPartnershipDiagnosed
+                && (not <| diagnosed DiagnosisDiscordantPartnershipInitialPhase assembled)
 
         DiagnosisSyphilisInitialPhase ->
             syphilisDiagnosed && immediateResult .syphilisTest
 
         DiagnosisSyphilisRecurrentPhase ->
-            syphilisDiagnosed && (not <| immediateResult .syphilisTest)
+            syphilisDiagnosed
+                && (not <| diagnosed DiagnosisSyphilisInitialPhase assembled)
 
         DiagnosisSyphilisWithComplicationsInitialPhase ->
             syphilisWithComplicationDiagnosed && immediateResult .syphilisTest
 
         DiagnosisSyphilisWithComplicationsRecurrentPhase ->
-            syphilisWithComplicationDiagnosed && (not <| immediateResult .syphilisTest)
+            syphilisWithComplicationDiagnosed
+                && (not <| diagnosed DiagnosisSyphilisWithComplicationsInitialPhase assembled)
 
         DiagnosisNeurosyphilisInitialPhase ->
             neurosyphilisDiagnosed && immediateResult .syphilisTest
 
         DiagnosisNeurosyphilisRecurrentPhase ->
-            neurosyphilisDiagnosed && (not <| immediateResult .syphilisTest)
+            neurosyphilisDiagnosed
+                && (not <| diagnosed DiagnosisNeurosyphilisInitialPhase assembled)
 
         DiagnosisHepatitisBInitialPhase ->
             testedPositiveAt .hepatitisBTest && immediateResult .hepatitisBTest
 
         DiagnosisHepatitisBRecurrentPhase ->
-            testedPositiveAt .hepatitisBTest && (not <| immediateResult .hepatitisBTest)
+            testedPositiveAt .hepatitisBTest
+                && (not <| diagnosed DiagnosisHepatitisBInitialPhase assembled)
 
         DiagnosisMalariaInitialPhase ->
             malariaDiagnosed
@@ -2011,43 +2015,55 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaRecurrentPhase ->
             malariaDiagnosed
-                && (not <| immediateResult .malariaTest)
+                && (not <| diagnosed DiagnosisMalariaInitialPhase assembled)
 
         DiagnosisMalariaMedicatedContinuedInitialPhase ->
             malariaMedicatedContinuedDiagnosed && immediateResult .malariaTest
 
         DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
-            malariaMedicatedContinuedDiagnosed && (not <| immediateResult .malariaTest)
+            malariaMedicatedContinuedDiagnosed
+                && (not <| diagnosed DiagnosisMalariaMedicatedContinuedInitialPhase assembled)
 
         DiagnosisMalariaWithAnemiaInitialPhase ->
-            malariaWithAnemiaDiagnosed && immediateResult .malariaTest
+            malariaWithAnemiaDiagnosed
+                && immediateResult .malariaTest
+                && immediateResult .hemoglobinTest
 
         DiagnosisMalariaWithAnemiaRecurrentPhase ->
-            malariaWithAnemiaDiagnosed && (not <| immediateResult .malariaTest)
+            malariaWithAnemiaDiagnosed
+                && (not <| diagnosed DiagnosisMalariaWithAnemiaInitialPhase assembled)
 
         DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
-            malariaWithAnemiaMedicatedContinuedDiagnosed && immediateResult .malariaTest
+            malariaWithAnemiaMedicatedContinuedDiagnosed
+                && immediateResult .malariaTest
+                && immediateResult .hemoglobinTest
 
         DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
-            malariaWithAnemiaMedicatedContinuedDiagnosed && (not <| immediateResult .malariaTest)
+            malariaWithAnemiaMedicatedContinuedDiagnosed
+                && (not <| diagnosed DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase assembled)
 
         DiagnosisMalariaWithSevereAnemiaInitialPhase ->
-            malariaWithSevereAnemiaDiagnosed && immediateResult .malariaTest
+            malariaWithSevereAnemiaDiagnosed
+                && immediateResult .malariaTest
+                && immediateResult .hemoglobinTest
 
         DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
-            malariaWithSevereAnemiaDiagnosed && (not <| immediateResult .malariaTest)
+            malariaWithSevereAnemiaDiagnosed
+                && (not <| diagnosed DiagnosisMalariaWithSevereAnemiaInitialPhase assembled)
 
         DiagnosisModerateAnemiaInitialPhase ->
             moderateAnemiaDiagnosed && immediateResult .hemoglobinTest
 
         DiagnosisModerateAnemiaRecurrentPhase ->
-            moderateAnemiaDiagnosed && (not <| immediateResult .hemoglobinTest)
+            moderateAnemiaDiagnosed
+                && (not <| diagnosed DiagnosisModerateAnemiaInitialPhase assembled)
 
         DiagnosisSevereAnemiaInitialPhase ->
             severeAnemiaDiagnosed && immediateResult .hemoglobinTest
 
         DiagnosisSevereAnemiaRecurrentPhase ->
-            severeAnemiaDiagnosed && (not <| immediateResult .hemoglobinTest)
+            severeAnemiaDiagnosed
+                && (not <| diagnosed DiagnosisSevereAnemiaInitialPhase assembled)
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
@@ -2057,10 +2073,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
-            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+            (not <| diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase assembled)
+                && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
-                        egaWeeks <= 20 && diabetesDiagnosedRecurrentPhase
+                        egaWeeks <= 20 && diabetesDiagnosedAnyPhase
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase ->
@@ -2071,17 +2088,19 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
-            (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
+            (not <| diagnosed Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase assembled)
+                && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
-                        egaWeeks > 20 && diabetesDiagnosedRecurrentPhase
+                        egaWeeks > 20 && diabetesDiagnosedAnyPhase
                     )
 
         DiagnosisRhesusNegativeInitialPhase ->
             rhesusNegativeDiagnosed && immediateResult .bloodGpRsTest
 
         DiagnosisRhesusNegativeRecurrentPhase ->
-            rhesusNegativeDiagnosed && (not <| immediateResult .bloodGpRsTest)
+            rhesusNegativeDiagnosed
+                && (not <| diagnosed DiagnosisRhesusNegativeInitialPhase assembled)
 
         -- If criterias for DiagnosisPostpartumMastitis also matches, this
         -- diagnosis will be filtered out when applying diagnoses hierarchy.

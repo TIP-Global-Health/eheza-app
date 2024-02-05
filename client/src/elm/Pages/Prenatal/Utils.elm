@@ -3607,6 +3607,8 @@ undeterminedPostpartumDiagnoses =
 applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyDiagnosesHierarchy =
     applyHypertensionlikeDiagnosesHierarchy
+        >> applyMalariaWithAnemiaDiagnosesHierarchy
+        >> applyAnemiaDiagnosesHierarchy
         >> applyMastitisDiagnosesHierarchy
         >> applyGeneralDiagnosesHierarchy
 
@@ -3629,6 +3631,70 @@ applyHypertensionlikeDiagnosesHierarchy diagnoses =
     topBloodPressureDiagnosis
         ++ others
         |> EverySet.fromList
+
+
+applyMalariaWithAnemiaDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyMalariaWithAnemiaDiagnosesHierarchy =
+    let
+        -- When Malaria with Severe Anamia diagnosed, we eliminate
+        -- Malaria and Severe Anamia standalone diagnoses.
+        applyMalariaWithSeverAnemiaLogic diagnoses =
+            if
+                List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+                    [ DiagnosisMalariaWithSevereAnemiaInitialPhase, DiagnosisMalariaWithSevereAnemiaRecurrentPhase ]
+            then
+                let
+                    toRemove =
+                        EverySet.fromList
+                            [ DiagnosisMalariaInitialPhase
+                            , DiagnosisMalariaRecurrentPhase
+                            , DiagnosisSevereAnemiaInitialPhase
+                            , DiagnosisSevereAnemiaRecurrentPhase
+                            ]
+                in
+                EverySet.diff diagnoses toRemove
+
+            else
+                diagnoses
+
+        -- When Malaria with Anamia is diagnosed, we eliminate
+        -- Malaria and Moderate Anamia standalone diagnoses.
+        applyMalariaWithAnemiaLogic diagnoses =
+            if
+                List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+                    [ DiagnosisMalariaWithAnemiaInitialPhase, DiagnosisMalariaWithAnemiaRecurrentPhase ]
+            then
+                let
+                    toRemove =
+                        EverySet.fromList
+                            [ DiagnosisMalariaInitialPhase
+                            , DiagnosisMalariaRecurrentPhase
+                            , DiagnosisModerateAnemiaInitialPhase
+                            , DiagnosisModerateAnemiaRecurrentPhase
+                            ]
+                in
+                EverySet.diff diagnoses toRemove
+
+            else
+                diagnoses
+    in
+    applyMalariaWithSeverAnemiaLogic
+        >> applyMalariaWithAnemiaLogic
+
+
+applyAnemiaDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyAnemiaDiagnosesHierarchy diagnoses =
+    -- When Severe Anamia with compliations is diagnosed, we eliminate
+    -- Severe Anamia standalone diagnosis.
+    if
+        List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+            [ DiagnosisSevereAnemiaWithComplicationsInitialPhase, DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ]
+    then
+        EverySet.remove DiagnosisSevereAnemiaInitialPhase diagnoses
+            |> EverySet.remove DiagnosisSevereAnemiaRecurrentPhase
+
+    else
+        diagnoses
 
 
 applyMastitisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
