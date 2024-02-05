@@ -951,12 +951,12 @@ generatePrenatalLabsEntryData language currentDate db item =
                         LabsEntryPending
 
                 ( performedTests, completedTests ) =
-                    prenatalLabsResultsTestData currentDate item
+                    labsResultsTestData currentDate item
 
                 label =
                     if
-                        List.member TestVitalsRecheck performedTests
-                            && (not <| List.member TestVitalsRecheck completedTests)
+                        EverySet.member TestVitalsRecheck performedTests
+                            && (not <| EverySet.member TestVitalsRecheck completedTests)
                     then
                         -- Vitals recheck was scheduled, but not completed yet.
                         Translate.PrenatalLabsCaseManagementEntryTypeVitals

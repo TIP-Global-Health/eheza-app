@@ -300,6 +300,12 @@ encodeBloodGpRsTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
         originatingEncounter =
             Maybe.map
                 (\originEncounter ->
@@ -321,6 +327,7 @@ encodeBloodGpRsTestValue value =
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
         ++ originatingEncounter
         ++ results
         ++ [ ( "deleted", bool False )
@@ -352,6 +359,12 @@ encodeHemoglobinTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
         result =
             Maybe.map
                 (\hemoglobinCount ->
@@ -362,6 +375,7 @@ encodeHemoglobinTestValue value =
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
         ++ result
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_hemoglobin_test" )
@@ -382,6 +396,12 @@ encodeHepatitisBTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
         result =
             Maybe.map
                 (\testResult ->
@@ -400,6 +420,7 @@ encodeHepatitisBTestValue value =
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
         ++ result
         ++ originatingEncounter
         ++ [ ( "deleted", bool False )
@@ -419,6 +440,12 @@ encodeHIVTestValue type_ value =
             Maybe.map
                 (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
                 value.executionDate
+                |> Maybe.withDefault []
+
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
                 |> Maybe.withDefault []
 
         result =
@@ -441,6 +468,7 @@ encodeHIVTestValue type_ value =
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
         ++ result
         ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns )
            , ( "deleted", bool False )
@@ -462,6 +490,12 @@ encodeHIVPCRTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
         hivViralLoadStatus =
             Maybe.map
                 (\viralLoadStatus -> [ ( "hiv_viral_load_status", encodeViralLoadStatus viralLoadStatus ) ])
@@ -476,6 +510,7 @@ encodeHIVPCRTestValue value =
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
         ++ hivViralLoadStatus
         ++ hivViralLoad
         ++ [ ( "deleted", bool False )
@@ -513,6 +548,12 @@ encodePartnerHIVTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
         result =
             Maybe.map
                 (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
@@ -521,6 +562,7 @@ encodePartnerHIVTestValue value =
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
         ++ result
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_partner_hiv_test" )
@@ -541,6 +583,12 @@ encodeMalariaTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
         result =
             Maybe.map
                 (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
@@ -551,6 +599,7 @@ encodeMalariaTestValue value =
     , ( "blood_smear_result", encodeBloodSmearResult value.bloodSmearResult )
     ]
         ++ executionDate
+        ++ testPrerequisites
         ++ result
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_malaria_test" )
@@ -636,6 +685,12 @@ encodeSyphilisTestValue value =
                 value.executionDate
                 |> Maybe.withDefault []
 
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
+                |> Maybe.withDefault []
+
         result =
             Maybe.map
                 (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
@@ -658,6 +713,7 @@ encodeSyphilisTestValue value =
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: executionDate
+        ++ testPrerequisites
         ++ result
         ++ illnessSymptoms
         ++ originatingEncounter
@@ -689,6 +745,12 @@ encodeUrineDipstickTestValue type_ value =
             Maybe.map
                 (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
                 value.executionDate
+                |> Maybe.withDefault []
+
+        testPrerequisites =
+            Maybe.map
+                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
+                value.testPrerequisites
                 |> Maybe.withDefault []
 
         encodeField encoder fieldName fieldValue =
@@ -729,6 +791,7 @@ encodeUrineDipstickTestValue type_ value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: testVariant
         ++ executionDate
+        ++ testPrerequisites
         ++ protein
         ++ ph
         ++ glucose

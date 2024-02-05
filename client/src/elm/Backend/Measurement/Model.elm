@@ -1039,6 +1039,7 @@ type alias PrenatalMalariaTest =
 type alias MalariaTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , bloodSmearResult : BloodSmearResult
     }
@@ -1068,6 +1069,9 @@ type BloodSmearResult
     | BloodSmearPlusPlus
     | BloodSmearPlusPlusPlus
     | BloodSmearNotTaken
+      -- Set on initial phase, when Malaria test is not
+      -- taken, and blood smear is ordered at lab.
+    | BloodSmearPending
 
 
 type alias PrenatalHIVTest =
@@ -1077,6 +1081,7 @@ type alias PrenatalHIVTest =
 type alias HIVTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
@@ -1102,6 +1107,7 @@ type HIVPCRResult
 type alias HIVPCRTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , hivViralLoadStatus : Maybe ViralLoadStatus
     , hivViralLoad : Maybe Float
     }
@@ -1119,6 +1125,7 @@ type alias PrenatalHepatitisBTest =
 type alias HepatitisBTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , originatingEncounter : Maybe encounterId
     }
@@ -1131,6 +1138,7 @@ type alias PrenatalSyphilisTest =
 type alias SyphilisTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
     , originatingEncounter : Maybe encounterId
@@ -1153,6 +1161,7 @@ type alias PrenatalHemoglobinTest =
 type alias HemoglobinTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , hemoglobinCount : Maybe Float
     }
 
@@ -1183,6 +1192,7 @@ type alias PrenatalBloodGpRsTest =
 type alias BloodGpRsTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
     , originatingEncounter : Maybe encounterId
@@ -1209,6 +1219,7 @@ type alias UrineDipstickTestValue =
     { testVariant : Maybe TestVariant
     , executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , protein : Maybe ProteinValue
     , ph : Maybe PHValue
     , glucose : Maybe GlucoseValue
@@ -1317,12 +1328,15 @@ type alias LabsResultsValue =
 type LaboratoryTest
     = TestBloodGpRs
     | TestHemoglobin
+    | TestHIV
+    | TestPartnerHIV
+    | TestMalaria
+    | TestHIVPCR
     | TestHepatitisB
     | TestRandomBloodSugar
     | TestSyphilis
     | TestUrineDipstick
     | TestVitalsRecheck
-    | TestHIVPCR
     | TestCreatinine
     | TestLiverFunction
     | TestLipidPanel
@@ -1628,6 +1642,7 @@ type alias PrenatalPartnerHIVTest =
 type alias PartnerHIVTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     }
 

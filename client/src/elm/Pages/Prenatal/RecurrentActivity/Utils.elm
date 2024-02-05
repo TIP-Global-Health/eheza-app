@@ -10,7 +10,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue, vitalsFormWithDefault)
+import Measurement.Utils exposing (bloodSmearResultSet, expectUniversalTestResultTask, testPerformedByValue, vitalsFormWithDefault)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
@@ -33,7 +33,7 @@ expectActivity : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bo
 expectActivity currentDate assembled activity =
     case activity of
         LabResults ->
-            resolveLaboratoryResultTask currentDate assembled
+            resolveLaboratoryResultTasks currentDate assembled
                 |> List.isEmpty
                 |> not
 
@@ -56,7 +56,7 @@ activityCompleted currentDate assembled activity =
     case activity of
         LabResults ->
             (not <| expectActivity currentDate assembled LabResults)
-                || (resolveLaboratoryResultTask currentDate assembled
+                || (resolveLaboratoryResultTasks currentDate assembled
                         |> List.all (laboratoryResultTaskCompleted currentDate assembled)
                    )
 
@@ -79,18 +79,21 @@ activityCompleted currentDate assembled activity =
 
 laboratoryResultTasks : List LaboratoryTask
 laboratoryResultTasks =
-    [ TaskSyphilisTest
+    [ TaskPartnerHIVTest
+    , TaskHIVTest
+    , TaskHIVPCRTest
+    , TaskSyphilisTest
     , TaskHepatitisBTest
+    , TaskMalariaTest
     , TaskBloodGpRsTest
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
-    , TaskHIVPCRTest
     ]
 
 
-resolveLaboratoryResultTask : NominalDate -> AssembledData -> List LaboratoryTask
-resolveLaboratoryResultTask currentDate assembled =
+resolveLaboratoryResultTasks : NominalDate -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTasks currentDate assembled =
     List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
 
 
@@ -107,8 +110,11 @@ laboratoryResultTaskCompleted currentDate assembled task =
                 |> isJust
     in
     case task of
+        TaskPartnerHIVTest ->
+            not <| taskExpected TaskPartnerHIVTest || testResultsCompleted .partnerHIVTest .testResult
+
         TaskHIVTest ->
-            not <| taskExpected TaskHIVTest
+            not <| taskExpected TaskHIVTest || testResultsCompleted .hivTest .testResult
 
         TaskSyphilisTest ->
             (not <| taskExpected TaskSyphilisTest) || testResultsCompleted .syphilisTest .testResult
@@ -117,7 +123,17 @@ laboratoryResultTaskCompleted currentDate assembled task =
             (not <| taskExpected TaskHepatitisBTest) || testResultsCompleted .hepatitisBTest .testResult
 
         TaskMalariaTest ->
-            not <| taskExpected TaskMalariaTest
+            let
+                resultSet =
+                    getMeasurementValueFunc assembled.measurements.malariaTest
+                        |> Maybe.map
+                            (\value ->
+                                isJust value.testResult
+                                    || bloodSmearResultSet value.bloodSmearResult
+                            )
+                        |> Maybe.withDefault False
+            in
+            not <| taskExpected TaskMalariaTest || resultSet
 
         TaskBloodGpRsTest ->
             (not <| taskExpected TaskBloodGpRsTest) || testResultsCompleted .bloodGpRsTest .bloodGroup
@@ -134,9 +150,6 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
 
-        TaskPartnerHIVTest ->
-            not <| taskExpected TaskPartnerHIVTest
-
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
 
@@ -151,11 +164,15 @@ expectLaboratoryResultTask currentDate assembled task =
         wasTestPerformed getMeasurementFunc =
             getMeasurementFunc assembled.measurements
                 |> getMeasurementValueFunc
-                |> testPerformedByValue
+                |> Maybe.map expectUniversalTestResultTask
+                |> Maybe.withDefault False
     in
     case task of
         TaskHIVTest ->
-            False
+            wasTestPerformed .hivTest
+
+        TaskPartnerHIVTest ->
+            wasTestPerformed .partnerHIVTest
 
         TaskSyphilisTest ->
             wasTestPerformed .syphilisTest
@@ -164,7 +181,7 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hepatitisBTest
 
         TaskMalariaTest ->
-            False
+            wasTestPerformed .malariaTest
 
         TaskBloodGpRsTest ->
             wasTestPerformed .bloodGpRsTest
@@ -176,15 +193,10 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hemoglobinTest
 
         TaskRandomBloodSugarTest ->
-            getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
-                |> Maybe.map expectRandomBloodSugarResultTask
-                |> Maybe.withDefault False
+            wasTestPerformed .randomBloodSugarTest
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
-
-        TaskPartnerHIVTest ->
-            False
 
         TaskCompletePreviousTests ->
             False

@@ -44,8 +44,8 @@ import Measurement.Utils
         , viewHbA1cTestForm
         , viewNonRDTForm
         , viewPregnancyTestForm
-        , viewRandomBloodSugarForm
-        , viewUrineDipstickForm
+        , viewRandomBloodSugarTestForm
+        , viewUrineDipstickTestForm
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (viewFamilyPlanningForm)
@@ -912,7 +912,7 @@ viewLaboratoryContent language currentDate assembled data =
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
                                 |> randomBloodSugarFormWithDefault data.randomBloodSugarTestForm
-                                |> viewRandomBloodSugarForm language
+                                |> viewRandomBloodSugarTestForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
@@ -921,7 +921,7 @@ viewLaboratoryContent language currentDate assembled data =
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
                                 |> urineDipstickFormWithDefault data.urineDipstickTestForm
-                                |> viewUrineDipstickForm language
+                                |> viewUrineDipstickTestForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig

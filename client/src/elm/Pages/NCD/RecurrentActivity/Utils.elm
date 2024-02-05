@@ -6,7 +6,7 @@ import Backend.NCDActivity.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue)
+import Measurement.Utils exposing (expectUniversalTestResultTask, testPerformedByValue)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
@@ -18,7 +18,7 @@ expectActivity : NominalDate -> AssembledData -> NCDRecurrentActivity -> Bool
 expectActivity currentDate assembled activity =
     case activity of
         LabResults ->
-            resolveLaboratoryResultTask currentDate assembled
+            resolveLaboratoryResultTasks currentDate assembled
                 |> List.isEmpty
                 |> not
 
@@ -34,7 +34,7 @@ activityCompleted currentDate assembled activity =
     case activity of
         LabResults ->
             (not <| expectActivity currentDate assembled LabResults)
-                || (resolveLaboratoryResultTask currentDate assembled
+                || (resolveLaboratoryResultTasks currentDate assembled
                         |> List.all (laboratoryResultTaskCompleted currentDate assembled)
                    )
 
@@ -143,8 +143,8 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
             )
 
 
-resolveLaboratoryResultTask : NominalDate -> AssembledData -> List LaboratoryTask
-resolveLaboratoryResultTask currentDate assembled =
+resolveLaboratoryResultTasks : NominalDate -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTasks currentDate assembled =
     List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
 
 
@@ -201,7 +201,7 @@ expectLaboratoryResultTask currentDate assembled task =
 
         TaskRandomBloodSugarTest ->
             getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
-                |> Maybe.map expectRandomBloodSugarResultTask
+                |> Maybe.map expectUniversalTestResultTask
                 |> Maybe.withDefault False
 
         TaskUrineDipstickTest ->

@@ -12,7 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
 import Pages.Report.Utils exposing (..)
@@ -644,7 +644,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                     (\value ->
                         if
                             (not <| testPerformedByExecutionNote value.executionNote)
-                                && (value.bloodSmearResult /= BloodSmearNotTaken)
+                                && bloodSmearResultNotSet value.bloodSmearResult
                         then
                             Maybe.map (\executionDate -> ( executionDate, Just value.bloodSmearResult ))
                                 value.executionDate

@@ -6,17 +6,23 @@ import Measurement.Model
     exposing
         ( BloodGpRsResultForm
         , HIVPCRResultForm
+        , HIVResultForm
         , HemoglobinResultForm
         , HepatitisBResultForm
         , LaboratoryTask
+        , MalariaResultForm
+        , PartnerHIVResultForm
         , RandomBloodSugarResultForm
         , SyphilisResultForm
         , UrineDipstickResultForm
         , VitalsForm
         , emptyBloodGpRsResultForm
         , emptyHIVPCRResultForm
+        , emptyHIVResultForm
         , emptyHemoglobinResultForm
         , emptyHepatitisBResultForm
+        , emptyMalariaResultForm
+        , emptyPartnerHIVResultForm
         , emptyRandomBloodSugarResultForm
         , emptySyphilisResultForm
         , emptyUrineDipstickResultForm
@@ -63,6 +69,14 @@ type Msg
     | SetHIVViralLoadUndetectable Bool
     | SetHIVViralLoad String
     | SaveHIVPCRResult PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
+    | SetHIVTestFormBoolInput (Bool -> HIVResultForm -> HIVResultForm) Bool
+    | SetHIVTestResult String
+    | SaveHIVResult PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
+    | SetPartnerHIVTestResult String
+    | SetMalariaTestResult String
+    | SavePartnerHIVResult PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)
+    | SetBloodSmearResult String
+    | SaveMalariaResult PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
       -- MalariaPreventionMsgs
     | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
     | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
@@ -122,6 +136,9 @@ type alias LabResultsData =
     , syphilisTestForm : SyphilisResultForm PrenatalEncounterId
     , urineDipstickTestForm : UrineDipstickResultForm
     , hivPCRTestForm : HIVPCRResultForm
+    , hivTestForm : HIVResultForm
+    , partnerHIVTestForm : PartnerHIVResultForm
+    , malariaTestForm : MalariaResultForm
     , activeTask : Maybe LaboratoryTask
     }
 
@@ -135,6 +152,9 @@ emptyLabResultsData =
     , syphilisTestForm = emptySyphilisResultForm
     , urineDipstickTestForm = emptyUrineDipstickResultForm
     , hivPCRTestForm = emptyHIVPCRResultForm
+    , hivTestForm = emptyHIVResultForm
+    , partnerHIVTestForm = emptyPartnerHIVResultForm
+    , malariaTestForm = emptyMalariaResultForm
     , activeTask = Nothing
     }
 

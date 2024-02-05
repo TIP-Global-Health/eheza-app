@@ -8,7 +8,7 @@ import Backend.NutritionEncounter.Utils
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Utils exposing (testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
 import Pages.Report.Model exposing (..)
 
 
@@ -44,7 +44,8 @@ malariaResultNormal =
 
 bloodSmearResultNormal : BloodSmearResult -> Bool
 bloodSmearResultNormal value =
-    List.member value [ BloodSmearNegative, BloodSmearNotTaken ]
+    bloodSmearResultNotSet value
+        || (value == BloodSmearNegative)
 
 
 proteinResultNormal : ProteinValue -> Bool
