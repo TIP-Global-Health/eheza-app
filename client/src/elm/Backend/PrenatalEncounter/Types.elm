@@ -15,49 +15,34 @@ type PrenatalDiagnosis
     | DiagnosisSeverePreeclampsiaRecurrentPhase
     | DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     | DiagnosisEclampsia
-      -- | DiagnosisHIV
     | DiagnosisHIVInitialPhase
     | DiagnosisHIVRecurrentPhase
-      -- | DiagnosisHIVDetectableViralLoad
     | DiagnosisHIVDetectableViralLoadInitialPhase
     | DiagnosisHIVDetectableViralLoadRecurrentPhase
-      -- | DiagnosisDiscordantPartnership
     | DiagnosisDiscordantPartnershipInitialPhase
     | DiagnosisDiscordantPartnershipRecurrentPhase
-      -- | DiagnosisSyphilis
     | DiagnosisSyphilisInitialPhase
     | DiagnosisSyphilisRecurrentPhase
-      -- | DiagnosisSyphilisWithComplications
     | DiagnosisSyphilisWithComplicationsInitialPhase
     | DiagnosisSyphilisWithComplicationsRecurrentPhase
-      -- | DiagnosisNeurosyphilis
     | DiagnosisNeurosyphilisInitialPhase
     | DiagnosisNeurosyphilisRecurrentPhase
-      -- | DiagnosisHepatitisB
     | DiagnosisHepatitisBInitialPhase
     | DiagnosisHepatitisBRecurrentPhase
-      -- | DiagnosisMalaria
     | DiagnosisMalariaInitialPhase
     | DiagnosisMalariaRecurrentPhase
-      -- | DiagnosisMalariaMedicatedContinued
     | DiagnosisMalariaMedicatedContinuedInitialPhase
     | DiagnosisMalariaMedicatedContinuedRecurrentPhase
-      -- | DiagnosisMalariaWithAnemia
     | DiagnosisMalariaWithAnemiaInitialPhase
     | DiagnosisMalariaWithAnemiaRecurrentPhase
-      -- | DiagnosisMalariaWithAnemiaMedicatedContinued
     | DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
     | DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
-      -- | DiagnosisMalariaWithSevereAnemia
     | DiagnosisMalariaWithSevereAnemiaInitialPhase
     | DiagnosisMalariaWithSevereAnemiaRecurrentPhase
-      -- | DiagnosisModerateAnemia
     | DiagnosisModerateAnemiaInitialPhase
     | DiagnosisModerateAnemiaRecurrentPhase
-      -- | DiagnosisSevereAnemia
     | DiagnosisSevereAnemiaInitialPhase
     | DiagnosisSevereAnemiaRecurrentPhase
-      -- | DiagnosisSevereAnemiaWithComplications
     | DiagnosisSevereAnemiaWithComplicationsInitialPhase
     | DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
     | DiagnosisMiscarriage
@@ -93,13 +78,10 @@ type PrenatalDiagnosis
     | DiagnosisTrichomonasOrBacterialVaginosis
     | DiagnosisTrichomonasOrBacterialVaginosisContinued
     | DiagnosisTuberculosis
-      -- | DiagnosisDiabetes
     | DiagnosisDiabetesInitialPhase
     | DiagnosisDiabetesRecurrentPhase
-      -- | DiagnosisGestationalDiabetes
     | DiagnosisGestationalDiabetesInitialPhase
     | DiagnosisGestationalDiabetesRecurrentPhase
-      -- | DiagnosisRhesusNegative
     | DiagnosisRhesusNegativeInitialPhase
     | DiagnosisRhesusNegativeRecurrentPhase
     | DiagnosisDepressionNotLikely
