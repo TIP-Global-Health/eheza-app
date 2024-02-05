@@ -16,6 +16,7 @@ class HedleyRestfulPrenatalLabsResults extends HedleyRestfulPrenatalActivityBase
   protected $fields = [
     'field_date_concluded',
     'field_patient_notified',
+    'field_review_state',
   ];
 
   /**
@@ -24,6 +25,7 @@ class HedleyRestfulPrenatalLabsResults extends HedleyRestfulPrenatalActivityBase
   protected $multiFields = [
     'field_performed_tests',
     'field_completed_tests',
+    'field_tests_with_follow_up',
   ];
 
   /**

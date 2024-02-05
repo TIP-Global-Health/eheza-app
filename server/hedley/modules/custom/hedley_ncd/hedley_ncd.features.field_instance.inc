@@ -3978,6 +3978,43 @@ function hedley_ncd_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-ncd_labs_results-field_review_state'.
+  $field_instances['node-ncd_labs_results-field_review_state'] = array(
+    'bundle' => 'ncd_labs_results',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_review_state',
+    'label' => 'Review State',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 16,
+    ),
+  );
+
   // Exported field_instance: 'node-ncd_labs_results-field_shards'.
   $field_instances['node-ncd_labs_results-field_shards'] = array(
     'bundle' => 'ncd_labs_results',
@@ -4019,6 +4056,44 @@ function hedley_ncd_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-ncd_labs_results-field_tests_with_follow_up'.
+  $field_instances['node-ncd_labs_results-field_tests_with_follow_up'] = array(
+    'bundle' => 'ncd_labs_results',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_tests_with_follow_up',
+    'label' => 'Tests with Follow Up',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 18,
     ),
   );
 
@@ -9605,6 +9680,7 @@ function hedley_ncd_field_default_field_instances() {
   t('Recommended Treatment');
   t('Referrals');
   t('Respiratory rate');
+  t('Review State');
   t('Shards');
   t('Sugar Count');
   t('Sys');
@@ -9612,6 +9688,7 @@ function hedley_ncd_field_default_field_instances() {
   t('Test Prerequisites');
   t('Test Result');
   t('Test variant');
+  t('Tests with Follow Up');
   t('Total Cholesterol');
   t('Triglycerides');
   t('UUID');

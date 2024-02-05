@@ -8,6 +8,7 @@ import Backend.Measurement.Model
         , EyesCPESign(..)
         , HandsCPESign(..)
         , IllnessSymptom(..)
+        , LabsResultsReviewState(..)
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
         , OutsideCareMedication(..)
@@ -139,6 +140,15 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
         isLabTech =
             isLabTechnician nurse
 
+        isResultsReviewer =
+            -- A nurse.
+            (not isChw && not isLabTech)
+                && -- Labs results review was requested.
+                   (getMeasurementValueFunc assembled.measurements.labsResults
+                        |> Maybe.map (.reviewState >> (==) (Just LabsResultsReviewRequested))
+                        |> Maybe.withDefault False
+                   )
+
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
@@ -155,8 +165,8 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
             Just { setReportComponentsMsg = SetReportComponents }
     in
     div [ class "page-report clinical" ] <|
-        [ viewHeader language assembled.id isLabTech initiator model
-        , viewContent language currentDate site features isChw isLabTech initiator model assembled
+        [ viewHeader language assembled.id isLabTech isResultsReviewer initiator model
+        , viewContent language currentDate site features isChw isLabTech isResultsReviewer initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
@@ -171,11 +181,11 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> Bool -> PrenatalProgressReportInitiator -> Model -> Html Msg
-viewHeader language id isLabTech initiator model =
+viewHeader : Language -> PrenatalEncounterId -> Bool -> Bool -> PrenatalProgressReportInitiator -> Model -> Html Msg
+viewHeader language id isLabTech isResultsReviewer initiator model =
     let
         label =
-            if isLabTech then
+            if isLabTech || isResultsReviewer then
                 Translate.LabResults
 
             else
@@ -259,6 +269,12 @@ viewHeader language id isLabTech initiator model =
 
                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
                     iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId)
+
+                InitiatorCaseManagement _ ->
+                    iconForView <|
+                        SetActivePage <|
+                            UserPage
+                                GlobalCaseManagementPage
     in
     div
         [ class "ui basic segment head" ]
@@ -275,13 +291,14 @@ viewContent :
     -> EverySet SiteFeature
     -> Bool
     -> Bool
+    -> Bool
     -> PrenatalProgressReportInitiator
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate site features isChw isLabTech initiator model assembled =
+viewContent language currentDate site features isChw isLabTech isResultsReviewer initiator model assembled =
     let
-        derivedContent =
+        content =
             let
                 labResultsConfig =
                     { hivPCR = True
@@ -299,8 +316,9 @@ viewContent language currentDate site features isChw isLabTech initiator model a
                     }
 
                 labResultsMode =
-                    if isLabTech then
-                        -- Lab thechnician goes straight to main page of lab results.
+                    if isLabTech || isResultsReviewer then
+                        -- Lab thechnician  and results reviewer go
+                        -- straight to main page of lab results.
                         Maybe.Extra.or model.labResultsMode (Just <| LabResultsCurrent LabResultsCurrentMain)
 
                     else
@@ -313,7 +331,12 @@ viewContent language currentDate site features isChw isLabTech initiator model a
                             case mode of
                                 LabResultsCurrent currentMode ->
                                     generateLabsResultsPaneData currentDate assembled
-                                        |> viewLabResultsPane language currentDate isLabTech currentMode SetLabResultsMode labResultsConfig
+                                        |> viewLabResultsPane language
+                                            currentDate
+                                            (isLabTech || isResultsReviewer)
+                                            currentMode
+                                            SetLabResultsMode
+                                            labResultsConfig
 
                                 LabResultsHistory historyMode ->
                                     viewLabResultsHistoryPane language currentDate historyMode
@@ -341,6 +364,23 @@ viewContent language currentDate site features isChw isLabTech initiator model a
                                     else
                                         emptyNode
 
+                                InitiatorCaseManagement encounterId ->
+                                    if isResultsReviewer then
+                                        Maybe.map2
+                                            (\( resultsId, _ ) value ->
+                                                button
+                                                    [ class "ui primary fluid button"
+                                                    , onClick <| ReviewAndAcceptLabsResults assembled.participant.person encounterId resultsId value
+                                                    ]
+                                                    [ text <| translate language Translate.ReviewAndAccept ]
+                                            )
+                                            assembled.measurements.labsResults
+                                            (getMeasurementValueFunc assembled.measurements.labsResults)
+                                            |> Maybe.withDefault emptyNode
+
+                                    else
+                                        emptyNode
+
                                 _ ->
                                     emptyNode
                     in
@@ -357,7 +397,12 @@ viewContent language currentDate site features isChw isLabTech initiator model a
                             Maybe.map
                                 (\_ ->
                                     generateLabsResultsPaneData currentDate assembled
-                                        |> viewLabResultsPane language currentDate isLabTech LabResultsCurrentMain SetLabResultsMode labResultsConfig
+                                        |> viewLabResultsPane language
+                                            currentDate
+                                            (isLabTech || isResultsReviewer)
+                                            LabResultsCurrentMain
+                                            SetLabResultsMode
+                                            labResultsConfig
                                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalLabsResults)
                                 )
                                 model.components
@@ -410,8 +455,8 @@ viewContent language currentDate site features isChw isLabTech initiator model a
                                     let
                                         ( _, pendingActivities ) =
                                             Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
-                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
+                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
 
                                         allowEndEncounter =
                                             List.isEmpty pendingActivities
@@ -435,6 +480,11 @@ viewContent language currentDate site features isChw isLabTech initiator model a
                                         ]
 
                                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
+                                    emptyNode
+
+                                -- Access from case management is granted only for labs results
+                                -- reviewers, so, this branch is not in use.
+                                InitiatorCaseManagement _ ->
                                     emptyNode
 
                         showComponent =
@@ -463,7 +513,7 @@ viewContent language currentDate site features isChw isLabTech initiator model a
         ]
     <|
         viewHeaderPane language currentDate assembled
-            :: derivedContent
+            :: content
 
 
 viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg

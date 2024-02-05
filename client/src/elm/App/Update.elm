@@ -266,6 +266,7 @@ update msg model =
                         model.healthCenterId
                         model.villageId
                         isChw
+                        isLabTech
                         model.activePage
                         model.syncManager
                         subMsg
@@ -563,7 +564,7 @@ update msg model =
                                     data.prenatalActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.Prenatal.Activity.Model.emptyModel
-                                        |> Pages.Prenatal.Activity.Update.update model.language currentDate id model.indexedDb subMsg
+                                        |> Pages.Prenatal.Activity.Update.update model.language currentDate id isLabTech model.indexedDb subMsg
                             in
                             ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
@@ -593,6 +594,7 @@ update msg model =
                                             currentDate
                                             originEncounterId
                                             labEncounterId
+                                            isLabTech
                                             model.indexedDb
                                             subMsg
                             in

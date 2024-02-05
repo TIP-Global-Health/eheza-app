@@ -23,6 +23,8 @@ class HedleyRestfulNCDLabsResults extends HedleyRestfulNCDActivityBase {
   protected $multiFields = [
     'field_performed_tests',
     'field_completed_tests',
+    'field_tests_with_follow_up',
+    'field_review_state',
   ];
 
   /**

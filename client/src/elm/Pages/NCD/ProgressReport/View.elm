@@ -201,6 +201,10 @@ viewContent language currentDate site features initiator db model assembled =
                     -- For now, NCD does not allow access for lab technicians.
                     False
 
+                isResultsReviewer =
+                    -- For now, NCD does not allow access for labs results reviewers.
+                    False
+
                 labResultsConfig =
                     { hivPCR = False
                     , partnerHIV = False
@@ -221,7 +225,12 @@ viewContent language currentDate site features initiator db model assembled =
                     case mode of
                         LabResultsCurrent currentMode ->
                             [ generateLabsResultsPaneData currentDate assembled
-                                |> viewLabResultsPane language currentDate isLabTech currentMode SetLabResultsMode labResultsConfig
+                                |> viewLabResultsPane language
+                                    currentDate
+                                    (isLabTech || isResultsReviewer)
+                                    currentMode
+                                    SetLabResultsMode
+                                    labResultsConfig
                             ]
 
                         LabResultsHistory historyMode ->
@@ -274,7 +283,12 @@ viewContent language currentDate site features initiator db model assembled =
                                     Maybe.map
                                         (\_ ->
                                             generateLabsResultsPaneData currentDate assembled
-                                                |> viewLabResultsPane language currentDate isLabTech LabResultsCurrentMain SetLabResultsMode labResultsConfig
+                                                |> viewLabResultsPane language
+                                                    currentDate
+                                                    (isLabTech || isResultsReviewer)
+                                                    LabResultsCurrentMain
+                                                    SetLabResultsMode
+                                                    labResultsConfig
                                                 |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDLabsResults)
                                         )
                                         model.components

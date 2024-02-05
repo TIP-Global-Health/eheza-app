@@ -33,6 +33,7 @@ type PrenatalRecurrentActivity
     | RecurrentNextSteps
     | RecurrentExamination
     | RecurrentMalariaPrevention
+    | LabsResultsFollowUps
 
 
 type RiskFactor

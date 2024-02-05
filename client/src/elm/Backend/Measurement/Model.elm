@@ -1071,7 +1071,7 @@ type BloodSmearResult
     | BloodSmearNotTaken
       -- Set on initial phase, when Malaria test is not
       -- taken, and blood smear is ordered at lab.
-    | BloodSmearPending
+    | BloodSmearPendingInput
 
 
 type alias PrenatalHIVTest =
@@ -1092,6 +1092,11 @@ type PrenatalHIVSign
     | PartnerHIVPositive
     | PartnerTakingARV
     | PartnerSurpressedViralLoad
+      -- This option is an indicator.
+      -- When Lab tech fills the result, they do not
+      -- answer follow up quesrtion. We use this optin to indicate
+      -- that nurse will have to complete the results follow up.
+    | PrenatalHIVSignPendingInput
     | NoPrenatalHIVSign
 
 
@@ -1151,6 +1156,11 @@ type IllnessSymptom
     | IllnessSymptomRash
     | IllnessSymptomPainlessUlcerMouth
     | IllnessSymptomPainlessUlcerGenitals
+      -- This option is an indicator.
+      -- When Lab tech fills the result, they do not
+      -- answer follow up quesrtion. We use this optin to indicate
+      -- that nurse will have to complete the results follow up.
+    | IllnessSymptomPendingInput
     | NoIllnessSymptoms
 
 
@@ -1322,6 +1332,8 @@ type alias LabsResultsValue =
     , completedTests : EverySet LaboratoryTest
     , resolutionDate : NominalDate
     , patientNotified : Bool
+    , reviewState : Maybe LabsResultsReviewState
+    , testsWithFollowUp : Maybe (EverySet LaboratoryTest)
     }
 
 
@@ -1340,6 +1352,11 @@ type LaboratoryTest
     | TestCreatinine
     | TestLiverFunction
     | TestLipidPanel
+
+
+type LabsResultsReviewState
+    = LabsResultsReviewRequested
+    | LabsResultsReviewCompleted
 
 
 type alias PrenatalMedicationDistribution =

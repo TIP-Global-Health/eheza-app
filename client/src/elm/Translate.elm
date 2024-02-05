@@ -1197,6 +1197,7 @@ type TranslationId
     | RandomBloodSugarResultNormalRange RandomBloodSugarResult
     | Read
     | ReadToggle Bool
+    | ReadyForReview
     | ReasonForNotBreastfeeding BreastfeedingSign
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
@@ -1442,6 +1443,7 @@ type TranslationId
     | ResultOfContactingRecommendedSite RecommendationSite
     | ResultsMissing
     | ResultsPending
+    | ReviewAndAccept
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
@@ -3385,11 +3387,10 @@ translationSet trans =
                     , kirundi = Just "Nticafashwe"
                     }
 
-                BloodSmearPending ->
-                    { english = "Pending"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                -- This option is an indicator - not meant to be
+                -- displayed with UI.
+                BloodSmearPendingInput ->
+                    translationSet EmptyString
 
         BloodSmearTestResult ->
             { english = "Malaria Blood Test Result"
@@ -6720,6 +6721,11 @@ translationSet trans =
                     , kirundi = Just "Igikomere kitababaza mu bihimba vy'irondoka"
                     }
 
+                -- This option is an indicator - not meant to be
+                -- displayed with UI.
+                IllnessSymptomPendingInput ->
+                    translationSet EmptyString
+
                 NoIllnessSymptoms ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta na kimwe"
@@ -7911,6 +7917,12 @@ translationSet trans =
                     , kinyarwanda = Just "Birafunga vuba"
                     , kirundi = Just "Agiye kugara vuba"
                     }
+
+                LabsEntryReadyForReview ->
+                    translationSet ReadyForReview
+
+                LabsEntryReviewed ->
+                    translationSet Reviewed
 
         LabsHistoryCompletedQuestion ->
             { english = "Have you updated all results that have been returned for this patient"
@@ -13323,6 +13335,12 @@ translationSet trans =
                     , kirundi = Just "Kwikingira Malariya"
                     }
 
+                Backend.PrenatalActivity.Model.LabsResultsFollowUps ->
+                    { english = "Lab Results Follow Ups"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         PrenatalAssesment assesment ->
             case assesment of
                 AssesmentNormalPregnancy ->
@@ -15150,11 +15168,16 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                NoPrenatalHIVSign ->
-                    { english = ""
+                PrenatalHIVSignPendingInput ->
+                    { english = "Pending Input"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+                -- This option is an indicator - not meant to be
+                -- displayed with UI.
+                NoPrenatalHIVSign ->
+                    translationSet EmptyString
 
         PrenatalImmunisationTask task ->
             case task of
@@ -16422,6 +16445,12 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 , kirundi = Just "Ivyasomwe"
                 }
+
+        ReadyForReview ->
+            { english = "Ready for Review"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         RandomBloodSugarResultNormalRange type_ ->
             case type_ of
@@ -19070,6 +19099,12 @@ translationSet trans =
             { english = "Results Pending"
             , kinyarwanda = Just "Ibisubizo birategerejwe"
             , kirundi = Just "Inyishu zirarindiriwe"
+            }
+
+        ReviewAndAccept ->
+            { english = "Review & Accept"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         ReviewCaseWith144Respondent ->

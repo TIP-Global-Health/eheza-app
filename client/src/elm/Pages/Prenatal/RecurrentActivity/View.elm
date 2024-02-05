@@ -25,6 +25,7 @@ import Measurement.Utils
         , hepatitisBResultFormWithDefault
         , hivPCRResultFormAndTasks
         , hivPCRResultFormWithDefault
+        , hivResultFollowUpsFormAndTasks
         , hivResultFormAndTasks
         , hivResultFormWithDefault
         , laboratoryTaskIconClass
@@ -34,6 +35,7 @@ import Measurement.Utils
         , partnerHIVResultFormWithDefault
         , randomBloodSugarResultFormAndTasks
         , randomBloodSugarResultFormWithDefault
+        , syphilisResultFollowUpsFormAndTasks
         , syphilisResultFormAndTasks
         , syphilisResultFormWithDefault
         , urineDipstickResultFormAndTasks
@@ -142,6 +144,9 @@ viewActivity language currentDate isLabTech activity assembled db model =
                 SaveMalariaPrevention
                 model.malariaPreventionData
 
+        LabsResultsFollowUps ->
+            viewLabResultFollowUpsContent language currentDate isLabTech assembled model
+
 
 viewLabResultsContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate isLabTech assembled model =
@@ -150,7 +155,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
             assembled.measurements
 
         tasks =
-            resolveLaboratoryResultTasks currentDate assembled
+            resolveLaboratoryResultTasks currentDate isLabTech assembled
 
         activeTask =
             Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
@@ -164,7 +169,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                     activeTask == Just task
 
                 isCompleted =
-                    laboratoryResultTaskCompleted currentDate assembled task
+                    laboratoryResultTaskCompleted currentDate isLabTech assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -642,6 +647,131 @@ viewReferralForm language currentDate assembled form =
     in
     div [ class "ui form referral" ]
         inputs
+
+
+viewLabResultFollowUpsContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
+    let
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveLaboratoryResultFollowUpsTasks currentDate assembled
+
+        activeTask =
+            Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
+
+        viewTask task =
+            let
+                iconClass =
+                    laboratoryTaskIconClass task
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    laboratoryResultFollowUpsTaskCompleted currentDate assembled task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveLabResultsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.LaboratoryTask task)
+                    ]
+                ]
+
+        formHtmlAndTasks =
+            List.map
+                (\task ->
+                    ( task
+                    , case task of
+                        TaskHIVTest ->
+                            getMeasurementValueFunc measurements.hivTest
+                                |> hivResultFormWithDefault model.labResultsData.hivTestForm
+                                |> hivResultFollowUpsFormAndTasks language currentDate SetHIVTestFormBoolInput
+
+                        TaskSyphilisTest ->
+                            getMeasurementValueFunc measurements.syphilisTest
+                                |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
+                                |> syphilisResultFollowUpsFormAndTasks language currentDate SetIllnessSymptom
+
+                        -- Others do not have results follow ups section,
+                        -- or, do not participate at Prenatal.
+                        _ ->
+                            ( emptyNode, 0, 0 )
+                    )
+                )
+                tasks
+                |> Dict.fromList
+
+        tasksCompletedFromTotalDict =
+            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                formHtmlAndTasks
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.andThen
+                (\task -> Dict.get task formHtmlAndTasks)
+                activeTask
+                |> Maybe.withDefault ( emptyNode, 0, 0 )
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.andThen
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        saveMsg =
+                            case task of
+                                TaskHIVTest ->
+                                    SaveHIVResult personId measurements.hivTest nextTask |> Just
+
+                                TaskSyphilisTest ->
+                                    SaveSyphilisResult personId measurements.syphilisTest nextTask |> Just
+
+                                -- Others do not have results follow ups section,
+                                -- or, do not participate at Prenatal.
+                                _ ->
+                                    Nothing
+                    in
+                    Maybe.map
+                        (\msg ->
+                            viewSaveAction language msg (tasksCompleted /= totalTasks)
+                        )
+                        saveMsg
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
 
 
 

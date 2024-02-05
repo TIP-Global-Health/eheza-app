@@ -150,7 +150,7 @@ function hedley_prenatal_field_default_field_bases() {
         '++' => '++',
         '+++' => '+++',
         'not-taken' => 'Not taken',
-        'pending' => 'pending',
+        'pending-input' => 'Pending input',
       ),
       'allowed_values_function' => '',
     ),
@@ -430,6 +430,7 @@ function hedley_prenatal_field_default_field_bases() {
         'partner-hiv-positive' => 'Partner HIV posiitve',
         'partner-taking-arv' => 'Partner taking ARVs',
         'partner-surpressed-viral-load' => 'Partner got surpressed viral load',
+        'pending-input' => 'Pending input',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -501,6 +502,7 @@ function hedley_prenatal_field_default_field_bases() {
         'rash' => 'Rash',
         'painless-ulcer-mouth' => 'Painless ulcer in Mouth',
         'painless-ulcer-genitals' => 'Painless ulcer in genital area',
+        'pending-input' => 'Pending input',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -1340,6 +1342,32 @@ function hedley_prenatal_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_review_state'.
+  $field_bases['field_review_state'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_review_state',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'requested' => 'Requested',
+        'completed' => 'Completed',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_rhesus'.
   $field_bases['field_rhesus'] = array(
     'active' => 1,
@@ -1554,6 +1582,32 @@ function hedley_prenatal_field_default_field_bases() {
       'allowed_values' => array(
         'short' => 'Short',
         'long' => 'Long',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_tests_with_follow_up'.
+  $field_bases['field_tests_with_follow_up'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_tests_with_follow_up',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hiv' => 'HIV',
+        'syphilis' => 'Syphilis',
       ),
       'allowed_values_function' => '',
     ),

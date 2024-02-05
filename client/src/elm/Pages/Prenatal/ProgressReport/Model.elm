@@ -1,6 +1,7 @@
 module Pages.Prenatal.ProgressReport.Model exposing (..)
 
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (LabsResultsValue)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Components.ReportToWhatsAppDialog.Model
 import EverySet exposing (EverySet)
@@ -132,3 +133,4 @@ type Msg
     | SetEndEncounterDialogState Bool
     | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
     | SetReportComponents (Maybe Components.ReportToWhatsAppDialog.Model.ReportComponentsList)
+    | ReviewAndAcceptLabsResults PersonId PrenatalEncounterId PrenatalLabsResultsId LabsResultsValue
