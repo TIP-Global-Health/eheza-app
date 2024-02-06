@@ -734,6 +734,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityTreatmentReview identifier ->
                 viewMeasurement identifier "Treatment Review"
 
+            BackendAuthorityTuberculosisEncounter identifier ->
+                text ("Tuberculosis Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
             BackendAuthorityVitals identifier ->
                 viewMeasurement identifier "Vitals"
 

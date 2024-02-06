@@ -24,6 +24,7 @@ import Backend.ResilienceMessage.Encoder
 import Backend.ResilienceSurvey.Encoder
 import Backend.Session.Encoder
 import Backend.StockUpdate.Encoder
+import Backend.TuberculosisEncounter.Encoder
 import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
@@ -862,6 +863,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityTreatmentReview identifier ->
             getIdentifier identifier "treatment_history"
 
+        BackendAuthorityTuberculosisEncounter identifier ->
+            getIdentifier identifier "tuberculosis_encounter"
+
         BackendAuthorityVitals identifier ->
             getIdentifier identifier "vitals"
 
@@ -1572,6 +1576,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityTreatmentReview identifier ->
             encode Backend.Measurement.Encoder.encodeTreatmentReview identifier
+
+        BackendAuthorityTuberculosisEncounter identifier ->
+            encode Backend.TuberculosisEncounter.Encoder.encodeTuberculosisEncounter identifier
 
         BackendAuthorityVitals identifier ->
             encode Backend.Measurement.Encoder.encodeVitals identifier
@@ -2328,6 +2335,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityTreatmentReview identifier ->
             TreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisEncounter identifier ->
+            TuberculosisEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityVitals identifier ->
             VitalsRevision (toEntityUuid identifier.uuid) identifier.entity

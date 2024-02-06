@@ -28,6 +28,7 @@ import Backend.ResilienceMessage.Decoder
 import Backend.ResilienceSurvey.Decoder
 import Backend.Session.Decoder
 import Backend.StockUpdate.Decoder
+import Backend.TuberculosisEncounter.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
 import Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
@@ -1110,6 +1111,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeTreatmentOngoing
                             BackendAuthorityTreatmentOngoing
+
+                    "tuberculosis_encounter" ->
+                        doDecode
+                            Backend.TuberculosisEncounter.Decoder.decodeTuberculosisEncounter
+                            BackendAuthorityTuberculosisEncounter
 
                     "vitals" ->
                         doDecode
