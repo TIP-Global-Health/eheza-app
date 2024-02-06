@@ -110,16 +110,19 @@ import Pages.PatientRecord.Model exposing (PatientRecordFilter(..))
 import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderType(..))
 import Pages.Prenatal.Activity.Types
     exposing
-        ( EarlyMastitisOrEngorgmentReliefMethod(..)
-        , ExaminationTask(..)
-        , HeartburnReliefMethod(..)
+        ( ExaminationTask(..)
         , HistoryTask(..)
-        , LegCrampsReliefMethod(..)
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
 import Pages.Prenatal.ProgressReport.Model exposing (CHWAction(..))
 import Pages.Prenatal.RecurrentActivity.Types
+import Pages.Prenatal.Types
+    exposing
+        ( EarlyMastitisOrEngorgmentReliefMethod(..)
+        , HeartburnReliefMethod(..)
+        , LegCrampsReliefMethod(..)
+        )
 import Pages.Report.Model
     exposing
         ( LabResultsCurrentMode(..)
@@ -13411,89 +13414,134 @@ translationSet trans =
                     , kirundi = Just "Éclampsie"
                     }
 
-                DiagnosisHIV ->
+                DiagnosisHIVInitialPhase ->
                     translationSet HIV
 
-                DiagnosisHIVDetectableViralLoad ->
+                DiagnosisHIVRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisHIVInitialPhase
+
+                DiagnosisHIVDetectableViralLoadInitialPhase ->
                     { english = "Detectable HIV Viral Load"
                     , kinyarwanda = Just "Agaragaza udukoko dutera virusi ya SIDA mu maraso"
                     , kirundi = Just "Afise umugera wa SIDA ugaragara"
                     }
 
-                DiagnosisDiscordantPartnership ->
+                DiagnosisHIVDetectableViralLoadRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisHIVDetectableViralLoadInitialPhase
+
+                DiagnosisDiscordantPartnershipInitialPhase ->
                     { english = "Discordant Partnership"
                     , kinyarwanda = Just "Umwe mubo babana afite ubwandu"
                     , kirundi = Just "Umwe afise umugera wa SIDA kandi uwundi atawafise"
                     }
 
-                DiagnosisSyphilis ->
+                DiagnosisDiscordantPartnershipRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisDiscordantPartnershipInitialPhase
+
+                DiagnosisSyphilisInitialPhase ->
                     { english = "Syphilis"
                     , kinyarwanda = Just "Mburugu"
                     , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
                     }
 
-                DiagnosisSyphilisWithComplications ->
+                DiagnosisSyphilisRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisSyphilisInitialPhase
+
+                DiagnosisSyphilisWithComplicationsInitialPhase ->
                     { english = "Syphilis with Complications"
                     , kinyarwanda = Just "Mburugu n'ibibazo bishamikiyeho"
                     , kirundi = Just "Syphilis hamwe n'ingorane"
                     }
 
-                DiagnosisNeurosyphilis ->
+                DiagnosisSyphilisWithComplicationsRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisSyphilisWithComplicationsInitialPhase
+
+                DiagnosisNeurosyphilisInitialPhase ->
                     { english = "Neurosyphilis"
                     , kinyarwanda = Just "Mburugu yageze mu bwonko"
                     , kirundi = Just "Ingwara yo m'ubwonko"
                     }
 
-                DiagnosisHepatitisB ->
+                DiagnosisNeurosyphilisRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisNeurosyphilisInitialPhase
+
+                DiagnosisHepatitisBInitialPhase ->
                     { english = "Hepatitis B"
                     , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
                     , kirundi = Just "Ingwara y'igitigu"
                     }
 
-                DiagnosisMalaria ->
+                DiagnosisHepatitisBRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisHepatitisBInitialPhase
+
+                DiagnosisMalariaInitialPhase ->
                     translationSet Malaria
 
-                DiagnosisMalariaMedicatedContinued ->
+                DiagnosisMalariaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisMalariaInitialPhase
+
+                DiagnosisMalariaMedicatedContinuedInitialPhase ->
                     { english = "Malaria Continued"
                     , kinyarwanda = Just "Uburwayi bwa Malariya buracyagaragara"
                     , kirundi = Just "Malariya irabandanya"
                     }
 
-                DiagnosisMalariaWithAnemia ->
+                DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisMalariaMedicatedContinuedInitialPhase
+
+                DiagnosisMalariaWithAnemiaInitialPhase ->
                     { english = "Malaria with Anemia"
                     , kinyarwanda = Just "Malariya n'Amaraso Macye"
                     , kirundi = Just "Malariya hamwe n'igabanuka ry'amaraso m'umubiri"
                     }
 
-                DiagnosisMalariaWithAnemiaMedicatedContinued ->
+                DiagnosisMalariaWithAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisMalariaWithAnemiaInitialPhase
+
+                DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
                     { english = "Malaria with Anemia Continued"
                     , kinyarwanda = Just "Malariya n'Amaraso Macye bikigaragara"
                     , kirundi = Just "Malariya hamwe n'igabanuka ry'amaraso m'umubiri birabandanya"
                     }
 
-                DiagnosisMalariaWithSevereAnemia ->
+                DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+
+                DiagnosisMalariaWithSevereAnemiaInitialPhase ->
                     { english = "Malaria with Severe Anemia"
                     , kinyarwanda = Just "Malariya n'Amaraso Macye Cyane"
                     , kirundi = Just "Malariya kumwe n'igabanuka ry'amaraso m'umubiri ridasanzwe"
                     }
 
-                DiagnosisModerateAnemia ->
+                DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisMalariaWithSevereAnemiaInitialPhase
+
+                DiagnosisModerateAnemiaInitialPhase ->
                     { english = "Mild to Moderate Anemia"
                     , kinyarwanda = Just "Amaraso Macye byoroheje"
                     , kirundi = Just "Igabanuka ry'amaraso kuva bisanzwe"
                     }
 
-                DiagnosisSevereAnemia ->
+                DiagnosisModerateAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisModerateAnemiaInitialPhase
+
+                DiagnosisSevereAnemiaInitialPhase ->
                     { english = "Severe Anemia"
                     , kinyarwanda = Just "Amaraso Macye Cyane"
                     , kirundi = Just "Ibura ry'amaraso rikaze"
                     }
 
-                DiagnosisSevereAnemiaWithComplications ->
+                DiagnosisSevereAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisSevereAnemiaInitialPhase
+
+                DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
                     { english = "Severe Anemia with Complications"
                     , kinyarwanda = Just "Amaraso Macye Cyane n'Ibibazo Bishamikiyeho"
                     , kirundi = Just "Ibura ry'amaraso rikaze hamwe n'ingorane bijanye"
                     }
+
+                DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisSevereAnemiaWithComplicationsInitialPhase
 
                 DiagnosisMiscarriage ->
                     { english = "Miscarriage"
@@ -13693,23 +13741,32 @@ translationSet trans =
                     , kirundi = Just "Igituntu"
                     }
 
-                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
                     { english = "Diabetes"
                     , kinyarwanda = Just "Diyabete (indwara y'igisukari)"
                     , kirundi = Just "Diyabete"
                     }
 
-                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase ->
                     { english = "Gestational Diabetes"
                     , kinyarwanda = Just "Diyabete iterwa no utwite"
                     , kirundi = Just "Diyabete y'imbanyi"
                     }
 
-                DiagnosisRhesusNegative ->
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+
+                DiagnosisRhesusNegativeInitialPhase ->
                     { english = "Rhesus Negative"
                     , kinyarwanda = Just "Rezisi negatifu"
                     , kirundi = Just "Rhesus Négatif"
                     }
+
+                DiagnosisRhesusNegativeRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisRhesusNegativeInitialPhase
 
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
@@ -13866,89 +13923,134 @@ translationSet trans =
                     , kirundi = Just "Éclampsie"
                     }
 
-                DiagnosisHIV ->
+                DiagnosisHIVInitialPhase ->
                     translationSet HIV
 
-                DiagnosisHIVDetectableViralLoad ->
+                DiagnosisHIVRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisHIVInitialPhase
+
+                DiagnosisHIVDetectableViralLoadInitialPhase ->
                     { english = "Detectable HIV Viral Load"
                     , kinyarwanda = Just "Agaragaza  udukoko dutera virusi ya SIDA mu maraso"
                     , kirundi = Just "Afise umugera wa SIDA ugaragara"
                     }
 
-                DiagnosisDiscordantPartnership ->
+                DiagnosisHIVDetectableViralLoadRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisHIVDetectableViralLoadInitialPhase
+
+                DiagnosisDiscordantPartnershipInitialPhase ->
                     { english = "Discordant Partnership"
                     , kinyarwanda = Just "Umwe mubo babana afite ubwandu"
                     , kirundi = Just "Umwe afise umugera wa SIDA kandi uwundi atawafise"
                     }
 
-                DiagnosisSyphilis ->
+                DiagnosisDiscordantPartnershipRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisDiscordantPartnershipInitialPhase
+
+                DiagnosisSyphilisInitialPhase ->
                     { english = "Syphilis"
                     , kinyarwanda = Just "Mburugu"
                     , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
                     }
 
-                DiagnosisSyphilisWithComplications ->
+                DiagnosisSyphilisRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSyphilisInitialPhase
+
+                DiagnosisSyphilisWithComplicationsInitialPhase ->
                     { english = "Syphilis with Complications"
                     , kinyarwanda = Just "Mburugu n'ibibazo bishamikiyeho"
                     , kirundi = Just "Syphilis hamwe n'ingorane"
                     }
 
-                DiagnosisNeurosyphilis ->
+                DiagnosisSyphilisWithComplicationsRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSyphilisWithComplicationsInitialPhase
+
+                DiagnosisNeurosyphilisInitialPhase ->
                     { english = "Suspected Neurosyphilis"
                     , kinyarwanda = Just "Arakekwaho Mburugu yageze mu bwonko"
                     , kirundi = Just "Hiketswe ingwara y'ubwonko canke y'igiti c'umugongo"
                     }
 
-                DiagnosisHepatitisB ->
+                DiagnosisNeurosyphilisRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisNeurosyphilisInitialPhase
+
+                DiagnosisHepatitisBInitialPhase ->
                     { english = "Hepatitis B"
                     , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
                     , kirundi = Just "Ingwara y'igitigu"
                     }
 
-                DiagnosisMalaria ->
+                DiagnosisHepatitisBRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisHepatitisBInitialPhase
+
+                DiagnosisMalariaInitialPhase ->
                     translationSet Malaria
 
-                DiagnosisMalariaMedicatedContinued ->
+                DiagnosisMalariaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisMalariaInitialPhase
+
+                DiagnosisMalariaMedicatedContinuedInitialPhase ->
                     { english = "Malaria Continued"
                     , kinyarwanda = Just "Uburwayi bwa Malariya buracyagaragara"
                     , kirundi = Just "Malariya irabandanya"
                     }
 
-                DiagnosisMalariaWithAnemia ->
+                DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisMalariaMedicatedContinuedInitialPhase
+
+                DiagnosisMalariaWithAnemiaInitialPhase ->
                     { english = "Malaria with Anemia"
                     , kinyarwanda = Just "Malariya n'Amaraso Macye"
                     , kirundi = Just "Malariya hamwe n'igabanuka ry'amaraso m'umubiri"
                     }
 
-                DiagnosisMalariaWithAnemiaMedicatedContinued ->
+                DiagnosisMalariaWithAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisMalariaWithAnemiaInitialPhase
+
+                DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
                     { english = "Malaria with Anemia Continued"
                     , kinyarwanda = Just "Malariya n'Amaraso Macye bikigaragara"
                     , kirundi = Just "Malariya hamwe n'igabanuka ry'amaraso m'umubiri birabandanya"
                     }
 
-                DiagnosisMalariaWithSevereAnemia ->
+                DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+
+                DiagnosisMalariaWithSevereAnemiaInitialPhase ->
                     { english = "Malaria with Severe Anemia"
                     , kinyarwanda = Just "Malariya n'Amaraso Macye Cyane"
                     , kirundi = Just "Malariya kumwe n'igabanuka ry'amaraso m'umubiri ridasanzwe"
                     }
 
-                DiagnosisModerateAnemia ->
+                DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisMalariaWithSevereAnemiaInitialPhase
+
+                DiagnosisModerateAnemiaInitialPhase ->
                     { english = "Anemia (Mild to Moderate)"
                     , kinyarwanda = Just "Amaraso Macye (byoroheje)"
                     , kirundi = Just "Igabanuka ry'amaraso (ryo hasi gushika hagati na hagati)"
                     }
 
-                DiagnosisSevereAnemia ->
+                DiagnosisModerateAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisModerateAnemiaInitialPhase
+
+                DiagnosisSevereAnemiaInitialPhase ->
                     { english = "Anemia (Severe)"
                     , kinyarwanda = Just "Amaraso Macye (bikabije)"
                     , kirundi = Just "Igabanuka ry'amaraso (rikomeye)"
                     }
 
-                DiagnosisSevereAnemiaWithComplications ->
+                DiagnosisSevereAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSevereAnemiaInitialPhase
+
+                DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
                     { english = "Anemia (Severe with Complications)"
                     , kinyarwanda = Just "Amaraso Macye (Bikabije n'Ibibazo Bishamikiyeho)"
                     , kirundi = Just "Igabanuka ry'amaraso (rikomeye hamwe n'inkurikizi zigoye)"
                     }
+
+                DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisSevereAnemiaWithComplicationsInitialPhase
 
                 DiagnosisMiscarriage ->
                     { english = "Possible Miscarriage"
@@ -14148,23 +14250,32 @@ translationSet trans =
                     , kirundi = Just "Birashoboka ko agwaye Igituntu"
                     }
 
-                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
                     { english = "Diabetes"
                     , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
                     , kirundi = Just "Diyabete"
                     }
 
-                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase ->
                     { english = "Gestational Diabetes"
                     , kinyarwanda = Just "Diyabete yatewe no gutwita"
                     , kirundi = Just "Diyabete y'imbanyi"
                     }
 
-                DiagnosisRhesusNegative ->
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+
+                DiagnosisRhesusNegativeInitialPhase ->
                     { english = "Rhesus Negative"
                     , kinyarwanda = Just "Rezisi negatifu"
                     , kirundi = Just "Rhesus Négatif"
                     }
+
+                DiagnosisRhesusNegativeRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisRhesusNegativeInitialPhase
 
                 DiagnosisDepressionNotLikely ->
                     { english = "Depression not Likely"
@@ -14267,95 +14378,140 @@ translationSet trans =
 
         PrenatalDiagnosisNonUrgentMessage diagnosis ->
             case diagnosis of
-                DiagnosisHIV ->
+                DiagnosisHIVInitialPhase ->
                     { english = "Patient has tested positive for HIV"
                     , kinyarwanda = Just "Afite ubwandu bwa Virusi itera SIDA"
                     , kirundi = Just "Afise umugera wa SIDA"
                     }
 
-                DiagnosisHIVDetectableViralLoad ->
+                DiagnosisHIVRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisHIVInitialPhase
+
+                DiagnosisHIVDetectableViralLoadInitialPhase ->
                     { english = "Patient has a detectable HIV Viral Load"
                     , kinyarwanda = Just "Umurwayi agaragaza  udukoko dutera virusi ya SIDA mu maraso"
                     , kirundi = Just "Umugwayi afise umugera wa SIDA ugaragara"
                     }
 
-                DiagnosisDiscordantPartnership ->
+                DiagnosisHIVDetectableViralLoadRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisHIVDetectableViralLoadInitialPhase
+
+                DiagnosisDiscordantPartnershipInitialPhase ->
                     { english = "Patient is HIV Negative with a discordant partner"
                     , kinyarwanda = Just "Umwe mubashakanye afite ubwandu bwa virusi itera SIDA"
                     , kirundi = Just "Umugwayi ata mugera wa Sida afise ariko mugenziwe ayifise"
                     }
 
-                DiagnosisSyphilis ->
+                DiagnosisDiscordantPartnershipRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisDiscordantPartnershipInitialPhase
+
+                DiagnosisSyphilisInitialPhase ->
                     { english = "Patient has tested positive for Syphilis"
                     , kinyarwanda = Just "Afite ubwandu bw'indwara ya Mburugu"
                     , kirundi = Just "Umugwayi bamutoye ingwara yo mu bihimba vy'irondoka yitwa Syphilis"
                     }
 
-                DiagnosisSyphilisWithComplications ->
+                DiagnosisSyphilisRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisSyphilisInitialPhase
+
+                DiagnosisSyphilisWithComplicationsInitialPhase ->
                     { english = "Patient has tested positive for Syphilis"
                     , kinyarwanda = Just "Afite ubwandu bw'indwara ya Mburugu"
                     , kirundi = Just "Umugwayi bamutoye ingwara yo mu bihimba vy'irondoka yitwa Syphilis"
                     }
 
-                DiagnosisNeurosyphilis ->
+                DiagnosisSyphilisWithComplicationsRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisSyphilisWithComplicationsInitialPhase
+
+                DiagnosisNeurosyphilisInitialPhase ->
                     { english = "Patient has tested positive for Syphilis and shows signs of Neurosyphilis"
                     , kinyarwanda = Just "Afite ubwandu bw'indwara ya Mburugu kandi afite ibimenyetso bigaragaza ko yageze mu bwonko"
                     , kirundi = Just "Umuvyeyi bamutoye ingwara yo mu bihimba vy'irondoka yitwa Syphilis hamwe n'ingwara yo m'ubwonko yitwa neurosyphilis"
                     }
 
-                DiagnosisHepatitisB ->
+                DiagnosisNeurosyphilisRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisNeurosyphilisInitialPhase
+
+                DiagnosisHepatitisBInitialPhase ->
                     { english = "Patient has tested positive for Hepatitis B"
                     , kinyarwanda = Just "Afite ubwandu bw'umwijima wo mu bwoko bwa B"
                     , kirundi = Just "Umugwayi bamutoye ingwara y'igitigu"
                     }
 
-                DiagnosisMalaria ->
+                DiagnosisHepatitisBRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisHepatitisBInitialPhase
+
+                DiagnosisMalariaInitialPhase ->
                     { english = "Patient has tested positive for Malaria"
                     , kinyarwanda = Just "Afite ubwandu bwa Malariya"
                     , kirundi = Just "Umugwayi bamutoye Malariya"
                     }
 
-                DiagnosisMalariaMedicatedContinued ->
+                DiagnosisMalariaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisMalariaInitialPhase
+
+                DiagnosisMalariaMedicatedContinuedInitialPhase ->
                     { english = "Patient has tested positive for persistent Malaria"
                     , kinyarwanda = Just "Umubyeyi afite ubwandu bwa Malariya ikomeje kugaragara"
                     , kirundi = Just "Umuvyeyi bamutoye Malariya ibandanya hamwe n'ibura ry'amaroso"
                     }
 
-                DiagnosisMalariaWithAnemia ->
+                DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisMalariaMedicatedContinuedInitialPhase
+
+                DiagnosisMalariaWithAnemiaInitialPhase ->
                     { english = "Patient has tested positive for Malaria with Anemia"
                     , kinyarwanda = Just "Umubyeyi afite Malariya n'amaraso macye"
                     , kirundi = Just "Umuvyeyi bamutoye Malariya ibandanya"
                     }
 
-                DiagnosisMalariaWithAnemiaMedicatedContinued ->
+                DiagnosisMalariaWithAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisMalariaWithAnemiaInitialPhase
+
+                DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
                     { english = "Patient has tested positive for persistent Malaria with Anemia"
                     , kinyarwanda = Just "Umubyeyi afite ubwandu bwa Malariya n'amaraso make bikomeje kugaragara"
                     , kirundi = Just "Umuvyeyi afise Malariya hamwe n'igabanuka ry'amaraso m'umubiri"
                     }
 
-                DiagnosisMalariaWithSevereAnemia ->
+                DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+
+                DiagnosisMalariaWithSevereAnemiaInitialPhase ->
                     { english = "Patient has tested positive for Malaria with Severe Anemia"
                     , kinyarwanda = Just "Umubyeyi afite ubwandu bwa Malariya n'amaraso macye cyane"
                     , kirundi = Just "Umuvyeyi afise Malariya kumwe n'igabanuka ry'amaraso m'umubiri ridasanzwe"
                     }
 
-                DiagnosisModerateAnemia ->
+                DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisMalariaWithSevereAnemiaInitialPhase
+
+                DiagnosisModerateAnemiaInitialPhase ->
                     { english = "Patient shows signs of Mild to Moderate Anemia"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'amaraso Macye byoroheje"
                     , kirundi = Just "Umuvyeyi afise Igabanuka ry'amaraso bisanzwe"
                     }
 
-                DiagnosisSevereAnemia ->
+                DiagnosisModerateAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisModerateAnemiaInitialPhase
+
+                DiagnosisSevereAnemiaInitialPhase ->
                     { english = "Patient shows signs of Severe Anemia"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'Amaraso Macye Cyane"
                     , kirundi = Just "Umuvyeyi afise Ibura ry'amaraso rikaze"
                     }
 
-                DiagnosisSevereAnemiaWithComplications ->
+                DiagnosisSevereAnemiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisSevereAnemiaInitialPhase
+
+                DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
                     { english = "Patient has tested positive for Severe Anemia with Complications"
                     , kinyarwanda = Just "Umubyeyi afite Amaraso Macye Cyane n'Ibibazo Bishamikiyeho"
                     , kirundi = Just "Umuvyeyi afise Ibura ry'amaraso rikaze hamwe n'ingorane bijanye"
                     }
+
+                DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisSevereAnemiaWithComplicationsInitialPhase
 
                 DiagnosisChronicHypertensionImmediate ->
                     { english = "Patient shows signs of Chronic Hypertension"
@@ -14489,23 +14645,34 @@ translationSet trans =
                     , kirundi = Just "Umuvyeyi yerekana ibimenyetso vy'ingwara y'Igituntu"
                     }
 
-                Backend.PrenatalEncounter.Types.DiagnosisDiabetes ->
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
                     { english = "Patient shows signs of Diabetes"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya Diyabete"
                     , kirundi = Just "Umugwayi yerekana ibimenyetso vya Diyabete"
                     }
 
-                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes ->
+                Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisDiabetesInitialPhase
+
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase ->
                     { english = "Patient shows signs of Gestational Diabetes"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya Diyabete yatewe no gutwita"
                     , kirundi = Just "Umugwayi yerekana ibimenyetso vya Diyabete igihe c'imbanyi"
                     }
 
-                DiagnosisRhesusNegative ->
+                Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
+                    translationSet <|
+                        PrenatalDiagnosisNonUrgentMessage
+                            Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+
+                DiagnosisRhesusNegativeInitialPhase ->
                     { english = "Patient has Rh-Negative status"
                     , kinyarwanda = Just "Umubyeyi afite Rezisi Negatifu"
                     , kirundi = Just "Umugwayi/umuvyeyi afise indangakamere ya Rhesus Négatif"
                     }
+
+                DiagnosisRhesusNegativeRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisRhesusNegativeInitialPhase
 
                 DiagnosisHyperemesisGravidumBySymptoms ->
                     { english = "Patient shows signs of Hyperemesis Gravidum"

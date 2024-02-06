@@ -143,6 +143,14 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
         isResultsReviewer =
             -- A nurse.
             (not isChw && not isLabTech)
+                && -- Access was perfomed from case  managament.
+                   (case initiator of
+                        InitiatorCaseManagement _ ->
+                            True
+
+                        _ ->
+                            False
+                   )
                 && -- Labs results review was requested.
                    (getMeasurementValueFunc assembled.measurements.labsResults
                         |> Maybe.map (.reviewState >> (==) (Just LabsResultsReviewRequested))
@@ -2062,7 +2070,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> wrapWithLI
     in
     case diagnosis of
-        DiagnosisHIV ->
+        DiagnosisHIVInitialPhase ->
             getMeasurementValueFunc measurements.sendToHC
                 |> Maybe.map
                     (\value ->
@@ -2107,7 +2115,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
-        DiagnosisHIVDetectableViralLoad ->
+        DiagnosisHIVRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisHIVInitialPhase
+
+        DiagnosisHIVDetectableViralLoadInitialPhase ->
             getMeasurementValueFunc measurements.hivPCRTest
                 |> Maybe.andThen .hivViralLoad
                 |> Maybe.map
@@ -2123,7 +2134,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault []
 
-        DiagnosisDiscordantPartnership ->
+        DiagnosisHIVDetectableViralLoadRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisHIVDetectableViralLoadInitialPhase
+
+        DiagnosisDiscordantPartnershipInitialPhase ->
             getMeasurementValueFunc measurements.medicationDistribution
                 |> Maybe.andThen
                     (\value ->
@@ -2151,10 +2165,16 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
-        DiagnosisSyphilis ->
+        DiagnosisDiscordantPartnershipRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisDiscordantPartnershipInitialPhase
+
+        DiagnosisSyphilisInitialPhase ->
             syphilisTreatmentMessage ""
 
-        DiagnosisSyphilisWithComplications ->
+        DiagnosisSyphilisRecurrentPhase ->
+            syphilisTreatmentMessage ""
+
+        DiagnosisSyphilisWithComplicationsInitialPhase ->
             let
                 complications =
                     getMeasurementValueFunc measurements.syphilisTest
@@ -2178,6 +2198,9 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         |> Maybe.withDefault ""
             in
             syphilisTreatmentMessage complications
+
+        DiagnosisSyphilisWithComplicationsRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisSyphilisWithComplicationsInitialPhase
 
         DiagnosisChronicHypertensionImmediate ->
             hypertensionTreatmentMessage
@@ -2248,7 +2271,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisLaborAndDelivery ->
             referredToHospitalMessage
 
-        DiagnosisModerateAnemia ->
+        DiagnosisModerateAnemiaInitialPhase ->
             getMeasurementValueFunc measurements.medicationDistribution
                 |> Maybe.andThen
                     (\value ->
@@ -2278,10 +2301,16 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
-        DiagnosisSevereAnemia ->
+        DiagnosisModerateAnemiaRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisModerateAnemiaInitialPhase
+
+        DiagnosisSevereAnemiaInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisSevereAnemiaWithComplications ->
+        DiagnosisSevereAnemiaRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
             let
                 complication =
                     " - ["
@@ -2336,25 +2365,49 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             in
             referredToHospitalMessageWithComplications complication
 
-        DiagnosisMalaria ->
+        DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisSevereAnemiaWithComplicationsInitialPhase
+
+        DiagnosisMalariaInitialPhase ->
             malariaTreatmentMessage
 
-        DiagnosisMalariaMedicatedContinued ->
-            referredToHospitalMessage
-
-        DiagnosisMalariaWithAnemia ->
+        DiagnosisMalariaRecurrentPhase ->
             malariaTreatmentMessage
 
-        DiagnosisMalariaWithAnemiaMedicatedContinued ->
+        DiagnosisMalariaMedicatedContinuedInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisMalariaWithSevereAnemia ->
+        DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisMalariaWithAnemiaInitialPhase ->
             malariaTreatmentMessage
 
-        DiagnosisHepatitisB ->
+        DiagnosisMalariaWithAnemiaRecurrentPhase ->
+            malariaTreatmentMessage
+
+        DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisNeurosyphilis ->
+        DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisMalariaWithSevereAnemiaInitialPhase ->
+            malariaTreatmentMessage
+
+        DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
+            malariaTreatmentMessage
+
+        DiagnosisHepatitisBInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisHepatitisBRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisNeurosyphilisInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisNeurosyphilisRecurrentPhase ->
             referredToHospitalMessage
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
@@ -2545,13 +2598,22 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ formatDDMMYYYY date
                 |> wrapWithLI
 
-        DiagnosisDiabetes ->
+        DiagnosisDiabetesInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisGestationalDiabetes ->
+        DiagnosisDiabetesRecurrentPhase ->
             referredToHospitalMessage
 
-        DiagnosisRhesusNegative ->
+        DiagnosisGestationalDiabetesInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisGestationalDiabetesRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisRhesusNegativeInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisRhesusNegativeRecurrentPhase ->
             referredToHospitalMessage
 
         DiagnosisDepressionNotLikely ->
@@ -2668,25 +2730,37 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                     ++ " "
         in
         case diagnosis of
-            DiagnosisHIV ->
+            DiagnosisHIVInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsHIV NoOutsideCareMedicationForMalaria
                     |> Just
                     |> completePhrase
 
-            DiagnosisSyphilis ->
+            DiagnosisHIVRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisHIVInitialPhase
+
+            DiagnosisSyphilisInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsSyphilis NoOutsideCareMedicationForSyphilis
                     |> Just
                     |> completePhrase
 
-            DiagnosisMalaria ->
+            DiagnosisSyphilisRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisSyphilisInitialPhase
+
+            DiagnosisMalariaInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsMalaria NoOutsideCareMedicationForMalaria
                     |> Just
                     |> completePhrase
 
-            DiagnosisModerateAnemia ->
+            DiagnosisMalariaRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisMalariaInitialPhase
+
+            DiagnosisModerateAnemiaInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsAnemia NoOutsideCareMedicationForAnemia
                     |> Just
                     |> completePhrase
+
+            DiagnosisModerateAnemiaRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisModerateAnemiaInitialPhase
 
             DiagnosisGestationalHypertensionImmediate ->
                 treatmentForHypertensionMessage

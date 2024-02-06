@@ -16,6 +16,7 @@ import Measurement.Utils exposing (generateVaccinationProgressForVaccine, toEver
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
+import Pages.Prenatal.Types exposing (..)
 import Pages.Utils
     exposing
         ( getCurrentReasonForMedicationNonAdministration
@@ -30,6 +31,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewInstructionsLabel
+        , viewLabel
         , viewQuestionLabel
         )
 import Translate exposing (Language, TranslationId, translate)
@@ -108,9 +110,10 @@ diagnosesCausingHospitalReferralByPhase phase assembled =
                     general =
                         diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseInitial assembled
                             ++ diagnosesCausingHospitalReferralByMentalHealth assembled
-                            ++ diagnosesCausingHospitalReferralByOtherReasons assembled
+                            ++ diagnosesCausingHospitalReferralByOtherReasons PrenatalEncounterPhaseInitial assembled
 
                     byAdverseEvent =
+                        -- Can be only on first phase, as that's where we record past treatment.
                         diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
 
                     byPastDiagnoses =
@@ -123,6 +126,7 @@ diagnosesCausingHospitalReferralByPhase phase assembled =
 
             PrenatalEncounterPhaseRecurrent ->
                 diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseRecurrent assembled
+                    ++ diagnosesCausingHospitalReferralByOtherReasons PrenatalEncounterPhaseRecurrent assembled
                     |> EverySet.fromList
 
 
@@ -151,20 +155,26 @@ mentalHealthDiagnosesRequiringTreatment =
     ]
 
 
-diagnosesCausingHospitalReferralByOtherReasons : AssembledData -> List PrenatalDiagnosis
-diagnosesCausingHospitalReferralByOtherReasons assembled =
+diagnosesCausingHospitalReferralByOtherReasons : PrenatalEncounterPhase -> AssembledData -> List PrenatalDiagnosis
+diagnosesCausingHospitalReferralByOtherReasons phase assembled =
     let
         malaria =
-            if diagnosedMalaria assembled && severeMalariaTreatment then
-                [ DiagnosisMalaria ]
+            let
+                severeMalariaTreatment =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
+                        |> Maybe.withDefault False
+            in
+            if diagnosedMalariaByPhase phase assembled && severeMalariaTreatment then
+                case phase of
+                    PrenatalEncounterPhaseInitial ->
+                        [ DiagnosisMalariaInitialPhase ]
+
+                    PrenatalEncounterPhaseRecurrent ->
+                        [ DiagnosisMalariaRecurrentPhase ]
 
             else
                 []
-
-        severeMalariaTreatment =
-            getMeasurementValueFunc assembled.measurements.medicationDistribution
-                |> Maybe.andThen (.recommendedTreatmentSigns >> Maybe.map (EverySet.member TreatmentReferToHospital))
-                |> Maybe.withDefault False
 
         hypertension =
             let
@@ -190,7 +200,12 @@ diagnosesCausingHospitalReferralByOtherReasons assembled =
                 else
                     []
     in
-    malaria ++ hypertension
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            malaria ++ hypertension
+
+        PrenatalEncounterPhaseRecurrent ->
+            malaria
 
 
 moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis : AssembledData -> Bool
@@ -235,8 +250,6 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                            , DiagnosisPelvicPainIntense
                            , DiagnosisPelvicPainContinued
                            , DiagnosisPyelonephritis
-                           , DiagnosisMalariaMedicatedContinued
-                           , DiagnosisMalariaWithAnemiaMedicatedContinued
                            , DiagnosisUrinaryTractInfectionContinued
                            , DiagnosisCandidiasisContinued
                            , DiagnosisGonorrheaContinued
@@ -244,19 +257,34 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                            , DiagnosisPostpartumUrinaryIncontinence
                            , DiagnosisPostpartumInfection
                            , DiagnosisPostpartumExcessiveBleeding
+
+                           -- Possible diagnoses on both phases:
+                           , DiagnosisHepatitisBInitialPhase
+                           , DiagnosisNeurosyphilisInitialPhase
+                           , DiagnosisMalariaWithSevereAnemiaInitialPhase
+                           , DiagnosisSevereAnemiaInitialPhase
+                           , DiagnosisModeratePreeclampsiaInitialPhase
+                           , DiagnosisSeverePreeclampsiaInitialPhase
+                           , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+                           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+                           , DiagnosisRhesusNegativeInitialPhase
+                           , DiagnosisMalariaMedicatedContinuedInitialPhase
+                           , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
                            ]
 
                 PrenatalEncounterPhaseRecurrent ->
                     emergencyReferralDiagnosesRecurrent
-                        ++ [ DiagnosisHepatitisB
-                           , DiagnosisNeurosyphilis
-                           , DiagnosisMalariaWithSevereAnemia
-                           , DiagnosisSevereAnemia
+                        ++ [ DiagnosisHepatitisBRecurrentPhase
+                           , DiagnosisNeurosyphilisRecurrentPhase
+                           , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+                           , DiagnosisSevereAnemiaRecurrentPhase
                            , DiagnosisModeratePreeclampsiaRecurrentPhase
                            , DiagnosisSeverePreeclampsiaRecurrentPhase
-                           , Backend.PrenatalEncounter.Types.DiagnosisDiabetes
-                           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
-                           , DiagnosisRhesusNegative
+                           , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+                           , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
+                           , DiagnosisRhesusNegativeRecurrentPhase
+                           , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+                           , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
                            ]
     in
     List.filter (\diagnosis -> diagnosed diagnosis assembled)
@@ -288,6 +316,7 @@ emergencyReferralDiagnosesInitial =
     , DiagnosisLaborAndDelivery
     , DiagnosisHyperemesisGravidum
     , DiagnosisSevereVomiting
+    , DiagnosisSevereAnemiaWithComplicationsInitialPhase
 
     -- Infection diagnosis will be available at latter phase.
     -- , DiagnosisInfection
@@ -298,7 +327,7 @@ emergencyReferralDiagnosesRecurrent : List PrenatalDiagnosis
 emergencyReferralDiagnosesRecurrent =
     [ DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
     , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
-    , DiagnosisSevereAnemiaWithComplications
+    , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
     ]
 
 
@@ -483,11 +512,8 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , metronidazole = or form.metronidazole (medicationDistributionResolveFromValue allowedSigns value Metronidazole)
                 , vitaminA = or form.vitaminA (medicationDistributionResolveFromValue allowedSigns value VitaminA)
                 , paracetamol = or form.paracetamol (medicationDistributionResolveFromValue allowedSigns value Paracetamol)
-
-                -- Following 2 do not participate at initial phase, therefore,
-                -- resolved directly from value.
-                , iron = EverySet.member Iron value.distributionSigns |> Just
-                , folicAcid = EverySet.member FolicAcid value.distributionSigns |> Just
+                , iron = or form.iron (medicationDistributionResolveFromValue allowedSigns value Iron)
+                , folicAcid = or form.folicAcid (medicationDistributionResolveFromValue allowedSigns value FolicAcid)
                 , nonAdministrationSigns = or form.nonAdministrationSigns (Just value.nonAdministrationSigns)
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
@@ -511,14 +537,14 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 in
                 { iron = or form.iron (medicationDistributionResolveFromValue allowedSigns value Iron)
                 , folicAcid = or form.folicAcid (medicationDistributionResolveFromValue allowedSigns value FolicAcid)
+                , dolutegravir = or form.dolutegravir (medicationDistributionResolveFromValue allowedSigns value Dolutegravir)
+                , tdf3tc = or form.tdf3tc (medicationDistributionResolveFromValue allowedSigns value TDF3TC)
 
-                -- Following 9 do not participate at recurrent phase, therefore,
+                -- Following 7 do not participate at recurrent phase, therefore,
                 -- resolved directly from value.
                 , mebendezole = EverySet.member Mebendezole value.distributionSigns |> Just
                 , tenofovir = EverySet.member Tenofovir value.distributionSigns |> Just
                 , lamivudine = EverySet.member Lamivudine value.distributionSigns |> Just
-                , dolutegravir = EverySet.member Dolutegravir value.distributionSigns |> Just
-                , tdf3tc = EverySet.member TDF3TC value.distributionSigns |> Just
                 , ceftriaxone = EverySet.member Ceftriaxone value.distributionSigns |> Just
                 , azithromycin = EverySet.member Azithromycin value.distributionSigns |> Just
                 , metronidazole = EverySet.member Metronidazole value.distributionSigns |> Just
@@ -693,21 +719,33 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
 
                     else
                         ( [], 0, 0 )
+
+                ( malariaInputs, malariaCompleted, malariaActive ) =
+                    if diagnosedMalariaByPhase phase assembled then
+                        resolveRecommendedTreatmentForMalariaInputsAndTasks language
+                            currentDate
+                            setRecommendedTreatmentSignMsg
+                            assembled
+                            form
+
+                    else
+                        ( [], 0, 0 )
+
+                ( syphilisInputs, syphilisCompleted, syphilisActive ) =
+                    if diagnosedSyphilisByPhase phase assembled then
+                        resolveRecommendedTreatmentForSyphilisInputsAndTasks language
+                            currentDate
+                            setRecommendedTreatmentSignMsg
+                            recommendedTreatmentSignsForSyphilis
+                            assembled
+                            form
+
+                    else
+                        ( [], 0, 0 )
             in
             case phase of
                 PrenatalEncounterPhaseInitial ->
                     let
-                        ( malariaInputs, malariaCompleted, malariaActive ) =
-                            if diagnosedMalaria assembled then
-                                resolveRecommendedTreatmentForMalariaInputsAndTasks language
-                                    currentDate
-                                    setRecommendedTreatmentSignMsg
-                                    assembled
-                                    form
-
-                            else
-                                ( [], 0, 0 )
-
                         ( heartburnInputs, heartburnCompleted, heartburnActive ) =
                             if diagnosed DiagnosisHeartburn assembled then
                                 resolveRecommendedTreatmentForHeartburnInputsAndTasks language
@@ -759,42 +797,32 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                                 ( [], 0, 0 )
                     in
                     ( malariaInputs
-                        ++ heartburnInputs
                         ++ hypertensionInputs
+                        ++ syphilisInputs
+                        ++ heartburnInputs
                         ++ urinaryTractInfectionInputs
                         ++ candidiasisInputs
                         ++ mastitisInputs
                     , malariaCompleted
-                        + heartburnCompleted
                         + hypertensionCompleted
+                        + syphilisCompleted
+                        + heartburnCompleted
                         + urinaryTractInfectionCompleted
                         + candidiasisCompleted
                         + mastitisCompleted
                     , malariaActive
-                        + heartburnActive
+                        + syphilisActive
                         + hypertensionActive
+                        + heartburnActive
                         + urinaryTractInfectionActive
                         + candidiasisActive
                         + mastitisActive
                     )
 
                 PrenatalEncounterPhaseRecurrent ->
-                    let
-                        ( syphilisInputs, syphilisCompleted, syphilisActive ) =
-                            if diagnosedSyphilis assembled then
-                                resolveRecommendedTreatmentForSyphilisInputsAndTasks language
-                                    currentDate
-                                    setRecommendedTreatmentSignMsg
-                                    recommendedTreatmentSignsForSyphilis
-                                    assembled
-                                    form
-
-                            else
-                                ( [], 0, 0 )
-                    in
-                    ( syphilisInputs ++ hypertensionInputs
-                    , syphilisCompleted + hypertensionCompleted
-                    , syphilisActive + hypertensionActive
+                    ( malariaInputs ++ syphilisInputs ++ hypertensionInputs
+                    , malariaCompleted + syphilisCompleted + hypertensionCompleted
+                    , malariaActive + syphilisActive + hypertensionActive
                     )
     in
     ( inputsByMedications ++ inputsByDiagnoses
@@ -1651,6 +1679,67 @@ resolveRequiredMedicationsSet :
     -> AssembledData
     -> List ( TranslationId, List MedicationDistributionSign, List (Html any) )
 resolveRequiredMedicationsSet language currentDate phase assembled =
+    let
+        resolveHIVPositiveSet diagnosis =
+            let
+                hivDiagnosed =
+                    diagnosed diagnosis assembled
+
+                hivProgramHC =
+                    hivProgramAtHC assembled.measurements
+            in
+            if
+                (hivDiagnosed && not hivProgramHC)
+                    || patientReportedNoMedicineRecievedFromPMTCT assembled.measurements
+            then
+                Just
+                    ( Translate.MedicationDistributionHelperHIV
+                    , [ TDF3TC, Dolutegravir ]
+                    , []
+                    )
+
+            else
+                Nothing
+
+        resolveDiscordantPartnershipSet diagnosis =
+            if diagnosed diagnosis assembled then
+                let
+                    partnerTakingARVs =
+                        getMeasurementValueFunc assembled.measurements.hivTest
+                            |> Maybe.andThen .hivSigns
+                            |> Maybe.map (EverySet.member PartnerTakingARV)
+                            |> Maybe.withDefault False
+
+                    helper =
+                        if partnerTakingARVs then
+                            Translate.MedicationDistributionHelperDiscordantPartnership
+
+                        else
+                            Translate.MedicationDistributionHelperDiscordantPartnershipNoARVs
+                in
+                Just
+                    ( helper
+                    , [ TDF3TC ]
+                    , []
+                    )
+
+            else
+                Nothing
+
+        resolveModerateAnemiaSet diagnosis =
+            if
+                diagnosed diagnosis assembled
+                    && (not <| referToHospitalDueToAdverseEventForAnemiaTreatment assembled)
+            then
+                Just
+                    ( Translate.MedicationDistributionHelperAnemia
+                    , [ Iron, FolicAcid ]
+                    , []
+                    )
+
+            else
+                Nothing
+    in
     case phase of
         -- Not for Postpartum encounter.
         PrenatalEncounterPhaseInitial ->
@@ -1670,52 +1759,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                         Just
                             ( Translate.MedicationDistributionHelperMebendazole
                             , [ Mebendezole ]
-                            , []
-                            )
-
-                    else
-                        Nothing
-
-                hivPositiveSet =
-                    let
-                        hivDiagnosed =
-                            diagnosed DiagnosisHIV assembled
-
-                        hivProgramHC =
-                            hivProgramAtHC assembled.measurements
-                    in
-                    if
-                        (hivDiagnosed && not hivProgramHC)
-                            || patientReportedNoMedicineRecievedFromPMTCT assembled.measurements
-                    then
-                        Just
-                            ( Translate.MedicationDistributionHelperHIV
-                            , [ TDF3TC, Dolutegravir ]
-                            , []
-                            )
-
-                    else
-                        Nothing
-
-                discordantPartnershipSet =
-                    if diagnosed DiagnosisDiscordantPartnership assembled then
-                        let
-                            partnerTakingARVs =
-                                getMeasurementValueFunc assembled.measurements.hivTest
-                                    |> Maybe.andThen .hivSigns
-                                    |> Maybe.map (EverySet.member PartnerTakingARV)
-                                    |> Maybe.withDefault False
-
-                            helper =
-                                if partnerTakingARVs then
-                                    Translate.MedicationDistributionHelperDiscordantPartnership
-
-                                else
-                                    Translate.MedicationDistributionHelperDiscordantPartnershipNoARVs
-                        in
-                        Just
-                            ( helper
-                            , [ TDF3TC ]
                             , []
                             )
 
@@ -1781,38 +1824,36 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
             in
             Maybe.Extra.values
                 [ mebendazoleSet
-                , hivPositiveSet
-                , discordantPartnershipSet
+                , resolveHIVPositiveSet DiagnosisHIVInitialPhase
+                , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipInitialPhase
+                , resolveModerateAnemiaSet DiagnosisModerateAnemiaInitialPhase
                 , gonorheaSet
                 , trichomonasOrBVSet
                 , vitaminASet
                 ]
 
         PrenatalEncounterPhaseRecurrent ->
-            if
-                diagnosed DiagnosisModerateAnemia assembled
-                    && (not <| referToHospitalDueToAdverseEventForAnemiaTreatment assembled)
-            then
-                [ ( Translate.MedicationDistributionHelperAnemia
-                  , [ Iron, FolicAcid ]
-                  , []
-                  )
+            Maybe.Extra.values
+                [ resolveHIVPositiveSet DiagnosisHIVRecurrentPhase
+                , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipRecurrentPhase
+                , resolveModerateAnemiaSet DiagnosisModerateAnemiaRecurrentPhase
                 ]
-
-            else
-                []
 
 
 diagnosesCausingHospitalReferralByAdverseEventForTreatment : AssembledData -> List PrenatalDiagnosis
 diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled =
     filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
-        [ DiagnosisHIV
+        [ DiagnosisHIVInitialPhase
+        , DiagnosisHIVRecurrentPhase
         , -- Since treatment for Hypertension and Moderate Preeclampsia
           -- is identical, we use this indicator for both.
           DiagnosisChronicHypertensionImmediate
-        , DiagnosisMalaria
-        , DiagnosisModerateAnemia
-        , DiagnosisSyphilis
+        , DiagnosisMalariaInitialPhase
+        , DiagnosisMalariaRecurrentPhase
+        , DiagnosisModerateAnemiaInitialPhase
+        , DiagnosisModerateAnemiaRecurrentPhase
+        , DiagnosisSyphilisInitialPhase
+        , DiagnosisSyphilisRecurrentPhase
         ]
         assembled
 
@@ -1835,7 +1876,7 @@ referToHospitalDueToAdverseEventForHypertensionTreatment =
 referToHospitalDueToAdverseEventForAnemiaTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForAnemiaTreatment =
     filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
-        [ DiagnosisModerateAnemia ]
+        [ DiagnosisModerateAnemiaInitialPhase, DiagnosisModerateAnemiaRecurrentPhase ]
         >> List.isEmpty
         >> not
 
@@ -1843,7 +1884,7 @@ referToHospitalDueToAdverseEventForAnemiaTreatment =
 referToHospitalDueToAdverseEventForMalariaTreatment : AssembledData -> Bool
 referToHospitalDueToAdverseEventForMalariaTreatment =
     filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment
-        [ DiagnosisMalaria ]
+        [ DiagnosisMalariaInitialPhase, DiagnosisMalariaRecurrentPhase ]
         >> List.isEmpty
         >> not
 
@@ -1856,21 +1897,33 @@ filterDiagnosesCausingHospitalReferralByAdverseEventForTreatment diagnoses assem
                 let
                     conditionByDiagnosis diagnosis =
                         case diagnosis of
-                            DiagnosisHIV ->
+                            DiagnosisHIVInitialPhase ->
                                 Maybe.map (EverySet.member HIVTreatmentAdverseEventsHospitalization) value.hivTreatment
                                     |> Maybe.withDefault False
+
+                            DiagnosisHIVRecurrentPhase ->
+                                conditionByDiagnosis DiagnosisHIVInitialPhase
 
                             DiagnosisChronicHypertensionImmediate ->
                                 referByTreatment value.hypertensionTreatment
 
-                            DiagnosisMalaria ->
+                            DiagnosisMalariaInitialPhase ->
                                 referByTreatment value.malariaTreatment
 
-                            DiagnosisModerateAnemia ->
+                            DiagnosisMalariaRecurrentPhase ->
+                                conditionByDiagnosis DiagnosisMalariaInitialPhase
+
+                            DiagnosisModerateAnemiaInitialPhase ->
                                 referByTreatment value.anemiaTreatment
 
-                            DiagnosisSyphilis ->
+                            DiagnosisModerateAnemiaRecurrentPhase ->
+                                conditionByDiagnosis DiagnosisModerateAnemiaInitialPhase
+
+                            DiagnosisSyphilisInitialPhase ->
                                 referByTreatment value.syphilisTreatment
+
+                            DiagnosisSyphilisRecurrentPhase ->
+                                conditionByDiagnosis DiagnosisSyphilisInitialPhase
 
                             -- There's no other diagnosis treatment we revise
                             -- at Treatment Review activity.
@@ -1892,7 +1945,7 @@ diagnosesCausingHospitalReferralByPastDiagnoses assembled =
         allowedPastDiagnoses =
             syphilisDiagnosesIncludingNeurosyphilis
                 ++ diabetesDiagnoses
-                ++ [ DiagnosisHepatitisB, DiagnosisRhesusNegative ]
+                ++ [ DiagnosisHepatitisBRecurrentPhase, DiagnosisRhesusNegativeRecurrentPhase ]
     in
     EverySet.toList assembled.encounter.pastDiagnoses
         |> List.filter (\diagnosis -> List.member diagnosis allowedPastDiagnoses)
@@ -2711,19 +2764,34 @@ resolveParacetamolDosageAndIcon currentDate person =
 medicationsInitialPhase : List MedicationDistributionSign
 medicationsInitialPhase =
     [ Mebendezole
-    , TDF3TC
-    , Dolutegravir
-    , Ceftriaxone
-    , Azithromycin
-    , Metronidazole
     , VitaminA
     , Paracetamol
+
+    -- Gonorhea medication
+    , Ceftriaxone
+    , Azithromycin
+
+    -- Trichomonas / Bacterial Vaginosis medication
+    , Metronidazole
+
+    -- HIV
+    , TDF3TC
+    , Dolutegravir
+
+    -- Anemia
+    , Iron
+    , FolicAcid
     ]
 
 
 medicationsRecurrentPhase : List MedicationDistributionSign
 medicationsRecurrentPhase =
-    [ Iron
+    [ -- HIV
+      TDF3TC
+    , Dolutegravir
+
+    -- Anemia
+    , Iron
     , FolicAcid
     ]
 
@@ -2867,11 +2935,17 @@ resolveARVReferralDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagno
 resolveARVReferralDiagnosis nursePreviousEncountersData =
     List.filterMap
         (\data ->
-            if EverySet.member DiagnosisHIV data.diagnoses || knownAsHIVPositive data.measurements then
-                Just DiagnosisHIV
+            if EverySet.member DiagnosisHIVInitialPhase data.diagnoses || knownAsHIVPositive data.measurements then
+                Just DiagnosisHIVInitialPhase
 
-            else if EverySet.member DiagnosisDiscordantPartnership data.diagnoses then
-                Just DiagnosisDiscordantPartnership
+            else if EverySet.member DiagnosisHIVRecurrentPhase data.diagnoses || knownAsHIVPositive data.measurements then
+                Just DiagnosisHIVRecurrentPhase
+
+            else if EverySet.member DiagnosisDiscordantPartnershipInitialPhase data.diagnoses then
+                Just DiagnosisDiscordantPartnershipInitialPhase
+
+            else if EverySet.member DiagnosisDiscordantPartnershipRecurrentPhase data.diagnoses then
+                Just DiagnosisDiscordantPartnershipRecurrentPhase
 
             else
                 Nothing
@@ -2938,36 +3012,88 @@ resolvePreviousDiabetesDiagnosis nursePreviousEncountersData =
         |> List.head
 
 
-diagnosedMalaria : AssembledData -> Bool
-diagnosedMalaria =
-    diagnosedAnyOf
-        [ DiagnosisMalaria
-        , DiagnosisMalariaWithAnemia
-        , DiagnosisMalariaWithSevereAnemia
-        ]
+diagnosedMalariaByPhase : PrenatalEncounterPhase -> AssembledData -> Bool
+diagnosedMalariaByPhase phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            diagnosedAnyOf
+                [ DiagnosisMalariaInitialPhase
+                , DiagnosisMalariaWithAnemiaInitialPhase
+                , DiagnosisMalariaWithSevereAnemiaInitialPhase
+                ]
+                assembled
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosedAnyOf
+                [ DiagnosisMalariaRecurrentPhase
+                , DiagnosisMalariaWithAnemiaRecurrentPhase
+                , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+                ]
+                assembled
 
 
-diagnosedSyphilis : AssembledData -> Bool
-diagnosedSyphilis =
-    diagnosedAnyOf
-        [ DiagnosisSyphilis
-        , DiagnosisSyphilisWithComplications
-        ]
+diagnosedSyphilisByPhase : PrenatalEncounterPhase -> AssembledData -> Bool
+diagnosedSyphilisByPhase phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            diagnosedAnyOf syphilisDiagnosesInitialPhase assembled
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosedAnyOf syphilisDiagnosesRecurrentPhase assembled
 
 
 syphilisDiagnosesIncludingNeurosyphilis : List PrenatalDiagnosis
 syphilisDiagnosesIncludingNeurosyphilis =
-    DiagnosisNeurosyphilis :: syphilisDiagnoses
+    syphilisDiagnosesIncludingNeurosyphilisInitialPhase
+        ++ syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase
+
+
+syphilisDiagnosesIncludingNeurosyphilisInitialPhase : List PrenatalDiagnosis
+syphilisDiagnosesIncludingNeurosyphilisInitialPhase =
+    DiagnosisNeurosyphilisInitialPhase :: syphilisDiagnosesInitialPhase
+
+
+syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase : List PrenatalDiagnosis
+syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase =
+    DiagnosisNeurosyphilisRecurrentPhase :: syphilisDiagnosesRecurrentPhase
 
 
 syphilisDiagnoses : List PrenatalDiagnosis
 syphilisDiagnoses =
-    [ DiagnosisSyphilis, DiagnosisSyphilisWithComplications ]
+    syphilisDiagnosesInitialPhase ++ syphilisDiagnosesRecurrentPhase
+
+
+syphilisDiagnosesInitialPhase : List PrenatalDiagnosis
+syphilisDiagnosesInitialPhase =
+    [ DiagnosisSyphilisInitialPhase
+    , DiagnosisSyphilisWithComplicationsInitialPhase
+    ]
+
+
+syphilisDiagnosesRecurrentPhase : List PrenatalDiagnosis
+syphilisDiagnosesRecurrentPhase =
+    [ DiagnosisSyphilisRecurrentPhase
+    , DiagnosisSyphilisWithComplicationsRecurrentPhase
+    ]
 
 
 diabetesDiagnoses : List PrenatalDiagnosis
 diabetesDiagnoses =
-    [ DiagnosisDiabetes, DiagnosisGestationalDiabetes ]
+    diabetesDiagnosesInitialPhase ++ diabetesDiagnosesRecurrentPhase
+
+
+diabetesDiagnosesInitialPhase : List PrenatalDiagnosis
+diabetesDiagnosesInitialPhase =
+    [ DiagnosisDiabetesInitialPhase
+    , DiagnosisGestationalDiabetesInitialPhase
+    ]
+
+
+diabetesDiagnosesRecurrentPhase : List PrenatalDiagnosis
+diabetesDiagnosesRecurrentPhase =
+    [ DiagnosisDiabetesRecurrentPhase
+    , DiagnosisGestationalDiabetesRecurrentPhase
+    ]
 
 
 outsideCareDiagnoses : List PrenatalDiagnosis
@@ -2977,13 +3103,13 @@ outsideCareDiagnoses =
 
 outsideCareDiagnosesLeftColumn : List PrenatalDiagnosis
 outsideCareDiagnosesLeftColumn =
-    [ DiagnosisHIV
-    , DiagnosisSyphilis
-    , DiagnosisNeurosyphilis
-    , DiagnosisMalaria
-    , DiagnosisHepatitisB
-    , DiagnosisModerateAnemia
-    , DiagnosisSevereAnemia
+    [ DiagnosisHIVInitialPhase
+    , DiagnosisSyphilisRecurrentPhase
+    , DiagnosisNeurosyphilisRecurrentPhase
+    , DiagnosisMalariaInitialPhase
+    , DiagnosisHepatitisBRecurrentPhase
+    , DiagnosisModerateAnemiaRecurrentPhase
+    , DiagnosisSevereAnemiaRecurrentPhase
     , DiagnosisPelvicPainIntense
     , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
     ]
@@ -3004,10 +3130,10 @@ outsideCareDiagnosesRightColumn =
 
 outsideCareDiagnosesWithPossibleMedication : List PrenatalDiagnosis
 outsideCareDiagnosesWithPossibleMedication =
-    [ DiagnosisHIV
-    , DiagnosisSyphilis
-    , DiagnosisMalaria
-    , DiagnosisModerateAnemia
+    [ DiagnosisHIVInitialPhase
+    , DiagnosisSyphilisInitialPhase
+    , DiagnosisMalariaInitialPhase
+    , DiagnosisModerateAnemiaInitialPhase
     , DiagnosisGestationalHypertensionImmediate
     , DiagnosisChronicHypertensionImmediate
     , DiagnosisModeratePreeclampsiaInitialPhase
@@ -3481,6 +3607,8 @@ undeterminedPostpartumDiagnoses =
 applyDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
 applyDiagnosesHierarchy =
     applyHypertensionlikeDiagnosesHierarchy
+        >> applyMalariaWithAnemiaDiagnosesHierarchy
+        >> applyAnemiaDiagnosesHierarchy
         >> applyMastitisDiagnosesHierarchy
         >> applyGeneralDiagnosesHierarchy
 
@@ -3503,6 +3631,70 @@ applyHypertensionlikeDiagnosesHierarchy diagnoses =
     topBloodPressureDiagnosis
         ++ others
         |> EverySet.fromList
+
+
+applyMalariaWithAnemiaDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyMalariaWithAnemiaDiagnosesHierarchy =
+    let
+        -- When Malaria with Severe Anamia diagnosed, we eliminate
+        -- Malaria and Severe Anamia standalone diagnoses.
+        applyMalariaWithSeverAnemiaLogic diagnoses =
+            if
+                List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+                    [ DiagnosisMalariaWithSevereAnemiaInitialPhase, DiagnosisMalariaWithSevereAnemiaRecurrentPhase ]
+            then
+                let
+                    toRemove =
+                        EverySet.fromList
+                            [ DiagnosisMalariaInitialPhase
+                            , DiagnosisMalariaRecurrentPhase
+                            , DiagnosisSevereAnemiaInitialPhase
+                            , DiagnosisSevereAnemiaRecurrentPhase
+                            ]
+                in
+                EverySet.diff diagnoses toRemove
+
+            else
+                diagnoses
+
+        -- When Malaria with Anamia is diagnosed, we eliminate
+        -- Malaria and Moderate Anamia standalone diagnoses.
+        applyMalariaWithAnemiaLogic diagnoses =
+            if
+                List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+                    [ DiagnosisMalariaWithAnemiaInitialPhase, DiagnosisMalariaWithAnemiaRecurrentPhase ]
+            then
+                let
+                    toRemove =
+                        EverySet.fromList
+                            [ DiagnosisMalariaInitialPhase
+                            , DiagnosisMalariaRecurrentPhase
+                            , DiagnosisModerateAnemiaInitialPhase
+                            , DiagnosisModerateAnemiaRecurrentPhase
+                            ]
+                in
+                EverySet.diff diagnoses toRemove
+
+            else
+                diagnoses
+    in
+    applyMalariaWithSeverAnemiaLogic
+        >> applyMalariaWithAnemiaLogic
+
+
+applyAnemiaDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyAnemiaDiagnosesHierarchy diagnoses =
+    -- When Severe Anamia with compliations is diagnosed, we eliminate
+    -- Severe Anamia standalone diagnosis.
+    if
+        List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+            [ DiagnosisSevereAnemiaWithComplicationsInitialPhase, DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ]
+    then
+        EverySet.remove DiagnosisSevereAnemiaInitialPhase diagnoses
+            |> EverySet.remove DiagnosisSevereAnemiaRecurrentPhase
+
+    else
+        diagnoses
 
 
 applyMastitisDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
@@ -3589,3 +3781,625 @@ toMalariaPreventionValue phaseRecorded form =
             }
         )
         form.receivedMosquitoNet
+
+
+labTestWithImmediateResult getMeasurementFunc measurements =
+    getMeasurementFunc measurements
+        |> getMeasurementValueFunc
+        |> Maybe.andThen .testPrerequisites
+        |> Maybe.map (EverySet.member PrerequisiteImmediateResult)
+        |> Maybe.withDefault False
+
+
+referredToSpecialityCareProgram : SpecialityCareSign -> AssembledData -> Bool
+referredToSpecialityCareProgram program assembled =
+    getMeasurementValueFunc assembled.measurements.specialityCare
+        |> Maybe.map (EverySet.member program >> not)
+        |> Maybe.withDefault False
+
+
+provideHIVEducation : PrenatalEncounterPhase -> PrenatalMeasurements -> Bool
+provideHIVEducation phase measurements =
+    getMeasurementValueFunc measurements.hivTest
+        |> Maybe.map
+            (\value ->
+                let
+                    phaseCondition =
+                        Maybe.map
+                            (\testPrerequisites ->
+                                case phase of
+                                    PrenatalEncounterPhaseInitial ->
+                                        EverySet.member PrerequisiteImmediateResult testPrerequisites
+
+                                    PrenatalEncounterPhaseRecurrent ->
+                                        not <| EverySet.member PrerequisiteImmediateResult testPrerequisites
+                            )
+                            value.testPrerequisites
+                            |> Maybe.withDefault False
+                in
+                isJust value.testResult && phaseCondition
+            )
+        |> Maybe.withDefault False
+
+
+healthEducationFormInputsAndTasksForNurse :
+    Language
+    -> PrenatalEncounterPhase
+    -> ((Bool -> HealthEducationForm -> HealthEducationForm) -> Bool -> msg)
+    -> AssembledData
+    -> HealthEducationForm
+    -> ( List (Html msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForNurse language phase setBoolInputMsg assembled form =
+    let
+        ( hivInputs, hivTasks ) =
+            if isJust assembled.measurements.hivTest then
+                healthEducationFormInputsAndTasksForHIV language phase setBoolInputMsg assembled form
+
+            else
+                ( [], [] )
+
+        detectableViralLoad triggeringDiagnosis =
+            if diagnosed triggeringDiagnosis assembled then
+                ( [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.hivDetectableViralLoad
+                        (setBoolInputMsg (\value form_ -> { form_ | hivDetectableViralLoad = Just value }))
+                        "hiv-detectable-viral-load"
+                        Nothing
+                  ]
+                , Just form.hivDetectableViralLoad
+                )
+
+            else
+                ( [], Nothing )
+
+        diabetes triggeringDiagnoses =
+            if diagnosedAnyOf triggeringDiagnoses assembled then
+                let
+                    header =
+                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase assembled then
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+
+                        else
+                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
+                in
+                ( [ viewCustomLabel language header "" "label header"
+                  , viewCustomLabel language Translate.PrenatalHealthEducationDiabetesInform "." "label paragraph"
+                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                  , viewBoolInput
+                        language
+                        form.diabetes
+                        (setBoolInputMsg (\value form_ -> { form_ | diabetes = Just value }))
+                        "diabetes"
+                        Nothing
+                  ]
+                , Just form.diabetes
+                )
+
+            else
+                ( [], Nothing )
+
+        inputsAndTasks =
+            case phase of
+                PrenatalEncounterPhaseInitial ->
+                    let
+                        nauseaVomiting =
+                            if provideNauseaAndVomitingEducation assembled then
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNauseaVomiting) "" "label header"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingInform "." "label paragraph"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationNauseaAndVomitingAdvise "." "label paragraph"
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.nauseaVomiting
+                                        (setBoolInputMsg (\value form_ -> { form_ | nauseaVomiting = Just value }))
+                                        "nausea-vomiting"
+                                        Nothing
+                                  ]
+                                , Just form.nauseaVomiting
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        legCramps =
+                            if symptomRecorded assembled.measurements LegCramps then
+                                let
+                                    reliefMethods =
+                                        List.map
+                                            (Translate.LegCrampsReliefMethod
+                                                >> translate language
+                                                >> String.toLower
+                                                >> text
+                                                >> List.singleton
+                                                >> li []
+                                            )
+                                            [ ReliefMethodMuscleStretching
+                                            , ReliefMethodDorsiflexion
+                                            , ReliefMethodRelaxation
+                                            , ReliefMethodSleepWithPillowBetweenLegs
+                                            , ReliefMethodHeatTherapy
+                                            , ReliefMethodMassage
+                                            ]
+                                            |> ul []
+                                in
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegCramps) "" "label header"
+                                  , viewLabel language Translate.PrenatalHealthEducationLegCrampsInform
+                                  , reliefMethods
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.legCramps
+                                        (setBoolInputMsg (\value form_ -> { form_ | legCramps = Just value }))
+                                        "leg-cramps"
+                                        Nothing
+                                  ]
+                                , Just form.legCramps
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        lowBackPain =
+                            if symptomRecorded assembled.measurements LowBackPain then
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLowBackPain) "" "label header"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationLowBackPainInform "." "label paragraph"
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.lowBackPain
+                                        (setBoolInputMsg (\value form_ -> { form_ | lowBackPain = Just value }))
+                                        "low-back-pain"
+                                        Nothing
+                                  ]
+                                , Just form.lowBackPain
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        constipation =
+                            if symptomRecorded assembled.measurements Constipation then
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationConstipation) "" "label header"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationConstipationInform "." "label paragraph"
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.constipation
+                                        (setBoolInputMsg (\value form_ -> { form_ | constipation = Just value }))
+                                        "constipation"
+                                        Nothing
+                                  ]
+                                , Just form.constipation
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        heartburn =
+                            if diagnosed DiagnosisHeartburn assembled then
+                                let
+                                    reliefMethods =
+                                        List.map
+                                            (Translate.HeartburnReliefMethod
+                                                >> translate language
+                                                >> String.toLower
+                                                >> text
+                                                >> List.singleton
+                                                >> li []
+                                            )
+                                            [ ReliefMethodAvoidLargeMeals
+                                            , ReliefMethodCeaseSmoking
+                                            , ReliefMethodAvoidAlcohom
+                                            , ReliefMethodSleepWithHeadRaised
+                                            ]
+                                            |> ul []
+                                in
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationHeartburn) "" "label header"
+                                  , viewLabel language Translate.PrenatalHealthEducationHeartburnInform
+                                  , reliefMethods
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.heartburn
+                                        (setBoolInputMsg (\value form_ -> { form_ | heartburn = Just value }))
+                                        "heartburn"
+                                        Nothing
+                                  ]
+                                , Just form.heartburn
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        varicoseVeins =
+                            if symptomRecorded assembled.measurements VaricoseVeins then
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationVaricoseVeins) "" "label header"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationVaricoseVeinsInform "." "label paragraph"
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.varicoseVeins
+                                        (setBoolInputMsg (\value form_ -> { form_ | varicoseVeins = Just value }))
+                                        "varicose-veins"
+                                        Nothing
+                                  ]
+                                , Just form.varicoseVeins
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        legPainRedness =
+                            if provideLegPainRednessEducation assembled then
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationLegPainRedness) "" "label header"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationLegPainRednessInform "." "label paragraph"
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.legPainRedness
+                                        (setBoolInputMsg (\value form_ -> { form_ | legPainRedness = Just value }))
+                                        "leg-pain-redness"
+                                        Nothing
+                                  ]
+                                , Just form.legPainRedness
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        pelvicPain =
+                            if providePelvicPainEducation assembled then
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationPelvicPain) "" "label header"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationPelvicPainInform "." "label paragraph"
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.pelvicPain
+                                        (setBoolInputMsg (\value form_ -> { form_ | pelvicPain = Just value }))
+                                        "pelvic-pain"
+                                        Nothing
+                                  ]
+                                , Just form.pelvicPain
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        saferSex =
+                            let
+                                saferSexDiagnoses =
+                                    List.filter
+                                        (\diagnosis ->
+                                            EverySet.member diagnosis assembled.encounter.diagnoses
+                                        )
+                                        -- Diagnoses that require safer sex practices education.
+                                        [ DiagnosisCandidiasis, DiagnosisGonorrhea, DiagnosisTrichomonasOrBacterialVaginosis ]
+                            in
+                            if not <| List.isEmpty saferSexDiagnoses then
+                                let
+                                    label =
+                                        List.filter (symptomRecorded assembled.measurements)
+                                            -- Symptoms that may  require safer sex practices education.
+                                            [ BurningWithUrination, AbnormalVaginalDischarge ]
+                                            |> List.map (Translate.PrenatalSymptom >> translate language)
+                                            |> String.join ", "
+                                in
+                                ( [ div [ class "label header" ] [ text label ]
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationSaferSexInform "." "label paragraph"
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.saferSex
+                                        (setBoolInputMsg (\value form_ -> { form_ | saferSex = Just value }))
+                                        "safer-sex"
+                                        Nothing
+                                  ]
+                                , Just form.saferSex
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        mentalHealth =
+                            if provideMentalHealthEducation assembled then
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationMentalHealth) "" "label header"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationMentalHealthInform "." "label paragraph"
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        form.mentalHealth
+                                        (setBoolInputMsg (\value form_ -> { form_ | mentalHealth = Just value }))
+                                        "mental-health"
+                                        Nothing
+                                  ]
+                                , Just form.mentalHealth
+                                )
+
+                            else
+                                ( [], Nothing )
+
+                        hierarchalMastitis =
+                            if diagnosedAnyOf [ DiagnosisPostpartumEarlyMastitisOrEngorgment, DiagnosisPostpartumMastitis ] assembled then
+                                let
+                                    reliefMethods =
+                                        List.map
+                                            (Translate.EarlyMastitisOrEngorgmentReliefMethod
+                                                >> translate language
+                                                >> String.toLower
+                                                >> text
+                                                >> List.singleton
+                                                >> li []
+                                            )
+                                            [ ReliefMethodBreastMassage
+                                            , ReliefMethodIncreaseFluid
+                                            , ReliefMethodBreastfeedingOrHandExpression
+                                            ]
+                                            |> ul []
+
+                                    ( educationSign, formField, updateFunc ) =
+                                        if diagnosed DiagnosisPostpartumMastitis assembled then
+                                            ( EducationMastitis
+                                            , form.mastitis
+                                            , \value form_ -> { form_ | mastitis = Just value }
+                                            )
+
+                                        else
+                                            ( EducationEarlyMastitisOrEngorgment
+                                            , form.earlyMastitisOrEngorgment
+                                            , \value form_ -> { form_ | earlyMastitisOrEngorgment = Just value }
+                                            )
+                                in
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel educationSign) "" "label header"
+                                  , viewCustomLabel language Translate.PrenatalHealthEducationEarlyMastitisOrEngorgmentInform ":" "label paragraph"
+                                  , reliefMethods
+                                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
+                                  , viewBoolInput
+                                        language
+                                        formField
+                                        (setBoolInputMsg updateFunc)
+                                        "mastitis"
+                                        Nothing
+                                  ]
+                                , Just formField
+                                )
+
+                            else
+                                ( [], Nothing )
+                    in
+                    [ detectableViralLoad DiagnosisHIVDetectableViralLoadInitialPhase
+                    , diabetes diabetesDiagnosesInitialPhase
+                    , nauseaVomiting
+                    , legCramps
+                    , lowBackPain
+                    , constipation
+                    , heartburn
+                    , varicoseVeins
+                    , legPainRedness
+                    , pelvicPain
+                    , saferSex
+                    , mentalHealth
+                    , hierarchalMastitis
+                    ]
+
+                PrenatalEncounterPhaseRecurrent ->
+                    [ detectableViralLoad DiagnosisHIVDetectableViralLoadRecurrentPhase
+                    , diabetes diabetesDiagnosesRecurrentPhase
+                    ]
+    in
+    ( hivInputs
+        ++ List.concatMap Tuple.first inputsAndTasks
+    , hivTasks
+        ++ (List.map Tuple.second inputsAndTasks
+                |> Maybe.Extra.values
+           )
+    )
+
+
+healthEducationFormInputsAndTasksForHIV :
+    Language
+    -> PrenatalEncounterPhase
+    -> ((Bool -> HealthEducationForm -> HealthEducationForm) -> Bool -> msg)
+    -> AssembledData
+    -> HealthEducationForm
+    -> ( List (Html msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasksForHIV language phase setBoolInputMsg assembled form =
+    let
+        translatePrenatalHealthEducationQuestion =
+            Translate.PrenatalHealthEducationQuestion False
+
+        positiveHIVUpdateFunc value form_ =
+            { form_ | positiveHIV = Just value }
+
+        saferSexHIVUpdateFunc value form_ =
+            { form_ | saferSexHIV = Just value }
+
+        saferSexHIVInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationSaferSexHIV
+            , viewBoolInput
+                language
+                form.saferSexHIV
+                (setBoolInputMsg saferSexHIVUpdateFunc)
+                "safer-sex-hiv"
+                Nothing
+            ]
+
+        partnerTestingUpdateFunc value form_ =
+            { form_ | partnerTesting = Just value }
+
+        partnerTestingInput =
+            [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPartnerTesting
+            , viewBoolInput
+                language
+                form.partnerTesting
+                (setBoolInputMsg partnerTestingUpdateFunc)
+                "partner-testing"
+                Nothing
+            ]
+
+        partnerSurpressedViralLoad =
+            getMeasurementValueFunc assembled.measurements.hivTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is HIV positive.
+                        EverySet.member PartnerHIVPositive hivSigns
+                            -- Partner is taking ARVs.
+                            && EverySet.member PartnerTakingARV hivSigns
+                            -- Partner reached surpressed viral load.
+                            && EverySet.member PartnerSurpressedViralLoad hivSigns
+                    )
+                |> Maybe.withDefault False
+
+        header =
+            viewCustomLabel language Translate.HIV "" "label header"
+
+        trigerringDiagnoses =
+            case phase of
+                PrenatalEncounterPhaseInitial ->
+                    [ DiagnosisHIVInitialPhase
+                    , DiagnosisDiscordantPartnershipInitialPhase
+                    ]
+
+                PrenatalEncounterPhaseRecurrent ->
+                    [ DiagnosisHIVRecurrentPhase
+                    , DiagnosisDiscordantPartnershipRecurrentPhase
+                    ]
+    in
+    if diagnosedAnyOf trigerringDiagnoses assembled then
+        let
+            positiveHIVInput =
+                [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationPositiveHIV
+                , viewBoolInput
+                    language
+                    form.positiveHIV
+                    (setBoolInputMsg positiveHIVUpdateFunc)
+                    "positive-hiv"
+                    Nothing
+                ]
+
+            familyPlanningInput =
+                healthEducationFormFamilyPlanningInput language setBoolInputMsg False form
+        in
+        ( header :: positiveHIVInput ++ saferSexHIVInput ++ partnerTestingInput ++ familyPlanningInput
+        , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
+        )
+
+    else if partnerSurpressedViralLoad then
+        ( header :: saferSexHIVInput
+        , [ form.saferSexHIV ]
+        )
+
+    else
+        ( header :: saferSexHIVInput ++ partnerTestingInput
+        , [ form.saferSexHIV, form.partnerTesting ]
+        )
+
+
+healthEducationFormFamilyPlanningInput :
+    Language
+    -> ((Bool -> HealthEducationForm -> HealthEducationForm) -> Bool -> msg)
+    -> Bool
+    -> HealthEducationForm
+    -> List (Html msg)
+healthEducationFormFamilyPlanningInput language setBoolInputMsg isChw form =
+    let
+        familyPlanningUpdateFunc value form_ =
+            { form_ | familyPlanning = Just value }
+    in
+    [ viewQuestionLabel language <| Translate.PrenatalHealthEducationQuestion isChw EducationFamilyPlanning
+    , viewBoolInput
+        language
+        form.familyPlanning
+        (setBoolInputMsg familyPlanningUpdateFunc)
+        "family-planning"
+        Nothing
+    ]
+
+
+provideNauseaAndVomitingEducation : AssembledData -> Bool
+provideNauseaAndVomitingEducation assembled =
+    let
+        -- NauseaAndVomiting reported at current encounter, and
+        -- all follow up questions were answered No.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member NauseaAndVomiting value.symptoms
+                            && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                                [ SymptomQuestionDizziness, SymptomQuestionLowUrineOutput, SymptomQuestionDarkUrine ]
+                    )
+                |> Maybe.withDefault False
+
+        -- NauseaAndVomiting was not reported at any of previous encounters.
+        byPreviousEncounters =
+            not <| symptomRecordedPreviously assembled NauseaAndVomiting
+    in
+    byCurrentEncounter && byPreviousEncounters
+
+
+provideLegPainRednessEducation : AssembledData -> Bool
+provideLegPainRednessEducation assembled =
+    -- LegPainRedness reported at current encounter, and
+    -- all follow up questions were answered No.
+    getMeasurementValueFunc assembled.measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                EverySet.member LegPainRedness value.symptoms
+                    && List.all (\question -> not <| EverySet.member question value.symptomQuestions)
+                        [ SymptomQuestionLegPainful, SymptomQuestionLegSwollen, SymptomQuestionLegWarm ]
+            )
+        |> Maybe.withDefault False
+
+
+providePelvicPainEducation : AssembledData -> Bool
+providePelvicPainEducation assembled =
+    let
+        -- PelvicPain reported at current encounter, and
+        -- all follow up questions were answered No.
+        byCurrentEncounter =
+            getMeasurementValueFunc assembled.measurements.symptomReview
+                |> Maybe.map
+                    (\value ->
+                        EverySet.member PelvicPain value.symptoms
+                            && (not <| EverySet.member SymptomQuestionPelvicPainHospitalization value.symptomQuestions)
+                    )
+                |> Maybe.withDefault False
+
+        -- PelvicPain was not reported at any of previous encounters.
+        byPreviousEncounters =
+            not <| symptomRecordedPreviously assembled PelvicPain
+    in
+    byCurrentEncounter && byPreviousEncounters
+
+
+provideMentalHealthEducation : AssembledData -> Bool
+provideMentalHealthEducation assembled =
+    -- Mental health survey was taken and none of
+    -- mental health diagnoses was determined.
+    -- No need to display at Postpartum encounter.
+    (assembled.encounter.encounterType == NurseEncounter)
+        && isJust assembled.measurements.mentalHealth
+        && diagnosedNoneOf mentalHealthDiagnosesRequiringTreatment assembled
+
+
+symptomRecorded : PrenatalMeasurements -> PrenatalSymptom -> Bool
+symptomRecorded measurements symptom =
+    getMeasurementValueFunc measurements.symptomReview
+        |> Maybe.map (.symptoms >> EverySet.member symptom)
+        |> Maybe.withDefault False
+
+
+symptomRecordedPreviously : AssembledData -> PrenatalSymptom -> Bool
+symptomRecordedPreviously assembled symptom =
+    assembled.nursePreviousEncountersData
+        |> List.filter
+            (\data ->
+                symptomRecorded data.measurements symptom
+            )
+        |> List.isEmpty
+        |> not

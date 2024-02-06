@@ -36,6 +36,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , tasksBarId
         , viewPersonDetailsExtended
         , viewSaveAction
@@ -103,7 +104,7 @@ viewLabResultsContent language currentDate assembled model =
             resolveLaboratoryResultTasks currentDate assembled
 
         activeTask =
-            Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
+            resolveActiveTask tasks model.labResultsData.activeTask
 
         viewTask task =
             let
@@ -277,16 +278,7 @@ viewNextStepsContent language currentDate assembled data =
             resolveNextStepsTasks currentDate assembled
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

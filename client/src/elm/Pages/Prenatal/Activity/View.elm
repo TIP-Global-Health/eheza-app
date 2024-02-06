@@ -104,6 +104,7 @@ import Pages.Utils
         ( customSaveButton
         , isTaskCompleted
         , maybeToBoolTask
+        , resolveActiveTask
         , saveButton
         , taskCompleted
         , tasksBarId
@@ -651,16 +652,7 @@ viewHistoryContent language currentDate assembled data =
                 |> Dict.fromList
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
@@ -709,16 +701,16 @@ viewHistoryContent language currentDate assembled data =
             , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
             , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
             , setHIVMedicationMsg = SetOutsideCareHIVMedication
-            , malariaDiagnoses = [ DiagnosisMalaria ]
+            , malariaDiagnoses = [ DiagnosisMalariaInitialPhase ]
             , hypertensionDiagnoses =
                 [ DiagnosisGestationalHypertensionImmediate
                 , DiagnosisChronicHypertensionImmediate
                 , DiagnosisModeratePreeclampsiaInitialPhase
                 ]
-            , syphilisDiagnoses = [ DiagnosisSyphilis ]
-            , anemiaDiagnoses = [ DiagnosisModerateAnemia ]
-            , hivDiagnoses = [ DiagnosisHIV ]
-            , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalaria
+            , syphilisDiagnoses = [ DiagnosisSyphilisRecurrentPhase ]
+            , anemiaDiagnoses = [ DiagnosisModerateAnemiaRecurrentPhase ]
+            , hivDiagnoses = [ DiagnosisHIVInitialPhase ]
+            , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalariaInitialPhase
             , resolveHypertensionHeaderTransId =
                 \diagnoses ->
                     if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
@@ -726,9 +718,9 @@ viewHistoryContent language currentDate assembled data =
 
                     else
                         Translate.Hypertension
-            , syphilisHeaderTransId = Translate.PrenatalDiagnosis DiagnosisSyphilis
-            , anemiaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisModerateAnemia
-            , hivHeaderTransId = Translate.PrenatalDiagnosis DiagnosisHIV
+            , syphilisHeaderTransId = Translate.PrenatalDiagnosis DiagnosisSyphilisRecurrentPhase
+            , anemiaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisModerateAnemiaRecurrentPhase
+            , hivHeaderTransId = Translate.PrenatalDiagnosis DiagnosisHIVInitialPhase
             , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
             , diagnosesRightColumn = outsideCareDiagnosesRightColumn
             , otherDiagnosis = DiagnosisOther
@@ -895,16 +887,7 @@ viewExaminationContent language currentDate assembled data =
             resolveExaminationTasks assembled
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -1447,7 +1430,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
             List.filter (expectLaboratoryTask currentDate assembled) laboratoryTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -1939,16 +1922,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             resolveNextStepsTasks currentDate assembled
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasksConsideringShowWaitTask then
-                        Just task
-
-                    else
-                        List.head tasksConsideringShowWaitTask
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasksConsideringShowWaitTask)
+            resolveActiveTask tasksConsideringShowWaitTask data.activeTask
 
         tasksConsideringShowWaitTask =
             if showWaitTask then
@@ -2338,16 +2312,7 @@ viewTreatmentReviewContent language currentDate assembled data =
                 |> Dict.fromList
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
@@ -2442,7 +2407,7 @@ viewImmunisationContent language currentDate site assembled data =
             List.filter (expectImmunisationTask currentDate assembled) immunisationTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

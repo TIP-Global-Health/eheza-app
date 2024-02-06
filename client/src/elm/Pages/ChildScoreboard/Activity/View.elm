@@ -48,7 +48,15 @@ import Pages.ChildScoreboard.Activity.Utils exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewLabel, viewPersonDetailsExtended, viewSaveAction)
+import Pages.Utils
+    exposing
+        ( isTaskCompleted
+        , resolveActiveTask
+        , tasksBarId
+        , viewLabel
+        , viewPersonDetailsExtended
+        , viewSaveAction
+        )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -170,7 +178,7 @@ viewImmunisationContent language currentDate site assembled db data =
             List.filter (expectImmunisationTask currentDate site assembled.person assembled.vaccinationHistory) immunisationTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

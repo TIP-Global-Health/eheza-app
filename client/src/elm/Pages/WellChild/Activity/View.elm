@@ -59,6 +59,7 @@ import Pages.Utils
     exposing
         ( isTaskCompleted
         , maybeToBoolTask
+        , resolveActiveTask
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -600,7 +601,7 @@ viewDangerSignsContent language currentDate assembled data =
             [ TaskSymptomsReview, TaskVitals ]
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -782,7 +783,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 |> List.filter (expectNutritionAssessmentTask currentDate assembled)
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -1056,7 +1057,7 @@ viewImmunisationContent language currentDate site isChw assembled db data =
             List.filter (expectImmunisationTask currentDate site isChw assembled) immunisationTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -1992,7 +1993,7 @@ viewMedicationContent language currentDate site isChw assembled data =
                 |> List.filter (expectMedicationTask currentDate site isChw assembled)
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -2230,7 +2231,7 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
             List.filter (expectNextStepsTask currentDate zscores site features isChw assembled db) nextStepsTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -2582,7 +2583,7 @@ viewHomeVisitContent language currentDate site assembled data db =
             [ TaskFeeding, TaskCaring, TaskHygiene, TaskFoodSecurity ]
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

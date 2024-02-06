@@ -59,6 +59,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , saveButton
         , taskCompleted
         , tasksBarId
@@ -281,16 +282,7 @@ viewExaminationContent language currentDate assembled data =
             [ TaskVitals, TaskCoreExam ]
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -453,16 +445,7 @@ viewMedicalHistoryContent language currentDate site assembled data =
             ]
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -874,7 +857,7 @@ viewLaboratoryContent language currentDate assembled data =
             List.filter (expectLaboratoryTask currentDate assembled) laboratoryTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -1142,16 +1125,7 @@ viewNextStepsContent language currentDate assembled data =
             resolveNextStepsTasks currentDate assembled
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

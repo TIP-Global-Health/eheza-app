@@ -56,6 +56,7 @@ import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicatio
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , tasksBarId
         , viewSaveAction
         )
@@ -158,7 +159,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
             resolveLaboratoryResultTasks currentDate isLabTech assembled
 
         activeTask =
-            Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
+            resolveActiveTask tasks model.labResultsData.activeTask
 
         viewTask task =
             let
@@ -362,7 +363,7 @@ viewNextStepsContent language currentDate assembled data =
             resolveNextStepsTasks currentDate assembled
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -504,7 +505,7 @@ viewExaminationContent language currentDate assembled data =
             [ ExaminationVitals ]
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -659,7 +660,7 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
             resolveLaboratoryResultFollowUpsTasks currentDate assembled
 
         activeTask =
-            Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
+            resolveActiveTask tasks model.labResultsData.activeTask
 
         viewTask task =
             let

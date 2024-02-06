@@ -64,8 +64,10 @@ obstetricalDiagnoses =
     , DiagnosisDeepVeinThrombosis
     , DiagnosisPelvicPainIntense
     , DiagnosisPelvicPainContinued
-    , DiagnosisGestationalDiabetes
-    , DiagnosisRhesusNegative
+    , DiagnosisGestationalDiabetesInitialPhase
+    , DiagnosisGestationalDiabetesRecurrentPhase
+    , DiagnosisRhesusNegativeInitialPhase
+    , DiagnosisRhesusNegativeRecurrentPhase
     , DiagnosisDepressionNotLikely
     , DiagnosisDepressionPossible
     , DiagnosisDepressionHighlyPossible
@@ -83,19 +85,32 @@ medicalDiagnoses : List PrenatalDiagnosis
 medicalDiagnoses =
     [ DiagnosisChronicHypertensionImmediate
     , DiagnosisChronicHypertensionAfterRecheck
-    , DiagnosisSyphilis
-    , DiagnosisSyphilisWithComplications
-    , DiagnosisNeurosyphilis
-    , DiagnosisModerateAnemia
-    , DiagnosisSevereAnemia
-    , DiagnosisSevereAnemiaWithComplications
-    , DiagnosisHIV
-    , DiagnosisHIVDetectableViralLoad
-    , DiagnosisDiscordantPartnership
-    , DiagnosisHepatitisB
-    , DiagnosisMalaria
-    , DiagnosisMalariaWithAnemia
-    , DiagnosisMalariaWithSevereAnemia
+    , DiagnosisSyphilisInitialPhase
+    , DiagnosisSyphilisRecurrentPhase
+    , DiagnosisSyphilisWithComplicationsInitialPhase
+    , DiagnosisSyphilisWithComplicationsRecurrentPhase
+    , DiagnosisNeurosyphilisInitialPhase
+    , DiagnosisNeurosyphilisRecurrentPhase
+    , DiagnosisModerateAnemiaInitialPhase
+    , DiagnosisModerateAnemiaRecurrentPhase
+    , DiagnosisSevereAnemiaInitialPhase
+    , DiagnosisSevereAnemiaRecurrentPhase
+    , DiagnosisSevereAnemiaWithComplicationsInitialPhase
+    , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
+    , DiagnosisHIVInitialPhase
+    , DiagnosisHIVRecurrentPhase
+    , DiagnosisHIVDetectableViralLoadInitialPhase
+    , DiagnosisHIVDetectableViralLoadRecurrentPhase
+    , DiagnosisDiscordantPartnershipInitialPhase
+    , DiagnosisDiscordantPartnershipRecurrentPhase
+    , DiagnosisHepatitisBInitialPhase
+    , DiagnosisHepatitisBRecurrentPhase
+    , DiagnosisMalariaInitialPhase
+    , DiagnosisMalariaRecurrentPhase
+    , DiagnosisMalariaWithAnemiaInitialPhase
+    , DiagnosisMalariaWithAnemiaRecurrentPhase
+    , DiagnosisMalariaWithSevereAnemiaInitialPhase
+    , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
     , DiagnosisUrinaryTractInfection
     , DiagnosisUrinaryTractInfectionContinued
     , DiagnosisPyelonephritis
@@ -106,7 +121,8 @@ medicalDiagnoses =
     , DiagnosisTuberculosis
     , DiagnosisTrichomonasOrBacterialVaginosis
     , DiagnosisTrichomonasOrBacterialVaginosisContinued
-    , DiagnosisDiabetes
+    , DiagnosisDiabetesInitialPhase
+    , DiagnosisDiabetesRecurrentPhase
     , DiagnosisOther
     , DiagnosisPostpartumHeadache
     , DiagnosisPostpartumPerinealPainOrDischarge
