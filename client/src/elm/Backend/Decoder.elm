@@ -22,6 +22,7 @@ import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
+import Backend.TuberculosisEncounter.Decoder exposing (decodeTuberculosisEncounter)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
 import Json.Decode exposing (..)
@@ -473,6 +474,9 @@ decodeRevision =
 
                     "treatment_ongoing" ->
                         decodeWithUuid TreatmentOngoingRevision decodeTreatmentOngoing
+
+                    "tuberculosis_encounter" ->
+                        decodeWithUuid TuberculosisEncounterRevision decodeTuberculosisEncounter
 
                     "village" ->
                         decodeWithUuid VillageRevision decodeVillage

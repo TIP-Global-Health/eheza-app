@@ -636,6 +636,7 @@ type Revision
     | TravelHistoryRevision TravelHistoryId TravelHistory
     | TreatmentOngoingRevision TreatmentOngoingId TreatmentOngoing
     | TreatmentReviewRevision TreatmentReviewId TreatmentReview
+    | TuberculosisEncounterRevision TuberculosisEncounterId TuberculosisEncounter
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
