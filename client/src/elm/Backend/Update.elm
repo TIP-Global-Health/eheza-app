@@ -894,6 +894,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
+        FetchTuberculosisEncountersForParticipant id ->
+            ( { model | tuberculosisEncountersByParticipant = Dict.insert id Loading model.tuberculosisEncountersByParticipant }
+            , sw.select tuberculosisEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedTuberculosisEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedTuberculosisEncountersForParticipant id data ->
+            ( { model | tuberculosisEncountersByParticipant = Dict.insert id data model.tuberculosisEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -1036,6 +1049,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
         HandleFetchedChildScoreboardMeasurements id data ->
             ( { model | childScoreboardMeasurements = Dict.insert id data model.childScoreboardMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchTuberculosisMeasurements id ->
+            ( { model | tuberculosisMeasurements = Dict.insert id Loading model.tuberculosisMeasurements }
+            , sw.get tuberculosisMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTuberculosisMeasurements id)
+            , []
+            )
+
+        HandleFetchedTuberculosisMeasurements id data ->
+            ( { model | tuberculosisMeasurements = Dict.insert id data model.tuberculosisMeasurements }
             , Cmd.none
             , []
             )
@@ -1416,6 +1442,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
         HandleFetchedChildScoreboardEncounter id data ->
             ( { model | childScoreboardEncounters = Dict.insert id data model.childScoreboardEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchTuberculosisEncounter id ->
+            ( { model | tuberculosisEncounters = Dict.insert id Loading model.tuberculosisEncounters }
+            , sw.get tuberculosisEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTuberculosisEncounter id)
+            , []
+            )
+
+        HandleFetchedTuberculosisEncounter id data ->
+            ( { model | tuberculosisEncounters = Dict.insert id data model.tuberculosisEncounters }
             , Cmd.none
             , []
             )
@@ -3361,8 +3400,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             let
                 encounter =
                     Dict.get encounterId model.childScoreboardEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.childScoreboardEncounterRequests
@@ -3373,6 +3411,24 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             in
             ( { model | childScoreboardEncounterRequests = Dict.insert encounterId subModel model.childScoreboardEncounterRequests }
             , Cmd.map (MsgChildScoreboardEncounter encounterId) subCmd
+            , appMsgs
+            )
+
+        MsgTuberculosisEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.tuberculosisEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.tuberculosisEncounterRequests
+                        |> Maybe.withDefault Backend.TuberculosisEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.TuberculosisEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | tuberculosisEncounterRequests = Dict.insert encounterId subModel model.tuberculosisEncounterRequests }
+            , Cmd.map (MsgTuberculosisEncounter encounterId) subCmd
             , appMsgs
             )
 

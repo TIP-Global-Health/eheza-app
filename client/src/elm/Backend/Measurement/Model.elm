@@ -3227,6 +3227,10 @@ type alias ChildScoreboardMeasurements =
     }
 
 
+type alias TuberculosisMeasurements =
+    {}
+
+
 {-| A set of measurements that includes all required data for
 Stock management data presentation.
 -}
