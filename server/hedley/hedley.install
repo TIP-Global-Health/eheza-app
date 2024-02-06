@@ -678,3 +678,10 @@ function hedley_update_7039() {
     variable_set('hedley_general_site_name', 'rwanda');
   }
 }
+
+/**
+ * Enable the Hedley Tuberculosis module.
+ */
+function hedley_update_7040() {
+  module_enable(['hedley_tuberculosis']);
+}
