@@ -130,6 +130,9 @@
                 else if (type === 'child-scoreboard-measurements') {
                   return viewMeasurements('child_scoreboard_encounter', uuid);
                 }
+                else if (type === 'tuberculosis-measurements') {
+                  return viewMeasurements('tuberculosis_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
@@ -516,6 +519,9 @@
                     else if (key === 'child_scoreboard_encounter') {
                         target = node.child_scoreboard_encounter;
                     }
+                    else if (key === 'tuberculosis_encounter') {
+                        target = node.tuberculosis_encounter;
+                    }
                     else if (key === 'newborn') {
                         target = node.newborn;
                     }
@@ -862,6 +868,7 @@
                   'ncd_encounter',
                   'nutrition_encounter',
                   'prenatal_encounter',
+                  'tuberculosis_encounter',
                   'well_child_encounter'
                 ];
                 if (encounterTypes.includes(type)) {
