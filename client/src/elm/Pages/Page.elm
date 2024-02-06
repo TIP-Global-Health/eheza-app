@@ -198,6 +198,10 @@ type UserPage
     | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- Child Scoreboard activities index.
     | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
     | ChildScoreboardProgressReportPage ChildScoreboardEncounterId -- Scorecard.
+    | TuberculosisParticipantPage PersonId
+    | TuberculosisEncounterPage TuberculosisEncounterId -- Child Scoreboard activities index.
+      -- @todo:
+      -- | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Child Scoreboard activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

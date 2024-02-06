@@ -53,6 +53,9 @@ import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 import Pages.StockManagement.Fetch
 import Pages.TraceContact.Fetch
+import Pages.Tuberculosis.Activity.Fetch
+import Pages.Tuberculosis.Encounter.Fetch
+import Pages.Tuberculosis.Participant.Fetch
 import Pages.WellChild.Activity.Fetch
 import Pages.WellChild.Encounter.Fetch
 import Pages.WellChild.Participant.Fetch
@@ -222,6 +225,15 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
+            UserPage (TuberculosisParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\_ ->
+                            Pages.Tuberculosis.Participant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
             UserPage (IndividualEncounterParticipantsPage encounterType) ->
                 getLoggedInData model
                     |> Maybe.map
@@ -336,6 +348,10 @@ fetch model =
 
             UserPage (ChildScoreboardActivityPage encounterId _) ->
                 Pages.ChildScoreboard.Activity.Fetch.fetch encounterId model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (TuberculosisEncounterPage id) ->
+                Pages.Tuberculosis.Encounter.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage id) ->

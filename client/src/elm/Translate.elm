@@ -22628,6 +22628,18 @@ translateActivePage page =
                 ChildScoreboardProgressReportPage _ ->
                     translationSet ChildScorecard
 
+                TuberculosisParticipantPage _ ->
+                    { english = "Tuberculosis Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TuberculosisEncounterPage _ ->
+                    { english = "Tuberculosis Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
 
 translateChartPhrase : ChartPhrase -> TranslationSet String
 translateChartPhrase phrase =

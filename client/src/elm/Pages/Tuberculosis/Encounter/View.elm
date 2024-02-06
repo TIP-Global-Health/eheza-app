@@ -1,11 +1,10 @@
-module Pages.Tuberculosis.Encounter.View exposing (acuteIllnessEncounterPopup, view, viewEndEncounterButton)
+module Pages.Tuberculosis.Encounter.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (NCDASign(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.TuberculosisActivity.Utils exposing (..)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)

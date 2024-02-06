@@ -174,6 +174,9 @@ pageToFragment current =
                 ChildScoreboardParticipantPage id ->
                     Just <| "child-scoreboard-participant/" ++ fromEntityUuid id
 
+                TuberculosisParticipantPage id ->
+                    Just <| "tuberculosis-participant/" ++ fromEntityUuid id
+
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
 
@@ -315,6 +318,9 @@ pageToFragment current =
                 ChildScoreboardProgressReportPage id ->
                     Just <| "child-scoreboard-progress-report/" ++ fromEntityUuid id
 
+                TuberculosisEncounterPage id ->
+                    Just <| "tuberculosis-encounter/" ++ fromEntityUuid id
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -359,6 +365,7 @@ parser =
         , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| NCDParticipantPage initiator id) (s "ncd-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id -> UserPage <| ChildScoreboardParticipantPage id) (s "child-scoreboard-participant" </> parseUuid)
+        , map (\id -> UserPage <| TuberculosisParticipantPage id) (s "tuberculosis-participant" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -390,6 +397,7 @@ parser =
         , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
+        , map (\id -> UserPage <| TuberculosisEncounterPage id) (s "tuberculosis-encounter" </> parseUuid)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
