@@ -454,9 +454,19 @@ function hedley_stats_requires_nutrition_group_statistics_recalculation($wrapper
   }
 
   if ($bundle == HEDLEY_ACTIVITY_GROUP_ENCOUNTER_CONTENT_TYPE) {
+    // Even though clinic is a required field on group encounter,
+    // we have this check to allow SimpleTest to pass.
+    if (empty($wrapper->field_clinic->getIdentifier())) {
+      return FALSE;
+    }
     $clinic_type = $wrapper->field_clinic->field_group_type->value();
   }
   else {
+    // Even though clinic is a required field on group measurements,
+    // we have this check to allow SimpleTest to pass.
+    if (empty($wrapper->field_session->getIdentifier())) {
+      return FALSE;
+    }
     $clinic_type = $wrapper->field_session->field_clinic->field_group_type->value();
   }
 
