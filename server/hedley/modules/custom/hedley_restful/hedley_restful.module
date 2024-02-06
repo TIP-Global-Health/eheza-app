@@ -52,6 +52,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'prenatal_encounter' => 'prenatal-encounters',
   'relationship' => 'relationships',
   'session' => 'sessions',
+  'tuberculosis_encounter' => 'tuberculosis-encounter',
   'well_child_encounter' => 'well-child-encounter',
   // Measurements.
   'acute_findings' => 'acute-findings',
