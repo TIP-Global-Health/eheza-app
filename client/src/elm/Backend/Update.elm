@@ -3837,9 +3837,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                         NCDParticipantPage InitiatorParticipantsPage personId
 
                                                     TuberculosisEncounter ->
-                                                        -- @todo
-                                                        --  TuberculosisParticipantPage personId
-                                                        IndividualEncounterTypesPage
+                                                        TuberculosisParticipantPage personId
 
                                                     -- Note yet implemented. Providing 'default'
                                                     -- page, to satisfy compiler.
@@ -4324,10 +4322,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 appMsgs =
                     RemoteData.map
                         (\( tuberculosisEncounterId, _ ) ->
-                            [-- @todo:
-                             -- App.Model.SetActivePage <|
-                             --     UserPage <|
-                             --         Pages.Page.TuberculosisEncounterPage tuberculosisEncounterId
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.TuberculosisEncounterPage tuberculosisEncounterId
                             ]
                         )
                         data

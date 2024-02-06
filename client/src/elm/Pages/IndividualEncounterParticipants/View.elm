@@ -235,9 +235,7 @@ viewParticipant language currentDate encounterType db id person =
                     [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
 
                 TuberculosisEncounter ->
-                    [-- @todo:
-                     --  onClick <| SetActivePage <| UserPage <| TuberculosisParticipantPage id
-                    ]
+                    [ onClick <| SetActivePage <| UserPage <| TuberculosisParticipantPage id ]
 
         viewAction =
             div [ class "action" ]
