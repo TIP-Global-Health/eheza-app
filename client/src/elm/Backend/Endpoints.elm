@@ -1374,3 +1374,8 @@ tuberculosisEncounterEndpoint =
     swEndpoint "nodes/tuberculosis_encounter" decodeTuberculosisEncounter
         |> withValueEncoder (object << encodeTuberculosisEncounter)
         |> withParamsEncoder encodeIndividualEncounterParams
+
+
+tuberculosisMeasurementsEndpoint : ReadOnlyEndPoint Error TuberculosisEncounterId TuberculosisMeasurements ()
+tuberculosisMeasurementsEndpoint =
+    swEndpoint "nodes/tuberculosis-measurements" decodeTuberculosisMeasurements

@@ -296,6 +296,11 @@ decodeChildScoreboardMeasurements =
         |> optional "child_scoreboard_rotarix_iz" (decodeHead decodeChildScoreboardRotarixImmunisation) Nothing
 
 
+decodeTuberculosisMeasurements : Decoder TuberculosisMeasurements
+decodeTuberculosisMeasurements =
+    succeed TuberculosisMeasurements
+
+
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
 decodeStockManagementMeasurements =
     succeed StockManagementMeasurements
