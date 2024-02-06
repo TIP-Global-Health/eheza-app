@@ -31,6 +31,9 @@ individualEncounterTypeToString encounterType =
         NutritionEncounter ->
             "nutrition"
 
+        TuberculosisEncounter ->
+            "tuberculosis"
+
         WellChildEncounter ->
             "well-child"
 
@@ -58,6 +61,9 @@ individualEncounterTypeFromString string =
 
         "nutrition" ->
             Just NutritionEncounter
+
+        "tuberculosis" ->
+            Just TuberculosisEncounter
 
         "well-child" ->
             Just WellChildEncounter

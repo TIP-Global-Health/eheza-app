@@ -625,6 +625,15 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             , title = Translate.People
                             }
 
+                        TuberculosisEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage TuberculosisEncounter)
+                            , expectedAge = ExpectAdultOrChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -120 today
+                            , birthDateSelectorTo = today
+                            , title = Translate.People
+                            }
+
                         -- Note yet implemented. Providing 'default'
                         -- values, to satisfy compiler.
                         InmmunizationEncounter ->

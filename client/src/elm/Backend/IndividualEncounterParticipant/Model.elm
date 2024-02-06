@@ -70,6 +70,7 @@ type IndividualEncounterType
     | InmmunizationEncounter
     | NCDEncounter
     | NutritionEncounter
+    | TuberculosisEncounter
     | WellChildEncounter
 
 

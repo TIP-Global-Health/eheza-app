@@ -47,6 +47,7 @@ import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, Session)
 import Backend.StockUpdate.Model exposing (StockManagementData)
 import Backend.TraceContact.Model
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Pages.Dashboard.Model
@@ -181,6 +182,7 @@ type alias ModelIndexedDb =
     , postWellChildEncounter : Dict IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
     , postNCDEncounter : Dict IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
     , postChildScoreboardEncounter : Dict IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
+    , postTuberculosisEncounter : Dict IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
     }
 
 
@@ -261,6 +263,7 @@ emptyModelIndexedDb =
     , postAcuteIllnessEncounter = Dict.empty
     , postNCDEncounter = Dict.empty
     , postChildScoreboardEncounter = Dict.empty
+    , postTuberculosisEncounter = Dict.empty
     }
 
 
@@ -429,6 +432,7 @@ type MsgIndexedDb
     | PostWellChildEncounter WellChildEncounter
     | PostNCDEncounter NCDEncounter
     | PostChildScoreboardEncounter ChildScoreboardEncounter
+    | PostTuberculosisEncounter TuberculosisEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PatchPersonInitator PersonId (WebData Person)
@@ -443,6 +447,7 @@ type MsgIndexedDb
     | HandlePostedWellChildEncounter IndividualEncounterParticipantId (WebData ( WellChildEncounterId, WellChildEncounter ))
     | HandlePostedNCDEncounter IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
     | HandlePostedChildScoreboardEncounter IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
+    | HandlePostedTuberculosisEncounter IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,

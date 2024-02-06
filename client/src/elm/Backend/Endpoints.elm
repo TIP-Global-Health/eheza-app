@@ -61,6 +61,9 @@ import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (Session)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
+import Backend.TuberculosisEncounter.Decoder exposing (decodeTuberculosisEncounter)
+import Backend.TuberculosisEncounter.Encoder exposing (encodeTuberculosisEncounter)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
@@ -1364,3 +1367,10 @@ wellChildCaringEndpoint : ReadWriteEndPoint Error WellChildCaringId WellChildCar
 wellChildCaringEndpoint =
     swEndpoint "nodes/well_child_caring" decodeWellChildCaring
         |> withValueEncoder (object << encodeWellChildCaring)
+
+
+tuberculosisEncounterEndpoint : ReadWriteEndPoint Error TuberculosisEncounterId TuberculosisEncounter TuberculosisEncounter (List IndividualEncounterParticipantId)
+tuberculosisEncounterEndpoint =
+    swEndpoint "nodes/tuberculosis_encounter" decodeTuberculosisEncounter
+        |> withValueEncoder (object << encodeTuberculosisEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams

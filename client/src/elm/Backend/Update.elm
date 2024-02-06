@@ -77,6 +77,8 @@ import Backend.StockUpdate.Update
 import Backend.StockUpdate.Utils exposing (generateStockManagementData)
 import Backend.TraceContact.Model
 import Backend.TraceContact.Update
+import Backend.TuberculosisEncounter.Model
+import Backend.TuberculosisEncounter.Update
 import Backend.Utils exposing (..)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
@@ -3778,6 +3780,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                     NCDEncounter ->
                                                         NCDParticipantPage InitiatorParticipantsPage personId
 
+                                                    TuberculosisEncounter ->
+                                                        -- @todo
+                                                        --  TuberculosisParticipantPage personId
+                                                        IndividualEncounterTypesPage
+
                                                     -- Note yet implemented. Providing 'default'
                                                     -- page, to satisfy compiler.
                                                     InmmunizationEncounter ->
@@ -4014,6 +4021,12 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                         |> App.Model.MsgIndexedDb
                                     ]
 
+                                TuberculosisEncounter ->
+                                    [ Backend.TuberculosisEncounter.Model.emptyTuberculosisEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostTuberculosisEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 InmmunizationEncounter ->
                                     []
                         )
@@ -4236,6 +4249,35 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         |> RemoteData.withDefault []
             in
             ( { model | postChildScoreboardEncounter = Dict.insert participantId data model.postChildScoreboardEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostTuberculosisEncounter tuberculosisEncounter ->
+            ( { model | postTuberculosisEncounter = Dict.insert tuberculosisEncounter.participant Loading model.postTuberculosisEncounter }
+            , sw.post tuberculosisEncounterEndpoint tuberculosisEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedTuberculosisEncounter tuberculosisEncounter.participant)
+            , []
+            )
+
+        HandlePostedTuberculosisEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( tuberculosisEncounterId, _ ) ->
+                            [-- @todo:
+                             -- App.Model.SetActivePage <|
+                             --     UserPage <|
+                             --         Pages.Page.TuberculosisEncounterPage tuberculosisEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postTuberculosisEncounter = Dict.insert participantId data model.postTuberculosisEncounter }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
