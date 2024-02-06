@@ -1533,3 +1533,11 @@ type alias WellChildCaringId =
 
 type WellChildCaringIdUuidType
     = WellChildCaringIdUuidType
+
+
+type alias TuberculosisEncounterId =
+    EntityUuid TuberculosisEncounterUuidType
+
+
+type TuberculosisEncounterUuidType
+    = TuberculosisEncounterUuidType
