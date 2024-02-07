@@ -697,6 +697,7 @@ type SiteFeature
     = FeatureNCDA
     | FeatureReportToWhatsApp
     | FeatureStockManagement
+    | FeatureTuberculosisManagement
 
 
 type Msg

@@ -262,3 +262,8 @@ reportToWhatsAppEnabled =
 stockManagementEnabled : EverySet SiteFeature -> Bool
 stockManagementEnabled =
     EverySet.member FeatureStockManagement
+
+
+tuberculosiskManagementEnabled : EverySet SiteFeature -> Bool
+tuberculosiskManagementEnabled =
+    EverySet.member FeatureTuberculosisManagement

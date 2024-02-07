@@ -7018,7 +7018,7 @@ translationSet trans =
                     }
 
                 TuberculosisEncounter ->
-                    { english = "Tuberculosis"
+                    { english = "TB Management"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
