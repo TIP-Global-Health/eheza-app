@@ -915,6 +915,11 @@ encodeChildScoreboardMeasurement =
     encodeMeasurement "child_scoreboard_encounter"
 
 
+encodeTuberculosisMeasurement : (value -> List ( String, Value )) -> TuberculosisMeasurement value -> List ( String, Value )
+encodeTuberculosisMeasurement =
+    encodeMeasurement "tuberculosis_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
@@ -4378,3 +4383,112 @@ encodeWellChildCaring =
 encodeWellChildFoodSecurity : WellChildFoodSecurity -> List ( String, Value )
 encodeWellChildFoodSecurity =
     encodeWellChildMeasurement (encodeNutritionFoodSecurityValueWithType "well_child_food_security")
+
+
+encodeTuberculosisDiagnostics : TuberculosisDiagnostics -> List ( String, Value )
+encodeTuberculosisDiagnostics =
+    encodeTuberculosisMeasurement encodeTuberculosisDiagnosticsValue
+
+
+encodeTuberculosisDiagnosticsValue : TuberculosisDiagnosticsValue -> List ( String, Value )
+encodeTuberculosisDiagnosticsValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "tuberculosis_diagnostics" )
+    ]
+
+
+encodeTuberculosisDOT : TuberculosisDOT -> List ( String, Value )
+encodeTuberculosisDOT =
+    encodeTuberculosisMeasurement encodeTuberculosisDOTValue
+
+
+encodeTuberculosisDOTValue : TuberculosisDOTValue -> List ( String, Value )
+encodeTuberculosisDOTValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "tuberculosis_dot" )
+    ]
+
+
+encodeTuberculosisFollowUp : TuberculosisFollowUp -> List ( String, Value )
+encodeTuberculosisFollowUp =
+    encodeTuberculosisMeasurement encodeTuberculosisFollowUpValue
+
+
+encodeTuberculosisFollowUpValue : TuberculosisFollowUpValue -> List ( String, Value )
+encodeTuberculosisFollowUpValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "tuberculosis_follow_up" )
+    ]
+
+
+encodeTuberculosisHealthEducation : TuberculosisHealthEducation -> List ( String, Value )
+encodeTuberculosisHealthEducation =
+    encodeTuberculosisMeasurement encodeTuberculosisHealthEducationValue
+
+
+encodeTuberculosisHealthEducationValue : TuberculosisHealthEducationValue -> List ( String, Value )
+encodeTuberculosisHealthEducationValue value =
+    [ -- ( "tuberculosis_health_education_signs", encodeEverySet encodeTuberculosisHealthEducationSign value )
+      ( "deleted", bool False )
+    , ( "type", string "tuberculosis_health_education" )
+    ]
+
+
+
+-- encodeTuberculosisHealthEducationSign : TuberculosisHealthEducationSign -> Value
+-- encodeTuberculosisHealthEducationSign sign =
+--     string <|
+--         case sign of
+--             EducationHypertension ->
+--                 "hypertension"
+--
+--             NoTuberculosisHealthEducationSigns ->
+--                 "none"
+
+
+encodeTuberculosisMedication : TuberculosisMedication -> List ( String, Value )
+encodeTuberculosisMedication =
+    encodeTuberculosisMeasurement encodeTuberculosisMedicationValue
+
+
+encodeTuberculosisMedicationValue : TuberculosisMedicationValue -> List ( String, Value )
+encodeTuberculosisMedicationValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "tuberculosis_medication" )
+    ]
+
+
+encodeTuberculosisReferral : TuberculosisReferral -> List ( String, Value )
+encodeTuberculosisReferral =
+    encodeTuberculosisMeasurement encodeTuberculosisReferralValue
+
+
+encodeTuberculosisReferralValue : TuberculosisReferralValue -> List ( String, Value )
+encodeTuberculosisReferralValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "tuberculosis_referral" )
+    ]
+
+
+encodeTuberculosisSymptomReview : TuberculosisSymptomReview -> List ( String, Value )
+encodeTuberculosisSymptomReview =
+    encodeTuberculosisMeasurement encodeTuberculosisSymptomReviewValue
+
+
+encodeTuberculosisSymptomReviewValue : TuberculosisSymptomReviewValue -> List ( String, Value )
+encodeTuberculosisSymptomReviewValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "tuberculosis_symptom_review" )
+    ]
+
+
+encodeTuberculosisTreatmentReview : TuberculosisTreatmentReview -> List ( String, Value )
+encodeTuberculosisTreatmentReview =
+    encodeTuberculosisMeasurement encodeTuberculosisTreatmentReviewValue
+
+
+encodeTuberculosisTreatmentReviewValue : TuberculosisTreatmentReviewValue -> List ( String, Value )
+encodeTuberculosisTreatmentReviewValue value =
+    [ ( "deleted", bool False )
+    , ( "type", string "tuberculosis_treatment_review" )
+    ]
