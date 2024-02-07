@@ -68,6 +68,10 @@ type alias ChildScoreboardMeasurement value =
     Measurement ChildScoreboardEncounterId value
 
 
+type alias TuberculosisMeasurement value =
+    Measurement TuberculosisEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -2862,6 +2866,74 @@ type alias ChildScoreboardRotarixImmunisation =
 
 
 
+-- Tuberculosis:
+
+
+type alias TuberculosisDiagnostics =
+    TuberculosisMeasurement TuberculosisDiagnosticsValue
+
+
+type alias TuberculosisDiagnosticsValue =
+    {}
+
+
+type alias TuberculosisDOT =
+    TuberculosisMeasurement TuberculosisDOTValue
+
+
+type alias TuberculosisDOTValue =
+    {}
+
+
+type alias TuberculosisFollowUp =
+    TuberculosisMeasurement TuberculosisFollowUpValue
+
+
+type alias TuberculosisFollowUpValue =
+    {}
+
+
+type alias TuberculosisHealthEducation =
+    TuberculosisMeasurement TuberculosisHealthEducationValue
+
+
+type alias TuberculosisHealthEducationValue =
+    {}
+
+
+type alias TuberculosisMedication =
+    TuberculosisMeasurement TuberculosisMedicationValue
+
+
+type alias TuberculosisMedicationValue =
+    {}
+
+
+type alias TuberculosisReferral =
+    TuberculosisMeasurement TuberculosisReferralValue
+
+
+type alias TuberculosisReferralValue =
+    {}
+
+
+type alias TuberculosisSymptomReview =
+    TuberculosisMeasurement TuberculosisSymptomReviewValue
+
+
+type alias TuberculosisSymptomReviewValue =
+    {}
+
+
+type alias TuberculosisTreatmentReview =
+    TuberculosisMeasurement TuberculosisTreatmentReviewValue
+
+
+type alias TuberculosisTreatmentReviewValue =
+    {}
+
+
+
 -- Stock Management:
 
 
@@ -3228,7 +3300,15 @@ type alias ChildScoreboardMeasurements =
 
 
 type alias TuberculosisMeasurements =
-    {}
+    { diagnostics : Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics )
+    , dot : Maybe ( TuberculosisDOTId, TuberculosisDOT )
+    , followUp : Maybe ( TuberculosisFollowUpId, TuberculosisFollowUp )
+    , healthEducation : Maybe ( TuberculosisHealthEducationId, TuberculosisHealthEducation )
+    , medication : Maybe ( TuberculosisMedicationId, TuberculosisMedication )
+    , referral : Maybe ( TuberculosisReferralId, TuberculosisReferral )
+    , symptomReview : Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview )
+    , treatmentReview : Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview )
+    }
 
 
 {-| A set of measurements that includes all required data for
