@@ -5711,6 +5711,22 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        TuberculosisDiagnosticsRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisDOTRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dot = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         TuberculosisEncounterRevision uuid data ->
             let
                 tuberculosisEncounters =
@@ -5723,6 +5739,54 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 | tuberculosisEncounters = tuberculosisEncounters
                 , tuberculosisEncountersByParticipant = tuberculosisEncountersByParticipant
               }
+            , recalc
+            )
+
+        TuberculosisFollowUpRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisHealthEducationRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisMedicationRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisReferralRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisSymptomReviewRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisTreatmentReviewRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                model
             , recalc
             )
 
