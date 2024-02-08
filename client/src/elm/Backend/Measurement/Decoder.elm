@@ -5430,7 +5430,7 @@ decodeTuberculosisDiagnostics =
 
 decodeTuberculosisDiagnosticsValue : Decoder TuberculosisDiagnosticsValue
 decodeTuberculosisDiagnosticsValue =
-    field "tuberculosis_signs" decodeTuberculosisSign
+    field "tuberculosis_diagnosis" decodeTuberculosisSign
 
 
 decodeTuberculosisSign : Decoder TuberculosisSign

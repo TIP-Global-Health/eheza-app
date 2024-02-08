@@ -4392,7 +4392,7 @@ encodeTuberculosisDiagnostics =
 
 encodeTuberculosisDiagnosticsValue : TuberculosisDiagnosticsValue -> List ( String, Value )
 encodeTuberculosisDiagnosticsValue value =
-    [ ( "tuberculosis_signs", encodeTuberculosisSign value )
+    [ ( "tuberculosis_diagnosis", encodeTuberculosisSign value )
     , ( "deleted", bool False )
     , ( "type", string "tuberculosis_diagnostics" )
     ]

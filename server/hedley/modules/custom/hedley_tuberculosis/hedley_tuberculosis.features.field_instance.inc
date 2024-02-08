@@ -246,8 +246,8 @@ function hedley_tuberculosis_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-tuberculosis_diagnostics-field_tuberculosis_signs'.
-  $field_instances['node-tuberculosis_diagnostics-field_tuberculosis_signs'] = array(
+  // 'node-tuberculosis_diagnostics-field_tuberculosis_diagnosis'.
+  $field_instances['node-tuberculosis_diagnostics-field_tuberculosis_diagnosis'] = array(
     'bundle' => 'tuberculosis_diagnostics',
     'default_value' => NULL,
     'deleted' => 0,
@@ -268,7 +268,7 @@ function hedley_tuberculosis_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_tuberculosis_signs',
+    'field_name' => 'field_tuberculosis_diagnosis',
     'label' => 'Tuberculosis Signs',
     'required' => 0,
     'settings' => array(

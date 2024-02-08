@@ -14,7 +14,7 @@ class HedleyRestfulTuberculosisDiagnostics extends HedleyRestfulTuberculosisActi
    * {@inheritdoc}
    */
   protected $fields = [
-    'field_tuberculosis_signs',
+    'field_tuberculosis_diagnosis',
   ];
 
 }

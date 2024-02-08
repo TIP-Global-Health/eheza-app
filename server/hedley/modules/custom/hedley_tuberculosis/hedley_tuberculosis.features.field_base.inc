@@ -47,14 +47,14 @@ function hedley_tuberculosis_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_tuberculosis_signs'.
-  $field_bases['field_tuberculosis_signs'] = array(
+  // Exported field_base: 'field_tuberculosis_diagnosis'.
+  $field_bases['field_tuberculosis_diagnosis'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_tuberculosis_signs',
+    'field_name' => 'field_tuberculosis_diagnosis',
     'indexes' => array(
       'value' => array(
         0 => 'value',
