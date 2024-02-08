@@ -636,7 +636,15 @@ type Revision
     | TravelHistoryRevision TravelHistoryId TravelHistory
     | TreatmentOngoingRevision TreatmentOngoingId TreatmentOngoing
     | TreatmentReviewRevision TreatmentReviewId TreatmentReview
+    | TuberculosisDiagnosticsRevision TuberculosisDiagnosticsId TuberculosisDiagnostics
+    | TuberculosisDOTRevision TuberculosisDOTId TuberculosisDOT
     | TuberculosisEncounterRevision TuberculosisEncounterId TuberculosisEncounter
+    | TuberculosisFollowUpRevision TuberculosisFollowUpId TuberculosisFollowUp
+    | TuberculosisHealthEducationRevision TuberculosisHealthEducationId TuberculosisHealthEducation
+    | TuberculosisMedicationRevision TuberculosisMedicationId TuberculosisMedication
+    | TuberculosisReferralRevision TuberculosisReferralId TuberculosisReferral
+    | TuberculosisSymptomReviewRevision TuberculosisSymptomReviewId TuberculosisSymptomReview
+    | TuberculosisTreatmentReviewRevision TuberculosisTreatmentReviewId TuberculosisTreatmentReview
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight

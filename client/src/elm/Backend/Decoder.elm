@@ -475,8 +475,32 @@ decodeRevision =
                     "treatment_ongoing" ->
                         decodeWithUuid TreatmentOngoingRevision decodeTreatmentOngoing
 
+                    "tuberculosis_diagnostics" ->
+                        decodeWithUuid TuberculosisDiagnosticsRevision decodeTuberculosisDiagnostics
+
+                    "tuberculosis_dot" ->
+                        decodeWithUuid TuberculosisDOTRevision decodeTuberculosisDOT
+
                     "tuberculosis_encounter" ->
                         decodeWithUuid TuberculosisEncounterRevision decodeTuberculosisEncounter
+
+                    "tuberculosis_follow_up" ->
+                        decodeWithUuid TuberculosisFollowUpRevision decodeTuberculosisFollowUp
+
+                    "tuberculosis_health_education" ->
+                        decodeWithUuid TuberculosisHealthEducationRevision decodeTuberculosisHealthEducation
+
+                    "tuberculosis_medication" ->
+                        decodeWithUuid TuberculosisMedicationRevision decodeTuberculosisMedication
+
+                    "tuberculosis_referral" ->
+                        decodeWithUuid TuberculosisReferralRevision decodeTuberculosisReferral
+
+                    "tuberculosis_symptom_review" ->
+                        decodeWithUuid TuberculosisSymptomReviewRevision decodeTuberculosisSymptomReview
+
+                    "tuberculosis_treatment_review" ->
+                        decodeWithUuid TuberculosisTreatmentReviewRevision decodeTuberculosisTreatmentReview
 
                     "village" ->
                         decodeWithUuid VillageRevision decodeVillage

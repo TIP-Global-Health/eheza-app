@@ -13,11 +13,10 @@ import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import RemoteData
-import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Site -> TuberculosisEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate site id db msg model =
+update : NominalDate -> TuberculosisEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate id db msg model =
     case msg of
         SetActivePage page ->
             ( model

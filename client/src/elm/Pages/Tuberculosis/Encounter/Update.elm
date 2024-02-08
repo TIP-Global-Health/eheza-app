@@ -27,3 +27,9 @@ update msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetSelectedTab tab ->
+            ( { model | selectedTab = tab }, Cmd.none, [] )
+
+        SetEndEncounterDialogState isOpen ->
+            ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )

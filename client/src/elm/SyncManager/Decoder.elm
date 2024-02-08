@@ -1112,10 +1112,50 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeTreatmentOngoing
                             BackendAuthorityTreatmentOngoing
 
+                    "tuberculosis_diagnostics" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisDiagnostics
+                            BackendAuthorityTuberculosisDiagnostics
+
+                    "tuberculosis_dot" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisDOT
+                            BackendAuthorityTuberculosisDOT
+
                     "tuberculosis_encounter" ->
                         doDecode
                             Backend.TuberculosisEncounter.Decoder.decodeTuberculosisEncounter
                             BackendAuthorityTuberculosisEncounter
+
+                    "tuberculosis_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisFollowUp
+                            BackendAuthorityTuberculosisFollowUp
+
+                    "tuberculosis_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisHealthEducation
+                            BackendAuthorityTuberculosisHealthEducation
+
+                    "tuberculosis_medication" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisMedication
+                            BackendAuthorityTuberculosisMedication
+
+                    "tuberculosis_referral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisReferral
+                            BackendAuthorityTuberculosisReferral
+
+                    "tuberculosis_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisSymptomReview
+                            BackendAuthorityTuberculosisSymptomReview
+
+                    "tuberculosis_treatment_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisTreatmentReview
+                            BackendAuthorityTuberculosisTreatmentReview
 
                     "vitals" ->
                         doDecode

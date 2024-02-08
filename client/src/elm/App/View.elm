@@ -977,6 +977,16 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> Html.map (MsgLoggedIn << MsgPageTuberculosisEncounter id)
                             |> flexPageWrapper configured.config model
 
+                    TuberculosisActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.tuberculosisActivityPages
+                                    |> Maybe.withDefault Pages.Tuberculosis.Activity.Model.emptyModel
+                        in
+                        Pages.Tuberculosis.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity)
+                            |> flexPageWrapper configured.config model
+
                     TraceContactPage traceContactId ->
                         let
                             page_ =

@@ -62,6 +62,11 @@ decodeChildScoreboardMeasurement =
     decodeMeasurement "child_scoreboard_encounter"
 
 
+decodeTuberculosisMeasurement : Decoder value -> Decoder (Measurement TuberculosisEncounterId value)
+decodeTuberculosisMeasurement =
+    decodeMeasurement "tuberculosis_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement
@@ -299,6 +304,14 @@ decodeChildScoreboardMeasurements =
 decodeTuberculosisMeasurements : Decoder TuberculosisMeasurements
 decodeTuberculosisMeasurements =
     succeed TuberculosisMeasurements
+        |> optional "tuberculosis_diagnostics" (decodeHead decodeTuberculosisDiagnostics) Nothing
+        |> optional "tuberculosis_dot" (decodeHead decodeTuberculosisDOT) Nothing
+        |> optional "tuberculosis_followUp" (decodeHead decodeTuberculosisFollowUp) Nothing
+        |> optional "tuberculosis_health_education" (decodeHead decodeTuberculosisHealthEducation) Nothing
+        |> optional "tuberculosis_medication" (decodeHead decodeTuberculosisMedication) Nothing
+        |> optional "tuberculosis_referral" (decodeHead decodeTuberculosisReferral) Nothing
+        |> optional "tuberculosis_symptom_review" (decodeHead decodeTuberculosisSymptomReview) Nothing
+        |> optional "tuberculosis_treatment_review" (decodeHead decodeTuberculosisTreatmentReview) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -5408,3 +5421,83 @@ decodeWellChildFoodSecurity =
 decodeWellChildCaring : Decoder WellChildCaring
 decodeWellChildCaring =
     decodeWellChildMeasurement decodeNutritionCaringValue
+
+
+decodeTuberculosisDiagnostics : Decoder TuberculosisDiagnostics
+decodeTuberculosisDiagnostics =
+    decodeTuberculosisMeasurement decodeTuberculosisDiagnosticsValue
+
+
+decodeTuberculosisDiagnosticsValue : Decoder TuberculosisDiagnosticsValue
+decodeTuberculosisDiagnosticsValue =
+    succeed TuberculosisDiagnosticsValue
+
+
+decodeTuberculosisDOT : Decoder TuberculosisDOT
+decodeTuberculosisDOT =
+    decodeTuberculosisMeasurement decodeTuberculosisDOTValue
+
+
+decodeTuberculosisDOTValue : Decoder TuberculosisDOTValue
+decodeTuberculosisDOTValue =
+    succeed TuberculosisDOTValue
+
+
+decodeTuberculosisFollowUp : Decoder TuberculosisFollowUp
+decodeTuberculosisFollowUp =
+    decodeTuberculosisMeasurement decodeTuberculosisFollowUpValue
+
+
+decodeTuberculosisFollowUpValue : Decoder TuberculosisFollowUpValue
+decodeTuberculosisFollowUpValue =
+    succeed TuberculosisFollowUpValue
+
+
+decodeTuberculosisHealthEducation : Decoder TuberculosisHealthEducation
+decodeTuberculosisHealthEducation =
+    decodeTuberculosisMeasurement decodeTuberculosisHealthEducationValue
+
+
+decodeTuberculosisHealthEducationValue : Decoder TuberculosisHealthEducationValue
+decodeTuberculosisHealthEducationValue =
+    succeed TuberculosisHealthEducationValue
+
+
+decodeTuberculosisMedication : Decoder TuberculosisMedication
+decodeTuberculosisMedication =
+    decodeTuberculosisMeasurement decodeTuberculosisMedicationValue
+
+
+decodeTuberculosisMedicationValue : Decoder TuberculosisMedicationValue
+decodeTuberculosisMedicationValue =
+    succeed TuberculosisMedicationValue
+
+
+decodeTuberculosisReferral : Decoder TuberculosisReferral
+decodeTuberculosisReferral =
+    decodeTuberculosisMeasurement decodeTuberculosisReferralValue
+
+
+decodeTuberculosisReferralValue : Decoder TuberculosisReferralValue
+decodeTuberculosisReferralValue =
+    succeed TuberculosisReferralValue
+
+
+decodeTuberculosisSymptomReview : Decoder TuberculosisSymptomReview
+decodeTuberculosisSymptomReview =
+    decodeTuberculosisMeasurement decodeTuberculosisSymptomReviewValue
+
+
+decodeTuberculosisSymptomReviewValue : Decoder TuberculosisSymptomReviewValue
+decodeTuberculosisSymptomReviewValue =
+    succeed TuberculosisSymptomReviewValue
+
+
+decodeTuberculosisTreatmentReview : Decoder TuberculosisTreatmentReview
+decodeTuberculosisTreatmentReview =
+    decodeTuberculosisMeasurement decodeTuberculosisTreatmentReviewValue
+
+
+decodeTuberculosisTreatmentReviewValue : Decoder TuberculosisTreatmentReviewValue
+decodeTuberculosisTreatmentReviewValue =
+    succeed TuberculosisTreatmentReviewValue
