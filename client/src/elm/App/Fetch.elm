@@ -354,6 +354,10 @@ fetch model =
                 Pages.Tuberculosis.Encounter.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
+            UserPage (TuberculosisActivityPage id _) ->
+                Pages.Tuberculosis.Activity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
             UserPage (NutritionProgressReportPage id) ->
                 Pages.Nutrition.ProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb

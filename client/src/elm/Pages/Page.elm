@@ -63,6 +63,7 @@ import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Initiator)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
+import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 
 
@@ -200,8 +201,7 @@ type UserPage
     | ChildScoreboardProgressReportPage ChildScoreboardEncounterId -- Scorecard.
     | TuberculosisParticipantPage PersonId
     | TuberculosisEncounterPage TuberculosisEncounterId -- Child Scoreboard activities index.
-      -- @todo:
-      -- | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Child Scoreboard activity.
+    | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Child Scoreboard activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

@@ -28,6 +28,8 @@ import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurr
 import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
 import Backend.PrenatalEncounter.Utils exposing (..)
+import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
+import Backend.TuberculosisActivity.Utils
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildActivity.Utils
 import Pages.Page exposing (..)
@@ -321,6 +323,9 @@ pageToFragment current =
                 TuberculosisEncounterPage id ->
                     Just <| "tuberculosis-encounter/" ++ fromEntityUuid id
 
+                TuberculosisActivityPage id activity ->
+                    Just <| "tuberculosis-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.TuberculosisActivity.Utils.activityToString activity
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -398,6 +403,7 @@ parser =
         , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
         , map (\id -> UserPage <| TuberculosisEncounterPage id) (s "tuberculosis-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| TuberculosisActivityPage id activity) (s "tuberculosis-activity" </> parseUuid </> parseTuberculosisActivity)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
@@ -496,6 +502,11 @@ parseNCDRecurrentActivity =
 parseChildScoreboardActivity : Parser (ChildScoreboardActivity -> c) c
 parseChildScoreboardActivity =
     custom "ChildScoreboardActivity" Backend.ChildScoreboardActivity.Utils.activityFromString
+
+
+parseTuberculosisActivity : Parser (TuberculosisActivity -> c) c
+parseTuberculosisActivity =
+    custom "TuberculosisActivity" Backend.TuberculosisActivity.Utils.activityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
