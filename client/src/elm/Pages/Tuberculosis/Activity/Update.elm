@@ -10,8 +10,10 @@ import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
+import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Model exposing (..)
+import Pages.Tuberculosis.Activity.Utils exposing (toDiagnosticsValueWithDefault)
 import RemoteData
 
 
@@ -22,4 +24,44 @@ update currentDate id db msg model =
             ( model
             , Cmd.none
             , [ App.Model.SetActivePage page ]
+            )
+
+        SetDiagnosticsBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.diagnosticsData.form
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveDiagnostics personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.diagnosticsData.form
+                        |> toDiagnosticsValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.TuberculosisEncounter.Model.SaveDiagnostics personId measurementId value
+                                    |> Backend.Model.MsgTuberculosisEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| TuberculosisEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
             )

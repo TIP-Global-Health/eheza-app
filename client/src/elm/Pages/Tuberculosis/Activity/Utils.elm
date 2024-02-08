@@ -109,8 +109,8 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     True
 
 
-tuberculosisDiagnosticsFormWithDefault : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm
-tuberculosisDiagnosticsFormWithDefault form saved =
+diagnosticsFormWithDefault : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm
+diagnosticsFormWithDefault form saved =
     saved
         |> unwrap
             form
@@ -137,14 +137,14 @@ tuberculosisDiagnosticsFormWithDefault form saved =
             )
 
 
-toTuberculosisDiagnosticsValueWithDefault : Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue
-toTuberculosisDiagnosticsValueWithDefault saved form =
-    tuberculosisDiagnosticsFormWithDefault form saved
-        |> toTuberculosisDiagnosticsValue
+toDiagnosticsValueWithDefault : Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue
+toDiagnosticsValueWithDefault saved form =
+    diagnosticsFormWithDefault form saved
+        |> toDiagnosticsValue
 
 
-toTuberculosisDiagnosticsValue : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue
-toTuberculosisDiagnosticsValue form =
+toDiagnosticsValue : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue
+toDiagnosticsValue form =
     Maybe.andThen
         (\diagnosed ->
             if not diagnosed then

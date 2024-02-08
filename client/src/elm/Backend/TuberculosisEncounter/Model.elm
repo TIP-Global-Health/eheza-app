@@ -28,15 +28,19 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeTuberculosisEncounter : WebData ()
+    , saveDiagnostics : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeTuberculosisEncounter = NotAsked
+    , saveDiagnostics = NotAsked
     }
 
 
 type Msg
     = CloseTuberculosisEncounter
     | HandleClosedTuberculosisEncounter (WebData ())
+    | SaveDiagnostics PersonId (Maybe TuberculosisDiagnosticsId) TuberculosisDiagnosticsValue
+    | HandleSavedDiagnostics (WebData ())

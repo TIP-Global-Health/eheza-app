@@ -52,3 +52,5 @@ type NextStepsTask
 
 type Msg
     = SetActivePage Page
+    | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
+    | SaveDiagnostics PersonId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
