@@ -579,6 +579,11 @@ h3.ui.header {
   background-size: 92px 92px;
 }
 
+.icon-task-diagnostics {
+  background-image: url(#{$img-path}icon-medication-distribution-white.svg);
+  background-size: 86px 86px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
