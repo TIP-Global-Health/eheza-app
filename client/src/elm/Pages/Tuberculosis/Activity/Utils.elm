@@ -107,3 +107,58 @@ mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     -- todo:
     True
+
+
+tuberculosisDiagnosticsFormWithDefault : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm
+tuberculosisDiagnosticsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    ( diagnosed, isPulmonary ) =
+                        case value of
+                            TuberculosisPulmonary ->
+                                ( Just True, Just True )
+
+                            TuberculosisExtrapulmonary ->
+                                ( Just True, Just False )
+
+                            NoTuberculosis ->
+                                ( Just False, Nothing )
+                in
+                { diagnosed = diagnosed
+                , isPulmonary =
+                    maybeValueConsideringIsDirtyField form.isPulmonaryDirty
+                        form.isPulmonary
+                        isPulmonary
+                , isPulmonaryDirty = form.isPulmonaryDirty
+                }
+            )
+
+
+toTuberculosisDiagnosticsValueWithDefault : Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue
+toTuberculosisDiagnosticsValueWithDefault saved form =
+    tuberculosisDiagnosticsFormWithDefault form saved
+        |> toTuberculosisDiagnosticsValue
+
+
+toTuberculosisDiagnosticsValue : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue
+toTuberculosisDiagnosticsValue form =
+    Maybe.andThen
+        (\diagnosed ->
+            if not diagnosed then
+                Just NoTuberculosis
+
+            else
+                Maybe.map
+                    (\isPulmonary ->
+                        if isPulmonary then
+                            TuberculosisPulmonary
+
+                        else
+                            TuberculosisExtrapulmonary
+                    )
+                    form.isPulmonary
+        )
+        form.diagnosed

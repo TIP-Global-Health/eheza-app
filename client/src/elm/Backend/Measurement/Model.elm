@@ -2874,7 +2874,7 @@ type alias TuberculosisDiagnostics =
 
 
 type alias TuberculosisDiagnosticsValue =
-    EverySet TuberculosisSign
+    TuberculosisSign
 
 
 type TuberculosisSign
