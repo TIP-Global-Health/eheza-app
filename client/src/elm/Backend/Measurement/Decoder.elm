@@ -5430,7 +5430,19 @@ decodeTuberculosisDiagnostics =
 
 decodeTuberculosisDiagnosticsValue : Decoder TuberculosisDiagnosticsValue
 decodeTuberculosisDiagnosticsValue =
-    succeed TuberculosisDiagnosticsValue
+    decodeEverySet decodeTuberculosisSign
+        |> field "tuberculosis_signs"
+
+
+decodeTuberculosisSign : Decoder TuberculosisSign
+decodeTuberculosisSign =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisSign" |> fail)
+            )
 
 
 decodeTuberculosisDOT : Decoder TuberculosisDOT

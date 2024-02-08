@@ -3913,6 +3913,35 @@ bloodSmearResultFromString value =
             Nothing
 
 
+tuberculosisSignToString : TuberculosisSign -> String
+tuberculosisSignToString sign =
+    case sign of
+        TuberculosisPulmonary ->
+            "pulmonary"
+
+        TuberculosisExtrapulmonary ->
+            "extrapulmonary"
+
+        NoTuberculosis ->
+            "none"
+
+
+tuberculosisSignFromString : String -> Maybe TuberculosisSign
+tuberculosisSignFromString sign =
+    case sign of
+        "pulmonary" ->
+            Just TuberculosisPulmonary
+
+        "extrapulmonary" ->
+            Just TuberculosisExtrapulmonary
+
+        "none" ->
+            Just NoTuberculosis
+
+        _ ->
+            Nothing
+
+
 generatePreviousMeasurements :
     (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
     -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
