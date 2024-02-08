@@ -34,7 +34,10 @@ function hedley_tuberculosis_user_default_permissions() {
   // Exported permission: 'create tuberculosis_encounter content'.
   $permissions['create tuberculosis_encounter content'] = array(
     'name' => 'create tuberculosis_encounter content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -119,7 +122,9 @@ function hedley_tuberculosis_user_default_permissions() {
   // Exported permission: 'delete any tuberculosis_encounter content'.
   $permissions['delete any tuberculosis_encounter content'] = array(
     'name' => 'delete any tuberculosis_encounter content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -198,7 +203,9 @@ function hedley_tuberculosis_user_default_permissions() {
   // Exported permission: 'delete own tuberculosis_encounter content'.
   $permissions['delete own tuberculosis_encounter content'] = array(
     'name' => 'delete own tuberculosis_encounter content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -279,7 +286,10 @@ function hedley_tuberculosis_user_default_permissions() {
   // Exported permission: 'edit any tuberculosis_encounter content'.
   $permissions['edit any tuberculosis_encounter content'] = array(
     'name' => 'edit any tuberculosis_encounter content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -366,7 +376,10 @@ function hedley_tuberculosis_user_default_permissions() {
   // Exported permission: 'edit own tuberculosis_encounter content'.
   $permissions['edit own tuberculosis_encounter content'] = array(
     'name' => 'edit own tuberculosis_encounter content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 

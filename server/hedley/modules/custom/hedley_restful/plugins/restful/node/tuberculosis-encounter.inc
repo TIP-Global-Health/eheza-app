@@ -8,7 +8,7 @@
 $plugin = array(
   'label' => t('Tuberculosis encounter'),
   'resource' => 'tuberculosis-encounter',
-  'name' => 'child-scoreboard-encounter',
+  'name' => 'tuberculosis-encounter',
   'entity_type' => 'node',
   'bundle' => 'tuberculosis_encounter',
   'description' => t('Exports the Tuberculosis Encounter bundle.'),
