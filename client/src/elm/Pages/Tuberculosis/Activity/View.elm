@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Date
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf)
@@ -25,11 +26,10 @@ import Utils.WebData exposing (viewWebData)
 view :
     Language
     -> NominalDate
-    -> Site
     -> TuberculosisEncounterId
-    --  -> TuberculosisActivity
+    -> TuberculosisActivity
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate site id db model =
+view language currentDate id activity db model =
     text "Pages.Tuberculosis.Activity.View.view"

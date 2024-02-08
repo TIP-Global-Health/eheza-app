@@ -16,5 +16,11 @@ emptyModel =
     {}
 
 
+type NextStepsTask
+    = TaskReferral
+    | TaskHealthEducation
+    | TaskFollowUp
+
+
 type Msg
     = SetActivePage Page
