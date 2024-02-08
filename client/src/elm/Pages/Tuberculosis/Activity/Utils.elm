@@ -127,7 +127,7 @@ diagnosticsFormWithDefault form saved =
                             NoTuberculosis ->
                                 ( Just False, Nothing )
                 in
-                { diagnosed = diagnosed
+                { diagnosed = or form.diagnosed diagnosed
                 , isPulmonary =
                     maybeValueConsideringIsDirtyField form.isPulmonaryDirty
                         form.isPulmonary
