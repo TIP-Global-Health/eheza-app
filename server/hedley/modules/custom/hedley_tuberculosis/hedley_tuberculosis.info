@@ -36,6 +36,7 @@ features[field_instance][] = node-tuberculosis_encounter-field_individual_partic
 features[field_instance][] = node-tuberculosis_encounter-field_scheduled_date
 features[field_instance][] = node-tuberculosis_encounter-field_shards
 features[field_instance][] = node-tuberculosis_encounter-field_uuid
+features[field_instance][] = node-tuberculosis_follow_up-field_date_concluded
 features[field_instance][] = node-tuberculosis_follow_up-field_date_measured
 features[field_instance][] = node-tuberculosis_follow_up-field_follow_up_options
 features[field_instance][] = node-tuberculosis_follow_up-field_nurse
