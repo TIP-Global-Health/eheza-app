@@ -9,12 +9,14 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { diagnosticsData : DiagnosticsData
+    , symptomReviewData : SymptomReviewData
     }
 
 
 emptyModel : Model
 emptyModel =
     { diagnosticsData = emptyDiagnosticsData
+    , symptomReviewData = emptySymptomReviewData
     }
 
 
@@ -41,6 +43,34 @@ emptyDiagnosticsForm =
     { diagnosed = Nothing
     , isPulmonary = Nothing
     , isPulmonaryDirty = False
+    }
+
+
+type alias SymptomReviewData =
+    { form : SymptomReviewForm
+    }
+
+
+emptySymptomReviewData : SymptomReviewData
+emptySymptomReviewData =
+    { form = emptySymptomReviewForm
+    }
+
+
+type alias SymptomReviewForm =
+    { nightSweats : Maybe Bool
+    , bloodInSputum : Maybe Bool
+    , weightLoss : Maybe Bool
+    , severeFatigue : Maybe Bool
+    }
+
+
+emptySymptomReviewForm : SymptomReviewForm
+emptySymptomReviewForm =
+    { nightSweats = Nothing
+    , bloodInSputum = Nothing
+    , weightLoss = Nothing
+    , severeFatigue = Nothing
     }
 
 
