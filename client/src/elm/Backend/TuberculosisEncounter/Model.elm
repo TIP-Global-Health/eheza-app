@@ -30,6 +30,9 @@ type alias Model =
     { closeTuberculosisEncounter : WebData ()
     , saveDiagnostics : WebData ()
     , saveSymptomReview : WebData ()
+    , saveReferral : WebData ()
+    , saveHealthEducation : WebData ()
+    , saveFollowUp : WebData ()
     }
 
 
@@ -38,6 +41,9 @@ emptyModel =
     { closeTuberculosisEncounter = NotAsked
     , saveDiagnostics = NotAsked
     , saveSymptomReview = NotAsked
+    , saveReferral = NotAsked
+    , saveHealthEducation = NotAsked
+    , saveFollowUp = NotAsked
     }
 
 
@@ -48,3 +54,9 @@ type Msg
     | HandleSavedDiagnostics (WebData ())
     | SaveSymptomReview PersonId (Maybe TuberculosisSymptomReviewId) TuberculosisSymptomReviewValue
     | HandleSavedSymptomReview (WebData ())
+    | SaveReferral PersonId (Maybe TuberculosisReferralId) SendToHCValue
+    | HandleSavedReferral (WebData ())
+    | SaveHealthEducation PersonId (Maybe TuberculosisHealthEducationId) TuberculosisHealthEducationValue
+    | HandleSavedHealthEducation (WebData ())
+    | SaveFollowUp PersonId (Maybe TuberculosisFollowUpId) FollowUpValue
+    | HandleSavedFollowUp (WebData ())
