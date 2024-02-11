@@ -118,3 +118,10 @@ type Msg
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
     | SetFollowUpOption FollowUpOption
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNonReferral ReasonForNonReferral
+
+
+
+-- | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)

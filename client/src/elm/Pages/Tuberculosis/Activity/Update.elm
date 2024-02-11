@@ -147,3 +147,85 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNonReferral value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+
+
+--
+-- SaveSendToHC personId saved nextTask_ ->
+--     let
+--         measurementId =
+--             Maybe.map Tuple.first saved
+--
+--         measurement =
+--             getMeasurementValueFunc saved
+--
+--         extraMsgs =
+--             generateNextStepsMsgs nextTask_
+--
+--         appMsgs =
+--             model.nextStepsData.sendToHCForm
+--                 |> toSendToHCValueWithDefault measurement
+--                 |> Maybe.map
+--                     (Backend.WellChildEncounter.Model.SaveSendToHC personId measurementId
+--                         >> Backend.Model.MsgWellChildEncounter id
+--                         >> App.Model.MsgIndexedDb
+--                         >> List.singleton
+--                     )
+--                 |> Maybe.withDefault []
+--     in
+--     ( model
+--     , Cmd.none
+--     , appMsgs
+--     )
+--         |> sequenceExtra (update currentDate site isChw id db) extraMsgs
