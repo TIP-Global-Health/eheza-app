@@ -15,7 +15,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (isJust)
-import Measurement.Utils exposing (followUpFormWithDefault)
+import Measurement.Utils exposing (followUpFormWithDefault, sendToHCFormWithDefault)
 import Measurement.View
     exposing
         ( viewFollowUpForm
@@ -337,16 +337,15 @@ viewNextStepsContent language currentDate assembled db data =
                         |> List.singleton
 
                 Just TaskReferral ->
-                    -- getMeasurementValueFunc measurements.referral
-                    --     |> sendToHCFormWithDefault data.sendToHCForm
-                    --     |> viewSendToHealthCenterForm language
-                    --         currentDate
-                    --         SetReferToHealthCenter
-                    --         SetReasonForNonReferral
-                    --         SetHandReferralForm
-                    --         Nothing
-                    --     |> List.singleton
-                    []
+                    getMeasurementValueFunc measurements.referral
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHealthCenterForm language
+                            currentDate
+                            SetReferToHealthCenter
+                            SetReasonForNonReferral
+                            SetHandReferralForm
+                            Nothing
+                        |> List.singleton
 
                 Nothing ->
                     []

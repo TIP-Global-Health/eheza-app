@@ -117,11 +117,10 @@ type Msg
       -- NEXT STEPS
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( TuberculosisHealthEducationId, TuberculosisHealthEducation )) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( TuberculosisFollowUpId, TuberculosisFollowUp )) (Maybe NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SetReasonForNonReferral ReasonForNonReferral
-
-
-
--- | SaveSendToHC PersonId (Maybe ( WellChildSendToHCId, WellChildSendToHC )) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
+    | SaveReferral PersonId (Maybe ( TuberculosisReferralId, TuberculosisReferral )) (Maybe NextStepsTask)

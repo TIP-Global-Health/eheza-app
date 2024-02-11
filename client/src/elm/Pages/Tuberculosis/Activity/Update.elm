@@ -11,6 +11,7 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
+import Measurement.Utils exposing (toFollowUpValueWithDefault, toSendToHCValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Activity.Utils exposing (..)
@@ -19,6 +20,11 @@ import RemoteData
 
 update : NominalDate -> TuberculosisEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
+    let
+        generateNextStepsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| TuberculosisEncounterPage id ]
+    in
     case msg of
         SetActivePage page ->
             ( model
@@ -131,6 +137,33 @@ update currentDate id db msg model =
             , []
             )
 
+        SaveHealthEducation personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
+                        |> Maybe.map
+                            (Backend.TuberculosisEncounter.Model.SaveHealthEducation personId measurementId
+                                >> Backend.Model.MsgTuberculosisEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
         SetFollowUpOption option ->
             let
                 form =
@@ -147,6 +180,33 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SaveFollowUp personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toFollowUpValueWithDefault measurement model.nextStepsData.followUpForm
+                        |> Maybe.map
+                            (Backend.TuberculosisEncounter.Model.SaveFollowUp personId measurementId
+                                >> Backend.Model.MsgTuberculosisEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetReferToHealthCenter value ->
             let
@@ -199,33 +259,29 @@ update currentDate id db msg model =
             , []
             )
 
+        SaveReferral personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
 
+                measurement =
+                    getMeasurementValueFunc saved
 
---
--- SaveSendToHC personId saved nextTask_ ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         extraMsgs =
---             generateNextStepsMsgs nextTask_
---
---         appMsgs =
---             model.nextStepsData.sendToHCForm
---                 |> toSendToHCValueWithDefault measurement
---                 |> Maybe.map
---                     (Backend.WellChildEncounter.Model.SaveSendToHC personId measurementId
---                         >> Backend.Model.MsgWellChildEncounter id
---                         >> App.Model.MsgIndexedDb
---                         >> List.singleton
---                     )
---                 |> Maybe.withDefault []
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
---         |> sequenceExtra (update currentDate site isChw id db) extraMsgs
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toSendToHCValueWithDefault measurement model.nextStepsData.sendToHCForm
+                        |> Maybe.map
+                            (Backend.TuberculosisEncounter.Model.SaveReferral personId measurementId
+                                >> Backend.Model.MsgTuberculosisEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
