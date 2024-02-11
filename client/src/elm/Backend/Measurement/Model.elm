@@ -2904,7 +2904,7 @@ type alias TuberculosisHealthEducationValue =
 
 
 type TuberculosisHealthEducationSign
-    = FollowUpTesting
+    = EducationFollowUpTesting
     | NoTuberculosisHealthEducationSigns
 
 

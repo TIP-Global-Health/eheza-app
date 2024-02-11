@@ -3986,7 +3986,7 @@ tuberculosisSymptomFromString symptom =
 tuberculosisHealthEducationSignToString : TuberculosisHealthEducationSign -> String
 tuberculosisHealthEducationSignToString sign =
     case sign of
-        FollowUpTesting ->
+        EducationFollowUpTesting ->
             "followup-testing"
 
         NoTuberculosisHealthEducationSigns ->
@@ -3997,7 +3997,7 @@ tuberculosisHealthEducationSignFromString : String -> Maybe TuberculosisHealthEd
 tuberculosisHealthEducationSignFromString sign =
     case sign of
         "followup-testing" ->
-            Just FollowUpTesting
+            Just EducationFollowUpTesting
 
         "none" ->
             Just NoTuberculosisHealthEducationSigns
