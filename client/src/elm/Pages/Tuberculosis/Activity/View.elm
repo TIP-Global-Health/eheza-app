@@ -15,7 +15,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (isJust)
+import Measurement.Utils exposing (followUpFormWithDefault)
 import Measurement.View
+    exposing
+        ( viewFollowUpForm
+        , viewSendToHealthCenterForm
+        )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Activity.Utils exposing (..)
@@ -323,11 +328,13 @@ viewNextStepsContent language currentDate assembled db data =
                         |> List.singleton
 
                 Just TaskFollowUp ->
-                    -- getMeasurementValueFunc measurements.followUp
-                    --     |> nutritionFollowUpFormWithDefault data.followUpForm
-                    --     |> viewFollowUpForm language currentDate SetFollowUpOption
-                    --     |> List.singleton
-                    []
+                    getMeasurementValueFunc measurements.followUp
+                        |> followUpFormWithDefault data.followUpForm
+                        |> viewFollowUpForm language
+                            currentDate
+                            [ OneDay, OneWeek ]
+                            SetFollowUpOption
+                        |> List.singleton
 
                 Just TaskReferral ->
                     -- getMeasurementValueFunc measurements.referral

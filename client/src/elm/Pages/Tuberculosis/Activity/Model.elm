@@ -117,3 +117,4 @@ type Msg
       -- NEXT STEPS
     | SetActiveNextStepsTask NextStepsTask
     | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SetFollowUpOption FollowUpOption

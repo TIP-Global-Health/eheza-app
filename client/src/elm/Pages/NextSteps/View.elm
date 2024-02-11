@@ -22,8 +22,8 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( viewContributingFactorsForm
-        , viewFollowUpForm
         , viewHealthEducationForm
+        , viewNutritionFollowUpForm
         , viewSendToHealthCenterForm
         )
 import Pages.NextSteps.Model exposing (Model, Msg(..))
@@ -195,7 +195,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
 
                             Just NextStepFollowUp ->
                                 nutritionFollowUpFormWithDefault model.followUpForm followUpValue
-                                    |> viewFollowUpForm language currentDate SetFollowUpOption
+                                    |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
 
                             Nothing ->
                                 emptyNode

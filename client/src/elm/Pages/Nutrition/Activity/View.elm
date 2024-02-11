@@ -49,9 +49,9 @@ import Measurement.View
     exposing
         ( viewColorAlertIndication
         , viewContributingFactorsForm
-        , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
+        , viewNutritionFollowUpForm
         , viewSendToHealthCenterForm
         , zScoreForHeightOrLength
         )
@@ -869,7 +869,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                     measurements.followUp
                         |> getMeasurementValueFunc
                         |> nutritionFollowUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate SetFollowUpOption
+                        |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
 
                 Nothing ->
                     emptyNode
