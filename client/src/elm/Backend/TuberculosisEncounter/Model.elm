@@ -29,6 +29,7 @@ to peform the updates indicated by the `Msg` type below.
 type alias Model =
     { closeTuberculosisEncounter : WebData ()
     , saveDiagnostics : WebData ()
+    , saveSymptomReview : WebData ()
     }
 
 
@@ -36,6 +37,7 @@ emptyModel : Model
 emptyModel =
     { closeTuberculosisEncounter = NotAsked
     , saveDiagnostics = NotAsked
+    , saveSymptomReview = NotAsked
     }
 
 
@@ -44,3 +46,5 @@ type Msg
     | HandleClosedTuberculosisEncounter (WebData ())
     | SaveDiagnostics PersonId (Maybe TuberculosisDiagnosticsId) TuberculosisDiagnosticsValue
     | HandleSavedDiagnostics (WebData ())
+    | SaveSymptomReview PersonId (Maybe TuberculosisSymptomReviewId) TuberculosisSymptomReviewValue
+    | HandleSavedSymptomReview (WebData ())

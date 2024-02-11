@@ -13,7 +13,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Model exposing (..)
-import Pages.Tuberculosis.Activity.Utils exposing (toDiagnosticsValueWithDefault)
+import Pages.Tuberculosis.Activity.Utils exposing (..)
 import RemoteData
 
 
@@ -55,6 +55,46 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.TuberculosisEncounter.Model.SaveDiagnostics personId measurementId value
+                                    |> Backend.Model.MsgTuberculosisEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| TuberculosisEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SetSymptomReviewBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.symptomReviewData.form
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSymptomReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.symptomReviewData.form
+                        |> toSymptomReviewValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.TuberculosisEncounter.Model.SaveSymptomReview personId measurementId value
                                     |> Backend.Model.MsgTuberculosisEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| TuberculosisEncounterPage id

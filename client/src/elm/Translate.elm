@@ -1646,6 +1646,7 @@ type TranslationId
     | TuberculosisPast
     | TuberculosisPresent
     | TuberculosisSign TuberculosisSign
+    | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
     | Type
@@ -20905,6 +20906,35 @@ translationSet trans =
 
                 NoTuberculosis ->
                     -- Not in use.
+                    translationSet EmptyString
+
+        TuberculosisSymptomQuestion symptom ->
+            case symptom of
+                SymptomNightSweats ->
+                    { english = "Do you have night sweats"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SymptomBloodInSputum ->
+                    { english = "Do you have blood in sputum"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SymptomWeightLoss ->
+                    { english = "Do you have weight loss"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SymptomSevereFatigue ->
+                    { english = "Do you have severe fatigue"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoTuberculosisSymptoms ->
                     translationSet EmptyString
 
         TuberculosisWarning ->
