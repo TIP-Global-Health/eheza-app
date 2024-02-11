@@ -37,6 +37,7 @@ import Pages.Utils
         , viewCustomBoolInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
+        , viewSaveAction
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
@@ -104,8 +105,7 @@ viewActivity language currentDate activity assembled db model =
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         NextSteps ->
-            -- @todo
-            []
+            viewNextStepsContent language currentDate assembled db model.nextStepsData
 
 
 viewDiagnosticsContent : Language -> NominalDate -> AssembledData -> DiagnosticsData -> List (Html Msg)
@@ -360,35 +360,30 @@ viewNextStepsContent language currentDate assembled db data =
                 |> List.head
 
         actions =
-            -- activeTask
-            --     |> Maybe.map
-            --         (\task ->
-            --             let
-            --                 personId =
-            --                     assembled.participant.person
-            --
-            --                 saveMsg =
-            --                     case task of
-            --
-            --                         TaskHealthEducation ->
-            --                             SaveHealthEducation personId measurements.healthEducation nextTask
-            --
-            --                         TaskFollowUp ->
-            --
-            --                             SaveFollowUp personId measurements.followUp nextTask
-            --
-            --                         TaskReferral ->
-            --                             SaveReferral personId measurements.sendToHC nextTask
-            --
-            --
-            --                 disabled =
-            --
-            --                         tasksCompleted /= totalTasks
-            --             in
-            --             viewSaveAction language saveMsg disabled
-            --         )
-            --     |> Maybe.withDefault
-            emptyNode
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            personId =
+                                assembled.participant.person
+
+                            saveMsg =
+                                case task of
+                                    TaskHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    TaskFollowUp ->
+                                        SaveFollowUp personId measurements.followUp nextTask
+
+                                    TaskReferral ->
+                                        SaveReferral personId measurements.referral nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
+                        in
+                        viewSaveAction language saveMsg disabled
+                    )
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
