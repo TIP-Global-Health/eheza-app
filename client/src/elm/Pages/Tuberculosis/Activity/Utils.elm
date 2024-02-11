@@ -11,6 +11,11 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Measurement.Utils
+    exposing
+        ( followUpFormWithDefault
+        , sendToHCFormWithDefault
+        )
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
 import Pages.Utils
@@ -76,10 +81,14 @@ activityCompleted currentDate assembled activity =
                 |> List.all (nextStepsTaskCompleted assembled)
 
 
+nextStepsTasks : List NextStepsTask
+nextStepsTasks =
+    [ TaskReferral, TaskHealthEducation, TaskFollowUp ]
+
+
 resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
 resolveNextStepsTasks currentDate assembled =
-    List.filter (expectNextStepsTask currentDate assembled)
-        [ TaskReferral, TaskHealthEducation, TaskFollowUp ]
+    List.filter (expectNextStepsTask currentDate assembled) nextStepsTasks
 
 
 expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -101,6 +110,56 @@ nextStepsTaskCompleted assembled task =
 
         TaskFollowUp ->
             isJust assembled.measurements.followUp
+
+
+nextStepsTasksCompletedFromTotal : TuberculosisMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
+    case task of
+        TaskHealthEducation ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            ( taskCompleted form.followUpTesting
+            , 1
+            )
+
+        TaskFollowUp ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.followUp
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
+            )
+
+        TaskReferral ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.referral
+                        |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
+            )
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
