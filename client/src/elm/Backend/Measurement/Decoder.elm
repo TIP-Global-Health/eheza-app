@@ -5501,7 +5501,19 @@ decodeTuberculosisSymptomReview =
 
 decodeTuberculosisSymptomReviewValue : Decoder TuberculosisSymptomReviewValue
 decodeTuberculosisSymptomReviewValue =
-    succeed TuberculosisSymptomReviewValue
+    decodeEverySet decodeTuberculosisSymptom
+        |> field "tuberculosis_symptoms"
+
+
+decodeTuberculosisSymptom : Decoder TuberculosisSymptom
+decodeTuberculosisSymptom =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisSymptomFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisSymptom" |> fail)
+            )
 
 
 decodeTuberculosisTreatmentReview : Decoder TuberculosisTreatmentReview

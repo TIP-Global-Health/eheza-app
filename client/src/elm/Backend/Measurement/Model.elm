@@ -2928,7 +2928,15 @@ type alias TuberculosisSymptomReview =
 
 
 type alias TuberculosisSymptomReviewValue =
-    {}
+    EverySet TuberculosisSymptom
+
+
+type TuberculosisSymptom
+    = SymptomNightSweats
+    | SymptomBloodInSputum
+    | SymptomWeightLoss
+    | SymptomSevereFatigue
+    | NoTuberculosisSymptoms
 
 
 type alias TuberculosisTreatmentReview =

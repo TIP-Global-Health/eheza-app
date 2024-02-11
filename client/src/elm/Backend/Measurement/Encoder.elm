@@ -4483,9 +4483,15 @@ encodeTuberculosisSymptomReview =
 
 encodeTuberculosisSymptomReviewValue : TuberculosisSymptomReviewValue -> List ( String, Value )
 encodeTuberculosisSymptomReviewValue value =
-    [ ( "deleted", bool False )
+    [ ( "tuberculosis_symptoms", encodeEverySet encodeTuberculosisSymptom value )
+    , ( "deleted", bool False )
     , ( "type", string "tuberculosis_symptom_review" )
     ]
+
+
+encodeTuberculosisSymptom : TuberculosisSymptom -> Value
+encodeTuberculosisSymptom =
+    tuberculosisSymptomToString >> string
 
 
 encodeTuberculosisTreatmentReview : TuberculosisTreatmentReview -> List ( String, Value )
