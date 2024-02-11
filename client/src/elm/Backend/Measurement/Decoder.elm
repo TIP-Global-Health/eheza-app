@@ -2431,22 +2431,22 @@ decodeContributingFactorsValue =
 
 decodeFollowUp : Decoder FollowUp
 decodeFollowUp =
-    decodeGroupMeasurement decodeFollowUpValue
+    decodeGroupMeasurement decodeNutritionFollowUpValue
 
 
 decodeNutritionFollowUp : Decoder NutritionFollowUp
 decodeNutritionFollowUp =
-    decodeNutritionMeasurement decodeFollowUpValue
+    decodeNutritionMeasurement decodeNutritionFollowUpValue
 
 
 decodeWellChildFollowUp : Decoder WellChildFollowUp
 decodeWellChildFollowUp =
-    decodeWellChildMeasurement decodeFollowUpValue
+    decodeWellChildMeasurement decodeNutritionFollowUpValue
 
 
-decodeFollowUpValue : Decoder FollowUpValue
-decodeFollowUpValue =
-    succeed FollowUpValue
+decodeNutritionFollowUpValue : Decoder NutritionFollowUpValue
+decodeNutritionFollowUpValue =
+    succeed NutritionFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
         |> custom decodeNutritionAssessment
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
@@ -2454,12 +2454,12 @@ decodeFollowUpValue =
 
 decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
 decodeAcuteIllnessFollowUp =
-    decodeAcuteIllnessMeasurement decodeAcuteIllnessFollowUpValue
+    decodeAcuteIllnessMeasurement decodeFollowUpValue
 
 
-decodeAcuteIllnessFollowUpValue : Decoder AcuteIllnessFollowUpValue
-decodeAcuteIllnessFollowUpValue =
-    succeed AcuteIllnessFollowUpValue
+decodeFollowUpValue : Decoder FollowUpValue
+decodeFollowUpValue =
+    succeed FollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
@@ -5430,17 +5430,17 @@ decodeTuberculosisDiagnostics =
 
 decodeTuberculosisDiagnosticsValue : Decoder TuberculosisDiagnosticsValue
 decodeTuberculosisDiagnosticsValue =
-    field "tuberculosis_diagnosis" decodeTuberculosisSign
+    field "tuberculosis_diagnosis" decodeTuberculosisDiagnosis
 
 
-decodeTuberculosisSign : Decoder TuberculosisSign
-decodeTuberculosisSign =
+decodeTuberculosisDiagnosis : Decoder TuberculosisDiagnosis
+decodeTuberculosisDiagnosis =
     string
         |> andThen
             (\result ->
-                tuberculosisSignFromString result
+                tuberculosisDiagnosisFromString result
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisSign" |> fail)
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisDiagnosis" |> fail)
             )
 
 
@@ -5456,12 +5456,7 @@ decodeTuberculosisDOTValue =
 
 decodeTuberculosisFollowUp : Decoder TuberculosisFollowUp
 decodeTuberculosisFollowUp =
-    decodeTuberculosisMeasurement decodeTuberculosisFollowUpValue
-
-
-decodeTuberculosisFollowUpValue : Decoder TuberculosisFollowUpValue
-decodeTuberculosisFollowUpValue =
-    succeed TuberculosisFollowUpValue
+    decodeTuberculosisMeasurement decodeFollowUpValue
 
 
 decodeTuberculosisHealthEducation : Decoder TuberculosisHealthEducation
@@ -5471,7 +5466,19 @@ decodeTuberculosisHealthEducation =
 
 decodeTuberculosisHealthEducationValue : Decoder TuberculosisHealthEducationValue
 decodeTuberculosisHealthEducationValue =
-    succeed TuberculosisHealthEducationValue
+    decodeEverySet decodeTuberculosisHealthEducationSign
+        |> field "tb_health_education_signs"
+
+
+decodeTuberculosisHealthEducationSign : Decoder TuberculosisHealthEducationSign
+decodeTuberculosisHealthEducationSign =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisHealthEducationSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisHealthEducationSign" |> fail)
+            )
 
 
 decodeTuberculosisMedication : Decoder TuberculosisMedication
@@ -5486,12 +5493,7 @@ decodeTuberculosisMedicationValue =
 
 decodeTuberculosisReferral : Decoder TuberculosisReferral
 decodeTuberculosisReferral =
-    decodeTuberculosisMeasurement decodeTuberculosisReferralValue
-
-
-decodeTuberculosisReferralValue : Decoder TuberculosisReferralValue
-decodeTuberculosisReferralValue =
-    succeed TuberculosisReferralValue
+    decodeTuberculosisMeasurement decodeSendToHCValue
 
 
 decodeTuberculosisSymptomReview : Decoder TuberculosisSymptomReview

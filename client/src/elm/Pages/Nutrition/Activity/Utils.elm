@@ -15,7 +15,13 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
+import Measurement.Utils
+    exposing
+        ( contributingFactorsFormWithDefault
+        , healthEducationFormWithDefault
+        , nutritionFollowUpFormWithDefault
+        , sendToHCFormWithDefault
+        )
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (taskCompleted)
@@ -203,7 +209,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
                 form =
                     measurements.followUp
                         |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
+                        |> nutritionFollowUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option
             , 1

@@ -2316,21 +2316,21 @@ encodeContributingFactorsSign sign =
 
 encodeFollowUp : FollowUp -> List ( String, Value )
 encodeFollowUp =
-    encodeGroupMeasurement (encodeFollowUpValueWithType "follow_up")
+    encodeGroupMeasurement (encodeNutritionFollowUpValueWithType "follow_up")
 
 
 encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
 encodeNutritionFollowUp =
-    encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
+    encodeNutritionMeasurement (encodeNutritionFollowUpValueWithType "nutrition_follow_up")
 
 
 encodeWellChildFollowUp : WellChildFollowUp -> List ( String, Value )
 encodeWellChildFollowUp =
-    encodeWellChildMeasurement (encodeFollowUpValueWithType "well_child_follow_up")
+    encodeWellChildMeasurement (encodeNutritionFollowUpValueWithType "well_child_follow_up")
 
 
-encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
-encodeFollowUpValueWithType type_ value =
+encodeNutritionFollowUpValueWithType : String -> NutritionFollowUpValue -> List ( String, Value )
+encodeNutritionFollowUpValueWithType type_ value =
     let
         assesment =
             EverySet.toList value.assesment
@@ -2356,14 +2356,14 @@ encodeFollowUpValueWithType type_ value =
 
 encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )
 encodeAcuteIllnessFollowUp =
-    encodeAcuteIllnessMeasurement encodeAcuteIllnessFollowUpValue
+    encodeAcuteIllnessMeasurement (encodeFollowUpValueWithType "acute_illness_follow_up")
 
 
-encodeAcuteIllnessFollowUpValue : AcuteIllnessFollowUpValue -> List ( String, Value )
-encodeAcuteIllnessFollowUpValue value =
+encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
+encodeFollowUpValueWithType type_ value =
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "deleted", bool False )
-    , ( "type", string "acute_illness_follow_up" )
+    , ( "type", string type_ )
     ]
         ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
@@ -4392,15 +4392,15 @@ encodeTuberculosisDiagnostics =
 
 encodeTuberculosisDiagnosticsValue : TuberculosisDiagnosticsValue -> List ( String, Value )
 encodeTuberculosisDiagnosticsValue value =
-    [ ( "tuberculosis_diagnosis", encodeTuberculosisSign value )
+    [ ( "tuberculosis_diagnosis", encodeTuberculosisDiagnosis value )
     , ( "deleted", bool False )
     , ( "type", string "tuberculosis_diagnostics" )
     ]
 
 
-encodeTuberculosisSign : TuberculosisSign -> Value
-encodeTuberculosisSign =
-    tuberculosisSignToString >> string
+encodeTuberculosisDiagnosis : TuberculosisDiagnosis -> Value
+encodeTuberculosisDiagnosis =
+    tuberculosisDiagnosisToString >> string
 
 
 encodeTuberculosisDOT : TuberculosisDOT -> List ( String, Value )
@@ -4417,14 +4417,7 @@ encodeTuberculosisDOTValue value =
 
 encodeTuberculosisFollowUp : TuberculosisFollowUp -> List ( String, Value )
 encodeTuberculosisFollowUp =
-    encodeTuberculosisMeasurement encodeTuberculosisFollowUpValue
-
-
-encodeTuberculosisFollowUpValue : TuberculosisFollowUpValue -> List ( String, Value )
-encodeTuberculosisFollowUpValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "tuberculosis_follow_up" )
-    ]
+    encodeTuberculosisMeasurement (encodeFollowUpValueWithType "tuberculosis_follow_up")
 
 
 encodeTuberculosisHealthEducation : TuberculosisHealthEducation -> List ( String, Value )
@@ -4434,22 +4427,15 @@ encodeTuberculosisHealthEducation =
 
 encodeTuberculosisHealthEducationValue : TuberculosisHealthEducationValue -> List ( String, Value )
 encodeTuberculosisHealthEducationValue value =
-    [ -- ( "tuberculosis_health_education_signs", encodeEverySet encodeTuberculosisHealthEducationSign value )
-      ( "deleted", bool False )
+    [ ( "tb_health_education_signs", encodeEverySet encodeTuberculosisHealthEducationSign value )
+    , ( "deleted", bool False )
     , ( "type", string "tuberculosis_health_education" )
     ]
 
 
-
--- encodeTuberculosisHealthEducationSign : TuberculosisHealthEducationSign -> Value
--- encodeTuberculosisHealthEducationSign sign =
---     string <|
---         case sign of
---             EducationHypertension ->
---                 "hypertension"
---
---             NoTuberculosisHealthEducationSigns ->
---                 "none"
+encodeTuberculosisHealthEducationSign : TuberculosisHealthEducationSign -> Value
+encodeTuberculosisHealthEducationSign =
+    tuberculosisHealthEducationSignToString >> string
 
 
 encodeTuberculosisMedication : TuberculosisMedication -> List ( String, Value )
@@ -4466,14 +4452,7 @@ encodeTuberculosisMedicationValue value =
 
 encodeTuberculosisReferral : TuberculosisReferral -> List ( String, Value )
 encodeTuberculosisReferral =
-    encodeTuberculosisMeasurement encodeTuberculosisReferralValue
-
-
-encodeTuberculosisReferralValue : TuberculosisReferralValue -> List ( String, Value )
-encodeTuberculosisReferralValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "tuberculosis_referral" )
-    ]
+    encodeTuberculosisMeasurement (encodeSendToHCValueWithType "tuberculosis_referral")
 
 
 encodeTuberculosisSymptomReview : TuberculosisSymptomReview -> List ( String, Value )

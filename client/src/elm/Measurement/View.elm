@@ -923,7 +923,7 @@ viewFollowUp :
     -> MeasurementData (Maybe ( FollowUpId, FollowUp ))
     -> OfflineSession
     -> ModelIndexedDb
-    -> FollowUpForm
+    -> NutritionFollowUpForm
     -> Html MsgChild
 viewFollowUp language currentDate zscores childId measurement offlineSession db form =
     let
@@ -941,11 +941,11 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
             { form | assesment = Just assesment }
 
         formContent =
-            followUpFormWithDefault form_ saved
+            nutritionFollowUpFormWithDefault form_ saved
                 |> viewFollowUpForm language currentDate SetFollowUpOption
 
         saveMsg =
-            toFollowUpValueWithDefault saved form_
+            toNutritionFollowUpValueWithDefault saved form_
                 |> Maybe.map (SaveFollowUp existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment follow-up" ]
@@ -959,7 +959,7 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
         ]
 
 
-viewFollowUpForm : Language -> NominalDate -> (FollowUpOption -> msg) -> FollowUpForm -> Html msg
+viewFollowUpForm : Language -> NominalDate -> (FollowUpOption -> msg) -> NutritionFollowUpForm -> Html msg
 viewFollowUpForm language currentDate setFollowUpOptionMsg form =
     div [ class "ui form follow-up" ]
         [ viewLabel language Translate.FollowUpLabel

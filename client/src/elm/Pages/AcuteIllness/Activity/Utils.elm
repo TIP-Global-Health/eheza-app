@@ -13,7 +13,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils
     exposing
-        ( healthEducationFormWithDefault
+        ( followUpFormWithDefault
+        , healthEducationFormWithDefault
         , muacFormWithDefault
         , sendToHCFormWithDefault
         , vitalsFormWithDefault
@@ -1641,33 +1642,6 @@ expectPhysicalExamTask currentDate person isChw isFirstEncounter task =
         -- We show Acute Finding only on first encounter
         PhysicalExamAcuteFindings ->
             isFirstEncounter
-
-
-followUpFormWithDefault : FollowUpForm -> Maybe AcuteIllnessFollowUpValue -> FollowUpForm
-followUpFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { option = or form.option (EverySet.toList value.options |> List.head)
-                , resolutionDate = or form.resolutionDate value.resolutionDate
-                }
-            )
-
-
-toFollowUpValueWithDefault : Maybe AcuteIllnessFollowUpValue -> FollowUpForm -> Maybe AcuteIllnessFollowUpValue
-toFollowUpValueWithDefault saved form =
-    followUpFormWithDefault form saved
-        |> toFollowUpValue
-
-
-toFollowUpValue : FollowUpForm -> Maybe AcuteIllnessFollowUpValue
-toFollowUpValue form =
-    Maybe.map
-        (\options ->
-            AcuteIllnessFollowUpValue options form.resolutionDate
-        )
-        (Maybe.map (List.singleton >> EverySet.fromList) form.option)
 
 
 fromNutritionValue : Maybe (EverySet ChildNutritionSign) -> AcuteIllnessNutritionForm

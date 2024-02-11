@@ -126,8 +126,8 @@ viewDiagnosticsContent language currentDate assembled data =
                                             )
                                         )
                                         "is-pulmonary"
-                                        ( Translate.TuberculosisSign TuberculosisPulmonary
-                                        , Translate.TuberculosisSign TuberculosisExtrapulmonary
+                                        ( Translate.TuberculosisDiagnosis TuberculosisPulmonary
+                                        , Translate.TuberculosisDiagnosis TuberculosisExtrapulmonary
                                         )
                                         "sixteen"
                                   ]

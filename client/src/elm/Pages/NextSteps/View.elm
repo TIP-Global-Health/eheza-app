@@ -194,7 +194,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                     |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
 
                             Just NextStepFollowUp ->
-                                followUpFormWithDefault model.followUpForm followUpValue
+                                nutritionFollowUpFormWithDefault model.followUpForm followUpValue
                                     |> viewFollowUpForm language currentDate SetFollowUpOption
 
                             Nothing ->
@@ -261,7 +261,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                                         form =
                                                             model.followUpForm |> (\form_ -> { form_ | assesment = Just assesment })
                                                     in
-                                                    toFollowUpValueWithDefault followUpValue form
+                                                    toNutritionFollowUpValueWithDefault followUpValue form
                                                         |> Maybe.map
                                                             (\value ->
                                                                 let

@@ -148,8 +148,8 @@ fromChildMeasurementData site data =
         fromData .contributingFactors (.value >> Just >> fromContributingFactorsValue)
             |> Maybe.withDefault emptyContributingFactorsForm
     , followUpForm =
-        fromData .followUp (.value >> Just >> fromFollowUpValue)
-            |> Maybe.withDefault emptyFollowUpForm
+        fromData .followUp (.value >> Just >> fromNutritionFollowUpValue)
+            |> Maybe.withDefault emptyNutritionFollowUpForm
     , healthEducationForm =
         fromData .healthEducation (.value >> Just >> fromHealthEducationValue)
             |> Maybe.withDefault emptyHealthEducationForm
@@ -477,14 +477,6 @@ toContributingFactorsValue form =
     Maybe.map (EverySet.fromList >> ifEverySetEmpty NoContributingFactorsSign) form.signs
 
 
-fromFollowUpValue : Maybe FollowUpValue -> FollowUpForm
-fromFollowUpValue saved =
-    { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
-    , assesment = Maybe.map .assesment saved
-    , resolutionDate = Maybe.andThen .resolutionDate saved
-    }
-
-
 followUpFormWithDefault : FollowUpForm -> Maybe FollowUpValue -> FollowUpForm
 followUpFormWithDefault form saved =
     saved
@@ -492,7 +484,6 @@ followUpFormWithDefault form saved =
             form
             (\value ->
                 { option = or form.option (EverySet.toList value.options |> List.head)
-                , assesment = or form.assesment (Just value.assesment)
                 , resolutionDate = or form.resolutionDate value.resolutionDate
                 }
             )
@@ -506,9 +497,45 @@ toFollowUpValueWithDefault saved form =
 
 toFollowUpValue : FollowUpForm -> Maybe FollowUpValue
 toFollowUpValue form =
+    Maybe.map
+        (\options ->
+            FollowUpValue options form.resolutionDate
+        )
+        (Maybe.map (List.singleton >> EverySet.fromList) form.option)
+
+
+fromNutritionFollowUpValue : Maybe NutritionFollowUpValue -> NutritionFollowUpForm
+fromNutritionFollowUpValue saved =
+    { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
+    , assesment = Maybe.map .assesment saved
+    , resolutionDate = Maybe.andThen .resolutionDate saved
+    }
+
+
+nutritionFollowUpFormWithDefault : NutritionFollowUpForm -> Maybe NutritionFollowUpValue -> NutritionFollowUpForm
+nutritionFollowUpFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { option = or form.option (EverySet.toList value.options |> List.head)
+                , assesment = or form.assesment (Just value.assesment)
+                , resolutionDate = or form.resolutionDate value.resolutionDate
+                }
+            )
+
+
+toNutritionFollowUpValueWithDefault : Maybe NutritionFollowUpValue -> NutritionFollowUpForm -> Maybe NutritionFollowUpValue
+toNutritionFollowUpValueWithDefault saved form =
+    nutritionFollowUpFormWithDefault form saved
+        |> toNutritionFollowUpValue
+
+
+toNutritionFollowUpValue : NutritionFollowUpForm -> Maybe NutritionFollowUpValue
+toNutritionFollowUpValue form =
     Maybe.map2
         (\options assesment ->
-            FollowUpValue options assesment form.resolutionDate
+            NutritionFollowUpValue options assesment form.resolutionDate
         )
         (Maybe.map (List.singleton >> EverySet.fromList) form.option)
         form.assesment
@@ -8194,7 +8221,7 @@ generateIndividualNutritionAssessmentEntries :
                     ( id2
                     , { v2
                         | dateMeasured : NominalDate
-                        , value : FollowUpValue
+                        , value : NutritionFollowUpValue
                       }
                     )
         }
@@ -8253,7 +8280,7 @@ filterNutritionAssessmentsFromNutritionValue dateMeasured value =
         Just ( dateMeasured, assesments )
 
 
-filterNutritionAssessmentsFromFollowUpValue : NominalDate -> FollowUpValue -> Maybe ( NominalDate, List NutritionAssessment )
+filterNutritionAssessmentsFromFollowUpValue : NominalDate -> NutritionFollowUpValue -> Maybe ( NominalDate, List NutritionAssessment )
 filterNutritionAssessmentsFromFollowUpValue dateMeasured value =
     let
         assesments =

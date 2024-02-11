@@ -1621,7 +1621,7 @@ update currentDate site isChw id db msg model =
                 appMsgs =
                     model.nextStepsData.followUpForm
                         |> (\form -> { form | assesment = Just assesment })
-                        |> toFollowUpValueWithDefault measurement
+                        |> toNutritionFollowUpValueWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveFollowUp personId measurementId
                                 >> Backend.Model.MsgWellChildEncounter id

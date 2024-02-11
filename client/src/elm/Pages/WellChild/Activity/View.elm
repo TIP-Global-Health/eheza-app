@@ -2317,7 +2317,7 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                 Just TaskFollowUp ->
                     measurements.followUp
                         |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
+                        |> nutritionFollowUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate SetFollowUpOption
                         |> List.singleton
 

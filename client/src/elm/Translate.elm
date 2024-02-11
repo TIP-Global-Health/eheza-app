@@ -1645,7 +1645,7 @@ type TranslationId
     | TuberculosisLocationQuestion
     | TuberculosisPast
     | TuberculosisPresent
-    | TuberculosisSign TuberculosisSign
+    | TuberculosisDiagnosis TuberculosisDiagnosis
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
@@ -20890,7 +20890,7 @@ translationSet trans =
             , kirundi = Just "Akubu k'igituntu"
             }
 
-        TuberculosisSign sign ->
+        TuberculosisDiagnosis sign ->
             case sign of
                 TuberculosisPulmonary ->
                     { english = "Pulmonary (in the lungs)"

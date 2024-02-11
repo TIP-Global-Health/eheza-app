@@ -868,7 +868,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                 Just NextStepFollowUp ->
                     measurements.followUp
                         |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
+                        |> nutritionFollowUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate SetFollowUpOption
 
                 Nothing ->
