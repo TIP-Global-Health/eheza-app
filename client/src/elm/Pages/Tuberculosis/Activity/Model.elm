@@ -78,10 +78,10 @@ emptyPrescribedMedicationForm =
 
 type alias DOTForm =
     { provideToday : Maybe Bool
-    , reasonNotProvidedToday : Maybe (List TuberculosisDOTSign)
+    , reasonNotProvidedToday : Maybe TuberculosisDOTSign
     , reasonNotProvidedTodayDirty : Bool
     , distributeMedications : Maybe Bool
-    , reasonNotDistributedMedications : Maybe (List TuberculosisDOTSign)
+    , reasonNotDistributedMedications : Maybe TuberculosisDOTSign
     , reasonNotDistributedMedicationsDirty : Bool
     }
 

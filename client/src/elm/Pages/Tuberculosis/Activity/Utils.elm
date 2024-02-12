@@ -257,7 +257,7 @@ toSymptomReviewValue form =
 toHealthEducationValueWithDefault : Maybe TuberculosisHealthEducationValue -> HealthEducationForm -> Maybe TuberculosisHealthEducationValue
 toHealthEducationValueWithDefault saved form =
     healthEducationFormWithDefault form saved
-        |> toHealthEducationValue saved
+        |> toHealthEducationValue
 
 
 healthEducationFormWithDefault :
@@ -273,8 +273,119 @@ healthEducationFormWithDefault form saved =
             )
 
 
-toHealthEducationValue : Maybe TuberculosisHealthEducationValue -> HealthEducationForm -> Maybe TuberculosisHealthEducationValue
-toHealthEducationValue saved form =
+toHealthEducationValue : HealthEducationForm -> Maybe TuberculosisHealthEducationValue
+toHealthEducationValue form =
     [ ifNullableTrue EducationFollowUpTesting form.followUpTesting ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTuberculosisHealthEducationSigns)
+
+
+toPrescribedMedicationValueWithDefault : Maybe TuberculosisMedicationValue -> PrescribedMedicationForm -> Maybe TuberculosisMedicationValue
+toPrescribedMedicationValueWithDefault saved form =
+    prescribedMedicationFormWithDefault form saved
+        |> toPrescribedMedicationValue
+
+
+prescribedMedicationFormWithDefault :
+    PrescribedMedicationForm
+    -> Maybe TuberculosisMedicationValue
+    -> PrescribedMedicationForm
+prescribedMedicationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { medication = or form.medication (Just value) }
+            )
+
+
+toPrescribedMedicationValue : PrescribedMedicationForm -> Maybe TuberculosisMedicationValue
+toPrescribedMedicationValue form =
+    Maybe.map identity form.medication
+
+
+toDOTValueWithDefault : Maybe TuberculosisDOTValue -> DOTForm -> Maybe TuberculosisDOTValue
+toDOTValueWithDefault saved form =
+    dotFormWithDefault form saved
+        |> toDOTValue
+
+
+dotFormWithDefault :
+    DOTForm
+    -> Maybe TuberculosisDOTValue
+    -> DOTForm
+dotFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    provideTodayFromValue =
+                        Just <| value.sign == DOTPositive
+
+                    reasonNotProvidedTodayFromValue =
+                        if value.sign == DOTPositive then
+                            Nothing
+
+                        else
+                            Just value.sign
+
+                    distributeMedicationsFromValue =
+                        Just <| value.medicationDistributionSign == DOTPositive
+
+                    reasonNotDistributeMedicationsFromValue =
+                        if value.medicationDistributionSign == DOTPositive then
+                            Nothing
+
+                        else
+                            Just value.sign
+                in
+                { provideToday = or form.provideToday provideTodayFromValue
+                , reasonNotProvidedToday =
+                    maybeValueConsideringIsDirtyField form.reasonNotProvidedTodayDirty
+                        form.reasonNotProvidedToday
+                        reasonNotProvidedTodayFromValue
+                , reasonNotProvidedTodayDirty = form.reasonNotProvidedTodayDirty
+                , distributeMedications = or form.distributeMedications distributeMedicationsFromValue
+                , reasonNotDistributedMedications =
+                    maybeValueConsideringIsDirtyField form.reasonNotDistributedMedicationsDirty
+                        form.reasonNotDistributedMedications
+                        reasonNotDistributeMedicationsFromValue
+                , reasonNotDistributedMedicationsDirty = form.reasonNotDistributedMedicationsDirty
+                }
+            )
+
+
+toDOTValue : DOTForm -> Maybe TuberculosisDOTValue
+toDOTValue form =
+    let
+        maybeSign =
+            let
+                signPositive =
+                    if form.provideToday == Just True then
+                        Just DOTPositive
+
+                    else
+                        Nothing
+            in
+            or signPositive form.reasonNotProvidedToday
+
+        maybeDistributeMedications =
+            let
+                distributeMedicationsPositive =
+                    if form.distributeMedications == Just True then
+                        Just DOTPositive
+
+                    else
+                        Nothing
+            in
+            or distributeMedicationsPositive form.reasonNotDistributedMedications
+    in
+    Maybe.map2
+        (\sign medicationDistributionSign ->
+            { sign = sign
+            , medicationDistributionSign = medicationDistributionSign
+            }
+        )
+        maybeSign
+        maybeDistributeMedications
