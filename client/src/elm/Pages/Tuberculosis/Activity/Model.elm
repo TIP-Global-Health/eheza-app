@@ -9,18 +9,18 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { diagnosticsData : DiagnosticsData
+    , medicationData : MedicationData
     , symptomReviewData : SymptomReviewData
     , nextStepsData : NextStepsData
-    , medicationData : MedicationData
     }
 
 
 emptyModel : Model
 emptyModel =
     { diagnosticsData = emptyDiagnosticsData
+    , medicationData = emptyMedicationData
     , symptomReviewData = emptySymptomReviewData
     , nextStepsData = emptyNextStepsData
-    , medicationData = emptyMedicationData
     }
 
 
@@ -78,14 +78,22 @@ emptyPrescribedMedicationForm =
 
 type alias DOTForm =
     { provideToday : Maybe Bool
+    , reasonNotProvidedToday : Maybe (List TuberculosisDOTSign)
+    , reasonNotProvidedTodayDirty : Bool
     , distributeMedications : Maybe Bool
+    , reasonNotDistributedMedications : Maybe (List TuberculosisDOTSign)
+    , reasonNotDistributedMedicationsDirty : Bool
     }
 
 
 emptyDOTForm : DOTForm
 emptyDOTForm =
     { provideToday = Nothing
+    , reasonNotProvidedToday = Nothing
+    , reasonNotProvidedTodayDirty = False
     , distributeMedications = Nothing
+    , reasonNotDistributedMedications = Nothing
+    , reasonNotDistributedMedicationsDirty = False
     }
 
 
