@@ -4006,6 +4006,64 @@ tuberculosisHealthEducationSignFromString sign =
             Nothing
 
 
+tuberculosisDOTSignToString : TuberculosisDOTSign -> String
+tuberculosisDOTSignToString sign =
+    case sign of
+        DOTProvideToday ->
+            "provide-today"
+
+        DOTDistributeMedications ->
+            "distribute-medications"
+
+        NoTuberculosisDOTSigns ->
+            "none"
+
+
+tuberculosisDOTSignFromString : String -> Maybe TuberculosisDOTSign
+tuberculosisDOTSignFromString sign =
+    case sign of
+        "provide-today" ->
+            Just DOTProvideToday
+
+        "distribute-medications" ->
+            Just DOTDistributeMedications
+
+        "none" ->
+            Just NoTuberculosisDOTSigns
+
+        _ ->
+            Nothing
+
+
+tuberculosisPrescribedMedicationToString : TuberculosisPrescribedMedication -> String
+tuberculosisPrescribedMedicationToString sign =
+    case sign of
+        MedicationRHZE ->
+            "rhze"
+
+        MedicationRH ->
+            "rh"
+
+        MedicationOther ->
+            "other"
+
+
+tuberculosisPrescribedMedicationFromString : String -> Maybe TuberculosisPrescribedMedication
+tuberculosisPrescribedMedicationFromString sign =
+    case sign of
+        "rhze" ->
+            Just MedicationRHZE
+
+        "rh" ->
+            Just MedicationRH
+
+        "other" ->
+            Just MedicationOther
+
+        _ ->
+            Nothing
+
+
 generatePreviousMeasurements :
     (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
     -> (ModelIndexedDb -> Dict encounterId (WebData measurements))

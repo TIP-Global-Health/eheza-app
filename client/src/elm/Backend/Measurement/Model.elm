@@ -2888,7 +2888,13 @@ type alias TuberculosisDOT =
 
 
 type alias TuberculosisDOTValue =
-    {}
+    EverySet TuberculosisDOTSign
+
+
+type TuberculosisDOTSign
+    = DOTProvideToday
+    | DOTDistributeMedications
+    | NoTuberculosisDOTSigns
 
 
 type alias TuberculosisFollowUp =
@@ -2913,7 +2919,13 @@ type alias TuberculosisMedication =
 
 
 type alias TuberculosisMedicationValue =
-    {}
+    TuberculosisPrescribedMedication
+
+
+type TuberculosisPrescribedMedication
+    = MedicationRHZE
+    | MedicationRH
+    | MedicationOther
 
 
 type alias TuberculosisReferral =
@@ -2937,11 +2949,7 @@ type TuberculosisSymptom
 
 
 type alias TuberculosisTreatmentReview =
-    TuberculosisMeasurement TuberculosisTreatmentReviewValue
-
-
-type alias TuberculosisTreatmentReviewValue =
-    {}
+    TuberculosisMeasurement TreatmentOngoingValue
 
 
 

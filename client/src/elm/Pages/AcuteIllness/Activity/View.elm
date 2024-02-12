@@ -2541,7 +2541,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                     measurements.treatmentOngoing
                         |> getMeasurementValueFunc
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses measurements
+                        |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses
 
         actions =
             let
@@ -2572,8 +2572,8 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
     ]
 
 
-viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measurements form =
+viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> OngoingTreatmentReviewForm -> Html Msg
+viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg form =
     let
         takenAsPrescribedUpdateFunc value form_ =
             if value then
