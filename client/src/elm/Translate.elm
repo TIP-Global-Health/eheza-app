@@ -1639,10 +1639,13 @@ type TranslationId
     | TreatmentReviewWarningPopupInstructions
     | TrySyncing
     | TuberculosisActivityTitle TuberculosisActivity
+    | TuberculosisDiagnosedQuestion
     | TuberculosisInstructions
     | TuberculosisInstructionsFollowed
+    | TuberculosisLocationQuestion
     | TuberculosisPast
     | TuberculosisPresent
+    | TuberculosisSign TuberculosisSign
     | TuberculosisWarning
     | TwoVisits
     | Type
@@ -20850,6 +20853,12 @@ translationSet trans =
                 Backend.TuberculosisActivity.Model.NextSteps ->
                     translationSet NextSteps
 
+        TuberculosisDiagnosedQuestion ->
+            { english = "Was this person diagnosed with Tuberculosis"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         TuberculosisInstructions ->
             { english = "Follow TB protocols"
             , kinyarwanda = Just "Kurikiza amabwiriza yo kuvura igitintu"
@@ -20860,6 +20869,12 @@ translationSet trans =
             { english = "followed TB protocols"
             , kinyarwanda = Just "Hakurikijwe amabwiriza yo kuvura igitintu"
             , kirundi = Just "Inyandiko Ntumberezo zerekeye Igituntu zakurikijwe"
+            }
+
+        TuberculosisLocationQuestion ->
+            { english = "Where is the Tuberculosis located"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         TuberculosisPast ->
@@ -20873,6 +20888,24 @@ translationSet trans =
             , kinyarwanda = Just "Arwaye igituntu"
             , kirundi = Just "Akubu k'igituntu"
             }
+
+        TuberculosisSign sign ->
+            case sign of
+                TuberculosisPulmonary ->
+                    { english = "Pulmonary (in the lungs)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TuberculosisExtrapulmonary ->
+                    { english = "Extrapulmonary (outside the lungs)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoTuberculosis ->
+                    -- Not in use.
+                    translationSet EmptyString
 
         TuberculosisWarning ->
             { english = "Patient is high risk for active Tuberculosis"

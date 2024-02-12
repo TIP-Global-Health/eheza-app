@@ -2874,7 +2874,13 @@ type alias TuberculosisDiagnostics =
 
 
 type alias TuberculosisDiagnosticsValue =
-    {}
+    TuberculosisSign
+
+
+type TuberculosisSign
+    = TuberculosisPulmonary
+    | TuberculosisExtrapulmonary
+    | NoTuberculosis
 
 
 type alias TuberculosisDOT =

@@ -107,3 +107,58 @@ mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
     -- todo:
     True
+
+
+diagnosticsFormWithDefault : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm
+diagnosticsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    ( diagnosed, isPulmonary ) =
+                        case value of
+                            TuberculosisPulmonary ->
+                                ( Just True, Just True )
+
+                            TuberculosisExtrapulmonary ->
+                                ( Just True, Just False )
+
+                            NoTuberculosis ->
+                                ( Just False, Nothing )
+                in
+                { diagnosed = or form.diagnosed diagnosed
+                , isPulmonary =
+                    maybeValueConsideringIsDirtyField form.isPulmonaryDirty
+                        form.isPulmonary
+                        isPulmonary
+                , isPulmonaryDirty = form.isPulmonaryDirty
+                }
+            )
+
+
+toDiagnosticsValueWithDefault : Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue
+toDiagnosticsValueWithDefault saved form =
+    diagnosticsFormWithDefault form saved
+        |> toDiagnosticsValue
+
+
+toDiagnosticsValue : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue
+toDiagnosticsValue form =
+    Maybe.andThen
+        (\diagnosed ->
+            if not diagnosed then
+                Just NoTuberculosis
+
+            else
+                Maybe.map
+                    (\isPulmonary ->
+                        if isPulmonary then
+                            TuberculosisPulmonary
+
+                        else
+                            TuberculosisExtrapulmonary
+                    )
+                    form.isPulmonary
+        )
+        form.diagnosed

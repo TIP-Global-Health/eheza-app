@@ -245,6 +245,44 @@ function hedley_tuberculosis_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-tuberculosis_diagnostics-field_tuberculosis_diagnosis'.
+  $field_instances['node-tuberculosis_diagnostics-field_tuberculosis_diagnosis'] = array(
+    'bundle' => 'tuberculosis_diagnostics',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_tuberculosis_diagnosis',
+    'label' => 'Tuberculosis Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
   // Exported field_instance: 'node-tuberculosis_diagnostics-field_uuid'.
   $field_instances['node-tuberculosis_diagnostics-field_uuid'] = array(
     'bundle' => 'tuberculosis_diagnostics',
@@ -2395,6 +2433,7 @@ function hedley_tuberculosis_field_default_field_instances() {
   t('Scheduled Date');
   t('Shards');
   t('Tuberculosis Encounter');
+  t('Tuberculosis Signs');
   t('UUID');
 
   return $field_instances;
