@@ -11,6 +11,60 @@
 function hedley_tuberculosis_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_dot_signs'.
+  $field_bases['field_dot_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_dot_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'provide-today' => 'Provide DOT today',
+        'distribute-medications' => 'Distribute Medications',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_prescribed_tb_medications'.
+  $field_bases['field_prescribed_tb_medications'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_prescribed_tb_medications',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'rhze' => 'RHZE',
+        'rh' => 'RH',
+        'other' => 'Other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_tb_health_education_signs'.
   $field_bases['field_tb_health_education_signs'] = array(
     'active' => 1,
