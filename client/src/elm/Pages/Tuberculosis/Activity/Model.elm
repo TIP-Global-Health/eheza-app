@@ -3,7 +3,7 @@ module Pages.Tuberculosis.Activity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (FollowUpForm, SendToHCForm, emptyFollowUpForm, emptySendToHCForm)
+import Measurement.Model exposing (FollowUpForm, OngoingTreatmentReviewForm, SendToHCForm, emptyFollowUpForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 
 
@@ -11,6 +11,7 @@ type alias Model =
     { diagnosticsData : DiagnosticsData
     , symptomReviewData : SymptomReviewData
     , nextStepsData : NextStepsData
+    , medicationData : MedicationData
     }
 
 
@@ -19,6 +20,7 @@ emptyModel =
     { diagnosticsData = emptyDiagnosticsData
     , symptomReviewData = emptySymptomReviewData
     , nextStepsData = emptyNextStepsData
+    , medicationData = emptyMedicationData
     }
 
 
@@ -46,6 +48,51 @@ emptyDiagnosticsForm =
     , isPulmonary = Nothing
     , isPulmonaryDirty = False
     }
+
+
+type alias MedicationData =
+    { prescribedMedicationForm : PrescribedMedicationForm
+    , dotForm : DOTForm
+    , treatmentReviewForm : OngoingTreatmentReviewForm
+    , activeTask : Maybe MedicationTask
+    }
+
+
+emptyMedicationData : MedicationData
+emptyMedicationData =
+    { prescribedMedicationForm = emptyPrescribedMedicationForm
+    , dotForm = emptyDOTForm
+    , treatmentReviewForm = emptyOngoingTreatmentReviewForm
+    , activeTask = Nothing
+    }
+
+
+type alias PrescribedMedicationForm =
+    { medication : Maybe TuberculosisPrescribedMedication }
+
+
+emptyPrescribedMedicationForm : PrescribedMedicationForm
+emptyPrescribedMedicationForm =
+    { medication = Nothing }
+
+
+type alias DOTForm =
+    { provideToday : Maybe Bool
+    , distributeMedications : Maybe Bool
+    }
+
+
+emptyDOTForm : DOTForm
+emptyDOTForm =
+    { provideToday = Nothing
+    , distributeMedications = Nothing
+    }
+
+
+type MedicationTask
+    = TaskPrescribedMedication
+    | TaskDOT
+    | TaskTreatmentReview
 
 
 type alias SymptomReviewData =

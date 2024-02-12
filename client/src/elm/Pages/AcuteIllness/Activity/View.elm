@@ -34,12 +34,21 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
-import Measurement.Model exposing (FollowUpForm, HealthEducationForm, InvokationModule(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Model
+    exposing
+        ( FollowUpForm
+        , HealthEducationForm
+        , InvokationModule(..)
+        , OngoingTreatmentReviewForm
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
 import Measurement.Utils
     exposing
         ( followUpFormWithDefault
         , healthEducationFormWithDefault
         , muacFormWithDefault
+        , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
         , vitalsFormWithDefault
         )
