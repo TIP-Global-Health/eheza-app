@@ -7,7 +7,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeIfExists)
+import Utils.Json exposing (encodeIfSet)
 
 
 encodeNCDEncounter : NCDEncounter -> List ( String, Value )
@@ -31,7 +31,7 @@ encodeNCDEncounter encounter =
     , ( "deleted", bool False )
     , ( "type", string "ncd_encounter" )
     ]
-        ++ encodeIfExists "shard" encounter.shard encodeEntityUuid
+        ++ encodeIfSet "shard" encounter.shard encodeEntityUuid
 
 
 encodeNCDDiagnosis : NCDDiagnosis -> Value

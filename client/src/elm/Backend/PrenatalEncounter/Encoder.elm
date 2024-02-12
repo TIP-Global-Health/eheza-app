@@ -7,7 +7,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeEverySet, encodeIfExists)
+import Utils.Json exposing (encodeEverySet, encodeIfSet)
 
 
 {-| Encodes a `PrenatalEncounter`.
@@ -43,7 +43,7 @@ encodePrenatalEncounter encounter =
     , ( "type", string "prenatal_encounter" )
     ]
         ++ prenatalIndicators
-        ++ encodeIfExists "shard" encounter.shard encodeEntityUuid
+        ++ encodeIfSet "shard" encounter.shard encodeEntityUuid
 
 
 encodePrenatalEncounterType : PrenatalEncounterType -> Value

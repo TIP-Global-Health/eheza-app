@@ -59,8 +59,8 @@ decodeWithFallback fallback decoder =
     oneOf [ decoder, succeed fallback ]
 
 
-encodeIfExists : String -> Maybe a -> (a -> Value) -> List ( String, Value )
-encodeIfExists name maybeVal encoder =
+encodeIfSet : String -> Maybe a -> (a -> Value) -> List ( String, Value )
+encodeIfSet name maybeVal encoder =
     Maybe.map (\val -> [ ( name, encoder val ) ]) maybeVal
         |> Maybe.withDefault []
 

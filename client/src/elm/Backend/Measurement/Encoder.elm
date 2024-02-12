@@ -1804,8 +1804,10 @@ encodeVitalsValueWithType type_ value =
         ++ encodeNullable "sys" value.sys float
         ++ encodeNullable "dia" value.dia float
         ++ encodeNullable "heart_rate" value.heartRate int
-        ++ encodeNullable "sys_repeated" value.sysRepeated float
-        ++ encodeNullable "dia_repeated" value.diaRepeated float
+        -- Not all CT got the repeated fields. Therefore we use
+        -- encodeIfSet, to send the field only if it has a value.
+        ++ encodeIfSet "sys_repeated" value.sysRepeated float
+        ++ encodeIfSet "dia_repeated" value.diaRepeated float
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]
