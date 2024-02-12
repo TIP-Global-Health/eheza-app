@@ -2888,13 +2888,18 @@ type alias TuberculosisDOT =
 
 
 type alias TuberculosisDOTValue =
-    EverySet TuberculosisDOTSign
+    { sign : TuberculosisDOTSign
+    , medicationDistributionSign : TuberculosisDOTSign
+    }
 
 
 type TuberculosisDOTSign
-    = DOTProvideToday
-    | DOTDistributeMedications
-    | NoTuberculosisDOTSigns
+    = DOTPositive
+    | DOTNegativeTakenToday
+    | DOTNegativeUnavailable
+    | DOTNegativeSideEffects
+    | DOTNegativePatientRefused
+    | DOTNegativeNotInsdicated
 
 
 type alias TuberculosisFollowUp =

@@ -4009,27 +4009,45 @@ tuberculosisHealthEducationSignFromString sign =
 tuberculosisDOTSignToString : TuberculosisDOTSign -> String
 tuberculosisDOTSignToString sign =
     case sign of
-        DOTProvideToday ->
-            "provide-today"
+        DOTPositive ->
+            "positive"
 
-        DOTDistributeMedications ->
-            "distribute-medications"
+        DOTNegativeTakenToday ->
+            "negative-taken-today"
 
-        NoTuberculosisDOTSigns ->
-            "none"
+        DOTNegativeUnavailable ->
+            "negative-unavailable"
+
+        DOTNegativeSideEffects ->
+            "negative-side-effects"
+
+        DOTNegativePatientRefused ->
+            "negative-patient-refused"
+
+        DOTNegativeNotInsdicated ->
+            "negative-not-indicated"
 
 
 tuberculosisDOTSignFromString : String -> Maybe TuberculosisDOTSign
 tuberculosisDOTSignFromString sign =
     case sign of
-        "provide-today" ->
-            Just DOTProvideToday
+        "positive" ->
+            Just DOTPositive
 
-        "distribute-medications" ->
-            Just DOTDistributeMedications
+        "negative-taken-today" ->
+            Just DOTNegativeTakenToday
 
-        "none" ->
-            Just NoTuberculosisDOTSigns
+        "negative-unavailable" ->
+            Just DOTNegativeUnavailable
+
+        "negative-side-effects" ->
+            Just DOTNegativeSideEffects
+
+        "negative-patient-refused" ->
+            Just DOTNegativePatientRefused
+
+        "negative-not-indicated" ->
+            Just DOTNegativeNotInsdicated
 
         _ ->
             Nothing

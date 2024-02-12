@@ -4410,7 +4410,8 @@ encodeTuberculosisDOT =
 
 encodeTuberculosisDOTValue : TuberculosisDOTValue -> List ( String, Value )
 encodeTuberculosisDOTValue value =
-    [ ( "dot_signs", encodeEverySet encodeTuberculosisDOTSign value )
+    [ ( "dot_signs", encodeTuberculosisDOTSign value.sign )
+    , ( "dot_meds_distribution_sign", encodeTuberculosisDOTSign value.medicationDistributionSign )
     , ( "deleted", bool False )
     , ( "type", string "tuberculosis_dot" )
     ]

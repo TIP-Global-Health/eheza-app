@@ -5455,8 +5455,9 @@ decodeTuberculosisDOT =
 
 decodeTuberculosisDOTValue : Decoder TuberculosisDOTValue
 decodeTuberculosisDOTValue =
-    decodeEverySet decodeTuberculosisDOTSign
-        |> field "dot_signs"
+    succeed TuberculosisDOTValue
+        |> required "dot_signs" decodeTuberculosisDOTSign
+        |> required "dot_meds_distribution_sign" decodeTuberculosisDOTSign
 
 
 decodeTuberculosisDOTSign : Decoder TuberculosisDOTSign

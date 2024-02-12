@@ -379,6 +379,44 @@ function hedley_tuberculosis_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-tuberculosis_dot-field_dot_meds_distribution_sign'.
+  $field_instances['node-tuberculosis_dot-field_dot_meds_distribution_sign'] = array(
+    'bundle' => 'tuberculosis_dot',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_dot_meds_distribution_sign',
+    'label' => 'DOT Meds Distribution Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-tuberculosis_dot-field_dot_signs'.
   $field_instances['node-tuberculosis_dot-field_dot_signs'] = array(
     'bundle' => 'tuberculosis_dot',
@@ -2909,6 +2947,7 @@ function hedley_tuberculosis_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Adverse Events');
+  t('DOT Meds Distribution Signs');
   t('DOT Signs');
   t('Date Measured');
   t('Date delivered to vendor');
