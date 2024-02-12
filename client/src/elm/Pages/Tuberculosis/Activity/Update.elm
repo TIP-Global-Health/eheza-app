@@ -72,6 +72,17 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        SetActiveMedicationTask task ->
+            let
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetSymptomReviewBoolInput formUpdateFunc value ->
             let
                 updatedForm =

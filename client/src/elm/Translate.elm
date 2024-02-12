@@ -86,7 +86,6 @@ import Pages.AcuteIllness.Activity.Types
         , NextStepsTask(..)
         , OngoingTreatmentTask(..)
         , PhysicalExamTask(..)
-        , PriorTreatmentTask(..)
         , SymptomReliefType(..)
         , SymptomsTask(..)
         )
@@ -1185,7 +1184,7 @@ type TranslationId
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
     | PreviousMeasurementNotFound
-    | PriorTreatmentTask PriorTreatmentTask
+    | PriorTreatmentTask Pages.AcuteIllness.Activity.Types.PriorTreatmentTask
     | Programs
     | ProgressPhotos
     | ProgressReport
@@ -1632,6 +1631,7 @@ type TranslationId
     | TreatmentDetailsHypertension Bool RecommendedTreatmentSign
     | TreatmentDetailsMalaria RecommendedTreatmentSign
     | TreatmentDetailsSyphilis RecommendedTreatmentSign
+    | TreatmentReview
     | TreatmentReviewQuestionAdverseEvents
     | TreatmentReviewQuestionAdverseEventsHospitalization
     | TreatmentReviewQuestionMedicationByPMTCT
@@ -1649,6 +1649,7 @@ type TranslationId
     | TuberculosisInstructions
     | TuberculosisInstructionsFollowed
     | TuberculosisLocationQuestion
+    | TuberculosisMedicationTask Pages.Tuberculosis.Activity.Model.MedicationTask
     | TuberculosisNextStepsTask Pages.Tuberculosis.Activity.Model.NextStepsTask
     | TuberculosisPast
     | TuberculosisPresent
@@ -2836,10 +2837,7 @@ translationSet trans =
                     translationSet NextSteps
 
                 AcuteIllnessOngoingTreatment ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                    translationSet TreatmentReview
 
                 AcuteIllnessDangerSigns ->
                     { english = "Danger Signs"
@@ -12345,10 +12343,7 @@ translationSet trans =
         OngoingTreatmentTask task ->
             case task of
                 OngoingTreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                    translationSet TreatmentReview
 
         OnlySickChild ->
             { english = "Only Sick Child"
@@ -13144,10 +13139,7 @@ translationSet trans =
                     translationSet SymptomReview
 
                 PrenatalTreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                    translationSet TreatmentReview
 
                 MaternalMentalHealth ->
                     { english = "Maternal Mental Health"
@@ -13174,10 +13166,7 @@ translationSet trans =
                     }
 
                 PostpartumTreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                    translationSet TreatmentReview
 
         PrenatalRecurrentActivitiesTitle activity ->
             case activity of
@@ -16247,11 +16236,8 @@ translationSet trans =
 
         PriorTreatmentTask task ->
             case task of
-                TreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                Pages.AcuteIllness.Activity.Types.TreatmentReview ->
+                    translationSet TreatmentReview
 
         Programs ->
             { english = "Programs"
@@ -20708,6 +20694,12 @@ translationSet trans =
                 _ ->
                     translationSet EmptyString
 
+        TreatmentReview ->
+            { english = "Treatment Review"
+            , kinyarwanda = Just "Kureba imiti yahawe"
+            , kirundi = Just "Isubiramwo ry'imiti"
+            }
+
         TreatmentReviewQuestionAdverseEvents ->
             { english = "Have you experienced any adverse events"
             , kinyarwanda = Just "Waba hari ibintu wabonye bidasanzwe(bitewe n'imiti wafashe)"
@@ -20858,6 +20850,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        TuberculosisMedicationTask task ->
+            case task of
+                Pages.Tuberculosis.Activity.Model.TaskPrescribedMedication ->
+                    { english = "Prescribed Medication"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Pages.Tuberculosis.Activity.Model.TaskDOT ->
+                    { english = "DOT"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Pages.Tuberculosis.Activity.Model.TaskTreatmentReview ->
+                    translationSet FollowUp
 
         TuberculosisNextStepsTask task ->
             case task of

@@ -14,6 +14,7 @@ import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Utils
     exposing
         ( followUpFormWithDefault
+        , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
         )
 import Pages.Tuberculosis.Activity.Model exposing (..)
@@ -79,6 +80,149 @@ activityCompleted currentDate assembled activity =
         NextSteps ->
             resolveNextStepsTasks currentDate assembled
                 |> List.all (nextStepsTaskCompleted assembled)
+
+
+medicationTasks : List MedicationTask
+medicationTasks =
+    [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
+
+
+resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
+resolveMedicationTasks currentDate assembled =
+    List.filter (expectMedicationTask currentDate assembled) medicationTasks
+
+
+expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
+expectMedicationTask currentDate assembled task =
+    case task of
+        _ ->
+            -- @todo:
+            True
+
+
+medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
+medicationTaskCompleted assembled task =
+    case task of
+        TaskPrescribedMedication ->
+            isJust assembled.measurements.medication
+
+        TaskDOT ->
+            isJust assembled.measurements.dot
+
+        TaskTreatmentReview ->
+            isJust assembled.measurements.treatmentReview
+
+
+medicationTasksCompletedFromTotal : TuberculosisMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal measurements data task =
+    case task of
+        TaskPrescribedMedication ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.medication
+                        |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+            in
+            ( taskCompleted form.medication
+            , 1
+            )
+
+        TaskDOT ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.dot
+                        |> dotFormWithDefault data.dotForm
+
+                ( provideTodayActive, provideTodayCompleted ) =
+                    Maybe.map
+                        (\provideToday ->
+                            if provideToday then
+                                ( 1, 1 )
+
+                            else if isJust form.reasonNotProvidedToday then
+                                ( 2, 2 )
+
+                            else
+                                ( 1, 2 )
+                        )
+                        form.provideToday
+                        |> Maybe.withDefault ( 0, 1 )
+
+                ( distributeMedicationsActive, distributeMedicationsCompleted ) =
+                    Maybe.map
+                        (\distributeMedications ->
+                            if distributeMedications then
+                                ( 1, 1 )
+
+                            else if isJust form.reasonNotDistributedMedications then
+                                ( 2, 2 )
+
+                            else
+                                ( 1, 2 )
+                        )
+                        form.distributeMedications
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( provideTodayActive + distributeMedicationsActive
+            , provideTodayCompleted + distributeMedicationsCompleted
+            )
+
+        TaskTreatmentReview ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.treatmentReview
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+
+                ( takenAsPrescribedActive, takenAsPrescribedComleted ) =
+                    form.takenAsPrescribed
+                        |> Maybe.map
+                            (\takenAsPrescribed ->
+                                if not takenAsPrescribed then
+                                    if isJust form.reasonForNotTaking then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+
+                ( missedDosesActive, missedDosesCompleted ) =
+                    form.missedDoses
+                        |> Maybe.map
+                            (\missedDoses ->
+                                if missedDoses then
+                                    if isJust form.totalMissedDoses then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+
+                ( adverseEventsActive, adverseEventsCompleted ) =
+                    form.sideEffects
+                        |> Maybe.map
+                            (\sideEffects ->
+                                if sideEffects then
+                                    if isJust form.adverseEvents then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( takenAsPrescribedActive + missedDosesActive + adverseEventsActive + taskCompleted form.feelingBetter
+            , takenAsPrescribedComleted + missedDosesCompleted + adverseEventsCompleted + 1
+            )
 
 
 nextStepsTasks : List NextStepsTask
