@@ -50,6 +50,7 @@ import Measurement.Utils
         , muacFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
+        , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (renderDatePart, viewSendToHealthCenterForm, viewSendToHospitalForm)
@@ -2536,7 +2537,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
             tasks
                 |> List.map
                     (\task ->
-                        ( task, ongoingTreatmentTasksCompletedFromTotal measurements data task )
+                        ( task, ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data task )
                     )
                 |> Dict.fromList
 
@@ -2550,7 +2551,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                     measurements.treatmentOngoing
                         |> getMeasurementValueFunc
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses
+                        |> viewOngoingTreatmentReviewForm language currentDate
 
         actions =
             let
@@ -2581,164 +2582,20 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
     ]
 
 
-viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg form =
+viewOngoingTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
+viewOngoingTreatmentReviewForm language currentDate form =
     let
-        takenAsPrescribedUpdateFunc value form_ =
-            if value then
-                { form_ | takenAsPrescribed = Just True, reasonForNotTaking = Nothing, reasonForNotTakingDirty = True }
-
-            else
-                { form_ | takenAsPrescribed = Just False }
-
-        missedDosesUpdateFunc value form_ =
-            if value then
-                { form_ | missedDoses = Just True }
-
-            else
-                { form_ | missedDoses = Just False, totalMissedDoses = Nothing, totalMissedDosesDirty = True }
-
-        feelingBetterUpdateFunc value form_ =
-            { form_ | feelingBetter = Just value }
-
-        sideEffectsUpdateFunc value form_ =
-            if value then
-                { form_ | sideEffects = Just value }
-
-            else
-                { form_ | sideEffects = Just value, adverseEvents = Nothing, adverseEventsDirty = True }
-
-        takenAsPrescribedSection =
-            let
-                takenAsPrescribed =
-                    form.takenAsPrescribed
-                        |> Maybe.withDefault True
-
-                reasonForNotTakingInput =
-                    if not takenAsPrescribed then
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "fifteen wide column" ]
-                                [ viewQuestionLabel language Translate.WhyNot ]
-                            ]
-                        , viewCheckBoxSelectInput language
-                            [ NotTakingAdverseEvent, NotTakingNoMoney ]
-                            [ NotTakingMemoryProblems, NotTakingOther ]
-                            form.reasonForNotTaking
-                            SetReasonForNotTaking
-                            Translate.ReasonForNotTaking
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationTakenAsPrescribedQuestion
-            , viewBoolInput
-                language
-                form.takenAsPrescribed
-                (SetOngoingTreatmentReviewBoolInput takenAsPrescribedUpdateFunc)
-                "taken-as-prescribed"
-                Nothing
-            ]
-                ++ reasonForNotTakingInput
-
-        missedDosesSection =
-            let
-                missedDoses =
-                    form.missedDoses
-                        |> Maybe.withDefault False
-
-                totalMissedDosesInput =
-                    if missedDoses then
-                        let
-                            options =
-                                List.repeat 22 ""
-                                    |> List.indexedMap (\index _ -> index)
-
-                            missedDosesInput =
-                                viewCustomSelectListInput form.totalMissedDoses
-                                    options
-                                    String.fromInt
-                                    setMissedDosesMsg
-                                    String.fromInt
-                                    ""
-                                    True
-                        in
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "four wide column" ]
-                                [ viewQuestionLabel language Translate.HowManyDoses ]
-                            , div [ class "four wide column" ]
-                                [ missedDosesInput ]
-                            ]
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationDosesMissedQuestion
-            , viewBoolInput
-                language
-                form.missedDoses
-                (SetOngoingTreatmentReviewBoolInput missedDosesUpdateFunc)
-                "missed-doses"
-                Nothing
-            ]
-                ++ totalMissedDosesInput
-
-        sideEffectsSection =
-            let
-                sideEffects =
-                    form.sideEffects
-                        |> Maybe.withDefault False
-
-                adverseEventsInput =
-                    if sideEffects then
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "fifteen wide column" ]
-                                [ viewQuestionLabel language Translate.AcuteIllnessAdverseEventKindsQuestion ]
-                            ]
-                        , viewCheckBoxMultipleSelectInput language
-                            [ AdverseEventRashOrItching
-                            , AdverseEventFever
-                            , AdverseEventDiarrhea
-                            ]
-                            [ AdverseEventVomiting
-                            , AdverseEventFatigue
-                            , AdverseEventOther
-                            ]
-                            (form.adverseEvents |> Maybe.withDefault [])
-                            Nothing
-                            SetAdverseEvent
-                            Translate.AcuteIllnessAdverseEvent
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationCausesSideEffectsQuestion
-            , viewBoolInput
-                language
-                form.sideEffects
-                (SetOngoingTreatmentReviewBoolInput sideEffectsUpdateFunc)
-                "side-effects"
-                Nothing
-            ]
-                ++ adverseEventsInput
+        ( inputs, _ ) =
+            treatmentReviewInputsAndTasks language
+                currentDate
+                SetOngoingTreatmentReviewBoolInput
+                SetReasonForNotTaking
+                SetTotalMissedDoses
+                SetAdverseEvent
+                form
     in
-    takenAsPrescribedSection
-        ++ missedDosesSection
-        ++ [ viewQuestionLabel language Translate.MedicationFeelBetterAfterTakingQuestion
-           , viewBoolInput
-                language
-                form.feelingBetter
-                (SetOngoingTreatmentReviewBoolInput feelingBetterUpdateFunc)
-                "feeling-better"
-                Nothing
-           ]
-        ++ sideEffectsSection
-        |> div [ class "ui form ongoing-treatment-review" ]
+    div [ class "ui form ongoing-treatment-review" ]
+        inputs
 
 
 viewAcuteIllnessDangerSigns : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> DangerSignsData -> List (Html Msg)
@@ -2826,7 +2683,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
 
 viewReviewDangerSignsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ReviewDangerSignsForm -> Html Msg
 viewReviewDangerSignsForm language currentDate measurements form =
-    div [ class "ui form ongoing-treatment-review" ]
+    div [ class "ui form danger-signs" ]
         [ viewQuestionLabel language Translate.ConditionImprovingQuestion
         , viewBoolInput
             language

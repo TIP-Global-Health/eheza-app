@@ -15,7 +15,14 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (isJust)
-import Measurement.Utils exposing (followUpFormWithDefault, sendToHCFormWithDefault)
+import Measurement.Model exposing (OngoingTreatmentReviewForm)
+import Measurement.Utils
+    exposing
+        ( followUpFormWithDefault
+        , ongoingTreatmentReviewFormWithDefault
+        , sendToHCFormWithDefault
+        , treatmentReviewInputsAndTasks
+        )
 import Measurement.View
     exposing
         ( viewFollowUpForm
@@ -231,7 +238,7 @@ viewMedicationContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, medicationTasksCompletedFromTotal measurements data task )) tasks
+            List.map (\task -> ( task, medicationTasksCompletedFromTotal language currentDate measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -239,38 +246,35 @@ viewMedicationContent language currentDate assembled data =
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            -- case activeTask of
-            -- Just TaskPrescribedMedication ->
-            --     getMeasurementValueFunc measurements.healthEducation
-            --         |> healthEducationFormWithDefault data.healthEducationForm
-            --         |> viewHealthEducationForm language
-            --             currentDate
-            --             assembled
-            --         |> List.singleton
-            --
-            -- Just TaskDOT ->
-            --     getMeasurementValueFunc measurements.followUp
-            --         |> followUpFormWithDefault data.followUpForm
-            --         |> viewFollowUpForm language
-            --             currentDate
-            --             [ OneDay, OneWeek ]
-            --             SetFollowUpOption
-            --         |> List.singleton
-            --
-            -- Just TaskTreatmentReview ->
-            --     getMeasurementValueFunc measurements.referral
-            --         |> sendToHCFormWithDefault data.sendToHCForm
-            --         |> viewSendToHealthCenterForm language
-            --             currentDate
-            --             SetReferToHealthCenter
-            --             SetReasonForNonReferral
-            --             SetHandReferralForm
-            --             Nothing
-            --         |> List.singleton
-            --
-            -- Nothing ->
-            --     []
-            []
+            case activeTask of
+                -- Just TaskPrescribedMedication ->
+                --     getMeasurementValueFunc measurements.healthEducation
+                --         |> healthEducationFormWithDefault data.healthEducationForm
+                --         |> viewHealthEducationForm language
+                --             currentDate
+                --             assembled
+                --         |> List.singleton
+                --
+                -- Just TaskDOT ->
+                --     getMeasurementValueFunc measurements.followUp
+                --         |> followUpFormWithDefault data.followUpForm
+                --         |> viewFollowUpForm language
+                --             currentDate
+                --             [ OneDay, OneWeek ]
+                --             SetFollowUpOption
+                --         |> List.singleton
+                --
+                Just TaskTreatmentReview ->
+                    getMeasurementValueFunc measurements.treatmentReview
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+                        |> viewTreatmentReviewForm language currentDate
+                        |> List.singleton
+
+                --
+                -- Nothing ->
+                --     []
+                _ ->
+                    []
 
         nextTask =
             List.filter
@@ -282,29 +286,29 @@ viewMedicationContent language currentDate assembled data =
                 |> List.head
 
         actions =
-            -- activeTask
-            --     |> Maybe.map
-            --         (\task ->
-            --             let
-            --                 personId =
-            --                     assembled.participant.person
+            -- Maybe.map
+            --     (\task ->
+            --         let
+            --             personId =
+            --                 assembled.participant.person
             --
-            --                 saveMsg =
-            --                     case task of
-            --                         TaskPrescribedMedication ->
-            --                             SaveHealthEducation personId measurements.healthEducation nextTask
+            --             saveMsg =
+            --                 case task of
+            --                     TaskPrescribedMedication ->
+            --                         SaveHealthEducation personId measurements.healthEducation nextTask
             --
-            --                         TaskDOT ->
-            --                             SaveFollowUp personId measurements.followUp nextTask
+            --                     TaskDOT ->
+            --                         SaveFollowUp personId measurements.followUp nextTask
             --
-            --                         TaskTreatmentReview ->
-            --                             SaveReferral personId measurements.referral nextTask
+            --                     TaskTreatmentReview ->
+            --                         SaveReferral personId measurements.referral nextTask
             --
-            --                 disabled =
-            --                     tasksCompleted /= totalTasks
-            --             in
-            --             viewSaveAction language saveMsg disabled
-            --         )
+            --             disabled =
+            --                 tasksCompleted /= totalTasks
+            --         in
+            --         viewSaveAction language saveMsg disabled
+            --     )
+            --     activeTask
             --     |> Maybe.withDefault emptyNode
             emptyNode
     in
@@ -318,6 +322,22 @@ viewMedicationContent language currentDate assembled data =
             (viewForm ++ [ actions ])
         ]
     ]
+
+
+viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            treatmentReviewInputsAndTasks language
+                currentDate
+                SetTreatmentReviewBoolInput
+                SetReasonForNotTaking
+                SetTotalMissedDoses
+                SetAdverseEvent
+                form
+    in
+    div [ class "ui form treatment-review" ]
+        inputs
 
 
 viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)

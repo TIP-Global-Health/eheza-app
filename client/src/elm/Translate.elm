@@ -20866,7 +20866,7 @@ translationSet trans =
                     }
 
                 Pages.Tuberculosis.Activity.Model.TaskTreatmentReview ->
-                    translationSet FollowUp
+                    translationSet TreatmentReview
 
         TuberculosisNextStepsTask task ->
             case task of

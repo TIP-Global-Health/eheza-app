@@ -167,7 +167,13 @@ type Msg
     = SetActivePage Page
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
     | SaveDiagnostics PersonId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
+      -- MEDICATION
     | SetActiveMedicationTask MedicationTask
+    | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
+    | SetReasonForNotTaking ReasonForNotTaking
+    | SetTotalMissedDoses String
+    | SetAdverseEvent AdverseEvent
+    | SaveTreatmentReview PersonId (Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview ))
     | SetSymptomReviewBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
     | SaveSymptomReview PersonId (Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview ))
       -- NEXT STEPS

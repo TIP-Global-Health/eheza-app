@@ -19,6 +19,7 @@ import Measurement.Utils
         , muacFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
+        , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
 import Pages.AcuteIllness.Activity.Model exposing (..)
@@ -34,7 +35,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         )
-import Translate exposing (TranslationId)
+import Translate exposing (Language, TranslationId)
 
 
 expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
@@ -777,66 +778,27 @@ nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements d
             )
 
 
-ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
-ongoingTreatmentTasksCompletedFromTotal measurements data task =
+ongoingTreatmentTasksCompletedFromTotal : Language -> NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
+ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data task =
     case task of
         OngoingTreatmentReview ->
             let
                 form =
-                    measurements.treatmentOngoing
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.treatmentOngoing
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
 
-                ( takenAsPrescribedActive, takenAsPrescribedComleted ) =
-                    form.takenAsPrescribed
-                        |> Maybe.map
-                            (\takenAsPrescribed ->
-                                if not takenAsPrescribed then
-                                    if isJust form.reasonForNotTaking then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( missedDosesActive, missedDosesCompleted ) =
-                    form.missedDoses
-                        |> Maybe.map
-                            (\missedDoses ->
-                                if missedDoses then
-                                    if isJust form.totalMissedDoses then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( adverseEventsActive, adverseEventsCompleted ) =
-                    form.sideEffects
-                        |> Maybe.map
-                            (\sideEffects ->
-                                if sideEffects then
-                                    if isJust form.adverseEvents then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                ( _, tasks ) =
+                    treatmentReviewInputsAndTasks language
+                        currentDate
+                        SetOngoingTreatmentReviewBoolInput
+                        SetReasonForNotTaking
+                        SetTotalMissedDoses
+                        SetAdverseEvent
+                        form
             in
-            ( takenAsPrescribedActive + missedDosesActive + adverseEventsActive + taskCompleted form.feelingBetter
-            , takenAsPrescribedComleted + missedDosesCompleted + adverseEventsCompleted + 1
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
 

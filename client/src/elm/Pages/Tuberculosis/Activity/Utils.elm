@@ -16,6 +16,7 @@ import Measurement.Utils
         ( followUpFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
+        , treatmentReviewInputsAndTasks
         )
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
@@ -113,8 +114,8 @@ medicationTaskCompleted assembled task =
             isJust assembled.measurements.treatmentReview
 
 
-medicationTasksCompletedFromTotal : TuberculosisMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
-medicationTasksCompletedFromTotal measurements data task =
+medicationTasksCompletedFromTotal : Language -> NominalDate -> TuberculosisMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal language currentDate measurements data task =
     case task of
         TaskPrescribedMedication ->
             let
@@ -172,56 +173,18 @@ medicationTasksCompletedFromTotal measurements data task =
                     getMeasurementValueFunc measurements.treatmentReview
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
 
-                ( takenAsPrescribedActive, takenAsPrescribedComleted ) =
-                    form.takenAsPrescribed
-                        |> Maybe.map
-                            (\takenAsPrescribed ->
-                                if not takenAsPrescribed then
-                                    if isJust form.reasonForNotTaking then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( missedDosesActive, missedDosesCompleted ) =
-                    form.missedDoses
-                        |> Maybe.map
-                            (\missedDoses ->
-                                if missedDoses then
-                                    if isJust form.totalMissedDoses then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( adverseEventsActive, adverseEventsCompleted ) =
-                    form.sideEffects
-                        |> Maybe.map
-                            (\sideEffects ->
-                                if sideEffects then
-                                    if isJust form.adverseEvents then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                ( _, tasks ) =
+                    treatmentReviewInputsAndTasks language
+                        currentDate
+                        SetTreatmentReviewBoolInput
+                        SetReasonForNotTaking
+                        SetTotalMissedDoses
+                        SetAdverseEvent
+                        form
             in
-            ( takenAsPrescribedActive + missedDosesActive + adverseEventsActive + taskCompleted form.feelingBetter
-            , takenAsPrescribedComleted + missedDosesCompleted + adverseEventsCompleted + 1
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
 
