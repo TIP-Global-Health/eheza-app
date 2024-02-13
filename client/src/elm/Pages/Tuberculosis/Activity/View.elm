@@ -213,13 +213,14 @@ viewMedicationContent language currentDate assembled data =
                 iconClass =
                     case task of
                         TaskPrescribedMedication ->
-                            "next-steps-health-education"
+                            "medication"
 
                         TaskDOT ->
-                            "next-steps-follow-up"
+                            -- @todo : add icon
+                            "dot"
 
                         TaskTreatmentReview ->
-                            "next-steps-send-to-hc"
+                            "treatment-review"
 
                 isActive =
                     activeTask == Just task
