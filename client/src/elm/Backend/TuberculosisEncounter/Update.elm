@@ -101,3 +101,39 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , Cmd.none
             , triggerRollbarOnFailure data
             )
+
+        SavePrescribedMedication personId valueId value ->
+            ( { model | savePrescribedMedication = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value tuberculosisMedicationEndpoint HandleSavedPrescribedMedication
+            , []
+            )
+
+        HandleSavedPrescribedMedication data ->
+            ( { model | savePrescribedMedication = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveDOT personId valueId value ->
+            ( { model | saveDOT = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value tuberculosisDOTEndpoint HandleSavedDOT
+            , []
+            )
+
+        HandleSavedDOT data ->
+            ( { model | saveDOT = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveTreatmentReview personId valueId value ->
+            ( { model | saveTreatmentReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value tuberculosisTreatmentReviewEndpoint HandleSavedTreatmentReview
+            , []
+            )
+
+        HandleSavedTreatmentReview data ->
+            ( { model | saveTreatmentReview = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
