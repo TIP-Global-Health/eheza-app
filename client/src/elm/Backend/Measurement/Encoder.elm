@@ -4452,7 +4452,7 @@ encodeTuberculosisMedication =
 
 encodeTuberculosisMedicationValue : TuberculosisMedicationValue -> List ( String, Value )
 encodeTuberculosisMedicationValue value =
-    [ ( "prescribed_tb_medications", encodeTuberculosisPrescribedMedication value )
+    [ ( "prescribed_tb_medications", encodeEverySet encodeTuberculosisPrescribedMedication value )
     , ( "deleted", bool False )
     , ( "type", string "tuberculosis_medication" )
     ]

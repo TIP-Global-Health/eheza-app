@@ -5505,7 +5505,8 @@ decodeTuberculosisMedication =
 
 decodeTuberculosisMedicationValue : Decoder TuberculosisMedicationValue
 decodeTuberculosisMedicationValue =
-    field "prescribed_tb_medications" decodeTuberculosisPrescribedMedication
+    decodeEverySet decodeTuberculosisPrescribedMedication
+        |> field "prescribed_tb_medications"
 
 
 decodeTuberculosisPrescribedMedication : Decoder TuberculosisPrescribedMedication

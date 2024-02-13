@@ -2924,7 +2924,7 @@ type alias TuberculosisMedication =
 
 
 type alias TuberculosisMedicationValue =
-    TuberculosisPrescribedMedication
+    EverySet TuberculosisPrescribedMedication
 
 
 type TuberculosisPrescribedMedication

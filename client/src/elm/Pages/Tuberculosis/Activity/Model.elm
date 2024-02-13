@@ -68,12 +68,12 @@ emptyMedicationData =
 
 
 type alias PrescribedMedicationForm =
-    { medication : Maybe TuberculosisPrescribedMedication }
+    { medications : Maybe (List TuberculosisPrescribedMedication) }
 
 
 emptyPrescribedMedicationForm : PrescribedMedicationForm
 emptyPrescribedMedicationForm =
-    { medication = Nothing }
+    { medications = Nothing }
 
 
 type alias DOTForm =

@@ -13,7 +13,7 @@ class HedleyRestfulTuberculosisMedication extends HedleyRestfulTuberculosisActiv
   /**
    * {@inheritdoc}
    */
-  protected $fields = [
+  protected $multiFields = [
     'field_prescribed_tb_medications',
   ];
 

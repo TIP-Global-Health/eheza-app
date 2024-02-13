@@ -123,7 +123,7 @@ medicationTasksCompletedFromTotal language currentDate measurements data task =
                     getMeasurementValueFunc measurements.medication
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
             in
-            ( taskCompleted form.medication
+            ( taskCompleted form.medications
             , 1
             )
 
@@ -402,13 +402,13 @@ prescribedMedicationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { medication = or form.medication (Just value) }
+                { medications = or form.medications (Just <| EverySet.toList value) }
             )
 
 
 toPrescribedMedicationValue : PrescribedMedicationForm -> Maybe TuberculosisMedicationValue
 toPrescribedMedicationValue form =
-    Maybe.map identity form.medication
+    Maybe.map EverySet.fromList form.medications
 
 
 toDOTValueWithDefault : Maybe TuberculosisDOTValue -> DOTForm -> Maybe TuberculosisDOTValue
