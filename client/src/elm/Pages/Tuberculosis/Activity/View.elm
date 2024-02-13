@@ -187,7 +187,7 @@ viewDiagnosticsContent language currentDate assembled data =
         , div [ class "actions" ]
             [ saveButton language
                 (tasksCompleted == totalTasks)
-                (SaveDiagnostics assembled.participant.person assembled.measurements.diagnostics)
+                (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
             ]
         ]
     ]

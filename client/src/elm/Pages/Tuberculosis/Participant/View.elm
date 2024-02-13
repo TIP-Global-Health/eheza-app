@@ -16,6 +16,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
@@ -94,12 +95,12 @@ viewTuberculosisAction :
     -> Html App.Model.Msg
 viewTuberculosisAction language currentDate selectedHealthCenter id db sessions =
     let
-        -- Person tuberculosis session.
         maybeSessionId =
             Dict.toList sessions
                 |> List.filter
                     (\( _, session ) ->
-                        session.encounterType == Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter
+                        (session.encounterType == Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter)
+                            && isNothing session.endDate
                     )
                 |> List.head
                 |> Maybe.map Tuple.first

@@ -169,8 +169,9 @@ type NextStepsTask
 
 type Msg
     = SetActivePage Page
+      -- DIAGNOSTICS
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
-    | SaveDiagnostics PersonId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
+    | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
     | SetPrescribedMedication TuberculosisPrescribedMedication
