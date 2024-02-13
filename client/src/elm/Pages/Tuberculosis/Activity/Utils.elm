@@ -72,15 +72,19 @@ activityCompleted currentDate assembled activity =
 
         Medication ->
             notExpected Medication
-                || isJust assembled.measurements.medication
+                || (resolveMedicationTasks currentDate assembled
+                        |> List.all (medicationTaskCompleted assembled)
+                   )
 
         SymptomReview ->
             notExpected SymptomReview
                 || isJust assembled.measurements.symptomReview
 
         NextSteps ->
-            resolveNextStepsTasks currentDate assembled
-                |> List.all (nextStepsTaskCompleted assembled)
+            notExpected NextSteps
+                || (resolveNextStepsTasks currentDate assembled
+                        |> List.all (nextStepsTaskCompleted assembled)
+                   )
 
 
 medicationTasks : List MedicationTask
@@ -421,7 +425,7 @@ dotFormWithDefault form saved =
                             Nothing
 
                         else
-                            Just value.sign
+                            Just value.medicationDistributionSign
                 in
                 { provideToday = or form.provideToday provideTodayFromValue
                 , reasonNotProvidedToday =
@@ -536,7 +540,7 @@ dotInputsAndTasks language currentDate form =
                                 SetReasonMedicationsNotDistributed
                                 Translate.TuberculosisReasonMedicationsNotDistributed
                           ]
-                        , [ maybeToBoolTask form.reasonNotProvidedToday ]
+                        , [ maybeToBoolTask form.reasonNotDistributedMedications ]
                         )
 
                     else

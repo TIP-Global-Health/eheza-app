@@ -13,7 +13,7 @@ class HedleyRestfulTuberculosisDOT extends HedleyRestfulTuberculosisActivityBase
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [
+  protected $fields = [
     'field_dot_signs',
     'field_dot_meds_distribution_sign',
   ];
