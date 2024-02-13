@@ -11,6 +11,33 @@
 function hedley_tuberculosis_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_tuberculosis_diagnosis'.
+  $field_bases['field_tuberculosis_diagnosis'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_tuberculosis_diagnosis',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'pulmonary' => 'Pulmonary (in the lungs)',
+        'extrapulmonary' => 'Extrapulmonary (outside the lungs)',
+        'none' => 'Illness not diagnosed',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_tuberculosis_encounter'.
   $field_bases['field_tuberculosis_encounter'] = array(
     'active' => 1,
@@ -47,14 +74,14 @@ function hedley_tuberculosis_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_tuberculosis_diagnosis'.
-  $field_bases['field_tuberculosis_diagnosis'] = array(
+  // Exported field_base: 'field_tuberculosis_symptoms'.
+  $field_bases['field_tuberculosis_symptoms'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_tuberculosis_diagnosis',
+    'field_name' => 'field_tuberculosis_symptoms',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -64,9 +91,11 @@ function hedley_tuberculosis_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'pulmonary' => 'Pulmonary (in the lungs)',
-        'extrapulmonary' => 'Extrapulmonary (outside the lungs)',
-        'none' => 'Illness not diagnosed',
+        'night-sweats' => 'Night sweats',
+        'blood-in-sputum' => 'Blood in sputum',
+        'wight-loss' => 'Weight loss',
+        'severe-fatigue' => 'Severe fatigue',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),

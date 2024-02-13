@@ -9,6 +9,7 @@
  * Class HedleyRestfulWellChildCaring.
  */
 class HedleyRestfulWellChildCaring extends HedleyRestfulWellChildActivityBase {
+
   /**
    * {@inheritdoc}
    */

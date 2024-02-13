@@ -93,8 +93,7 @@ viewActivity language currentDate activity assembled db model =
             []
 
         SymptomReview ->
-            -- @todo
-            []
+            viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         NextSteps ->
             -- @todo
@@ -172,6 +171,81 @@ viewDiagnosticsContent language currentDate assembled data =
             [ saveButton language
                 (tasksCompleted == totalTasks)
                 (SaveDiagnostics assembled.participant.person assembled.measurements.diagnostics)
+            ]
+        ]
+    ]
+
+
+viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
+viewSymptomReviewContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.symptomReview
+                |> getMeasurementValueFunc
+                |> symptomReviewFormWithDefault data.form
+
+        ( inputs, tasksCompleted, totalTasks ) =
+            ( [ viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion SymptomNightSweats
+              , viewBoolInput
+                    language
+                    form.nightSweats
+                    (SetSymptomReviewBoolInput
+                        (\value form_ ->
+                            { form_ | nightSweats = Just value }
+                        )
+                    )
+                    "night-sweats"
+                    Nothing
+              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion SymptomBloodInSputum
+              , viewBoolInput
+                    language
+                    form.bloodInSputum
+                    (SetSymptomReviewBoolInput
+                        (\value form_ ->
+                            { form_ | bloodInSputum = Just value }
+                        )
+                    )
+                    "blood-in-Sputum"
+                    Nothing
+              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion SymptomWeightLoss
+              , viewBoolInput
+                    language
+                    form.weightLoss
+                    (SetSymptomReviewBoolInput
+                        (\value form_ ->
+                            { form_ | weightLoss = Just value }
+                        )
+                    )
+                    "weight-loss"
+                    Nothing
+              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion SymptomSevereFatigue
+              , viewBoolInput
+                    language
+                    form.severeFatigue
+                    (SetSymptomReviewBoolInput
+                        (\value form_ ->
+                            { form_ | severeFatigue = Just value }
+                        )
+                    )
+                    "severe-fatigue"
+                    Nothing
+              ]
+            , taskCompleted form.nightSweats
+                + taskCompleted form.bloodInSputum
+                + taskCompleted form.weightLoss
+                + taskCompleted form.severeFatigue
+            , 4
+            )
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form danger-signs" ] inputs
+            ]
+        , div [ class "actions" ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
             ]
         ]
     ]

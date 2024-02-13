@@ -53,3 +53,15 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , Cmd.none
             , triggerRollbarOnFailure data
             )
+
+        SaveSymptomReview personId valueId value ->
+            ( { model | saveSymptomReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value tuberculosisSymptomReviewEndpoint HandleSavedSymptomReview
+            , []
+            )
+
+        HandleSavedSymptomReview data ->
+            ( { model | saveSymptomReview = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )

@@ -3942,6 +3942,47 @@ tuberculosisSignFromString sign =
             Nothing
 
 
+tuberculosisSymptomToString : TuberculosisSymptom -> String
+tuberculosisSymptomToString symptom =
+    case symptom of
+        SymptomNightSweats ->
+            "night-sweats"
+
+        SymptomBloodInSputum ->
+            "blood-in-sputum"
+
+        SymptomWeightLoss ->
+            "wight-loss"
+
+        SymptomSevereFatigue ->
+            "severe-fatigue"
+
+        NoTuberculosisSymptoms ->
+            "none"
+
+
+tuberculosisSymptomFromString : String -> Maybe TuberculosisSymptom
+tuberculosisSymptomFromString symptom =
+    case symptom of
+        "night-sweats" ->
+            Just SymptomNightSweats
+
+        "blood-in-sputum" ->
+            Just SymptomBloodInSputum
+
+        "wight-loss" ->
+            Just SymptomWeightLoss
+
+        "severe-fatigue" ->
+            Just SymptomSevereFatigue
+
+        "none" ->
+            Just NoTuberculosisSymptoms
+
+        _ ->
+            Nothing
+
+
 generatePreviousMeasurements :
     (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
     -> (ModelIndexedDb -> Dict encounterId (WebData measurements))

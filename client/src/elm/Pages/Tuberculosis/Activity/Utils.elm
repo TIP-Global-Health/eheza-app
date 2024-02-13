@@ -162,3 +162,34 @@ toDiagnosticsValue form =
                     form.isPulmonary
         )
         form.diagnosed
+
+
+symptomReviewFormWithDefault : SymptomReviewForm -> Maybe TuberculosisSymptomReviewValue -> SymptomReviewForm
+symptomReviewFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { nightSweats = or form.nightSweats (EverySet.member SymptomNightSweats value |> Just)
+                , bloodInSputum = or form.bloodInSputum (EverySet.member SymptomBloodInSputum value |> Just)
+                , weightLoss = or form.weightLoss (EverySet.member SymptomWeightLoss value |> Just)
+                , severeFatigue = or form.severeFatigue (EverySet.member SymptomSevereFatigue value |> Just)
+                }
+            )
+
+
+toSymptomReviewValueWithDefault : Maybe TuberculosisSymptomReviewValue -> SymptomReviewForm -> Maybe TuberculosisSymptomReviewValue
+toSymptomReviewValueWithDefault saved form =
+    symptomReviewFormWithDefault form saved
+        |> toSymptomReviewValue
+
+
+toSymptomReviewValue : SymptomReviewForm -> Maybe TuberculosisSymptomReviewValue
+toSymptomReviewValue form =
+    [ ifNullableTrue SymptomNightSweats form.nightSweats
+    , ifNullableTrue SymptomBloodInSputum form.bloodInSputum
+    , ifNullableTrue SymptomWeightLoss form.weightLoss
+    , ifNullableTrue SymptomSevereFatigue form.severeFatigue
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTuberculosisSymptoms)
