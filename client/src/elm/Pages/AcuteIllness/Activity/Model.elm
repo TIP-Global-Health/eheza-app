@@ -366,7 +366,7 @@ emptyNextStepsData =
     , sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = FollowUpForm Nothing Nothing
+    , followUpForm = emptyFollowUpForm
     , contactsTracingForm = emptyContactsTracingForm
     , activeTask = Nothing
     }
@@ -408,12 +408,6 @@ emptyCall114Form =
     , contactedSiteDirty = False
     , recommendationSite = Nothing
     , recommendationSiteDirty = False
-    }
-
-
-type alias FollowUpForm =
-    { option : Maybe FollowUpOption
-    , resolutionDate : Maybe NominalDate
     }
 
 

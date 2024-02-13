@@ -3913,9 +3913,9 @@ bloodSmearResultFromString value =
             Nothing
 
 
-tuberculosisSignToString : TuberculosisSign -> String
-tuberculosisSignToString sign =
-    case sign of
+tuberculosisDiagnosisToString : TuberculosisDiagnosis -> String
+tuberculosisDiagnosisToString diagnosis =
+    case diagnosis of
         TuberculosisPulmonary ->
             "pulmonary"
 
@@ -3926,9 +3926,9 @@ tuberculosisSignToString sign =
             "none"
 
 
-tuberculosisSignFromString : String -> Maybe TuberculosisSign
-tuberculosisSignFromString sign =
-    case sign of
+tuberculosisDiagnosisFromString : String -> Maybe TuberculosisDiagnosis
+tuberculosisDiagnosisFromString diagnosis =
+    case diagnosis of
         "pulmonary" ->
             Just TuberculosisPulmonary
 
@@ -3978,6 +3978,29 @@ tuberculosisSymptomFromString symptom =
 
         "none" ->
             Just NoTuberculosisSymptoms
+
+        _ ->
+            Nothing
+
+
+tuberculosisHealthEducationSignToString : TuberculosisHealthEducationSign -> String
+tuberculosisHealthEducationSignToString sign =
+    case sign of
+        EducationFollowUpTesting ->
+            "followup-testing"
+
+        NoTuberculosisHealthEducationSigns ->
+            "none"
+
+
+tuberculosisHealthEducationSignFromString : String -> Maybe TuberculosisHealthEducationSign
+tuberculosisHealthEducationSignFromString sign =
+    case sign of
+        "followup-testing" ->
+            Just EducationFollowUpTesting
+
+        "none" ->
+            Just NoTuberculosisHealthEducationSigns
 
         _ ->
             Nothing

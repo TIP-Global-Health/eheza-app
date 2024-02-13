@@ -15,7 +15,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (isJust)
+import Measurement.Utils exposing (followUpFormWithDefault, sendToHCFormWithDefault)
 import Measurement.View
+    exposing
+        ( viewFollowUpForm
+        , viewSendToHealthCenterForm
+        )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Activity.Utils exposing (..)
@@ -23,12 +28,16 @@ import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
 import Pages.Utils
     exposing
-        ( saveButton
+        ( isTaskCompleted
+        , resolveActiveTask
+        , saveButton
         , taskCompleted
+        , tasksBarId
         , viewBoolInput
         , viewCustomBoolInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
+        , viewSaveAction
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
@@ -96,8 +105,7 @@ viewActivity language currentDate activity assembled db model =
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         NextSteps ->
-            -- @todo
-            []
+            viewNextStepsContent language currentDate assembled db model.nextStepsData
 
 
 viewDiagnosticsContent : Language -> NominalDate -> AssembledData -> DiagnosticsData -> List (Html Msg)
@@ -126,8 +134,8 @@ viewDiagnosticsContent language currentDate assembled data =
                                             )
                                         )
                                         "is-pulmonary"
-                                        ( Translate.TuberculosisSign TuberculosisPulmonary
-                                        , Translate.TuberculosisSign TuberculosisExtrapulmonary
+                                        ( Translate.TuberculosisDiagnosis TuberculosisPulmonary
+                                        , Translate.TuberculosisDiagnosis TuberculosisExtrapulmonary
                                         )
                                         "sixteen"
                                   ]
@@ -249,3 +257,154 @@ viewSymptomReviewContent language currentDate assembled data =
             ]
         ]
     ]
+
+
+viewNextStepsContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate assembled db data =
+    let
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectNextStepsTask currentDate assembled) nextStepsTasks
+
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskHealthEducation ->
+                            ( "next-steps-health-education"
+                            , isJust measurements.healthEducation
+                            )
+
+                        TaskFollowUp ->
+                            ( "next-steps-follow-up"
+                            , isJust measurements.followUp
+                            )
+
+                        TaskReferral ->
+                            ( "next-steps-send-to-hc"
+                            , isJust measurements.referral
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveNextStepsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.TuberculosisNextStepsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task )) tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskHealthEducation ->
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewHealthEducationForm language
+                            currentDate
+                            assembled
+                        |> List.singleton
+
+                Just TaskFollowUp ->
+                    getMeasurementValueFunc measurements.followUp
+                        |> followUpFormWithDefault data.followUpForm
+                        |> viewFollowUpForm language
+                            currentDate
+                            [ OneDay, OneWeek ]
+                            SetFollowUpOption
+                        |> List.singleton
+
+                Just TaskReferral ->
+                    getMeasurementValueFunc measurements.referral
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHealthCenterForm language
+                            currentDate
+                            SetReferToHealthCenter
+                            SetReasonForNonReferral
+                            SetHandReferralForm
+                            Nothing
+                        |> List.singleton
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            activeTask
+                |> Maybe.map
+                    (\task ->
+                        let
+                            personId =
+                                assembled.participant.person
+
+                            saveMsg =
+                                case task of
+                                    TaskHealthEducation ->
+                                        SaveHealthEducation personId measurements.healthEducation nextTask
+
+                                    TaskFollowUp ->
+                                        SaveFollowUp personId measurements.followUp nextTask
+
+                                    TaskReferral ->
+                                        SaveReferral personId measurements.referral nextTask
+
+                            disabled =
+                                tasksCompleted /= totalTasks
+                        in
+                        viewSaveAction language saveMsg disabled
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate assembled form =
+    div [ class "ui form health-education" ]
+        [ viewQuestionLabel language <| Translate.TuberculosisHealthEducationQuestion EducationFollowUpTesting
+        , viewBoolInput
+            language
+            form.followUpTesting
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | followUpTesting = Just value }))
+            "followup-testing"
+            Nothing
+        ]

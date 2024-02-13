@@ -32,7 +32,8 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
-        ( toHealthEducationValueWithDefault
+        ( toFollowUpValueWithDefault
+        , toHealthEducationValueWithDefault
         , toMuacValueWithDefault
         , toSendToHCValueWithDefault
         , toVitalsValueWithDefault

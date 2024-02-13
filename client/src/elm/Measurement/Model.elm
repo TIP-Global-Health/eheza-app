@@ -47,7 +47,7 @@ type alias ModelChild =
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
     , fbfForm : FbfForm
     , contributingFactorsForm : ContributingFactorsForm
-    , followUpForm : FollowUpForm
+    , followUpForm : NutritionFollowUpForm
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
     , ncdaData : NCDAData
@@ -72,7 +72,7 @@ emptyModelChild =
     , counseling = Nothing
     , fbfForm = FbfForm Nothing Nothing
     , contributingFactorsForm = emptyContributingFactorsForm
-    , followUpForm = emptyFollowUpForm
+    , followUpForm = emptyNutritionFollowUpForm
     , healthEducationForm = emptyHealthEducationForm
     , sendToHCForm = emptySendToHCForm
     , ncdaData = emptyNCDAData
@@ -111,6 +111,19 @@ emptyContributingFactorsForm =
 
 type alias FollowUpForm =
     { option : Maybe FollowUpOption
+    , resolutionDate : Maybe NominalDate
+    }
+
+
+emptyFollowUpForm : FollowUpForm
+emptyFollowUpForm =
+    { option = Nothing
+    , resolutionDate = Nothing
+    }
+
+
+type alias NutritionFollowUpForm =
+    { option : Maybe FollowUpOption
 
     -- We do not display this. Using it when saving.
     , assesment : Maybe (EverySet NutritionAssessment)
@@ -118,9 +131,9 @@ type alias FollowUpForm =
     }
 
 
-emptyFollowUpForm : FollowUpForm
-emptyFollowUpForm =
-    FollowUpForm Nothing Nothing Nothing
+emptyNutritionFollowUpForm : NutritionFollowUpForm
+emptyNutritionFollowUpForm =
+    NutritionFollowUpForm Nothing Nothing Nothing
 
 
 type alias HealthEducationForm =
@@ -284,7 +297,7 @@ type OutMsgChild
     | SavePhoto (Maybe PhotoId) ImageUrl
     | SaveChildFbf (Maybe ChildFbfId) FbfValue
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign)
-    | SaveFollowUp (Maybe FollowUpId) FollowUpValue
+    | SaveFollowUp (Maybe FollowUpId) NutritionFollowUpValue
     | SaveHealthEducation (Maybe GroupHealthEducationId) HealthEducationValue
     | SaveSendToHC (Maybe GroupSendToHCId) SendToHCValue
     | SaveNCDA (Maybe GroupNCDAId) NCDAValue

@@ -65,3 +65,39 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , Cmd.none
             , triggerRollbarOnFailure data
             )
+
+        SaveReferral personId valueId value ->
+            ( { model | saveReferral = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value tuberculosisReferralEndpoint HandleSavedReferral
+            , []
+            )
+
+        HandleSavedReferral data ->
+            ( { model | saveReferral = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value tuberculosisHealthEducationEndpoint HandleSavedHealthEducation
+            , []
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveFollowUp personId valueId value ->
+            ( { model | saveFollowUp = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value tuberculosisFollowUpEndpoint HandleSavedFollowUp
+            , []
+            )
+
+        HandleSavedFollowUp data ->
+            ( { model | saveFollowUp = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )

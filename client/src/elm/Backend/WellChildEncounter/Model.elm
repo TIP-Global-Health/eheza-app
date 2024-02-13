@@ -208,7 +208,7 @@ type Msg
     | HandleSavedContributingFactors (WebData ())
     | SaveHealthEducation PersonId (Maybe WellChildHealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
-    | SaveFollowUp PersonId (Maybe WellChildFollowUpId) FollowUpValue
+    | SaveFollowUp PersonId (Maybe WellChildFollowUpId) NutritionFollowUpValue
     | HandleSavedFollowUp (WebData ())
     | SaveSendToHC PersonId (Maybe WellChildSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())

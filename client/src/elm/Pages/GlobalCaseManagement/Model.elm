@@ -2,7 +2,7 @@ module Pages.GlobalCaseManagement.Model exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (FollowUpOption, FollowUpValue, PrenatalFollowUpValue)
+import Backend.Measurement.Model exposing (FollowUpOption, NutritionFollowUpValue, PrenatalFollowUpValue)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -43,7 +43,7 @@ type FollowUpDueOption
 type alias NutritionFollowUpItem =
     { dateMeasured : NominalDate
     , personName : String
-    , value : FollowUpValue
+    , value : NutritionFollowUpValue
     }
 
 

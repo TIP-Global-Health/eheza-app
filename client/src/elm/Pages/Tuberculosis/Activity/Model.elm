@@ -3,13 +3,14 @@ module Pages.Tuberculosis.Activity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model
+import Measurement.Model exposing (FollowUpForm, SendToHCForm, emptyFollowUpForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { diagnosticsData : DiagnosticsData
     , symptomReviewData : SymptomReviewData
+    , nextStepsData : NextStepsData
     }
 
 
@@ -17,6 +18,7 @@ emptyModel : Model
 emptyModel =
     { diagnosticsData = emptyDiagnosticsData
     , symptomReviewData = emptySymptomReviewData
+    , nextStepsData = emptyNextStepsData
     }
 
 
@@ -74,6 +76,32 @@ emptySymptomReviewForm =
     }
 
 
+type alias NextStepsData =
+    { sendToHCForm : SendToHCForm
+    , healthEducationForm : HealthEducationForm
+    , followUpForm : FollowUpForm
+    , activeTask : Maybe NextStepsTask
+    }
+
+
+emptyNextStepsData : NextStepsData
+emptyNextStepsData =
+    { sendToHCForm = emptySendToHCForm
+    , healthEducationForm = emptyHealthEducationForm
+    , followUpForm = emptyFollowUpForm
+    , activeTask = Nothing
+    }
+
+
+type alias HealthEducationForm =
+    { followUpTesting : Maybe Bool }
+
+
+emptyHealthEducationForm : HealthEducationForm
+emptyHealthEducationForm =
+    { followUpTesting = Nothing }
+
+
 type NextStepsTask
     = TaskReferral
     | TaskHealthEducation
@@ -86,3 +114,13 @@ type Msg
     | SaveDiagnostics PersonId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
     | SetSymptomReviewBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
     | SaveSymptomReview PersonId (Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview ))
+      -- NEXT STEPS
+    | SetActiveNextStepsTask NextStepsTask
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( TuberculosisHealthEducationId, TuberculosisHealthEducation )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( TuberculosisFollowUpId, TuberculosisFollowUp )) (Maybe NextStepsTask)
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNonReferral ReasonForNonReferral
+    | SaveReferral PersonId (Maybe ( TuberculosisReferralId, TuberculosisReferral )) (Maybe NextStepsTask)

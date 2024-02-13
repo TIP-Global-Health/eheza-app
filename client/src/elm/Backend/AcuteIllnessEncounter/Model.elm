@@ -173,7 +173,7 @@ type Msg
     | HandleSavedNutrition (WebData ())
     | SaveHealthEducation PersonId (Maybe HealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
-    | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) AcuteIllnessFollowUpValue
+    | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) FollowUpValue
     | HandleSavedFollowUp (WebData ())
     | SaveCoreExam PersonId (Maybe AcuteIllnessCoreExamId) AcuteIllnessCoreExamValue
     | HandleSavedCoreExam (WebData ())

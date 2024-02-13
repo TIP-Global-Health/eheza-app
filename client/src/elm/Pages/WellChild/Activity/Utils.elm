@@ -1484,7 +1484,7 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
                 form =
                     measurements.followUp
                         |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
+                        |> nutritionFollowUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option
             , 1

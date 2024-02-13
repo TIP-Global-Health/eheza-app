@@ -79,5 +79,5 @@ type Msg
     | HandleSavedHealthEducation (WebData ())
     | SaveContributingFactors PersonId (Maybe NutritionContributingFactorsId) (EverySet ContributingFactorsSign)
     | HandleSavedContributingFactors (WebData ())
-    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) FollowUpValue
+    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) NutritionFollowUpValue
     | HandleSavedFollowUp (WebData ())
