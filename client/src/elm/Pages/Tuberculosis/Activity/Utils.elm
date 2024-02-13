@@ -133,38 +133,12 @@ medicationTasksCompletedFromTotal language currentDate measurements data task =
                     getMeasurementValueFunc measurements.dot
                         |> dotFormWithDefault data.dotForm
 
-                ( provideTodayActive, provideTodayCompleted ) =
-                    Maybe.map
-                        (\provideToday ->
-                            if provideToday then
-                                ( 1, 1 )
-
-                            else if isJust form.reasonNotProvidedToday then
-                                ( 2, 2 )
-
-                            else
-                                ( 1, 2 )
-                        )
-                        form.provideToday
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( distributeMedicationsActive, distributeMedicationsCompleted ) =
-                    Maybe.map
-                        (\distributeMedications ->
-                            if distributeMedications then
-                                ( 1, 1 )
-
-                            else if isJust form.reasonNotDistributedMedications then
-                                ( 2, 2 )
-
-                            else
-                                ( 1, 2 )
-                        )
-                        form.distributeMedications
-                        |> Maybe.withDefault ( 0, 1 )
+                ( _, tasks ) =
+                    dotInputsAndTasks language currentDate form
             in
-            ( provideTodayActive + distributeMedicationsActive
-            , provideTodayCompleted + distributeMedicationsCompleted
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
         TaskTreatmentReview ->
@@ -498,3 +472,96 @@ toDOTValue form =
         )
         maybeSign
         maybeDistributeMedications
+
+
+dotInputsAndTasks : Language -> NominalDate -> DOTForm -> ( List (Html Msg), List (Maybe Bool) )
+dotInputsAndTasks language currentDate form =
+    let
+        ( provideTodayInputs, provideTodayTasks ) =
+            let
+                ( derivedInputs, derivedTasks ) =
+                    if form.provideToday == Just False then
+                        ( [ viewQuestionLabel language Translate.WhyNot
+                          , viewCheckBoxSelectInput language
+                                [ DOTNegativeTakenToday
+                                , DOTNegativeNotIndicated
+                                , DOTNegativeUnavailable
+                                , DOTNegativeSideEffects
+                                , DOTNegativePatientRefused
+                                ]
+                                []
+                                form.reasonNotProvidedToday
+                                SetReasonNotProvidedToday
+                                Translate.TuberculosisReasonNotProvidedToday
+                          ]
+                        , [ maybeToBoolTask form.reasonNotProvidedToday ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.TuberculosisProvideDOTTodayQuestion
+              , viewBoolInput
+                    language
+                    form.provideToday
+                    (SetDOTBoolInput
+                        (\value form_ ->
+                            { form_
+                                | provideToday = Just value
+                                , reasonNotProvidedToday = Nothing
+                                , reasonNotProvidedTodayDirty = True
+                            }
+                        )
+                    )
+                    "provide-today"
+                    Nothing
+              ]
+                ++ derivedInputs
+            , form.provideToday :: derivedTasks
+            )
+
+        ( distributeMedicationsInputs, distributeMedicationsTasks ) =
+            let
+                ( derivedInputs, derivedTasks ) =
+                    if form.distributeMedications == Just False then
+                        ( [ viewQuestionLabel language Translate.WhyNot
+                          , viewCheckBoxSelectInput language
+                                [ DOTNegativeTakenToday
+                                , DOTNegativeUnavailable
+                                , DOTNegativeSideEffects
+                                , DOTNegativePatientRefused
+                                ]
+                                []
+                                form.reasonNotDistributedMedications
+                                SetReasonMedicationsNotDistributed
+                                Translate.TuberculosisReasonMedicationsNotDistributed
+                          ]
+                        , [ maybeToBoolTask form.reasonNotProvidedToday ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.TuberculosisDistributeMedicationsQuestion
+              , viewBoolInput
+                    language
+                    form.distributeMedications
+                    (SetDOTBoolInput
+                        (\value form_ ->
+                            { form_
+                                | distributeMedications = Just value
+                                , reasonNotDistributedMedications = Nothing
+                                , reasonNotDistributedMedicationsDirty = True
+                            }
+                        )
+                    )
+                    "distribute-medications"
+                    Nothing
+              ]
+                ++ derivedInputs
+            , form.distributeMedications :: derivedTasks
+            )
+    in
+    ( provideTodayInputs ++ distributeMedicationsInputs
+    , provideTodayTasks ++ distributeMedicationsTasks
+    )

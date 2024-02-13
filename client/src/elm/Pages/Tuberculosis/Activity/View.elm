@@ -36,12 +36,14 @@ import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , maybeToBoolTask
         , resolveActiveTask
         , saveButton
         , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
         , viewCustomBoolInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
@@ -254,26 +256,19 @@ viewMedicationContent language currentDate assembled data =
                         |> viewPrescribedMedicationForm language currentDate
                         |> List.singleton
 
-                --
-                -- Just TaskDOT ->
-                --     getMeasurementValueFunc measurements.followUp
-                --         |> followUpFormWithDefault data.followUpForm
-                --         |> viewFollowUpForm language
-                --             currentDate
-                --             [ OneDay, OneWeek ]
-                --             SetFollowUpOption
-                --         |> List.singleton
-                --
+                Just TaskDOT ->
+                    getMeasurementValueFunc measurements.dot
+                        |> dotFormWithDefault data.dotForm
+                        |> viewDOTForm language currentDate
+                        |> List.singleton
+
                 Just TaskTreatmentReview ->
                     getMeasurementValueFunc measurements.treatmentReview
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewTreatmentReviewForm language currentDate
                         |> List.singleton
 
-                --
-                -- Nothing ->
-                --     []
-                _ ->
+                Nothing ->
                     []
 
         nextTask =
@@ -324,22 +319,6 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
-viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
-viewTreatmentReviewForm language currentDate form =
-    let
-        ( inputs, _ ) =
-            treatmentReviewInputsAndTasks language
-                currentDate
-                SetTreatmentReviewBoolInput
-                SetReasonForNotTaking
-                SetTotalMissedDoses
-                SetAdverseEvent
-                form
-    in
-    div [ class "ui form treatment-review" ]
-        inputs
-
-
 viewPrescribedMedicationForm : Language -> NominalDate -> PrescribedMedicationForm -> Html Msg
 viewPrescribedMedicationForm language currentDate form =
     div [ class "ui form prescribed-medication" ]
@@ -355,6 +334,32 @@ viewPrescribedMedicationForm language currentDate form =
             SetPrescribedMedication
             Translate.TuberculosisPrescribedMedication
         ]
+
+
+viewDOTForm : Language -> NominalDate -> DOTForm -> Html Msg
+viewDOTForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            dotInputsAndTasks language currentDate form
+    in
+    div [ class "ui form dot" ]
+        inputs
+
+
+viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            treatmentReviewInputsAndTasks language
+                currentDate
+                SetTreatmentReviewBoolInput
+                SetReasonForNotTaking
+                SetTotalMissedDoses
+                SetAdverseEvent
+                form
+    in
+    div [ class "ui form treatment-review" ]
+        inputs
 
 
 viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)

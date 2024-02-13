@@ -4024,7 +4024,7 @@ tuberculosisDOTSignToString sign =
         DOTNegativePatientRefused ->
             "negative-patient-refused"
 
-        DOTNegativeNotInsdicated ->
+        DOTNegativeNotIndicated ->
             "negative-not-indicated"
 
 
@@ -4047,7 +4047,7 @@ tuberculosisDOTSignFromString sign =
             Just DOTNegativePatientRefused
 
         "negative-not-indicated" ->
-            Just DOTNegativeNotInsdicated
+            Just DOTNegativeNotIndicated
 
         _ ->
             Nothing

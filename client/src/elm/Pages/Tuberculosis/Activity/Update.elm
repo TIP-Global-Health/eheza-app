@@ -36,6 +36,9 @@ update currentDate id db msg model =
         medicationForm =
             resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
 
+        dotForm =
+            resolveFormWithDefaults .dot dotFormWithDefault model.medicationData.dotForm
+
         treatmentReviewForm =
             resolveFormWithDefaults .treatmentReview ongoingTreatmentReviewFormWithDefault model.medicationData.treatmentReviewForm
 
@@ -152,6 +155,54 @@ update currentDate id db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetDOTBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value dotForm
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | dotForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonNotProvidedToday value ->
+            let
+                form =
+                    dotForm
+
+                updatedForm =
+                    { form | reasonNotProvidedToday = Just value, reasonNotProvidedTodayDirty = True }
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | dotForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonMedicationsNotDistributed value ->
+            let
+                form =
+                    dotForm
+
+                updatedForm =
+                    { form | reasonNotDistributedMedications = Just value, reasonNotDistributedMedicationsDirty = True }
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | dotForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SetTreatmentReviewBoolInput formUpdateFunc value ->
             let

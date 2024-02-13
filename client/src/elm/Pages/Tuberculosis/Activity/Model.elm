@@ -175,6 +175,9 @@ type Msg
     | SetActiveMedicationTask MedicationTask
     | SetPrescribedMedication TuberculosisPrescribedMedication
     | SavePrescribedMedication PersonId (Maybe ( TuberculosisMedicationId, TuberculosisMedication )) (Maybe MedicationTask)
+    | SetDOTBoolInput (Bool -> DOTForm -> DOTForm) Bool
+    | SetReasonNotProvidedToday TuberculosisDOTSign
+    | SetReasonMedicationsNotDistributed TuberculosisDOTSign
     | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
     | SetReasonForNotTaking ReasonForNotTaking
     | SetTotalMissedDoses String

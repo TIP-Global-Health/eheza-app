@@ -1017,6 +1017,7 @@ type TranslationId
     | NoChildrenRegisteredInTheSystem
     | NotAvailable
     | NotFollowingRecommendationQuestion
+    | NotIndicated
     | NotTaken
     | NumberOfAbortions
     | NumberOfChildrenUnder5
@@ -1077,6 +1078,7 @@ type TranslationId
     | PatientGotDiabetesHeader
     | PatientProgress
     | PatientRecord
+    | PatientRefused
     | PatientInformation
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
@@ -1645,6 +1647,7 @@ type TranslationId
     | TuberculosisActivityTitle TuberculosisActivity
     | TuberculosisDiagnosis TuberculosisDiagnosis
     | TuberculosisDiagnosedQuestion
+    | TuberculosisDistributeMedicationsQuestion
     | TuberculosisHealthEducationQuestion TuberculosisHealthEducationSign
     | TuberculosisInstructions
     | TuberculosisInstructionsFollowed
@@ -1655,6 +1658,9 @@ type TranslationId
     | TuberculosisPrescribedMedication TuberculosisPrescribedMedication
     | TuberculosisPrescribedMedicationsQuestion
     | TuberculosisPresent
+    | TuberculosisProvideDOTTodayQuestion
+    | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
+    | TuberculosisReasonMedicationsNotDistributed TuberculosisDOTSign
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
@@ -6423,10 +6429,7 @@ translationSet trans =
                     }
 
                 HIVTreatmentNoMedicinePatientRefused ->
-                    { english = "Patient Refused"
-                    , kinyarwanda = Just "Umurwayi yabyanze"
-                    , kirundi = Just "Umugwayi yanse"
-                    }
+                    translationSet PatientRefused
 
                 HIVTreatmentNoMedicineOther ->
                     { english = "Other"
@@ -11611,10 +11614,7 @@ translationSet trans =
                     }
 
                 ReasonForNonReferralNotIndicated ->
-                    { english = "Not indicated"
-                    , kinyarwanda = Just "Ntibyasabwe"
-                    , kirundi = Just "Ntivyerekanywe"
-                    }
+                    translationSet NotIndicated
 
                 ReasonForNonReferralOther ->
                     { english = "Other"
@@ -11820,6 +11820,12 @@ translationSet trans =
             { english = "Why recommendations were not followed"
             , kinyarwanda = Just "Nta bipimo byafashwe"
             , kirundi = Just "Kubera iki ivyifuzo bitakurikijwe"
+            }
+
+        NotIndicated ->
+            { english = "Not indicated"
+            , kinyarwanda = Just "Ikizamini nticyasabwe"
+            , kirundi = Just "Ntivyerekanywe"
             }
 
         NotTaken ->
@@ -12532,6 +12538,12 @@ translationSet trans =
             { english = "Patient Record"
             , kinyarwanda = Just "Amakuru y'Umurwayi"
             , kirundi = Just "Icegeranyo c'umugwayi"
+            }
+
+        PatientRefused ->
+            { english = "Patient refused"
+            , kinyarwanda = Just "Umurwayi yabyanze"
+            , kirundi = Just "Umugwayi yanse"
             }
 
         PatientInformation ->
@@ -16100,10 +16112,7 @@ translationSet trans =
                     }
 
                 TestNoteNotIndicated ->
-                    { english = "Not Indicated"
-                    , kinyarwanda = Just "Ikizamini nticyasabwe"
-                    , kirundi = Just "Ntivyerekanywe"
-                    }
+                    translationSet NotIndicated
 
                 TestNoteKnownAsPositive ->
                     { english = "Known as Positive"
@@ -16554,11 +16563,8 @@ translationSet trans =
                     , kirundi = Just "Ukubura ry'indongozo nziza yo gukoresha ivyo wize"
                     }
 
-                PatientRefused ->
-                    { english = "Patient refused"
-                    , kinyarwanda = Just "Umurwayi yabyanze"
-                    , kirundi = Just "Umugwayi yanse"
-                    }
+                Backend.Measurement.Model.PatientRefused ->
+                    translationSet PatientRefused
 
                 PatientTooIll ->
                     { english = "Patient too ill"
@@ -16725,10 +16731,7 @@ translationSet trans =
                     }
 
                 NonePatientRefused ->
-                    { english = "Patient refused"
-                    , kinyarwanda = Just "Umurwayi yabyanze"
-                    , kirundi = Just "Umugwayi yanse"
-                    }
+                    translationSet PatientRefused
 
                 NoneOtherRecommendationSite ->
                     { english = "Other"
@@ -20824,6 +20827,30 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        TuberculosisDiagnosis sign ->
+            case sign of
+                TuberculosisPulmonary ->
+                    { english = "Pulmonary (in the lungs)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TuberculosisExtrapulmonary ->
+                    { english = "Extrapulmonary (outside the lungs)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoTuberculosis ->
+                    -- Not in use.
+                    translationSet EmptyString
+
+        TuberculosisDistributeMedicationsQuestion ->
+            { english = "Did you distribute the following medications"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         TuberculosisHealthEducationQuestion sign ->
             case sign of
                 EducationFollowUpTesting ->
@@ -20922,23 +20949,44 @@ translationSet trans =
             , kirundi = Just "Akubu k'igituntu"
             }
 
-        TuberculosisDiagnosis sign ->
-            case sign of
-                TuberculosisPulmonary ->
-                    { english = "Pulmonary (in the lungs)"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+        TuberculosisProvideDOTTodayQuestion ->
+            { english = "Will you provide DOT/TDO today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
-                TuberculosisExtrapulmonary ->
-                    { english = "Extrapulmonary (outside the lungs)"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                NoTuberculosis ->
-                    -- Not in use.
+        TuberculosisReasonNotProvidedToday reason ->
+            case reason of
+                -- Not in use
+                DOTPositive ->
                     translationSet EmptyString
+
+                DOTNegativeTakenToday ->
+                    { english = "Meds already taken today"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DOTNegativeUnavailable ->
+                    { english = "Meds unavailable"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DOTNegativeSideEffects ->
+                    { english = "Advised to hold b/c of side effects"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DOTNegativePatientRefused ->
+                    translationSet PatientRefused
+
+                DOTNegativeNotIndicated ->
+                    translationSet NotIndicated
+
+        TuberculosisReasonMedicationsNotDistributed reason ->
+            translationSet <| TuberculosisReasonNotProvidedToday reason
 
         TuberculosisSymptomQuestion symptom ->
             case symptom of

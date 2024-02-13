@@ -2899,7 +2899,7 @@ type TuberculosisDOTSign
     | DOTNegativeUnavailable
     | DOTNegativeSideEffects
     | DOTNegativePatientRefused
-    | DOTNegativeNotInsdicated
+    | DOTNegativeNotIndicated
 
 
 type alias TuberculosisFollowUp =
