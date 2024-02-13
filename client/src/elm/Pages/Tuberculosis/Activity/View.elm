@@ -281,31 +281,30 @@ viewMedicationContent language currentDate assembled data =
                 |> List.head
 
         actions =
-            -- Maybe.map
-            --     (\task ->
-            --         let
-            --             personId =
-            --                 assembled.participant.person
-            --
-            --             saveMsg =
-            --                 case task of
-            --                     TaskPrescribedMedication ->
-            --                         SaveHealthEducation personId measurements.healthEducation nextTask
-            --
-            --                     TaskDOT ->
-            --                         SaveFollowUp personId measurements.followUp nextTask
-            --
-            --                     TaskTreatmentReview ->
-            --                         SaveReferral personId measurements.referral nextTask
-            --
-            --             disabled =
-            --                 tasksCompleted /= totalTasks
-            --         in
-            --         viewSaveAction language saveMsg disabled
-            --     )
-            --     activeTask
-            --     |> Maybe.withDefault emptyNode
-            emptyNode
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        saveMsg =
+                            case task of
+                                TaskPrescribedMedication ->
+                                    SavePrescribedMedication personId measurements.medication nextTask
+
+                                TaskDOT ->
+                                    SaveDOT personId measurements.dot nextTask
+
+                                TaskTreatmentReview ->
+                                    SaveTreatmentReview personId measurements.treatmentReview nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|

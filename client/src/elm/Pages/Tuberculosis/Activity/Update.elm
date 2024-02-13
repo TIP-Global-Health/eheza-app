@@ -204,6 +204,33 @@ update currentDate id db msg model =
             , []
             )
 
+        SaveDOT personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask
+
+                appMsgs =
+                    toDOTValueWithDefault measurement model.medicationData.dotForm
+                        |> Maybe.map
+                            (Backend.TuberculosisEncounter.Model.SaveDOT personId measurementId
+                                >> Backend.Model.MsgTuberculosisEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
         SetTreatmentReviewBoolInput formUpdateFunc value ->
             let
                 updatedData =

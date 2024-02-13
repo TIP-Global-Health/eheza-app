@@ -178,6 +178,7 @@ type Msg
     | SetDOTBoolInput (Bool -> DOTForm -> DOTForm) Bool
     | SetReasonNotProvidedToday TuberculosisDOTSign
     | SetReasonMedicationsNotDistributed TuberculosisDOTSign
+    | SaveDOT PersonId (Maybe ( TuberculosisDOTId, TuberculosisDOT )) (Maybe MedicationTask)
     | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
     | SetReasonForNotTaking ReasonForNotTaking
     | SetTotalMissedDoses String
