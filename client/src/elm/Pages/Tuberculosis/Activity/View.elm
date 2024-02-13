@@ -41,6 +41,7 @@ import Pages.Utils
         , taskCompleted
         , tasksBarId
         , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
         , viewCustomBoolInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
@@ -247,13 +248,12 @@ viewMedicationContent language currentDate assembled data =
 
         viewForm =
             case activeTask of
-                -- Just TaskPrescribedMedication ->
-                --     getMeasurementValueFunc measurements.healthEducation
-                --         |> healthEducationFormWithDefault data.healthEducationForm
-                --         |> viewHealthEducationForm language
-                --             currentDate
-                --             assembled
-                --         |> List.singleton
+                Just TaskPrescribedMedication ->
+                    getMeasurementValueFunc measurements.medication
+                        |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+                        |> viewPrescribedMedicationForm language currentDate
+                        |> List.singleton
+
                 --
                 -- Just TaskDOT ->
                 --     getMeasurementValueFunc measurements.followUp
@@ -338,6 +338,23 @@ viewTreatmentReviewForm language currentDate form =
     in
     div [ class "ui form treatment-review" ]
         inputs
+
+
+viewPrescribedMedicationForm : Language -> NominalDate -> PrescribedMedicationForm -> Html Msg
+viewPrescribedMedicationForm language currentDate form =
+    div [ class "ui form prescribed-medication" ]
+        [ viewQuestionLabel language Translate.TuberculosisPrescribedMedicationsQuestion
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicationRHZE
+            , MedicationRH
+            , MedicationOther
+            ]
+            []
+            (Maybe.withDefault [] form.medications)
+            Nothing
+            SetPrescribedMedication
+            Translate.TuberculosisPrescribedMedication
+        ]
 
 
 viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)

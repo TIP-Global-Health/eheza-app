@@ -402,7 +402,9 @@ prescribedMedicationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { medications = or form.medications (Just <| EverySet.toList value) }
+                { medications = or form.medications (Just <| EverySet.toList value)
+                , medicationsDirty = form.medicationsDirty
+                }
             )
 
 

@@ -90,6 +90,7 @@ function hedley_tuberculosis_field_default_field_bases() {
         'rhze' => 'RHZE',
         'rh' => 'RH',
         'other' => 'Other',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),

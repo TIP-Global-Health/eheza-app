@@ -2931,6 +2931,7 @@ type TuberculosisPrescribedMedication
     = MedicationRHZE
     | MedicationRH
     | MedicationOther
+    | NoTuberculosisPrescribedMedications
 
 
 type alias TuberculosisReferral =

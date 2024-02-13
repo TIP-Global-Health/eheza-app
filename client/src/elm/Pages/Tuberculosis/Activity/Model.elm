@@ -68,12 +68,16 @@ emptyMedicationData =
 
 
 type alias PrescribedMedicationForm =
-    { medications : Maybe (List TuberculosisPrescribedMedication) }
+    { medications : Maybe (List TuberculosisPrescribedMedication)
+    , medicationsDirty : Bool
+    }
 
 
 emptyPrescribedMedicationForm : PrescribedMedicationForm
 emptyPrescribedMedicationForm =
-    { medications = Nothing }
+    { medications = Nothing
+    , medicationsDirty = False
+    }
 
 
 type alias DOTForm =
@@ -169,11 +173,14 @@ type Msg
     | SaveDiagnostics PersonId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
+    | SetPrescribedMedication TuberculosisPrescribedMedication
+    | SavePrescribedMedication PersonId (Maybe ( TuberculosisMedicationId, TuberculosisMedication )) (Maybe MedicationTask)
     | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
     | SetReasonForNotTaking ReasonForNotTaking
     | SetTotalMissedDoses String
     | SetAdverseEvent AdverseEvent
-    | SaveTreatmentReview PersonId (Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview ))
+    | SaveTreatmentReview PersonId (Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview )) (Maybe MedicationTask)
+      -- SYMPTOM REVIEW
     | SetSymptomReviewBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
     | SaveSymptomReview PersonId (Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview ))
       -- NEXT STEPS

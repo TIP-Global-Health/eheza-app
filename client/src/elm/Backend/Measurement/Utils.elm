@@ -4065,6 +4065,9 @@ tuberculosisPrescribedMedicationToString sign =
         MedicationOther ->
             "other"
 
+        NoTuberculosisPrescribedMedications ->
+            "none"
+
 
 tuberculosisPrescribedMedicationFromString : String -> Maybe TuberculosisPrescribedMedication
 tuberculosisPrescribedMedicationFromString sign =
@@ -4077,6 +4080,9 @@ tuberculosisPrescribedMedicationFromString sign =
 
         "other" ->
             Just MedicationOther
+
+        "none" ->
+            Just NoTuberculosisPrescribedMedications
 
         _ ->
             Nothing

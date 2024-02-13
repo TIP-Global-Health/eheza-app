@@ -3,7 +3,7 @@ module Pages.Tuberculosis.Activity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (AdverseEvent(..))
+import Backend.Measurement.Model exposing (AdverseEvent(..), TuberculosisPrescribedMedication(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.TuberculosisEncounter.Model
@@ -23,10 +23,6 @@ import RemoteData exposing (RemoteData(..))
 update : NominalDate -> TuberculosisEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
     let
-        generateNextStepsMsgs nextTask =
-            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage <| TuberculosisEncounterPage id ]
-
         resolveFormWithDefaults getMeasurementFunc formWithDefaultsFunc form =
             Dict.get id db.tuberculosisMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -37,8 +33,19 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault form
 
+        medicationForm =
+            resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
+
         treatmentReviewForm =
             resolveFormWithDefaults .treatmentReview ongoingTreatmentReviewFormWithDefault model.medicationData.treatmentReviewForm
+
+        generateMedicationMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveMedicationTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| TuberculosisEncounterPage id ]
+
+        generateNextStepsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| TuberculosisEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -97,6 +104,54 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetPrescribedMedication medication ->
+            let
+                form =
+                    medicationForm
+
+                updatedForm =
+                    setMultiSelectInputValue .medications
+                        (\medications -> { form | medications = medications, medicationsDirty = True })
+                        NoTuberculosisPrescribedMedications
+                        medication
+                        form
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | prescribedMedicationForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SavePrescribedMedication personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask
+
+                appMsgs =
+                    toPrescribedMedicationValueWithDefault measurement model.medicationData.prescribedMedicationForm
+                        |> Maybe.map
+                            (Backend.TuberculosisEncounter.Model.SavePrescribedMedication personId measurementId
+                                >> Backend.Model.MsgTuberculosisEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetTreatmentReviewBoolInput formUpdateFunc value ->
             let
@@ -168,7 +223,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveTreatmentReview personId saved ->
+        SaveTreatmentReview personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -176,23 +231,24 @@ update currentDate id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
+                extraMsgs =
+                    generateMedicationMsgs nextTask
+
                 appMsgs =
-                    model.medicationData.treatmentReviewForm
-                        |> toOngoingTreatmentReviewValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.TuberculosisEncounter.Model.SaveTreatmentReview personId measurementId value
-                                    |> Backend.Model.MsgTuberculosisEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| TuberculosisEncounterPage id
-                                ]
+                    toOngoingTreatmentReviewValueWithDefault measurement model.medicationData.treatmentReviewForm
+                        |> Maybe.map
+                            (Backend.TuberculosisEncounter.Model.SaveTreatmentReview personId measurementId
+                                >> Backend.Model.MsgTuberculosisEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
+                        |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
         SetSymptomReviewBoolInput formUpdateFunc value ->
             let

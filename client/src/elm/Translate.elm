@@ -1652,6 +1652,8 @@ type TranslationId
     | TuberculosisMedicationTask Pages.Tuberculosis.Activity.Model.MedicationTask
     | TuberculosisNextStepsTask Pages.Tuberculosis.Activity.Model.NextStepsTask
     | TuberculosisPast
+    | TuberculosisPrescribedMedication TuberculosisPrescribedMedication
+    | TuberculosisPrescribedMedicationsQuestion
     | TuberculosisPresent
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
@@ -20883,6 +20885,35 @@ translationSet trans =
             { english = "Tuberculosis in the past"
             , kinyarwanda = Just "Yigeze kurwara igituntu"
             , kirundi = Just "Akahise k'igituntu"
+            }
+
+        TuberculosisPrescribedMedication medication ->
+            case medication of
+                MedicationRHZE ->
+                    { english = "RHZE x 2 months (Initiation phase)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MedicationRH ->
+                    { english = "RH x 4 months (Continuation phase)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MedicationOther ->
+                    { english = "Other - include HIV dosing, Pediatric dosing, etc"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoTuberculosisPrescribedMedications ->
+                    translationSet EmptyString
+
+        TuberculosisPrescribedMedicationsQuestion ->
+            { english = "What are the medications that were prescribed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         TuberculosisPresent ->
