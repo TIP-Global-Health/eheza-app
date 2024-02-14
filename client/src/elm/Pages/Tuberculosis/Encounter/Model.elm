@@ -35,6 +35,9 @@ type alias AssembledData =
     , person : Person
     , measurements : TuberculosisMeasurements
     , previousEncountersData : List PreviousEncounterData
+
+    -- Intial encounter is the one where initial diagnosis is made.
+    , initialEncounter : Bool
     }
 
 
