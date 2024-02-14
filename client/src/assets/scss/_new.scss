@@ -2482,18 +2482,11 @@ div.page-activity.tuberculosis {
 
   .ui.full.segment .full.content {
 
-    @include next-steps;
-
-    .helper {
-      font-style: italic;
-      margin-top: -10px;
-    }
-
     .ui.form.dot .prescribed-medications {
       padding: 20px;
 
       p {
-        margin-bottom: 5px; 
+        margin-bottom: 5px;
       }
     }
   }
