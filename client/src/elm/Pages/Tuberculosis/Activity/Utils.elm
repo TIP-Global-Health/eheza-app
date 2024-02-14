@@ -179,9 +179,51 @@ resolveNextStepsTasks currentDate assembled =
 expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
-        _ ->
-            -- @todo:
-            True
+        TaskReferral ->
+            adverseEventReported assembled.measurements
+                || symptomReported assembled.measurements
+
+        TaskHealthEducation ->
+            expectNextStepsTask currentDate assembled TaskReferral
+
+        TaskFollowUp ->
+            expectNextStepsTask currentDate assembled TaskReferral
+
+
+adverseEventReported : TuberculosisMeasurements -> Bool
+adverseEventReported measurements =
+    getMeasurementValueFunc measurements.treatmentReview
+        |> Maybe.map
+            (\value ->
+                case EverySet.toList value.adverseEvents of
+                    [] ->
+                        False
+
+                    [ NoAdverseEvent ] ->
+                        False
+
+                    _ ->
+                        True
+            )
+        |> Maybe.withDefault False
+
+
+symptomReported : TuberculosisMeasurements -> Bool
+symptomReported measurements =
+    getMeasurementValueFunc measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                case EverySet.toList value of
+                    [] ->
+                        False
+
+                    [ NoTuberculosisSymptoms ] ->
+                        False
+
+                    _ ->
+                        True
+            )
+        |> Maybe.withDefault False
 
 
 nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
