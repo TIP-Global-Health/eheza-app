@@ -193,10 +193,12 @@ expectNextStepsTask currentDate assembled task =
                 || symptomReported assembled.measurements
 
         TaskHealthEducation ->
-            expectNextStepsTask currentDate assembled TaskReferral
+            -- Always provide health education.
+            True
 
         TaskFollowUp ->
-            expectNextStepsTask currentDate assembled TaskReferral
+            -- Always schedule follow up.
+            True
 
 
 adverseEventReported : TuberculosisMeasurements -> Bool
