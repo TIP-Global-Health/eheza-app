@@ -2386,7 +2386,9 @@ type alias WellChildNextVisit =
 
 type alias NextVisitValue =
     { immunisationDate : Maybe NominalDate
+    , asapImmunisationDate : Maybe NominalDate
     , pediatricVisitDate : Maybe NominalDate
+    , resolutionDate : Maybe NominalDate
     }
 
 
@@ -2435,6 +2437,22 @@ type alias VaccinationValue =
 
 type alias WellChildNCDA =
     WellChildMeasurement NCDAValue
+
+
+type alias WellChildFeeding =
+    WellChildMeasurement NutritionFeedingValue
+
+
+type alias WellChildHygiene =
+    WellChildMeasurement NutritionHygieneValue
+
+
+type alias WellChildFoodSecurity =
+    WellChildMeasurement NutritionFoodSecurityValue
+
+
+type alias WellChildCaring =
+    WellChildMeasurement NutritionCaringValue
 
 
 
@@ -3084,6 +3102,7 @@ type alias FollowUpMeasurements =
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
     , ncdLabs : Dict NCDLabsResultsId NCDLabsResults
+    , nextVisit : Dict WellChildNextVisitId WellChildNextVisit
     }
 
 
@@ -3128,6 +3147,10 @@ type alias WellChildMeasurements =
     , pcv13Immunisation : Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )
     , rotarixImmunisation : Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )
     , ncda : Maybe ( WellChildNCDAId, WellChildNCDA )
+    , feeding : Maybe ( WellChildFeedingId, WellChildFeeding )
+    , hygiene : Maybe ( WellChildHygieneId, WellChildHygiene )
+    , foodSecurity : Maybe ( WellChildFoodSecurityId, WellChildFoodSecurity )
+    , caring : Maybe ( WellChildCaringId, WellChildCaring )
     }
 
 

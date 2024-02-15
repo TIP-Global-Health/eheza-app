@@ -40,7 +40,6 @@ expectActivity currentDate site assembled activity =
                 childBehindOnVaccinationByVaccinaitonHistory =
                     behindOnVaccinationsByHistory currentDate
                         site
-                        False
                         assembled.person
                         assembled.vaccinationHistory
                         assembled.vaccinationProgress
@@ -129,49 +128,7 @@ expectImmunisationTask currentDate site person vaccinationHistory task =
         isTaskExpected vaccineType =
             Dict.get vaccineType futureVaccinations
                 |> Maybe.Extra.join
-                |> Maybe.map
-                    (\( dose, date ) ->
-                        let
-                            defaultCondition =
-                                not <| Date.compare date currentDate == GT
-                        in
-                        if vaccineType == VaccineOPV then
-                            case dose of
-                                VaccineDoseFirst ->
-                                    Maybe.map
-                                        (\ageWeeks ->
-                                            -- First dose of OPV vaccine is given within first 2
-                                            -- weeks from birth, or, starting from 6 weeks after birth.
-                                            -- In latter case, there're only 3 doses, and not 4.
-                                            if ageWeeks >= 2 && ageWeeks <= 5 then
-                                                False
-
-                                            else
-                                                defaultCondition
-                                        )
-                                        ageInWeeks
-                                        |> Maybe.withDefault False
-
-                                VaccineDoseSecond ->
-                                    Maybe.map
-                                        (\ageWeeks ->
-                                            -- Second dose of OPV vaccine is given starting from
-                                            -- 6 weeks after birth.
-                                            if ageWeeks < 6 then
-                                                False
-
-                                            else
-                                                defaultCondition
-                                        )
-                                        ageInWeeks
-                                        |> Maybe.withDefault False
-
-                                _ ->
-                                    defaultCondition
-
-                        else
-                            defaultCondition
-                    )
+                |> Maybe.map (\( dose, date ) -> not <| Date.compare date currentDate == GT)
                 |> Maybe.withDefault False
     in
     immunisationTaskToVaccineType task

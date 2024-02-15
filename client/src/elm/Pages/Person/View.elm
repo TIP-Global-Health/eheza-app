@@ -586,13 +586,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom =
-                                if isChw then
-                                    Date.add Months -2 today
-                                        |> Date.add Days 1
-
-                                else
-                                    Date.add Years -13 today
+                            , birthDateSelectorFrom = Date.add Years -13 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }

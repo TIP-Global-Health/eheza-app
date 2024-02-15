@@ -489,6 +489,9 @@ decodeRevision =
                     "well_child_bcg_immunisation" ->
                         decodeWithUuid WellChildBCGImmunisationRevision decodeWellChildBCGImmunisation
 
+                    "well_child_caring" ->
+                        decodeWithUuid WellChildCaringRevision decodeWellChildCaring
+
                     "well_child_contributing_factors" ->
                         decodeWithUuid WellChildContributingFactorsRevision decodeWellChildContributingFactors
 
@@ -504,8 +507,14 @@ decodeRevision =
                     "well_child_encounter" ->
                         decodeWithUuid WellChildEncounterRevision decodeWellChildEncounter
 
+                    "well_child_feeding" ->
+                        decodeWithUuid WellChildFeedingRevision decodeWellChildFeeding
+
                     "well_child_follow_up" ->
                         decodeWithUuid WellChildFollowUpRevision decodeWellChildFollowUp
+
+                    "well_child_food_security" ->
+                        decodeWithUuid WellChildFoodSecurityRevision decodeWellChildFoodSecurity
 
                     "well_child_head_circumference" ->
                         decodeWithUuid WellChildHeadCircumferenceRevision decodeWellChildHeadCircumference
@@ -515,6 +524,9 @@ decodeRevision =
 
                     "well_child_height" ->
                         decodeWithUuid WellChildHeightRevision decodeWellChildHeight
+
+                    "well_child_hygiene" ->
+                        decodeWithUuid WellChildHygieneRevision decodeWellChildHygiene
 
                     "well_child_hpv_immunisation" ->
                         decodeWithUuid WellChildHPVImmunisationRevision decodeWellChildHPVImmunisation

@@ -47,6 +47,9 @@ decodeWellChildEncounterType =
                     "pediatric-care" ->
                         succeed PediatricCare
 
+                    "pediatric-care-chw" ->
+                        succeed PediatricCareChw
+
                     "newborn-exam" ->
                         succeed NewbornExam
 
