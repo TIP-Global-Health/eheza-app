@@ -88,12 +88,13 @@ import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils
     exposing
-        ( generateAssembledData
+        ( allowEndingEcounter
+        , generateAssembledData
         , pediatricCareMilestoneToComparable
         , resolveDateForPediatricCareMilestone
         , resolvePediatricCareMilestoneOnDate
         )
-import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities)
+import Pages.WellChild.Encounter.View exposing (partitionActivities)
 import Pages.WellChild.ProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -162,12 +163,12 @@ view language currentDate zscores site features id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEncounter = allowEndingEcounter pendingActivities
+                        , allowEndEncounter = allowEndingEcounter currentDate pendingActivities assembled
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db
+                    , mandatoryNutritionAssessmentTasksCompleted currentDate assembled
                     )
                 )
                 assembledData

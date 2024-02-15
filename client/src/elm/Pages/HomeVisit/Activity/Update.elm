@@ -7,6 +7,13 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
+import Measurement.Utils
+    exposing
+        ( toNutritionCaringValueWithDefault
+        , toNutritionFeedingValueWithDefault
+        , toNutritionFoodSecurityValueWithDefault
+        , toNutritionHygieneValueWithDefault
+        )
 import Pages.HomeVisit.Activity.Model exposing (..)
 import Pages.HomeVisit.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))

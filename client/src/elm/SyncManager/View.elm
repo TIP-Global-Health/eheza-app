@@ -746,6 +746,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildBCGImmunisation identifier ->
                 viewMeasurement identifier "Well Child BCG Immunisation"
 
+            BackendAuthorityWellChildCaring identifier ->
+                viewMeasurement identifier "Well Child Caring"
+
             BackendAuthorityWellChildContributingFactors identifier ->
                 viewMeasurement identifier "Well Child Contributing Factors"
 
@@ -761,8 +764,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildEncounter identifier ->
                 text ("Well Child Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
+            BackendAuthorityWellChildFeeding identifier ->
+                viewMeasurement identifier "Well Child Feeding"
+
             BackendAuthorityWellChildFollowUp identifier ->
                 viewMeasurement identifier "Well Child Follow Up"
+
+            BackendAuthorityWellChildFoodSecurity identifier ->
+                viewMeasurement identifier "Well Child Food Security"
 
             BackendAuthorityWellChildHeadCircumference identifier ->
                 viewMeasurement identifier "Well Child Head Circumference"
@@ -772,6 +781,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWellChildHeight identifier ->
                 viewMeasurement identifier "Well Child Height"
+
+            BackendAuthorityWellChildHygiene identifier ->
+                viewMeasurement identifier "Well Child Hygiene"
 
             BackendAuthorityWellChildHPVImmunisation identifier ->
                 viewMeasurement identifier "Well Child HPV Immunisation"
