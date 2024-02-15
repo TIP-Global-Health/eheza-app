@@ -7,7 +7,7 @@ import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualParticipantInitiator(..), emptyIndividualEncounterParticipant)
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Model
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant, getNutritionEncountersForParticipant)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -150,7 +150,15 @@ viewNutritionAction language currentDate selectedHealthCenter id isChw db sessio
                         |> Maybe.map
                             -- If nutrition session exists, create new encounter for it.
                             (\sessionId ->
-                                [ Backend.NutritionEncounter.Model.emptyNutritionEncounter sessionId currentDate (Just selectedHealthCenter)
+                                let
+                                    encounterType =
+                                        if isChw then
+                                            NutritionEncounterCHW
+
+                                        else
+                                            NutritionEncounterNurse
+                                in
+                                [ Backend.NutritionEncounter.Model.emptyNutritionEncounter sessionId currentDate encounterType (Just selectedHealthCenter)
                                     |> Backend.Model.PostNutritionEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
@@ -158,11 +166,20 @@ viewNutritionAction language currentDate selectedHealthCenter id isChw db sessio
                             )
                         -- If nutrition session does not exist, create it.
                         |> Maybe.withDefault
-                            [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.NutritionEncounter selectedHealthCenter
-                                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                            (let
+                                encounterType =
+                                    if isChw then
+                                        NutritionEncounterCHW
+
+                                    else
+                                        NutritionEncounterNurse
+                             in
+                             [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.NutritionEncounter selectedHealthCenter
+                                |> Backend.Model.PostIndividualEncounterParticipant (Backend.IndividualEncounterParticipant.Model.NutritionData encounterType)
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
-                            ]
+                             ]
+                            )
                     )
 
         navigateToEncounterAction id_ =

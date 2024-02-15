@@ -676,7 +676,12 @@ expectImmunisationTask : NominalDate -> Site -> Bool -> AssembledData -> Measure
 expectImmunisationTask currentDate site isChw assembled task =
     let
         futureVaccinations =
-            generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationHistory
+            generateFutureVaccinationsData currentDate
+                site
+                assembled.person.birthDate
+                assembled.person.gender
+                False
+                assembled.vaccinationHistory
                 |> Dict.fromList
 
         ageInWeeks =
@@ -1682,7 +1687,7 @@ generateNextDateForImmunisationVisit : NominalDate -> Site -> AssembledData -> M
 generateNextDateForImmunisationVisit currentDate site assembled =
     let
         futureVaccinationsData =
-            generateFutureVaccinationsData currentDate site assembled.person True assembled.vaccinationProgress
+            generateFutureVaccinationsData currentDate site assembled.person.birthDate assembled.person.gender True assembled.vaccinationProgress
 
         -- If there're only 6 months interval vaccines (which are given at older age),
         -- we'll suggested most recent date.
@@ -1745,7 +1750,12 @@ If not, on which date we'll need to administer next vaccination (of any type).
 -}
 generateASAPImmunisationDate : NominalDate -> Site -> AssembledData -> Maybe NominalDate
 generateASAPImmunisationDate currentDate site assembled =
-    generateFutureVaccinationsData currentDate site assembled.person False assembled.vaccinationProgress
+    generateFutureVaccinationsData currentDate
+        site
+        assembled.person.birthDate
+        assembled.person.gender
+        False
+        assembled.vaccinationProgress
         |> List.filterMap (Tuple.second >> Maybe.map Tuple.second)
         |> List.sortWith Date.compare
         -- Get the most recent of all dates.

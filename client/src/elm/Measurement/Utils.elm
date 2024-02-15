@@ -7888,7 +7888,7 @@ generateSuggestedVaccinations :
 generateSuggestedVaccinations currentDate site person vaccinationHistory vaccinationProgress =
     let
         initialOpvAdministered =
-            wasInitialOpvAdministeredByVaccinationProgress person vaccinationHistory
+            wasInitialOpvAdministeredByVaccinationProgress person.birthDate vaccinationHistory
     in
     allVaccineTypes site
         |> List.filter (expectVaccineForPerson currentDate site person initialOpvAdministered vaccinationProgress)
@@ -7913,19 +7913,19 @@ generateSuggestedVaccinations currentDate site person vaccinationHistory vaccina
             )
 
 
-wasInitialOpvAdministeredByVaccinationProgress : Person -> VaccinationProgressDict -> Bool
-wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress =
+wasInitialOpvAdministeredByVaccinationProgress : Maybe NominalDate -> VaccinationProgressDict -> Bool
+wasInitialOpvAdministeredByVaccinationProgress birthDate vaccinationProgress =
     let
         firstDoseAdminstrationDate =
             Dict.get VaccineOPV vaccinationProgress
                 |> Maybe.andThen (Dict.get VaccineDoseFirst)
     in
     Maybe.map2
-        (\adminstrationDate birthDate ->
-            Date.diff Days birthDate adminstrationDate < 14
+        (\adminstrationDate birthDate_ ->
+            Date.diff Days birthDate_ adminstrationDate < 14
         )
         firstDoseAdminstrationDate
-        person.birthDate
+        birthDate
         |> Maybe.withDefault False
 
 
@@ -7935,16 +7935,17 @@ If there's no need for future vaccination, Nothing is returned.
 generateFutureVaccinationsData :
     NominalDate
     -> Site
-    -> Person
+    -> Maybe NominalDate
+    -> Gender
     -> Bool
     -> VaccinationProgressDict
     -> List ( WellChildVaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday vaccinationProgress =
+generateFutureVaccinationsData currentDate site birthDate gender scheduleFirstDoseForToday vaccinationProgress =
     let
         initialOpvAdministered =
-            wasInitialOpvAdministeredByVaccinationProgress person vaccinationProgress
+            wasInitialOpvAdministeredByVaccinationProgress birthDate vaccinationProgress
     in
-    allVaccineTypesForPerson site person
+    allVaccineTypesByGender site gender
         |> List.map
             (\vaccineType ->
                 let
@@ -7952,7 +7953,7 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
                         case latestVaccinationDataForVaccine vaccinationProgress vaccineType of
                             Just ( lastDoseAdministered, lastDoseDate ) ->
                                 nextVaccinationDataForVaccine site
-                                    person
+                                    birthDate
                                     vaccineType
                                     initialOpvAdministered
                                     lastDoseDate
@@ -7964,14 +7965,14 @@ generateFutureVaccinationsData currentDate site person scheduleFirstDoseForToday
                                 let
                                     initialDate =
                                         Maybe.map
-                                            (\birthDate ->
+                                            (\birthDate_ ->
                                                 initialVaccinationDateByBirthDate site
-                                                    birthDate
+                                                    birthDate_
                                                     initialOpvAdministered
                                                     vaccinationProgress
                                                     ( vaccineType, VaccineDoseFirst )
                                             )
-                                            person.birthDate
+                                            birthDate
                                             |> Maybe.withDefault currentDate
 
                                     vaccinationDate =
@@ -8125,8 +8126,8 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : Site -> Person -> WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
-nextVaccinationDataForVaccine site person vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
+nextVaccinationDataForVaccine : Site -> Maybe NominalDate -> WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine site maybeBirthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     Maybe.andThen
         (\birthDate ->
             if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
@@ -8164,12 +8165,12 @@ nextVaccinationDataForVaccine site person vaccineType initialOpvAdministered las
                                 ( dose, Date.add unit interval lastDoseDate )
                         )
         )
-        person.birthDate
+        maybeBirthDate
 
 
 nextDoseForVaccine : NominalDate -> Site -> Person -> NominalDate -> Bool -> VaccineDose -> WellChildVaccineType -> Maybe VaccineDose
 nextDoseForVaccine currentDate site person lastDoseDate initialOpvAdministered lastDoseAdministered vaccineType =
-    nextVaccinationDataForVaccine site person vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
+    nextVaccinationDataForVaccine site person.birthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered
         |> Maybe.andThen
             (\( dose, dueDate ) ->
                 if Date.compare dueDate currentDate == GT then
@@ -8302,14 +8303,14 @@ getIntervalForVaccine site vaccineType =
             ( 6, Months )
 
 
-allVaccineTypesForPerson : Site -> Person -> List WellChildVaccineType
-allVaccineTypesForPerson site person =
+allVaccineTypesByGender : Site -> Gender -> List WellChildVaccineType
+allVaccineTypesByGender site gender =
     allVaccineTypes site
         |> List.filter
             (\vaccineType ->
                 case vaccineType of
                     VaccineHPV ->
-                        person.gender == Female
+                        gender == Female
 
                     _ ->
                         True
