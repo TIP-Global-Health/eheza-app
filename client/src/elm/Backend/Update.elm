@@ -3986,10 +3986,15 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                     ]
 
                                 NutritionEncounter ->
-                                    [ emptyNutritionEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostNutritionEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
+                                    case extraData of
+                                        NutritionData nutritionEncounterType ->
+                                            [ emptyNutritionEncounter sessionId currentDate nutritionEncounterType healthCenterId
+                                                |> Backend.Model.PostNutritionEncounter
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
 
                                 HomeVisitEncounter ->
                                     [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
@@ -5824,10 +5829,17 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         WellChildNextVisitRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | nextVisit = Dict.insert uuid data measurements.nextVisit })
+                        model
+            in
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | nextVisit = Just ( uuid, data ) })
-                model
+                modelWithMappedFollowUp
             , recalc
             )
 

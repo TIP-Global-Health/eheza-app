@@ -1,4 +1,4 @@
-module Backend.NCDEncounter.Encoder exposing (encodeNCDEncounter)
+module Backend.NCDEncounter.Encoder exposing (encodeNCDDiagnosis, encodeNCDEncounter)
 
 import Backend.NCDEncounter.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (..)

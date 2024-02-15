@@ -407,42 +407,17 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> flexPageWrapper configured.config model
 
                     DashboardPage subPage ->
-                        let
-                            viewDashboardPage =
-                                Pages.Dashboard.View.view model.language
-                                    subPage
-                                    currentDate
-                                    healthCenterId
-                                    isChw
-                                    (Tuple.second loggedInModel.nurse)
-                                    loggedInModel.dashboardPage
-                                    model.indexedDb
-                                    |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
-                                    |> flexPageWrapper configured.config model
-
-                            viewPageNotFound =
-                                Pages.PageNotFound.View.viewPage model.language (SetActivePage PinCodePage) (UserPage <| DashboardPage subPage)
-                        in
-                        case subPage of
-                            MainPage ->
-                                -- Main page is common for Nurse and CHw.
-                                viewDashboardPage
-
-                            NursePage _ ->
-                                if isChw then
-                                    -- Only Nursed may access Nursed pages.
-                                    viewPageNotFound
-
-                                else
-                                    viewDashboardPage
-
-                            ChwPage _ ->
-                                if isChw then
-                                    viewDashboardPage
-
-                                else
-                                    -- Only CHW may access CHW pages.
-                                    viewPageNotFound
+                        Pages.Dashboard.View.view model.language
+                            subPage
+                            currentDate
+                            site
+                            healthCenterId
+                            isChw
+                            (Tuple.second loggedInModel.nurse)
+                            loggedInModel.dashboardPage
+                            model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
+                            |> flexPageWrapper configured.config model
 
                     GlobalCaseManagementPage ->
                         Pages.GlobalCaseManagement.View.view model.language

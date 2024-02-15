@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounter)
+module Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounter, encodePrenatalEncounterType)
 
 import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))

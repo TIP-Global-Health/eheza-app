@@ -15,7 +15,7 @@ import Json.Encode exposing (Value, bool, float, int, list, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityUuid, encodeEntityUuid, fromEntityUuid)
 import Translate.Utils exposing (encodeLanguage)
-import Utils.Json exposing (encodeEverySet, encodeEverySetNullable, encodeNullable, encodeNullableWithValueFunc)
+import Utils.Json exposing (encodeEverySet, encodeEverySetNullable, encodeIfSet, encodeNullable, encodeNullableWithValueFunc)
 
 
 encodeHeight : Height -> List ( String, Value )
