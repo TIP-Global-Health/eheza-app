@@ -3140,6 +3140,26 @@ outsideCareDiagnosesWithPossibleMedication =
     ]
 
 
+preeclampsiaDiagnoses : List PrenatalDiagnosis
+preeclampsiaDiagnoses =
+    [ DiagnosisSeverePreeclampsiaInitialPhase
+    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
+    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
+severeAnemiaDiagnoses : List PrenatalDiagnosis
+severeAnemiaDiagnoses =
+    [ DiagnosisMalariaWithSevereAnemiaInitialPhase
+    , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+    , DiagnosisSevereAnemiaInitialPhase
+    , DiagnosisSevereAnemiaRecurrentPhase
+    , DiagnosisSevereAnemiaWithComplicationsInitialPhase
+    , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
+    ]
+
+
 generateVaccinationProgress : List PrenatalMeasurements -> VaccinationProgressDict
 generateVaccinationProgress measurements =
     let

@@ -423,9 +423,22 @@ viewMonthSelector language selectedDate monthGap maxGap changeMonthGapMsg =
         ]
 
 
+{-| If current month is selected, returns current date.
+If any of previous months is selected, returns last day of selected months.
+-}
 resolveSelectedDateForMonthSelector : NominalDate -> Int -> NominalDate
 resolveSelectedDateForMonthSelector currentDate monthGap =
-    Date.add Date.Months (-1 * monthGap) currentDate
+    if monthGap == 0 then
+        currentDate
+
+    else
+        Date.add Date.Months (-1 * monthGap) currentDate
+            |> getLastDayOfMonth
+
+
+getLastDayOfMonth : NominalDate -> NominalDate
+getLastDayOfMonth =
+    Date.ceiling Date.Month >> Date.add Date.Days -1
 
 
 

@@ -115,7 +115,7 @@ expectImmunisationTask : NominalDate -> Site -> Person -> VaccinationProgressDic
 expectImmunisationTask currentDate site person vaccinationHistory task =
     let
         futureVaccinations =
-            generateFutureVaccinationsData currentDate site person False vaccinationHistory
+            generateFutureVaccinationsData currentDate site person.birthDate person.gender False vaccinationHistory
                 |> Dict.fromList
 
         ageInWeeks =

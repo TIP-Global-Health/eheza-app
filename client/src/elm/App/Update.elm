@@ -966,9 +966,9 @@ update msg model =
                                                         -- When accessing Dashboard page, reset
                                                         -- the page to initial state - selected month,
                                                         -- for example will be set to current month.
-                                                        UserPage (DashboardPage MainPage) ->
+                                                        UserPage (DashboardPage PageMain) ->
                                                             Pages.Dashboard.Model.Reset model.villageId
-                                                                |> MsgPageDashboard MainPage
+                                                                |> MsgPageDashboard PageMain
                                                                 |> MsgLoggedIn
                                                                 |> List.singleton
 

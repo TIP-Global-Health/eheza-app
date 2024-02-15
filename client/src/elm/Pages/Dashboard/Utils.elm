@@ -1,7 +1,7 @@
 module Pages.Dashboard.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Dashboard.Model
     exposing
         ( AcuteIllnessDataItem
@@ -10,17 +10,25 @@ import Backend.Dashboard.Model
         , CaseManagement
         , CaseNutrition
         , CaseNutritionTotal
+        , ChildScoreboardDataItem
+        , ChildScoreboardEncounterDataItem
         , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
+        , NCDDataItem
+        , NCDEncounterDataItem
         , Nutrition
         , NutritionPageData
         , NutritionStatus
         , NutritionValue
+        , PMTCTDataItem
         , Periods
         , PersonIdentifier
         , PrenatalDataItem
+        , PrenatalEncounterDataItem
         , ProgramType(..)
+        , SPVDataItem
+        , SPVEncounterDataItem
         , TotalBeneficiaries
         , TotalEncountersData
         , emptyTotalBeneficiaries
@@ -32,18 +40,29 @@ import Backend.Measurement.Model
         ( Call114Sign(..)
         , DangerSign(..)
         , FollowUpMeasurements
+        , Gender(..)
         , HCContactSign(..)
         , HCRecommendation(..)
+        , MedicalCondition(..)
         , Recommendation114(..)
         , SendToHCSign(..)
+        , TestExecutionNote(..)
+        , TestResult(..)
+        , VaccineDose(..)
+        , WellChildVaccineType(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Model exposing (Village)
 import Date exposing (Unit(..), isBetween)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import List.Extra
 import Maybe.Extra exposing (isJust)
+import Measurement.Model exposing (VaccinationProgressDict)
+import Measurement.Utils exposing (allVaccineTypes)
 import Pages.Dashboard.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils
     exposing
@@ -60,7 +79,10 @@ import Pages.GlobalCaseManagement.View
         , generateNutritionFollowUpEntries
         , generatePrenatalFollowUpEntries
         )
+import Pages.Utils exposing (getLastDayOfMonth)
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language)
+import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
 
 
 filterProgramTypeToString : FilterProgramType -> String
@@ -117,8 +139,14 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
             generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter
     in
     { stats = filteredStats
-    , acuteIllnessData = generateFilteredAcuteIllnessData stats selectedVillageFilter
-    , prenatalData = generateFilteredPrenatalData stats selectedVillageFilter
+    , acuteIllnessData = generateFilteredData .acuteIllnessData stats selectedVillageFilter
+    , prenatalData = generateFilteredData .prenatalData stats selectedVillageFilter
+    , ncdData = generateFilteredData .ncdData stats selectedVillageFilter
+    , pmtctData = generateFilteredData .pmtctData stats selectedVillageFilter
+    , spvData = generateFilteredData .spvData stats selectedVillageFilter
+    , childScoreboardData = generateFilteredData .childScoreboardData stats selectedVillageFilter
+    , nutritionIndividualData = generateFilteredData .nutritionIndividualData stats selectedVillageFilter
+    , nutritionGroupData = generateFilteredData .nutritionGroupData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     }
 
@@ -150,24 +178,19 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
     }
 
 
-generateFilteredAcuteIllnessData : DashboardStatsRaw -> Maybe VillageId -> List AcuteIllnessDataItem
-generateFilteredAcuteIllnessData stats selectedVillageFilter =
-    selectedVillageFilter
-        |> Maybe.andThen
-            (\villageId -> Dict.get villageId stats.villagesWithResidents)
-        |> Maybe.map
-            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.acuteIllnessData)
-        |> Maybe.withDefault []
-
-
-generateFilteredPrenatalData : DashboardStatsRaw -> Maybe VillageId -> List PrenatalDataItem
-generateFilteredPrenatalData stats selectedVillageFilter =
-    selectedVillageFilter
-        |> Maybe.andThen
-            (\villageId -> Dict.get villageId stats.villagesWithResidents)
-        |> Maybe.map
-            (\residents -> List.filter (\item -> List.member item.identifier residents) stats.prenatalData)
-        |> Maybe.withDefault []
+generateFilteredData :
+    (DashboardStatsRaw -> List { a | identifier : PersonIdentifier })
+    -> DashboardStatsRaw
+    -> Maybe VillageId
+    -> List { a | identifier : PersonIdentifier }
+generateFilteredData getDataFunc stats selectedVillageFilter =
+    let
+        beforeFiltering =
+            getDataFunc stats
+    in
+    Maybe.andThen (\villageId -> Dict.get villageId stats.villagesWithResidents) selectedVillageFilter
+        |> Maybe.map (\residents -> List.filter (\item -> List.member item.identifier residents) beforeFiltering)
+        |> Maybe.withDefault beforeFiltering
 
 
 applyProgramTypeAndResidentsFilters :
@@ -416,18 +439,27 @@ generateTotalEncountersFromPeriodsDict programTypeFilter dict =
 
 
 --
+-- Global functions.
+--
+
+
+getEncountersForSelectedMonth :
+    NominalDate
+    -> List { dataItem | encounters : List { ecounterDataItem | startDate : NominalDate } }
+    -> List { ecounterDataItem | startDate : NominalDate }
+getEncountersForSelectedMonth dateLastDayOfSelectedMonth =
+    List.concatMap .encounters
+        >> List.filter (.startDate >> withinSelectedMonth dateLastDayOfSelectedMonth)
+
+
+
+--
 -- Acute illness - Overview functions.
 --
 
 
-getAcuteIllnessEncountersForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem
-getAcuteIllnessEncountersForSelectedMonth selectedDate itemsList =
-    List.concatMap .encounters itemsList
-        |> List.filter (.startDate >> withinSelectedMonth selectedDate)
-
-
-countAcuteIllnessAssesments : List AcuteIllnessEncounterDataItem -> Int
-countAcuteIllnessAssesments encounters =
+countAcuteIllnessAssessments : List AcuteIllnessEncounterDataItem -> Int
+countAcuteIllnessAssessments encounters =
     -- Count number of encounters that occured during selected month.
     List.length encounters
 
@@ -592,6 +624,21 @@ countUncomplicatedMalariaManagedByChw encounters =
         |> List.length
 
 
+countUncomplicatedMalariaSentToHC : List AcuteIllnessEncounterDataItem -> Int
+countUncomplicatedMalariaSentToHC encounters =
+    List.filter
+        (\encounter ->
+            -- Encounter which has produced Uncomplicated Malaria diagnosis,
+            -- patient is bellow age of 6 months and
+            -- patient was sent to health center.
+            (encounter.diagnosis == DiagnosisMalariaUncomplicated)
+                && (encounter.ageInMonths < 6)
+                && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+        )
+        encounters
+        |> List.length
+
+
 countUncomplicatedMalariaAndPregnantSentToHC : List AcuteIllnessEncounterDataItem -> Int
 countUncomplicatedMalariaAndPregnantSentToHC encounters =
     List.filter
@@ -619,25 +666,24 @@ countComplicatedMalariaSentToHC encounters =
 
 
 countResolvedMalariaCasesForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countResolvedMalariaCasesForSelectedMonth selectedDate itemsList =
+countResolvedMalariaCasesForSelectedMonth dateLastDayOfSelectedMonth =
     List.filter
-        (\item ->
-            case item.dateConcluded of
+        (\illness ->
+            case illness.dateConcluded of
                 Nothing ->
                     False
 
                 Just dateConcluded ->
                     -- Illness that was resolved at selected month,
                     -- and had a Malaria diagnosis.
-                    withinSelectedMonth selectedDate dateConcluded
-                        && List.member item.diagnosis
+                    withinSelectedMonth dateLastDayOfSelectedMonth dateConcluded
+                        && List.member illness.diagnosis
                             [ DiagnosisMalariaComplicated
                             , DiagnosisMalariaUncomplicated
                             , DiagnosisMalariaUncomplicatedAndPregnant
                             ]
         )
-        itemsList
-        |> List.length
+        >> List.length
 
 
 
@@ -686,25 +732,24 @@ countComplicatedGISentToHC encounters =
 
 
 countResolvedGICasesForSelectedMonth : NominalDate -> List AcuteIllnessDataItem -> Int
-countResolvedGICasesForSelectedMonth selectedDate itemsList =
+countResolvedGICasesForSelectedMonth dateLastDayOfSelectedMonth =
     List.filter
-        (\item ->
-            case item.dateConcluded of
+        (\illness ->
+            case illness.dateConcluded of
                 Nothing ->
                     False
 
                 Just dateConcluded ->
                     -- Illness that was resolved at selected month,
                     -- has outcome set, and had a GI diagnosis.
-                    withinSelectedMonth selectedDate dateConcluded
-                        && isJust item.outcome
-                        && List.member item.diagnosis
+                    withinSelectedMonth dateLastDayOfSelectedMonth dateConcluded
+                        && isJust illness.outcome
+                        && List.member illness.diagnosis
                             [ DiagnosisGastrointestinalInfectionComplicated
                             , DiagnosisGastrointestinalInfectionUncomplicated
                             ]
         )
-        itemsList
-        |> List.length
+        >> List.length
 
 
 
@@ -713,164 +758,319 @@ countResolvedGICasesForSelectedMonth selectedDate itemsList =
 --
 
 
-countNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-countNewlyIdentifiedPregananciesForSelectedMonth selectedDate itemsList =
-    itemsList
-        |> List.filter (.created >> withinSelectedMonth selectedDate)
-        |> List.length
+filterNewlyDiagnosesCasesForSelectedMonth : NominalDate -> List PrenatalDiagnosis -> List PrenatalDataItem -> List PrenatalDataItem
+filterNewlyDiagnosesCasesForSelectedMonth dateLastDayOfSelectedMonth diagnoses =
+    List.filter
+        (\pregnancy ->
+            let
+                matchDates =
+                    List.filterMap
+                        (\encounter ->
+                            if
+                                EverySet.toList encounter.diagnoses
+                                    |> List.any (\diagnosis -> List.member diagnosis diagnoses)
+                            then
+                                Just encounter.startDate
+
+                            else
+                                Nothing
+                        )
+                        pregnancy.encounters
+                        |> List.sortWith Date.compare
+            in
+            List.head matchDates
+                |> Maybe.map (withinSelectedMonth dateLastDayOfSelectedMonth)
+                |> Maybe.withDefault False
+        )
 
 
-countCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
-countCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
-    getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList
-        |> List.length
+filterNewlyDiagnosesMalnutritionForSelectedMonth : NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
+filterNewlyDiagnosesMalnutritionForSelectedMonth dateLastDayOfSelectedMonth =
+    List.filter
+        (\pregnancy ->
+            let
+                matchDates =
+                    List.filterMap
+                        (\encounter ->
+                            Maybe.andThen
+                                (\muac ->
+                                    if muac < 21 then
+                                        Just encounter.startDate
+
+                                    else
+                                        Nothing
+                                )
+                                encounter.muac
+                        )
+                        pregnancy.encounters
+                        |> List.sortWith Date.compare
+            in
+            List.head matchDates
+                |> Maybe.map (withinSelectedMonth dateLastDayOfSelectedMonth)
+                |> Maybe.withDefault False
+        )
 
 
-getCurrentlyPregnantForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
-getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList =
+isNurseEncounter : PrenatalEncounterDataItem -> Bool
+isNurseEncounter encounter =
+    List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
+
+
+countNewlyIdentifiedPregananciesForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
+countNewlyIdentifiedPregananciesForSelectedMonth dateLastDayOfSelectedMonth isChw itemsList =
+    let
+        ( newByNurse, newByChw ) =
+            List.partition
+                (\pregnancy ->
+                    List.sortWith (sortByDate .startDate) pregnancy.encounters
+                        |> List.head
+                        |> Maybe.map isNurseEncounter
+                        |> Maybe.withDefault False
+                )
+                itemsList
+    in
+    if isChw then
+        -- Number of pregnancies where first encounter was performed by CHW.
+        List.filter (.created >> withinSelectedMonth dateLastDayOfSelectedMonth) newByChw
+            |> List.length
+
+    else
+        -- Number of pregnancies where first encounter was performed by nurse.
+        List.filter (.created >> withinSelectedMonth dateLastDayOfSelectedMonth) newByNurse
+            |> List.length
+
+
+countCurrentlyPregnantForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
+countCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw =
+    getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw
+        >> List.length
+
+
+getCurrentlyPregnantForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> List PrenatalDataItem
+getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw =
     let
         dateFirstDayOfSelectedMonth =
-            Date.floor Date.Month selectedDate
+            Date.floor Date.Month dateLastDayOfSelectedMonth
 
-        dateFirstDayOfNextMonth =
-            Date.ceiling Date.Month selectedDate
+        facilityFilter encounters =
+            if isChw then
+                List.any (isNurseEncounter >> not) encounters
+
+            else
+                List.any isNurseEncounter encounters
     in
-    itemsList
-        |> List.filter
-            (\item ->
+    List.filter
+        (\pregnancy ->
+            let
+                -- Pregnancy was tracked during current month, or before.
+                createdDateFilter =
+                    not <| Date.compare dateLastDayOfSelectedMonth pregnancy.created == GT
+
+                -- Expected date exists, and is set to 3 weeks or less,
+                -- before the beggining of the range.
+                expectedDateConcludedFilter =
+                    pregnancy.expectedDateConcluded
+                        |> Maybe.map
+                            (\expectedDateConcluded ->
+                                Date.diff Date.Weeks expectedDateConcluded dateFirstDayOfSelectedMonth <= 3
+                            )
+                        |> Maybe.withDefault False
+
+                -- No date concluded, or it's set within month range, or after that.
+                actualDateConcludedFilter =
+                    case pregnancy.dateConcluded of
+                        Just dateConcluded ->
+                            let
+                                compareResult =
+                                    Date.compare dateFirstDayOfSelectedMonth dateConcluded
+                            in
+                            compareResult == LT || compareResult == EQ
+
+                        Nothing ->
+                            True
+            in
+            facilityFilter pregnancy.encounters
+                && createdDateFilter
+                && expectedDateConcludedFilter
+                && actualDateConcludedFilter
+        )
+
+
+{-| Danger signs is considered a permanent condition until it is "cleared".
+That is if a patient had a danger sign last month and has not been seen,
+she would still be counted. If she had a danger sign last month, but this month
+she had an encounter and she has no danger signs, then she is not counted.
+-}
+countCurrentlyPregnantWithDangerSignsForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
+countCurrentlyPregnantWithDangerSignsForSelectedMonth dateLastDayOfSelectedMonth isChw =
+    getCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw
+        >> List.filter
+            (\pregnancy ->
                 let
-                    -- Pregnancy was tracked during current month, or before.
-                    createdDateFilter =
-                        Date.compare item.created dateFirstDayOfNextMonth == LT
-
-                    -- Expected date exists, and is set to 3 weeks or less,
-                    -- before the beggining of the range.
-                    expectedDateConcludedFilter =
-                        item.expectedDateConcluded
-                            |> Maybe.map
-                                (\expectedDateConcluded ->
-                                    Date.diff Date.Weeks expectedDateConcluded dateFirstDayOfSelectedMonth <= 3
-                                )
-                            |> Maybe.withDefault False
-
-                    -- No date concluded, or it's set within month range, or after that.
-                    actualDateConcludedFilter =
-                        case item.dateConcluded of
-                            Just dateConcluded ->
-                                let
-                                    compareResult =
-                                        Date.compare dateFirstDayOfSelectedMonth dateConcluded
-                                in
-                                compareResult == LT || compareResult == EQ
-
-                            Nothing ->
-                                True
+                    -- All encounters that took place till selected month (including).
+                    encountersTillSelectedMonth =
+                        let
+                            dateFirstDayOfNextMonth =
+                                Date.ceiling Date.Month dateLastDayOfSelectedMonth
+                        in
+                        List.filter
+                            (\encounter ->
+                                Date.compare encounter.startDate dateFirstDayOfNextMonth == LT
+                            )
+                            pregnancy.encounters
                 in
-                createdDateFilter && expectedDateConcludedFilter && actualDateConcludedFilter
+                List.sortWith (sortByDateDesc .startDate) encountersTillSelectedMonth
+                    -- Get last encounter, and check if there were danger signs or not.
+                    |> List.head
+                    |> Maybe.map
+                        (\encounter ->
+                            (not <| EverySet.isEmpty encounter.dangerSigns)
+                                && (encounter.dangerSigns /= EverySet.singleton NoDangerSign)
+                        )
+                    |> Maybe.withDefault False
             )
-
-
-countCurrentlyPregnantWithDangerSignsForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> Int
-countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate itemsList =
-    getCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate itemsList
-        |> List.length
-
-
-getCurrentlyPregnantWithDangerSignsForSelectedMonth : NominalDate -> NominalDate -> List PrenatalDataItem -> List PrenatalDataItem
-getCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate itemsList =
-    getCurrentlyPregnantForSelectedMonth currentDate selectedDate itemsList
-        |> List.filter
-            (.encounters
-                >> List.any
-                    (\encounter ->
-                        -- Active pregnancy that got an encounter at
-                        -- selected month, where danger signs where recorded.
-                        withinSelectedMonth selectedDate encounter.startDate
-                            && (not <| EverySet.isEmpty encounter.dangerSigns)
-                            && (encounter.dangerSigns /= EverySet.singleton NoDangerSign)
-                    )
-            )
+        >> List.length
 
 
 countNewbornForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-countNewbornForSelectedMonth selectedDate itemsList =
-    itemsList
-        |> List.filter
-            (\item ->
-                Maybe.map2
-                    (\dateConcluded outcome ->
-                        -- Live baby born within selected month.
-                        (outcome == Pregnancy OutcomeLiveAtTerm || outcome == Pregnancy OutcomeLivePreTerm)
-                            && withinSelectedMonth selectedDate dateConcluded
-                    )
-                    item.dateConcluded
-                    item.outcome
-                    |> Maybe.withDefault False
-            )
-        |> List.length
+countNewbornForSelectedMonth dateLastDayOfSelectedMonth =
+    List.filter
+        (\item ->
+            Maybe.map2
+                (\dateConcluded outcome ->
+                    -- Live baby born within selected month.
+                    (outcome == Pregnancy OutcomeLiveAtTerm || outcome == Pregnancy OutcomeLivePreTerm)
+                        && withinSelectedMonth dateLastDayOfSelectedMonth dateConcluded
+                )
+                item.dateConcluded
+                item.outcome
+                |> Maybe.withDefault False
+        )
+        >> List.length
 
 
-countPregnanciesDueWithin4MonthsForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
-countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate itemsList =
+countPregnanciesDueWithin4MonthsForSelectedMonth : NominalDate -> Bool -> List PrenatalDataItem -> Int
+countPregnanciesDueWithin4MonthsForSelectedMonth dateLastDayOfSelectedMonth isChw =
     let
         dateFirstDayOfSelectedMonth =
-            Date.floor Date.Month selectedDate
-
-        dateLastDayOfSelectedMonth =
-            Date.ceiling Date.Month selectedDate
-                |> Date.add Date.Days -1
+            Date.floor Date.Month dateLastDayOfSelectedMonth
     in
-    itemsList
-        |> List.filter
-            (\item ->
-                let
-                    -- Either pregnanacy is not concluded, or, it was concluded
-                    -- after selected months has ended.
-                    dateConcludedFilter =
-                        case item.dateConcluded of
-                            Just dateConcluded ->
-                                Date.compare dateConcluded dateLastDayOfSelectedMonth == GT
+    List.filter
+        (\pregnancy ->
+            let
+                -- For nurses, we want at least one encounter to
+                -- be conducted by nurse at HC.
+                -- For CHWs, at least one encounter performed by CHW.
+                facilityFilter =
+                    let
+                        encountersTilldateLastDayOfSelectedMonth =
+                            List.filter (\encounter -> not <| Date.compare encounter.startDate dateLastDayOfSelectedMonth == GT)
+                                pregnancy.encounters
+                    in
+                    if isChw then
+                        List.any (isNurseEncounter >> not) encountersTilldateLastDayOfSelectedMonth
 
-                            Nothing ->
-                                True
+                    else
+                        List.any isNurseEncounter encountersTilldateLastDayOfSelectedMonth
 
-                    -- Expected date exists, is within selected month or
-                    -- latter than that, and within 120 days from the
-                    -- beginning of selected month.
-                    expectedDateConcludedFilter =
-                        item.expectedDateConcluded
-                            |> Maybe.map
-                                (\expectedDateConcluded ->
-                                    let
-                                        compareResult =
-                                            Date.compare expectedDateConcluded dateFirstDayOfSelectedMonth
-                                    in
-                                    (compareResult == GT || compareResult == EQ)
-                                        && (Date.diff Date.Days dateFirstDayOfSelectedMonth expectedDateConcluded <= 120)
-                                )
-                            |> Maybe.withDefault False
-                in
-                dateConcludedFilter && expectedDateConcludedFilter
-            )
-        |> List.length
+                -- Either pregnanacy is not concluded, or, it was concluded
+                -- after selected months has ended.
+                dateConcludedFilter =
+                    case pregnancy.dateConcluded of
+                        Just dateConcluded ->
+                            Date.compare dateConcluded dateLastDayOfSelectedMonth == GT
+
+                        Nothing ->
+                            True
+
+                -- Expected date exists, is within selected month or
+                -- latter than that, and within 120 days from the
+                -- beginning of selected month.
+                expectedDateConcludedFilter =
+                    pregnancy.expectedDateConcluded
+                        |> Maybe.map
+                            (\expectedDateConcluded ->
+                                let
+                                    compareResult =
+                                        Date.compare expectedDateConcluded dateFirstDayOfSelectedMonth
+                                in
+                                (compareResult == GT || compareResult == EQ)
+                                    && (Date.diff Date.Days dateFirstDayOfSelectedMonth expectedDateConcluded <= 120)
+                            )
+                        |> Maybe.withDefault False
+            in
+            facilityFilter && dateConcludedFilter && expectedDateConcludedFilter
+        )
+        >> List.length
+
+
+{-| Only for Nurses.
+-}
+countPregnanciesWith4VisitsOrMoreForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+countPregnanciesWith4VisitsOrMoreForSelectedMonth dateLastDayOfSelectedMonth =
+    let
+        dateFirstDayOfSelectedMonth =
+            Date.floor Date.Month dateLastDayOfSelectedMonth
+    in
+    List.filter
+        (\pregnancy ->
+            let
+                -- Either pregnanacy is not concluded, or, it was concluded
+                -- after selected month has ended.
+                dateConcludedFilter =
+                    case pregnancy.dateConcluded of
+                        Just dateConcluded ->
+                            Date.compare dateConcluded dateLastDayOfSelectedMonth == GT
+
+                        Nothing ->
+                            True
+
+                -- We want at least one encounter to  be conducted by nurse at HC.
+                facilityFilter =
+                    let
+                        encountersTilldateLastDayOfSelectedMonth =
+                            List.filter (\encounter -> not <| Date.compare encounter.startDate dateLastDayOfSelectedMonth == GT)
+                                pregnancy.encounters
+                    in
+                    List.any isNurseEncounter encountersTilldateLastDayOfSelectedMonth
+            in
+            facilityFilter && dateConcludedFilter
+        )
+        >> List.length
+
+
+{-| Pregnancies that a nurse have an encounter at selected month, where
+patient was referred to hospital.
+-}
+countHospitalReferralsForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
+countHospitalReferralsForSelectedMonth dateLastDayOfSelectedMonth =
+    List.filter
+        (.encounters
+            >> List.any
+                (\encounter ->
+                    isNurseEncounter encounter
+                        && withinSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
+                        && EverySet.member ReferToHealthCenter encounter.sendToHCSigns
+                )
+        )
+        >> List.length
 
 
 countDeliveriesAtLocationForSelectedMonth : NominalDate -> DeliveryLocation -> List PrenatalDataItem -> Int
-countDeliveriesAtLocationForSelectedMonth selectedDate location itemsList =
-    itemsList
-        |> List.filter
-            (\item ->
-                Maybe.map2
-                    (\dateConcluded deliveryLocation ->
-                        -- Live baby born within selected month.
-                        withinSelectedMonth selectedDate dateConcluded
-                            && (deliveryLocation == location)
-                    )
-                    item.dateConcluded
-                    item.deliveryLocation
-                    |> Maybe.withDefault False
-            )
-        |> List.length
+countDeliveriesAtLocationForSelectedMonth dateLastDayOfSelectedMonth location =
+    List.filter
+        (\pregnancy ->
+            Maybe.map2
+                (\dateConcluded deliveryLocation ->
+                    -- Live baby born within selected month.
+                    withinSelectedMonth dateLastDayOfSelectedMonth dateConcluded
+                        && (deliveryLocation == location)
+                )
+                pregnancy.dateConcluded
+                pregnancy.deliveryLocation
+                |> Maybe.withDefault False
+        )
+        >> List.length
 
 
 
@@ -1036,8 +1236,7 @@ generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
                 let
                     maxJoinDate =
                         Date.add Months (-1 * index) currentDate
-                            |> Date.ceiling Date.Month
-                            |> Date.add Days -1
+                            |> getLastDayOfMonth
 
                     minGraduationDate =
                         Date.add Months (-1 * index) currentDate
@@ -1204,7 +1403,7 @@ applyTotalBeneficiariesDenomination : Dict Int Int -> Dict Int TotalBeneficiarie
 applyTotalBeneficiariesDenomination beneficiariesPerMonthsDict totalBeneficiariesDict =
     let
         applyDenomination number denominator =
-            ceiling (100 * toFloat number / toFloat denominator)
+            round (100 * toFloat number / toFloat denominator)
     in
     totalBeneficiariesDict
         |> Dict.map
@@ -1263,10 +1462,7 @@ filterStatsByPeriod fiterFunc currentDate period stats =
                     ( Date.add Months -1 currentDate
                         |> Date.floor Date.Month
                     , Date.add Months -1 currentDate
-                        |> Date.ceiling Date.Month
-                        -- We have to remove a day because the "ceiling" function for some reason is going up to the
-                        -- first day of the next month.
-                        |> Date.add Days -1
+                        |> getLastDayOfMonth
                     )
 
                 ThreeMonthsAgo ->
@@ -1274,10 +1470,7 @@ filterStatsByPeriod fiterFunc currentDate period stats =
                     ( Date.add Months -2 currentDate
                         |> Date.floor Date.Month
                     , Date.add Months -2 currentDate
-                        |> Date.ceiling Date.Month
-                        -- We have to remove a day because the "ceiling" function for some reason is going up to the
-                        -- first day of the next month.
-                        |> Date.add Days -1
+                        |> getLastDayOfMonth
                     )
 
         filterPartial =
@@ -1335,6 +1528,352 @@ applyGenderFilter model list =
         list
 
 
+{-| Counts all data items (representing NCD participants) that had Hypertension
+diagnosis recorded during any of it's encounters.
+-}
+countTotalNumberOfPatientsWithHypertension : NominalDate -> List NCDDataItem -> Int
+countTotalNumberOfPatientsWithHypertension dateLastDayOfSelectedMonth =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
+            >> --  Generate dates of all encounters where Hypertension was diagnosed.
+               generateHypertensionDiagnosisEncountersDates True
+            >> List.isEmpty
+            >> not
+        )
+        >> List.length
+
+
+{-| Counts all data items (representing NCD participants) that had first Hypertension
+diagnosis recorded during selected month.
+Hypertension can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
+Outside care activities).
+-}
+countNewlyIdentifieHypertensionCasesForSelectedMonth : NominalDate -> List NCDDataItem -> Int
+countNewlyIdentifieHypertensionCasesForSelectedMonth dateLastDayOfSelectedMonth =
+    List.filter
+        (.encounters
+            >> --  Generate dates of all encounters where Hypertension was diagnosed.
+               generateHypertensionDiagnosisEncountersDates False
+            -- Take first date, which represents first diagnosis for Hypertension.
+            >> List.head
+            -- Check if it falls within selected month.
+            >> Maybe.map (withinSelectedMonth dateLastDayOfSelectedMonth)
+            >> Maybe.withDefault False
+        )
+        >> List.length
+
+
+{-| Generate dates of all encounters where Hypertension was diagnosed.
+Hypertension can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
+Outside care activities).
+-}
+generateHypertensionDiagnosisEncountersDates : Bool -> List NCDEncounterDataItem -> List NominalDate
+generateHypertensionDiagnosisEncountersDates includingMedicalConditions =
+    List.filterMap
+        (\encounter ->
+            let
+                byDiagnosis =
+                    List.any (\diagnosis -> EverySet.member diagnosis encounter.diagnoses)
+                        [ DiagnosisHypertensionStage1, DiagnosisHypertensionStage2, DiagnosisHypertensionStage3 ]
+
+                byMedicalConditions =
+                    if includingMedicalConditions then
+                        let
+                            medicalConditions =
+                                EverySet.union encounter.medicalConditions encounter.coMorbidities
+                        in
+                        List.any (\condition -> EverySet.member condition medicalConditions)
+                            [ MedicalConditionHypertension, MedicalConditionPregnancyRelatedHypertension ]
+
+                    else
+                        False
+            in
+            if byDiagnosis || byMedicalConditions then
+                Just encounter.startDate
+
+            else
+                Nothing
+        )
+        -- Sort by date ASC.
+        >> List.sortWith Date.compare
+
+
+{-| Counts all data items (representing NCD participants) that had Diabetes
+diagnosis recorded during any of it's encounters.
+-}
+countTotalNumberOfPatientsWithDiabetes : NominalDate -> List NCDDataItem -> Int
+countTotalNumberOfPatientsWithDiabetes dateLastDayOfSelectedMonth =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
+            >> --  Generate dates of all encounters where Diabetes was diagnosed.
+               generateDiabetesDiagnosisEncountersDates True
+            >> List.isEmpty
+            >> not
+        )
+        >> List.length
+
+
+{-| Counts all data items (representing NCD participants) that had first Diabetes
+diagnosis recorded during selected month.
+-}
+countNewlyIdentifiedDiabetesCasesForSelectedMonth : NominalDate -> List NCDDataItem -> Int
+countNewlyIdentifiedDiabetesCasesForSelectedMonth dateLastDayOfSelectedMonth =
+    List.filter
+        (.encounters
+            >> --  Generate dates of all encounters where Diabetes was diagnosed.
+               generateDiabetesDiagnosisEncountersDates False
+            -- Take first date, which represents first diagnosis for Diabetes.
+            >> List.head
+            -- Check if it falls within selected month.
+            >> Maybe.map (withinSelectedMonth dateLastDayOfSelectedMonth)
+            >> Maybe.withDefault False
+        )
+        >> List.length
+
+
+{-| Counts all data items (representing ANC participants) that had Diabetes
+diagnosis recorded during any of it's encounters.
+-}
+countTotalNumberOfPatientsWithGestationalDiabetes : NominalDate -> List PrenatalDataItem -> Int
+countTotalNumberOfPatientsWithGestationalDiabetes dateLastDayOfSelectedMonth =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
+            >> -- Check if any of them had Gestational Diabetes diagnosis.
+               List.any
+                (.diagnoses
+                    >> EverySet.toList
+                    >> List.any
+                        (\diagnosis ->
+                            List.member diagnosis
+                                [ DiagnosisGestationalDiabetesInitialPhase, DiagnosisGestationalDiabetesRecurrentPhase ]
+                        )
+                )
+        )
+        -- Since one woman may have multiple pregnancies, we make sure
+        -- that patient identifier is unique before we count the total.
+        >> List.map .identifier
+        >> EverySet.fromList
+        >> EverySet.size
+
+
+{-| Generate dates of all encounters where Diabetes was diagnosed.
+Diabetes can be recorded as a diagnosis, or medical condition (from Co-Morbidities and
+Outside care activities).
+-}
+generateDiabetesDiagnosisEncountersDates : Bool -> List NCDEncounterDataItem -> List NominalDate
+generateDiabetesDiagnosisEncountersDates includingMedicalConditions =
+    List.filterMap
+        (\encounter ->
+            let
+                byDiagnosis =
+                    List.any (\diagnosis -> EverySet.member diagnosis encounter.diagnoses)
+                        [ DiagnosisDiabetesInitial, DiagnosisDiabetesRecurrent ]
+
+                byMedicalConditions =
+                    if includingMedicalConditions then
+                        let
+                            medicalConditions =
+                                EverySet.union encounter.medicalConditions encounter.coMorbidities
+                        in
+                        EverySet.member MedicalConditionDiabetes medicalConditions
+
+                    else
+                        False
+            in
+            if byDiagnosis || byMedicalConditions then
+                Just encounter.startDate
+
+            else
+                Nothing
+        )
+        -- Sort by date ASC.
+        >> List.sortWith Date.compare
+
+
+generatePatientsWithHIV : NominalDate -> List NCDDataItem -> List PersonIdentifier
+generatePatientsWithHIV dateLastDayOfSelectedMonth =
+    List.filter
+        (.encounters
+            >> -- Take only encounters that were ran at current month
+               -- or prior to that.
+               List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
+            >> -- Generate dates of all encounters where Hypertension was diagnosed.
+               List.filter
+                (\encounter ->
+                    let
+                        byTestResult =
+                            Maybe.map ((==) TestPositive)
+                                encounter.hivTestResult
+                                |> Maybe.withDefault False
+
+                        byTestExecutionNote =
+                            Maybe.map ((==) TestNoteKnownAsPositive)
+                                encounter.hivTestExecutionNote
+                                |> Maybe.withDefault False
+
+                        byMedicalConditions =
+                            let
+                                medicalConditions =
+                                    EverySet.union encounter.medicalConditions encounter.coMorbidities
+                            in
+                            EverySet.member MedicalConditionHIV medicalConditions
+                    in
+                    byTestResult || byTestExecutionNote || byMedicalConditions
+                )
+            >> List.isEmpty
+            >> not
+        )
+        >> List.map .identifier
+
+
+generateVaccinationProgressDict : Site -> Gender -> List SPVEncounterDataItem -> List ChildScoreboardEncounterDataItem -> VaccinationProgressDict
+generateVaccinationProgressDict site gender spvEncounters childScoreboardEncounters =
+    let
+        bcgImminizationDates =
+            EverySet.union
+                (resolveAllVaccinationDates .bcgImminizationDates spvEncounters)
+                (resolveAllVaccinationDates .bcgImminizationDates childScoreboardEncounters)
+
+        opvImminizationDates =
+            EverySet.union
+                (resolveAllVaccinationDates .opvImminizationDates spvEncounters)
+                (resolveAllVaccinationDates .opvImminizationDates childScoreboardEncounters)
+
+        dtpImminizationDates =
+            EverySet.union
+                (resolveAllVaccinationDates .dtpImminizationDates spvEncounters)
+                (resolveAllVaccinationDates .dtpImminizationDates childScoreboardEncounters)
+
+        pcv13ImminizationDates =
+            EverySet.union
+                (resolveAllVaccinationDates .pcv13ImminizationDates spvEncounters)
+                (resolveAllVaccinationDates .pcv13ImminizationDates childScoreboardEncounters)
+
+        rotarixImminizationDates =
+            EverySet.union
+                (resolveAllVaccinationDates .rotarixImminizationDates spvEncounters)
+                (resolveAllVaccinationDates .rotarixImminizationDates childScoreboardEncounters)
+
+        ipvImminizationDates =
+            EverySet.union
+                (resolveAllVaccinationDates .ipvImminizationDates spvEncounters)
+                (resolveAllVaccinationDates .ipvImminizationDates childScoreboardEncounters)
+
+        mrImminizationDates =
+            EverySet.union
+                (resolveAllVaccinationDates .mrImminizationDates spvEncounters)
+                (resolveAllVaccinationDates .mrImminizationDates childScoreboardEncounters)
+
+        resolveAllVaccinationDates resolveFunc encounters =
+            List.map resolveFunc encounters
+                |> List.foldl EverySet.union EverySet.empty
+
+        dtpStandaloneEntry =
+            -- This entry shall appear after 3 doses of DTP were given.
+            if EverySet.size dtpImminizationDates == 3 then
+                let
+                    dtpStandaloneImminizationDates =
+                        EverySet.union
+                            (resolveAllVaccinationDates .dtpStandaloneImminizationDates spvEncounters)
+                            (resolveAllVaccinationDates .dtpStandaloneImminizationDates childScoreboardEncounters)
+                in
+                [ ( VaccineDTPStandalone, generateVaccinationProgressForVaccine dtpStandaloneImminizationDates ) ]
+
+            else
+                []
+
+        hpvEntry =
+            if gender == Female then
+                let
+                    hpvImminizationDates =
+                        resolveAllVaccinationDates .hpvImminizationDates spvEncounters
+                in
+                [ ( VaccineHPV, generateVaccinationProgressForVaccine hpvImminizationDates ) ]
+
+            else
+                []
+
+        generateVaccinationProgressForVaccine dates =
+            EverySet.toList dates
+                |> List.sortWith Date.compare
+                |> List.indexedMap
+                    (\index date ->
+                        vaccineDoseFromOrder index
+                            |> Maybe.map (\dose -> ( dose, date ))
+                    )
+                |> Maybe.Extra.values
+                |> Dict.fromList
+
+        vaccineTypesForSite =
+            allVaccineTypes site
+    in
+    [ ( VaccineBCG, generateVaccinationProgressForVaccine bcgImminizationDates )
+    , ( VaccineOPV, generateVaccinationProgressForVaccine opvImminizationDates )
+    , ( VaccineDTP, generateVaccinationProgressForVaccine dtpImminizationDates )
+    , ( VaccinePCV13, generateVaccinationProgressForVaccine pcv13ImminizationDates )
+    , ( VaccineRotarix, generateVaccinationProgressForVaccine rotarixImminizationDates )
+    , ( VaccineIPV, generateVaccinationProgressForVaccine ipvImminizationDates )
+    , ( VaccineMR, generateVaccinationProgressForVaccine mrImminizationDates )
+    ]
+        ++ dtpStandaloneEntry
+        ++ hpvEntry
+        |> List.filter
+            (\( vaccineType, _ ) ->
+                List.member vaccineType vaccineTypesForSite
+            )
+        |> Dict.fromList
+
+
+vaccineDoseToComparable : VaccineDose -> Int
+vaccineDoseToComparable dose =
+    case dose of
+        VaccineDoseFirst ->
+            1
+
+        VaccineDoseSecond ->
+            2
+
+        VaccineDoseThird ->
+            3
+
+        VaccineDoseFourth ->
+            4
+
+        VaccineDoseFifth ->
+            5
+
+
+vaccineDoseFromOrder : Int -> Maybe VaccineDose
+vaccineDoseFromOrder order =
+    case order of
+        0 ->
+            Just VaccineDoseFirst
+
+        1 ->
+            Just VaccineDoseSecond
+
+        2 ->
+            Just VaccineDoseThird
+
+        3 ->
+            Just VaccineDoseFourth
+
+        4 ->
+            Just VaccineDoseFifth
+
+        _ ->
+            Nothing
+
+
 
 --
 -- Helper functions.
@@ -1342,21 +1881,23 @@ applyGenderFilter model list =
 
 
 withinSelectedMonth : NominalDate -> NominalDate -> Bool
-withinSelectedMonth selectedDate date =
+withinSelectedMonth dateLastDayOfSelectedMonth date =
+    withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth date
+        && withinOrAfterSelectedMonth dateLastDayOfSelectedMonth date
+
+
+withinOrBeforeSelectedMonth : NominalDate -> NominalDate -> Bool
+withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth date =
+    not <| Date.compare date dateLastDayOfSelectedMonth == GT
+
+
+withinOrAfterSelectedMonth : NominalDate -> NominalDate -> Bool
+withinOrAfterSelectedMonth dateLastDayOfSelectedMonth date =
     let
-        month =
-            Date.monthNumber selectedDate
-
-        year =
-            Date.year selectedDate
+        dateFirstDayOfSelectedMonth =
+            Date.floor Date.Month dateLastDayOfSelectedMonth
     in
-    (Date.monthNumber date == month)
-        && (Date.year date == year)
-
-
-getSelectedDate : NominalDate -> Model -> NominalDate
-getSelectedDate currentDate model =
-    Date.add Date.Months (-1 * model.monthGap) currentDate
+    not <| Date.compare date dateFirstDayOfSelectedMonth == LT
 
 
 childrenBeneficiariesByProgramType : ProgramType -> Dict ProgramType (List ChildrenBeneficiariesStats) -> List ChildrenBeneficiariesStats
@@ -1368,3 +1909,8 @@ childrenBeneficiariesByProgramType programType childrenBeneficiaries =
 filterByLimitDate : NominalDate -> Dict id { a | dateMeasured : NominalDate } -> Dict id { a | dateMeasured : NominalDate }
 filterByLimitDate limitDate followUps =
     Dict.filter (\_ followUp -> Date.compare followUp.dateMeasured limitDate == LT) followUps
+
+
+isAcuteIllnessNurseEncounter : AcuteIllnessEncounterDataItem -> Bool
+isAcuteIllnessNurseEncounter encounter =
+    encounter.encounterType /= AcuteIllnessEncounterCHW

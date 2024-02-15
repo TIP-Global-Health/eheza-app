@@ -2,6 +2,7 @@ module Backend.IndividualEncounterParticipant.Model exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType)
@@ -34,6 +35,7 @@ type IndividualParticipantExtraData
     = AcuteIllnessData AcuteIllnessEncounterType
     | AntenatalData PrenatalEncounterType
     | WellChildData WellChildEncounterType
+    | NutritionData NutritionEncounterType
     | NoIndividualParticipantExtraData
 
 

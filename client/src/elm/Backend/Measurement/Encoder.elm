@@ -15,7 +15,7 @@ import Json.Encode exposing (Value, bool, float, int, list, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityUuid, encodeEntityUuid, fromEntityUuid)
 import Translate.Utils exposing (encodeLanguage)
-import Utils.Json exposing (encodeEverySet, encodeEverySetNullable, encodeNullable, encodeNullableWithValueFunc)
+import Utils.Json exposing (encodeEverySet, encodeEverySetNullable, encodeIfSet, encodeNullable, encodeNullableWithValueFunc)
 
 
 encodeHeight : Height -> List ( String, Value )
@@ -1809,8 +1809,10 @@ encodeVitalsValueWithType type_ value =
         ++ encodeNullable "sys" value.sys float
         ++ encodeNullable "dia" value.dia float
         ++ encodeNullable "heart_rate" value.heartRate int
-        ++ encodeNullable "sys_repeated" value.sysRepeated float
-        ++ encodeNullable "dia_repeated" value.diaRepeated float
+        -- Not all CT got the repeated fields. Therefore we use
+        -- encodeIfSet, to send the field only if it has a value.
+        ++ encodeIfSet "sys_repeated" value.sysRepeated float
+        ++ encodeIfSet "dia_repeated" value.diaRepeated float
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]

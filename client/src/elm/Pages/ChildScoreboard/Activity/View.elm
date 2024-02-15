@@ -534,7 +534,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                     , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
                     , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
                     , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site assembled.person vaccineType initialOpvAdministered
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site assembled.person.birthDate vaccineType initialOpvAdministered
                     , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
                     , firstDoseExpectedFrom =
                         initialVaccinationDateByBirthDate site
@@ -555,7 +555,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                     else
                         let
                             initialOpvAdministeredByProgress =
-                                wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+                                wasInitialOpvAdministeredByVaccinationProgress assembled.person.birthDate assembled.vaccinationProgress
                         in
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
