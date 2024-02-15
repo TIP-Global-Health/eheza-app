@@ -811,29 +811,6 @@ filterNewlyDiagnosesMalnutritionForSelectedMonth dateLastDayOfSelectedMonth =
         )
 
 
-syphilisDiagnoses : List PrenatalDiagnosis
-syphilisDiagnoses =
-    [ DiagnosisSyphilis, DiagnosisSyphilisWithComplications ]
-
-
-preeclampsiaDiagnoses : List PrenatalDiagnosis
-preeclampsiaDiagnoses =
-    [ DiagnosisSeverePreeclampsiaInitialPhase
-    , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
-    , DiagnosisSeverePreeclampsiaRecurrentPhase
-    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
-    ]
-
-
-severeAnemiaDiagnoses : List PrenatalDiagnosis
-severeAnemiaDiagnoses =
-    [ DiagnosisMalariaWithSevereAnemia
-    , DiagnosisModerateAnemia
-    , DiagnosisSevereAnemia
-    , DiagnosisSevereAnemiaWithComplications
-    ]
-
-
 isNurseEncounter : PrenatalEncounterDataItem -> Bool
 isNurseEncounter encounter =
     List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
@@ -1671,7 +1648,15 @@ countTotalNumberOfPatientsWithGestationalDiabetes dateLastDayOfSelectedMonth =
                -- or prior to that.
                List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth)
             >> -- Check if any of them had Gestational Diabetes diagnosis.
-               List.any (.diagnoses >> EverySet.member DiagnosisGestationalDiabetes)
+               List.any
+                (.diagnoses
+                    >> EverySet.toList
+                    >> List.any
+                        (\diagnosis ->
+                            List.member diagnosis
+                                [ DiagnosisGestationalDiabetesInitialPhase, DiagnosisGestationalDiabetesRecurrentPhase ]
+                        )
+                )
         )
         -- Since one woman may have multiple pregnancies, we make sure
         -- that patient identifier is unique before we count the total.
