@@ -3843,10 +3843,15 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                     ]
 
                                 NutritionEncounter ->
-                                    [ emptyNutritionEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostNutritionEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
+                                    case extraData of
+                                        NutritionData nutritionEncounterType ->
+                                            [ emptyNutritionEncounter sessionId currentDate nutritionEncounterType healthCenterId
+                                                |> Backend.Model.PostNutritionEncounter
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
 
                                 HomeVisitEncounter ->
                                     [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
