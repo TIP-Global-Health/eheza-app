@@ -24,7 +24,7 @@ import RemoteData exposing (WebData)
 
 chwFilters : List CaseManagementFilter
 chwFilters =
-    [ FilterAcuteIllness, FilterAntenatal, FilterNutrition ]
+    [ FilterAcuteIllness, FilterAntenatal, FilterNutrition, FilterImmunization ]
 
 
 nurseFilters : List CaseManagementFilter
@@ -178,6 +178,42 @@ generatePrenatalFollowUps limitDate db followUps =
                                     (Dict.insert ( participantId, personId ) newItem accum)
                         )
                     |> Maybe.withDefault accum
+            )
+            Dict.empty
+
+
+generateImmunizationFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId ImmunizationFollowUpItem
+generateImmunizationFollowUps limitDate followUps =
+    Dict.values followUps.nextVisit
+        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+        |> List.filterMap
+            (\followUp ->
+                Maybe.andThen
+                    (\dueDate ->
+                        if not <| Date.compare limitDate dueDate == LT then
+                            Just ( followUp.dateMeasured, followUp.participantId, dueDate )
+
+                        else
+                            Nothing
+                    )
+                    followUp.value.asapImmunisationDate
+            )
+        |> List.foldl
+            (\( dateMeasured, participantId, dueDate ) accum ->
+                let
+                    candidateItem =
+                        ImmunizationFollowUpItem dateMeasured dueDate ""
+                in
+                Dict.get participantId accum
+                    |> Maybe.map
+                        (\memberItem ->
+                            if Date.compare candidateItem.dateMeasured memberItem.dateMeasured == GT then
+                                Dict.insert participantId candidateItem accum
+
+                            else
+                                accum
+                        )
+                    |> Maybe.withDefault (Dict.insert participantId candidateItem accum)
             )
             Dict.empty
 
@@ -356,18 +392,21 @@ generateFollowUpsForResidents :
     -> Village
     -> ModelIndexedDb
     -> FollowUpMeasurements
-    -> ( List PersonId, List PersonId, List PersonId )
+    -> FollowUpPatients
     -> FollowUpMeasurements
-generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal ) =
+generateFollowUpsForResidents currentDate village db followUps followUpPatients =
     let
         residentsForNutrition =
-            filterResidents db village peopleForNutrition
+            filterResidents db village followUpPatients.nutrition
 
         residentsForAccuteIllness =
-            filterResidents db village peopleForAccuteIllness
+            filterResidents db village followUpPatients.acuteIllness
 
         residentsForPrenatal =
-            filterResidents db village peopleForPrenatal
+            filterResidents db village followUpPatients.prenatal
+
+        residentsForImmunization =
+            filterResidents db village followUpPatients.immunization
 
         nutritionGroup =
             Dict.filter
@@ -403,6 +442,13 @@ generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrit
                     List.member followUp.participantId residentsForPrenatal
                 )
                 followUps.prenatal
+
+        nextVisit =
+            Dict.filter
+                (\_ followUp ->
+                    List.member followUp.participantId residentsForImmunization
+                )
+                followUps.nextVisit
     in
     { followUps
         | nutritionGroup = nutritionGroup
@@ -410,10 +456,11 @@ generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrit
         , wellChild = wellChild
         , acuteIllness = acuteIllness
         , prenatal = prenatal
+        , nextVisit = nextVisit
     }
 
 
-resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> ( List PersonId, List PersonId, List PersonId )
+resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> FollowUpPatients
 resolveUniquePatientsFromFollowUps limitDate followUps =
     let
         peopleForNutritionGroup =
@@ -432,13 +479,15 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
                 |> List.map .participantId
                 |> Pages.Utils.unique
     in
-    ( peopleForNutritionGroup
-        ++ peopleForNutritionIndividual
-        ++ peopleForWellChild
-        |> Pages.Utils.unique
-    , uniquePatientsFromFollowUps .acuteIllness
-    , uniquePatientsFromFollowUps .prenatal
-    )
+    { nutrition =
+        peopleForNutritionGroup
+            ++ peopleForNutritionIndividual
+            ++ peopleForWellChild
+            |> Pages.Utils.unique
+    , acuteIllness = uniquePatientsFromFollowUps .acuteIllness
+    , prenatal = uniquePatientsFromFollowUps .prenatal
+    , immunization = uniquePatientsFromFollowUps .nextVisit
+    }
 
 
 filterResidents : ModelIndexedDb -> Village -> List PersonId -> List PersonId

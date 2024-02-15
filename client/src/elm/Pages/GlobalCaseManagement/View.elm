@@ -19,17 +19,22 @@ import Backend.Measurement.Model
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( getHomeVisitEncountersForParticipant
+        , getWellChildEncountersForParticipant
+        )
 import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.Village.Model exposing (Village)
 import Backend.Village.Utils exposing (getVillageById)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -118,10 +123,18 @@ viewContentForChw language currentDate village model db followUps =
         prenatalFollowUpsPane =
             viewPrenatalPane language currentDate prenatalFollowUps db model
 
+        immunizationFollowUps =
+            generateImmunizationFollowUps currentDate followUpsForResidents
+                |> fillPersonName identity db
+
+        immunizationFollowUpsPane =
+            viewImmunizationPane language currentDate immunizationFollowUps db model
+
         panes =
             [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
             , ( FilterAntenatal, prenatalFollowUpsPane )
             , ( FilterNutrition, nutritionFollowUpsPane )
+            , ( FilterImmunization, immunizationFollowUpsPane )
             ]
                 |> List.filterMap
                     (\( type_, pane ) ->
@@ -215,6 +228,9 @@ viewStartFollowUpEncounterDialog language dataType =
 
         FollowUpAcuteIllness data ->
             startFollowUpDialog AcuteIllnessEncounter data.personName
+
+        FollowUpImmunization data ->
+            startFollowUpDialog WellChildEncounter data.personName
 
         -- We should never get here, since Prenatal got
         -- it's own dialog.
@@ -366,14 +382,14 @@ generateNutritionFollowUpEntryData language limitDate db personId item =
     lastHomeVisitEncounter
         |> Maybe.map
             (\encounter ->
-                -- Last Home Visitit encounter occurred before follow up was scheduled.
+                -- Last Home Visit encounter occurred before follow up was scheduled.
                 if Date.compare encounter.startDate item.dateMeasured == LT then
                     Just <| NutritionFollowUpEntry personId item
 
                 else
                     Nothing
             )
-        |> -- No Home Visitit encounter found.
+        |> -- No Home Visit encounter found.
            Maybe.withDefault
             (Just <| NutritionFollowUpEntry personId item)
 
@@ -1063,3 +1079,86 @@ viewNCDLabsEntry language data =
         data.state
         data.label
         (NCDRecurrentEncounterPage data.encounterId)
+
+
+viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
+viewImmunizationPane language currentDate itemsDict db model =
+    let
+        entries =
+            generateImmunizationFollowUpEntries language currentDate itemsDict db
+
+        content =
+            if List.isEmpty entries then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                List.map (viewImmunizationFollowUpEntry language currentDate) entries
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language FilterImmunization
+        , div [ class "pane-content" ] content
+        ]
+
+
+generateImmunizationFollowUpEntries : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntries language limitDate itemsDict db =
+    Dict.map (generateImmunizationFollowUpEntryData language limitDate db) itemsDict
+        |> Dict.values
+        |> Maybe.Extra.values
+
+
+generateImmunizationFollowUpEntryData : Language -> NominalDate -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntryData language limitDate db personId item =
+    let
+        lastWellChildEncounter =
+            resolveIndividualParticipantForPerson personId WellChildEncounter db
+                |> Maybe.map
+                    (getWellChildEncountersForParticipant db
+                        >> List.map Tuple.second
+                        >> List.filter
+                            (\encounter ->
+                                (encounter.encounterType /= NewbornExam)
+                                    && (Date.compare encounter.startDate limitDate == LT)
+                            )
+                    )
+                |> Maybe.withDefault []
+                -- Sort DESC
+                |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
+                |> List.head
+    in
+    Maybe.map
+        (\encounter ->
+            -- Last Well Child encounter occurred before follow up was scheduled.
+            if Date.compare encounter.startDate item.dateMeasured == LT then
+                Just <| ImmunizationFollowUpEntry personId item
+
+            else
+                Nothing
+        )
+        lastWellChildEncounter
+        |> -- No Home Visit encounter found.
+           Maybe.withDefault
+            (Just <| ImmunizationFollowUpEntry personId item)
+
+
+viewImmunizationFollowUpEntry : Language -> NominalDate -> ImmunizationFollowUpEntry -> Html Msg
+viewImmunizationFollowUpEntry language currentDate entry =
+    let
+        item =
+            entry.item
+
+        dueOption =
+            if diffDays item.dueDate currentDate <= 30 then
+                DueThisMonth
+
+            else
+                OverDue
+
+        popupData =
+            FollowUpImmunization <| FollowUpImmunizationData entry.personId item.personName
+    in
+    viewFollowUpEntry language
+        dueOption
+        item.personName
+        popupData
+        [ p [] [ text <| translate language Translate.ImmunizationFollowUpInstructions ] ]

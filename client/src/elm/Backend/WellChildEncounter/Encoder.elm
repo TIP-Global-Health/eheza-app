@@ -1,4 +1,4 @@
-module Backend.WellChildEncounter.Encoder exposing (encodeWellChildEncounter)
+module Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning, encodeWellChildEncounter, encodeWellChildEncounterType)
 
 import Backend.WellChildEncounter.Model exposing (..)
 import EverySet
@@ -43,6 +43,9 @@ encodeWellChildEncounterType encounterType =
         case encounterType of
             PediatricCare ->
                 "pediatric-care"
+
+            PediatricCareChw ->
+                "pediatric-care-chw"
 
             NewbornExam ->
                 "newborn-exam"

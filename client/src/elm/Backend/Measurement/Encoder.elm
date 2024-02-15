@@ -2723,16 +2723,16 @@ encodeFollowUpOption option =
 
 encodeNutritionFeeding : NutritionFeeding -> List ( String, Value )
 encodeNutritionFeeding =
-    encodeHomeVisitMeasurement encodeNutritionFeedingValue
+    encodeHomeVisitMeasurement (encodeNutritionFeedingValueWithType "nutrition_feeding")
 
 
-encodeNutritionFeedingValue : NutritionFeedingValue -> List ( String, Value )
-encodeNutritionFeedingValue value =
+encodeNutritionFeedingValueWithType : String -> NutritionFeedingValue -> List ( String, Value )
+encodeNutritionFeedingValueWithType type_ value =
     [ ( "nutrition_feeding_signs", encodeEverySet encodeNutritionFeedingSign value.signs )
     , ( "supplement_type", encodeNutritionSupplementType value.supplementType )
     , ( "sachets_per_day", float value.sachetsPerDay )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_feeding" )
+    , ( "type", string type_ )
     ]
 
 
@@ -2793,16 +2793,16 @@ encodeNutritionFeedingSign sign =
 
 encodeNutritionHygiene : NutritionHygiene -> List ( String, Value )
 encodeNutritionHygiene =
-    encodeHomeVisitMeasurement encodeNutritionHygieneValue
+    encodeHomeVisitMeasurement (encodeNutritionHygieneValueWithType "nutrition_hygiene")
 
 
-encodeNutritionHygieneValue : NutritionHygieneValue -> List ( String, Value )
-encodeNutritionHygieneValue value =
+encodeNutritionHygieneValueWithType : String -> NutritionHygieneValue -> List ( String, Value )
+encodeNutritionHygieneValueWithType type_ value =
     [ ( "nutrition_hygiene_signs", encodeEverySet encodeNutritionHygieneSign value.signs )
     , ( "main_water_source", encodeMainWaterSource value.mainWaterSource )
     , ( "water_preparation_option", encodeWaterPreparationOption value.waterPreparationOption )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_hygiene" )
+    , ( "type", string type_ )
     ]
 
 
@@ -2868,15 +2868,15 @@ encodeWaterPreparationOption type_ =
 
 encodeNutritionFoodSecurity : NutritionFoodSecurity -> List ( String, Value )
 encodeNutritionFoodSecurity =
-    encodeHomeVisitMeasurement encodeNutritionFoodSecurityValue
+    encodeHomeVisitMeasurement (encodeNutritionFoodSecurityValueWithType "nutrition_food_security")
 
 
-encodeNutritionFoodSecurityValue : NutritionFoodSecurityValue -> List ( String, Value )
-encodeNutritionFoodSecurityValue value =
+encodeNutritionFoodSecurityValueWithType : String -> NutritionFoodSecurityValue -> List ( String, Value )
+encodeNutritionFoodSecurityValueWithType type_ value =
     [ ( "food_security_signs", encodeEverySet encodeNutritionFoodSecuritySign value.signs )
     , ( "main_income_source", encodeMainIncomeSource value.mainIncomeSource )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_food_security" )
+    , ( "type", string type_ )
     ]
 
 
@@ -2910,15 +2910,15 @@ encodeMainIncomeSource type_ =
 
 encodeNutritionCaring : NutritionCaring -> List ( String, Value )
 encodeNutritionCaring =
-    encodeHomeVisitMeasurement encodeNutritionCaringValue
+    encodeHomeVisitMeasurement (encodeNutritionCaringValueWithType "nutrition_caring")
 
 
-encodeNutritionCaringValue : NutritionCaringValue -> List ( String, Value )
-encodeNutritionCaringValue value =
+encodeNutritionCaringValueWithType : String -> NutritionCaringValue -> List ( String, Value )
+encodeNutritionCaringValueWithType type_ value =
     [ ( "nutrition_caring_signs", encodeEverySet encodeNutritionCaringSign value.signs )
     , ( "child_caring_options", encodeNutritionCaringOption value.caringOption )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_caring" )
+    , ( "type", string type_ )
     ]
 
 
@@ -4230,11 +4230,24 @@ encodeWellChildNextVisit =
 
 encodeNextVisitValue : NextVisitValue -> List ( String, Value )
 encodeNextVisitValue value =
+    let
+        resolutionDate =
+            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.resolutionDate
+                |> Maybe.withDefault []
+
+        asapImmunisationDate =
+            Maybe.map (\date -> [ ( "asap_immunisation_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
+                value.asapImmunisationDate
+                |> Maybe.withDefault []
+    in
     [ ( "immunisation_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.immunisationDate )
     , ( "pediatric_visit_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pediatricVisitDate )
     , ( "deleted", bool False )
     , ( "type", string "well_child_next_visit" )
     ]
+        ++ resolutionDate
+        ++ asapImmunisationDate
 
 
 encodeWellChildBCGImmunisation : WellChildBCGImmunisation -> List ( String, Value )
@@ -4957,3 +4970,23 @@ encodeChildScoreboardPCV13Immunisation =
 encodeChildScoreboardRotarixImmunisation : ChildScoreboardRotarixImmunisation -> List ( String, Value )
 encodeChildScoreboardRotarixImmunisation =
     encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_rotarix_iz")
+
+
+encodeWellChildFeeding : WellChildFeeding -> List ( String, Value )
+encodeWellChildFeeding =
+    encodeWellChildMeasurement (encodeNutritionFeedingValueWithType "well_child_feeding")
+
+
+encodeWellChildHygiene : WellChildHygiene -> List ( String, Value )
+encodeWellChildHygiene =
+    encodeWellChildMeasurement (encodeNutritionHygieneValueWithType "well_child_hygiene")
+
+
+encodeWellChildCaring : WellChildCaring -> List ( String, Value )
+encodeWellChildCaring =
+    encodeWellChildMeasurement (encodeNutritionCaringValueWithType "well_child_caring")
+
+
+encodeWellChildFoodSecurity : WellChildFoodSecurity -> List ( String, Value )
+encodeWellChildFoodSecurity =
+    encodeWellChildMeasurement (encodeNutritionFoodSecurityValueWithType "well_child_food_security")

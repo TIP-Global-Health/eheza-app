@@ -1,4 +1,4 @@
-module Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities, view)
+module Pages.WellChild.Encounter.View exposing (partitionActivities, view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
@@ -14,7 +14,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewPersonDetailsExtended, viewSkipNCDADialog)
 import Pages.WellChild.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.WellChild.Encounter.Model exposing (..)
-import Pages.WellChild.Encounter.Utils exposing (generateAssembledData)
+import Pages.WellChild.Encounter.Utils exposing (allowEndingEcounter, generateAssembledData)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
@@ -239,7 +239,7 @@ viewMainPageContent language currentDate zscores site features id isChw db assem
                 action
 
         allowEndEncounter =
-            allowEndingEcounter pendingActivities
+            allowEndingEcounter currentDate pendingActivities assembled
 
         endEcounterButtonAttributes =
             if allowEndEncounter then
@@ -289,12 +289,6 @@ partitionActivitiesConsideringSkipped :
     -> EverySet WellChildActivity
     -> ( List WellChildActivity, List WellChildActivity )
 partitionActivitiesConsideringSkipped currentDate zscores site features isChw db assembled skipped =
-    getAllActivities isChw
-        |> List.filter (\activity -> EverySet.member activity skipped |> not)
+    List.filter (\activity -> EverySet.member activity skipped |> not) getAllActivities
         |> List.filter (expectActivity currentDate zscores site features isChw assembled db)
         |> List.partition (activityCompleted currentDate zscores site features isChw assembled db)
-
-
-allowEndingEcounter : List WellChildActivity -> Bool
-allowEndingEcounter pendingActivities =
-    List.all (\activity -> List.member activity [ WellChildNCDA, WellChildPhoto ]) pendingActivities

@@ -1501,3 +1501,35 @@ type alias ChildScoreboardRotarixImmunisationId =
 
 type ChildScoreboardRotarixImmunisationUuidType
     = ChildScoreboardRotarixImmunisationUuidType
+
+
+type alias WellChildFeedingId =
+    EntityUuid WellChildFeedingIdUuidType
+
+
+type WellChildFeedingIdUuidType
+    = WellChildFeedingIdUuidType
+
+
+type alias WellChildHygieneId =
+    EntityUuid WellChildHygieneIdUuidType
+
+
+type WellChildHygieneIdUuidType
+    = WellChildHygieneIdUuidType
+
+
+type alias WellChildFoodSecurityId =
+    EntityUuid WellChildFoodSecurityIdUuidType
+
+
+type WellChildFoodSecurityIdUuidType
+    = WellChildFoodSecurityIdUuidType
+
+
+type alias WellChildCaringId =
+    EntityUuid WellChildCaringIdUuidType
+
+
+type WellChildCaringIdUuidType
+    = WellChildCaringIdUuidType

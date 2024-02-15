@@ -1,36 +1,52 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounterType)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Dashboard.Model exposing (..)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
 import Backend.Measurement.Decoder
     exposing
         ( decodeCall114Sign
+        , decodeChildNutritionSign
         , decodeDangerSign
         , decodeFamilyPlanningSign
         , decodeHCContactSign
         , decodeHCRecommendation
         , decodeIsolationSign
+        , decodeMedicalCondition
         , decodeRecommendation114
         , decodeSendToHCSign
+        , decodeTestExecutionNote
+        , decodeTestResult
         )
 import Backend.Measurement.Model
     exposing
         ( Call114Sign(..)
         , DangerSign(..)
+        , ECDSign(..)
         , HCContactSign(..)
         , HCRecommendation(..)
         , IsolationSign(..)
+        , MedicalCondition(..)
         , Recommendation114(..)
         , SendToHCSign(..)
         )
+import Backend.NCDEncounter.Decoder exposing (decodeNCDDiagnosis)
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounterType)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.Person.Decoder exposing (decodeGender)
+import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning, decodeWellChildEncounterType)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Dict as LegacyDict
+import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
-import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Gizra.NominalDate exposing (decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Pages.Report.Utils exposing (compareAcuteIllnessEncountersDesc)
@@ -49,6 +65,12 @@ decodeDashboardStatsRaw =
         |> required "total_encounters" decodeTotalEncountersData
         |> required "acute_illness_data" (list decodeAcuteIllnessDataItem)
         |> required "prenatal_data" (list decodePrenatalDataItem)
+        |> required "ncd_data" (list decodeNCDDataItem)
+        |> required "pmtct_data" (list decodePMTCTDataItem)
+        |> required "spv_data" (list decodeSPVDataItem)
+        |> required "child_scoreboard_data" (list decodeChildScoreboardDataItem)
+        |> required "nutrition_individual_data" (list decodeNutritionIndividualDataItem)
+        |> required "nutrition_group_data" (list decodeNutritionGroupDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -294,6 +316,7 @@ decodeAcuteIllnessDataItem =
     succeed AcuteIllnessDataItem
         |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
         |> hardcoded NoAcuteIllnessDiagnosis
         |> required "date_concluded" (nullable decodeYYYYMMDD)
         |> required "outcome" (nullable decodeIndividualEncounterParticipantOutcome)
@@ -302,7 +325,8 @@ decodeAcuteIllnessDataItem =
             (\item ->
                 let
                     orderedEncounters =
-                        List.sortWith compareAcuteIllnessEncountersDesc item.encounters
+                        List.map (\encounter -> { encounter | ageInMonths = diffMonths item.birthDate encounter.startDate }) item.encounters
+                            |> List.sortWith compareAcuteIllnessEncountersDesc
 
                     resolvedDiagnosis =
                         List.filter (.diagnosis >> (/=) NoAcuteIllnessDiagnosis) orderedEncounters
@@ -318,7 +342,9 @@ decodeAcuteIllnessEncounterDataItem : Decoder AcuteIllnessEncounterDataItem
 decodeAcuteIllnessEncounterDataItem =
     succeed AcuteIllnessEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" (decodeWithFallback AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType) AcuteIllnessEncounterCHW
         |> required "sequence_number" (decodeWithFallback 1 decodeInt)
+        |> hardcoded 0
         |> required "diagnosis" decodeAcuteIllnessDiagnosis
         |> required "fever" bool
         |> required "isolation" (decodeEverySet (decodeWithFallback NoIsolationSigns decodeIsolationSign))
@@ -343,6 +369,172 @@ decodePrenatalDataItem =
 
 decodePrenatalEncounterDataItem : Decoder PrenatalEncounterDataItem
 decodePrenatalEncounterDataItem =
+    let
+        decodeDiagnoses =
+            map
+                (\items ->
+                    if List.isEmpty items then
+                        EverySet.singleton NoPrenatalDiagnosis
+
+                    else
+                        EverySet.fromList items
+                )
+            <|
+                list (decodeWithFallback NoPrenatalDiagnosis decodePrenatalDiagnosis)
+    in
     succeed PrenatalEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType) NurseEncounter
         |> required "danger_signs" (decodeEverySet (decodeWithFallback NoDangerSign decodeDangerSign))
+        |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> required "send_to_hc" (decodeEverySet (decodeWithFallback NoSendToHCSigns decodeSendToHCSign))
+
+
+decodeNCDDataItem : Decoder NCDDataItem
+decodeNCDDataItem =
+    succeed NCDDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "encounters" (list decodeNCDEncounterDataItem)
+
+
+decodeNCDEncounterDataItem : Decoder NCDEncounterDataItem
+decodeNCDEncounterDataItem =
+    let
+        decodeDiagnoses =
+            map
+                (\items ->
+                    if List.isEmpty items then
+                        EverySet.singleton NoNCDDiagnosis
+
+                    else
+                        EverySet.fromList items
+                )
+            <|
+                list (decodeWithFallback NoNCDDiagnosis decodeNCDDiagnosis)
+    in
+    succeed NCDEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "diagnoses" decodeDiagnoses (EverySet.singleton NoNCDDiagnosis)
+        |> required "medical_conditions" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
+        |> required "co_morbidities" (decodeEverySet (decodeWithFallback NoMedicalConditions decodeMedicalCondition))
+        |> optional "hiv_test_result" (nullable decodeTestResult) Nothing
+        |> optional "hiv_test_execution_note" (nullable decodeTestExecutionNote) Nothing
+
+
+decodePMTCTDataItem : Decoder PMTCTDataItem
+decodePMTCTDataItem =
+    succeed PMTCTDataItem
+        |> required "id" decodeInt
+        |> required "start_date" decodeYYYYMMDD
+        |> required "end_date" decodeYYYYMMDD
+
+
+decodeSPVDataItem : Decoder SPVDataItem
+decodeSPVDataItem =
+    succeed SPVDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "gender" decodeGender
+        |> required "encounters" (list decodeSPVEncounterDataItem)
+
+
+decodeSPVEncounterDataItem : Decoder SPVEncounterDataItem
+decodeSPVEncounterDataItem =
+    let
+        decodeWarnings =
+            map
+                (\items ->
+                    if List.isEmpty items then
+                        EverySet.singleton NoEncounterWarnings
+
+                    else
+                        EverySet.fromList items
+                )
+            <|
+                list (decodeWithFallback NoEncounterWarnings decodeEncounterWarning)
+    in
+    succeed SPVEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" decodeWellChildEncounterType PediatricCare
+        |> optional "warnings" decodeWarnings (EverySet.singleton NoEncounterWarnings)
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
+        |> optional "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_dtp_sa_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_pcv13_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_rotarix_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_ipv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_mr_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_hpv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+
+
+decodeChildScoreboardDataItem : Decoder ChildScoreboardDataItem
+decodeChildScoreboardDataItem =
+    succeed ChildScoreboardDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "gender" decodeGender
+        |> required "encounters" (list decodeChildScoreboardEncounterDataItem)
+
+
+decodeChildScoreboardEncounterDataItem : Decoder ChildScoreboardEncounterDataItem
+decodeChildScoreboardEncounterDataItem =
+    succeed ChildScoreboardEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "child_scoreboard_bcg_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_opv_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_dtp_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_dtp_sa_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_pcv13_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_rotarix_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_ipv_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_mr_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+
+
+decodeNutritionIndividualDataItem : Decoder NutritionIndividualDataItem
+decodeNutritionIndividualDataItem =
+    succeed NutritionIndividualDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "encounters" (list decodeNutritionIndividualEncounterDataItem)
+
+
+decodeNutritionIndividualEncounterDataItem : Decoder NutritionIndividualEncounterDataItem
+decodeNutritionIndividualEncounterDataItem =
+    succeed NutritionIndividualEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" decodeNutritionEncounterType NutritionEncounterUnknown
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
+
+
+decodeNutritionGroupDataItem : Decoder NutritionGroupDataItem
+decodeNutritionGroupDataItem =
+    succeed NutritionGroupDataItem
+        |> required "id" decodeInt
+        |> required "encounters" (list decodeNutritionGroupEncounterDataItem)
+
+
+decodeNutritionGroupEncounterDataItem : Decoder NutritionGroupEncounterDataItem
+decodeNutritionGroupEncounterDataItem =
+    succeed NutritionGroupEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty

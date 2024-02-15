@@ -2,6 +2,17 @@ module Pages.HomeVisit.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Measurement.Model
+    exposing
+        ( NutritionCaringForm
+        , NutritionFeedingForm
+        , NutritionFoodSecurityForm
+        , NutritionHygieneForm
+        , emptyNutritionCaringForm
+        , emptyNutritionFeedingForm
+        , emptyNutritionFoodSecurityForm
+        , emptyNutritionHygieneForm
+        )
 import Pages.Page exposing (Page)
 
 
@@ -39,76 +50,3 @@ emptyModel =
     , foodSecurityForm = emptyNutritionFoodSecurityForm
     , caringForm = emptyNutritionCaringForm
     }
-
-
-type alias NutritionFeedingForm =
-    { receiveSupplement : Maybe Bool
-    , rationPresentAtHome : Maybe Bool
-    , enoughTillNextSession : Maybe Bool
-    , supplementShared : Maybe Bool
-    , encouragedToEat : Maybe Bool
-    , refusingToEat : Maybe Bool
-    , breastfeeding : Maybe Bool
-    , cleanWaterAvailable : Maybe Bool
-    , eatenWithWater : Maybe Bool
-    , supplementType : Maybe NutritionSupplementType
-    , sachetsPerDay : Maybe Float
-    }
-
-
-emptyNutritionFeedingForm : NutritionFeedingForm
-emptyNutritionFeedingForm =
-    { receiveSupplement = Nothing
-    , rationPresentAtHome = Nothing
-    , enoughTillNextSession = Nothing
-    , supplementShared = Nothing
-    , encouragedToEat = Nothing
-    , refusingToEat = Nothing
-    , breastfeeding = Nothing
-    , cleanWaterAvailable = Nothing
-    , eatenWithWater = Nothing
-    , supplementType = Nothing
-    , sachetsPerDay = Nothing
-    }
-
-
-type alias NutritionHygieneForm =
-    { soapInTheHouse : Maybe Bool
-    , washHandsBeforeFeeding : Maybe Bool
-    , foodCovered : Maybe Bool
-    , mainWaterSource : Maybe MainWaterSource
-    , waterPreparationOption : Maybe WaterPreparationOption
-    }
-
-
-emptyNutritionHygieneForm : NutritionHygieneForm
-emptyNutritionHygieneForm =
-    { soapInTheHouse = Nothing
-    , washHandsBeforeFeeding = Nothing
-    , foodCovered = Nothing
-    , mainWaterSource = Nothing
-    , waterPreparationOption = Nothing
-    }
-
-
-type alias NutritionFoodSecurityForm =
-    { householdGotFood : Maybe Bool
-    , mainIncomeSource : Maybe MainIncomeSource
-    }
-
-
-emptyNutritionFoodSecurityForm : NutritionFoodSecurityForm
-emptyNutritionFoodSecurityForm =
-    NutritionFoodSecurityForm Nothing Nothing
-
-
-type alias NutritionCaringForm =
-    { caringOption : Maybe CaringOption
-    , parentHealth : Maybe Bool
-    , childClean : Maybe Bool
-    }
-
-
-emptyNutritionCaringForm : NutritionCaringForm
-emptyNutritionCaringForm =
-    NutritionCaringForm Nothing Nothing Nothing

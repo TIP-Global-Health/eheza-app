@@ -68,42 +68,59 @@ pageToFragment current =
                 ClinicsPage ->
                     Just "clinics"
 
-                DashboardPage subPage ->
+                DashboardPage page ->
                     let
                         url =
-                            case subPage of
-                                MainPage ->
+                            case page of
+                                PageMain ->
                                     "main"
 
-                                NursePage nurseDashboardPage ->
-                                    case nurseDashboardPage of
-                                        StatsPage ->
-                                            "stats"
+                                PageAcuteIllness subPage ->
+                                    case subPage of
+                                        PageAcuteIllnessOverview ->
+                                            "acute-illness"
 
-                                        CaseManagementPage ->
-                                            "case-management"
+                                        PageCovid19 ->
+                                            "covid-19"
 
-                                ChwPage chwDashboardPage ->
-                                    case chwDashboardPage of
-                                        AcuteIllnessPage acuteIllnessSubPage ->
-                                            case acuteIllnessSubPage of
-                                                OverviewPage ->
-                                                    "acute-illness"
+                                        PageMalaria ->
+                                            "malaria"
 
-                                                Covid19Page ->
-                                                    "covid-19"
+                                        PageGastro ->
+                                            "gastro"
 
-                                                MalariaPage ->
-                                                    "malaria"
+                                PageNutrition subPage ->
+                                    case subPage of
+                                        PageCharts ->
+                                            "nutrition-charts"
 
-                                                GastroPage ->
-                                                    "gastro"
+                                        PageStats ->
+                                            "nutrition-stats"
 
-                                        NutritionPage ->
-                                            "nutrition"
+                                        PageCaseManagement ->
+                                            "nutrition-case-management"
 
-                                        AntenatalPage ->
-                                            "antenatal"
+                                PagePrenatal ->
+                                    "prenatal"
+
+                                PageNCD subPage ->
+                                    case subPage of
+                                        PageHypertension ->
+                                            "hypertension"
+
+                                        PageHIV ->
+                                            "hiv"
+
+                                        PageDiabetes ->
+                                            "diabetes"
+
+                                PageChildWellness subPage ->
+                                    case subPage of
+                                        PageChildWellnessOverview ->
+                                            "child-wellness"
+
+                                        PageChildWellnessNutrition ->
+                                            "child-wellness-nutrition"
                     in
                     Just ("dashboard/" ++ url)
 
@@ -404,15 +421,20 @@ parser =
 parseDashboardPage : Parser (DashboardPage -> c) c
 parseDashboardPage =
     oneOf
-        [ map MainPage (s "main")
-        , map (NursePage StatsPage) (s "stats")
-        , map (NursePage CaseManagementPage) (s "case-management")
-        , map (ChwPage <| AcuteIllnessPage OverviewPage) (s "acute-illness")
-        , map (ChwPage <| AcuteIllnessPage Covid19Page) (s "covid-19")
-        , map (ChwPage <| AcuteIllnessPage MalariaPage) (s "malaria")
-        , map (ChwPage <| AcuteIllnessPage GastroPage) (s "gastro")
-        , map (ChwPage NutritionPage) (s "nutrition")
-        , map (ChwPage AntenatalPage) (s "antenatal")
+        [ map PageMain (s "main")
+        , map (PageNutrition PageCharts) (s "nutrition-charts")
+        , map (PageNutrition PageStats) (s "nutrition-stats")
+        , map (PageNutrition PageCaseManagement) (s "nutrition-case-management")
+        , map (PageAcuteIllness PageAcuteIllnessOverview) (s "acute-illness")
+        , map (PageAcuteIllness PageCovid19) (s "covid-19")
+        , map (PageAcuteIllness PageMalaria) (s "malaria")
+        , map (PageAcuteIllness PageGastro) (s "gastro")
+        , map PagePrenatal (s "prenatal")
+        , map (PageNCD PageHypertension) (s "hypertension")
+        , map (PageNCD PageHIV) (s "hiv")
+        , map (PageNCD PageDiabetes) (s "diabetes")
+        , map (PageChildWellness PageChildWellnessOverview) (s "child-wellness")
+        , map (PageChildWellness PageChildWellnessNutrition) (s "child-wellness-nutrition")
         ]
 
 

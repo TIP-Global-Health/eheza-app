@@ -331,6 +331,7 @@ type MsgIndexedDb
     | FetchHomeVisitMeasurements HomeVisitEncounterId
     | FetchWellChildEncounter WellChildEncounterId
     | FetchWellChildEncountersForParticipant IndividualEncounterParticipantId
+    | FetchWellChildEncountersForParticipants (List IndividualEncounterParticipantId)
     | FetchWellChildMeasurements WellChildEncounterId
     | FetchNCDEncounter NCDEncounterId
     | FetchNCDEncountersForParticipant IndividualEncounterParticipantId
@@ -390,6 +391,7 @@ type MsgIndexedDb
     | HandleFetchedHomeVisitMeasurements HomeVisitEncounterId (WebData HomeVisitMeasurements)
     | HandleFetchedWellChildEncounter WellChildEncounterId (WebData WellChildEncounter)
     | HandleFetchedWellChildEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict WellChildEncounterId WellChildEncounter))
+    | HandleFetchedWellChildEncountersForParticipants (WebData (Dict IndividualEncounterParticipantId (Dict WellChildEncounterId WellChildEncounter)))
     | HandleFetchedWellChildMeasurements WellChildEncounterId (WebData WellChildMeasurements)
     | HandleFetchedNCDEncounter NCDEncounterId (WebData NCDEncounter)
     | HandleFetchedNCDEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict NCDEncounterId NCDEncounter))
@@ -619,15 +621,19 @@ type Revision
     | WeightRevision WeightId Weight
     | WellChildAlbendazoleRevision WellChildAlbendazoleId WellChildAlbendazole
     | WellChildBCGImmunisationRevision WellChildBCGImmunisationId WellChildBCGImmunisation
+    | WellChildCaringRevision WellChildCaringId WellChildCaring
     | WellChildContributingFactorsRevision WellChildContributingFactorsId WellChildContributingFactors
     | WellChildDTPImmunisationRevision WellChildDTPImmunisationId WellChildDTPImmunisation
     | WellChildDTPStandaloneImmunisationRevision WellChildDTPStandaloneImmunisationId WellChildDTPStandaloneImmunisation
     | WellChildECDRevision WellChildECDId WellChildECD
     | WellChildEncounterRevision WellChildEncounterId WellChildEncounter
+    | WellChildFeedingRevision WellChildFeedingId WellChildFeeding
     | WellChildFollowUpRevision WellChildFollowUpId WellChildFollowUp
+    | WellChildFoodSecurityRevision WellChildFoodSecurityId WellChildFoodSecurity
     | WellChildHeadCircumferenceRevision WellChildHeadCircumferenceId WellChildHeadCircumference
     | WellChildHealthEducationRevision WellChildHealthEducationId WellChildHealthEducation
     | WellChildHeightRevision WellChildHeightId WellChildHeight
+    | WellChildHygieneRevision WellChildHygieneId WellChildHygiene
     | WellChildHPVImmunisationRevision WellChildHPVImmunisationId WellChildHPVImmunisation
     | WellChildIPVImmunisationRevision WellChildIPVImmunisationId WellChildIPVImmunisation
     | WellChildMebendezoleRevision WellChildMebendezoleId WellChildMebendezole
