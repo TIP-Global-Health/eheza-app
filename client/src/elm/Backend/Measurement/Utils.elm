@@ -4006,6 +4006,88 @@ tuberculosisHealthEducationSignFromString sign =
             Nothing
 
 
+tuberculosisDOTSignToString : TuberculosisDOTSign -> String
+tuberculosisDOTSignToString sign =
+    case sign of
+        DOTPositive ->
+            "positive"
+
+        DOTNegativeTakenToday ->
+            "negative-taken-today"
+
+        DOTNegativeUnavailable ->
+            "negative-unavailable"
+
+        DOTNegativeSideEffects ->
+            "negative-side-effects"
+
+        DOTNegativePatientRefused ->
+            "negative-patient-refused"
+
+        DOTNegativeNotIndicated ->
+            "negative-not-indicated"
+
+
+tuberculosisDOTSignFromString : String -> Maybe TuberculosisDOTSign
+tuberculosisDOTSignFromString sign =
+    case sign of
+        "positive" ->
+            Just DOTPositive
+
+        "negative-taken-today" ->
+            Just DOTNegativeTakenToday
+
+        "negative-unavailable" ->
+            Just DOTNegativeUnavailable
+
+        "negative-side-effects" ->
+            Just DOTNegativeSideEffects
+
+        "negative-patient-refused" ->
+            Just DOTNegativePatientRefused
+
+        "negative-not-indicated" ->
+            Just DOTNegativeNotIndicated
+
+        _ ->
+            Nothing
+
+
+tuberculosisPrescribedMedicationToString : TuberculosisPrescribedMedication -> String
+tuberculosisPrescribedMedicationToString sign =
+    case sign of
+        MedicationRHZE ->
+            "rhze"
+
+        MedicationRH ->
+            "rh"
+
+        MedicationOther ->
+            "other"
+
+        NoTuberculosisPrescribedMedications ->
+            "none"
+
+
+tuberculosisPrescribedMedicationFromString : String -> Maybe TuberculosisPrescribedMedication
+tuberculosisPrescribedMedicationFromString sign =
+    case sign of
+        "rhze" ->
+            Just MedicationRHZE
+
+        "rh" ->
+            Just MedicationRH
+
+        "other" ->
+            Just MedicationOther
+
+        "none" ->
+            Just NoTuberculosisPrescribedMedications
+
+        _ ->
+            Nothing
+
+
 generatePreviousMeasurements :
     (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
     -> (ModelIndexedDb -> Dict encounterId (WebData measurements))

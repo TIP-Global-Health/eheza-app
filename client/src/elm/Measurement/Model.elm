@@ -1868,3 +1868,32 @@ type alias NutritionCaringForm =
 emptyNutritionCaringForm : NutritionCaringForm
 emptyNutritionCaringForm =
     NutritionCaringForm Nothing Nothing Nothing
+
+
+type alias OngoingTreatmentReviewForm =
+    { takenAsPrescribed : Maybe Bool
+    , missedDoses : Maybe Bool
+    , feelingBetter : Maybe Bool
+    , sideEffects : Maybe Bool
+    , reasonForNotTaking : Maybe ReasonForNotTaking
+    , reasonForNotTakingDirty : Bool
+    , totalMissedDoses : Maybe Int
+    , totalMissedDosesDirty : Bool
+    , adverseEvents : Maybe (List AdverseEvent)
+    , adverseEventsDirty : Bool
+    }
+
+
+emptyOngoingTreatmentReviewForm : OngoingTreatmentReviewForm
+emptyOngoingTreatmentReviewForm =
+    { takenAsPrescribed = Nothing
+    , missedDoses = Nothing
+    , feelingBetter = Nothing
+    , sideEffects = Nothing
+    , reasonForNotTaking = Nothing
+    , reasonForNotTakingDirty = False
+    , totalMissedDoses = Nothing
+    , totalMissedDosesDirty = False
+    , adverseEvents = Nothing
+    , adverseEventsDirty = False
+    }

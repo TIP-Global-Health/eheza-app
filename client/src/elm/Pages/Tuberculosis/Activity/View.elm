@@ -15,7 +15,14 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (isJust)
-import Measurement.Utils exposing (followUpFormWithDefault, sendToHCFormWithDefault)
+import Measurement.Model exposing (OngoingTreatmentReviewForm)
+import Measurement.Utils
+    exposing
+        ( followUpFormWithDefault
+        , ongoingTreatmentReviewFormWithDefault
+        , sendToHCFormWithDefault
+        , treatmentReviewInputsAndTasks
+        )
 import Measurement.View
     exposing
         ( viewFollowUpForm
@@ -29,11 +36,14 @@ import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , maybeToBoolTask
         , resolveActiveTask
         , saveButton
         , taskCompleted
         , tasksBarId
         , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
         , viewCustomBoolInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
@@ -98,14 +108,13 @@ viewActivity language currentDate activity assembled db model =
             viewDiagnosticsContent language currentDate assembled model.diagnosticsData
 
         Medication ->
-            -- @todo
-            []
+            viewMedicationContent language currentDate assembled model.medicationData
 
         SymptomReview ->
             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
 
         NextSteps ->
-            viewNextStepsContent language currentDate assembled db model.nextStepsData
+            viewNextStepsContent language currentDate assembled model.nextStepsData
 
 
 viewDiagnosticsContent : Language -> NominalDate -> AssembledData -> DiagnosticsData -> List (Html Msg)
@@ -184,6 +193,175 @@ viewDiagnosticsContent language currentDate assembled data =
     ]
 
 
+viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
+viewMedicationContent language currentDate assembled data =
+    let
+        measurements =
+            assembled.measurements
+
+        tasks =
+            List.filter (expectMedicationTask currentDate assembled) medicationTasks
+
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
+        viewTask task =
+            let
+                isCompleted =
+                    medicationTaskCompleted assembled task
+
+                iconClass =
+                    case task of
+                        TaskPrescribedMedication ->
+                            "medication"
+
+                        TaskDOT ->
+                            -- @todo : add icon
+                            "dot"
+
+                        TaskTreatmentReview ->
+                            "treatment-review"
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveMedicationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.TuberculosisMedicationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, medicationTasksCompletedFromTotal language currentDate measurements data task )) tasks
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case activeTask of
+                Just TaskPrescribedMedication ->
+                    getMeasurementValueFunc measurements.medication
+                        |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+                        |> viewPrescribedMedicationForm language currentDate
+                        |> List.singleton
+
+                Just TaskDOT ->
+                    getMeasurementValueFunc measurements.dot
+                        |> dotFormWithDefault data.dotForm
+                        |> viewDOTForm language currentDate
+                        |> List.singleton
+
+                Just TaskTreatmentReview ->
+                    getMeasurementValueFunc measurements.treatmentReview
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+                        |> viewTreatmentReviewForm language currentDate
+                        |> List.singleton
+
+                Nothing ->
+                    []
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        saveMsg =
+                            case task of
+                                TaskPrescribedMedication ->
+                                    SavePrescribedMedication personId measurements.medication nextTask
+
+                                TaskDOT ->
+                                    SaveDOT personId measurements.dot nextTask
+
+                                TaskTreatmentReview ->
+                                    SaveTreatmentReview personId measurements.treatmentReview nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
+        ]
+    ]
+
+
+viewPrescribedMedicationForm : Language -> NominalDate -> PrescribedMedicationForm -> Html Msg
+viewPrescribedMedicationForm language currentDate form =
+    div [ class "ui form prescribed-medication" ]
+        [ viewQuestionLabel language Translate.TuberculosisPrescribedMedicationsQuestion
+        , viewCheckBoxMultipleSelectInput language
+            [ MedicationRHZE
+            , MedicationRH
+            , MedicationOther
+            ]
+            []
+            (Maybe.withDefault [] form.medications)
+            Nothing
+            SetPrescribedMedication
+            Translate.TuberculosisPrescribedMedication
+        ]
+
+
+viewDOTForm : Language -> NominalDate -> DOTForm -> Html Msg
+viewDOTForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            dotInputsAndTasks language currentDate form
+    in
+    div [ class "ui form dot" ]
+        inputs
+
+
+viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            treatmentReviewInputsAndTasks language
+                currentDate
+                SetTreatmentReviewBoolInput
+                SetReasonForNotTaking
+                SetTotalMissedDoses
+                SetAdverseEvent
+                form
+    in
+    div [ class "ui form treatment-review" ]
+        inputs
+
+
 viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
 viewSymptomReviewContent language currentDate assembled data =
     let
@@ -259,8 +437,8 @@ viewSymptomReviewContent language currentDate assembled data =
     ]
 
 
-viewNextStepsContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
-viewNextStepsContent language currentDate assembled db data =
+viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
+viewNextStepsContent language currentDate assembled data =
     let
         measurements =
             assembled.measurements
@@ -273,22 +451,19 @@ viewNextStepsContent language currentDate assembled db data =
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                isCompleted =
+                    nextStepsTaskCompleted assembled task
+
+                iconClass =
                     case task of
                         TaskHealthEducation ->
-                            ( "next-steps-health-education"
-                            , isJust measurements.healthEducation
-                            )
+                            "next-steps-health-education"
 
                         TaskFollowUp ->
-                            ( "next-steps-follow-up"
-                            , isJust measurements.followUp
-                            )
+                            "next-steps-follow-up"
 
                         TaskReferral ->
-                            ( "next-steps-send-to-hc"
-                            , isJust measurements.referral
-                            )
+                            "next-steps-send-to-hc"
 
                 isActive =
                     activeTask == Just task

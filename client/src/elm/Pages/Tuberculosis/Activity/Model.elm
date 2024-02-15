@@ -3,12 +3,13 @@ module Pages.Tuberculosis.Activity.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
-import Measurement.Model exposing (FollowUpForm, SendToHCForm, emptyFollowUpForm, emptySendToHCForm)
+import Measurement.Model exposing (FollowUpForm, OngoingTreatmentReviewForm, SendToHCForm, emptyFollowUpForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
     { diagnosticsData : DiagnosticsData
+    , medicationData : MedicationData
     , symptomReviewData : SymptomReviewData
     , nextStepsData : NextStepsData
     }
@@ -17,6 +18,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { diagnosticsData = emptyDiagnosticsData
+    , medicationData = emptyMedicationData
     , symptomReviewData = emptySymptomReviewData
     , nextStepsData = emptyNextStepsData
     }
@@ -46,6 +48,63 @@ emptyDiagnosticsForm =
     , isPulmonary = Nothing
     , isPulmonaryDirty = False
     }
+
+
+type alias MedicationData =
+    { prescribedMedicationForm : PrescribedMedicationForm
+    , dotForm : DOTForm
+    , treatmentReviewForm : OngoingTreatmentReviewForm
+    , activeTask : Maybe MedicationTask
+    }
+
+
+emptyMedicationData : MedicationData
+emptyMedicationData =
+    { prescribedMedicationForm = emptyPrescribedMedicationForm
+    , dotForm = emptyDOTForm
+    , treatmentReviewForm = emptyOngoingTreatmentReviewForm
+    , activeTask = Nothing
+    }
+
+
+type alias PrescribedMedicationForm =
+    { medications : Maybe (List TuberculosisPrescribedMedication)
+    , medicationsDirty : Bool
+    }
+
+
+emptyPrescribedMedicationForm : PrescribedMedicationForm
+emptyPrescribedMedicationForm =
+    { medications = Nothing
+    , medicationsDirty = False
+    }
+
+
+type alias DOTForm =
+    { provideToday : Maybe Bool
+    , reasonNotProvidedToday : Maybe TuberculosisDOTSign
+    , reasonNotProvidedTodayDirty : Bool
+    , distributeMedications : Maybe Bool
+    , reasonNotDistributedMedications : Maybe TuberculosisDOTSign
+    , reasonNotDistributedMedicationsDirty : Bool
+    }
+
+
+emptyDOTForm : DOTForm
+emptyDOTForm =
+    { provideToday = Nothing
+    , reasonNotProvidedToday = Nothing
+    , reasonNotProvidedTodayDirty = False
+    , distributeMedications = Nothing
+    , reasonNotDistributedMedications = Nothing
+    , reasonNotDistributedMedicationsDirty = False
+    }
+
+
+type MedicationTask
+    = TaskPrescribedMedication
+    | TaskDOT
+    | TaskTreatmentReview
 
 
 type alias SymptomReviewData =
@@ -112,6 +171,20 @@ type Msg
     = SetActivePage Page
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
     | SaveDiagnostics PersonId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
+      -- MEDICATION
+    | SetActiveMedicationTask MedicationTask
+    | SetPrescribedMedication TuberculosisPrescribedMedication
+    | SavePrescribedMedication PersonId (Maybe ( TuberculosisMedicationId, TuberculosisMedication )) (Maybe MedicationTask)
+    | SetDOTBoolInput (Bool -> DOTForm -> DOTForm) Bool
+    | SetReasonNotProvidedToday TuberculosisDOTSign
+    | SetReasonMedicationsNotDistributed TuberculosisDOTSign
+    | SaveDOT PersonId (Maybe ( TuberculosisDOTId, TuberculosisDOT )) (Maybe MedicationTask)
+    | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
+    | SetReasonForNotTaking ReasonForNotTaking
+    | SetTotalMissedDoses String
+    | SetAdverseEvent AdverseEvent
+    | SaveTreatmentReview PersonId (Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview )) (Maybe MedicationTask)
+      -- SYMPTOM REVIEW
     | SetSymptomReviewBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
     | SaveSymptomReview PersonId (Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview ))
       -- NEXT STEPS

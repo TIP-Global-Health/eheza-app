@@ -3094,17 +3094,17 @@ encodeAcuteIllnessMuac =
 
 encodeTreatmentOngoing : TreatmentOngoing -> List ( String, Value )
 encodeTreatmentOngoing =
-    encodeAcuteIllnessMeasurement encodeTreatmentOngoingValue
+    encodeAcuteIllnessMeasurement (encodeTreatmentOngoingValueWithType "treatment_ongoing")
 
 
-encodeTreatmentOngoingValue : TreatmentOngoingValue -> List ( String, Value )
-encodeTreatmentOngoingValue value =
+encodeTreatmentOngoingValueWithType : String -> TreatmentOngoingValue -> List ( String, Value )
+encodeTreatmentOngoingValueWithType type_ value =
     [ ( "treatment_ongoing", encodeEverySet encodeTreatmentOngoingSign value.signs )
     , ( "reason_for_not_taking", encodeReasonForNotTakingSign value.reasonForNotTaking )
     , ( "missed_doses", int value.missedDoses )
     , ( "adverse_events", encodeEverySet encodeAdverseEvent value.adverseEvents )
     , ( "deleted", bool False )
-    , ( "type", string "treatment_ongoing" )
+    , ( "type", string type_ )
     ]
 
 
@@ -4410,9 +4410,16 @@ encodeTuberculosisDOT =
 
 encodeTuberculosisDOTValue : TuberculosisDOTValue -> List ( String, Value )
 encodeTuberculosisDOTValue value =
-    [ ( "deleted", bool False )
+    [ ( "dot_signs", encodeTuberculosisDOTSign value.sign )
+    , ( "dot_meds_distribution_sign", encodeTuberculosisDOTSign value.medicationDistributionSign )
+    , ( "deleted", bool False )
     , ( "type", string "tuberculosis_dot" )
     ]
+
+
+encodeTuberculosisDOTSign : TuberculosisDOTSign -> Value
+encodeTuberculosisDOTSign =
+    tuberculosisDOTSignToString >> string
 
 
 encodeTuberculosisFollowUp : TuberculosisFollowUp -> List ( String, Value )
@@ -4445,9 +4452,15 @@ encodeTuberculosisMedication =
 
 encodeTuberculosisMedicationValue : TuberculosisMedicationValue -> List ( String, Value )
 encodeTuberculosisMedicationValue value =
-    [ ( "deleted", bool False )
+    [ ( "prescribed_tb_medications", encodeEverySet encodeTuberculosisPrescribedMedication value )
+    , ( "deleted", bool False )
     , ( "type", string "tuberculosis_medication" )
     ]
+
+
+encodeTuberculosisPrescribedMedication : TuberculosisPrescribedMedication -> Value
+encodeTuberculosisPrescribedMedication =
+    tuberculosisPrescribedMedicationToString >> string
 
 
 encodeTuberculosisReferral : TuberculosisReferral -> List ( String, Value )
@@ -4475,11 +4488,4 @@ encodeTuberculosisSymptom =
 
 encodeTuberculosisTreatmentReview : TuberculosisTreatmentReview -> List ( String, Value )
 encodeTuberculosisTreatmentReview =
-    encodeTuberculosisMeasurement encodeTuberculosisTreatmentReviewValue
-
-
-encodeTuberculosisTreatmentReviewValue : TuberculosisTreatmentReviewValue -> List ( String, Value )
-encodeTuberculosisTreatmentReviewValue value =
-    [ ( "deleted", bool False )
-    , ( "type", string "tuberculosis_treatment_review" )
-    ]
+    encodeTuberculosisMeasurement (encodeTreatmentOngoingValueWithType "tuberculosis_treatment_review")

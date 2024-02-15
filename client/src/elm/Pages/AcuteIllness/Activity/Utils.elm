@@ -14,9 +14,12 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils
     exposing
         ( followUpFormWithDefault
+        , fromListWithDefaultValue
         , healthEducationFormWithDefault
         , muacFormWithDefault
+        , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
+        , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
 import Pages.AcuteIllness.Activity.Model exposing (..)
@@ -32,7 +35,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         )
-import Translate exposing (TranslationId)
+import Translate exposing (Language, TranslationId)
 
 
 expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
@@ -775,66 +778,27 @@ nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements d
             )
 
 
-ongoingTreatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
-ongoingTreatmentTasksCompletedFromTotal measurements data task =
+ongoingTreatmentTasksCompletedFromTotal : Language -> NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
+ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data task =
     case task of
         OngoingTreatmentReview ->
             let
                 form =
-                    measurements.treatmentOngoing
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.treatmentOngoing
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
 
-                ( takenAsPrescribedActive, takenAsPrescribedComleted ) =
-                    form.takenAsPrescribed
-                        |> Maybe.map
-                            (\takenAsPrescribed ->
-                                if not takenAsPrescribed then
-                                    if isJust form.reasonForNotTaking then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( missedDosesActive, missedDosesCompleted ) =
-                    form.missedDoses
-                        |> Maybe.map
-                            (\missedDoses ->
-                                if missedDoses then
-                                    if isJust form.totalMissedDoses then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( adverseEventsActive, adverseEventsCompleted ) =
-                    form.sideEffects
-                        |> Maybe.map
-                            (\sideEffects ->
-                                if sideEffects then
-                                    if isJust form.adverseEvents then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                ( _, tasks ) =
+                    treatmentReviewInputsAndTasks language
+                        currentDate
+                        SetOngoingTreatmentReviewBoolInput
+                        SetReasonForNotTaking
+                        SetTotalMissedDoses
+                        SetAdverseEvent
+                        form
             in
-            ( takenAsPrescribedActive + missedDosesActive + adverseEventsActive + taskCompleted form.feelingBetter
-            , takenAsPrescribedComleted + missedDosesCompleted + adverseEventsCompleted + 1
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
             )
 
 
@@ -1497,65 +1461,6 @@ resolveAmoxicillinDosage currentDate person =
                 else
                     ( "1", "500", Translate.ByMouthThreeTimesADayForXDays 5 )
             )
-
-
-fromOngoingTreatmentReviewValue : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
-fromOngoingTreatmentReviewValue saved =
-    { takenAsPrescribed = Maybe.map (.signs >> EverySet.member TakenAsPrescribed) saved
-    , missedDoses = Maybe.map (.signs >> EverySet.member MissedDoses) saved
-    , feelingBetter = Maybe.map (.signs >> EverySet.member FeelingBetter) saved
-    , sideEffects = Maybe.map (.signs >> EverySet.member SideEffects) saved
-    , reasonForNotTaking = Maybe.map .reasonForNotTaking saved
-    , reasonForNotTakingDirty = False
-    , totalMissedDoses = Maybe.map .missedDoses saved
-    , totalMissedDosesDirty = False
-    , adverseEvents = Maybe.map (.adverseEvents >> EverySet.toList) saved
-    , adverseEventsDirty = False
-    }
-
-
-ongoingTreatmentReviewFormWithDefault : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
-ongoingTreatmentReviewFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
-            (\value ->
-                { takenAsPrescribed = or form.takenAsPrescribed (EverySet.member TakenAsPrescribed value.signs |> Just)
-                , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
-                , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
-                , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
-                , reasonForNotTaking = valueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking value.reasonForNotTaking
-                , reasonForNotTakingDirty = form.reasonForNotTakingDirty
-                , totalMissedDoses = valueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses value.missedDoses
-                , totalMissedDosesDirty = form.totalMissedDosesDirty
-                , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents (value.adverseEvents |> EverySet.toList |> Just)
-                , adverseEventsDirty = form.adverseEventsDirty
-                }
-            )
-
-
-toOngoingTreatmentReviewValueWithDefault : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue
-toOngoingTreatmentReviewValueWithDefault saved form =
-    ongoingTreatmentReviewFormWithDefault form saved
-        |> toOngoingTreatmentReviewValue
-
-
-toOngoingTreatmentReviewValue : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue
-toOngoingTreatmentReviewValue form =
-    let
-        signs =
-            [ Maybe.map (ifTrue TakenAsPrescribed) form.takenAsPrescribed
-            , Maybe.map (ifTrue MissedDoses) form.missedDoses
-            , Maybe.map (ifTrue FeelingBetter) form.feelingBetter
-            , Maybe.map (ifTrue SideEffects) form.sideEffects
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentOngoingSign)
-    in
-    Maybe.map TreatmentOngoingValue signs
-        |> andMap (form.reasonForNotTaking |> Maybe.withDefault NoReasonForNotTakingSign |> Just)
-        |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
-        |> andMap (form.adverseEvents |> fromListWithDefaultValue NoAdverseEvent |> Just)
 
 
 fromReviewDangerSignsValue : Maybe (EverySet AcuteIllnessDangerSign) -> ReviewDangerSignsForm
@@ -3146,13 +3051,3 @@ withDefaultValue : a -> Maybe a -> EverySet a
 withDefaultValue default maybe =
     Maybe.map List.singleton maybe
         |> fromListWithDefaultValue default
-
-
-fromListWithDefaultValue : a -> Maybe (List a) -> EverySet a
-fromListWithDefaultValue default maybeList =
-    case maybeList of
-        Just list ->
-            EverySet.fromList list |> ifEverySetEmpty default
-
-        Nothing ->
-            EverySet.singleton default

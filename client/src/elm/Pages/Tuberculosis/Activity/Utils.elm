@@ -14,7 +14,9 @@ import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Utils
     exposing
         ( followUpFormWithDefault
+        , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
+        , treatmentReviewInputsAndTasks
         )
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
@@ -70,15 +72,98 @@ activityCompleted currentDate assembled activity =
 
         Medication ->
             notExpected Medication
-                || isJust assembled.measurements.medication
+                || (resolveMedicationTasks currentDate assembled
+                        |> List.all (medicationTaskCompleted assembled)
+                   )
 
         SymptomReview ->
             notExpected SymptomReview
                 || isJust assembled.measurements.symptomReview
 
         NextSteps ->
-            resolveNextStepsTasks currentDate assembled
-                |> List.all (nextStepsTaskCompleted assembled)
+            notExpected NextSteps
+                || (resolveNextStepsTasks currentDate assembled
+                        |> List.all (nextStepsTaskCompleted assembled)
+                   )
+
+
+medicationTasks : List MedicationTask
+medicationTasks =
+    [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
+
+
+resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
+resolveMedicationTasks currentDate assembled =
+    List.filter (expectMedicationTask currentDate assembled) medicationTasks
+
+
+expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
+expectMedicationTask currentDate assembled task =
+    case task of
+        _ ->
+            -- @todo:
+            True
+
+
+medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
+medicationTaskCompleted assembled task =
+    case task of
+        TaskPrescribedMedication ->
+            isJust assembled.measurements.medication
+
+        TaskDOT ->
+            isJust assembled.measurements.dot
+
+        TaskTreatmentReview ->
+            isJust assembled.measurements.treatmentReview
+
+
+medicationTasksCompletedFromTotal : Language -> NominalDate -> TuberculosisMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal language currentDate measurements data task =
+    case task of
+        TaskPrescribedMedication ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.medication
+                        |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+            in
+            ( taskCompleted form.medications
+            , 1
+            )
+
+        TaskDOT ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.dot
+                        |> dotFormWithDefault data.dotForm
+
+                ( _, tasks ) =
+                    dotInputsAndTasks language currentDate form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
+
+        TaskTreatmentReview ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.treatmentReview
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+
+                ( _, tasks ) =
+                    treatmentReviewInputsAndTasks language
+                        currentDate
+                        SetTreatmentReviewBoolInput
+                        SetReasonForNotTaking
+                        SetTotalMissedDoses
+                        SetAdverseEvent
+                        form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
 
 nextStepsTasks : List NextStepsTask
@@ -257,7 +342,7 @@ toSymptomReviewValue form =
 toHealthEducationValueWithDefault : Maybe TuberculosisHealthEducationValue -> HealthEducationForm -> Maybe TuberculosisHealthEducationValue
 toHealthEducationValueWithDefault saved form =
     healthEducationFormWithDefault form saved
-        |> toHealthEducationValue saved
+        |> toHealthEducationValue
 
 
 healthEducationFormWithDefault :
@@ -273,8 +358,214 @@ healthEducationFormWithDefault form saved =
             )
 
 
-toHealthEducationValue : Maybe TuberculosisHealthEducationValue -> HealthEducationForm -> Maybe TuberculosisHealthEducationValue
-toHealthEducationValue saved form =
+toHealthEducationValue : HealthEducationForm -> Maybe TuberculosisHealthEducationValue
+toHealthEducationValue form =
     [ ifNullableTrue EducationFollowUpTesting form.followUpTesting ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTuberculosisHealthEducationSigns)
+
+
+toPrescribedMedicationValueWithDefault : Maybe TuberculosisMedicationValue -> PrescribedMedicationForm -> Maybe TuberculosisMedicationValue
+toPrescribedMedicationValueWithDefault saved form =
+    prescribedMedicationFormWithDefault form saved
+        |> toPrescribedMedicationValue
+
+
+prescribedMedicationFormWithDefault :
+    PrescribedMedicationForm
+    -> Maybe TuberculosisMedicationValue
+    -> PrescribedMedicationForm
+prescribedMedicationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { medications = or form.medications (Just <| EverySet.toList value)
+                , medicationsDirty = form.medicationsDirty
+                }
+            )
+
+
+toPrescribedMedicationValue : PrescribedMedicationForm -> Maybe TuberculosisMedicationValue
+toPrescribedMedicationValue form =
+    Maybe.map EverySet.fromList form.medications
+
+
+toDOTValueWithDefault : Maybe TuberculosisDOTValue -> DOTForm -> Maybe TuberculosisDOTValue
+toDOTValueWithDefault saved form =
+    dotFormWithDefault form saved
+        |> toDOTValue
+
+
+dotFormWithDefault :
+    DOTForm
+    -> Maybe TuberculosisDOTValue
+    -> DOTForm
+dotFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                let
+                    provideTodayFromValue =
+                        Just <| value.sign == DOTPositive
+
+                    reasonNotProvidedTodayFromValue =
+                        if value.sign == DOTPositive then
+                            Nothing
+
+                        else
+                            Just value.sign
+
+                    distributeMedicationsFromValue =
+                        Just <| value.medicationDistributionSign == DOTPositive
+
+                    reasonNotDistributeMedicationsFromValue =
+                        if value.medicationDistributionSign == DOTPositive then
+                            Nothing
+
+                        else
+                            Just value.medicationDistributionSign
+                in
+                { provideToday = or form.provideToday provideTodayFromValue
+                , reasonNotProvidedToday =
+                    maybeValueConsideringIsDirtyField form.reasonNotProvidedTodayDirty
+                        form.reasonNotProvidedToday
+                        reasonNotProvidedTodayFromValue
+                , reasonNotProvidedTodayDirty = form.reasonNotProvidedTodayDirty
+                , distributeMedications = or form.distributeMedications distributeMedicationsFromValue
+                , reasonNotDistributedMedications =
+                    maybeValueConsideringIsDirtyField form.reasonNotDistributedMedicationsDirty
+                        form.reasonNotDistributedMedications
+                        reasonNotDistributeMedicationsFromValue
+                , reasonNotDistributedMedicationsDirty = form.reasonNotDistributedMedicationsDirty
+                }
+            )
+
+
+toDOTValue : DOTForm -> Maybe TuberculosisDOTValue
+toDOTValue form =
+    let
+        maybeSign =
+            let
+                signPositive =
+                    if form.provideToday == Just True then
+                        Just DOTPositive
+
+                    else
+                        Nothing
+            in
+            or signPositive form.reasonNotProvidedToday
+
+        maybeDistributeMedications =
+            let
+                distributeMedicationsPositive =
+                    if form.distributeMedications == Just True then
+                        Just DOTPositive
+
+                    else
+                        Nothing
+            in
+            or distributeMedicationsPositive form.reasonNotDistributedMedications
+    in
+    Maybe.map2
+        (\sign medicationDistributionSign ->
+            { sign = sign
+            , medicationDistributionSign = medicationDistributionSign
+            }
+        )
+        maybeSign
+        maybeDistributeMedications
+
+
+dotInputsAndTasks : Language -> NominalDate -> DOTForm -> ( List (Html Msg), List (Maybe Bool) )
+dotInputsAndTasks language currentDate form =
+    let
+        ( provideTodayInputs, provideTodayTasks ) =
+            let
+                ( derivedInputs, derivedTasks ) =
+                    if form.provideToday == Just False then
+                        ( [ viewQuestionLabel language Translate.WhyNot
+                          , viewCheckBoxSelectInput language
+                                [ DOTNegativeTakenToday
+                                , DOTNegativeNotIndicated
+                                , DOTNegativeUnavailable
+                                , DOTNegativeSideEffects
+                                , DOTNegativePatientRefused
+                                ]
+                                []
+                                form.reasonNotProvidedToday
+                                SetReasonNotProvidedToday
+                                Translate.TuberculosisReasonNotProvidedToday
+                          ]
+                        , [ maybeToBoolTask form.reasonNotProvidedToday ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.TuberculosisProvideDOTTodayQuestion
+              , viewBoolInput
+                    language
+                    form.provideToday
+                    (SetDOTBoolInput
+                        (\value form_ ->
+                            { form_
+                                | provideToday = Just value
+                                , reasonNotProvidedToday = Nothing
+                                , reasonNotProvidedTodayDirty = True
+                            }
+                        )
+                    )
+                    "provide-today"
+                    Nothing
+              ]
+                ++ derivedInputs
+            , form.provideToday :: derivedTasks
+            )
+
+        ( distributeMedicationsInputs, distributeMedicationsTasks ) =
+            let
+                ( derivedInputs, derivedTasks ) =
+                    if form.distributeMedications == Just False then
+                        ( [ viewQuestionLabel language Translate.WhyNot
+                          , viewCheckBoxSelectInput language
+                                [ DOTNegativeTakenToday
+                                , DOTNegativeUnavailable
+                                , DOTNegativeSideEffects
+                                , DOTNegativePatientRefused
+                                ]
+                                []
+                                form.reasonNotDistributedMedications
+                                SetReasonMedicationsNotDistributed
+                                Translate.TuberculosisReasonMedicationsNotDistributed
+                          ]
+                        , [ maybeToBoolTask form.reasonNotDistributedMedications ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.TuberculosisDistributeMedicationsQuestion
+              , viewBoolInput
+                    language
+                    form.distributeMedications
+                    (SetDOTBoolInput
+                        (\value form_ ->
+                            { form_
+                                | distributeMedications = Just value
+                                , reasonNotDistributedMedications = Nothing
+                                , reasonNotDistributedMedicationsDirty = True
+                            }
+                        )
+                    )
+                    "distribute-medications"
+                    Nothing
+              ]
+                ++ derivedInputs
+            , form.distributeMedications :: derivedTasks
+            )
+    in
+    ( provideTodayInputs ++ distributeMedicationsInputs
+    , provideTodayTasks ++ distributeMedicationsTasks
+    )

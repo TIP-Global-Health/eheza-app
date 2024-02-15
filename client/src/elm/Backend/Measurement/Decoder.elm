@@ -3889,12 +3889,16 @@ decodeAcuteIllnessMuac =
 
 decodeTreatmentOngoing : Decoder TreatmentOngoing
 decodeTreatmentOngoing =
+    decodeAcuteIllnessMeasurement decodeTreatmentOngoingValue
+
+
+decodeTreatmentOngoingValue : Decoder TreatmentOngoingValue
+decodeTreatmentOngoingValue =
     succeed TreatmentOngoingValue
         |> required "treatment_ongoing" (decodeEverySet decodeTreatmentOngoingSign)
         |> required "reason_for_not_taking" decodeReasonForNotTaking
         |> required "missed_doses" decodeInt
         |> required "adverse_events" (decodeEverySet decodeAdverseEvent)
-        |> decodeAcuteIllnessMeasurement
 
 
 decodeTreatmentOngoingSign : Decoder TreatmentOngoingSign
@@ -5452,6 +5456,19 @@ decodeTuberculosisDOT =
 decodeTuberculosisDOTValue : Decoder TuberculosisDOTValue
 decodeTuberculosisDOTValue =
     succeed TuberculosisDOTValue
+        |> required "dot_signs" decodeTuberculosisDOTSign
+        |> required "dot_meds_distribution_sign" decodeTuberculosisDOTSign
+
+
+decodeTuberculosisDOTSign : Decoder TuberculosisDOTSign
+decodeTuberculosisDOTSign =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisDOTSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisDOTSign" |> fail)
+            )
 
 
 decodeTuberculosisFollowUp : Decoder TuberculosisFollowUp
@@ -5488,7 +5505,19 @@ decodeTuberculosisMedication =
 
 decodeTuberculosisMedicationValue : Decoder TuberculosisMedicationValue
 decodeTuberculosisMedicationValue =
-    succeed TuberculosisMedicationValue
+    decodeEverySet decodeTuberculosisPrescribedMedication
+        |> field "prescribed_tb_medications"
+
+
+decodeTuberculosisPrescribedMedication : Decoder TuberculosisPrescribedMedication
+decodeTuberculosisPrescribedMedication =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisPrescribedMedicationFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisPrescribedMedication" |> fail)
+            )
 
 
 decodeTuberculosisReferral : Decoder TuberculosisReferral
@@ -5520,9 +5549,4 @@ decodeTuberculosisSymptom =
 
 decodeTuberculosisTreatmentReview : Decoder TuberculosisTreatmentReview
 decodeTuberculosisTreatmentReview =
-    decodeTuberculosisMeasurement decodeTuberculosisTreatmentReviewValue
-
-
-decodeTuberculosisTreatmentReviewValue : Decoder TuberculosisTreatmentReviewValue
-decodeTuberculosisTreatmentReviewValue =
-    succeed TuberculosisTreatmentReviewValue
+    decodeTuberculosisMeasurement decodeTreatmentOngoingValue

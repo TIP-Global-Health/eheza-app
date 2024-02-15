@@ -1370,7 +1370,193 @@ outsideCareFormInputsAndTasks language config step form =
             outsideCareFormInputsAndTasksMedications language config form
 
 
-outsideCareFormInputsAndTasksDiagnoses : Language -> OutsideCareConfig diagnosis msg -> OutsideCareForm diagnosis -> ( List (Html msg), List (Maybe Bool) )
+treatmentReviewInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ((Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) -> Bool -> msg)
+    -> (ReasonForNotTaking -> msg)
+    -> (String -> msg)
+    -> (AdverseEvent -> msg)
+    -> OngoingTreatmentReviewForm
+    -> ( List (Html msg), List (Maybe Bool) )
+treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
+    let
+        ( takenAsPrescribedInputs, takenAsPrescribedTasks ) =
+            let
+                takenAsPrescribedUpdateFunc value form_ =
+                    if value then
+                        { form_ | takenAsPrescribed = Just True, reasonForNotTaking = Nothing, reasonForNotTakingDirty = True }
+
+                    else
+                        { form_ | takenAsPrescribed = Just False }
+
+                ( reasonForNotTakingInput, reasonForNotTakingTask ) =
+                    let
+                        takenAsPrescribed =
+                            Maybe.withDefault True form.takenAsPrescribed
+                    in
+                    if not takenAsPrescribed then
+                        ( [ div [ class "ui grid" ]
+                                [ div [ class "one wide column" ] []
+                                , div [ class "fifteen wide column" ]
+                                    [ viewQuestionLabel language Translate.WhyNot ]
+                                ]
+                          , viewCheckBoxSelectInput language
+                                [ NotTakingAdverseEvent, NotTakingNoMoney ]
+                                [ NotTakingMemoryProblems, NotTakingOther ]
+                                form.reasonForNotTaking
+                                setReasonForNotTakingMsg
+                                Translate.ReasonForNotTaking
+                          ]
+                        , [ maybeToBoolTask form.reasonForNotTaking ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.MedicationTakenAsPrescribedQuestion
+              , viewBoolInput
+                    language
+                    form.takenAsPrescribed
+                    (setTreatmentReviewBoolInputMsg takenAsPrescribedUpdateFunc)
+                    "taken-as-prescribed"
+                    Nothing
+              ]
+                ++ reasonForNotTakingInput
+            , form.takenAsPrescribed
+                :: reasonForNotTakingTask
+            )
+
+        ( missedDosesInputs, missedDosesTasks ) =
+            let
+                missedDosesUpdateFunc value form_ =
+                    if value then
+                        { form_ | missedDoses = Just True }
+
+                    else
+                        { form_ | missedDoses = Just False, totalMissedDoses = Nothing, totalMissedDosesDirty = True }
+
+                ( totalMissedDosesInput, totalMissedDosesTask ) =
+                    let
+                        missedDoses =
+                            Maybe.withDefault False form.missedDoses
+                    in
+                    if missedDoses then
+                        let
+                            options =
+                                List.repeat 22 ""
+                                    |> List.indexedMap (\index _ -> index)
+
+                            missedDosesInput =
+                                viewCustomSelectListInput form.totalMissedDoses
+                                    options
+                                    String.fromInt
+                                    setMissedDosesMsg
+                                    String.fromInt
+                                    ""
+                                    True
+                        in
+                        ( [ div [ class "ui grid" ]
+                                [ div [ class "one wide column" ] []
+                                , div [ class "four wide column" ]
+                                    [ viewQuestionLabel language Translate.HowManyDoses ]
+                                , div [ class "four wide column" ]
+                                    [ missedDosesInput ]
+                                ]
+                          ]
+                        , [ maybeToBoolTask form.totalMissedDoses ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.MedicationDosesMissedQuestion
+              , viewBoolInput
+                    language
+                    form.missedDoses
+                    (setTreatmentReviewBoolInputMsg missedDosesUpdateFunc)
+                    "missed-doses"
+                    Nothing
+              ]
+                ++ totalMissedDosesInput
+            , form.missedDoses :: totalMissedDosesTask
+            )
+
+        ( sideEffectsInputs, sideEffectsTasks ) =
+            let
+                sideEffectsUpdateFunc value form_ =
+                    if value then
+                        { form_ | sideEffects = Just value }
+
+                    else
+                        { form_ | sideEffects = Just value, adverseEvents = Nothing, adverseEventsDirty = True }
+
+                ( adverseEventsInput, adverseEventsTask ) =
+                    let
+                        sideEffects =
+                            Maybe.withDefault False form.sideEffects
+                    in
+                    if sideEffects then
+                        ( [ div [ class "ui grid" ]
+                                [ div [ class "one wide column" ] []
+                                , div [ class "fifteen wide column" ]
+                                    [ viewQuestionLabel language Translate.AcuteIllnessAdverseEventKindsQuestion ]
+                                ]
+                          , viewCheckBoxMultipleSelectInput language
+                                [ AdverseEventRashOrItching
+                                , AdverseEventFever
+                                , AdverseEventDiarrhea
+                                ]
+                                [ AdverseEventVomiting
+                                , AdverseEventFatigue
+                                , AdverseEventOther
+                                ]
+                                (Maybe.withDefault [] form.adverseEvents)
+                                Nothing
+                                setAdverseEventMsg
+                                Translate.AcuteIllnessAdverseEvent
+                          ]
+                        , [ maybeToBoolTask form.adverseEvents ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            ( [ viewQuestionLabel language Translate.MedicationCausesSideEffectsQuestion
+              , viewBoolInput
+                    language
+                    form.sideEffects
+                    (setTreatmentReviewBoolInputMsg sideEffectsUpdateFunc)
+                    "side-effects"
+                    Nothing
+              ]
+                ++ adverseEventsInput
+            , form.sideEffects :: adverseEventsTask
+            )
+
+        feelingBetterUpdateFunc value form_ =
+            { form_ | feelingBetter = Just value }
+    in
+    ( takenAsPrescribedInputs
+        ++ missedDosesInputs
+        ++ [ viewQuestionLabel language Translate.MedicationFeelBetterAfterTakingQuestion
+           , viewBoolInput
+                language
+                form.feelingBetter
+                (setTreatmentReviewBoolInputMsg feelingBetterUpdateFunc)
+                "feeling-better"
+                Nothing
+           ]
+        ++ sideEffectsInputs
+    , takenAsPrescribedTasks ++ missedDosesTasks ++ [ form.feelingBetter ] ++ sideEffectsTasks
+    )
+
+
+outsideCareFormInputsAndTasksDiagnoses :
+    Language
+    -> OutsideCareConfig diagnosis msg
+    -> OutsideCareForm diagnosis
+    -> ( List (Html msg), List (Maybe Bool) )
 outsideCareFormInputsAndTasksDiagnoses language config form =
     let
         ( givenNewDiagnosisSection, givenNewDiagnosisTasks ) =
@@ -8877,3 +9063,57 @@ toNutritionCaringValue form =
     in
     Maybe.map NutritionCaringValue signs
         |> andMap form.caringOption
+
+
+ongoingTreatmentReviewFormWithDefault : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm
+ongoingTreatmentReviewFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { takenAsPrescribed = or form.takenAsPrescribed (EverySet.member TakenAsPrescribed value.signs |> Just)
+                , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
+                , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
+                , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
+                , reasonForNotTaking = valueConsideringIsDirtyField form.reasonForNotTakingDirty form.reasonForNotTaking value.reasonForNotTaking
+                , reasonForNotTakingDirty = form.reasonForNotTakingDirty
+                , totalMissedDoses = valueConsideringIsDirtyField form.totalMissedDosesDirty form.totalMissedDoses value.missedDoses
+                , totalMissedDosesDirty = form.totalMissedDosesDirty
+                , adverseEvents = maybeValueConsideringIsDirtyField form.adverseEventsDirty form.adverseEvents (value.adverseEvents |> EverySet.toList |> Just)
+                , adverseEventsDirty = form.adverseEventsDirty
+                }
+            )
+
+
+toOngoingTreatmentReviewValueWithDefault : Maybe TreatmentOngoingValue -> OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue
+toOngoingTreatmentReviewValueWithDefault saved form =
+    ongoingTreatmentReviewFormWithDefault form saved
+        |> toOngoingTreatmentReviewValue
+
+
+toOngoingTreatmentReviewValue : OngoingTreatmentReviewForm -> Maybe TreatmentOngoingValue
+toOngoingTreatmentReviewValue form =
+    let
+        signs =
+            [ Maybe.map (ifTrue TakenAsPrescribed) form.takenAsPrescribed
+            , Maybe.map (ifTrue MissedDoses) form.missedDoses
+            , Maybe.map (ifTrue FeelingBetter) form.feelingBetter
+            , Maybe.map (ifTrue SideEffects) form.sideEffects
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentOngoingSign)
+    in
+    Maybe.map TreatmentOngoingValue signs
+        |> andMap (form.reasonForNotTaking |> Maybe.withDefault NoReasonForNotTakingSign |> Just)
+        |> andMap (form.totalMissedDoses |> Maybe.withDefault 0 |> Just)
+        |> andMap (form.adverseEvents |> fromListWithDefaultValue NoAdverseEvent |> Just)
+
+
+fromListWithDefaultValue : a -> Maybe (List a) -> EverySet a
+fromListWithDefaultValue default maybeList =
+    case maybeList of
+        Just list ->
+            EverySet.fromList list |> ifEverySetEmpty default
+
+        Nothing ->
+            EverySet.singleton default
