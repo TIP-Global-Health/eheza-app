@@ -3913,6 +3913,181 @@ bloodSmearResultFromString value =
             Nothing
 
 
+tuberculosisDiagnosisToString : TuberculosisDiagnosis -> String
+tuberculosisDiagnosisToString diagnosis =
+    case diagnosis of
+        TuberculosisPulmonary ->
+            "pulmonary"
+
+        TuberculosisExtrapulmonary ->
+            "extrapulmonary"
+
+        NoTuberculosis ->
+            "none"
+
+
+tuberculosisDiagnosisFromString : String -> Maybe TuberculosisDiagnosis
+tuberculosisDiagnosisFromString diagnosis =
+    case diagnosis of
+        "pulmonary" ->
+            Just TuberculosisPulmonary
+
+        "extrapulmonary" ->
+            Just TuberculosisExtrapulmonary
+
+        "none" ->
+            Just NoTuberculosis
+
+        _ ->
+            Nothing
+
+
+tuberculosisSymptomToString : TuberculosisSymptom -> String
+tuberculosisSymptomToString symptom =
+    case symptom of
+        SymptomNightSweats ->
+            "night-sweats"
+
+        SymptomBloodInSputum ->
+            "blood-in-sputum"
+
+        SymptomWeightLoss ->
+            "wight-loss"
+
+        SymptomSevereFatigue ->
+            "severe-fatigue"
+
+        NoTuberculosisSymptoms ->
+            "none"
+
+
+tuberculosisSymptomFromString : String -> Maybe TuberculosisSymptom
+tuberculosisSymptomFromString symptom =
+    case symptom of
+        "night-sweats" ->
+            Just SymptomNightSweats
+
+        "blood-in-sputum" ->
+            Just SymptomBloodInSputum
+
+        "wight-loss" ->
+            Just SymptomWeightLoss
+
+        "severe-fatigue" ->
+            Just SymptomSevereFatigue
+
+        "none" ->
+            Just NoTuberculosisSymptoms
+
+        _ ->
+            Nothing
+
+
+tuberculosisHealthEducationSignToString : TuberculosisHealthEducationSign -> String
+tuberculosisHealthEducationSignToString sign =
+    case sign of
+        EducationFollowUpTesting ->
+            "followup-testing"
+
+        NoTuberculosisHealthEducationSigns ->
+            "none"
+
+
+tuberculosisHealthEducationSignFromString : String -> Maybe TuberculosisHealthEducationSign
+tuberculosisHealthEducationSignFromString sign =
+    case sign of
+        "followup-testing" ->
+            Just EducationFollowUpTesting
+
+        "none" ->
+            Just NoTuberculosisHealthEducationSigns
+
+        _ ->
+            Nothing
+
+
+tuberculosisDOTSignToString : TuberculosisDOTSign -> String
+tuberculosisDOTSignToString sign =
+    case sign of
+        DOTPositive ->
+            "positive"
+
+        DOTNegativeTakenToday ->
+            "negative-taken-today"
+
+        DOTNegativeUnavailable ->
+            "negative-unavailable"
+
+        DOTNegativeSideEffects ->
+            "negative-side-effects"
+
+        DOTNegativePatientRefused ->
+            "negative-patient-refused"
+
+        DOTNegativeNotIndicated ->
+            "negative-not-indicated"
+
+
+tuberculosisDOTSignFromString : String -> Maybe TuberculosisDOTSign
+tuberculosisDOTSignFromString sign =
+    case sign of
+        "positive" ->
+            Just DOTPositive
+
+        "negative-taken-today" ->
+            Just DOTNegativeTakenToday
+
+        "negative-unavailable" ->
+            Just DOTNegativeUnavailable
+
+        "negative-side-effects" ->
+            Just DOTNegativeSideEffects
+
+        "negative-patient-refused" ->
+            Just DOTNegativePatientRefused
+
+        "negative-not-indicated" ->
+            Just DOTNegativeNotIndicated
+
+        _ ->
+            Nothing
+
+
+tuberculosisPrescribedMedicationToString : TuberculosisPrescribedMedication -> String
+tuberculosisPrescribedMedicationToString sign =
+    case sign of
+        MedicationRHZE ->
+            "rhze"
+
+        MedicationRH ->
+            "rh"
+
+        MedicationOther ->
+            "other"
+
+        NoTuberculosisPrescribedMedications ->
+            "none"
+
+
+tuberculosisPrescribedMedicationFromString : String -> Maybe TuberculosisPrescribedMedication
+tuberculosisPrescribedMedicationFromString sign =
+    case sign of
+        "rhze" ->
+            Just MedicationRHZE
+
+        "rh" ->
+            Just MedicationRH
+
+        "other" ->
+            Just MedicationOther
+
+        "none" ->
+            Just NoTuberculosisPrescribedMedications
+
+        _ ->
+            Nothing
+
+
 generatePreviousMeasurements :
     (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
     -> (ModelIndexedDb -> Dict encounterId (WebData measurements))

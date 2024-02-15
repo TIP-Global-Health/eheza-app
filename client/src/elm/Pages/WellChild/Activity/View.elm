@@ -47,8 +47,8 @@ import Measurement.View
         , nutritionHygieneInputsAndTasks
         , viewColorAlertIndication
         , viewContributingFactorsForm
-        , viewFollowUpForm
         , viewHealthEducationForm
+        , viewNutritionFollowUpForm
         , viewReferToProgramForm
         , viewSendToHealthCenterForm
         )
@@ -2317,8 +2317,8 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                 Just TaskFollowUp ->
                     measurements.followUp
                         |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate SetFollowUpOption
+                        |> nutritionFollowUpFormWithDefault data.followUpForm
+                        |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
                         |> List.singleton
 
                 Just TaskSendToHC ->

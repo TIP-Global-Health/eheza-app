@@ -201,6 +201,44 @@ function hedley_tuberculosis_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-tuberculosis_diagnostics-field_tuberculosis_diagnosis'.
+  $field_instances['node-tuberculosis_diagnostics-field_tuberculosis_diagnosis'] = array(
+    'bundle' => 'tuberculosis_diagnostics',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_tuberculosis_diagnosis',
+    'label' => 'Tuberculosis Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-tuberculosis_diagnostics-field_tuberculosis_encounter'.
   $field_instances['node-tuberculosis_diagnostics-field_tuberculosis_encounter'] = array(
     'bundle' => 'tuberculosis_diagnostics',
@@ -338,6 +376,81 @@ function hedley_tuberculosis_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-tuberculosis_dot-field_dot_meds_distribution_sign'.
+  $field_instances['node-tuberculosis_dot-field_dot_meds_distribution_sign'] = array(
+    'bundle' => 'tuberculosis_dot',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_dot_meds_distribution_sign',
+    'label' => 'DOT Meds Distribution Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-tuberculosis_dot-field_dot_signs'.
+  $field_instances['node-tuberculosis_dot-field_dot_signs'] = array(
+    'bundle' => 'tuberculosis_dot',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_dot_signs',
+    'label' => 'DOT Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
     ),
   );
 
@@ -744,6 +857,63 @@ function hedley_tuberculosis_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-tuberculosis_follow_up-field_date_concluded'.
+  $field_instances['node-tuberculosis_follow_up-field_date_concluded'] = array(
+    'bundle' => 'tuberculosis_follow_up',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_concluded',
+    'label' => 'Date delivered to vendor',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-tuberculosis_follow_up-field_date_measured'.
   $field_instances['node-tuberculosis_follow_up-field_date_measured'] = array(
     'bundle' => 'tuberculosis_follow_up',
@@ -797,6 +967,44 @@ function hedley_tuberculosis_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-tuberculosis_follow_up-field_follow_up_options'.
+  $field_instances['node-tuberculosis_follow_up-field_follow_up_options'] = array(
+    'bundle' => 'tuberculosis_follow_up',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_follow_up_options',
+    'label' => 'Follow up options',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
     ),
   );
 
@@ -1207,6 +1415,44 @@ function hedley_tuberculosis_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-tuberculosis_health_education-field_tb_health_education_signs'.
+  $field_instances['node-tuberculosis_health_education-field_tb_health_education_signs'] = array(
+    'bundle' => 'tuberculosis_health_education',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_tb_health_education_signs',
+    'label' => 'Tuberculosis Health Education Signs',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-tuberculosis_health_education-field_tuberculosis_encounter'.
   $field_instances['node-tuberculosis_health_education-field_tuberculosis_encounter'] = array(
     'bundle' => 'tuberculosis_health_education',
@@ -1433,6 +1679,44 @@ function hedley_tuberculosis_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => -3,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-tuberculosis_medication-field_prescribed_tb_medications'.
+  $field_instances['node-tuberculosis_medication-field_prescribed_tb_medications'] = array(
+    'bundle' => 'tuberculosis_medication',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prescribed_tb_medications',
+    'label' => 'Prescribed TB medications',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
     ),
   );
 
@@ -1706,6 +1990,81 @@ function hedley_tuberculosis_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => -3,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-tuberculosis_referral-field_reason_not_sent_to_hc'.
+  $field_instances['node-tuberculosis_referral-field_reason_not_sent_to_hc'] = array(
+    'bundle' => 'tuberculosis_referral',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reason_not_sent_to_hc',
+    'label' => 'Reason for Not Sending to HC',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance: 'node-tuberculosis_referral-field_send_to_hc'.
+  $field_instances['node-tuberculosis_referral-field_send_to_hc'] = array(
+    'bundle' => 'tuberculosis_referral',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_send_to_hc',
+    'label' => 'Send to HC',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
     ),
   );
 
@@ -2072,6 +2431,44 @@ function hedley_tuberculosis_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-tuberculosis_symptom_review-field_tuberculosis_symptoms'.
+  $field_instances['node-tuberculosis_symptom_review-field_tuberculosis_symptoms'] = array(
+    'bundle' => 'tuberculosis_symptom_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_tuberculosis_symptoms',
+    'label' => 'Tuberculosis Symptoms',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-tuberculosis_symptom_review-field_uuid'.
   $field_instances['node-tuberculosis_symptom_review-field_uuid'] = array(
     'bundle' => 'tuberculosis_symptom_review',
@@ -2109,6 +2506,44 @@ function hedley_tuberculosis_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-tuberculosis_treatment_review-field_adverse_events'.
+  $field_instances['node-tuberculosis_treatment_review-field_adverse_events'] = array(
+    'bundle' => 'tuberculosis_treatment_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_adverse_events',
+    'label' => 'Adverse Events',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 15,
     ),
   );
 
@@ -2166,6 +2601,53 @@ function hedley_tuberculosis_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-tuberculosis_treatment_review-field_missed_doses'.
+  $field_instances['node-tuberculosis_treatment_review-field_missed_doses'] = array(
+    'bundle' => 'tuberculosis_treatment_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_missed_doses',
+    'label' => 'Missed doses',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
     ),
   );
 
@@ -2257,6 +2739,44 @@ function hedley_tuberculosis_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-tuberculosis_treatment_review-field_reason_for_not_taking'.
+  $field_instances['node-tuberculosis_treatment_review-field_reason_for_not_taking'] = array(
+    'bundle' => 'tuberculosis_treatment_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reason_for_not_taking',
+    'label' => 'Reason for not taking',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
+    ),
+  );
+
   // Exported field_instance: 'node-tuberculosis_treatment_review-field_shards'.
   $field_instances['node-tuberculosis_treatment_review-field_shards'] = array(
     'bundle' => 'tuberculosis_treatment_review',
@@ -2298,6 +2818,44 @@ function hedley_tuberculosis_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-tuberculosis_treatment_review-field_treatment_ongoing'.
+  $field_instances['node-tuberculosis_treatment_review-field_treatment_ongoing'] = array(
+    'bundle' => 'tuberculosis_treatment_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_treatment_ongoing',
+    'label' => 'Treatment Ongoing',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
     ),
   );
 
@@ -2388,13 +2946,27 @@ function hedley_tuberculosis_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('Adverse Events');
+  t('DOT Meds Distribution Signs');
+  t('DOT Signs');
   t('Date Measured');
+  t('Date delivered to vendor');
+  t('Follow up options');
   t('Individual Participant');
+  t('Missed doses');
   t('Nurse');
   t('Person');
+  t('Prescribed TB medications');
+  t('Reason for Not Sending to HC');
+  t('Reason for not taking');
   t('Scheduled Date');
+  t('Send to HC');
   t('Shards');
+  t('Treatment Ongoing');
   t('Tuberculosis Encounter');
+  t('Tuberculosis Health Education Signs');
+  t('Tuberculosis Signs');
+  t('Tuberculosis Symptoms');
   t('UUID');
 
   return $field_instances;

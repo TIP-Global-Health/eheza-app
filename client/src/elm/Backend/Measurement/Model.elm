@@ -233,10 +233,10 @@ type alias ContributingFactors =
 
 
 type alias FollowUp =
-    GroupMeasurement FollowUpValue
+    GroupMeasurement NutritionFollowUpValue
 
 
-type alias FollowUpValue =
+type alias NutritionFollowUpValue =
     { options : EverySet FollowUpOption
     , assesment : EverySet NutritionAssessment
     , resolutionDate : Maybe NominalDate
@@ -372,7 +372,7 @@ type alias NutritionContributingFactors =
 
 
 type alias NutritionFollowUp =
-    NutritionMeasurement FollowUpValue
+    NutritionMeasurement NutritionFollowUpValue
 
 
 
@@ -2123,10 +2123,10 @@ type HealthEducationSign
 
 
 type alias AcuteIllnessFollowUp =
-    AcuteIllnessMeasurement AcuteIllnessFollowUpValue
+    AcuteIllnessMeasurement FollowUpValue
 
 
-type alias AcuteIllnessFollowUpValue =
+type alias FollowUpValue =
     { options : EverySet FollowUpOption
     , resolutionDate : Maybe NominalDate
     }
@@ -2242,7 +2242,7 @@ type alias WellChildContributingFactors =
 
 
 type alias WellChildFollowUp =
-    WellChildMeasurement FollowUpValue
+    WellChildMeasurement NutritionFollowUpValue
 
 
 type alias WellChildHeadCircumference =
@@ -2874,7 +2874,13 @@ type alias TuberculosisDiagnostics =
 
 
 type alias TuberculosisDiagnosticsValue =
-    {}
+    TuberculosisDiagnosis
+
+
+type TuberculosisDiagnosis
+    = TuberculosisPulmonary
+    | TuberculosisExtrapulmonary
+    | NoTuberculosis
 
 
 type alias TuberculosisDOT =
@@ -2882,15 +2888,22 @@ type alias TuberculosisDOT =
 
 
 type alias TuberculosisDOTValue =
-    {}
+    { sign : TuberculosisDOTSign
+    , medicationDistributionSign : TuberculosisDOTSign
+    }
+
+
+type TuberculosisDOTSign
+    = DOTPositive
+    | DOTNegativeTakenToday
+    | DOTNegativeUnavailable
+    | DOTNegativeSideEffects
+    | DOTNegativePatientRefused
+    | DOTNegativeNotIndicated
 
 
 type alias TuberculosisFollowUp =
-    TuberculosisMeasurement TuberculosisFollowUpValue
-
-
-type alias TuberculosisFollowUpValue =
-    {}
+    TuberculosisMeasurement FollowUpValue
 
 
 type alias TuberculosisHealthEducation =
@@ -2898,7 +2911,12 @@ type alias TuberculosisHealthEducation =
 
 
 type alias TuberculosisHealthEducationValue =
-    {}
+    EverySet TuberculosisHealthEducationSign
+
+
+type TuberculosisHealthEducationSign
+    = EducationFollowUpTesting
+    | NoTuberculosisHealthEducationSigns
 
 
 type alias TuberculosisMedication =
@@ -2906,15 +2924,18 @@ type alias TuberculosisMedication =
 
 
 type alias TuberculosisMedicationValue =
-    {}
+    EverySet TuberculosisPrescribedMedication
+
+
+type TuberculosisPrescribedMedication
+    = MedicationRHZE
+    | MedicationRH
+    | MedicationOther
+    | NoTuberculosisPrescribedMedications
 
 
 type alias TuberculosisReferral =
-    TuberculosisMeasurement TuberculosisReferralValue
-
-
-type alias TuberculosisReferralValue =
-    {}
+    TuberculosisMeasurement SendToHCValue
 
 
 type alias TuberculosisSymptomReview =
@@ -2922,15 +2943,19 @@ type alias TuberculosisSymptomReview =
 
 
 type alias TuberculosisSymptomReviewValue =
-    {}
+    EverySet TuberculosisSymptom
+
+
+type TuberculosisSymptom
+    = SymptomNightSweats
+    | SymptomBloodInSputum
+    | SymptomWeightLoss
+    | SymptomSevereFatigue
+    | NoTuberculosisSymptoms
 
 
 type alias TuberculosisTreatmentReview =
-    TuberculosisMeasurement TuberculosisTreatmentReviewValue
-
-
-type alias TuberculosisTreatmentReviewValue =
-    {}
+    TuberculosisMeasurement TreatmentOngoingValue
 
 
 

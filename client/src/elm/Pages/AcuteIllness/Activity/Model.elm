@@ -366,7 +366,7 @@ emptyNextStepsData =
     , sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = FollowUpForm Nothing Nothing
+    , followUpForm = emptyFollowUpForm
     , contactsTracingForm = emptyContactsTracingForm
     , activeTask = Nothing
     }
@@ -408,12 +408,6 @@ emptyCall114Form =
     , contactedSiteDirty = False
     , recommendationSite = Nothing
     , recommendationSiteDirty = False
-    }
-
-
-type alias FollowUpForm =
-    { option : Maybe FollowUpOption
-    , resolutionDate : Maybe NominalDate
     }
 
 
@@ -502,35 +496,6 @@ emptyOngoingTreatmentData : OngoingTreatmentData
 emptyOngoingTreatmentData =
     { treatmentReviewForm = emptyOngoingTreatmentReviewForm
     , activeTask = OngoingTreatmentReview
-    }
-
-
-type alias OngoingTreatmentReviewForm =
-    { takenAsPrescribed : Maybe Bool
-    , missedDoses : Maybe Bool
-    , feelingBetter : Maybe Bool
-    , sideEffects : Maybe Bool
-    , reasonForNotTaking : Maybe ReasonForNotTaking
-    , reasonForNotTakingDirty : Bool
-    , totalMissedDoses : Maybe Int
-    , totalMissedDosesDirty : Bool
-    , adverseEvents : Maybe (List AdverseEvent)
-    , adverseEventsDirty : Bool
-    }
-
-
-emptyOngoingTreatmentReviewForm : OngoingTreatmentReviewForm
-emptyOngoingTreatmentReviewForm =
-    { takenAsPrescribed = Nothing
-    , missedDoses = Nothing
-    , feelingBetter = Nothing
-    , sideEffects = Nothing
-    , reasonForNotTaking = Nothing
-    , reasonForNotTakingDirty = False
-    , totalMissedDoses = Nothing
-    , totalMissedDosesDirty = False
-    , adverseEvents = Nothing
-    , adverseEventsDirty = False
     }
 
 

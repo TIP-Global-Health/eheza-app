@@ -923,7 +923,7 @@ viewFollowUp :
     -> MeasurementData (Maybe ( FollowUpId, FollowUp ))
     -> OfflineSession
     -> ModelIndexedDb
-    -> FollowUpForm
+    -> NutritionFollowUpForm
     -> Html MsgChild
 viewFollowUp language currentDate zscores childId measurement offlineSession db form =
     let
@@ -941,11 +941,11 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
             { form | assesment = Just assesment }
 
         formContent =
-            followUpFormWithDefault form_ saved
-                |> viewFollowUpForm language currentDate SetFollowUpOption
+            nutritionFollowUpFormWithDefault form_ saved
+                |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
 
         saveMsg =
-            toFollowUpValueWithDefault saved form_
+            toNutritionFollowUpValueWithDefault saved form_
                 |> Maybe.map (SaveFollowUp existingId >> SendOutMsgChild)
     in
     div [ class "ui full segment follow-up" ]
@@ -959,12 +959,32 @@ viewFollowUp language currentDate zscores childId measurement offlineSession db 
         ]
 
 
-viewFollowUpForm : Language -> NominalDate -> (FollowUpOption -> msg) -> FollowUpForm -> Html msg
-viewFollowUpForm language currentDate setFollowUpOptionMsg form =
+viewNutritionFollowUpForm :
+    Language
+    -> NominalDate
+    -> (FollowUpOption -> msg)
+    -> { f | option : Maybe FollowUpOption }
+    -> Html msg
+viewNutritionFollowUpForm language currentDate setFollowUpOptionMsg form =
+    viewFollowUpForm language
+        currentDate
+        [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+        setFollowUpOptionMsg
+        form
+
+
+viewFollowUpForm :
+    Language
+    -> NominalDate
+    -> List FollowUpOption
+    -> (FollowUpOption -> msg)
+    -> { f | option : Maybe FollowUpOption }
+    -> Html msg
+viewFollowUpForm language currentDate options setFollowUpOptionMsg form =
     div [ class "ui form follow-up" ]
         [ viewLabel language Translate.FollowUpLabel
         , viewCheckBoxSelectInput language
-            [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+            options
             []
             form.option
             setFollowUpOptionMsg

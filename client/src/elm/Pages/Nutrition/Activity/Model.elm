@@ -125,7 +125,7 @@ type alias NextStepsData =
     { sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm
     , contributingFactorsForm : ContributingFactorsForm
-    , followUpForm : FollowUpForm
+    , followUpForm : NutritionFollowUpForm
     , activeTask : Maybe NextStepsTask
     }
 
@@ -135,6 +135,6 @@ emptyNextStepsData =
     { sendToHCForm = emptySendToHCForm
     , healthEducationForm = emptyHealthEducationForm
     , contributingFactorsForm = emptyContributingFactorsForm
-    , followUpForm = emptyFollowUpForm
+    , followUpForm = emptyNutritionFollowUpForm
     , activeTask = Nothing
     }

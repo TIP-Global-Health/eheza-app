@@ -27,7 +27,7 @@ type alias Model =
     { sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm
     , contributingFactorsForm : ContributingFactorsForm
-    , followUpForm : FollowUpForm
+    , followUpForm : NutritionFollowUpForm
     , activeTask : Maybe NextStepsTask
     , warningPopupState : List NutritionAssessment
     }
@@ -46,7 +46,7 @@ type Msg
     | SetContributingFactorsSign ContributingFactorsSign
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp (Maybe FollowUpId) FollowUpValue (Maybe NextStepsTask)
+    | SaveFollowUp (Maybe FollowUpId) NutritionFollowUpValue (Maybe NextStepsTask)
 
 
 emptyModel : Model
@@ -54,7 +54,7 @@ emptyModel =
     { sendToHCForm = emptySendToHCForm
     , healthEducationForm = emptyHealthEducationForm
     , contributingFactorsForm = emptyContributingFactorsForm
-    , followUpForm = emptyFollowUpForm
+    , followUpForm = emptyNutritionFollowUpForm
     , activeTask = Nothing
     , warningPopupState = []
     }
