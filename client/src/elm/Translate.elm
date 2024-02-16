@@ -11513,17 +11513,12 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 , kirundi = Nothing
                 }
+
             else
                 { english = "Next immunization visit"
                 , kinyarwanda = Just "Ikingira rikurikira"
                 , kirundi = Just "Urugendo kubw'urucanco ruzokurikira umunsi ruzobako"
                 }
-
-        Pediatrics ->
-            { english = "Pediatrics"
-            , kinyarwanda = Just "Kwita ku buzima bw'umwana"
-            , kirundi = Nothing
-            }
 
         NextPediatricVisit isChw ->
             if isChw then
@@ -23485,7 +23480,6 @@ translateMonth month short =
 
             else
                 { english = "March"
-                , kinyarwanda = Just "Werurwe"
                 , kinyarwanda = Just "Werurwe"
                 , kirundi = Just "Ntwarante"
                 }
