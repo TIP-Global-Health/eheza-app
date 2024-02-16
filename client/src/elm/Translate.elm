@@ -6729,7 +6729,7 @@ translationSet trans =
 
         ImmunizationFollowUpInstructions ->
             { english = "Check for Immunization"
-            , kinyarwanda = Just "Reba ibijyanye n'inkingo"
+            , kinyarwanda = Just "Kureba Gahunda y'ikingira"
             , kirundi = Nothing
             }
 
@@ -6854,7 +6854,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Well Child Visit"
-                        , kinyarwanda = Just "Isurwa ry'Umwana umeze neza"
+                        , kinyarwanda = Just "Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -6911,7 +6911,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Select Well Child Visit"
-                        , kinyarwanda = Just "Hitamo Isurwa ry'Umwana umeze neza"
+                        , kinyarwanda = Just "Hitamo Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -7009,7 +7009,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Well Child Visit"
-                        , kinyarwanda = Just "Isurwa ry'Umwana umeze neza"
+                        , kinyarwanda = Just "Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -11473,7 +11473,7 @@ translationSet trans =
         NextImmunisationVisit isChw ->
             if isChw then
                 { english = "Next immunization visit at the health center"
-                , kinyarwanda = Just "Isura ryo gukingiza rikurikira ku kigonderabuzima"
+                , kinyarwanda = Just "Gahuda Ikurikira yo Gukingiza ku Kigo Nderabuzima"
                 , kirundi = Nothing
                 }
 
@@ -11486,7 +11486,7 @@ translationSet trans =
         NextPediatricVisit isChw ->
             if isChw then
                 { english = "Next pediatric visit at the health center"
-                , kinyarwanda = Just "Isuzuma rikurikira ku kigonderabuzima"
+                , kinyarwanda = Just "Isura ry'umwana rikurikira ku kigo Nderabuzima"
                 , kirundi = Nothing
                 }
 
