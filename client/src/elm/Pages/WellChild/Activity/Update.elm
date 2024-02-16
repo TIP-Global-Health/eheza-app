@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -82,16 +82,12 @@ update currentDate site isChw id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildProgressReportPage id ]
 
         generateImmunisationMsgs nextTask =
-            let
-                defaultMsg =
-                    if isChw then
-                        SetActivePage <| UserPage <| WellChildEncounterPage id
-
-                    else
-                        SetActiveImmunisationTask TaskOverview
-            in
             Maybe.map (\task -> [ SetActiveImmunisationTask task ]) nextTask
-                |> Maybe.withDefault [ defaultMsg ]
+                |> Maybe.withDefault [ SetActiveImmunisationTask TaskOverview ]
+
+        generateHomeVisitMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveHomeVisitTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -440,26 +436,37 @@ update currentDate site isChw id db msg model =
 
         PreSaveHeadCircumference personId maybeZscore saved nextTask ->
             let
-                warning =
+                ( warning, warningMessage ) =
+                    let
+                        setEncounterWarningMsg encounterWarning =
+                            Backend.WellChildEncounter.Model.SetWellChildEncounterWarning encounterWarning
+                                |> Backend.Model.MsgWellChildEncounter id
+                                |> App.Model.MsgIndexedDb
+                    in
                     Maybe.map
                         (\zscore ->
                             if zscore > 3 then
-                                WarningHeadCircumferenceMacrocephaly
+                                ( WarningHeadCircumferenceMacrocephaly
+                                , [ setEncounterWarningMsg WarningHeadCircumferenceMacrocephaly ]
+                                )
 
                             else if zscore < -3 then
-                                WarningHeadCircumferenceMicrocephaly
+                                ( WarningHeadCircumferenceMicrocephaly
+                                , [ setEncounterWarningMsg WarningHeadCircumferenceMicrocephaly ]
+                                )
 
                             else
-                                NoHeadCircumferenceWarning
+                                -- Z-score value is within range, so no warning is
+                                -- shown / recorded on encounter.
+                                ( NoHeadCircumferenceWarning, [] )
                         )
                         maybeZscore
-                        |> Maybe.withDefault NoHeadCircumferenceWarning
-
-                setEncounterWarningMsg =
-                    [ Backend.WellChildEncounter.Model.SetWellChildEncounterWarning warning
-                        |> Backend.Model.MsgWellChildEncounter id
-                        |> App.Model.MsgIndexedDb
-                    ]
+                        |> Maybe.withDefault
+                            ( NoHeadCircumferenceWarning
+                            , -- There's no z-score, meaning that measurement was not taken.
+                              -- Therefore, we set appropriate encounter warning.
+                              [ setEncounterWarningMsg NoHeadCircumferenceWarning ]
+                            )
 
                 extraMsgs =
                     -- If there's a warning, we show warning popup.
@@ -483,7 +490,7 @@ update currentDate site isChw id db msg model =
             in
             ( model
             , Cmd.none
-            , setEncounterWarningMsg
+            , warningMessage
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
@@ -1640,7 +1647,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveNextVisit personId saved nextDateForImmunisationVisit nextDateForPediatricVisit nextTask_ ->
+        SaveNextVisit personId saved nextDateForImmunisationVisit nextDateForPediatricVisit asapImmunisationDate nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1653,7 +1660,13 @@ update currentDate site isChw id db msg model =
 
                 appMsgs =
                     model.nextStepsData.nextVisitForm
-                        |> (\form -> { form | immunisationDate = nextDateForImmunisationVisit, pediatricVisitDate = nextDateForPediatricVisit })
+                        |> (\form ->
+                                { form
+                                    | immunisationDate = nextDateForImmunisationVisit
+                                    , asapImmunisationDate = asapImmunisationDate
+                                    , pediatricVisitDate = nextDateForPediatricVisit
+                                }
+                           )
                         |> toNextVisitValueWithDefault measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveNextVisit personId measurementId
@@ -1893,3 +1906,304 @@ update currentDate site isChw id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveHomeVisitTask task ->
+            let
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetFeedingBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.homeVisitData.feedingForm
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | feedingForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNutritionSupplementType value ->
+            let
+                form =
+                    model.homeVisitData.feedingForm
+
+                updatedForm =
+                    { form | supplementType = Just value, sachetsPerDay = Nothing, eatenWithWater = Nothing }
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | feedingForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSachetsPerDay value ->
+            let
+                form =
+                    model.homeVisitData.feedingForm
+
+                updatedForm =
+                    { form | sachetsPerDay = String.toFloat value }
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | feedingForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFeeding personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateHomeVisitMsgs nextTask
+
+                appMsgs =
+                    model.homeVisitData.feedingForm
+                        |> toNutritionFeedingValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveFeeding personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
+
+        SetHygieneBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.homeVisitData.hygieneForm
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | hygieneForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMainWaterSource value ->
+            let
+                form =
+                    model.homeVisitData.hygieneForm
+
+                updatedForm =
+                    { form | mainWaterSource = Just value }
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | hygieneForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetWaterPreparationOption value ->
+            let
+                form =
+                    model.homeVisitData.hygieneForm
+
+                updatedForm =
+                    { form | waterPreparationOption = Just value }
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | hygieneForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHygiene personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateHomeVisitMsgs nextTask
+
+                appMsgs =
+                    model.homeVisitData.hygieneForm
+                        |> toNutritionHygieneValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveHygiene personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
+
+        SetFoodSecurityBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.homeVisitData.foodSecurityForm
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | foodSecurityForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMainIncomeSource value ->
+            let
+                form =
+                    model.homeVisitData.foodSecurityForm
+
+                updatedForm =
+                    { form | mainIncomeSource = Just value }
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | foodSecurityForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFoodSecurity personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateHomeVisitMsgs nextTask
+
+                appMsgs =
+                    model.homeVisitData.foodSecurityForm
+                        |> toNutritionFoodSecurityValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveFoodSecurity personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs
+
+        SetParentsAliveAndHealthy value ->
+            let
+                form =
+                    model.homeVisitData.caringForm
+
+                updatedForm =
+                    { form | parentHealth = Just value }
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | caringForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetChildClean value ->
+            let
+                form =
+                    model.homeVisitData.caringForm
+
+                updatedForm =
+                    { form | childClean = Just value }
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | caringForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNutritionCaringOption option ->
+            let
+                form =
+                    model.homeVisitData.caringForm
+
+                updatedForm =
+                    { form | caringOption = Just option }
+
+                updatedData =
+                    model.homeVisitData
+                        |> (\data -> { data | caringForm = updatedForm })
+            in
+            ( { model | homeVisitData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveNutritionCaring personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateHomeVisitMsgs nextTask
+
+                appMsgs =
+                    model.homeVisitData.caringForm
+                        |> toNutritionCaringValueWithDefault measurement
+                        |> Maybe.map
+                            (Backend.WellChildEncounter.Model.SaveCaring personId measurementId
+                                >> Backend.Model.MsgWellChildEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate site isChw id db) extraMsgs

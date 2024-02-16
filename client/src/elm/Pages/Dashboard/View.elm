@@ -13,6 +13,8 @@ import Backend.Dashboard.Model
         , DashboardStats
         , NCDDataItem
         , Nutrition
+        , NutritionDataItem
+        , NutritionEncounterDataItem
         , NutritionPageData
         , NutritionValue
         , PMTCTDataItem
@@ -25,9 +27,10 @@ import Backend.Dashboard.Model
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Utils exposing (getVillageById)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
@@ -42,7 +45,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
@@ -2576,7 +2579,7 @@ viewChildWellnessPage language currentDate site healthCenterId activePage assemb
                     viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth assembled.spvData assembled.childScoreboardData
 
                 PageChildWellnessNutrition ->
-                    viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled.spvData
+                    viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled
     in
     [ viewChildWellnessMenu language activePage
     , monthSelector language dateLastDayOfSelectedMonth model
@@ -2761,41 +2764,248 @@ viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataIt
     ]
 
 
-viewChildWellnessNutritionPage : Language -> NominalDate -> List SPVDataItem -> List (Html Msg)
-viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth dataItems =
+viewChildWellnessNutritionPage : Language -> NominalDate -> AssembledData -> List (Html Msg)
+viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
     let
+        dataItems =
+            mergeDicts spvDict nutritionIndividualDict
+                |> mergeDicts nutritionGroupDict
+                |> Dict.toList
+                |> List.map (\( identifier, encounters ) -> NutritionDataItem identifier encounters)
+
+        mergeDicts d1 d2 =
+            Dict.merge
+                (\key value -> Dict.insert key value)
+                -- In case we got both values for months, we give preference to
+                -- the one with more recent date.
+                (\key value1 value2 ->
+                    value1
+                        ++ value2
+                        |> -- Sort DESC by date, so it will be easier to resolve l
+                           -- ast occurance of encounter values.
+                           List.sortWith (sortByDateDesc .startDate)
+                        |> Dict.insert key
+                )
+                (\key value -> Dict.insert key value)
+                d1
+                d2
+                Dict.empty
+
+        spvDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (.encounterType >> (==) PediatricCare) .warnings item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.spvData
+                |> itemsToDict
+
+        nutritionIndividualDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (.encounterType >> (==) NutritionEncounterNurse) (always EverySet.empty) item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.nutritionIndividualData
+                |> itemsToDict
+
+        nutritionGroupDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (always True) (always EverySet.empty) item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.nutritionGroupData
+                |> itemsToDict
+
+        generateEncounters isNurseEncounterFunc resolveWarningsFunc =
+            List.filterMap
+                (\encounter ->
+                    if isNurseEncounterFunc encounter then
+                        Just <|
+                            NutritionEncounterDataItem encounter.startDate
+                                (resolveWarningsFunc encounter)
+                                encounter.zscoreStunting
+                                encounter.zscoreUnderweight
+                                encounter.zscoreWasting
+                                encounter.muac
+                                encounter.nutritionSigns
+
+                    else
+                        Nothing
+                )
+
+        itemsToDict =
+            List.map
+                (\item ->
+                    ( item.identifier, item.encounters )
+                )
+                >> Dict.fromList
+
+        encountersForSelectedMonth =
+            getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataItems
+
+        -- Percent of good nutrition encounters from total encounters
+        -- performed during selected month.
         percentOfGoodNutrition =
-            -- @todo
-            0
+            let
+                goodNutritionEncounters =
+                    List.filter isGoodNutritionEncounter encountersForSelectedMonth
+                        |> List.length
+            in
+            round (100 * toFloat goodNutritionEncounters / toFloat totalEncountersCompleted)
 
-        totalEncountersComplete =
-            -- @todo
-            0
+        -- Total Nutrition encounters performed during selected month.
+        totalEncountersCompleted =
+            List.length encountersForSelectedMonth
 
+        -- Number of children who had moderate or acute wasting diagnosed
+        -- at encounter during selected month or previously, and did not have
+        -- an encounter afterwards that indicated that condition was resolved.
         totalBeneficiariesWasting =
-            -- @todo
-            0
+            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < 2)
 
+        -- Number of children who are had firs diagnosis of wasting during
+        -- selected month.
         incidentsOfWasting =
-            -- @todo
-            0
+            List.filter
+                (\item ->
+                    let
+                        wastingDates =
+                            List.filterMap
+                                (\encounter ->
+                                    Maybe.andThen
+                                        (\zscore ->
+                                            if zscore < -2 then
+                                                Just encounter.startDate
 
+                                            else
+                                                Nothing
+                                        )
+                                        encounter.zscoreWasting
+                                )
+                                item.encounters
+                    in
+                    (not <| List.isEmpty wastingDates) && List.all (withinSelectedMonth dateLastDayOfSelectedMonth) wastingDates
+                )
+                itemsWithinOrBeforeSelectedMonth
+                |> List.length
+
+        -- Number of children who had moderate or acute stunting diagnosed at
+        -- encounter during selected month or previously, and did not have an
+        -- encounter afterwards that indicated that condition was resolved.
         numberOfStunting =
-            -- @todo
-            0
+            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < 2)
 
+        -- Number of Children who had either micro or macrocephaly diagnosed at
+        -- encounter during selected month or previously, and did not have an
+        -- encounter afterwards that indicated that condition was resolved.
         numberOfCephaly =
-            -- @todo
-            0
+            countCurrentlyDiagnosedByValue
+                (\encounter ->
+                    if
+                        EverySet.isEmpty encounter.warnings
+                            || EverySet.member NoHeadCircumferenceWarning encounter.warnings
+                    then
+                        Nothing
 
+                    else
+                        Just encounter.warnings
+                )
+                (\warnings ->
+                    List.any
+                        (\warning ->
+                            EverySet.member warning warnings
+                        )
+                        [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly ]
+                )
+
+        -- Number children who had malnutrition diagnosed at encounter during
+        -- selected month or previously, and did not have an encounter
+        -- afterwards that indicated that condition was resolved.
         numberOfDiagnosedMalnorished =
-            -- @todo
-            0
+            countCurrentlyDiagnosedByValue Just (isGoodNutritionEncounter >> not)
+
+        itemsWithinOrBeforeSelectedMonth =
+            List.map
+                (\item ->
+                    let
+                        encounters =
+                            List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth) item.encounters
+                    in
+                    { item | encounters = encounters }
+                )
+                dataItems
+
+        isGoodNutritionEncounter encounter =
+            (case EverySet.toList encounter.nutritionSigns of
+                [] ->
+                    True
+
+                [ NormalChildNutrition ] ->
+                    True
+
+                _ ->
+                    False
+            )
+                && (Maybe.map (\muac -> muac > 12.5) encounter.muac
+                        |> Maybe.withDefault True
+                   )
+                && (Maybe.Extra.values [ encounter.zscoreStunting, encounter.zscoreUnderweight, encounter.zscoreWasting ]
+                        |> List.all (\zscore -> zscore >= -2)
+                   )
+
+        countCurrentlyDiagnosedByValue valueMappingFunc valueConditionFunc =
+            List.filter
+                (\item ->
+                    let
+                        valuesWithDate =
+                            List.filterMap
+                                (\encounter ->
+                                    valueMappingFunc encounter
+                                        |> Maybe.map (\value -> ( encounter.startDate, value ))
+                                )
+                                item.encounters
+
+                        lastValueDate =
+                            List.head valuesWithDate
+                                |> Maybe.map Tuple.first
+
+                        lastDiagnosisDate =
+                            List.filter (Tuple.second >> valueConditionFunc) valuesWithDate
+                                |> List.head
+                                |> Maybe.map Tuple.first
+                    in
+                    isJust lastDiagnosisDate && lastValueDate == lastDiagnosisDate
+                )
+                itemsWithinOrBeforeSelectedMonth
+                |> List.length
     in
     [ div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.GoodNutritionLabel) (String.fromInt percentOfGoodNutrition)
-            , chwCard language (Translate.Dashboard Translate.TotalEncountersLabel) (String.fromInt totalEncountersComplete)
+            , chwCard language (Translate.Dashboard Translate.TotalEncountersLabel) (String.fromInt totalEncountersCompleted)
             , chwCard language (Translate.Dashboard Translate.TotalBeneficiariesWasting) (String.fromInt totalBeneficiariesWasting)
             ]
         , div [ class "three column row" ]

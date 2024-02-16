@@ -9,6 +9,7 @@ import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLo
 import Backend.Measurement.Decoder
     exposing
         ( decodeCall114Sign
+        , decodeChildNutritionSign
         , decodeDangerSign
         , decodeFamilyPlanningSign
         , decodeHCContactSign
@@ -34,6 +35,8 @@ import Backend.Measurement.Model
         )
 import Backend.NCDEncounter.Decoder exposing (decodeNCDDiagnosis)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounterType)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.Person.Decoder exposing (decodeGender)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
@@ -66,6 +69,8 @@ decodeDashboardStatsRaw =
         |> required "pmtct_data" (list decodePMTCTDataItem)
         |> required "spv_data" (list decodeSPVDataItem)
         |> required "child_scoreboard_data" (list decodeChildScoreboardDataItem)
+        |> required "nutrition_individual_data" (list decodeNutritionIndividualDataItem)
+        |> required "nutrition_group_data" (list decodeNutritionGroupDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
         |> required "timestamp" string
         |> required "stats_cache_hash" string
@@ -456,15 +461,20 @@ decodeSPVEncounterDataItem =
         |> required "start_date" decodeYYYYMMDD
         |> optional "encounter_type" decodeWellChildEncounterType PediatricCare
         |> optional "warnings" decodeWarnings (EverySet.singleton NoEncounterWarnings)
-        |> required "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_dtp_sa_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_pcv13_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_rotarix_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_ipv_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_mr_immunisation" (decodeEverySet decodeYYYYMMDD)
-        |> required "well_child_hpv_immunisation" (decodeEverySet decodeYYYYMMDD)
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
+        |> optional "well_child_bcg_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_opv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_dtp_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_dtp_sa_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_pcv13_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_rotarix_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_ipv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_mr_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "well_child_hpv_immunisation" (decodeEverySet decodeYYYYMMDD) EverySet.empty
 
 
 decodeChildScoreboardDataItem : Decoder ChildScoreboardDataItem
@@ -481,11 +491,50 @@ decodeChildScoreboardEncounterDataItem : Decoder ChildScoreboardEncounterDataIte
 decodeChildScoreboardEncounterDataItem =
     succeed ChildScoreboardEncounterDataItem
         |> required "start_date" decodeYYYYMMDD
-        |> required "child_scoreboard_bcg_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_opv_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_dtp_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_dtp_sa_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_pcv13_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_rotarix_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_ipv_iz" (decodeEverySet decodeYYYYMMDD)
-        |> required "child_scoreboard_mr_iz" (decodeEverySet decodeYYYYMMDD)
+        |> optional "child_scoreboard_bcg_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_opv_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_dtp_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_dtp_sa_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_pcv13_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_rotarix_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_ipv_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+        |> optional "child_scoreboard_mr_iz" (decodeEverySet decodeYYYYMMDD) EverySet.empty
+
+
+decodeNutritionIndividualDataItem : Decoder NutritionIndividualDataItem
+decodeNutritionIndividualDataItem =
+    succeed NutritionIndividualDataItem
+        |> required "id" decodeInt
+        |> required "created" decodeYYYYMMDD
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "encounters" (list decodeNutritionIndividualEncounterDataItem)
+
+
+decodeNutritionIndividualEncounterDataItem : Decoder NutritionIndividualEncounterDataItem
+decodeNutritionIndividualEncounterDataItem =
+    succeed NutritionIndividualEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "encounter_type" decodeNutritionEncounterType NutritionEncounterUnknown
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
+
+
+decodeNutritionGroupDataItem : Decoder NutritionGroupDataItem
+decodeNutritionGroupDataItem =
+    succeed NutritionGroupDataItem
+        |> required "id" decodeInt
+        |> required "encounters" (list decodeNutritionGroupEncounterDataItem)
+
+
+decodeNutritionGroupEncounterDataItem : Decoder NutritionGroupEncounterDataItem
+decodeNutritionGroupEncounterDataItem =
+    succeed NutritionGroupEncounterDataItem
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "zscore_stunting" (nullable decodeFloat) Nothing
+        |> optional "zscore_underweight" (nullable decodeFloat) Nothing
+        |> optional "zscore_wasting" (nullable decodeFloat) Nothing
+        |> optional "muac" (nullable decodeFloat) Nothing
+        |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty

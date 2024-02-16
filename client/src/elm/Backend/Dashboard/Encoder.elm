@@ -14,6 +14,7 @@ import Backend.Measurement.Encoder
         , encodeHCRecommendation
         , encodeIsolationSign
         , encodeMedicalCondition
+        , encodeNutritionSign
         , encodeRecommendation114
         , encodeSendToHCSign
         , encodeTestExecutionNote
@@ -21,6 +22,7 @@ import Backend.Measurement.Encoder
         )
 import Backend.NCDEncounter.Encoder exposing (encodeNCDDiagnosis)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
+import Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounterType)
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis, encodePrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -49,6 +51,8 @@ encodeDashboardStatsRaw stats =
     , encodePMTCTData stats.pmtctData
     , encodeSPVData stats.spvData
     , encodeChildScoreboardData stats.childScoreboardData
+    , encodeNutritionIndividualData stats.nutritionIndividualData
+    , encodeNutritionGroupData stats.nutritionGroupData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
@@ -402,18 +406,38 @@ encodeSPVDataItem item =
 encodeSPVEncounterDataItem : SPVEncounterDataItem -> Value
 encodeSPVEncounterDataItem item =
     let
-        --  , ( "danger_signs", encodeEverySet encodeDangerSign item.dangerSigns )
         warningsWithDefault warnings =
             if EverySet.isEmpty warnings then
                 List.singleton NoEncounterWarnings
 
             else
                 EverySet.toList warnings
+
+        zscoreStunting =
+            Maybe.map (\value -> [ ( "zscore_stunting", float value ) ])
+                item.zscoreStunting
+                |> Maybe.withDefault []
+
+        zscoreUnderweight =
+            Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
+                item.zscoreStunting
+                |> Maybe.withDefault []
+
+        zscoreWasting =
+            Maybe.map (\value -> [ ( "zscore_wasting", float value ) ])
+                item.zscoreWasting
+                |> Maybe.withDefault []
+
+        muac =
+            Maybe.map (\value -> [ ( "muac", float value ) ])
+                item.muac
+                |> Maybe.withDefault []
     in
     object <|
         [ ( "start_date", encodeYYYYMMDD item.startDate )
         , ( "encounter_type", encodeWellChildEncounterType item.encounterType )
         , ( "warnings", list encodeEncounterWarning (warningsWithDefault item.warnings) )
+        , ( "nutrition_signs", encodeEverySet encodeNutritionSign item.nutritionSigns )
         , ( "well_child_bcg_immunisation", encodeEverySet encodeYYYYMMDD item.bcgImminizationDates )
         , ( "well_child_opv_immunisation", encodeEverySet encodeYYYYMMDD item.opvImminizationDates )
         , ( "well_child_dtp_immunisation", encodeEverySet encodeYYYYMMDD item.dtpImminizationDates )
@@ -424,6 +448,10 @@ encodeSPVEncounterDataItem item =
         , ( "well_child_mr_immunisation", encodeEverySet encodeYYYYMMDD item.mrImminizationDates )
         , ( "well_child_hpv_immunisation", encodeEverySet encodeYYYYMMDD item.hpvImminizationDates )
         ]
+            ++ zscoreStunting
+            ++ zscoreUnderweight
+            ++ zscoreWasting
+            ++ muac
 
 
 encodeChildScoreboardData : List ChildScoreboardDataItem -> ( String, Value )
@@ -454,3 +482,96 @@ encodeChildScoreboardEncounterDataItem item =
         , ( "child_scoreboard_ipv_iz", encodeEverySet encodeYYYYMMDD item.ipvImminizationDates )
         , ( "child_scoreboard_mr_iz", encodeEverySet encodeYYYYMMDD item.mrImminizationDates )
         ]
+
+
+encodeNutritionIndividualData : List NutritionIndividualDataItem -> ( String, Value )
+encodeNutritionIndividualData itemsList =
+    ( "nutrition_individual_data", list (encodeNutritionIndividualDataItem >> object) itemsList )
+
+
+encodeNutritionIndividualDataItem : NutritionIndividualDataItem -> List ( String, Value )
+encodeNutritionIndividualDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "created", encodeYYYYMMDD item.created )
+    , ( "birth_date", encodeYYYYMMDD item.birthDate )
+    , ( "encounters", list encodeNutritionIndividualEncounterDataItem item.encounters )
+    ]
+
+
+encodeNutritionIndividualEncounterDataItem : NutritionIndividualEncounterDataItem -> Value
+encodeNutritionIndividualEncounterDataItem item =
+    let
+        zscoreStunting =
+            Maybe.map (\value -> [ ( "zscore_stunting", float value ) ])
+                item.zscoreStunting
+                |> Maybe.withDefault []
+
+        zscoreUnderweight =
+            Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
+                item.zscoreStunting
+                |> Maybe.withDefault []
+
+        zscoreWasting =
+            Maybe.map (\value -> [ ( "zscore_wasting", float value ) ])
+                item.zscoreWasting
+                |> Maybe.withDefault []
+
+        muac =
+            Maybe.map (\value -> [ ( "muac", float value ) ])
+                item.muac
+                |> Maybe.withDefault []
+    in
+    object <|
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "encounter_type", encodeNutritionEncounterType item.encounterType )
+        , ( "nutrition_signs", encodeEverySet encodeNutritionSign item.nutritionSigns )
+        ]
+            ++ zscoreStunting
+            ++ zscoreUnderweight
+            ++ zscoreWasting
+            ++ muac
+
+
+encodeNutritionGroupData : List NutritionGroupDataItem -> ( String, Value )
+encodeNutritionGroupData itemsList =
+    ( "nutrition_group_data", list (encodeNutritionGroupDataItem >> object) itemsList )
+
+
+encodeNutritionGroupDataItem : NutritionGroupDataItem -> List ( String, Value )
+encodeNutritionGroupDataItem item =
+    [ ( "id", int item.identifier )
+    , ( "encounters", list encodeNutritionGroupEncounterDataItem item.encounters )
+    ]
+
+
+encodeNutritionGroupEncounterDataItem : NutritionGroupEncounterDataItem -> Value
+encodeNutritionGroupEncounterDataItem item =
+    let
+        zscoreStunting =
+            Maybe.map (\value -> [ ( "zscore_stunting", float value ) ])
+                item.zscoreStunting
+                |> Maybe.withDefault []
+
+        zscoreUnderweight =
+            Maybe.map (\value -> [ ( "zscore_underweight", float value ) ])
+                item.zscoreStunting
+                |> Maybe.withDefault []
+
+        zscoreWasting =
+            Maybe.map (\value -> [ ( "zscore_wasting", float value ) ])
+                item.zscoreWasting
+                |> Maybe.withDefault []
+
+        muac =
+            Maybe.map (\value -> [ ( "muac", float value ) ])
+                item.muac
+                |> Maybe.withDefault []
+    in
+    object <|
+        [ ( "start_date", encodeYYYYMMDD item.startDate )
+        , ( "nutrition_signs", encodeEverySet encodeNutritionSign item.nutritionSigns )
+        ]
+            ++ zscoreStunting
+            ++ zscoreUnderweight
+            ++ zscoreWasting
+            ++ muac

@@ -44,6 +44,9 @@ encodeWellChildEncounterType encounterType =
             PediatricCare ->
                 "pediatric-care"
 
+            PediatricCareChw ->
+                "pediatric-care-chw"
+
             NewbornExam ->
                 "newborn-exam"
 
