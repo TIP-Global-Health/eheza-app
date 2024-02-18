@@ -2311,7 +2311,7 @@ translationSet trans =
 
         AcuteMalnutrition ->
             { english = "Acute Malnutrition"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imirire mibi ihutiyeho"
             , kirundi = Nothing
             }
 
@@ -3865,7 +3865,7 @@ translationSet trans =
 
         ChildWellness ->
             { english = "Child Wellness"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Imibereho myiza y'umwana"
             , kirundi = Nothing
             }
 
@@ -5256,7 +5256,7 @@ translationSet trans =
 
                 WellChildEncounter ->
                     { english = "Do you want to start a Well Child encounter for"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urashaka gutangira isuzuma ry'umwana umeze neza kuri"
                     , kirundi = Nothing
                     }
 
@@ -6805,7 +6805,7 @@ translationSet trans =
 
         ImmunizationFollowUpInstructions ->
             { english = "Check for Immunization"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kureba Gahunda y'ikingira"
             , kirundi = Nothing
             }
 
@@ -6930,7 +6930,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Well Child Visit"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -6987,7 +6987,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Select Well Child Visit"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Hitamo Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -7079,7 +7079,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Well Child Visit"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -11398,7 +11398,7 @@ translationSet trans =
 
         NCDs ->
             { english = "NCDs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Indwara zitandura"
             , kirundi = Nothing
             }
 
@@ -11510,7 +11510,7 @@ translationSet trans =
         NextImmunisationVisit isChw ->
             if isChw then
                 { english = "Next immunization visit at the health center"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Gahuda Ikurikira yo Gukingiza ku Kigo Nderabuzima"
                 , kirundi = Nothing
                 }
 
@@ -11523,7 +11523,7 @@ translationSet trans =
         NextPediatricVisit isChw ->
             if isChw then
                 { english = "Next pediatric visit at the health center"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Isura ry'umwana rikurikira ku kigo Nderabuzima"
                 , kirundi = Nothing
                 }
 
@@ -20552,7 +20552,7 @@ translationSet trans =
 
         TotalHighRiskPregnancies ->
             { english = "Total Number of High Risk Pregnancies"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abagore batwite bafite ibimenyetso mpuruza"
             , kirundi = Nothing
             }
 
@@ -22833,7 +22833,7 @@ translateDashboard trans =
 
         DiabetesNewCases ->
             { english = "Diabetes - New cases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abarwayi bashya bagaragaweho Diyabete"
             , kirundi = Nothing
             }
 
@@ -22869,7 +22869,7 @@ translateDashboard trans =
 
         ECDOnTrackLabel ->
             { english = "% ECD on Track"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ijanisha ku bana bakurikiranywe imikurire ku gihe"
             , kirundi = Nothing
             }
 
@@ -23025,7 +23025,7 @@ translateDashboard trans =
 
         HealthCenterDeliveries ->
             { english = "Health Center Deliveries"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ababyariye ku kigo nderabuzima"
             , kirundi = Nothing
             }
 
@@ -23037,7 +23037,7 @@ translateDashboard trans =
 
         HealthCenterLevelCases ->
             { english = "HC Level Cases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abavuriwe ku Kigo Nderabuzima"
             , kirundi = Nothing
             }
 
@@ -23049,19 +23049,19 @@ translateDashboard trans =
 
         HospitalReferrals ->
             { english = "Hospital Referrals"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Aboherejwe ku Bitaro"
             , kirundi = Nothing
             }
 
         HypertensionCases ->
             { english = "Hypertension Cases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abagaraweho indwara y'umuvuduko w'maraso"
             , kirundi = Nothing
             }
 
         HypertensionNewCases ->
             { english = "Hypertension - New cases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abarwayi bashya bagaragaweho umuvuduko w'amaraso"
             , kirundi = Nothing
             }
 
@@ -23073,13 +23073,13 @@ translateDashboard trans =
 
         ImmunizationOnTrackLabel ->
             { english = "% Immunization on Track"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ijanisha ry'abana bakingiwe ku gihe"
             , kirundi = Nothing
             }
 
         IncidentsOfWasting ->
             { english = "Incidents of Wasting"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abana bashya bagaragaweho kunanuka"
             , kirundi = Nothing
             }
 
@@ -23091,7 +23091,7 @@ translateDashboard trans =
 
         ManagedByPMTCT ->
             { english = "Managed by PMTCT"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abakurikiranwa muri serivisi ya PMTCT"
             , kirundi = Nothing
             }
 
@@ -23157,25 +23157,25 @@ translateDashboard trans =
 
         NumberOfCephaly ->
             { english = "# of Micro/Macrocephaly"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare wabana bavukanye umutwe muto cg munini  cyane bikabije"
             , kirundi = Nothing
             }
 
         NumberOfChildrenSeen ->
             { english = "# of Children Seen"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abana bose bakiriwe"
             , kirundi = Nothing
             }
 
         NumberOfDiagnosedMalnourished ->
             { english = "# of Diagnosed Malnourished"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abana bagaragaweho imitrire mibi"
             , kirundi = Nothing
             }
 
         NumberOfStunting ->
             { english = "# of Stunting"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abana bagaragaweho igwingira"
             , kirundi = Nothing
             }
 
@@ -23245,7 +23245,7 @@ translateDashboard trans =
 
         PregnanciesWith4VisitsOrMore ->
             { english = "# of Women with 4 Visits or more"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abagore bipimishije inshuro 4 no hejuru"
             , kirundi = Nothing
             }
 
@@ -23337,13 +23337,13 @@ translateDashboard trans =
 
         TotalCases ->
             { english = "Total Cases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abakiriwe bose"
             , kirundi = Nothing
             }
 
         TotalDiabeticCases ->
             { english = "Total Diabetic Cases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'abarwaye Diyabete bose"
             , kirundi = Nothing
             }
 
