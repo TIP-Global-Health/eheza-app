@@ -23157,7 +23157,7 @@ translateDashboard trans =
 
         NumberOfCephaly ->
             { english = "# of Micro/Macrocephaly"
-            , kinyarwanda = Just "Umubare wabana bavukanye umutwe muto cg munini  cyane bikabije "
+            , kinyarwanda = Just "Umubare wabana bavukanye umutwe muto cg munini  cyane bikabije"
             , kirundi = Nothing
             }
 
