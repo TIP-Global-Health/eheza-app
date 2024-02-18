@@ -5256,7 +5256,7 @@ translationSet trans =
 
                 WellChildEncounter ->
                     { english = "Do you want to start a Well Child encounter for"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urashaka gutangira isuzuma ry'umwana umeze neza kuri"
                     , kirundi = Nothing
                     }
 
@@ -6805,7 +6805,7 @@ translationSet trans =
 
         ImmunizationFollowUpInstructions ->
             { english = "Check for Immunization"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kureba Gahunda y'ikingira"
             , kirundi = Nothing
             }
 
@@ -6930,7 +6930,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Well Child Visit"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -6987,7 +6987,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Select Well Child Visit"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Hitamo Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -7079,7 +7079,7 @@ translationSet trans =
                 WellChildEncounter ->
                     if isChw then
                         { english = "Well Child Visit"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
                         }
 
@@ -11510,7 +11510,7 @@ translationSet trans =
         NextImmunisationVisit isChw ->
             if isChw then
                 { english = "Next immunization visit at the health center"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Gahuda Ikurikira yo Gukingiza ku Kigo Nderabuzima"
                 , kirundi = Nothing
                 }
 
@@ -11523,7 +11523,7 @@ translationSet trans =
         NextPediatricVisit isChw ->
             if isChw then
                 { english = "Next pediatric visit at the health center"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Isura ry'umwana rikurikira ku kigo Nderabuzima"
                 , kirundi = Nothing
                 }
 
