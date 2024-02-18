@@ -167,6 +167,14 @@ type NextStepsTask
     | TaskFollowUp
 
 
+type TuberculosisFollowUpTestingStage
+    = FollowUpTestingMonth1
+    | FollowUpTestingMonth2
+    | FollowUpTestingEndMonth2
+    | FollowUpTestingEndMonth5
+    | FollowUpTestingEndMonth6
+
+
 type Msg
     = SetActivePage Page
       -- DIAGNOSTICS

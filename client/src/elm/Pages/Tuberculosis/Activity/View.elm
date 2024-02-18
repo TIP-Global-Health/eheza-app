@@ -585,8 +585,28 @@ viewNextStepsContent language currentDate assembled data =
 
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate assembled form =
+    let
+        followUpTestingTable =
+            let
+                viewRow stage =
+                    div [ class "row" ]
+                        [ div [ class "item label" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageLabel stage ]
+                        , div [ class "item test" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageTest stage ]
+                        , div [ class "item guidance" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageInstructions stage ]
+                        ]
+            in
+            div [ class "follow-up-testing-table" ] <|
+                List.map viewRow
+                    [ FollowUpTestingMonth1
+                    , FollowUpTestingMonth2
+                    , FollowUpTestingEndMonth2
+                    , FollowUpTestingEndMonth5
+                    , FollowUpTestingEndMonth6
+                    ]
+    in
     div [ class "ui form health-education" ]
-        [ viewQuestionLabel language <| Translate.TuberculosisHealthEducationQuestion EducationFollowUpTesting
+        [ followUpTestingTable
+        , viewQuestionLabel language <| Translate.TuberculosisHealthEducationQuestion EducationFollowUpTesting
         , viewBoolInput
             language
             form.followUpTesting
