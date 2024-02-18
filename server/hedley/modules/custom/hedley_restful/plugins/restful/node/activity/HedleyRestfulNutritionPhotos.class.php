@@ -30,7 +30,7 @@ class HedleyRestfulNutritionPhotos extends HedleyRestfulNutritionActivityBase {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      'image_styles' => ['patient-photo'],
+      'image_styles' => ['person-photo'],
     ];
 
     return $public_fields;
@@ -56,7 +56,7 @@ class HedleyRestfulNutritionPhotos extends HedleyRestfulNutritionActivityBase {
 
     foreach ($items as &$item) {
       if (!empty($item->photo) && !empty($item->uri)) {
-        $item->photo = image_style_url('patient-photo', $item->uri);
+        $item->photo = image_style_url('person-photo', $item->uri);
       }
 
       unset($item->uri);

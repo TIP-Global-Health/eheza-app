@@ -50,7 +50,7 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      'image_styles' => ['patient-photo'],
+      'image_styles' => ['person-photo'],
     ];
 
     $public_fields['birth_date'] = [
@@ -125,7 +125,7 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       $item->birth_date_estimated = (bool) intval($item->birth_date_estimated);
 
       if (!empty($item->photo) && !empty($item->uri)) {
-        $item->photo = image_style_url('patient-photo', $item->uri);
+        $item->photo = image_style_url('person-photo', $item->uri);
       }
 
       unset($item->uri);

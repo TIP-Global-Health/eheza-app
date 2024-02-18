@@ -85,6 +85,7 @@ features[field_instance][] = node-relationship-field_related_to
 features[field_instance][] = node-relationship-field_shards
 features[field_instance][] = node-relationship-field_uuid
 features[image][] = patient-photo
+features[image][] = person-photo
 features[node][] = person
 features[node][] = relationship
 features[user_permission][] = create person content
