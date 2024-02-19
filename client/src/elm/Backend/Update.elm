@@ -5748,10 +5748,17 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         TuberculosisFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | tuberculosis = Dict.insert uuid data measurements.tuberculosis })
+                        model
+            in
             ( mapTuberculosisMeasurements
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
-                model
+                modelWithMappedFollowUp
             , recalc
             )
 
