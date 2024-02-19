@@ -1363,6 +1363,12 @@ function hedley_stats_get_pmtct_data($health_center_id, array $pmtct_clinics) {
     return $cache_data;
   }
 
+  if (empty($pmtct_clinics)) {
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PMTCT_DATA, $health_center_id, NULL, $result);
+    return $result;
+  }
+
   $query = hedley_stats_get_base_query($health_center_id, 'pmtct_participant');
   $fields_to_join = [
     'field_clinic',
