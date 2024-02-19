@@ -791,7 +791,7 @@ generateTuberculosisFollowUpEntryData :
 generateTuberculosisFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
     if item.dateMeasured == currentDate then
         -- We do not display follow ups that were scheduled today,
-        -- since we should not allow starting and encounter, if there
+        -- since we should not allow starting an encounter, if there
         -- was already and encounter completed today (where follow up
         -- was scheduled).
         Nothing
