@@ -365,7 +365,9 @@ type MsgIndexedDb
     | FetchStockManagementMeasurements HealthCenterId
     | FetchStockManagementData HealthCenterId
     | FetchTuberculosisEncounter TuberculosisEncounterId
+    | FetchTuberculosisEncounters (List TuberculosisEncounterId)
     | FetchTuberculosisEncountersForParticipant IndividualEncounterParticipantId
+    | FetchTuberculosisEncountersForParticipants (List IndividualEncounterParticipantId)
     | FetchTuberculosisMeasurements TuberculosisEncounterId
     | MarkForRecalculationStockManagementData HealthCenterId
     | FetchVillages
@@ -427,7 +429,9 @@ type MsgIndexedDb
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedStockManagementMeasurements HealthCenterId (WebData StockManagementMeasurements)
     | HandleFetchedTuberculosisEncounter TuberculosisEncounterId (WebData TuberculosisEncounter)
+    | HandleFetchedTuberculosisEncounters (WebData (Dict TuberculosisEncounterId TuberculosisEncounter))
     | HandleFetchedTuberculosisEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict TuberculosisEncounterId TuberculosisEncounter))
+    | HandleFetchedTuberculosisEncountersForParticipants (WebData (Dict IndividualEncounterParticipantId (Dict TuberculosisEncounterId TuberculosisEncounter)))
     | HandleFetchedTuberculosisMeasurements TuberculosisEncounterId (WebData TuberculosisMeasurements)
     | HandleFetchedVillages (WebData (Dict VillageId Village))
     | HandleFetchedTraceContact AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)

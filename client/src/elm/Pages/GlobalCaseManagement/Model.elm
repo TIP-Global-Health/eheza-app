@@ -182,6 +182,7 @@ type alias FollowUpPatients =
     , acuteIllness : List PersonId
     , prenatal : List PersonId
     , immunization : List PersonId
+    , tuberculosis : List PersonId
     }
 
 

@@ -54,6 +54,7 @@ fetchForCHWAtVillage currentDate village db followUps =
                 ++ followUpPatients.acuteIllness
                 ++ followUpPatients.prenatal
                 ++ followUpPatients.immunization
+                ++ followUpPatients.tuberculosis
                 |> Pages.Utils.unique
 
         residentsForNutrition =
@@ -125,15 +126,39 @@ fetchForCHWAtVillage currentDate village db followUps =
         fetchPrenatalEncountersForParticipantMsg =
             EverySet.toList prenatalParticipants
                 |> FetchPrenatalEncountersForParticipants
+
+        --
+        --  Tuberculosis follows ups calculations.
+        --
+        tuberculosisEncounters =
+            generateTuberculosisEncounters followUpsForResidents
+
+        tuberculosisParticipants =
+            generateTuberculosisParticipants tuberculosisEncounters db
+
+        fetchTuberculosisEncountersMsg =
+            EverySet.toList tuberculosisEncounters
+                |> FetchTuberculosisEncounters
+
+        fetchTuberculosisParticipantsMsg =
+            EverySet.toList tuberculosisParticipants
+                |> FetchIndividualEncounterParticipants
+
+        fetchTuberculosisEncountersForParticipantMsg =
+            EverySet.toList tuberculosisParticipants
+                |> FetchTuberculosisEncountersForParticipants
     in
     [ FetchFollowUpParticipants peopleForFetch
     , fetchAcuteIllnessEncountersMsg
     , fetchPrenatalEncountersMsg
+    , fetchTuberculosisEncountersMsg
     , fetchAcuteIllnessParticipantsMsg
     , fetchPrenatalParticipantsMsg
+    , fetchTuberculosisParticipantsMsg
     , fetchHomeVisitEncountersMsg
     , fetchAcuteIllnessEncountersForParticipantMsg
     , fetchPrenatalEncountersForParticipantMsg
+    , fetchTuberculosisEncountersForParticipantMsg
     , fetchIndividualParticipantsMsg
     , fetchWellChildEncountersMsg
     ]

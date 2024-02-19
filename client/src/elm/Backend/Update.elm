@@ -907,6 +907,49 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
+        FetchTuberculosisEncountersForParticipants ids ->
+            let
+                tuberculosisEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.tuberculosisEncountersByParticipant ids
+            in
+            ( { model | tuberculosisEncountersByParticipant = tuberculosisEncountersByParticipantUpdated }
+            , sw.select tuberculosisEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedTuberculosisEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedTuberculosisEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | tuberculosisEncountersByParticipant = Dict.union dictUpdated model.tuberculosisEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -1458,6 +1501,36 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , Cmd.none
             , []
             )
+
+        FetchTuberculosisEncounters ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    tuberculosisEncountersUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.tuberculosisEncounters ids
+                in
+                ( { model | tuberculosisEncounters = tuberculosisEncountersUpdated }
+                , sw.getMany tuberculosisEncounterEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedTuberculosisEncounters)
+                , []
+                )
+
+        HandleFetchedTuberculosisEncounters webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | tuberculosisEncounters = Dict.union dictUpdated model.tuberculosisEncounters }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }

@@ -258,6 +258,11 @@ generatePrenatalEncounters followUps =
     generateEncountersIdsFromMeasurements .prenatal followUps
 
 
+generateTuberculosisEncounters : FollowUpMeasurements -> EverySet TuberculosisEncounterId
+generateTuberculosisEncounters followUps =
+    generateEncountersIdsFromMeasurements .tuberculosis followUps
+
+
 generateEncountersIdsFromMeasurements :
     (FollowUpMeasurements -> Dict measurementId { a | encounterId : Maybe encounterId })
     -> FollowUpMeasurements
@@ -277,6 +282,11 @@ generateAcuteIllnessParticipants encounters db =
 generatePrenatalParticipants : EverySet PrenatalEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
 generatePrenatalParticipants encounters db =
     generateParticipantsIdsByEncounters .prenatalEncounters encounters db
+
+
+generateTuberculosisParticipants : EverySet TuberculosisEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
+generateTuberculosisParticipants encounters db =
+    generateParticipantsIdsByEncounters .tuberculosisEncounters encounters db
 
 
 generateParticipantsIdsByEncounters :
@@ -491,6 +501,7 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
     , acuteIllness = uniquePatientsFromFollowUps .acuteIllness
     , prenatal = uniquePatientsFromFollowUps .prenatal
     , immunization = uniquePatientsFromFollowUps .nextVisit
+    , tuberculosis = uniquePatientsFromFollowUps .tuberculosis
     }
 
 
