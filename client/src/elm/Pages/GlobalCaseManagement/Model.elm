@@ -2,7 +2,7 @@ module Pages.GlobalCaseManagement.Model exposing (..)
 
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (FollowUpOption, NutritionFollowUpValue, PrenatalFollowUpValue)
+import Backend.Measurement.Model exposing (FollowUpOption, FollowUpValue, NutritionFollowUpValue, PrenatalFollowUpValue)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -30,6 +30,7 @@ type CaseManagementFilter
     | FilterPrenatalLabs
     | FilterNCDLabs
     | FilterImmunization
+    | FilterTuberculosis
 
 
 type FollowUpDueOption
@@ -105,11 +106,27 @@ type alias ImmunizationFollowUpEntry =
     }
 
 
+type alias TuberculosisFollowUpItem =
+    { dateMeasured : NominalDate
+    , personName : String
+    , encounterId : Maybe TuberculosisEncounterId
+    , value : FollowUpValue
+    }
+
+
+type alias TuberculosisFollowUpEntry =
+    { participantId : IndividualEncounterParticipantId
+    , personId : PersonId
+    , item : TuberculosisFollowUpItem
+    }
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
     | FollowUpPrenatal FollowUpPrenatalData
     | FollowUpImmunization FollowUpImmunizationData
+    | FollowUpTuberculosis FollowUpTuberculosisData
     | CaseManagementContactsTracing
 
 
@@ -140,6 +157,13 @@ type alias FollowUpPrenatalData =
     , encounterType : PrenatalEncounterType
     , hasNurseEncounter : Bool
     , dateMeasured : NominalDate
+    }
+
+
+type alias FollowUpTuberculosisData =
+    { personId : PersonId
+    , personName : String
+    , participantId : IndividualEncounterParticipantId
     }
 
 

@@ -1680,10 +1680,12 @@ type TranslationId
     | TreatmentReviewWarningPopupMessage
     | TreatmentReviewWarningPopupInstructions
     | TrySyncing
+    | Tuberculosis
     | TuberculosisActivityTitle TuberculosisActivity
     | TuberculosisDiagnosis TuberculosisDiagnosis
     | TuberculosisDiagnosedQuestion
     | TuberculosisDistributeMedicationsQuestion
+    | TuberculosisFollowUpLabel
     | TuberculosisFollowUpTestingStageInstructions TuberculosisFollowUpTestingStage
     | TuberculosisFollowUpTestingStageLabel TuberculosisFollowUpTestingStage
     | TuberculosisFollowUpTestingStageTest TuberculosisFollowUpTestingStage
@@ -3697,6 +3699,9 @@ translationSet trans =
                 FilterImmunization ->
                     translationSet Immunisation
 
+                FilterTuberculosis ->
+                    translationSet Tuberculosis
+
         CaseManagementPaneHeader encounterType ->
             case encounterType of
                 Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
@@ -3734,6 +3739,9 @@ translationSet trans =
 
                 FilterImmunization ->
                     translationSet Immunisation
+
+                FilterTuberculosis ->
+                    translationSet Tuberculosis
 
         Celsius ->
             { english = "Celsius"
@@ -5248,7 +5256,10 @@ translationSet trans =
                     translationSet EmptyString
 
                 TuberculosisEncounter ->
-                    translationSet EmptyString
+                    { english = "Do you want to start a Tuberculosis Management encounter for"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 WellChildEncounter ->
                     { english = "Do you want to start a Well Child encounter for"
@@ -20865,6 +20876,12 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        Tuberculosis ->
+            { english = "Tuberculosis"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         TuberculosisActivityTitle activity ->
             case activity of
                 Backend.TuberculosisActivity.Model.Diagnostics ->
@@ -20908,6 +20925,12 @@ translationSet trans =
 
         TuberculosisDistributeMedicationsQuestion ->
             { english = "Did you distribute the following medications"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TuberculosisFollowUpLabel ->
+            { english = "Tuberculosis Follow up"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

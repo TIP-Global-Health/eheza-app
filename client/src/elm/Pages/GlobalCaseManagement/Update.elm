@@ -7,6 +7,7 @@ import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (emptyPrenatalEncounter)
+import Backend.TuberculosisEncounter.Model exposing (emptyTuberculosisEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
 import Gizra.NominalDate exposing (NominalDate)
@@ -50,6 +51,9 @@ update currentDate healthCenterId msg db model =
 
                                     FollowUpImmunization data ->
                                         startFollowUpEncounterWellChild currentDate selectedHealthCenter db data
+
+                                    FollowUpTuberculosis data ->
+                                        startFollowUpEncounterTuberculosis currentDate selectedHealthCenter data
 
                                     -- We should never get here, as Prenatal Encounter got it's own action.
                                     FollowUpPrenatal _ ->
@@ -126,3 +130,11 @@ startFollowUpEncounterWellChild currentDate selectedHealthCenter db data =
         -- We should never get here, since Next Visist follow up is generated from content of
         -- Well Child encounter, which means that participant must exist.
         |> Maybe.withDefault []
+
+
+startFollowUpEncounterTuberculosis : NominalDate -> HealthCenterId -> FollowUpTuberculosisData -> List App.Model.Msg
+startFollowUpEncounterTuberculosis currentDate selectedHealthCenter data =
+    [ emptyTuberculosisEncounter data.participantId currentDate (Just selectedHealthCenter)
+        |> Backend.Model.PostTuberculosisEncounter
+        |> App.Model.MsgIndexedDb
+    ]

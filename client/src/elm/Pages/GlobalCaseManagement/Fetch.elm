@@ -152,6 +152,7 @@ fetchForCHWAtVillage currentDate village db followUps =
     , fetchAcuteIllnessEncountersMsg
     , fetchPrenatalEncountersMsg
     , fetchTuberculosisEncountersMsg
+    , fetchWellChildEncountersMsg
     , fetchAcuteIllnessParticipantsMsg
     , fetchPrenatalParticipantsMsg
     , fetchTuberculosisParticipantsMsg
@@ -160,7 +161,6 @@ fetchForCHWAtVillage currentDate village db followUps =
     , fetchPrenatalEncountersForParticipantMsg
     , fetchTuberculosisEncountersForParticipantMsg
     , fetchIndividualParticipantsMsg
-    , fetchWellChildEncountersMsg
     ]
 
 
