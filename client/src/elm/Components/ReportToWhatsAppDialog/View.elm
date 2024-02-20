@@ -152,15 +152,7 @@ viewPhoneInput language currentDate site data =
                         ]
                         [ text <| "+" ++ countryCodeToString item ]
                 )
-                [ CountryCodeRwanda
-                , CountryCodeUganda
-                , CountryCodeCongo
-                , CountryCodeKenya
-                , CountryCodeTanzania
-                , CountryCodeBurundi
-                , CountryCodeUSACanada
-                , CountryCodeIsrael
-                ]
+                allCountryCodes
 
         curerntPhoneNumber =
             if siteToCountryCode site == data.countryCode then
