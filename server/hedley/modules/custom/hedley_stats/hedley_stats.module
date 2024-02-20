@@ -2011,6 +2011,7 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA, $health_center_id, NULL, $result);
     return $result;
   }
+
   $sessions_during_period = array_keys($result);
 
   // Now we need to resolve all patients (children) that have participated
@@ -2032,6 +2033,11 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
     ->execute()
     ->fetchAllAssoc('person_id');
   $patients_ids = array_unique(array_keys($patients_ids));
+  if (empty($patients_ids)) {
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA, $health_center_id, NULL, $result);
+    return $result;
+  }
 
   $data = [];
 
