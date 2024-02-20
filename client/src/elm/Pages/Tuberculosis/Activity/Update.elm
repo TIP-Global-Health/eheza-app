@@ -3,7 +3,7 @@ module Pages.Tuberculosis.Activity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
+import Backend.IndividualEncounterParticipant.Model exposing (TuberculosisOutcome(..))
 import Backend.Measurement.Model exposing (AdverseEvent(..), TuberculosisPrescribedMedication(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -97,7 +97,7 @@ update currentDate id db msg model =
 
                                     additionalMsgs =
                                         if diagnosticsForm.diagnosed == Just False then
-                                            [ Backend.IndividualEncounterParticipant.Model.CloseTuberculosisSession
+                                            [ Backend.IndividualEncounterParticipant.Model.CloseTuberculosisSession OutcomeNotDiagnosed
                                                 |> Backend.Model.MsgIndividualEncounterParticipant particpantId
                                                 |> App.Model.MsgIndexedDb
                                             , App.Model.SetActivePage PinCodePage
