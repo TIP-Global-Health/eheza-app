@@ -216,7 +216,6 @@ viewMedicationContent language currentDate assembled data =
                             "medication"
 
                         TaskDOT ->
-                            -- @todo : add icon
                             "dot"
 
                         TaskTreatmentReview ->

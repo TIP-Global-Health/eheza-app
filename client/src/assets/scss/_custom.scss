@@ -2989,6 +2989,20 @@ input::placeholder {
   }
 }
 
+.icon-dot {
+  .active &:after {
+    background-image: url(#{$img-path}icon-dot-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-dot-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-dot-gray.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
