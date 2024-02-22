@@ -737,6 +737,40 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
+        SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.partnerHIVTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetPartnerHIVTestResult value ->
             let
                 form =

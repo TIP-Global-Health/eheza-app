@@ -3130,6 +3130,22 @@ contentAndTasksLaboratoryResultConfirmation language currentDate config task for
                     , setExecutionNoteMsg = config.setHIVTestExecutionNoteMsg
                     }
 
+                TaskPartnerHIVTest ->
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                { form_
+                                    | runConfirmedByLabTech = Just value
+                                    , executionNote = resolveNote value
+                                    , executionNoteDirty = True
+                                    , testResult = Nothing
+                                    , testResultDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setPartnerHIVTestFormBoolInputMsg updateFunc
+                    , setExecutionNoteMsg = config.setPartnerHIVTestExecutionNoteMsg
+                    }
+
                 -- TaskSyphilisTest ->
                 --     let
                 --         updateFunc =
@@ -3351,29 +3367,6 @@ contentAndTasksLaboratoryResultConfirmation language currentDate config task for
                 --     , setExecutionNoteMsg = config.setHIVPCRTestExecutionNoteMsg
                 --     }
                 --
-                -- TaskPartnerHIVTest ->
-                --     let
-                --         updateFunc =
-                --             \value form_ ->
-                --                 let
-                --                     ( executionNote, executionDate ) =
-                --                         resolveNoteAndDate value
-                --                 in
-                --                 { form_
-                --                     | testPerformed = Just value
-                --                     , testPerformedDirty = True
-                --                     , immediateResult = Nothing
-                --                     , executionNote = executionNote
-                --                     , executionNoteDirty = True
-                --                     , executionDate = executionDate
-                --                     , executionDateDirty = True
-                --                     , testResult = Nothing
-                --                     , testResultDirty = True
-                --                 }
-                --     in
-                --     { setBoolInputMsg = config.setPartnerHIVTestFormBoolInputMsg updateFunc
-                --     , setExecutionNoteMsg = config.setPartnerHIVTestExecutionNoteMsg
-                --     }
                 _ ->
                     -- Other tasks do not use this config, as they either
                     -- have only 'non universal form' variant, or a proprietary form.
@@ -3993,19 +3986,36 @@ viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
 partnerHIVResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg
     -> (String -> msg)
     -> PartnerHIVResultForm
     -> ( Html msg, Int, Int )
-partnerHIVResultFormAndTasks language currentDate setPartnerHIVTestResultMsg form =
+partnerHIVResultFormAndTasks language currentDate isLabTech config setPartnerHIVTestResultMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskPartnerHIVTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            standardTestResultInputsAndTasks language setPartnerHIVTestResultMsg form.testResult TaskPartnerHIVTest
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                standardTestResultInputsAndTasks language
+                    setPartnerHIVTestResultMsg
+                    form.testResult
+                    TaskPartnerHIVTest
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskPartnerHIVTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 
@@ -6297,6 +6307,8 @@ emptyContentAndTasksLaboratoryResultConfig : msg -> ContentAndTasksLaboratoryRes
 emptyContentAndTasksLaboratoryResultConfig noOpMsg =
     { setHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
     , setHIVTestExecutionNoteMsg = always noOpMsg
+    , setPartnerHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setPartnerHIVTestExecutionNoteMsg = always noOpMsg
 
     -- , setSyphilisTestFormBoolInputMsg = \_ _ -> noOpMsg
     -- , setSyphilisTestExecutionNoteMsg = always noOpMsg
@@ -6326,8 +6338,6 @@ emptyContentAndTasksLaboratoryResultConfig noOpMsg =
     -- , setLipidPanelTestExecutionNoteMsg = always noOpMsg
     -- , setHbA1cTestFormBoolInputMsg = \_ _ -> noOpMsg
     -- , setHbA1cTestExecutionNoteMsg = always noOpMsg
-    -- , setPartnerHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
-    -- , setPartnerHIVTestExecutionNoteMsg = always noOpMsg
     , noOpMsg = noOpMsg
     }
 
@@ -6727,6 +6737,18 @@ toHIVPCRResultValue form =
         form.executionNote
 
 
+resolveRunConfirmedByLabTechFromValue : { v | executionNote : TestExecutionNote } -> Maybe Bool
+resolveRunConfirmedByLabTechFromValue value =
+    if value.executionNote == TestNoteRunConfirmedByLabTech then
+        Just True
+
+    else if testNotPerformedByWhyNotAtExecutionNote value.executionNote then
+        Just False
+
+    else
+        Nothing
+
+
 hivResultFormWithDefault : HIVResultForm -> Maybe HIVTestValue -> HIVResultForm
 hivResultFormWithDefault form =
     unwrap
@@ -6734,14 +6756,7 @@ hivResultFormWithDefault form =
         (\value ->
             let
                 runConfirmedByLabTechFromValue =
-                    if value.executionNote == TestNoteRunConfirmedByLabTech then
-                        Just True
-
-                    else if testNotPerformedByWhyNotAtExecutionNote value.executionNote then
-                        Just False
-
-                    else
-                        Nothing
+                    resolveRunConfirmedByLabTechFromValue value
 
                 signsByValue =
                     Maybe.map
@@ -6862,10 +6877,23 @@ partnerHIVResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
+                let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+                in
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , testResult = or form.testResult value.testResult
+                , testResult =
+                    maybeValueConsideringIsDirtyField form.testResultDirty
+                        form.testResult
+                        value.testResult
+                , testResultDirty = form.testResultDirty
                 }
             )
 
@@ -6880,7 +6908,15 @@ toPartnerHIVResultValue : PartnerHIVResultForm -> Maybe PartnerHIVTestValue
 toPartnerHIVResultValue form =
     Maybe.map
         (\executionNote ->
-            { executionNote = executionNote
+            let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+            in
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult

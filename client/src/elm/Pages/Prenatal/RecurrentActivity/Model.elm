@@ -73,6 +73,8 @@ type Msg
     | SetHIVTestExecutionNote TestExecutionNote
     | SetHIVTestResult String
     | SaveHIVResult PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
+    | SetPartnerHIVTestFormBoolInput (Bool -> PartnerHIVResultForm -> PartnerHIVResultForm) Bool
+    | SetPartnerHIVTestExecutionNote TestExecutionNote
     | SetPartnerHIVTestResult String
     | SetMalariaTestResult String
     | SavePartnerHIVResult PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)

@@ -197,7 +197,11 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                         TaskPartnerHIVTest ->
                             getMeasurementValueFunc measurements.partnerHIVTest
                                 |> partnerHIVResultFormWithDefault model.labResultsData.partnerHIVTestForm
-                                |> partnerHIVResultFormAndTasks language currentDate SetPartnerHIVTestResult
+                                |> partnerHIVResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetPartnerHIVTestResult
 
                         TaskHIVTest ->
                             getMeasurementValueFunc measurements.hivTest
@@ -788,6 +792,8 @@ contentAndTasksLaboratorResultsConfig =
                 { config
                     | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
                     , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
+                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
 
                     -- , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
                     -- , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
@@ -806,8 +812,6 @@ contentAndTasksLaboratorResultsConfig =
                     -- , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
                     -- , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
                     -- , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
-                    -- , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
-                    -- , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
                 }
            )
 
@@ -875,7 +879,11 @@ viewLab language currentDate lab assembled data =
                 TestPartnerHIV ->
                     getMeasurementValueFunc measurements.partnerHIVTest
                         |> partnerHIVResultFormWithDefault data.partnerHIVTestForm
-                        |> partnerHIVResultFormAndTasks language currentDate SetPartnerHIVTestResult
+                        |> partnerHIVResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetPartnerHIVTestResult
 
                 TestHIV ->
                     getMeasurementValueFunc measurements.hivTest

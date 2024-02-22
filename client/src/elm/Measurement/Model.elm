@@ -768,6 +768,8 @@ type alias ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg =
 type alias ContentAndTasksLaboratoryResultConfig msg =
     { setHIVTestFormBoolInputMsg : (Bool -> HIVResultForm -> HIVResultForm) -> Bool -> msg
     , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVResultForm -> PartnerHIVResultForm) -> Bool -> msg
+    , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
 
     -- , setSyphilisTestFormBoolInputMsg : (Bool -> SyphilisTestForm -> SyphilisTestForm) -> Bool -> msg
     -- , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
@@ -797,8 +799,6 @@ type alias ContentAndTasksLaboratoryResultConfig msg =
     -- , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
     -- , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
     -- , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
-    -- , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm -> PartnerHIVTestForm) -> Bool -> msg
-    -- , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
     , noOpMsg : msg
     }
 
@@ -1375,19 +1375,25 @@ emptyPartnerHIVTestForm =
 
 
 type alias PartnerHIVResultForm =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     }
 
 
 emptyPartnerHIVResultForm : PartnerHIVResultForm
 emptyPartnerHIVResultForm =
-    { executionNote = Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
     , executionDate = Nothing
     , testPrerequisites = Nothing
     , testResult = Nothing
+    , testResultDirty = False
     }
 
 
