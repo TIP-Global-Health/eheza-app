@@ -4835,19 +4835,36 @@ viewHepatitisBTestForm language currentDate configInitial configPerformed form =
 hepatitisBResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> HepatitisBResultForm encounterId
     -> ( Html msg, Int, Int )
-hepatitisBResultFormAndTasks language currentDate setHepatitisBTestResultMsg form =
+hepatitisBResultFormAndTasks language currentDate isLabTech config setHepatitisBTestResultMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskHepatitisBTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            standardTestResultInputsAndTasks language setHepatitisBTestResultMsg form.testResult TaskHepatitisBTest
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                standardTestResultInputsAndTasks language
+                    setHepatitisBTestResultMsg
+                    form.testResult
+                    TaskHepatitisBTest
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskHepatitisBTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 
@@ -5070,25 +5087,38 @@ syphilisResultFormAndTasks :
     Language
     -> NominalDate
     -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (IllnessSymptom -> msg)
     -> SyphilisResultForm encounterId
     -> ( Html msg, Int, Int )
-syphilisResultFormAndTasks language currentDate isLabTech setTestResultMsg setIllnessSymptomMsg form =
+syphilisResultFormAndTasks language currentDate isLabTech config setTestResultMsg setIllnessSymptomMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskSyphilisTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            syphilisResultInputsAndTasks language
-                isLabTech
-                setTestResultMsg
-                setIllnessSymptomMsg
-                form.testResult
-                form.symptoms
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                syphilisResultInputsAndTasks language
+                    isLabTech
+                    setTestResultMsg
+                    setIllnessSymptomMsg
+                    form.testResult
+                    form.symptoms
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskSyphilisTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 

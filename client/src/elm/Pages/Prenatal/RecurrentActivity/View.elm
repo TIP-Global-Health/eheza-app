@@ -216,12 +216,21 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                         TaskSyphilisTest ->
                             getMeasurementValueFunc measurements.syphilisTest
                                 |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
-                                |> syphilisResultFormAndTasks language currentDate isLabTech SetSyphilisTestResult SetIllnessSymptom
+                                |> syphilisResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetSyphilisTestResult
+                                    SetIllnessSymptom
 
                         TaskHepatitisBTest ->
                             getMeasurementValueFunc measurements.hepatitisBTest
                                 |> hepatitisBResultFormWithDefault model.labResultsData.hepatitisBTestForm
-                                |> hepatitisBResultFormAndTasks language currentDate SetHepatitisBTestResult
+                                |> hepatitisBResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetHepatitisBTestResult
 
                         TaskMalariaTest ->
                             getMeasurementValueFunc measurements.malariaTest
@@ -896,12 +905,21 @@ viewLab language currentDate lab assembled data =
                 TestSyphilis ->
                     getMeasurementValueFunc measurements.syphilisTest
                         |> syphilisResultFormWithDefault data.syphilisTestForm
-                        |> syphilisResultFormAndTasks language currentDate isLabTech SetSyphilisTestResult SetIllnessSymptom
+                        |> syphilisResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetSyphilisTestResult
+                            SetIllnessSymptom
 
                 TestHepatitisB ->
                     getMeasurementValueFunc measurements.hepatitisBTest
                         |> hepatitisBResultFormWithDefault data.hepatitisBTestForm
-                        |> hepatitisBResultFormAndTasks language currentDate SetHepatitisBTestResult
+                        |> hepatitisBResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetHepatitisBTestResult
 
                 TestMalaria ->
                     getMeasurementValueFunc measurements.malariaTest
