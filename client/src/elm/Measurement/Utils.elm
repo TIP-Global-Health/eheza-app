@@ -4136,6 +4136,8 @@ viewUrineDipstickTestUniversalForm language currentDate configInitial configPerf
 urineDipstickResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (String -> msg)
     -> (String -> msg)
@@ -4147,35 +4149,47 @@ urineDipstickResultFormAndTasks :
     -> (String -> msg)
     -> UrineDipstickResultForm
     -> ( Html msg, Int, Int )
-urineDipstickResultFormAndTasks language currentDate setProteinMsg setPHMsg setGlucoseMsg setLeukocytesMsg setNitriteMsg setUrobilinogenMsg setHaemoglobinMsg setKetoneMsg setBilirubinMsg form =
+urineDipstickResultFormAndTasks language currentDate isLabTech config setProteinMsg setPHMsg setGlucoseMsg setLeukocytesMsg setNitriteMsg setUrobilinogenMsg setHaemoglobinMsg setKetoneMsg setBilirubinMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskUrineDipstickTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            urineDipstickResultInputsAndTasks language
-                setProteinMsg
-                setPHMsg
-                setGlucoseMsg
-                setLeukocytesMsg
-                setNitriteMsg
-                setUrobilinogenMsg
-                setHaemoglobinMsg
-                setKetoneMsg
-                setBilirubinMsg
-                form.protein
-                form.ph
-                form.glucose
-                form.leukocytes
-                form.nitrite
-                form.urobilinogen
-                form.haemoglobin
-                form.ketone
-                form.bilirubin
-                form.testVariant
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                urineDipstickResultInputsAndTasks language
+                    setProteinMsg
+                    setPHMsg
+                    setGlucoseMsg
+                    setLeukocytesMsg
+                    setNitriteMsg
+                    setUrobilinogenMsg
+                    setHaemoglobinMsg
+                    setKetoneMsg
+                    setBilirubinMsg
+                    form.protein
+                    form.ph
+                    form.glucose
+                    form.leukocytes
+                    form.nitrite
+                    form.urobilinogen
+                    form.haemoglobin
+                    form.ketone
+                    form.bilirubin
+                    form.testVariant
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory urine-dipstick-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskUrineDipstickTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 
@@ -4751,19 +4765,35 @@ viewHemoglobinTestForm language currentDate configInitial configPerformed form =
 hemoglobinResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> HemoglobinResultForm
     -> ( Html msg, Int, Int )
-hemoglobinResultFormAndTasks language currentDate setHemoglobinCountMsg form =
+hemoglobinResultFormAndTasks language currentDate isLabTech config setHemoglobinCountMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskHemoglobinTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            hemoglobinResultInputsAndTasks language setHemoglobinCountMsg form.hemoglobinCount
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                hemoglobinResultInputsAndTasks language
+                    setHemoglobinCountMsg
+                    form.hemoglobinCount
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory hemoglobin-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskHemoglobinTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 

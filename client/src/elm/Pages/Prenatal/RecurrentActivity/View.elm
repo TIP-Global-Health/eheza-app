@@ -257,6 +257,8 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                                 |> urineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
                                 |> urineDipstickResultFormAndTasks language
                                     currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
                                     SetProtein
                                     SetPH
                                     SetGlucose
@@ -270,7 +272,11 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                         TaskHemoglobinTest ->
                             getMeasurementValueFunc measurements.hemoglobinTest
                                 |> hemoglobinResultFormWithDefault model.labResultsData.hemoglobinTestForm
-                                |> hemoglobinResultFormAndTasks language currentDate SetHemoglobin
+                                |> hemoglobinResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetHemoglobin
 
                         TaskRandomBloodSugarTest ->
                             getMeasurementValueFunc measurements.randomBloodSugarTest
@@ -956,6 +962,8 @@ viewLab language currentDate lab assembled data =
                         |> urineDipstickResultFormWithDefault data.urineDipstickTestForm
                         |> urineDipstickResultFormAndTasks language
                             currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
                             SetProtein
                             SetPH
                             SetGlucose
@@ -969,7 +977,11 @@ viewLab language currentDate lab assembled data =
                 TestHemoglobin ->
                     getMeasurementValueFunc measurements.hemoglobinTest
                         |> hemoglobinResultFormWithDefault data.hemoglobinTestForm
-                        |> hemoglobinResultFormAndTasks language currentDate SetHemoglobin
+                        |> hemoglobinResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetHemoglobin
 
                 TestRandomBloodSugar ->
                     getMeasurementValueFunc measurements.randomBloodSugarTest
