@@ -2478,6 +2478,58 @@ div.page-activity.child-scoreboard {
   }
 }
 
+div.page-activity.tuberculosis {
+
+  .ui.full.segment .full.content {
+
+    .ui.form.dot .prescribed-medications {
+      padding: 20px;
+
+      p {
+        margin-bottom: 5px;
+      }
+    }
+
+    .ui.form.health-education .follow-up-testing-table {
+      border: 1px solid black;
+      margin-bottom: 20px;
+
+      .row {
+        border-bottom: 1px solid black;
+        display: flex;
+        justify-content: center;
+
+        .item {
+          float: left;
+          font-size: 18px;
+          line-height: 24px;
+          padding: 10px;
+        }
+
+        .item.label {
+          border-right: 1px solid black;
+          margin-bottom: 0;
+          width: 14%;
+        }
+
+        .item.test {
+          border-right: 1px solid black;
+          width: 30%;
+        }
+
+        .item.guidance {
+          width: 55%;
+        }
+      }
+
+      .row:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+}
+
 div.page-outcome {
 
   .tasks-count {

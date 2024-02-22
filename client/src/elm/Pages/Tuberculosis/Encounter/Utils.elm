@@ -63,6 +63,9 @@ generateAssembledData id db =
             RemoteData.toMaybe encounter
                 |> Maybe.map (\encounter_ -> generatePreviousEncountersData (Just id) encounter_.participant db)
                 |> Maybe.withDefault []
+
+        initialEncounter =
+            List.isEmpty previousEncountersData
     in
     RemoteData.map AssembledData (Success id)
         |> RemoteData.andMap encounter
@@ -70,6 +73,7 @@ generateAssembledData id db =
         |> RemoteData.andMap person
         |> RemoteData.andMap measurements
         |> RemoteData.andMap (Success previousEncountersData)
+        |> RemoteData.andMap (Success initialEncounter)
 
 
 generatePreviousEncountersData : Maybe TuberculosisEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List PreviousEncounterData

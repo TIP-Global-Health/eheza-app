@@ -42,6 +42,13 @@ update currentDate participantId maybeParticipant msg model =
                 (\participant -> { participant | endDate = Just currentDate, outcome = Just (AcuteIllness outcome) })
                 model
 
+        CloseTuberculosisSession ->
+            updateIndividualEncounterParticipant currentDate
+                participantId
+                maybeParticipant
+                (\participant -> { participant | endDate = Just currentDate })
+                model
+
         SetEddDate eddDate ->
             updateIndividualEncounterParticipant currentDate
                 participantId

@@ -134,7 +134,7 @@ import Pages.Report.Model
         )
 import Pages.StockManagement.Model exposing (CorrectionEntryType(..), StockManagementMenu(..))
 import Pages.TraceContact.Model exposing (NoContactReason(..))
-import Pages.Tuberculosis.Activity.Model
+import Pages.Tuberculosis.Activity.Model exposing (TuberculosisFollowUpTestingStage(..))
 import Pages.WellChild.Activity.Types
     exposing
         ( HomeVisitTask(..)
@@ -1684,6 +1684,9 @@ type TranslationId
     | TuberculosisDiagnosis TuberculosisDiagnosis
     | TuberculosisDiagnosedQuestion
     | TuberculosisDistributeMedicationsQuestion
+    | TuberculosisFollowUpTestingStageInstructions TuberculosisFollowUpTestingStage
+    | TuberculosisFollowUpTestingStageLabel TuberculosisFollowUpTestingStage
+    | TuberculosisFollowUpTestingStageTest TuberculosisFollowUpTestingStage
     | TuberculosisHealthEducationQuestion TuberculosisHealthEducationSign
     | TuberculosisInstructions
     | TuberculosisInstructionsFollowed
@@ -20908,6 +20911,93 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        TuberculosisFollowUpTestingStageInstructions stage ->
+            case stage of
+                FollowUpTestingMonth1 ->
+                    { english = "Reassess treatment according to results, continue first-line treatment if drug susceptible."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingMonth2 ->
+                    translationSet <| TuberculosisFollowUpTestingStageInstructions FollowUpTestingMonth1
+
+                FollowUpTestingEndMonth2 ->
+                    { english = "If positive, Culture and DST - Continuation phase."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth5 ->
+                    { english = "If positive, Culture and DST, and retest after 15 days."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth6 ->
+                    { english = "If positive, Culture and DST, and retest after 15 days, if negative - cured."
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        TuberculosisFollowUpTestingStageLabel stage ->
+            case stage of
+                FollowUpTestingMonth1 ->
+                    { english = "Month 1"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingMonth2 ->
+                    { english = "Month 2"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth2 ->
+                    { english = "End Month 2"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth5 ->
+                    { english = "End Month 5"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth6 ->
+                    { english = "End Month 6"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        TuberculosisFollowUpTestingStageTest stage ->
+            case stage of
+                FollowUpTestingMonth1 ->
+                    { english = "xPert, Culture, and DST"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingMonth2 ->
+                    translationSet <| TuberculosisFollowUpTestingStageTest FollowUpTestingMonth1
+
+                FollowUpTestingEndMonth2 ->
+                    { english = "Smear microposy at the end of the intensive phase"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth5 ->
+                    { english = "Smear microposy"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth6 ->
+                    translationSet <| TuberculosisFollowUpTestingStageTest FollowUpTestingEndMonth5
 
         TuberculosisHealthEducationQuestion sign ->
             case sign of

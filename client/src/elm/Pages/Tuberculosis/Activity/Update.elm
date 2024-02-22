@@ -3,6 +3,7 @@ module Pages.Tuberculosis.Activity.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (AdverseEvent(..), TuberculosisPrescribedMedication(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -33,6 +34,9 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault form
 
+        diagnosticsForm =
+            resolveFormWithDefaults .diagnostics diagnosticsFormWithDefault model.diagnosticsData.form
+
         medicationForm =
             resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
 
@@ -60,7 +64,7 @@ update currentDate id db msg model =
         SetDiagnosticsBoolInput formUpdateFunc value ->
             let
                 updatedForm =
-                    formUpdateFunc value model.diagnosticsData.form
+                    formUpdateFunc value diagnosticsForm
 
                 updatedData =
                     model.diagnosticsData
@@ -71,7 +75,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveDiagnostics personId saved ->
+        SaveDiagnostics personId particpantId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -85,11 +89,24 @@ update currentDate id db msg model =
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.TuberculosisEncounter.Model.SaveDiagnostics personId measurementId value
-                                    |> Backend.Model.MsgTuberculosisEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| TuberculosisEncounterPage id
-                                ]
+                                let
+                                    saveMsg =
+                                        Backend.TuberculosisEncounter.Model.SaveDiagnostics personId measurementId value
+                                            |> Backend.Model.MsgTuberculosisEncounter id
+                                            |> App.Model.MsgIndexedDb
+
+                                    additionalMsgs =
+                                        if diagnosticsForm.diagnosed == Just False then
+                                            [ Backend.IndividualEncounterParticipant.Model.CloseTuberculosisSession
+                                                |> Backend.Model.MsgIndividualEncounterParticipant particpantId
+                                                |> App.Model.MsgIndexedDb
+                                            , App.Model.SetActivePage PinCodePage
+                                            ]
+
+                                        else
+                                            [ App.Model.SetActivePage <| UserPage <| TuberculosisEncounterPage id ]
+                                in
+                                saveMsg :: additionalMsgs
                             )
             in
             ( model

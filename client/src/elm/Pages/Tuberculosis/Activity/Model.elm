@@ -167,10 +167,19 @@ type NextStepsTask
     | TaskFollowUp
 
 
+type TuberculosisFollowUpTestingStage
+    = FollowUpTestingMonth1
+    | FollowUpTestingMonth2
+    | FollowUpTestingEndMonth2
+    | FollowUpTestingEndMonth5
+    | FollowUpTestingEndMonth6
+
+
 type Msg
     = SetActivePage Page
+      -- DIAGNOSTICS
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
-    | SaveDiagnostics PersonId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
+    | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
     | SetPrescribedMedication TuberculosisPrescribedMedication

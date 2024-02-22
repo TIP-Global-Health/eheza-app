@@ -187,7 +187,7 @@ viewDiagnosticsContent language currentDate assembled data =
         , div [ class "actions" ]
             [ saveButton language
                 (tasksCompleted == totalTasks)
-                (SaveDiagnostics assembled.participant.person assembled.measurements.diagnostics)
+                (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
             ]
         ]
     ]
@@ -216,7 +216,6 @@ viewMedicationContent language currentDate assembled data =
                             "medication"
 
                         TaskDOT ->
-                            -- @todo : add icon
                             "dot"
 
                         TaskTreatmentReview ->
@@ -242,7 +241,7 @@ viewMedicationContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, medicationTasksCompletedFromTotal language currentDate measurements data task )) tasks
+            List.map (\task -> ( task, medicationTasksCompletedFromTotal language currentDate assembled data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -260,7 +259,7 @@ viewMedicationContent language currentDate assembled data =
                 Just TaskDOT ->
                     getMeasurementValueFunc measurements.dot
                         |> dotFormWithDefault data.dotForm
-                        |> viewDOTForm language currentDate
+                        |> viewDOTForm language currentDate assembled
                         |> List.singleton
 
                 Just TaskTreatmentReview ->
@@ -273,12 +272,23 @@ viewMedicationContent language currentDate assembled data =
                     []
 
         nextTask =
+            let
+                tasksAfterSave =
+                    case activeTask of
+                        Just TaskPrescribedMedication ->
+                            -- DOT and Treatment Review review appear only after
+                            -- Prescribed Medication task is saved.
+                            [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
+
+                        _ ->
+                            tasks
+            in
             List.filter
                 (\task ->
                     (Just task /= activeTask)
                         && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
                 )
-                tasks
+                tasksAfterSave
                 |> List.head
 
         actions =
@@ -336,11 +346,11 @@ viewPrescribedMedicationForm language currentDate form =
         ]
 
 
-viewDOTForm : Language -> NominalDate -> DOTForm -> Html Msg
-viewDOTForm language currentDate form =
+viewDOTForm : Language -> NominalDate -> AssembledData -> DOTForm -> Html Msg
+viewDOTForm language currentDate assembled form =
     let
         ( inputs, _ ) =
-            dotInputsAndTasks language currentDate form
+            dotInputsAndTasks language currentDate assembled form
     in
     div [ class "ui form dot" ]
         inputs
@@ -574,8 +584,28 @@ viewNextStepsContent language currentDate assembled data =
 
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate assembled form =
+    let
+        followUpTestingTable =
+            let
+                viewRow stage =
+                    div [ class "row" ]
+                        [ div [ class "item label" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageLabel stage ]
+                        , div [ class "item test" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageTest stage ]
+                        , div [ class "item guidance" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageInstructions stage ]
+                        ]
+            in
+            div [ class "follow-up-testing-table" ] <|
+                List.map viewRow
+                    [ FollowUpTestingMonth1
+                    , FollowUpTestingMonth2
+                    , FollowUpTestingEndMonth2
+                    , FollowUpTestingEndMonth5
+                    , FollowUpTestingEndMonth6
+                    ]
+    in
     div [ class "ui form health-education" ]
-        [ viewQuestionLabel language <| Translate.TuberculosisHealthEducationQuestion EducationFollowUpTesting
+        [ followUpTestingTable
+        , viewQuestionLabel language <| Translate.TuberculosisHealthEducationQuestion EducationFollowUpTesting
         , viewBoolInput
             language
             form.followUpTesting

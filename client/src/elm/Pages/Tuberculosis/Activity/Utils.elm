@@ -6,7 +6,8 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity(..))
 import Backend.TuberculosisActivity.Utils exposing (allActivities)
 import Date
-import EverySet
+import EverySet exposing (EverySet)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -35,7 +36,7 @@ import Pages.Utils
         , viewNumberInput
         , viewQuestionLabel
         )
-import Translate
+import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 
 
@@ -43,13 +44,15 @@ expectActivity : NominalDate -> AssembledData -> TuberculosisActivity -> Bool
 expectActivity currentDate assembled activity =
     case activity of
         Diagnostics ->
-            True
+            assembled.initialEncounter
 
         Medication ->
-            True
+            resolveMedicationTasks currentDate assembled
+                |> List.isEmpty
+                |> not
 
         SymptomReview ->
-            True
+            not assembled.initialEncounter
 
         NextSteps ->
             mandatoryActivitiesForNextStepsCompleted currentDate assembled
@@ -100,9 +103,15 @@ resolveMedicationTasks currentDate assembled =
 expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
 expectMedicationTask currentDate assembled task =
     case task of
-        _ ->
-            -- @todo:
-            True
+        TaskPrescribedMedication ->
+            assembled.initialEncounter
+
+        TaskDOT ->
+            not assembled.initialEncounter
+                || isJust assembled.measurements.medication
+
+        TaskTreatmentReview ->
+            expectMedicationTask currentDate assembled TaskDOT
 
 
 medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
@@ -118,13 +127,13 @@ medicationTaskCompleted assembled task =
             isJust assembled.measurements.treatmentReview
 
 
-medicationTasksCompletedFromTotal : Language -> NominalDate -> TuberculosisMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
-medicationTasksCompletedFromTotal language currentDate measurements data task =
+medicationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal language currentDate assembled data task =
     case task of
         TaskPrescribedMedication ->
             let
                 form =
-                    getMeasurementValueFunc measurements.medication
+                    getMeasurementValueFunc assembled.measurements.medication
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
             in
             ( taskCompleted form.medications
@@ -134,11 +143,11 @@ medicationTasksCompletedFromTotal language currentDate measurements data task =
         TaskDOT ->
             let
                 form =
-                    getMeasurementValueFunc measurements.dot
+                    getMeasurementValueFunc assembled.measurements.dot
                         |> dotFormWithDefault data.dotForm
 
                 ( _, tasks ) =
-                    dotInputsAndTasks language currentDate form
+                    dotInputsAndTasks language currentDate assembled form
             in
             ( Maybe.Extra.values tasks
                 |> List.length
@@ -148,7 +157,7 @@ medicationTasksCompletedFromTotal language currentDate measurements data task =
         TaskTreatmentReview ->
             let
                 form =
-                    getMeasurementValueFunc measurements.treatmentReview
+                    getMeasurementValueFunc assembled.measurements.treatmentReview
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
 
                 ( _, tasks ) =
@@ -179,9 +188,53 @@ resolveNextStepsTasks currentDate assembled =
 expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
 expectNextStepsTask currentDate assembled task =
     case task of
-        _ ->
-            -- @todo:
+        TaskReferral ->
+            adverseEventReported assembled.measurements
+                || symptomReported assembled.measurements
+
+        TaskHealthEducation ->
+            -- Always provide health education.
             True
+
+        TaskFollowUp ->
+            -- Always schedule follow up.
+            True
+
+
+adverseEventReported : TuberculosisMeasurements -> Bool
+adverseEventReported measurements =
+    getMeasurementValueFunc measurements.treatmentReview
+        |> Maybe.map
+            (\value ->
+                case EverySet.toList value.adverseEvents of
+                    [] ->
+                        False
+
+                    [ NoAdverseEvent ] ->
+                        False
+
+                    _ ->
+                        True
+            )
+        |> Maybe.withDefault False
+
+
+symptomReported : TuberculosisMeasurements -> Bool
+symptomReported measurements =
+    getMeasurementValueFunc measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                case EverySet.toList value of
+                    [] ->
+                        False
+
+                    [ NoTuberculosisSymptoms ] ->
+                        False
+
+                    _ ->
+                        True
+            )
+        |> Maybe.withDefault False
 
 
 nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
@@ -249,8 +302,8 @@ nextStepsTasksCompletedFromTotal measurements data task =
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
 mandatoryActivitiesForNextStepsCompleted currentDate assembled =
-    -- todo:
-    True
+    List.all (activityCompleted currentDate assembled)
+        [ Diagnostics, Medication, SymptomReview ]
 
 
 diagnosticsFormWithDefault : DiagnosticsForm -> Maybe TuberculosisDiagnosticsValue -> DiagnosticsForm
@@ -478,8 +531,8 @@ toDOTValue form =
         maybeDistributeMedications
 
 
-dotInputsAndTasks : Language -> NominalDate -> DOTForm -> ( List (Html Msg), List (Maybe Bool) )
-dotInputsAndTasks language currentDate form =
+dotInputsAndTasks : Language -> NominalDate -> AssembledData -> DOTForm -> ( List (Html Msg), List (Maybe Bool) )
+dotInputsAndTasks language currentDate assembled form =
     let
         ( provideTodayInputs, provideTodayTasks ) =
             let
@@ -526,6 +579,33 @@ dotInputsAndTasks language currentDate form =
 
         ( distributeMedicationsInputs, distributeMedicationsTasks ) =
             let
+                prescribedMedications =
+                    let
+                        medicationMeasurement =
+                            if assembled.initialEncounter then
+                                assembled.measurements.medication
+
+                            else
+                                List.filterMap (.measurements >> .medication)
+                                    assembled.previousEncountersData
+                                    |> List.head
+                    in
+                    getMeasurementValueFunc medicationMeasurement
+                        |> Maybe.map (EverySet.remove NoTuberculosisPrescribedMedications)
+                        |> Maybe.withDefault EverySet.empty
+
+                prescribedMedicationsForView =
+                    if EverySet.isEmpty prescribedMedications then
+                        emptyNode
+
+                    else
+                        EverySet.toList prescribedMedications
+                            |> List.map
+                                (\medicatiopn ->
+                                    p [] [ text <| translate language <| Translate.TuberculosisPrescribedMedication medicatiopn ]
+                                )
+                            |> div [ class "prescribed-medications" ]
+
                 ( derivedInputs, derivedTasks ) =
                     if form.distributeMedications == Just False then
                         ( [ viewQuestionLabel language Translate.WhyNot
@@ -547,6 +627,7 @@ dotInputsAndTasks language currentDate form =
                         ( [], [] )
             in
             ( [ viewQuestionLabel language Translate.TuberculosisDistributeMedicationsQuestion
+              , prescribedMedicationsForView
               , viewBoolInput
                     language
                     form.distributeMedications

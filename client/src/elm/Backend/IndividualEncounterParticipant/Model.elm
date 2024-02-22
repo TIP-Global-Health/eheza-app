@@ -50,8 +50,9 @@ type alias Model =
 
 
 type Msg
-    = ClosePrenatalSession Date PregnancyOutcome DeliveryLocation
+    = ClosePrenatalSession NominalDate PregnancyOutcome DeliveryLocation
     | CloseAcuteIllnessSession AcuteIllnessOutcome
+    | CloseTuberculosisSession
     | SetEddDate NominalDate
     | SetNewborn PersonId
     | HandleUpdatedIndividualEncounterParticipant (WebData ())
