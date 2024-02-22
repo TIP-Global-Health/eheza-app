@@ -6400,10 +6400,23 @@ hepatitisBResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
+                let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+                in
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , testResult = or form.testResult value.testResult
+                , testResult =
+                    maybeValueConsideringIsDirtyField form.testResultDirty
+                        form.testResult
+                        value.testResult
+                , testResultDirty = form.testResultDirty
                 , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
@@ -6419,7 +6432,15 @@ toHepatitisBResultValue : HepatitisBResultForm encounterId -> Maybe (HepatitisBT
 toHepatitisBResultValue form =
     Maybe.map
         (\executionNote ->
-            { executionNote = executionNote
+            let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+            in
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
@@ -6436,6 +6457,9 @@ malariaResultFormWithDefault form saved =
             form
             (\value ->
                 let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+
                     bloodSmearTakenByValue =
                         value.bloodSmearResult == BloodSmearPendingInput
 
@@ -6448,12 +6472,25 @@ malariaResultFormWithDefault form saved =
                         else
                             Just value.bloodSmearResult
                 in
-                { executionNote = or form.executionNote (Just value.executionNote)
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
+                , testResult =
+                    maybeValueConsideringIsDirtyField form.testResultDirty
+                        form.testResult
+                        value.testResult
+                , testResultDirty = form.testResultDirty
                 , bloodSmearTaken = bloodSmearTakenByValue
-                , testResult = or form.testResult value.testResult
-                , bloodSmearResult = or form.bloodSmearResult bloodSmearResultByValue
+                , bloodSmearResult =
+                    maybeValueConsideringIsDirtyField form.bloodSmearResultDirty
+                        form.bloodSmearResult
+                        (Just value.bloodSmearResult)
+                , bloodSmearResultDirty = form.bloodSmearResultDirty
                 }
             )
 
@@ -6468,7 +6505,15 @@ toMalariaResultValue : MalariaResultForm -> Maybe MalariaTestValue
 toMalariaResultValue form =
     Maybe.map
         (\executionNote ->
-            { executionNote = executionNote
+            let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+            in
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
@@ -6485,6 +6530,9 @@ syphilisResultFormWithDefault form saved =
             form
             (\value ->
                 let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+
                     symptomsByValue =
                         Maybe.andThen
                             (\symptoms_ ->
@@ -6499,10 +6547,19 @@ syphilisResultFormWithDefault form saved =
                             )
                             value.symptoms
                 in
-                { executionNote = or form.executionNote (Just value.executionNote)
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , testResult = or form.testResult value.testResult
+                , testResult =
+                    maybeValueConsideringIsDirtyField form.testResultDirty
+                        form.testResult
+                        value.testResult
+                , testResultDirty = form.testResultDirty
                 , symptoms = maybeValueConsideringIsDirtyField form.symptomsDirty form.symptoms symptomsByValue
                 , symptomsDirty = form.symptomsDirty
                 , originatingEncounter = or form.originatingEncounter value.originatingEncounter
@@ -6521,6 +6578,13 @@ toSyphilisResultValue isLabTech form =
     Maybe.map
         (\executionNote ->
             let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+
                 symptoms =
                     if isLabTech then
                         -- Lab technician can activate this function only from
@@ -6535,7 +6599,7 @@ toSyphilisResultValue isLabTech form =
                     else
                         Maybe.map EverySet.fromList form.symptoms
             in
-            { executionNote = executionNote
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
@@ -6552,11 +6616,28 @@ bloodGpRsResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
+                let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+                in
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , bloodGroup = or form.bloodGroup value.bloodGroup
-                , rhesus = or form.rhesus value.rhesus
+                , bloodGroup =
+                    maybeValueConsideringIsDirtyField form.bloodGroupDirty
+                        form.bloodGroup
+                        value.bloodGroup
+                , bloodGroupDirty = form.bloodGroupDirty
+                , rhesus =
+                    maybeValueConsideringIsDirtyField form.rhesusDirty
+                        form.rhesus
+                        value.rhesus
+                , rhesusDirty = form.rhesusDirty
                 , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
@@ -6572,7 +6653,15 @@ toBloodGpRsResultValue : BloodGpRsResultForm encounterId -> Maybe (BloodGpRsTest
 toBloodGpRsResultValue form =
     Maybe.map
         (\executionNote ->
-            { executionNote = executionNote
+            let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+            in
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , bloodGroup = form.bloodGroup
@@ -6589,10 +6678,23 @@ hemoglobinResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
+                let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+                in
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , hemoglobinCount = or form.hemoglobinCount value.hemoglobinCount
+                , hemoglobinCount =
+                    maybeValueConsideringIsDirtyField form.hemoglobinCountDirty
+                        form.hemoglobinCount
+                        value.hemoglobinCount
+                , hemoglobinCountDirty = form.hemoglobinCountDirty
                 }
             )
 
@@ -6607,7 +6709,15 @@ toHemoglobinResultValue : HemoglobinResultForm -> Maybe HemoglobinTestValue
 toHemoglobinResultValue form =
     Maybe.map
         (\executionNote ->
-            { executionNote = executionNote
+            let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+            in
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , hemoglobinCount = form.hemoglobinCount
@@ -6616,16 +6726,29 @@ toHemoglobinResultValue form =
         form.executionNote
 
 
-randomBloodSugarResultFormWithDefault : RandomBloodSugarResultForm encounterId -> Maybe (RandomBloodSugarTestValue encounterId) -> RandomBloodSugarResultForm encounterId
+randomBloodSugarResultFormWithDefault :
+    RandomBloodSugarResultForm encounterId
+    -> Maybe (RandomBloodSugarTestValue encounterId)
+    -> RandomBloodSugarResultForm encounterId
 randomBloodSugarResultFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
+                let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+                in
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , sugarCount = or form.sugarCount value.sugarCount
+                , sugarCount = maybeValueConsideringIsDirtyField form.sugarCountDirty form.sugarCount value.sugarCount
+                , sugarCountDirty = form.sugarCountDirty
                 , originatingEncounter = or form.originatingEncounter value.originatingEncounter
                 }
             )
@@ -6641,7 +6764,15 @@ toRandomBloodSugarResultValue : RandomBloodSugarResultForm encounterId -> Maybe 
 toRandomBloodSugarResultValue form =
     Maybe.map
         (\executionNote ->
-            { executionNote = executionNote
+            let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+            in
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , sugarCount = form.sugarCount
@@ -6657,19 +6788,37 @@ urineDipstickResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { testVariant = or form.testVariant value.testVariant
-                , executionNote = or form.executionNote (Just value.executionNote)
+                let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+                in
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
+                , testVariant = or form.testVariant value.testVariant
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , protein = or form.protein value.protein
-                , ph = or form.ph value.ph
-                , glucose = or form.glucose value.glucose
-                , leukocytes = or form.leukocytes value.leukocytes
-                , nitrite = or form.nitrite value.nitrite
-                , urobilinogen = or form.urobilinogen value.urobilinogen
-                , haemoglobin = or form.haemoglobin value.haemoglobin
-                , ketone = or form.ketone value.ketone
-                , bilirubin = or form.bilirubin value.bilirubin
+                , protein = maybeValueConsideringIsDirtyField form.proteinDirty form.protein value.protein
+                , proteinDirty = form.proteinDirty
+                , ph = maybeValueConsideringIsDirtyField form.phDirty form.ph value.ph
+                , phDirty = form.phDirty
+                , glucose = maybeValueConsideringIsDirtyField form.glucoseDirty form.glucose value.glucose
+                , glucoseDirty = form.glucoseDirty
+                , leukocytes = maybeValueConsideringIsDirtyField form.leukocytesDirty form.leukocytes value.leukocytes
+                , leukocytesDirty = form.leukocytesDirty
+                , nitrite = maybeValueConsideringIsDirtyField form.nitriteDirty form.nitrite value.nitrite
+                , nitriteDirty = form.nitriteDirty
+                , urobilinogen = maybeValueConsideringIsDirtyField form.urobilinogenDirty form.urobilinogen value.urobilinogen
+                , urobilinogenDirty = form.urobilinogenDirty
+                , haemoglobin = maybeValueConsideringIsDirtyField form.haemoglobinDirty form.haemoglobin value.haemoglobin
+                , haemoglobinDirty = form.haemoglobinDirty
+                , ketone = maybeValueConsideringIsDirtyField form.ketoneDirty form.ketone value.ketone
+                , ketoneDirty = form.ketoneDirty
+                , bilirubin = maybeValueConsideringIsDirtyField form.bilirubinDirty form.bilirubin value.bilirubin
+                , bilirubinDirty = form.bilirubinDirty
                 }
             )
 
@@ -6684,8 +6833,16 @@ toUrineDipstickResultValue : UrineDipstickResultForm -> Maybe UrineDipstickTestV
 toUrineDipstickResultValue form =
     Maybe.map
         (\executionNote ->
-            { testVariant = form.testVariant
-            , executionNote = executionNote
+            let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+            in
+            { executionNote = executionNoteConsideringLabTech
+            , testVariant = form.testVariant
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , protein = form.protein
@@ -6708,11 +6865,28 @@ hivPCRResultFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { executionNote = or form.executionNote (Just value.executionNote)
+                let
+                    runConfirmedByLabTechFromValue =
+                        resolveRunConfirmedByLabTechFromValue value
+                in
+                { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+                , executionNote =
+                    maybeValueConsideringIsDirtyField form.executionNoteDirty
+                        form.executionNote
+                        (Just value.executionNote)
+                , executionNoteDirty = form.executionNoteDirty
                 , executionDate = or form.executionDate value.executionDate
                 , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-                , hivViralLoadStatus = or form.hivViralLoadStatus value.hivViralLoadStatus
-                , hivViralLoad = or form.hivViralLoad value.hivViralLoad
+                , hivViralLoadStatus =
+                    maybeValueConsideringIsDirtyField form.hivViralLoadStatusDirty
+                        form.hivViralLoadStatus
+                        value.hivViralLoadStatus
+                , hivViralLoadStatusDirty = form.hivViralLoadStatusDirty
+                , hivViralLoad =
+                    maybeValueConsideringIsDirtyField form.hivViralLoadDirty
+                        form.hivViralLoad
+                        value.hivViralLoad
+                , hivViralLoadDirty = form.hivViralLoadDirty
                 }
             )
 

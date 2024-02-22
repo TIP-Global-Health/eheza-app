@@ -842,18 +842,32 @@ emptyBloodGpRsTestForm =
 
 
 type alias BloodGpRsResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , bloodGroup : Maybe BloodGroup
+    , bloodGroupDirty : Bool
     , rhesus : Maybe Rhesus
+    , rhesusDirty : Bool
     , originatingEncounter : Maybe encounterId
     }
 
 
 emptyBloodGpRsResultForm : BloodGpRsResultForm encounterId
 emptyBloodGpRsResultForm =
-    BloodGpRsResultForm Nothing Nothing Nothing Nothing Nothing Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , bloodGroup = Nothing
+    , bloodGroupDirty = False
+    , rhesus = Nothing
+    , rhesusDirty = False
+    , originatingEncounter = Nothing
+    }
 
 
 type alias HemoglobinTestForm =
@@ -887,16 +901,26 @@ emptyHemoglobinTestForm =
 
 
 type alias HemoglobinResultForm =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , hemoglobinCount : Maybe Float
+    , hemoglobinCountDirty : Bool
     }
 
 
 emptyHemoglobinResultForm : HemoglobinResultForm
 emptyHemoglobinResultForm =
-    HemoglobinResultForm Nothing Nothing Nothing Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , hemoglobinCount = Nothing
+    , hemoglobinCountDirty = False
+    }
 
 
 type alias HepatitisBTestForm =
@@ -933,17 +957,28 @@ emptyHepatitisBTestForm =
 
 
 type alias HepatitisBResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     , originatingEncounter : Maybe encounterId
     }
 
 
 emptyHepatitisBResultForm : HepatitisBResultForm encounterId
 emptyHepatitisBResultForm =
-    HepatitisBResultForm Nothing Nothing Nothing Nothing Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , testResult = Nothing
+    , testResultDirty = False
+    , originatingEncounter = Nothing
+    }
 
 
 type alias HIVPCRTestForm =
@@ -981,17 +1016,30 @@ emptyHIVPCRTestForm =
 
 
 type alias HIVPCRResultForm =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , hivViralLoadStatus : Maybe ViralLoadStatus
+    , hivViralLoadStatusDirty : Bool
     , hivViralLoad : Maybe Float
+    , hivViralLoadDirty : Bool
     }
 
 
 emptyHIVPCRResultForm : HIVPCRResultForm
 emptyHIVPCRResultForm =
-    HIVPCRResultForm Nothing Nothing Nothing Nothing Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , hivViralLoadStatus = Nothing
+    , hivViralLoadStatusDirty = False
+    , hivViralLoad = Nothing
+    , hivViralLoadDirty = False
+    }
 
 
 type alias RandomBloodSugarTestUniversalForm =
@@ -1027,17 +1075,28 @@ emptyRandomBloodSugarTestUniversalForm =
 
 
 type alias RandomBloodSugarResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , sugarCount : Maybe Float
+    , sugarCountDirty : Bool
     , originatingEncounter : Maybe encounterId
     }
 
 
 emptyRandomBloodSugarResultForm : RandomBloodSugarResultForm encounterId
 emptyRandomBloodSugarResultForm =
-    RandomBloodSugarResultForm Nothing Nothing Nothing Nothing Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , sugarCount = Nothing
+    , sugarCountDirty = False
+    , originatingEncounter = Nothing
+    }
 
 
 type alias SyphilisTestForm =
@@ -1075,10 +1134,13 @@ emptySyphilisTestForm =
 
 
 type alias SyphilisResultForm encounterId =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     , symptoms : Maybe (List IllnessSymptom)
     , symptomsDirty : Bool
     , originatingEncounter : Maybe encounterId
@@ -1087,7 +1149,17 @@ type alias SyphilisResultForm encounterId =
 
 emptySyphilisResultForm : SyphilisResultForm encounterId
 emptySyphilisResultForm =
-    SyphilisResultForm Nothing Nothing Nothing Nothing Nothing False Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
+    , executionDate = Nothing
+    , testPrerequisites = Nothing
+    , testResult = Nothing
+    , testResultDirty = False
+    , symptoms = Nothing
+    , symptomsDirty = False
+    , originatingEncounter = Nothing
+    }
 
 
 type alias UrineDipstickTestUniversalForm =
@@ -1157,37 +1229,59 @@ emptyUrineDipstickTestUniversalForm =
 
 
 type alias UrineDipstickResultForm =
-    { testVariant : Maybe TestVariant
+    { runConfirmedByLabTech : Maybe Bool
+    , testVariant : Maybe TestVariant
     , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , protein : Maybe ProteinValue
+    , proteinDirty : Bool
     , ph : Maybe PHValue
+    , phDirty : Bool
     , glucose : Maybe GlucoseValue
+    , glucoseDirty : Bool
     , leukocytes : Maybe LeukocytesValue
+    , leukocytesDirty : Bool
     , nitrite : Maybe NitriteValue
+    , nitriteDirty : Bool
     , urobilinogen : Maybe UrobilinogenValue
+    , urobilinogenDirty : Bool
     , haemoglobin : Maybe HaemoglobinValue
+    , haemoglobinDirty : Bool
     , ketone : Maybe KetoneValue
+    , ketoneDirty : Bool
     , bilirubin : Maybe BilirubinValue
+    , bilirubinDirty : Bool
     }
 
 
 emptyUrineDipstickResultForm : UrineDipstickResultForm
 emptyUrineDipstickResultForm =
-    { testVariant = Nothing
+    { runConfirmedByLabTech = Nothing
+    , testVariant = Nothing
     , executionNote = Nothing
+    , executionNoteDirty = False
     , executionDate = Nothing
     , testPrerequisites = Nothing
     , protein = Nothing
+    , proteinDirty = False
     , ph = Nothing
+    , phDirty = False
     , glucose = Nothing
+    , glucoseDirty = False
     , leukocytes = Nothing
+    , leukocytesDirty = False
     , nitrite = Nothing
+    , nitriteDirty = False
     , urobilinogen = Nothing
+    , urobilinogenDirty = False
     , haemoglobin = Nothing
+    , haemoglobinDirty = False
     , ketone = Nothing
+    , ketoneDirty = False
     , bilirubin = Nothing
+    , bilirubinDirty = False
     }
 
 
@@ -1321,26 +1415,34 @@ emptyMalariaTestForm =
 
 
 type alias MalariaResultForm =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
+    , testResult : Maybe TestResult
+    , testResultDirty : Bool
 
     -- Set to True, if Malaria test was not
     -- taken, and blood smear was ordered at lab.
     , bloodSmearTaken : Bool
-    , testResult : Maybe TestResult
     , bloodSmearResult : Maybe BloodSmearResult
+    , bloodSmearResultDirty : Bool
     }
 
 
 emptyMalariaResultForm : MalariaResultForm
 emptyMalariaResultForm =
-    { executionNote = Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
     , executionDate = Nothing
     , testPrerequisites = Nothing
-    , bloodSmearTaken = False
     , testResult = Nothing
+    , testResultDirty = False
+    , bloodSmearTaken = False
     , bloodSmearResult = Nothing
+    , bloodSmearResultDirty = False
     }
 
 
