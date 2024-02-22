@@ -6901,7 +6901,15 @@ toHIVPCRResultValue : HIVPCRResultForm -> Maybe HIVPCRTestValue
 toHIVPCRResultValue form =
     Maybe.map
         (\executionNote ->
-            { executionNote = executionNote
+            let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+            in
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , hivViralLoadStatus = form.hivViralLoadStatus
