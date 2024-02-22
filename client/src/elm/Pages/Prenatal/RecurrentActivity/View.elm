@@ -785,7 +785,7 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
     ]
 
 
-contentAndTasksLaboratorResultsConfig : ContentAndTasksLaboratoryResultConfig Msg
+contentAndTasksLaboratorResultsConfig : ContentAndTasksLaboratoryResultConfig Msg PrenatalEncounterId
 contentAndTasksLaboratorResultsConfig =
     emptyContentAndTasksLaboratoryResultConfig NoOp
         |> (\config ->
@@ -794,24 +794,22 @@ contentAndTasksLaboratorResultsConfig =
                     , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
                     , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
                     , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
-
-                    -- , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
-                    -- , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
-                    -- , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
-                    -- , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
-                    -- , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
-                    -- , setHepatitisBTestExecutionNoteMsg = SetHepatitisBTestExecutionNote
-                    -- , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
-                    -- , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
-                    -- , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
-                    -- , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
-                    -- , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
-                    -- , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
-                    -- , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
-                    -- , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
-                    -- , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
-                    -- , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
-                    -- , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
+                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
+                    , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
+                    , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
+                    , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
+                    , setHepatitisBTestExecutionNoteMsg = SetHepatitisBTestExecutionNote
+                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
+                    , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
+                    , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
+                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
+                    , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
                 }
            )
 

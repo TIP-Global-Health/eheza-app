@@ -765,29 +765,34 @@ type alias ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg =
     }
 
 
-type alias ContentAndTasksLaboratoryResultConfig msg =
+type alias ContentAndTasksLaboratoryResultConfig msg encounterId =
     { setHIVTestFormBoolInputMsg : (Bool -> HIVResultForm -> HIVResultForm) -> Bool -> msg
     , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
     , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVResultForm -> PartnerHIVResultForm) -> Bool -> msg
     , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setSyphilisTestFormBoolInputMsg : (Bool -> SyphilisResultForm encounterId -> SyphilisResultForm encounterId) -> Bool -> msg
+    , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHepatitisBTestFormBoolInputMsg : (Bool -> HepatitisBResultForm encounterId -> HepatitisBResultForm encounterId) -> Bool -> msg
+    , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setMalariaTestFormBoolInputMsg : (Bool -> MalariaResultForm -> MalariaResultForm) -> Bool -> msg
+    , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setBloodGpRsTestFormBoolInputMsg : (Bool -> BloodGpRsResultForm encounterId -> BloodGpRsResultForm encounterId) -> Bool -> msg
+    , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickResultForm -> UrineDipstickResultForm) -> Bool -> msg
+    , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHemoglobinTestFormBoolInputMsg : (Bool -> HemoglobinResultForm -> HemoglobinResultForm) -> Bool -> msg
+    , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setRandomBloodSugarTestFormBoolInputMsg :
+        (Bool
+         -> RandomBloodSugarResultForm encounterId
+         -> RandomBloodSugarResultForm encounterId
+        )
+        -> Bool
+        -> msg
+    , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
+    , setHIVPCRTestFormBoolInputMsg : (Bool -> HIVPCRResultForm -> HIVPCRResultForm) -> Bool -> msg
+    , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
 
-    -- , setSyphilisTestFormBoolInputMsg : (Bool -> SyphilisTestForm -> SyphilisTestForm) -> Bool -> msg
-    -- , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
-    -- , setHepatitisBTestFormBoolInputMsg : (Bool -> HepatitisBTestForm -> HepatitisBTestForm) -> Bool -> msg
-    -- , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
-    -- , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm -> MalariaTestForm) -> Bool -> msg
-    -- , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
-    -- , setBloodGpRsTestFormBoolInputMsg : (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) -> Bool -> msg
-    -- , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
-    -- , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickTestUniversalForm -> UrineDipstickTestUniversalForm) -> Bool -> msg
-    -- , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
-    -- , setUrineDipstickTestVariantMsg : TestVariant -> msg
-    -- , setHemoglobinTestFormBoolInputMsg : (Bool -> HemoglobinTestForm -> HemoglobinTestForm) -> Bool -> msg
-    -- , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
-    -- , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarTestUniversalForm -> RandomBloodSugarTestUniversalForm) -> Bool -> msg
-    -- , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
-    -- , setHIVPCRTestFormBoolInputMsg : (Bool -> HIVPCRTestForm -> HIVPCRTestForm) -> Bool -> msg
-    -- , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
     -- , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
     -- , setPregnancyTestExecutionNoteMsg : TestExecutionNote -> msg
     -- , setPregnancyTestResultMsg : String -> msg
