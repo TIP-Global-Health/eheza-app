@@ -235,12 +235,22 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                         TaskMalariaTest ->
                             getMeasurementValueFunc measurements.malariaTest
                                 |> malariaResultFormWithDefault model.labResultsData.malariaTestForm
-                                |> malariaResultFormAndTasks language currentDate SetMalariaTestResult SetBloodSmearResult
+                                |> malariaResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetMalariaTestResult
+                                    SetBloodSmearResult
 
                         TaskBloodGpRsTest ->
                             getMeasurementValueFunc measurements.bloodGpRsTest
                                 |> bloodGpRsResultFormWithDefault model.labResultsData.bloodGpRsTestForm
-                                |> bloodGpRsResultFormAndTasks language currentDate SetBloodGroup SetRhesus
+                                |> bloodGpRsResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetBloodGroup
+                                    SetRhesus
 
                         TaskUrineDipstickTest ->
                             getMeasurementValueFunc measurements.urineDipstickTest
@@ -924,12 +934,22 @@ viewLab language currentDate lab assembled data =
                 TestMalaria ->
                     getMeasurementValueFunc measurements.malariaTest
                         |> malariaResultFormWithDefault data.malariaTestForm
-                        |> malariaResultFormAndTasks language currentDate SetMalariaTestResult SetBloodSmearResult
+                        |> malariaResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetMalariaTestResult
+                            SetBloodSmearResult
 
                 TestBloodGpRs ->
                     getMeasurementValueFunc measurements.bloodGpRsTest
                         |> bloodGpRsResultFormWithDefault data.bloodGpRsTestForm
-                        |> bloodGpRsResultFormAndTasks language currentDate SetBloodGroup SetRhesus
+                        |> bloodGpRsResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetBloodGroup
+                            SetRhesus
 
                 TestUrineDipstick ->
                     getMeasurementValueFunc measurements.urineDipstickTest

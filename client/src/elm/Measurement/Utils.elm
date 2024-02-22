@@ -3768,27 +3768,41 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
 malariaResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (String -> msg)
     -> MalariaResultForm
     -> ( Html msg, Int, Int )
-malariaResultFormAndTasks language currentDate setMalariaTestResultMsg setBloodSmearResultMsg form =
+malariaResultFormAndTasks language currentDate isLabTech config setMalariaTestResultMsg setBloodSmearResultMsg form =
     let
-        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            if form.bloodSmearTaken then
-                bloodSmearResultInputsAndTasks language
-                    Translate.BloodSmearTestResult
-                    setBloodSmearResultMsg
-                    form.bloodSmearResult
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskMalariaTest form
 
             else
-                standardTestResultInputsAndTasks language setMalariaTestResultMsg form.testResult TaskMalariaTest
+                ( [], 0, 0 )
+
+        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                if form.bloodSmearTaken then
+                    bloodSmearResultInputsAndTasks language
+                        Translate.BloodSmearTestResult
+                        setBloodSmearResultMsg
+                        form.bloodSmearResult
+
+                else
+                    standardTestResultInputsAndTasks language setMalariaTestResultMsg form.testResult TaskMalariaTest
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskMalariaTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 
@@ -4602,20 +4616,38 @@ viewBloodGpRsTestForm language currentDate configInitial configPerformed form =
 bloodGpRsResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (String -> msg)
     -> BloodGpRsResultForm encounterId
     -> ( Html msg, Int, Int )
-bloodGpRsResultFormAndTasks language currentDate setBloodGroupMsg setRhesusMsg form =
+bloodGpRsResultFormAndTasks language currentDate isLabTech config setBloodGroupMsg setRhesusMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskBloodGpRsTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            bloodGpRsResultInputsAndTasks language setBloodGroupMsg setRhesusMsg form.bloodGroup form.rhesus
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                bloodGpRsResultInputsAndTasks language
+                    setBloodGroupMsg
+                    setRhesusMsg
+                    form.bloodGroup
+                    form.rhesus
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory blood-group-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskBloodGpRsTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 
