@@ -14,6 +14,7 @@ import Measurement.Utils
     exposing
         ( bloodSmearResultSet
         , expectUniversalTestResultTask
+        , testNotPerformedByWhyNotAtExecutionNote
         , testPerformedByExecutionNote
         , testPerformedByValue
         , vitalsFormWithDefault
@@ -126,8 +127,10 @@ laboratoryResultTaskCompleted currentDate isLabTech assembled task =
                 |> getMeasurementValueFunc
                 |> Maybe.map
                     (\value ->
-                        testPerformedByExecutionNote value.executionNote
-                            && (isJust <| getResultFieldFunc value)
+                        testNotPerformedByWhyNotAtExecutionNote value.executionNote
+                            || (testPerformedByExecutionNote value.executionNote
+                                    && (isJust <| getResultFieldFunc value)
+                               )
                     )
                 |> Maybe.withDefault False
     in

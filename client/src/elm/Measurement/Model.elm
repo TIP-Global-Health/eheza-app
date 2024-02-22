@@ -765,6 +765,44 @@ type alias ContentAndTasksForPerformedLaboratoryUniversalTestConfig msg =
     }
 
 
+type alias ContentAndTasksLaboratoryResultConfig msg =
+    { setHIVTestFormBoolInputMsg : (Bool -> HIVResultForm -> HIVResultForm) -> Bool -> msg
+    , setHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+
+    -- , setSyphilisTestFormBoolInputMsg : (Bool -> SyphilisTestForm -> SyphilisTestForm) -> Bool -> msg
+    -- , setSyphilisTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setHepatitisBTestFormBoolInputMsg : (Bool -> HepatitisBTestForm -> HepatitisBTestForm) -> Bool -> msg
+    -- , setHepatitisBTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setMalariaTestFormBoolInputMsg : (Bool -> MalariaTestForm -> MalariaTestForm) -> Bool -> msg
+    -- , setMalariaTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setBloodGpRsTestFormBoolInputMsg : (Bool -> BloodGpRsTestForm -> BloodGpRsTestForm) -> Bool -> msg
+    -- , setBloodGpRsTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setUrineDipstickTestFormBoolInputMsg : (Bool -> UrineDipstickTestUniversalForm -> UrineDipstickTestUniversalForm) -> Bool -> msg
+    -- , setUrineDipstickTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setUrineDipstickTestVariantMsg : TestVariant -> msg
+    -- , setHemoglobinTestFormBoolInputMsg : (Bool -> HemoglobinTestForm -> HemoglobinTestForm) -> Bool -> msg
+    -- , setHemoglobinTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setRandomBloodSugarTestFormBoolInputMsg : (Bool -> RandomBloodSugarTestUniversalForm -> RandomBloodSugarTestUniversalForm) -> Bool -> msg
+    -- , setRandomBloodSugarTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setHIVPCRTestFormBoolInputMsg : (Bool -> HIVPCRTestForm -> HIVPCRTestForm) -> Bool -> msg
+    -- , setHIVPCRTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setPregnancyTestFormBoolInputMsg : (Bool -> PregnancyTestForm msg -> PregnancyTestForm msg) -> Bool -> msg
+    -- , setPregnancyTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setPregnancyTestResultMsg : String -> msg
+    -- , setCreatinineTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    -- , setCreatinineTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setLiverFunctionTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    -- , setLiverFunctionTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setLipidPanelTestFormBoolInputMsg : (Bool -> NonRDTForm msg -> NonRDTForm msg) -> Bool -> msg
+    -- , setLipidPanelTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setHbA1cTestFormBoolInputMsg : (Bool -> HbA1cTestForm msg -> HbA1cTestForm msg) -> Bool -> msg
+    -- , setHbA1cTestExecutionNoteMsg : TestExecutionNote -> msg
+    -- , setPartnerHIVTestFormBoolInputMsg : (Bool -> PartnerHIVTestForm -> PartnerHIVTestForm) -> Bool -> msg
+    -- , setPartnerHIVTestExecutionNoteMsg : TestExecutionNote -> msg
+    , noOpMsg : msg
+    }
+
+
 
 -- Universal Lab forms    - start
 
@@ -1202,10 +1240,13 @@ emptyHIVTestUniversalForm =
 
 
 type alias HIVResultForm =
-    { executionNote : Maybe TestExecutionNote
+    { runConfirmedByLabTech : Maybe Bool
+    , executionNote : Maybe TestExecutionNote
+    , executionNoteDirty : Bool
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
+    , testResultDirty : Bool
     , hivProgramHC : Maybe Bool
     , hivProgramHCDirty : Bool
     , partnerHIVPositive : Maybe Bool
@@ -1219,10 +1260,13 @@ type alias HIVResultForm =
 
 emptyHIVResultForm : HIVResultForm
 emptyHIVResultForm =
-    { executionNote = Nothing
+    { runConfirmedByLabTech = Nothing
+    , executionNote = Nothing
+    , executionNoteDirty = False
     , executionDate = Nothing
     , testPrerequisites = Nothing
     , testResult = Nothing
+    , testResultDirty = False
     , hivProgramHC = Nothing
     , hivProgramHCDirty = False
     , partnerHIVPositive = Nothing

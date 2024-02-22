@@ -3083,32 +3083,386 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed form
     )
 
 
+contentAndTasksLaboratoryResultConfirmation :
+    Language
+    -> NominalDate
+    -> ContentAndTasksLaboratoryResultConfig msg
+    -> LaboratoryTask
+    ->
+        { f
+            | runConfirmedByLabTech : Maybe Bool
+            , executionNote : Maybe TestExecutionNote
+        }
+    -> ( List (Html msg), Int, Int )
+contentAndTasksLaboratoryResultConfirmation language currentDate config task form =
+    let
+        msgs =
+            let
+                resolveNote value =
+                    if value == True then
+                        Just TestNoteRunConfirmedByLabTech
+
+                    else
+                        Nothing
+            in
+            case task of
+                TaskHIVTest ->
+                    let
+                        updateFunc =
+                            \value form_ ->
+                                { form_
+                                    | runConfirmedByLabTech = Just value
+                                    , executionNote = resolveNote value
+                                    , executionNoteDirty = True
+                                    , testResult = Nothing
+                                    , testResultDirty = True
+                                    , hivProgramHC = Nothing
+                                    , hivProgramHCDirty = True
+                                    , partnerHIVPositive = Nothing
+                                    , partnerHIVPositiveDirty = True
+                                    , partnerTakingARV = Nothing
+                                    , partnerTakingARVDirty = True
+                                    , partnerSurpressedViralLoad = Nothing
+                                    , partnerSurpressedViralLoadDirty = True
+                                }
+                    in
+                    { setBoolInputMsg = config.setHIVTestFormBoolInputMsg updateFunc
+                    , setExecutionNoteMsg = config.setHIVTestExecutionNoteMsg
+                    }
+
+                -- TaskSyphilisTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , testResult = Nothing
+                --                     , testResultDirty = True
+                --                     , symptoms = Nothing
+                --                     , symptomsDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setSyphilisTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setSyphilisTestExecutionNoteMsg
+                --     }
+                --
+                -- TaskHepatitisBTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , testResult = Nothing
+                --                     , testResultDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setHepatitisBTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setHepatitisBTestExecutionNoteMsg
+                --     }
+                --
+                -- TaskMalariaTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , testResult = Nothing
+                --                     , testResultDirty = True
+                --                     , bloodSmearTaken = Nothing
+                --                     , bloodSmearTakenDirty = True
+                --                     , bloodSmearResult = Nothing
+                --                     , bloodSmearResultDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setMalariaTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setMalariaTestExecutionNoteMsg
+                --     }
+                --
+                -- TaskBloodGpRsTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , bloodGroup = Nothing
+                --                     , bloodGroupDirty = True
+                --                     , rhesus = Nothing
+                --                     , rhesusDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setBloodGpRsTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setBloodGpRsTestExecutionNoteMsg
+                --     }
+                --
+                -- TaskUrineDipstickTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , testVariant = Nothing
+                --                     , testVariantDirty = True
+                --                     , protein = Nothing
+                --                     , proteinDirty = True
+                --                     , ph = Nothing
+                --                     , phDirty = True
+                --                     , glucose = Nothing
+                --                     , glucoseDirty = True
+                --                     , leukocytes = Nothing
+                --                     , leukocytesDirty = True
+                --                     , nitrite = Nothing
+                --                     , nitriteDirty = True
+                --                     , urobilinogen = Nothing
+                --                     , urobilinogenDirty = True
+                --                     , haemoglobin = Nothing
+                --                     , haemoglobinDirty = True
+                --                     , ketone = Nothing
+                --                     , ketoneDirty = True
+                --                     , bilirubin = Nothing
+                --                     , bilirubinDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setUrineDipstickTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setUrineDipstickTestExecutionNoteMsg
+                --     }
+                --
+                -- TaskHemoglobinTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , hemoglobinCount = Nothing
+                --                     , hemoglobinCountDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setHemoglobinTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setHemoglobinTestExecutionNoteMsg
+                --     }
+                --
+                -- TaskRandomBloodSugarTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , patientFasted = Nothing
+                --                     , sugarCount = Nothing
+                --                     , sugarCountDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setRandomBloodSugarTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setRandomBloodSugarTestExecutionNoteMsg
+                --     }
+                --
+                -- TaskHIVPCRTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , hivViralLoadStatus = Nothing
+                --                     , hivViralLoadStatusDirty = True
+                --                     , hivViralLoad = Nothing
+                --                     , hivViralLoadDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setHIVPCRTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setHIVPCRTestExecutionNoteMsg
+                --     }
+                --
+                -- TaskPartnerHIVTest ->
+                --     let
+                --         updateFunc =
+                --             \value form_ ->
+                --                 let
+                --                     ( executionNote, executionDate ) =
+                --                         resolveNoteAndDate value
+                --                 in
+                --                 { form_
+                --                     | testPerformed = Just value
+                --                     , testPerformedDirty = True
+                --                     , immediateResult = Nothing
+                --                     , executionNote = executionNote
+                --                     , executionNoteDirty = True
+                --                     , executionDate = executionDate
+                --                     , executionDateDirty = True
+                --                     , testResult = Nothing
+                --                     , testResultDirty = True
+                --                 }
+                --     in
+                --     { setBoolInputMsg = config.setPartnerHIVTestFormBoolInputMsg updateFunc
+                --     , setExecutionNoteMsg = config.setPartnerHIVTestExecutionNoteMsg
+                --     }
+                _ ->
+                    -- Other tasks do not use this config, as they either
+                    -- have only 'non universal form' variant, or a proprietary form.
+                    { setBoolInputMsg = always config.noOpMsg
+                    , setExecutionNoteMsg = always config.noOpMsg
+                    }
+
+        ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
+            Maybe.map
+                (\runConfirmedByLabTech ->
+                    if runConfirmedByLabTech then
+                        ( [], 0, 0 )
+
+                    else
+                        ( [ div [ class "why-not" ]
+                                [ viewQuestionLabel language Translate.WhyNot
+                                , viewCheckBoxSelectInput language
+                                    [ TestNoteLackOfReagents
+                                    , TestNoteLackOfOtherSupplies
+                                    , TestNoteBrokenEquipment
+                                    ]
+                                    [ TestNoteNoEquipment
+                                    , TestNoteNotIndicated
+                                    ]
+                                    form.executionNote
+                                    msgs.setExecutionNoteMsg
+                                    Translate.TestExecutionNote
+                                ]
+                          ]
+                        , taskCompleted form.executionNote
+                        , 1
+                        )
+                )
+                form.runConfirmedByLabTech
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( [ viewQuestionLabel language Translate.TestWillBePerformedTodayQuestion
+      , viewBoolInput
+            language
+            form.runConfirmedByLabTech
+            msgs.setBoolInputMsg
+            "test-performed"
+            Nothing
+      ]
+        ++ derivedSection
+    , taskCompleted form.runConfirmedByLabTech + derivedTasksCompleted
+    , 1 + derivedTasksTotal
+    )
+
+
 hivResultFormAndTasks :
     Language
     -> NominalDate
     -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg
     -> (String -> msg)
     -> ((Bool -> HIVResultForm -> HIVResultForm) -> Bool -> msg)
     -> HIVResultForm
     -> ( Html msg, Int, Int )
-hivResultFormAndTasks language currentDate isLabTech setHIVTestResultMsg setHIVTestFormBoolInputMsg form =
+hivResultFormAndTasks language currentDate isLabTech config setHIVTestResultMsg setHIVTestFormBoolInputMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskHIVTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            hivResultInputsAndTasks language
-                isLabTech
-                setHIVTestResultMsg
-                setHIVTestFormBoolInputMsg
-                form.testResult
-                form.hivProgramHC
-                form.partnerHIVPositive
-                form.partnerTakingARV
-                form.partnerSurpressedViralLoad
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                hivResultInputsAndTasks language
+                    isLabTech
+                    setHIVTestResultMsg
+                    setHIVTestFormBoolInputMsg
+                    form.testResult
+                    form.hivProgramHC
+                    form.partnerHIVPositive
+                    form.partnerTakingARV
+                    form.partnerSurpressedViralLoad
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory prenatal-test-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskHIVTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 
@@ -5939,6 +6293,45 @@ emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig noOpMsg =
     }
 
 
+emptyContentAndTasksLaboratoryResultConfig : msg -> ContentAndTasksLaboratoryResultConfig msg
+emptyContentAndTasksLaboratoryResultConfig noOpMsg =
+    { setHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
+    , setHIVTestExecutionNoteMsg = always noOpMsg
+
+    -- , setSyphilisTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setSyphilisTestExecutionNoteMsg = always noOpMsg
+    -- , setHepatitisBTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setHepatitisBTestExecutionNoteMsg = always noOpMsg
+    -- , setMalariaTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setMalariaTestExecutionNoteMsg = always noOpMsg
+    -- , setBloodGpRsTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setBloodGpRsTestExecutionNoteMsg = always noOpMsg
+    -- , setUrineDipstickTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setUrineDipstickTestExecutionNoteMsg = always noOpMsg
+    -- , setUrineDipstickTestVariantMsg = always noOpMsg
+    -- , setHemoglobinTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setHemoglobinTestExecutionNoteMsg = always noOpMsg
+    -- , setRandomBloodSugarTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setRandomBloodSugarTestExecutionNoteMsg = always noOpMsg
+    -- , setHIVPCRTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setHIVPCRTestExecutionNoteMsg = always noOpMsg
+    -- , setPregnancyTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setPregnancyTestExecutionNoteMsg = always noOpMsg
+    -- , setPregnancyTestResultMsg = always noOpMsg
+    -- , setCreatinineTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setCreatinineTestExecutionNoteMsg = always noOpMsg
+    -- , setLiverFunctionTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setLiverFunctionTestExecutionNoteMsg = always noOpMsg
+    -- , setLipidPanelTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setLipidPanelTestExecutionNoteMsg = always noOpMsg
+    -- , setHbA1cTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setHbA1cTestExecutionNoteMsg = always noOpMsg
+    -- , setPartnerHIVTestFormBoolInputMsg = \_ _ -> noOpMsg
+    -- , setPartnerHIVTestExecutionNoteMsg = always noOpMsg
+    , noOpMsg = noOpMsg
+    }
+
+
 laboratoryTaskIconClass : LaboratoryTask -> String
 laboratoryTaskIconClass task =
     case task of
@@ -6340,6 +6733,16 @@ hivResultFormWithDefault form =
         form
         (\value ->
             let
+                runConfirmedByLabTechFromValue =
+                    if value.executionNote == TestNoteRunConfirmedByLabTech then
+                        Just True
+
+                    else if testNotPerformedByWhyNotAtExecutionNote value.executionNote then
+                        Just False
+
+                    else
+                        Nothing
+
                 signsByValue =
                     Maybe.map
                         (\signs ->
@@ -6368,10 +6771,19 @@ hivResultFormWithDefault form =
                             , partnerSurpressedViralLoadValue = Nothing
                             }
             in
-            { executionNote = or form.executionNote (Just value.executionNote)
+            { runConfirmedByLabTech = or form.runConfirmedByLabTech runConfirmedByLabTechFromValue
+            , executionNote =
+                maybeValueConsideringIsDirtyField form.executionNoteDirty
+                    form.executionNote
+                    (Just value.executionNote)
+            , executionNoteDirty = form.executionNoteDirty
             , executionDate = or form.executionDate value.executionDate
             , testPrerequisites = or form.testPrerequisites value.testPrerequisites
-            , testResult = or form.testResult value.testResult
+            , testResult =
+                maybeValueConsideringIsDirtyField form.testResultDirty
+                    form.testResult
+                    value.testResult
+            , testResultDirty = form.testResultDirty
             , hivProgramHC =
                 maybeValueConsideringIsDirtyField form.hivProgramHCDirty
                     form.hivProgramHC
@@ -6407,6 +6819,13 @@ toHIVResultValue isLabTech form =
     Maybe.map
         (\executionNote ->
             let
+                executionNoteConsideringLabTech =
+                    if form.runConfirmedByLabTech == Just True then
+                        TestNoteRunConfirmedByLabTech
+
+                    else
+                        executionNote
+
                 hivSigns =
                     if isLabTech then
                         -- Lab technician can activate this function only from
@@ -6427,7 +6846,7 @@ toHIVResultValue isLabTech form =
                             |> Maybe.Extra.combine
                             |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHIVSign)
             in
-            { executionNote = executionNote
+            { executionNote = executionNoteConsideringLabTech
             , executionDate = form.executionDate
             , testPrerequisites = form.testPrerequisites
             , testResult = form.testResult
@@ -6841,7 +7260,18 @@ testPerformedByValue =
 
 testPerformedByExecutionNote : TestExecutionNote -> Bool
 testPerformedByExecutionNote executionNote =
-    List.member executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+    List.member executionNote [ TestNoteRunToday, TestNoteRunPreviously, TestNoteRunConfirmedByLabTech ]
+
+
+testNotPerformedByWhyNotAtExecutionNote : TestExecutionNote -> Bool
+testNotPerformedByWhyNotAtExecutionNote executionNote =
+    List.member executionNote
+        [ TestNoteLackOfReagents
+        , TestNoteLackOfOtherSupplies
+        , TestNoteNoEquipment
+        , TestNoteBrokenEquipment
+        , TestNoteNotIndicated
+        ]
 
 
 expectUniversalTestResultTask : { v | testPrerequisites : Maybe (EverySet TestPrerequisite), executionNote : TestExecutionNote } -> Bool

@@ -14,11 +14,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra
-import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( bloodGpRsResultFormAndTasks
         , bloodGpRsResultFormWithDefault
+        , emptyContentAndTasksLaboratoryResultConfig
         , hemoglobinResultFormAndTasks
         , hemoglobinResultFormWithDefault
         , hepatitisBResultFormAndTasks
@@ -201,7 +202,12 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                         TaskHIVTest ->
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
-                                |> hivResultFormAndTasks language currentDate isLabTech SetHIVTestResult SetHIVTestFormBoolInput
+                                |> hivResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetHIVTestResult
+                                    SetHIVTestFormBoolInput
 
                         TaskSyphilisTest ->
                             getMeasurementValueFunc measurements.syphilisTest
@@ -775,6 +781,37 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
     ]
 
 
+contentAndTasksLaboratorResultsConfig : ContentAndTasksLaboratoryResultConfig Msg
+contentAndTasksLaboratorResultsConfig =
+    emptyContentAndTasksLaboratoryResultConfig NoOp
+        |> (\config ->
+                { config
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
+
+                    -- , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    -- , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
+                    -- , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
+                    -- , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
+                    -- , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
+                    -- , setHepatitisBTestExecutionNoteMsg = SetHepatitisBTestExecutionNote
+                    -- , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
+                    -- , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
+                    -- , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    -- , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    -- , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
+                    -- , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
+                    -- , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
+                    -- , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    -- , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    -- , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
+                    -- , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
+                    -- , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    -- , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
+                }
+           )
+
+
 
 -- LAB HISTORY
 
@@ -843,7 +880,12 @@ viewLab language currentDate lab assembled data =
                 TestHIV ->
                     getMeasurementValueFunc measurements.hivTest
                         |> hivResultFormWithDefault data.hivTestForm
-                        |> hivResultFormAndTasks language currentDate isLabTech SetHIVTestResult SetHIVTestFormBoolInput
+                        |> hivResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetHIVTestResult
+                            SetHIVTestFormBoolInput
 
                 TestSyphilis ->
                     getMeasurementValueFunc measurements.syphilisTest

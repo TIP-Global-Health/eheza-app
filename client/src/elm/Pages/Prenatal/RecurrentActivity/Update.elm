@@ -665,6 +665,23 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
+        SetHIVTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.hivTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hivTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetHIVTestResult value ->
             let
                 form =

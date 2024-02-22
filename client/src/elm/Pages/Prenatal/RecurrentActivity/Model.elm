@@ -70,6 +70,7 @@ type Msg
     | SetHIVViralLoad String
     | SaveHIVPCRResult PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
     | SetHIVTestFormBoolInput (Bool -> HIVResultForm -> HIVResultForm) Bool
+    | SetHIVTestExecutionNote TestExecutionNote
     | SetHIVTestResult String
     | SaveHIVResult PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
     | SetPartnerHIVTestResult String
