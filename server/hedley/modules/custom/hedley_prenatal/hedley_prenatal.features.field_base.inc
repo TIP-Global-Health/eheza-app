@@ -1523,6 +1523,7 @@ function hedley_prenatal_field_default_field_bases() {
         'not-indicated' => 'Not Indicated',
         'known-as-positive' => 'Known as Positive',
         'to-be-done-at-hospital' => 'To be done at hospital',
+        'run-confirmed-by-lab-tech' => 'Run confirmed by lab tech',
       ),
       'allowed_values_function' => '',
     ),
