@@ -4519,19 +4519,33 @@ randomBloodSugarTestPrerequisitesInputsAndTasks language setRandomBloodSugarTest
 randomBloodSugarResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> RandomBloodSugarResultForm encounterId
     -> ( Html msg, Int, Int )
-randomBloodSugarResultFormAndTasks language currentDate setRandomBloodSugarMsg form =
+randomBloodSugarResultFormAndTasks language currentDate isLabTech config setRandomBloodSugarMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskRandomBloodSugarTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            randomBloodSugarResultInputsAndTasks language setRandomBloodSugarMsg form.sugarCount
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                randomBloodSugarResultInputsAndTasks language setRandomBloodSugarMsg form.sugarCount
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory random-blood-sugar-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskRandomBloodSugarTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 
@@ -5007,24 +5021,38 @@ viewHIVPCRTestForm language currentDate configInitial configPerformed form =
 hivPCRResultFormAndTasks :
     Language
     -> NominalDate
+    -> Bool
+    -> ContentAndTasksLaboratoryResultConfig msg encounterId
     -> (String -> msg)
     -> (Bool -> msg)
     -> HIVPCRResultForm
     -> ( Html msg, Int, Int )
-hivPCRResultFormAndTasks language currentDate setHIVViralLoadMsg setHIVViralLoadUndetectableMsg form =
+hivPCRResultFormAndTasks language currentDate isLabTech config setHIVViralLoadMsg setHIVViralLoadUndetectableMsg form =
     let
+        ( confirmationSection, confirmationTasksCompleted, confirmationTasksTotal ) =
+            if isLabTech then
+                contentAndTasksLaboratoryResultConfirmation language currentDate config TaskHIVPCRTest form
+
+            else
+                ( [], 0, 0 )
+
         ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-            hivPCRResultInputsAndTasks language
-                setHIVViralLoadMsg
-                setHIVViralLoadUndetectableMsg
-                form.hivViralLoadStatus
-                form.hivViralLoad
+            if not isLabTech || form.runConfirmedByLabTech == Just True then
+                hivPCRResultInputsAndTasks language
+                    setHIVViralLoadMsg
+                    setHIVViralLoadUndetectableMsg
+                    form.hivViralLoadStatus
+                    form.hivViralLoad
+
+            else
+                ( [], 0, 0 )
     in
     ( div [ class "ui form laboratory hiv-prc-result" ] <|
         resultFormHeaderSection language currentDate form.executionDate TaskHIVPCRTest
+            ++ confirmationSection
             ++ testResultSection
-    , testResultTasksCompleted
-    , testResultTasksTotal
+    , confirmationTasksCompleted + testResultTasksCompleted
+    , confirmationTasksTotal + testResultTasksTotal
     )
 
 

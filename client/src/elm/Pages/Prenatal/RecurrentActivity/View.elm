@@ -281,12 +281,21 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                         TaskRandomBloodSugarTest ->
                             getMeasurementValueFunc measurements.randomBloodSugarTest
                                 |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
-                                |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
+                                |> randomBloodSugarResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetRandomBloodSugar
 
                         TaskHIVPCRTest ->
                             getMeasurementValueFunc measurements.hivPCRTest
                                 |> hivPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
-                                |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
+                                |> hivPCRResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetHIVViralLoad
+                                    SetHIVViralLoadUndetectable
 
                         -- Only relevant for initial phase.
                         TaskCompletePreviousTests ->
@@ -986,12 +995,21 @@ viewLab language currentDate lab assembled data =
                 TestRandomBloodSugar ->
                     getMeasurementValueFunc measurements.randomBloodSugarTest
                         |> randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
-                        |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
+                        |> randomBloodSugarResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetRandomBloodSugar
 
                 TestHIVPCR ->
                     getMeasurementValueFunc measurements.hivPCRTest
                         |> hivPCRResultFormWithDefault data.hivPCRTestForm
-                        |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
+                        |> hivPCRResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetHIVViralLoad
+                            SetHIVViralLoadUndetectable
 
                 TestVitalsRecheck ->
                     ( emptyNode, 0, 0 )

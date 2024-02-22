@@ -147,7 +147,11 @@ viewLabResultsContent language currentDate assembled model =
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
                                 |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
-                                |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
+                                |> randomBloodSugarResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetRandomBloodSugar
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
