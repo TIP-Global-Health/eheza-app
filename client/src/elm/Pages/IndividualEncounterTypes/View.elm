@@ -3,7 +3,7 @@ module Pages.IndividualEncounterTypes.View exposing (view)
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Utils exposing (ncdaEnabled, tuberculosiskManagementEnabled)
+import Backend.Utils exposing (ncdaEnabled, tuberculosisManagementEnabled)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -63,7 +63,7 @@ viewContent language currentDate features healthCenterId isChw model =
                             emptyNode
 
                     tuberculosiskManagementButton =
-                        if tuberculosiskManagementEnabled features then
+                        if tuberculosisManagementEnabled features then
                             encounterButton TuberculosisEncounter
 
                         else

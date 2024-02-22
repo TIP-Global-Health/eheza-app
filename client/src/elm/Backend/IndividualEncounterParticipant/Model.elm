@@ -52,7 +52,7 @@ type alias Model =
 type Msg
     = ClosePrenatalSession NominalDate PregnancyOutcome DeliveryLocation
     | CloseAcuteIllnessSession AcuteIllnessOutcome
-    | CloseTuberculosisSession
+    | CloseTuberculosisSession TuberculosisOutcome
     | SetEddDate NominalDate
     | SetNewborn PersonId
     | HandleUpdatedIndividualEncounterParticipant (WebData ())
@@ -85,6 +85,16 @@ type DeliveryLocation
 type IndividualEncounterParticipantOutcome
     = AcuteIllness AcuteIllnessOutcome
     | Pregnancy PregnancyOutcome
+    | Tuberculosis TuberculosisOutcome
+
+
+type AcuteIllnessOutcome
+    = OutcomeIllnessResolved
+    | OutcomeLostToFollowUp
+    | OutcomeMovedOutsideCA
+    | OutcomePatientDied
+    | OutcomeReferredToHC
+    | OutcomeOther
 
 
 type PregnancyOutcome
@@ -95,6 +105,10 @@ type PregnancyOutcome
     | OutcomeAbortions
 
 
+type TuberculosisOutcome
+    = OutcomeNotDiagnosed
+
+
 allPregnancyOutcome : List PregnancyOutcome
 allPregnancyOutcome =
     [ OutcomeLiveAtTerm
@@ -103,15 +117,6 @@ allPregnancyOutcome =
     , OutcomeStillPreTerm
     , OutcomeAbortions
     ]
-
-
-type AcuteIllnessOutcome
-    = OutcomeIllnessResolved
-    | OutcomeLostToFollowUp
-    | OutcomeMovedOutsideCA
-    | OutcomePatientDied
-    | OutcomeReferredToHC
-    | OutcomeOther
 
 
 allAcuteIllnessOutcome : List AcuteIllnessOutcome

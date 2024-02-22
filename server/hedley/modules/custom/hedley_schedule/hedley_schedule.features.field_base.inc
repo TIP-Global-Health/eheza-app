@@ -494,6 +494,7 @@ function hedley_schedule_field_default_field_bases() {
         'patient-died' => 'Patient Died',
         'referred-to-hc' => 'Referred to Health Center',
         'other' => 'Other',
+        'not-diagnosed' => 'Not Diagnosed',
       ),
       'allowed_values_function' => '',
     ),

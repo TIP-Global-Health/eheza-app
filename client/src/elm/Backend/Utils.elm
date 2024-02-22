@@ -275,6 +275,6 @@ stockManagementEnabled =
     EverySet.member FeatureStockManagement
 
 
-tuberculosiskManagementEnabled : EverySet SiteFeature -> Bool
-tuberculosiskManagementEnabled =
+tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
+tuberculosisManagementEnabled =
     EverySet.member FeatureTuberculosisManagement

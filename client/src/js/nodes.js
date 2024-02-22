@@ -573,13 +573,14 @@
       'nutrition_follow_up',
       'prenatal_follow_up',
       'well_child_follow_up',
+      'tuberculosis_follow_up',
       'acute_illness_trace_contact',
       'prenatal_labs_results',
       'ncd_labs_results',
       'well_child_next_visit'
     ];
 
-    // These are tupes of follow ups that need to be loaded, even if they
+    // These are types of follow ups that need to be loaded, even if they
     // were resolved during period of past 6 months.
     // This is required to present data at Dashboard statistics.
     var resolvedFollowUpMeasurementsTypes = [
