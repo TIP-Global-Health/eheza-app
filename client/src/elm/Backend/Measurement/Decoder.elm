@@ -909,6 +909,9 @@ decodeTestExecutionNote =
                     "to-be-done-at-hospital" ->
                         succeed TestNoteToBeDoneAtHospital
 
+                    "run-confirmed-by-lab-tech" ->
+                        succeed TestNoteRunConfirmedByLabTech
+
                     _ ->
                         fail <|
                             note

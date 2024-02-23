@@ -135,6 +135,40 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
+        SetSyphilisTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.syphilisTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | syphilisTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSyphilisTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.syphilisTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | syphilisTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetSyphilisTestResult value ->
             let
                 form =
@@ -207,6 +241,40 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
+        SetHepatitisBTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.hepatitisBTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hepatitisBTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHepatitisBTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.hepatitisBTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hepatitisBTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetHepatitisBTestResult value ->
             let
                 form =
@@ -250,6 +318,40 @@ update language currentDate id isLabTech db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+
+        SetBloodGpRsTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.bloodGpRsTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | bloodGpRsTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBloodGpRsTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.bloodGpRsTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | bloodGpRsTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SetBloodGroup value ->
             let
@@ -311,6 +413,40 @@ update language currentDate id isLabTech db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+
+        SetUrineDipstickTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.urineDipstickTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetUrineDipstickTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.urineDipstickTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | urineDipstickTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SetProtein value ->
             let
@@ -492,6 +628,40 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
+        SetHemoglobinTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.hemoglobinTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hemoglobinTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHemoglobinTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.hemoglobinTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hemoglobinTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetHemoglobin value ->
             let
                 form =
@@ -536,6 +706,40 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
+        SetRandomBloodSugarTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.randomBloodSugarTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRandomBloodSugarTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.randomBloodSugarTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | randomBloodSugarTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetRandomBloodSugar value ->
             let
                 form =
@@ -579,6 +783,40 @@ update language currentDate id isLabTech db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+
+        SetHIVPCRTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.hivPCRTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHIVPCRTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.hivPCRTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hivPCRTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SetHIVViralLoadUndetectable undetectable ->
             let
@@ -665,6 +903,23 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
+        SetHIVTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.hivTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | hivTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetHIVTestResult value ->
             let
                 form =
@@ -720,6 +975,40 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
+        SetPartnerHIVTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.partnerHIVTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPartnerHIVTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.partnerHIVTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | partnerHIVTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetPartnerHIVTestResult value ->
             let
                 form =
@@ -764,6 +1053,40 @@ update language currentDate id isLabTech db msg model =
             , appMsgs
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+
+        SetMalariaTestFormBoolInput formUpdateFunc value ->
+            let
+                form =
+                    model.labResultsData.malariaTestForm
+
+                updatedForm =
+                    formUpdateFunc value form
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMalariaTestExecutionNote value ->
+            let
+                form =
+                    model.labResultsData.malariaTestForm
+
+                updatedForm =
+                    { form | executionNote = Just value, executionNoteDirty = True }
+
+                updatedData =
+                    model.labResultsData
+                        |> (\data -> { data | malariaTestForm = updatedForm })
+            in
+            ( { model | labResultsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SetMalariaTestResult value ->
             let

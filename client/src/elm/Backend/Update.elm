@@ -1673,7 +1673,14 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                     (\encounterId_ ->
                                         let
                                             labsResultsMsgs =
-                                                if resultsAdded then
+                                                if
+                                                    resultsAdded
+                                                        || -- If user is lab tech, we know for sure
+                                                           -- the update is performed from recurrent phase of encounter,
+                                                           -- even if actual test results are not set (which can happen
+                                                           -- if lab tech indicates that test was not run).
+                                                           isLabTech
+                                                then
                                                     generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
 
                                                 else

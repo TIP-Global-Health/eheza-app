@@ -634,6 +634,9 @@ encodeTestExecutionNote value =
             TestNoteToBeDoneAtHospital ->
                 "to-be-done-at-hospital"
 
+            TestNoteRunConfirmedByLabTech ->
+                "run-confirmed-by-lab-tech"
+
 
 encodeTestResult : TestResult -> Value
 encodeTestResult =

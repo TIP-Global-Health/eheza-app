@@ -16335,6 +16335,9 @@ translationSet trans =
                     , kirundi = Just "Gukorerwa mu Bitaro"
                     }
 
+                TestNoteRunConfirmedByLabTech ->
+                    translationSet <| TestExecutionNote TestNoteRunToday
+
         TestResult result ->
             case result of
                 TestPositive ->

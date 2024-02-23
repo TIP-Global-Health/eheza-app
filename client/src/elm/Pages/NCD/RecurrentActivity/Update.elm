@@ -77,6 +77,12 @@ update currentDate id db msg model =
                     )
     in
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
