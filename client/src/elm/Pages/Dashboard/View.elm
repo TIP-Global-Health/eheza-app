@@ -935,14 +935,18 @@ viewCovid19Page language isChw encounters managedCovid model =
 
     else
         let
-            sentToHospital =
-                -- @todo
-                0
+            -- Not viewd for now, as https://github.com/TIP-Global-Health/eheza-app/issues/959 is on hold.
+            hospitalReferralsCard =
+                let
+                    -- @todo: implement once issue is off hold.
+                    sentToHospital =
+                        0
+                in
+                chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
         in
         [ div [ class "ui grid" ]
-            [ div [ class "two column row" ]
-                [ chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
-                , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+            [ div [ class "two column row center" ]
+                [ chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
                 ]
             ]
         ]
