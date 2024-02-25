@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
 import Config.Model
@@ -346,9 +346,11 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     currentDate =
                         fromLocalDateTime model.currentTime
 
-                    isChw =
+                    ( isChw, isLabTech ) =
                         Tuple.second loggedInModel.nurse
-                            |> isCommunityHealthWorker
+                            |> (\nurse ->
+                                    ( isCommunityHealthWorker nurse, isLabTechnician nurse )
+                               )
                 in
                 case page of
                     MyAccountPage ->
@@ -380,6 +382,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             currentDate
                             site
                             features
+                            (Tuple.second loggedInModel.nurse)
                             prenatalEncounterId
                             isChw
                             initiator
@@ -421,6 +424,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             currentDate
                             healthCenterId
                             model.villageId
+                            isLabTech
                             model.syncManager
                             model.indexedDb
                             loggedInModel.globalCaseManagementPage
@@ -599,7 +603,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.prenatalRecurrentEncounterPages
                                     |> Maybe.withDefault Pages.Prenatal.RecurrentEncounter.Model.emptyModel
                         in
-                        Pages.Prenatal.RecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.Prenatal.RecurrentEncounter.View.view model.language currentDate (Tuple.second loggedInModel.nurse) id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -609,7 +613,13 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.prenatalRecurrentActivityPages
                                     |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyModel
                         in
-                        Pages.Prenatal.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.Prenatal.RecurrentActivity.View.view model.language
+                            currentDate
+                            (Tuple.second loggedInModel.nurse)
+                            id
+                            activity
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity)
                             |> flexPageWrapper configured.config model
 

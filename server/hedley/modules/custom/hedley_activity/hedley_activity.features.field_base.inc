@@ -880,6 +880,10 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'positive-hiv' => 'Positive HIV',
+        'safer-sex-hiv' => 'Safer sex HIV',
+        'partner-testing' => 'Partner testing',
+        'family-planning' => 'Family planning',
         'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
         'diabetes' => 'Diabetes',
         'none' => 'None',
@@ -1748,6 +1752,8 @@ function hedley_activity_field_default_field_bases() {
         'mental-health' => 'Mental Health',
         'early-mastitis-engorgment' => 'Early Mastitis or Engorgment',
         'mastitis' => 'Mastitis',
+        'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
+        'diabetes' => 'Diabetes',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

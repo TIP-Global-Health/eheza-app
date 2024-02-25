@@ -22,7 +22,8 @@ import Pages.Page exposing (Page)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
       -- Lab Results msgs
     | SetActiveLabResultsTask LaboratoryTask
     | SetProtein String

@@ -14,6 +14,7 @@ import Backend.Measurement.Model
         ( AcuteIllnessTraceContact
         , FollowUpMeasurements
         , LaboratoryTest(..)
+        , LabsResultsReviewState(..)
         , NCDLabsResults
         , NutritionAssessment(..)
         , PrenatalLabsResults
@@ -25,6 +26,7 @@ import Backend.NutritionEncounter.Utils
         , getWellChildEncountersForParticipant
         )
 import Backend.Person.Utils exposing (generateFullName)
+import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
@@ -54,8 +56,8 @@ import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate healthCenterId villageId syncManager db model =
+view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> Bool -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate healthCenterId villageId isLabTech syncManager db model =
     let
         header =
             div
@@ -82,7 +84,7 @@ view language currentDate healthCenterId villageId syncManager db model =
                         )
                 )
                 villageId
-                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate model db) identity followUps)
+                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate isLabTech model db) identity followUps)
                 |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div [ class "wrap wrap-alt-2 page-case-management" ]
@@ -150,35 +152,48 @@ viewContentForChw language currentDate village model db followUps =
             :: panes
 
 
-viewContentForNurse : Language -> NominalDate -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForNurse language currentDate model db followUps =
+viewContentForNurse : Language -> NominalDate -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForNurse language currentDate isLabTech model db followUps =
     let
-        contactsTracingPane =
-            viewContactsTracingPane language currentDate followUps.traceContacts db model
+        ( panes, filters ) =
+            let
+                prenatalLabsPane =
+                    viewPrenatalLabsPane language currentDate isLabTech followUps.prenatalLabs db model
+            in
+            if isLabTech then
+                ( [ ( FilterPrenatalLabs, prenatalLabsPane ) ]
+                , labTechFilters
+                )
 
-        prenatalLabsPane =
-            viewPrenatalLabsPane language currentDate followUps.prenatalLabs db model
+            else
+                let
+                    contactsTracingPane =
+                        viewContactsTracingPane language currentDate followUps.traceContacts db model
 
-        ncdLabsPane =
-            viewNCDLabsPane language currentDate followUps.ncdLabs db model
+                    ncdLabsPane =
+                        viewNCDLabsPane language currentDate followUps.ncdLabs db model
+                in
+                ( [ ( FilterContactsTrace, contactsTracingPane )
+                  , ( FilterPrenatalLabs, prenatalLabsPane )
+                  , ( FilterNCDLabs, ncdLabsPane )
+                  ]
+                , nurseFilters
+                )
 
-        panes =
-            [ ( FilterContactsTrace, contactsTracingPane )
-            , ( FilterPrenatalLabs, prenatalLabsPane )
-            , ( FilterNCDLabs, ncdLabsPane )
-            ]
-                |> List.filterMap
-                    (\( type_, pane ) ->
-                        if isNothing model.filter || model.filter == Just type_ then
-                            Just pane
+        panesForView =
+            List.filterMap
+                (\( type_, pane ) ->
+                    if isNothing model.filter || model.filter == Just type_ then
+                        Just pane
 
-                        else
-                            Nothing
-                    )
+                    else
+                        Nothing
+                )
+                panes
     in
     div [ class "ui unstackable items" ] <|
-        viewFilters language nurseFilters model
-            :: panes
+        viewFilters language filters model
+            :: panesForView
 
 
 viewEntryPopUp : Language -> NominalDate -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)
@@ -863,30 +878,62 @@ viewTraceContactEntry language currentDate db entry =
 viewPrenatalLabsPane :
     Language
     -> NominalDate
+    -> Bool
     -> Dict PrenatalLabsResultsId PrenatalLabsResults
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewPrenatalLabsPane language currentDate itemsDict db model =
+viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
     let
         filteredItemsDict =
             Dict.filter
                 (\_ item ->
-                    -- We know that item is not resolved, if resolution
-                    -- date is a future date.
-                    Date.compare currentDate item.value.resolutionDate == LT
+                    let
+                        resolutionDateCondition =
+                            -- We know that item is not resolved, if resolution
+                            -- date is a future date.
+                            Date.compare currentDate item.value.resolutionDate == LT
+
+                        roleDependantCondition =
+                            let
+                                diff =
+                                    EverySet.diff item.value.performedTests item.value.completedTests
+                            in
+                            if isLabTech then
+                                -- If review was requested (by lab technician), or completed
+                                -- (by nurse) we do not display entry for lab technician.
+                                isNothing item.value.reviewState
+                                    && -- If all tests were completed, or only one that was not is
+                                       -- vitals recheck, we do not display entry for lab technician.
+                                       -- For nurse,all tests were completed condition des not apply,
+                                       -- since there maybe follow up quesitons to fill.
+                                       (case EverySet.toList diff of
+                                            [] ->
+                                                False
+
+                                            [ TestVitalsRecheck ] ->
+                                                False
+
+                                            _ ->
+                                                True
+                                       )
+
+                            else
+                                True
+                    in
+                    resolutionDateCondition && roleDependantCondition
                 )
                 itemsDict
 
         entries =
-            generatePrenatalLabsEntries language currentDate filteredItemsDict db
+            generatePrenatalLabsEntries language currentDate isLabTech filteredItemsDict db
 
         content =
             if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                List.map (viewPrenatalLabsEntry language) entries
+                List.map (viewPrenatalLabsEntry language isLabTech) entries
     in
     div [ class "pane" ]
         [ viewItemHeading language FilterPrenatalLabs
@@ -898,22 +945,24 @@ viewPrenatalLabsPane language currentDate itemsDict db model =
 generatePrenatalLabsEntries :
     Language
     -> NominalDate
+    -> Bool
     -> Dict PrenatalLabsResultsId PrenatalLabsResults
     -> ModelIndexedDb
     -> List PrenatalLabsEntryData
-generatePrenatalLabsEntries language currentDate itemsDict db =
+generatePrenatalLabsEntries language currentDate isLabTech itemsDict db =
     Dict.values itemsDict
-        |> List.map (generatePrenatalLabsEntryData language currentDate db)
+        |> List.map (generatePrenatalLabsEntryData language currentDate isLabTech db)
         |> Maybe.Extra.values
 
 
 generatePrenatalLabsEntryData :
     Language
     -> NominalDate
+    -> Bool
     -> ModelIndexedDb
     -> PrenatalLabsResults
     -> Maybe PrenatalLabsEntryData
-generatePrenatalLabsEntryData language currentDate db item =
+generatePrenatalLabsEntryData language currentDate isLabTech db item =
     Maybe.map
         (\encounterId ->
             let
@@ -927,16 +976,22 @@ generatePrenatalLabsEntryData language currentDate db item =
                     if Date.diff Days currentDate item.value.resolutionDate < 8 then
                         LabsEntryClosingSoon
 
+                    else if not isLabTech && (item.value.reviewState == Just LabsResultsReviewRequested) then
+                        LabsEntryReadyForReview
+
+                    else if not isLabTech && (item.value.reviewState == Just LabsResultsReviewCompleted) then
+                        LabsEntryReviewed
+
                     else
                         LabsEntryPending
 
                 ( performedTests, completedTests ) =
-                    prenatalLabsResultsTestData currentDate item
+                    labsResultsTestData currentDate item
 
                 label =
                     if
-                        List.member TestVitalsRecheck performedTests
-                            && (not <| List.member TestVitalsRecheck completedTests)
+                        EverySet.member TestVitalsRecheck performedTests
+                            && (not <| EverySet.member TestVitalsRecheck completedTests)
                     then
                         -- Vitals recheck was scheduled, but not completed yet.
                         Translate.PrenatalLabsCaseManagementEntryTypeVitals
@@ -952,24 +1007,38 @@ generatePrenatalLabsEntryData language currentDate db item =
 
 viewPrenatalLabsEntry :
     Language
+    -> Bool
     -> PrenatalLabsEntryData
     -> Html Msg
-viewPrenatalLabsEntry language data =
+viewPrenatalLabsEntry language isLabTech data =
+    let
+        targetPage =
+            if isLabTech then
+                PrenatalRecurrentActivityPage data.encounterId LabResults
+
+            else if data.state == LabsEntryReadyForReview then
+                ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorCaseManagement data.encounterId) data.encounterId
+
+            else
+                PrenatalRecurrentEncounterPage data.encounterId
+    in
     viewLabsEntry language
+        isLabTech
         data.personName
         data.state
         data.label
-        (PrenatalRecurrentEncounterPage data.encounterId)
+        targetPage
 
 
 viewLabsEntry :
     Language
+    -> Bool
     -> String
     -> LabsEntryState
     -> String
     -> UserPage
     -> Html Msg
-viewLabsEntry language personName state label targetPage =
+viewLabsEntry language isLabTech personName state label targetPage =
     let
         entryStateClass =
             "due "
@@ -979,11 +1048,19 @@ viewLabsEntry language personName state label targetPage =
 
                         LabsEntryPending ->
                             "this-week"
+
+                        LabsEntryReadyForReview ->
+                            -- @todo: needs styling?
+                            "this-week"
+
+                        LabsEntryReviewed ->
+                            -- @todo: needs styling?
+                            "this-week"
                    )
     in
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text personName ]
-        , div [ class entryStateClass ] [ translateText language <| Translate.LabsEntryState state ]
+        , div [ class entryStateClass ] [ translateText language <| Translate.LabsEntryState isLabTech state ]
         , div [ class "assesment center" ] [ text label ]
         , div
             [ class "icon-forward"
@@ -1075,6 +1152,7 @@ viewNCDLabsEntry :
     -> Html Msg
 viewNCDLabsEntry language data =
     viewLabsEntry language
+        False
         data.personName
         data.state
         data.label

@@ -9,7 +9,7 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Model
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -228,10 +228,17 @@ update msg model =
         loggedInData =
             getLoggedInData model
 
-        isChw =
-            loggedInData
-                |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
-                |> Maybe.withDefault False
+        ( isChw, isLabTech ) =
+            Maybe.map
+                (Tuple.second
+                    >> .nurse
+                    >> Tuple.second
+                    >> (\nurse ->
+                            ( isCommunityHealthWorker nurse, isLabTechnician nurse )
+                       )
+                )
+                loggedInData
+                |> Maybe.withDefault ( False, False )
 
         site =
             model.syncManager.syncInfoGeneral.site
@@ -246,8 +253,7 @@ update msg model =
         MsgIndexedDb subMsg ->
             let
                 nurseId =
-                    loggedInData
-                        |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+                    Maybe.map (Tuple.second >> .nurse >> Tuple.first) loggedInData
 
                 ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb model.language
@@ -260,6 +266,7 @@ update msg model =
                         model.healthCenterId
                         model.villageId
                         isChw
+                        isLabTech
                         model.activePage
                         model.syncManager
                         subMsg
@@ -557,7 +564,7 @@ update msg model =
                                     data.prenatalActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.Prenatal.Activity.Model.emptyModel
-                                        |> Pages.Prenatal.Activity.Update.update model.language currentDate id model.indexedDb subMsg
+                                        |> Pages.Prenatal.Activity.Update.update model.language currentDate id isLabTech model.indexedDb subMsg
                             in
                             ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
@@ -570,7 +577,7 @@ update msg model =
                                     data.prenatalRecurrentActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyModel
-                                        |> Pages.Prenatal.RecurrentActivity.Update.update model.language currentDate id model.indexedDb subMsg
+                                        |> Pages.Prenatal.RecurrentActivity.Update.update model.language currentDate id isLabTech model.indexedDb subMsg
                             in
                             ( { data | prenatalRecurrentActivityPages = Dict.insert ( id, activity ) subModel data.prenatalRecurrentActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity) subCmd
@@ -587,6 +594,7 @@ update msg model =
                                             currentDate
                                             originEncounterId
                                             labEncounterId
+                                            isLabTech
                                             model.indexedDb
                                             subMsg
                             in

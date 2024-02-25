@@ -11,13 +11,13 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Measurement.Utils
     exposing
-        ( toCreatinineResultsValueWithDefault
-        , toLipidPanelResultsValueWithDefault
-        , toLiverFunctionResultsValueWithDefault
-        , toRandomBloodSugarResultsValueWithDefault
-        , toUrineDipstickResultsValueWithDefault
+        ( toCreatinineResultValueWithDefault
+        , toLipidPanelResultValueWithDefault
+        , toLiverFunctionResultValueWithDefault
+        , toRandomBloodSugarResultValueWithDefault
+        , toUrineDipstickResultValueWithDefault
         )
-import Pages.GlobalCaseManagement.Utils exposing (ncdLabsResultsTestData)
+import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -56,9 +56,9 @@ update currentDate id db msg model =
                                     (\( labsResultsId, results ) ->
                                         let
                                             ( performedTests, completedTests ) =
-                                                ncdLabsResultsTestData currentDate results
+                                                labsResultsTestData currentDate results
                                         in
-                                        if List.length performedTests == List.length completedTests then
+                                        if EverySet.size performedTests == EverySet.size completedTests then
                                             let
                                                 updatedValue =
                                                     results.value
@@ -77,6 +77,12 @@ update currentDate id db msg model =
                     )
     in
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -259,7 +265,7 @@ update currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toUrineDipstickResultsValueWithDefault measurement model.labResultsData.urineDipstickTestForm
+                    toUrineDipstickResultValueWithDefault measurement model.labResultsData.urineDipstickTestForm
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveUrineDipstickTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
@@ -303,7 +309,7 @@ update currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toRandomBloodSugarResultsValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
+                    toRandomBloodSugarResultValueWithDefault measurement model.labResultsData.randomBloodSugarTestForm
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveRandomBloodSugarTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
@@ -364,7 +370,7 @@ update currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toCreatinineResultsValueWithDefault measurement model.labResultsData.creatinineTestForm
+                    toCreatinineResultValueWithDefault measurement model.labResultsData.creatinineTestForm
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveCreatinineTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
@@ -425,7 +431,7 @@ update currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toLiverFunctionResultsValueWithDefault measurement model.labResultsData.liverFunctionTestForm
+                    toLiverFunctionResultValueWithDefault measurement model.labResultsData.liverFunctionTestForm
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveLiverFunctionTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id
@@ -547,7 +553,7 @@ update currentDate id db msg model =
                     generateLabResultsMsgs nextTask
 
                 appMsgs =
-                    toLipidPanelResultsValueWithDefault measurement model.labResultsData.lipidPanelTestForm
+                    toLipidPanelResultValueWithDefault measurement model.labResultsData.lipidPanelTestForm
                         |> Maybe.map
                             (Backend.NCDEncounter.Model.SaveLipidPanelTest personId measurementId
                                 >> Backend.Model.MsgNCDEncounter id

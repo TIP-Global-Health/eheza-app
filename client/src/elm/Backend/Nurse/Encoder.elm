@@ -9,19 +9,11 @@ import Gizra.TimePosix exposing (encodePosixAsSeconds)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
+import Utils.Json exposing (encodeNullable)
 
 
 encodeNurse : Nurse -> List ( String, Value )
 encodeNurse nurse =
-    let
-        email =
-            Maybe.map (\nurseEmail -> [ ( "email", string nurseEmail ) ]) nurse.email
-                |> Maybe.withDefault []
-
-        reminder =
-            Maybe.map (\nextReminder -> [ ( "next_reminder", encodePosixAsSeconds nextReminder ) ]) nurse.resilienceNextReminder
-                |> Maybe.withDefault []
-    in
     [ ( "label", string nurse.name )
     , ( "health_centers", list encodeEntityUuid (EverySet.toList nurse.healthCenters) )
     , ( "villages", list encodeEntityUuid (EverySet.toList nurse.villages) )
@@ -38,8 +30,8 @@ encodeNurse nurse =
     , ( "deleted", bool False )
     , ( "type", string "nurse" )
     ]
-        ++ email
-        ++ reminder
+        ++ encodeNullable "email" nurse.email string
+        ++ encodeNullable "next_reminder" nurse.resilienceNextReminder encodePosixAsSeconds
 
 
 encodeRole : Role -> Value
@@ -53,6 +45,9 @@ encodeRole role =
 
         RoleNurse ->
             string "nurse"
+
+        RoleLabTech ->
+            string "lab-tech"
 
 
 encodeResilienceRole : ResilienceRole -> Value

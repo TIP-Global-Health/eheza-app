@@ -8,6 +8,7 @@ import Backend.Measurement.Model
         , EyesCPESign(..)
         , HandsCPESign(..)
         , IllnessSymptom(..)
+        , LabsResultsReviewState(..)
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
         , OutsideCareMedication(..)
@@ -24,11 +25,14 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
+        , PrenatalRecurrentActivity(..)
         , allMedicalDiagnoses
         , allObstetricalDiagnoses
         , allRiskFactors
@@ -105,18 +109,19 @@ view :
     -> NominalDate
     -> Site
     -> EverySet SiteFeature
+    -> Nurse
     -> PrenatalEncounterId
     -> Bool
     -> PrenatalProgressReportInitiator
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate site features id isChw initiator db model =
+view language currentDate site features nurse id isChw initiator db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewContentAndHeader language currentDate site features isChw initiator model) identity assembled
+    viewWebData language (viewContentAndHeader language currentDate site features nurse isChw initiator model) identity assembled
 
 
 viewContentAndHeader :
@@ -124,13 +129,34 @@ viewContentAndHeader :
     -> NominalDate
     -> Site
     -> EverySet SiteFeature
+    -> Nurse
     -> Bool
     -> PrenatalProgressReportInitiator
     -> Model
     -> AssembledData
     -> Html Msg
-viewContentAndHeader language currentDate site features isChw initiator model assembled =
+viewContentAndHeader language currentDate site features nurse isChw initiator model assembled =
     let
+        isLabTech =
+            isLabTechnician nurse
+
+        isResultsReviewer =
+            -- A nurse.
+            (not isChw && not isLabTech)
+                && -- Access was perfomed from case  managament.
+                   (case initiator of
+                        InitiatorCaseManagement _ ->
+                            True
+
+                        _ ->
+                            False
+                   )
+                && -- Labs results review was requested.
+                   (getMeasurementValueFunc assembled.measurements.labsResults
+                        |> Maybe.map (.reviewState >> (==) (Just LabsResultsReviewRequested))
+                        |> Maybe.withDefault False
+                   )
+
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
@@ -147,8 +173,8 @@ viewContentAndHeader language currentDate site features isChw initiator model as
             Just { setReportComponentsMsg = SetReportComponents }
     in
     div [ class "page-report clinical" ] <|
-        [ viewHeader language assembled.id initiator model
-        , viewContent language currentDate site features isChw initiator model assembled
+        [ viewHeader language assembled.id isLabTech isResultsReviewer initiator model
+        , viewContent language currentDate site features isChw isLabTech isResultsReviewer initiator model assembled
         , viewModal endEncounterDialog
         , Html.map MsgReportToWhatsAppDialog
             (Components.ReportToWhatsAppDialog.View.view
@@ -163,21 +189,25 @@ viewContentAndHeader language currentDate site features isChw initiator model as
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> PrenatalProgressReportInitiator -> Model -> Html Msg
-viewHeader language id initiator model =
+viewHeader : Language -> PrenatalEncounterId -> Bool -> Bool -> PrenatalProgressReportInitiator -> Model -> Html Msg
+viewHeader language id isLabTech isResultsReviewer initiator model =
     let
         label =
-            Maybe.map
-                (\mode ->
-                    case mode of
-                        LabResultsCurrent _ ->
-                            Translate.LabResults
+            if isLabTech || isResultsReviewer then
+                Translate.LabResults
 
-                        LabResultsHistory _ ->
-                            Translate.LabHistory
-                )
-                model.labResultsMode
-                |> Maybe.withDefault Translate.AntenatalProgressReport
+            else
+                Maybe.map
+                    (\mode ->
+                        case mode of
+                            LabResultsCurrent _ ->
+                                Translate.LabResults
+
+                            LabResultsHistory _ ->
+                                Translate.LabHistory
+                    )
+                    model.labResultsMode
+                    |> Maybe.withDefault Translate.AntenatalProgressReport
 
         backIcon =
             let
@@ -202,7 +232,11 @@ viewHeader language id initiator model =
                                 LabResultsCurrent currentMode ->
                                     case currentMode of
                                         LabResultsCurrentMain ->
-                                            SetLabResultsMode Nothing
+                                            if isLabTech then
+                                                defaultAction
+
+                                            else
+                                                SetLabResultsMode Nothing
 
                                         LabResultsCurrentDipstickShort ->
                                             backToCurrentMsg LabResultsCurrentMain
@@ -224,13 +258,31 @@ viewHeader language id initiator model =
                     iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId)
 
                 InitiatorRecurrentEncounterPage prenatalEncounterId ->
-                    iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage prenatalEncounterId)
+                    let
+                        action =
+                            if isLabTech then
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalRecurrentActivityPage prenatalEncounterId LabResults
+
+                            else
+                                SetActivePage <|
+                                    UserPage <|
+                                        PrenatalRecurrentEncounterPage prenatalEncounterId
+                    in
+                    iconForView <| goBackActionByLabResultsState action
 
                 InitiatorNewEncounter _ ->
                     emptyNode
 
                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
                     iconForView <| goBackActionByLabResultsState (SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory patientId)
+
+                InitiatorCaseManagement _ ->
+                    iconForView <|
+                        SetActivePage <|
+                            UserPage
+                                GlobalCaseManagementPage
     in
     div
         [ class "ui basic segment head" ]
@@ -246,13 +298,15 @@ viewContent :
     -> Site
     -> EverySet SiteFeature
     -> Bool
+    -> Bool
+    -> Bool
     -> PrenatalProgressReportInitiator
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate site features isChw initiator model assembled =
+viewContent language currentDate site features isChw isLabTech isResultsReviewer initiator model assembled =
     let
-        derivedContent =
+        content =
             let
                 labResultsConfig =
                     { hivPCR = True
@@ -268,17 +322,79 @@ viewContent language currentDate site features isChw initiator model assembled =
                     , hba1c = False
                     , lipidPanel = False
                     }
-            in
-            case model.labResultsMode of
-                Just mode ->
-                    case mode of
-                        LabResultsCurrent currentMode ->
-                            [ generateLabsResultsPaneData currentDate assembled
-                                |> viewLabResultsPane language currentDate currentMode SetLabResultsMode labResultsConfig
-                            ]
 
-                        LabResultsHistory historyMode ->
-                            [ viewLabResultsHistoryPane language currentDate historyMode ]
+                labResultsMode =
+                    if isLabTech || isResultsReviewer then
+                        -- Lab thechnician  and results reviewer go
+                        -- straight to main page of lab results.
+                        Maybe.Extra.or model.labResultsMode (Just <| LabResultsCurrent LabResultsCurrentMain)
+
+                    else
+                        model.labResultsMode
+            in
+            case labResultsMode of
+                Just mode ->
+                    let
+                        resultsPane =
+                            case mode of
+                                LabResultsCurrent currentMode ->
+                                    generateLabsResultsPaneData currentDate assembled
+                                        |> viewLabResultsPane language
+                                            currentDate
+                                            (isLabTech || isResultsReviewer)
+                                            currentMode
+                                            SetLabResultsMode
+                                            labResultsConfig
+
+                                LabResultsHistory historyMode ->
+                                    viewLabResultsHistoryPane language currentDate historyMode
+
+                        bottomActions =
+                            case initiator of
+                                InitiatorRecurrentEncounterPage id ->
+                                    if isLabTech then
+                                        div [ class "two ui buttons" ]
+                                            [ button
+                                                [ class "ui primary fluid button"
+                                                , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
+                                                ]
+                                                [ text <| translate language Translate.SubmitResults ]
+                                            , button
+                                                [ class "ui primary fluid button"
+                                                , onClick <|
+                                                    SetActivePage <|
+                                                        UserPage <|
+                                                            PrenatalRecurrentActivityPage id LabResults
+                                                ]
+                                                [ text <| translate language Translate.EditResults ]
+                                            ]
+
+                                    else
+                                        emptyNode
+
+                                InitiatorCaseManagement encounterId ->
+                                    if isResultsReviewer then
+                                        Maybe.map2
+                                            (\( resultsId, _ ) value ->
+                                                button
+                                                    [ class "ui primary fluid button"
+                                                    , onClick <| ReviewAndAcceptLabsResults assembled.participant.person encounterId resultsId value
+                                                    ]
+                                                    [ text <| translate language Translate.ReviewAndAccept ]
+                                            )
+                                            assembled.measurements.labsResults
+                                            (getMeasurementValueFunc assembled.measurements.labsResults)
+                                            |> Maybe.withDefault emptyNode
+
+                                    else
+                                        emptyNode
+
+                                _ ->
+                                    emptyNode
+                    in
+                    [ resultsPane
+                    , bottomActions
+                    ]
 
                 Nothing ->
                     let
@@ -289,7 +405,12 @@ viewContent language currentDate site features isChw initiator model assembled =
                             Maybe.map
                                 (\_ ->
                                     generateLabsResultsPaneData currentDate assembled
-                                        |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
+                                        |> viewLabResultsPane language
+                                            currentDate
+                                            (isLabTech || isResultsReviewer)
+                                            LabResultsCurrentMain
+                                            SetLabResultsMode
+                                            labResultsConfig
                                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalLabsResults)
                                 )
                                 model.components
@@ -341,9 +462,9 @@ viewContent language currentDate site features isChw initiator model assembled =
                                 InitiatorRecurrentEncounterPage _ ->
                                     let
                                         ( _, pendingActivities ) =
-                                            Pages.Prenatal.RecurrentEncounter.Utils.allActivities
-                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate assembled)
-                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate assembled)
+                                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
+                                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
+                                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
 
                                         allowEndEncounter =
                                             List.isEmpty pendingActivities
@@ -367,6 +488,11 @@ viewContent language currentDate site features isChw initiator model assembled =
                                         ]
 
                                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
+                                    emptyNode
+
+                                -- Access from case management is granted only for labs results
+                                -- reviewers, so, this branch is not in use.
+                                InitiatorCaseManagement _ ->
                                     emptyNode
 
                         showComponent =
@@ -395,7 +521,7 @@ viewContent language currentDate site features isChw initiator model assembled =
         ]
     <|
         viewHeaderPane language currentDate assembled
-            :: derivedContent
+            :: content
 
 
 viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg
@@ -1944,7 +2070,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 |> wrapWithLI
     in
     case diagnosis of
-        DiagnosisHIV ->
+        DiagnosisHIVInitialPhase ->
             getMeasurementValueFunc measurements.sendToHC
                 |> Maybe.map
                     (\value ->
@@ -1989,7 +2115,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
-        DiagnosisHIVDetectableViralLoad ->
+        DiagnosisHIVRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisHIVInitialPhase
+
+        DiagnosisHIVDetectableViralLoadInitialPhase ->
             getMeasurementValueFunc measurements.hivPCRTest
                 |> Maybe.andThen .hivViralLoad
                 |> Maybe.map
@@ -2005,7 +2134,10 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault []
 
-        DiagnosisDiscordantPartnership ->
+        DiagnosisHIVDetectableViralLoadRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisHIVDetectableViralLoadInitialPhase
+
+        DiagnosisDiscordantPartnershipInitialPhase ->
             getMeasurementValueFunc measurements.medicationDistribution
                 |> Maybe.andThen
                     (\value ->
@@ -2033,10 +2165,16 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
-        DiagnosisSyphilis ->
+        DiagnosisDiscordantPartnershipRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisDiscordantPartnershipInitialPhase
+
+        DiagnosisSyphilisInitialPhase ->
             syphilisTreatmentMessage ""
 
-        DiagnosisSyphilisWithComplications ->
+        DiagnosisSyphilisRecurrentPhase ->
+            syphilisTreatmentMessage ""
+
+        DiagnosisSyphilisWithComplicationsInitialPhase ->
             let
                 complications =
                     getMeasurementValueFunc measurements.syphilisTest
@@ -2060,6 +2198,9 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                         |> Maybe.withDefault ""
             in
             syphilisTreatmentMessage complications
+
+        DiagnosisSyphilisWithComplicationsRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisSyphilisWithComplicationsInitialPhase
 
         DiagnosisChronicHypertensionImmediate ->
             hypertensionTreatmentMessage
@@ -2130,7 +2271,7 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisLaborAndDelivery ->
             referredToHospitalMessage
 
-        DiagnosisModerateAnemia ->
+        DiagnosisModerateAnemiaInitialPhase ->
             getMeasurementValueFunc measurements.medicationDistribution
                 |> Maybe.andThen
                     (\value ->
@@ -2160,10 +2301,16 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                     )
                 |> Maybe.withDefault noTreatmentRecordedMessage
 
-        DiagnosisSevereAnemia ->
+        DiagnosisModerateAnemiaRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisModerateAnemiaInitialPhase
+
+        DiagnosisSevereAnemiaInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisSevereAnemiaWithComplications ->
+        DiagnosisSevereAnemiaRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
             let
                 complication =
                     " - ["
@@ -2218,25 +2365,49 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
             in
             referredToHospitalMessageWithComplications complication
 
-        DiagnosisMalaria ->
+        DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
+            viewTreatmentForDiagnosis language date measurements allDiagnoses DiagnosisSevereAnemiaWithComplicationsInitialPhase
+
+        DiagnosisMalariaInitialPhase ->
             malariaTreatmentMessage
 
-        DiagnosisMalariaMedicatedContinued ->
-            referredToHospitalMessage
-
-        DiagnosisMalariaWithAnemia ->
+        DiagnosisMalariaRecurrentPhase ->
             malariaTreatmentMessage
 
-        DiagnosisMalariaWithAnemiaMedicatedContinued ->
+        DiagnosisMalariaMedicatedContinuedInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisMalariaWithSevereAnemia ->
+        DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisMalariaWithAnemiaInitialPhase ->
             malariaTreatmentMessage
 
-        DiagnosisHepatitisB ->
+        DiagnosisMalariaWithAnemiaRecurrentPhase ->
+            malariaTreatmentMessage
+
+        DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisNeurosyphilis ->
+        DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisMalariaWithSevereAnemiaInitialPhase ->
+            malariaTreatmentMessage
+
+        DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
+            malariaTreatmentMessage
+
+        DiagnosisHepatitisBInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisHepatitisBRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisNeurosyphilisInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisNeurosyphilisRecurrentPhase ->
             referredToHospitalMessage
 
         DiagnosisModeratePreeclampsiaInitialPhase ->
@@ -2427,13 +2598,22 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
                 ++ formatDDMMYYYY date
                 |> wrapWithLI
 
-        DiagnosisDiabetes ->
+        DiagnosisDiabetesInitialPhase ->
             referredToHospitalMessage
 
-        DiagnosisGestationalDiabetes ->
+        DiagnosisDiabetesRecurrentPhase ->
             referredToHospitalMessage
 
-        DiagnosisRhesusNegative ->
+        DiagnosisGestationalDiabetesInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisGestationalDiabetesRecurrentPhase ->
+            referredToHospitalMessage
+
+        DiagnosisRhesusNegativeInitialPhase ->
+            referredToHospitalMessage
+
+        DiagnosisRhesusNegativeRecurrentPhase ->
             referredToHospitalMessage
 
         DiagnosisDepressionNotLikely ->
@@ -2550,25 +2730,37 @@ viewTreatmentForOutsideCareDiagnosis language date medications diagnosis =
                     ++ " "
         in
         case diagnosis of
-            DiagnosisHIV ->
+            DiagnosisHIVInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsHIV NoOutsideCareMedicationForMalaria
                     |> Just
                     |> completePhrase
 
-            DiagnosisSyphilis ->
+            DiagnosisHIVRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisHIVInitialPhase
+
+            DiagnosisSyphilisInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsSyphilis NoOutsideCareMedicationForSyphilis
                     |> Just
                     |> completePhrase
 
-            DiagnosisMalaria ->
+            DiagnosisSyphilisRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisSyphilisInitialPhase
+
+            DiagnosisMalariaInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsMalaria NoOutsideCareMedicationForMalaria
                     |> Just
                     |> completePhrase
 
-            DiagnosisModerateAnemia ->
+            DiagnosisMalariaRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisMalariaInitialPhase
+
+            DiagnosisModerateAnemiaInitialPhase ->
                 treatedWithPhrase outsideCareMedicationOptionsAnemia NoOutsideCareMedicationForAnemia
                     |> Just
                     |> completePhrase
+
+            DiagnosisModerateAnemiaRecurrentPhase ->
+                viewTreatmentForOutsideCareDiagnosis language date medications DiagnosisModerateAnemiaInitialPhase
 
             DiagnosisGestationalHypertensionImmediate ->
                 treatmentForHypertensionMessage

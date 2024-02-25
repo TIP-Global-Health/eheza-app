@@ -5,6 +5,8 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isLabTechnician)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -12,20 +14,29 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra
-import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( bloodGpRsResultFormAndTasks
         , bloodGpRsResultFormWithDefault
+        , emptyContentAndTasksLaboratoryResultConfig
         , hemoglobinResultFormAndTasks
         , hemoglobinResultFormWithDefault
         , hepatitisBResultFormAndTasks
         , hepatitisBResultFormWithDefault
         , hivPCRResultFormAndTasks
         , hivPCRResultFormWithDefault
+        , hivResultFollowUpsFormAndTasks
+        , hivResultFormAndTasks
+        , hivResultFormWithDefault
         , laboratoryTaskIconClass
+        , malariaResultFormAndTasks
+        , malariaResultFormWithDefault
+        , partnerHIVResultFormAndTasks
+        , partnerHIVResultFormWithDefault
         , randomBloodSugarResultFormAndTasks
         , randomBloodSugarResultFormWithDefault
+        , syphilisResultFollowUpsFormAndTasks
         , syphilisResultFormAndTasks
         , syphilisResultFormWithDefault
         , urineDipstickResultFormAndTasks
@@ -46,6 +57,7 @@ import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicatio
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , tasksBarId
         , viewSaveAction
         )
@@ -54,178 +66,40 @@ import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-viewLabsHistory :
-    Language
-    -> NominalDate
-    -> PrenatalEncounterId
-    -> PrenatalEncounterId
-    -> LaboratoryTest
-    -> ModelIndexedDb
-    -> LabResultsData
-    -> Html Msg
-viewLabsHistory language currentDate originatingEncounterId labEncounterId lab db data =
-    let
-        assembled =
-            generateAssembledData labEncounterId db
-    in
-    viewWebData language (viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data) identity assembled
-
-
-viewLabsHistoryHeaderAndContent :
-    Language
-    -> NominalDate
-    -> PrenatalEncounterId
-    -> PrenatalEncounterId
-    -> LaboratoryTest
-    -> ModelIndexedDb
-    -> LabResultsData
-    -> AssembledData
-    -> Html Msg
-viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data assembled =
-    div [ class "page-activity prenatal labs-history" ] <|
-        [ viewHeader language
-            (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
-            (Translate.LaboratoryTest lab)
-            assembled
-        , viewLabsHistoryContent language currentDate lab db data assembled
-        ]
-
-
-viewLabsHistoryContent : Language -> NominalDate -> LaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
-viewLabsHistoryContent language currentDate lab db data assembled =
-    div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate False assembled Nothing
-            ++ viewLab language currentDate lab assembled data
-
-
-viewLab : Language -> NominalDate -> LaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
-viewLab language currentDate lab assembled data =
-    let
-        measurements =
-            assembled.measurements
-
-        ( viewForm, tasksCompleted, totalTasks ) =
-            case lab of
-                TestSyphilis ->
-                    measurements.syphilisTest
-                        |> getMeasurementValueFunc
-                        |> syphilisResultFormWithDefault data.syphilisTestForm
-                        |> syphilisResultFormAndTasks language currentDate SetIllnessSymptom SetSyphilisTestResult
-
-                TestHepatitisB ->
-                    measurements.hepatitisBTest
-                        |> getMeasurementValueFunc
-                        |> hepatitisBResultFormWithDefault data.hepatitisBTestForm
-                        |> hepatitisBResultFormAndTasks language currentDate SetHepatitisBTestResult
-
-                TestBloodGpRs ->
-                    measurements.bloodGpRsTest
-                        |> getMeasurementValueFunc
-                        |> bloodGpRsResultFormWithDefault data.bloodGpRsTestForm
-                        |> bloodGpRsResultFormAndTasks language currentDate SetBloodGroup SetRhesus
-
-                TestUrineDipstick ->
-                    measurements.urineDipstickTest
-                        |> getMeasurementValueFunc
-                        |> urineDipstickResultFormWithDefault data.urineDipstickTestForm
-                        |> urineDipstickResultFormAndTasks language
-                            currentDate
-                            SetProtein
-                            SetPH
-                            SetGlucose
-                            SetLeukocytes
-                            SetNitrite
-                            SetUrobilinogen
-                            SetHaemoglobin
-                            SetKetone
-                            SetBilirubin
-
-                TestHemoglobin ->
-                    measurements.hemoglobinTest
-                        |> getMeasurementValueFunc
-                        |> hemoglobinResultFormWithDefault data.hemoglobinTestForm
-                        |> hemoglobinResultFormAndTasks language currentDate SetHemoglobin
-
-                TestRandomBloodSugar ->
-                    measurements.randomBloodSugarTest
-                        |> getMeasurementValueFunc
-                        |> randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
-                        |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
-
-                TestHIVPCR ->
-                    measurements.hivPCRTest
-                        |> getMeasurementValueFunc
-                        |> hivPCRResultFormWithDefault data.hivPCRTestForm
-                        |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
-
-                TestVitalsRecheck ->
-                    ( emptyNode, 0, 0 )
-
-                -- Others do no participate at Prenatal.
-                _ ->
-                    ( emptyNode, 0, 0 )
-
-        actions =
-            let
-                personId =
-                    assembled.participant.person
-
-                saveMsg =
-                    case lab of
-                        TestSyphilis ->
-                            SaveSyphilisResult personId measurements.syphilisTest Nothing
-
-                        TestHepatitisB ->
-                            SaveHepatitisBResult personId measurements.hepatitisBTest Nothing
-
-                        TestBloodGpRs ->
-                            SaveBloodGpRsResult personId measurements.bloodGpRsTest Nothing
-
-                        TestUrineDipstick ->
-                            SaveUrineDipstickResult personId measurements.urineDipstickTest Nothing
-
-                        TestHemoglobin ->
-                            SaveHemoglobinResult personId measurements.hemoglobinTest Nothing
-
-                        TestRandomBloodSugar ->
-                            SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest Nothing
-
-                        TestHIVPCR ->
-                            SaveHIVPCRResult personId measurements.hivPCRTest Nothing
-
-                        TestVitalsRecheck ->
-                            NoOp
-
-                        -- Others do no participate at Prenatal.
-                        _ ->
-                            NoOp
-            in
-            viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
-    in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-    , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            [ viewForm
-            , actions
-            ]
-        ]
-    ]
-
-
-view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> Nurse -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate nurse id activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate id activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate nurse id activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> PrenatalEncounterId -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate id activity db model assembled =
+viewHeaderAndContent :
+    Language
+    -> NominalDate
+    -> Nurse
+    -> PrenatalEncounterId
+    -> PrenatalRecurrentActivity
+    -> ModelIndexedDb
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewHeaderAndContent language currentDate nurse id activity db model assembled =
+    let
+        isLabTech =
+            isLabTechnician nurse
+
+        goBackPage =
+            if isLabTech then
+                GlobalCaseManagementPage
+
+            else
+                PrenatalRecurrentEncounterPage id
+    in
     div [ class "page-activity prenatal" ] <|
-        [ viewHeader language (PrenatalRecurrentEncounterPage id) (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
-        , viewContent language currentDate activity db model assembled
+        [ viewHeader language goBackPage (Translate.PrenatalRecurrentActivitiesTitle activity) assembled
+        , viewContent language currentDate isLabTech activity db model assembled
         , viewModal <|
             warningPopup language currentDate False assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
@@ -245,18 +119,18 @@ viewHeader language goBackPage labelTransId assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate activity db model assembled =
+viewContent : Language -> NominalDate -> Bool -> PrenatalRecurrentActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate isLabTech activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate False assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate activity assembled db model
+            ++ viewActivity language currentDate isLabTech activity assembled db model
 
 
-viewActivity : Language -> NominalDate -> PrenatalRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate activity assembled db model =
+viewActivity : Language -> NominalDate -> Bool -> PrenatalRecurrentActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate isLabTech activity assembled db model =
     case activity of
         LabResults ->
-            viewLabResultsContent language currentDate assembled model
+            viewLabResultsContent language currentDate isLabTech assembled model
 
         RecurrentNextSteps ->
             viewNextStepsContent language currentDate assembled model.nextStepsData
@@ -272,18 +146,21 @@ viewActivity language currentDate activity assembled db model =
                 SaveMalariaPrevention
                 model.malariaPreventionData
 
+        LabsResultsFollowUps ->
+            viewLabResultFollowUpsContent language currentDate isLabTech assembled model
 
-viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewLabResultsContent language currentDate assembled model =
+
+viewLabResultsContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewLabResultsContent language currentDate isLabTech assembled model =
     let
         measurements =
             assembled.measurements
 
         tasks =
-            resolveLaboratoryResultTask currentDate assembled
+            resolveLaboratoryResultTasks currentDate isLabTech assembled
 
         activeTask =
-            Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
+            resolveActiveTask tasks model.labResultsData.activeTask
 
         viewTask task =
             let
@@ -294,7 +171,7 @@ viewLabResultsContent language currentDate assembled model =
                     activeTask == Just task
 
                 isCompleted =
-                    laboratoryResultTaskCompleted currentDate assembled task
+                    laboratoryResultTaskCompleted currentDate isLabTech assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -317,36 +194,71 @@ viewLabResultsContent language currentDate assembled model =
                 (\task ->
                     ( task
                     , case task of
+                        TaskPartnerHIVTest ->
+                            getMeasurementValueFunc measurements.partnerHIVTest
+                                |> partnerHIVResultFormWithDefault model.labResultsData.partnerHIVTestForm
+                                |> partnerHIVResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetPartnerHIVTestResult
+
                         TaskHIVTest ->
-                            ( emptyNode, 0, 0 )
+                            getMeasurementValueFunc measurements.hivTest
+                                |> hivResultFormWithDefault model.labResultsData.hivTestForm
+                                |> hivResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetHIVTestResult
+                                    SetHIVTestFormBoolInput
 
                         TaskSyphilisTest ->
-                            measurements.syphilisTest
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc measurements.syphilisTest
                                 |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
-                                |> syphilisResultFormAndTasks language currentDate SetIllnessSymptom SetSyphilisTestResult
+                                |> syphilisResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetSyphilisTestResult
+                                    SetIllnessSymptom
 
                         TaskHepatitisBTest ->
-                            measurements.hepatitisBTest
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc measurements.hepatitisBTest
                                 |> hepatitisBResultFormWithDefault model.labResultsData.hepatitisBTestForm
-                                |> hepatitisBResultFormAndTasks language currentDate SetHepatitisBTestResult
+                                |> hepatitisBResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetHepatitisBTestResult
 
                         TaskMalariaTest ->
-                            ( emptyNode, 0, 0 )
+                            getMeasurementValueFunc measurements.malariaTest
+                                |> malariaResultFormWithDefault model.labResultsData.malariaTestForm
+                                |> malariaResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetMalariaTestResult
+                                    SetBloodSmearResult
 
                         TaskBloodGpRsTest ->
-                            measurements.bloodGpRsTest
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc measurements.bloodGpRsTest
                                 |> bloodGpRsResultFormWithDefault model.labResultsData.bloodGpRsTestForm
-                                |> bloodGpRsResultFormAndTasks language currentDate SetBloodGroup SetRhesus
+                                |> bloodGpRsResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetBloodGroup
+                                    SetRhesus
 
                         TaskUrineDipstickTest ->
-                            measurements.urineDipstickTest
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc measurements.urineDipstickTest
                                 |> urineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
                                 |> urineDipstickResultFormAndTasks language
                                     currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
                                     SetProtein
                                     SetPH
                                     SetGlucose
@@ -358,26 +270,34 @@ viewLabResultsContent language currentDate assembled model =
                                     SetBilirubin
 
                         TaskHemoglobinTest ->
-                            measurements.hemoglobinTest
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc measurements.hemoglobinTest
                                 |> hemoglobinResultFormWithDefault model.labResultsData.hemoglobinTestForm
-                                |> hemoglobinResultFormAndTasks language currentDate SetHemoglobin
+                                |> hemoglobinResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetHemoglobin
 
                         TaskRandomBloodSugarTest ->
-                            measurements.randomBloodSugarTest
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc measurements.randomBloodSugarTest
                                 |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
-                                |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
+                                |> randomBloodSugarResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetRandomBloodSugar
 
                         TaskHIVPCRTest ->
-                            measurements.hivPCRTest
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc measurements.hivPCRTest
                                 |> hivPCRResultFormWithDefault model.labResultsData.hivPCRTestForm
-                                |> hivPCRResultFormAndTasks language currentDate SetHIVViralLoad SetHIVViralLoadUndetectable
+                                |> hivPCRResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetHIVViralLoad
+                                    SetHIVViralLoadUndetectable
 
-                        TaskPartnerHIVTest ->
-                            ( emptyNode, 0, 0 )
-
+                        -- Only relevant for initial phase.
                         TaskCompletePreviousTests ->
                             ( emptyNode, 0, 0 )
 
@@ -417,8 +337,11 @@ viewLabResultsContent language currentDate assembled model =
 
                         saveMsg =
                             case task of
+                                TaskPartnerHIVTest ->
+                                    SavePartnerHIVResult personId measurements.partnerHIVTest nextTask |> Just
+
                                 TaskHIVTest ->
-                                    Nothing
+                                    SaveHIVResult personId measurements.hivTest nextTask |> Just
 
                                 TaskSyphilisTest ->
                                     SaveSyphilisResult personId measurements.syphilisTest nextTask |> Just
@@ -427,7 +350,7 @@ viewLabResultsContent language currentDate assembled model =
                                     SaveHepatitisBResult personId measurements.hepatitisBTest nextTask |> Just
 
                                 TaskMalariaTest ->
-                                    Nothing
+                                    SaveMalariaResult personId measurements.malariaTest nextTask |> Just
 
                                 TaskBloodGpRsTest ->
                                     SaveBloodGpRsResult personId measurements.bloodGpRsTest nextTask |> Just
@@ -443,9 +366,6 @@ viewLabResultsContent language currentDate assembled model =
 
                                 TaskHIVPCRTest ->
                                     SaveHIVPCRResult personId measurements.hivPCRTest nextTask |> Just
-
-                                TaskPartnerHIVTest ->
-                                    Nothing
 
                                 TaskCompletePreviousTests ->
                                     Nothing
@@ -487,7 +407,7 @@ viewNextStepsContent language currentDate assembled data =
             resolveNextStepsTasks currentDate assembled
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -629,7 +549,7 @@ viewExaminationContent language currentDate assembled data =
             [ ExaminationVitals ]
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -772,3 +692,383 @@ viewReferralForm language currentDate assembled form =
     in
     div [ class "ui form referral" ]
         inputs
+
+
+viewLabResultFollowUpsContent : Language -> NominalDate -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
+    let
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveLaboratoryResultFollowUpsTasks currentDate assembled
+
+        activeTask =
+            resolveActiveTask tasks model.labResultsData.activeTask
+
+        viewTask task =
+            let
+                iconClass =
+                    laboratoryTaskIconClass task
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    laboratoryResultFollowUpsTaskCompleted currentDate assembled task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveLabResultsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.LaboratoryTask task)
+                    ]
+                ]
+
+        formHtmlAndTasks =
+            List.map
+                (\task ->
+                    ( task
+                    , case task of
+                        TaskHIVTest ->
+                            getMeasurementValueFunc measurements.hivTest
+                                |> hivResultFormWithDefault model.labResultsData.hivTestForm
+                                |> hivResultFollowUpsFormAndTasks language currentDate SetHIVTestFormBoolInput
+
+                        TaskSyphilisTest ->
+                            getMeasurementValueFunc measurements.syphilisTest
+                                |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
+                                |> syphilisResultFollowUpsFormAndTasks language currentDate SetIllnessSymptom
+
+                        -- Others do not have results follow ups section,
+                        -- or, do not participate at Prenatal.
+                        _ ->
+                            ( emptyNode, 0, 0 )
+                    )
+                )
+                tasks
+                |> Dict.fromList
+
+        tasksCompletedFromTotalDict =
+            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                formHtmlAndTasks
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            Maybe.andThen
+                (\task -> Dict.get task formHtmlAndTasks)
+                activeTask
+                |> Maybe.withDefault ( emptyNode, 0, 0 )
+
+        nextTask =
+            List.filter
+                (\task ->
+                    (Just task /= activeTask)
+                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
+                )
+                tasks
+                |> List.head
+
+        actions =
+            Maybe.andThen
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        saveMsg =
+                            case task of
+                                TaskHIVTest ->
+                                    SaveHIVResult personId measurements.hivTest nextTask |> Just
+
+                                TaskSyphilisTest ->
+                                    SaveSyphilisResult personId measurements.syphilisTest nextTask |> Just
+
+                                -- Others do not have results follow ups section,
+                                -- or, do not participate at Prenatal.
+                                _ ->
+                                    Nothing
+                    in
+                    Maybe.map
+                        (\msg ->
+                            viewSaveAction language msg (tasksCompleted /= totalTasks)
+                        )
+                        saveMsg
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+contentAndTasksLaboratorResultsConfig : ContentAndTasksLaboratoryResultConfig Msg PrenatalEncounterId
+contentAndTasksLaboratorResultsConfig =
+    emptyContentAndTasksLaboratoryResultConfig NoOp
+        |> (\config ->
+                { config
+                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
+                    , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
+                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
+                    , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
+                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
+                    , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
+                    , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
+                    , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
+                    , setHepatitisBTestExecutionNoteMsg = SetHepatitisBTestExecutionNote
+                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
+                    , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
+                    , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
+                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
+                    , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
+                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
+                    , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
+                }
+           )
+
+
+
+-- LAB HISTORY
+
+
+viewLabsHistory :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterId
+    -> PrenatalEncounterId
+    -> LaboratoryTest
+    -> ModelIndexedDb
+    -> LabResultsData
+    -> Html Msg
+viewLabsHistory language currentDate originatingEncounterId labEncounterId lab db data =
+    let
+        assembled =
+            generateAssembledData labEncounterId db
+    in
+    viewWebData language (viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data) identity assembled
+
+
+viewLabsHistoryHeaderAndContent :
+    Language
+    -> NominalDate
+    -> PrenatalEncounterId
+    -> PrenatalEncounterId
+    -> LaboratoryTest
+    -> ModelIndexedDb
+    -> LabResultsData
+    -> AssembledData
+    -> Html Msg
+viewLabsHistoryHeaderAndContent language currentDate originatingEncounterId labEncounterId lab db data assembled =
+    div [ class "page-activity prenatal labs-history" ] <|
+        [ viewHeader language
+            (PrenatalActivityPage originatingEncounterId Backend.PrenatalActivity.Model.Laboratory)
+            (Translate.LaboratoryTest lab)
+            assembled
+        , viewLabsHistoryContent language currentDate lab db data assembled
+        ]
+
+
+viewLabsHistoryContent : Language -> NominalDate -> LaboratoryTest -> ModelIndexedDb -> LabResultsData -> AssembledData -> Html Msg
+viewLabsHistoryContent language currentDate lab db data assembled =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate False assembled Nothing
+            ++ viewLab language currentDate lab assembled data
+
+
+viewLab : Language -> NominalDate -> LaboratoryTest -> AssembledData -> LabResultsData -> List (Html Msg)
+viewLab language currentDate lab assembled data =
+    let
+        isLabTech =
+            -- Labs history can be filled only by nurses.
+            False
+
+        measurements =
+            assembled.measurements
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            case lab of
+                TestPartnerHIV ->
+                    getMeasurementValueFunc measurements.partnerHIVTest
+                        |> partnerHIVResultFormWithDefault data.partnerHIVTestForm
+                        |> partnerHIVResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetPartnerHIVTestResult
+
+                TestHIV ->
+                    getMeasurementValueFunc measurements.hivTest
+                        |> hivResultFormWithDefault data.hivTestForm
+                        |> hivResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetHIVTestResult
+                            SetHIVTestFormBoolInput
+
+                TestSyphilis ->
+                    getMeasurementValueFunc measurements.syphilisTest
+                        |> syphilisResultFormWithDefault data.syphilisTestForm
+                        |> syphilisResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetSyphilisTestResult
+                            SetIllnessSymptom
+
+                TestHepatitisB ->
+                    getMeasurementValueFunc measurements.hepatitisBTest
+                        |> hepatitisBResultFormWithDefault data.hepatitisBTestForm
+                        |> hepatitisBResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetHepatitisBTestResult
+
+                TestMalaria ->
+                    getMeasurementValueFunc measurements.malariaTest
+                        |> malariaResultFormWithDefault data.malariaTestForm
+                        |> malariaResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetMalariaTestResult
+                            SetBloodSmearResult
+
+                TestBloodGpRs ->
+                    getMeasurementValueFunc measurements.bloodGpRsTest
+                        |> bloodGpRsResultFormWithDefault data.bloodGpRsTestForm
+                        |> bloodGpRsResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetBloodGroup
+                            SetRhesus
+
+                TestUrineDipstick ->
+                    getMeasurementValueFunc measurements.urineDipstickTest
+                        |> urineDipstickResultFormWithDefault data.urineDipstickTestForm
+                        |> urineDipstickResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetProtein
+                            SetPH
+                            SetGlucose
+                            SetLeukocytes
+                            SetNitrite
+                            SetUrobilinogen
+                            SetHaemoglobin
+                            SetKetone
+                            SetBilirubin
+
+                TestHemoglobin ->
+                    getMeasurementValueFunc measurements.hemoglobinTest
+                        |> hemoglobinResultFormWithDefault data.hemoglobinTestForm
+                        |> hemoglobinResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetHemoglobin
+
+                TestRandomBloodSugar ->
+                    getMeasurementValueFunc measurements.randomBloodSugarTest
+                        |> randomBloodSugarResultFormWithDefault data.randomBloodSugarTestForm
+                        |> randomBloodSugarResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetRandomBloodSugar
+
+                TestHIVPCR ->
+                    getMeasurementValueFunc measurements.hivPCRTest
+                        |> hivPCRResultFormWithDefault data.hivPCRTestForm
+                        |> hivPCRResultFormAndTasks language
+                            currentDate
+                            isLabTech
+                            contentAndTasksLaboratorResultsConfig
+                            SetHIVViralLoad
+                            SetHIVViralLoadUndetectable
+
+                TestVitalsRecheck ->
+                    ( emptyNode, 0, 0 )
+
+                -- Others do no participate at Prenatal.
+                _ ->
+                    ( emptyNode, 0, 0 )
+
+        actions =
+            let
+                personId =
+                    assembled.participant.person
+
+                saveMsg =
+                    case lab of
+                        TestPartnerHIV ->
+                            SavePartnerHIVResult personId measurements.partnerHIVTest Nothing
+
+                        TestHIV ->
+                            SaveHIVResult personId measurements.hivTest Nothing
+
+                        TestSyphilis ->
+                            SaveSyphilisResult personId measurements.syphilisTest Nothing
+
+                        TestHepatitisB ->
+                            SaveHepatitisBResult personId measurements.hepatitisBTest Nothing
+
+                        TestMalaria ->
+                            SaveMalariaResult personId measurements.malariaTest Nothing
+
+                        TestBloodGpRs ->
+                            SaveBloodGpRsResult personId measurements.bloodGpRsTest Nothing
+
+                        TestUrineDipstick ->
+                            SaveUrineDipstickResult personId measurements.urineDipstickTest Nothing
+
+                        TestHemoglobin ->
+                            SaveHemoglobinResult personId measurements.hemoglobinTest Nothing
+
+                        TestRandomBloodSugar ->
+                            SaveRandomBloodSugarResult personId measurements.randomBloodSugarTest Nothing
+
+                        TestHIVPCR ->
+                            SaveHIVPCRResult personId measurements.hivPCRTest Nothing
+
+                        TestVitalsRecheck ->
+                            NoOp
+
+                        -- Others do no participate at Prenatal.
+                        _ ->
+                            NoOp
+            in
+            viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ] <|
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]

@@ -245,6 +245,7 @@ function hedley_user_field_default_field_bases() {
         'admin' => 'Administrator',
         'nurse' => 'Nurse',
         'chw' => 'Community Health Worker',
+        'lab-tech' => 'Lab Technician',
       ),
       'allowed_values_function' => '',
     ),

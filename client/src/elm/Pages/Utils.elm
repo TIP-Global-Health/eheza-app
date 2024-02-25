@@ -1340,3 +1340,17 @@ setMuacValueForSite site s =
 
         _ ->
             String.toFloat s
+
+
+resolveActiveTask : List t -> Maybe t -> Maybe t
+resolveActiveTask options selected =
+    Maybe.map
+        (\task ->
+            if List.member task options then
+                Just task
+
+            else
+                List.head options
+        )
+        selected
+        |> Maybe.withDefault (List.head options)

@@ -459,6 +459,7 @@ function hedley_schedule_field_default_field_bases() {
       'allowed_values' => array(
         'nurse' => 'Nurse',
         'chw' => 'CHW',
+        'unknown' => 'Unknown',
       ),
       'allowed_values_function' => '',
     ),

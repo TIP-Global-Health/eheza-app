@@ -22,9 +22,13 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model
     exposing
-        ( ChildMeasurements
+        ( BloodSmearResult(..)
+        , ChildMeasurements
         , HistoricalMeasurements
+        , LaboratoryTest(..)
+        , LabsResultsReviewState(..)
         , Measurements
+        , TestPrerequisite(..)
         , WellChildSymptom(..)
         )
 import Backend.Measurement.Utils
@@ -83,8 +87,9 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model
+import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Types
 import Pages.AcuteIllness.Activity.Utils
@@ -120,6 +125,7 @@ import Pages.Prenatal.Encounter.Model
 import Pages.Prenatal.Encounter.Utils
 import Pages.Prenatal.RecurrentActivity.Model
 import Pages.Prenatal.RecurrentActivity.Utils
+import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
@@ -146,12 +152,13 @@ updateIndexedDb :
     -> Maybe HealthCenterId
     -> Maybe VillageId
     -> Bool
+    -> Bool
     -> Page
     -> SyncManager.Model.Model
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime zscores site features nurseId healthCenterId villageId isChw activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime zscores site features nurseId healthCenterId villageId isChw isLabTech activePage syncManager msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -320,6 +327,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         healthCenterId
                         villageId
                         isChw
+                        isLabTech
                         activePage
                         syncManager
                     )
@@ -1651,7 +1659,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         in
                         ( newModel, extraMsgs )
 
-                processRevisionAndUpdatePrenatalLabsResults participantId encounterId test executionNote resultsAdded =
+                processRevisionAndUpdatePrenatalLabsResults participantId encounterId test executionNote resultsAdded testPrerequisites =
                     if downloadingContent then
                         ( model, [] )
 
@@ -1663,11 +1671,29 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                             extraMsgs =
                                 Maybe.map
                                     (\encounterId_ ->
-                                        if resultsAdded then
-                                            generatePrenatalLabsResultsAddedMsgs currentDate newModel test encounterId_
+                                        let
+                                            labsResultsMsgs =
+                                                if
+                                                    resultsAdded
+                                                        || -- If user is lab tech, we know for sure
+                                                           -- the update is performed from recurrent phase of encounter,
+                                                           -- even if actual test results are not set (which can happen
+                                                           -- if lab tech indicates that test was not run).
+                                                           isLabTech
+                                                then
+                                                    generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
 
-                                        else
-                                            generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+                                                else
+                                                    generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+
+                                            possibleEndEncounterMsgs =
+                                                if atPrenatalRecurrentPhase activePage then
+                                                    generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+
+                                                else
+                                                    generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
+                                        in
+                                        labsResultsMsgs ++ possibleEndEncounterMsgs
                                     )
                                     encounterId
                                     |> Maybe.withDefault []
@@ -1691,42 +1717,54 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                 let
                                                     resultsAdded =
                                                         isJust value.diaRepeated
+
+                                                    labsResultsMsgs =
+                                                        if resultsAdded then
+                                                            generatePrenatalLabsResultsAddedMsgs
+                                                                currentDate
+                                                                isLabTech
+                                                                newModel
+                                                                Backend.Measurement.Model.TestVitalsRecheck
+                                                                Nothing
+                                                                encounterId_
+
+                                                        else
+                                                            let
+                                                                executionNote =
+                                                                    if Pages.Prenatal.Activity.Utils.highBloodPressureCondition dia sys then
+                                                                        -- When we have diagnosed Hypertension, we'll try to unschedule
+                                                                        -- vitals recheck (as we do not know if it was scheduled before).
+                                                                        -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                        Backend.Measurement.Model.TestNoteNotIndicated
+
+                                                                    else
+                                                                    -- When we suspect hypertension, we'll try to schedule vitals recheck.
+                                                                    -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
+                                                                    if
+                                                                        Pages.Prenatal.Utils.marginalBloodPressureCondition dia sys
+                                                                    then
+                                                                        Backend.Measurement.Model.TestNoteRunToday
+
+                                                                    else
+                                                                        -- Otherwise, we try to unschedule vitals recheck.
+                                                                        -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                        Backend.Measurement.Model.TestNoteNotIndicated
+                                                            in
+                                                            generatePrenatalLabsTestAddedMsgs
+                                                                currentDate
+                                                                newModel
+                                                                Backend.Measurement.Model.TestVitalsRecheck
+                                                                executionNote
+                                                                encounterId_
+
+                                                    possibleEndEncounterMsgs =
+                                                        if atPrenatalRecurrentPhase activePage then
+                                                            generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+
+                                                        else
+                                                            generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
                                                 in
-                                                if resultsAdded then
-                                                    generatePrenatalLabsResultsAddedMsgs
-                                                        currentDate
-                                                        newModel
-                                                        Backend.Measurement.Model.TestVitalsRecheck
-                                                        encounterId_
-
-                                                else
-                                                    let
-                                                        executionNote =
-                                                            if Pages.Prenatal.Activity.Utils.highBloodPressureCondition dia sys then
-                                                                -- When we have diagnosed Hypertension, we'll try to unschedule
-                                                                -- vitals recheck (as we do not know if it was scheduled before).
-                                                                -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
-                                                                Backend.Measurement.Model.TestNoteNotIndicated
-
-                                                            else
-                                                            -- When we suspect hypertension, we'll try to schedule vitals recheck.
-                                                            -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
-                                                            if
-                                                                Pages.Prenatal.Utils.marginalBloodPressureCondition dia sys
-                                                            then
-                                                                Backend.Measurement.Model.TestNoteRunToday
-
-                                                            else
-                                                                -- Otherwise, we try to unschedule vitals recheck.
-                                                                -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
-                                                                Backend.Measurement.Model.TestNoteNotIndicated
-                                                    in
-                                                    generatePrenatalLabsTestAddedMsgs
-                                                        currentDate
-                                                        newModel
-                                                        Backend.Measurement.Model.TestVitalsRecheck
-                                                        executionNote
-                                                        encounterId_
+                                                labsResultsMsgs ++ possibleEndEncounterMsgs
                                             )
                                             encounterId
                                             |> Maybe.withDefault []
@@ -1736,6 +1774,30 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                     |> Maybe.withDefault []
                         in
                         ( newModel, extraMsgs )
+
+                processRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+                        in
+                        if not <| atPrenatalRecurrentPhase activePage then
+                            ( newModel, [] )
+
+                        else
+                            let
+                                extraMsgs =
+                                    Maybe.map
+                                        (\encounterId_ ->
+                                            generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+                                        )
+                                        encounterId
+                                        |> Maybe.withDefault []
+                            in
+                            ( newModel, extraMsgs )
 
                 processRevisionAndUpdateNCDLabsResults participantId encounterId test executionNote resultsAdded =
                     if downloadingContent then
@@ -2374,7 +2436,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processVitalsRevisionAndUpdateLabsResults
                                 data.participantId
@@ -2389,21 +2451,89 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
-                [ PrenatalHIVTestRevision _ data ] ->
+                [ MalariaPreventionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
                     , extraMsgs
                     )
 
+                [ PrenatalHealthEducationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalSendToHCRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalMedicationDistributionRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalHIVTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHIV
+                                data.value.executionNote
+                                (isJust data.value.testResult)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalPartnerHIVTestRevision _ data ] ->
+                    let
+                        ( newModel, extraMsg ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestPartnerHIV
+                                data.value.executionNote
+                                (isJust data.value.testResult)
+                                data.value.testPrerequisites
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsg
+                    )
+
                 [ PrenatalHIVPCRTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2411,6 +2541,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Backend.Measurement.Model.TestHIVPCR
                                 data.value.executionNote
                                 (isJust data.value.hivViralLoadStatus)
+                                data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2424,7 +2555,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2432,11 +2563,14 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Backend.Measurement.Model.TestSyphilis
                                 data.value.executionNote
                                 (isJust data.value.testResult)
+                                data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
                                 (\originatingEncounterId ->
-                                    ( originatingEncounterId, Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilis )
+                                    ( originatingEncounterId
+                                    , Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase
+                                    )
                                 )
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
@@ -2450,7 +2584,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2458,10 +2592,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Backend.Measurement.Model.TestHepatitisB
                                 data.value.executionNote
                                 (isJust data.value.testResult)
+                                data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisB ] ))
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisBRecurrentPhase ] ))
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
@@ -2472,19 +2607,33 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                 [ PrenatalMalariaTestRevision _ data ] ->
                     let
-                        ( newModel, extraMsgs ) =
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestMalaria
+                                data.value.executionNote
+                                (isJust data.value.testResult
+                                    || bloodSmearResultNotSet data.value.bloodSmearResult
+                                )
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
                     in
                     ( newModel
                     , Cmd.none
-                    , extraMsgs
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
                     )
 
                 [ PrenatalUrineDipstickTestRevision _ data ] ->
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2492,6 +2641,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Backend.Measurement.Model.TestUrineDipstick
                                 data.value.executionNote
                                 (isJust data.value.protein)
+                                data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2505,7 +2655,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to the model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2513,10 +2663,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Backend.Measurement.Model.TestBloodGpRs
                                 data.value.executionNote
                                 (isJust data.value.bloodGroup)
+                                data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegative ] ))
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegativeRecurrentPhase ] ))
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
@@ -2529,7 +2680,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2537,6 +2688,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Backend.Measurement.Model.TestHemoglobin
                                 data.value.executionNote
                                 (isJust data.value.hemoglobinCount)
+                                data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -2550,7 +2702,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessPrenatal`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
@@ -2558,10 +2710,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 Backend.Measurement.Model.TestRandomBloodSugar
                                 data.value.executionNote
                                 (isJust data.value.sugarCount)
+                                data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
                             Maybe.map
-                                (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnoses ))
+                                (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnosesRecurrentPhase ))
                                 data.value.originatingEncounter
                                 |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
                     in
@@ -2820,7 +2973,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
@@ -2841,7 +2994,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
@@ -2862,7 +3015,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     let
                         -- We do not catch changes done to model, because
                         -- it's handled by `processRevisionAndAssessNCD`
-                        -- activation that comes below.
+                        -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
                             processRevisionAndUpdateNCDLabsResults
                                 data.participantId
@@ -3519,6 +3672,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         healthCenterId
                         villageId
                         isChw
+                        isLabTech
                         activePage
                         syncManager
                     )
@@ -3726,6 +3880,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         healthCenterId
                         villageId
                         isChw
+                        isLabTech
                         activePage
                         syncManager
                     )
@@ -5908,7 +6063,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                     List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
                                         |> EverySet.fromList
 
-                                diabetesDiagnoses =
+                                diabetesDiagnosed =
                                     EverySet.toList reportedDiagnoses
                                         |> List.any
                                             (\diagnosis ->
@@ -5921,7 +6076,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                             else
                                 let
                                     rhNegativeDiagnosis =
-                                        EverySet.member DiagnosisRhesusNegative reportedDiagnoses
+                                        EverySet.member DiagnosisRhesusNegativeRecurrentPhase reportedDiagnoses
                                 in
                                 if
                                     (-- Reporting back about previous diagnosis results in hospital referral
@@ -5930,7 +6085,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                      -- On next occasions, no next steps are required.
                                      -- Therefore, if we know that Diabetes was already diagnosed, we will not
                                      -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
-                                     diabetesDiagnoses
+                                     diabetesDiagnosed
                                         && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
                                     )
                                         || (-- Reporting back about previous diagnosis results in hospital referral
@@ -5942,7 +6097,11 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                             -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
                                             -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
                                             rhNegativeDiagnosis
-                                                && Pages.Prenatal.Utils.diagnosedPreviously DiagnosisRhesusNegative assembledAfter
+                                                && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf
+                                                    [ DiagnosisRhesusNegativeInitialPhase
+                                                    , DiagnosisRhesusNegativeRecurrentPhase
+                                                    ]
+                                                    assembledAfter
                                            )
                                 then
                                     []
@@ -6091,34 +6250,32 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
             (\assembled ->
                 let
                     testExecuted =
-                        List.member executionNote [ Backend.Measurement.Model.TestNoteRunToday, Backend.Measurement.Model.TestNoteRunPreviously ]
+                        testPerformedByExecutionNote executionNote
                 in
                 Maybe.map
                     (\( resultsId, measurement ) ->
                         let
                             updatedValue =
-                                measurement.value
-                                    |> (\value ->
-                                            { value
-                                                | performedTests =
-                                                    if testExecuted then
-                                                        EverySet.insert test value.performedTests
+                                (\value ->
+                                    { value
+                                        | performedTests =
+                                            if testExecuted then
+                                                EverySet.insert test value.performedTests
 
-                                                    else
-                                                        EverySet.remove test value.performedTests
-                                                , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                            }
-                                       )
+                                            else
+                                                EverySet.remove test value.performedTests
+
+                                        -- When we have universal form, it's possible to change if test is performed
+                                        -- at lab, or at point of care.
+                                        -- Therefore, we need to make sure that test does not appear as completed,
+                                        -- which can happen, when nurse switches from point of care to lab.
+                                        , completedTests = EverySet.remove test value.completedTests
+                                        , resolutionDate = Date.add Days labExpirationPeriod currentDate
+                                    }
+                                )
+                                    measurement.value
                         in
-                        if
-                            (testExecuted && (not <| EverySet.member test measurement.value.performedTests))
-                                || (not testExecuted && EverySet.member test measurement.value.performedTests)
-                        then
-                            -- Update value only when really needed, as it may be set up properly already.
-                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
-
-                        else
-                            []
+                        [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )
                     assembled.measurements.labsResults
                     |> Maybe.withDefault
@@ -6130,6 +6287,8 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
                                         EverySet.empty
                                         (Date.add Days labExpirationPeriod currentDate)
                                         False
+                                        Nothing
+                                        Nothing
                             in
                             [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
 
@@ -6142,77 +6301,171 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
 
 generatePrenatalLabsResultsAddedMsgs :
     NominalDate
+    -> Bool
     -> ModelIndexedDb
     -> Backend.Measurement.Model.LaboratoryTest
+    -> Maybe (EverySet TestPrerequisite)
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalLabsResultsAddedMsgs currentDate after test id =
+generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrerequisites id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.andThen
             (\assembled ->
                 Maybe.map
                     (\( resultsId, results ) ->
-                        if EverySet.member test results.value.completedTests then
+                        if
+                            EverySet.member test results.value.completedTests
+                                && EverySet.member test results.value.performedTests
+                        then
                             -- Do not update value if we have it set up properly already.
                             []
 
                         else
                             let
                                 ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.prenatalLabsResultsTestData currentDate results
+                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
 
-                                ( updatedValue, navigateToProgressReportMsg ) =
-                                    results.value
-                                        |> (\value ->
-                                                let
-                                                    updatedCompletedTests =
-                                                        test :: completedTests
+                                updatedValue =
+                                    (\value ->
+                                        let
+                                            -- Since lab results can be entered right away (at poit of care),
+                                            -- or at latter stage (after test was ordered at lab), we
+                                            -- update both performed and completed tests.
+                                            -- Since data structure is EverySet, it will not create duplicacies.
+                                            updatedPerformedTests =
+                                                EverySet.insert test performedTests
 
-                                                    allActivitiesCompleted =
-                                                        -- All performed tests are completed, and Next Steps are either
-                                                        -- completed, or not required,
-                                                        (List.length updatedCompletedTests == List.length performedTests)
-                                                            && Pages.Prenatal.RecurrentActivity.Utils.activityCompleted
-                                                                currentDate
-                                                                assembled
-                                                                Backend.PrenatalActivity.Model.RecurrentNextSteps
+                                            updatedCompletedTests =
+                                                EverySet.insert test completedTests
 
-                                                    resolutionDate =
-                                                        -- When all performed tests are completed, and Next Steps are either
-                                                        -- completed, or not required, setting today as resolution date.
-                                                        if allActivitiesCompleted then
-                                                            currentDate
+                                            allLabsCompleted =
+                                                EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
 
-                                                        else
-                                                            value.resolutionDate
-                                                in
-                                                ( { value
-                                                    | completedTests = EverySet.fromList updatedCompletedTests
-                                                    , resolutionDate = resolutionDate
-                                                  }
-                                                , if allActivitiesCompleted then
-                                                    -- When all activities are completed, we show progress report.
-                                                    -- Here we handle added Lab results, so, similar logic is applied
-                                                    -- at Pages.Prenatal.RecurrentActivity.Update, for Next Steps activities.
-                                                    [ App.Model.SetActivePage <|
-                                                        UserPage <|
-                                                            ClinicalProgressReportPage
-                                                                (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
-                                                                id
-                                                    ]
+                                            updatedTestsWithFollowUp =
+                                                -- Mark tests which results were entered by Lab Tech, and got
+                                                -- follow up questions that will have to be completed by nurse.
+                                                if isLabTech && List.member test [ TestHIV, TestSyphilis ] then
+                                                    Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
+                                                        |> Maybe.withDefault (Just <| EverySet.singleton test)
 
-                                                  else
-                                                    []
-                                                )
-                                           )
+                                                else
+                                                    value.testsWithFollowUp
+
+                                            reviewState =
+                                                -- For lab technician, request review if all labs were
+                                                -- completed, and review state was not set previously.
+                                                if isLabTech && isNothing value.reviewState && allLabsCompleted then
+                                                    Just LabsResultsReviewRequested
+
+                                                else
+                                                    value.reviewState
+                                        in
+                                        { value
+                                            | performedTests = updatedPerformedTests
+                                            , completedTests = updatedCompletedTests
+                                            , testsWithFollowUp = updatedTestsWithFollowUp
+                                            , reviewState = reviewState
+                                        }
+                                    )
+                                        results.value
                             in
-                            savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue
-                                :: navigateToProgressReportMsg
+                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )
                     assembled.measurements.labsResults
             )
         |> Maybe.withDefault []
+
+
+generatePrenatalInitialPhaseCompletedMsgs :
+    NominalDate
+    -> Site
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
+    Pages.Prenatal.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    ( _, pendingActivities ) =
+                        Pages.Prenatal.Encounter.Utils.getAllActivities assembled
+                            |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
+                            |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site assembled)
+                in
+                if List.isEmpty pendingActivities then
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            ClinicalProgressReportPage
+                                (Backend.PrenatalEncounter.Model.InitiatorEncounterPage id)
+                                id
+                    ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []
+
+
+generatePrenatalRecurrentPhaseCompletedMsgs :
+    NominalDate
+    -> Bool
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
+    if isLabTech then
+        []
+
+    else
+        Pages.Prenatal.Encounter.Utils.generateAssembledData id after
+            |> RemoteData.toMaybe
+            |> Maybe.andThen
+                (\assembled ->
+                    let
+                        ( _, pendingActivities ) =
+                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities False
+                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
+                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
+                    in
+                    if List.isEmpty pendingActivities then
+                        Maybe.map
+                            (\( resultsId, results ) ->
+                                let
+                                    value =
+                                        results.value
+                                in
+                                [ savePrenatalLabsResultsMsg id
+                                    assembled.participant.person
+                                    (Just resultsId)
+                                    { value | resolutionDate = currentDate }
+                                , App.Model.SetActivePage <|
+                                    UserPage <|
+                                        ClinicalProgressReportPage
+                                            (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
+                                            id
+                                ]
+                            )
+                            assembled.measurements.labsResults
+
+                    else
+                        Nothing
+                )
+            |> Maybe.withDefault []
+
+
+atPrenatalRecurrentPhase : Page -> Bool
+atPrenatalRecurrentPhase activePage =
+    case activePage of
+        UserPage (PrenatalRecurrentEncounterPage _) ->
+            True
+
+        UserPage (PrenatalRecurrentActivityPage _ _) ->
+            True
+
+        _ ->
+            False
 
 
 savePrenatalLabsResultsMsg :
@@ -6273,7 +6526,7 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
             (\assembled ->
                 let
                     testExecuted =
-                        List.member executionNote [ Backend.Measurement.Model.TestNoteRunToday, Backend.Measurement.Model.TestNoteRunPreviously ]
+                        testPerformedByExecutionNote executionNote
                 in
                 Maybe.map
                     (\( resultsId, measurement ) ->
@@ -6288,19 +6541,17 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
 
                                                     else
                                                         EverySet.remove test value.performedTests
+
+                                                -- When we have universal form, it's possible to change if test is performed
+                                                -- at lab, or at point of care.
+                                                -- Therefore, we need to make sure that test does not appear as completed,
+                                                -- which can happen, when nurse switches from point of care to lab.
+                                                , completedTests = EverySet.remove test value.completedTests
                                                 , resolutionDate = Date.add Days labExpirationPeriod currentDate
                                             }
                                        )
                         in
-                        if
-                            (testExecuted && (not <| EverySet.member test measurement.value.performedTests))
-                                || (not testExecuted && EverySet.member test measurement.value.performedTests)
-                        then
-                            -- Update value only when really needed, as it may be set up properly already.
-                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
-
-                        else
-                            []
+                        [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )
                     assembled.measurements.labsResults
                     |> Maybe.withDefault
@@ -6312,6 +6563,8 @@ generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
                                         EverySet.empty
                                         (Date.add Days labExpirationPeriod currentDate)
                                         False
+                                        Nothing
+                                        Nothing
                             in
                             [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
 
@@ -6335,42 +6588,53 @@ generateNCDLabsResultsAddedMsgs currentDate after test id =
             (\assembled ->
                 Maybe.map
                     (\( resultsId, results ) ->
-                        if EverySet.member test results.value.completedTests then
+                        if
+                            EverySet.member test results.value.completedTests
+                                && EverySet.member test results.value.performedTests
+                        then
                             -- Do not update value if we have it set up properly already.
                             []
 
                         else
                             let
                                 ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.ncdLabsResultsTestData currentDate results
+                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
 
                                 updatedValue =
-                                    results.value
-                                        |> (\value ->
-                                                let
-                                                    updatedCompletedTests =
-                                                        test :: completedTests
+                                    (\value ->
+                                        let
+                                            -- Since lab results can be entered right away (at poit of care),
+                                            -- or at latter stage (after test was ordered at lab), we
+                                            -- update both performed and completed tests.
+                                            -- Since data structure is EverySet, it will not create duplicacies.
+                                            updatedPerformedTests =
+                                                EverySet.insert test performedTests
 
-                                                    resolutionDate =
-                                                        -- When all performed tests are completed, and Next Steps are either
-                                                        -- completed, or not required, setting today as resolution date.
-                                                        if
-                                                            (List.length updatedCompletedTests == List.length performedTests)
-                                                                && Pages.NCD.RecurrentActivity.Utils.activityCompleted
-                                                                    currentDate
-                                                                    assembled
-                                                                    Backend.NCDActivity.Model.RecurrentNextSteps
-                                                        then
+                                            updatedCompletedTests =
+                                                EverySet.insert test completedTests
+
+                                            resolutionDate =
+                                                -- When all performed tests are completed, and Next Steps are either
+                                                -- completed, or not required, setting today as resolution date.
+                                                if
+                                                    (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
+                                                        && Pages.NCD.RecurrentActivity.Utils.activityCompleted
                                                             currentDate
+                                                            assembled
+                                                            Backend.NCDActivity.Model.RecurrentNextSteps
+                                                then
+                                                    currentDate
 
-                                                        else
-                                                            value.resolutionDate
-                                                in
-                                                { value
-                                                    | completedTests = EverySet.fromList updatedCompletedTests
-                                                    , resolutionDate = resolutionDate
-                                                }
-                                           )
+                                                else
+                                                    value.resolutionDate
+                                        in
+                                        { value
+                                            | performedTests = updatedPerformedTests
+                                            , completedTests = updatedCompletedTests
+                                            , resolutionDate = resolutionDate
+                                        }
+                                    )
+                                        results.value
                             in
                             [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )

@@ -15,8 +15,8 @@ import Measurement.Model
         , OutsideCareForm
         , OutsideCareStep(..)
         , PregnancyTestForm
-        , RandomBloodSugarForm
-        , UrineDipstickForm
+        , RandomBloodSugarTestForm
+        , UrineDipstickTestForm
         , VitalsForm
         , emptyCorePhysicalExamForm
         , emptyFamilyPlanningForm
@@ -25,8 +25,8 @@ import Measurement.Model
         , emptyNonRDTForm
         , emptyOutsideCareForm
         , emptyPregnancyTestForm
-        , emptyRandomBloodSugarForm
-        , emptyUrineDipstickForm
+        , emptyRandomBloodSugarTestForm
+        , emptyUrineDipstickTestForm
         , emptyVitalsForm
         )
 import Pages.NCD.Activity.Types exposing (..)
@@ -97,13 +97,13 @@ type Msg
     | SetHIVTestResult String
     | SetHIVTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveHIVTest PersonId (Maybe ( NCDHIVTestId, NCDHIVTest )) (Maybe LaboratoryTask)
-    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickForm Msg -> UrineDipstickForm Msg) Bool
+    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickTestForm Msg -> UrineDipstickTestForm Msg) Bool
     | SetUrineDipstickTestExecutionNote TestExecutionNote
     | SetUrineDipstickTestVariant TestVariant
     | SetUrineDipstickTestExecutionDate NominalDate
     | SetUrineDipstickTestDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveUrineDipstickTest PersonId (Maybe ( NCDUrineDipstickTestId, NCDUrineDipstickTest )) (Maybe LaboratoryTask)
-    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarForm Msg -> RandomBloodSugarForm Msg) Bool
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarTestForm Msg -> RandomBloodSugarTestForm Msg) Bool
     | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugarTestExecutionDate NominalDate
     | SetRandomBloodSugarTestDateSelectorState (Maybe (DateSelectorConfig Msg))
@@ -344,8 +344,8 @@ emptySocialHistoryForm =
 
 type alias LaboratoryData =
     { hivTestForm : HIVTestForm Msg
-    , urineDipstickTestForm : UrineDipstickForm Msg
-    , randomBloodSugarTestForm : RandomBloodSugarForm Msg
+    , urineDipstickTestForm : UrineDipstickTestForm Msg
+    , randomBloodSugarTestForm : RandomBloodSugarTestForm Msg
     , pregnancyTestForm : PregnancyTestForm Msg
     , creatinineTestForm : NonRDTForm Msg
     , liverFunctionTestForm : NonRDTForm Msg
@@ -358,8 +358,8 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { hivTestForm = emptyHIVTestForm
-    , urineDipstickTestForm = emptyUrineDipstickForm
-    , randomBloodSugarTestForm = emptyRandomBloodSugarForm
+    , urineDipstickTestForm = emptyUrineDipstickTestForm
+    , randomBloodSugarTestForm = emptyRandomBloodSugarTestForm
     , pregnancyTestForm = emptyPregnancyTestForm
     , creatinineTestForm = emptyNonRDTForm
     , liverFunctionTestForm = emptyNonRDTForm

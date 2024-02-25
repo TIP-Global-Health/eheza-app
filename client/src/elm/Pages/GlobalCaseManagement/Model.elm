@@ -164,6 +164,8 @@ type alias PrenatalLabsEntryData =
 type LabsEntryState
     = LabsEntryPending
     | LabsEntryClosingSoon
+    | LabsEntryReadyForReview
+    | LabsEntryReviewed
 
 
 type alias NCDLabsEntryData =
