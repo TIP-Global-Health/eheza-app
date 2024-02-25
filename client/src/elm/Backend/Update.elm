@@ -1776,23 +1776,28 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         ( newModel, extraMsgs )
 
                 processRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
-                    if downloadingContent || (not <| atPrenatalRecurrentPhase activePage) then
+                    if downloadingContent then
                         ( model, [] )
 
                     else
                         let
                             ( newModel, _ ) =
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
-
-                            extraMsgs =
-                                Maybe.map
-                                    (\encounterId_ ->
-                                        generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
-                                    )
-                                    encounterId
-                                    |> Maybe.withDefault []
                         in
-                        ( newModel, extraMsgs )
+                        if not <| atPrenatalRecurrentPhase activePage then
+                            ( newModel, [] )
+
+                        else
+                            let
+                                extraMsgs =
+                                    Maybe.map
+                                        (\encounterId_ ->
+                                            generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+                                        )
+                                        encounterId
+                                        |> Maybe.withDefault []
+                            in
+                            ( newModel, extraMsgs )
 
                 processRevisionAndUpdateNCDLabsResults participantId encounterId test executionNote resultsAdded =
                     if downloadingContent then

@@ -293,6 +293,12 @@ expectLaboratoryResultFollowUpsTask currentDate assembled task =
 
         TaskSyphilisTest ->
             wasFollowUpScheduled TestSyphilis
+                && -- Lab tech entered result showing positive Syphilis,
+                   -- which requires Syphilis symptoms question.
+                   (getMeasurementValueFunc assembled.measurements.syphilisTest
+                        |> Maybe.map (.testResult >> (==) (Just TestPositive))
+                        |> Maybe.withDefault False
+                   )
 
         -- Others are not in use for Prenatal.
         _ ->

@@ -889,18 +889,39 @@ viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
             Dict.filter
                 (\_ item ->
                     let
-                        roleBasedCondition =
-                            -- If review was requested (by lab technician), or completed
-                            -- (by nurse) we do not display entry for lab technician.
+                        resolutionDateCondition =
+                            -- We know that item is not resolved, if resolution
+                            -- date is a future date.
+                            Date.compare currentDate item.value.resolutionDate == LT
+
+                        roleDependantCondition =
+                            let
+                                diff =
+                                    EverySet.diff item.value.performedTests item.value.completedTests
+                            in
                             if isLabTech then
+                                -- If review was requested (by lab technician), or completed
+                                -- (by nurse) we do not display entry for lab technician.
                                 isNothing item.value.reviewState
+                                    && -- If all tests were completed, or only one that was not is
+                                       -- vitals recheck, we do not display entry for lab technician.
+                                       -- For nurse,all tests were completed condition des not apply,
+                                       -- since there maybe follow up quesitons to fill.
+                                       (case EverySet.toList diff of
+                                            [] ->
+                                                False
+
+                                            [ TestVitalsRecheck ] ->
+                                                False
+
+                                            _ ->
+                                                True
+                                       )
 
                             else
                                 True
                     in
-                    -- We know that item is not resolved, if resolution
-                    -- date is a future date.
-                    Date.compare currentDate item.value.resolutionDate == LT && roleBasedCondition
+                    resolutionDateCondition && roleDependantCondition
                 )
                 itemsDict
 
