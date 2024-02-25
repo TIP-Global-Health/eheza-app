@@ -32,6 +32,11 @@ nurseFilters =
     [ FilterContactsTrace, FilterPrenatalLabs, FilterNCDLabs ]
 
 
+labTechFilters : List CaseManagementFilter
+labTechFilters =
+    [ FilterPrenatalLabs ]
+
+
 generateNutritionFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId NutritionFollowUpItem
 generateNutritionFollowUps limitDate followUps =
     let
@@ -366,24 +371,23 @@ compareAcuteIllnessFollowUpItems item1 item2 =
         byDate
 
 
-prenatalLabsResultsTestData : NominalDate -> PrenatalLabsResults -> ( List LaboratoryTest, List LaboratoryTest )
-prenatalLabsResultsTestData currentDate results =
-    labsResultsTestData currentDate results.dateMeasured results.value
-
-
-ncdLabsResultsTestData : NominalDate -> NCDLabsResults -> ( List LaboratoryTest, List LaboratoryTest )
-ncdLabsResultsTestData currentDate results =
-    labsResultsTestData currentDate results.dateMeasured results.value
-
-
-labsResultsTestData : NominalDate -> NominalDate -> LabsResultsValue -> ( List LaboratoryTest, List LaboratoryTest )
-labsResultsTestData currentDate dateMeasured value =
-    if Date.compare currentDate dateMeasured == EQ then
-        ( EverySet.toList value.performedTests, EverySet.toList value.completedTests )
+labsResultsTestData :
+    NominalDate
+    ->
+        { r
+            | dateMeasured : NominalDate
+            , value : { v | performedTests : EverySet LaboratoryTest, completedTests : EverySet LaboratoryTest }
+        }
+    -> ( EverySet LaboratoryTest, EverySet LaboratoryTest )
+labsResultsTestData currentDate results =
+    if Date.compare currentDate results.dateMeasured == EQ then
+        ( results.value.performedTests, results.value.completedTests )
 
     else
-        ( EverySet.remove TestVitalsRecheck value.performedTests |> EverySet.toList
-        , EverySet.remove TestVitalsRecheck value.completedTests |> EverySet.toList
+        -- Vitals recheck needs to happen on same day it was scheduled.
+        -- If it's not the case, we remove the test from the list.
+        ( EverySet.remove TestVitalsRecheck results.value.performedTests
+        , EverySet.remove TestVitalsRecheck results.value.completedTests
         )
 
 

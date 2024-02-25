@@ -5,19 +5,11 @@ import Backend.ResilienceMessage.Utils exposing (..)
 import Gizra.TimePosix exposing (encodePosixAsSeconds)
 import Json.Encode exposing (..)
 import Restful.Endpoint exposing (encodeEntityUuid)
+import Utils.Json exposing (encodeNullable)
 
 
 encodeResilienceMessage : ResilienceMessage -> List ( String, Value )
 encodeResilienceMessage message =
-    let
-        read =
-            Maybe.map (\timeRead -> [ ( "time_read", encodePosixAsSeconds timeRead ) ]) message.timeRead
-                |> Maybe.withDefault []
-
-        reminder =
-            Maybe.map (\nextReminder -> [ ( "next_reminder", encodePosixAsSeconds nextReminder ) ]) message.nextReminder
-                |> Maybe.withDefault []
-    in
     [ ( "nurse", encodeEntityUuid message.nurse )
     , ( "resilience_category", encodeResilienceCategory message.category )
     , ( "resilience_order", encodeResilienceMessageOrder message.order )
@@ -26,8 +18,8 @@ encodeResilienceMessage message =
     , ( "deleted", bool False )
     , ( "type", string "resilience_message" )
     ]
-        ++ read
-        ++ reminder
+        ++ encodeNullable "time_read" message.timeRead encodePosixAsSeconds
+        ++ encodeNullable "next_reminder" message.nextReminder encodePosixAsSeconds
 
 
 encodeResilienceCategory : ResilienceCategory -> Value

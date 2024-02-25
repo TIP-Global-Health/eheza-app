@@ -63,6 +63,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , taskCompleted
         , tasksBarId
         , viewCheckBoxMultipleSelectInput
@@ -781,7 +782,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
             allNextStepsTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

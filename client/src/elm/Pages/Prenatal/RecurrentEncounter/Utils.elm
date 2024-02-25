@@ -3,6 +3,10 @@ module Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
 import Backend.PrenatalActivity.Model exposing (..)
 
 
-allActivities : List PrenatalRecurrentActivity
-allActivities =
-    [ RecurrentExamination, RecurrentMalariaPrevention, LabResults, RecurrentNextSteps ]
+getAllActivities : Bool -> List PrenatalRecurrentActivity
+getAllActivities isLabTech =
+    if isLabTech then
+        [ LabResults ]
+
+    else
+        [ RecurrentExamination, RecurrentMalariaPrevention, LabResults, LabsResultsFollowUps, RecurrentNextSteps ]

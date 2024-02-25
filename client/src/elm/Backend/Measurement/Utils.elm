@@ -1388,6 +1388,9 @@ prenatalHIVSignToString sign =
         PartnerSurpressedViralLoad ->
             "partner-surpressed-viral-load"
 
+        PrenatalHIVSignPendingInput ->
+            "pending-input"
+
         NoPrenatalHIVSign ->
             "none"
 
@@ -1406,6 +1409,9 @@ prenatalHIVSignFromString sign =
 
         "partner-surpressed-viral-load" ->
             Just PartnerSurpressedViralLoad
+
+        "pending-input" ->
+            Just PrenatalHIVSignPendingInput
 
         "none" ->
             Just NoPrenatalHIVSign
@@ -1754,6 +1760,9 @@ illnessSymptomToString symptom =
         IllnessSymptomPainlessUlcerGenitals ->
             "painless-ulcer-genitals"
 
+        IllnessSymptomPendingInput ->
+            "pending-input"
+
         NoIllnessSymptoms ->
             "none"
 
@@ -1775,6 +1784,9 @@ illnessSymptomFromString symptom =
 
         "painless-ulcer-genitals" ->
             Just IllnessSymptomPainlessUlcerGenitals
+
+        "pending-input" ->
+            Just IllnessSymptomPendingInput
 
         "none" ->
             Just NoIllnessSymptoms
@@ -3306,6 +3318,18 @@ laboratoryTestToString value =
         TestHepatitisB ->
             "hepatitis-b"
 
+        TestHIV ->
+            "hiv"
+
+        TestPartnerHIV ->
+            "partner-hiv"
+
+        TestHIVPCR ->
+            "hiv-pcr"
+
+        TestMalaria ->
+            "malaria"
+
         TestRandomBloodSugar ->
             "random-blood-sugar"
 
@@ -3317,9 +3341,6 @@ laboratoryTestToString value =
 
         TestVitalsRecheck ->
             "vitals-recheck"
-
-        TestHIVPCR ->
-            "hiv-pcr"
 
         TestCreatinine ->
             "creatinine"
@@ -3343,6 +3364,18 @@ laboratoryTestFromString value =
         "hepatitis-b" ->
             Just TestHepatitisB
 
+        "hiv" ->
+            Just TestHIV
+
+        "partner-hiv" ->
+            Just TestPartnerHIV
+
+        "hiv-pcr" ->
+            Just TestHIVPCR
+
+        "malaria" ->
+            Just TestMalaria
+
         "random-blood-sugar" ->
             Just TestRandomBloodSugar
 
@@ -3355,9 +3388,6 @@ laboratoryTestFromString value =
         "vitals-recheck" ->
             Just TestVitalsRecheck
 
-        "hiv-pcr" ->
-            Just TestHIVPCR
-
         "creatinine" ->
             Just TestCreatinine
 
@@ -3366,6 +3396,29 @@ laboratoryTestFromString value =
 
         "lipid-panel" ->
             Just TestLipidPanel
+
+        _ ->
+            Nothing
+
+
+reviewStateToString : LabsResultsReviewState -> String
+reviewStateToString state =
+    case state of
+        LabsResultsReviewRequested ->
+            "requested"
+
+        LabsResultsReviewCompleted ->
+            "completed"
+
+
+reviewStateFromString : String -> Maybe LabsResultsReviewState
+reviewStateFromString state =
+    case state of
+        "requested" ->
+            Just LabsResultsReviewRequested
+
+        "completed" ->
+            Just LabsResultsReviewCompleted
 
         _ ->
             Nothing
@@ -3831,6 +3884,9 @@ bloodSmearResultToString value =
         BloodSmearNotTaken ->
             "not-taken"
 
+        BloodSmearPendingInput ->
+            "pending-input"
+
 
 bloodSmearResultFromString : String -> Maybe BloodSmearResult
 bloodSmearResultFromString value =
@@ -3849,6 +3905,9 @@ bloodSmearResultFromString value =
 
         "not-taken" ->
             Just BloodSmearNotTaken
+
+        "pending-input" ->
+            Just BloodSmearPendingInput
 
         _ ->
             Nothing

@@ -25,6 +25,7 @@ class HedleyRestfulPrenatalSyphilisTest extends HedleyRestfulPrenatalActivityBas
    */
   protected $multiFields = [
     'field_illness_symptoms',
+    'field_test_prerequisites',
   ];
 
   /**

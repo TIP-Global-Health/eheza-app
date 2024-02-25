@@ -15,7 +15,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeIfExists)
+import Utils.Json exposing (encodeIfSet)
 
 
 encodePerson : Person -> List ( String, Value )
@@ -45,7 +45,7 @@ encodePerson person =
     , ( "deleted", bool person.deleted )
     , ( "type", string "person" )
     ]
-        ++ encodeIfExists "shard" person.shard encodeEntityUuid
+        ++ encodeIfSet "shard" person.shard encodeEntityUuid
 
 
 encodeGender : Gender -> Value

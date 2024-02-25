@@ -53,6 +53,7 @@ type PrenatalProgressReportInitiator
     | InitiatorRecurrentEncounterPage PrenatalEncounterId
     | InitiatorNewEncounter PrenatalEncounterId
     | InitiatorPatientRecord PersonId
+    | InitiatorCaseManagement PrenatalEncounterId
 
 
 type PrenatalEncounterPostCreateDestination

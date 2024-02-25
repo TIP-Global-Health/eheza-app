@@ -375,7 +375,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 12,
+      'weight' => 10,
     ),
   );
 
@@ -432,7 +432,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -489,7 +489,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 8,
     ),
   );
 
@@ -533,7 +533,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -578,7 +578,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 15,
+      'weight' => 12,
     ),
   );
 
@@ -622,7 +622,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -667,7 +667,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -704,7 +704,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 13,
+      'weight' => 11,
     ),
   );
 
@@ -748,7 +748,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -786,6 +786,44 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_blood_gprs_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_blood_gprs_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_blood_gprs_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
       'weight' => 9,
     ),
   );
@@ -2096,7 +2134,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -2153,7 +2191,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 8,
     ),
   );
 
@@ -2200,7 +2238,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 12,
+      'weight' => 10,
     ),
   );
 
@@ -2244,7 +2282,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -2288,7 +2326,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -2333,7 +2371,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -2377,7 +2415,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -2415,6 +2453,44 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_hemoglobin_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_hemoglobin_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_hemoglobin_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
       'weight' => 9,
     ),
   );
@@ -2512,7 +2588,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -2569,7 +2645,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 8,
     ),
   );
 
@@ -2613,7 +2689,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -2658,7 +2734,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 14,
+      'weight' => 11,
     ),
   );
 
@@ -2702,7 +2778,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -2747,7 +2823,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -2791,7 +2867,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -2829,6 +2905,44 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_hepatitis_b_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_hepatitis_b_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_hepatitis_b_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
       'weight' => 9,
     ),
   );
@@ -2867,7 +2981,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 13,
+      'weight' => 10,
     ),
   );
 
@@ -3065,7 +3179,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 10,
+      'weight' => 11,
     ),
   );
 
@@ -3103,7 +3217,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 9,
+      'weight' => 10,
     ),
   );
 
@@ -3322,6 +3436,44 @@ function hedley_prenatal_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-prenatal_hiv_pcr_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_hiv_pcr_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_hiv_pcr_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_hiv_pcr_test-field_uuid'.
   $field_instances['node-prenatal_hiv_pcr_test-field_uuid'] = array(
     'bundle' => 'prenatal_hiv_pcr_test',
@@ -3414,7 +3566,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -3470,7 +3622,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 8,
     ),
   );
 
@@ -3507,7 +3659,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 14,
+      'weight' => 11,
     ),
   );
 
@@ -3551,7 +3703,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -3595,7 +3747,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -3639,7 +3791,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -3683,7 +3835,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -3721,6 +3873,43 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_hiv_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_hiv_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_hiv_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
       'weight' => 9,
     ),
   );
@@ -3758,7 +3947,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 13,
+      'weight' => 10,
     ),
   );
 
@@ -3836,7 +4025,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 9,
+      'weight' => 8,
     ),
   );
 
@@ -3892,7 +4081,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 9,
     ),
   );
 
@@ -3948,7 +4137,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -3992,7 +4181,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -4030,7 +4219,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 12,
+      'weight' => 10,
     ),
   );
 
@@ -4068,7 +4257,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 8,
+      'weight' => 7,
     ),
   );
 
@@ -4112,7 +4301,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -4157,7 +4346,44 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_labs_results-field_review_state'.
+  $field_instances['node-prenatal_labs_results-field_review_state'] = array(
+    'bundle' => 'prenatal_labs_results',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_review_state',
+    'label' => 'Review State',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 12,
     ),
   );
 
@@ -4201,7 +4427,45 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_labs_results-field_tests_with_follow_up'.
+  $field_instances['node-prenatal_labs_results-field_tests_with_follow_up'] = array(
+    'bundle' => 'prenatal_labs_results',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_tests_with_follow_up',
+    'label' => 'Tests with Follow Up',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
     ),
   );
 
@@ -4279,7 +4543,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 12,
+      'weight' => 11,
     ),
   );
 
@@ -4335,7 +4599,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -4391,7 +4655,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 10,
+      'weight' => 8,
     ),
   );
 
@@ -4435,7 +4699,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -4479,7 +4743,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -4524,7 +4788,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -4568,7 +4832,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -4606,7 +4870,45 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 8,
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_malaria_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_malaria_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_malaria_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
     ),
   );
 
@@ -4643,7 +4945,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 11,
+      'weight' => 10,
     ),
   );
 
@@ -5912,7 +6214,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -5969,7 +6271,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 11,
+      'weight' => 8,
     ),
   );
 
@@ -6013,7 +6315,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -6057,7 +6359,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -6102,7 +6404,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -6184,6 +6486,44 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_partner_hiv_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_partner_hiv_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_partner_hiv_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
       'weight' => 9,
     ),
   );
@@ -6222,7 +6562,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 13,
+      'weight' => 10,
     ),
   );
 
@@ -6262,7 +6602,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -6376,7 +6716,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 9,
+      'weight' => 8,
     ),
   );
 
@@ -6466,7 +6806,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 12,
+      'weight' => 11,
     ),
   );
 
@@ -6724,7 +7064,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 8,
+      'weight' => 9,
     ),
   );
 
@@ -7944,7 +8284,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -8001,7 +8341,7 @@ function hedley_prenatal_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 10,
+      'weight' => 8,
     ),
   );
 
@@ -8039,7 +8379,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 13,
+      'weight' => 11,
     ),
   );
 
@@ -8083,7 +8423,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
+      'weight' => 3,
     ),
   );
 
@@ -8128,7 +8468,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 15,
+      'weight' => 12,
     ),
   );
 
@@ -8172,7 +8512,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -8217,7 +8557,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -8261,7 +8601,7 @@ function hedley_prenatal_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 6,
     ),
   );
 
@@ -8299,6 +8639,44 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_syphilis_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_syphilis_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_syphilis_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
       'weight' => 9,
     ),
   );
@@ -8336,7 +8714,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 12,
+      'weight' => 10,
     ),
   );
 
@@ -8972,7 +9350,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 12,
+      'weight' => 13,
     ),
   );
 
@@ -9010,7 +9388,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 16,
+      'weight' => 17,
     ),
   );
 
@@ -9085,7 +9463,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 13,
+      'weight' => 14,
     ),
   );
 
@@ -9122,7 +9500,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 14,
+      'weight' => 15,
     ),
   );
 
@@ -9247,7 +9625,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 11,
+      'weight' => 12,
     ),
   );
 
@@ -9329,7 +9707,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 10,
+      'weight' => 11,
     ),
   );
 
@@ -9416,6 +9794,44 @@ function hedley_prenatal_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-prenatal_urine_dipstick_test-field_test_prerequisites'.
+  $field_instances['node-prenatal_urine_dipstick_test-field_test_prerequisites'] = array(
+    'bundle' => 'prenatal_urine_dipstick_test',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 19,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_test_prerequisites',
+    'label' => 'Test Prerequisites',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-prenatal_urine_dipstick_test-field_test_variant'.
   $field_instances['node-prenatal_urine_dipstick_test-field_test_variant'] = array(
     'bundle' => 'prenatal_urine_dipstick_test',
@@ -9487,7 +9903,7 @@ function hedley_prenatal_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 15,
+      'weight' => 16,
     ),
   );
 
@@ -9680,6 +10096,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Reasons for non referrals');
   t('Recommended Treatment');
   t('Referrals');
+  t('Review State');
   t('Rhesus');
   t('Send to HC');
   t('Shards');
@@ -9691,6 +10108,7 @@ function hedley_prenatal_field_default_field_instances() {
   t('Test Prerequisites');
   t('Test Result');
   t('Test variant');
+  t('Tests with Follow Up');
   t('UUID');
   t('Urobilinogen');
   t('Vaginal Exam Signs');

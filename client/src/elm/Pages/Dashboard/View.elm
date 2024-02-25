@@ -61,6 +61,7 @@ import Pages.Page
         , Page(..)
         , UserPage(..)
         )
+import Pages.Prenatal.Utils exposing (preeclampsiaDiagnoses, severeAnemiaDiagnoses, syphilisDiagnoses)
 import Pages.Utils
     exposing
         ( calculatePercentage
@@ -1187,10 +1188,14 @@ viewPrenatalDiagnosesSection language currentDate currentlyPregnantWithDangerSig
             filterNewlyDiagnosesMalnutritionForSelectedMonth currentDate data
 
         newlyDiagnosesGestationalDiabetesPregnancies =
-            filterNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisGestationalDiabetes ] data
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate
+                [ DiagnosisGestationalDiabetesInitialPhase, DiagnosisGestationalDiabetesRecurrentPhase ]
+                data
 
         newlyDiagnosesHIVPregnancies =
-            filterNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisHIV ] data
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate
+                [ DiagnosisHIVInitialPhase, DiagnosisHIVRecurrentPhase ]
+                data
     in
     [ div [ class "separator" ] []
     , div [ class "ui grid" ]

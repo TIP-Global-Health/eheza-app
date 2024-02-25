@@ -15,7 +15,7 @@ import Json.Encode exposing (Value, bool, float, int, list, string)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (EntityUuid, encodeEntityUuid, fromEntityUuid)
 import Translate.Utils exposing (encodeLanguage)
-import Utils.Json exposing (encodeEverySet)
+import Utils.Json exposing (encodeEverySet, encodeEverySetNullable, encodeIfSet, encodeNullable, encodeNullableWithValueFunc)
 
 
 encodeHeight : Height -> List ( String, Value )
@@ -140,17 +140,11 @@ encodePrenatalHealthEducation =
 
 encodePrenatalHealthEducationValue : PrenatalHealthEducationValue -> List ( String, Value )
 encodePrenatalHealthEducationValue value =
-    let
-        signsPhase2 =
-            Maybe.map (\signs -> [ ( "health_education_signs_ph2", encodeEverySet encodePrenatalHealthEducationSign signs ) ])
-                value.signsPhase2
-                |> Maybe.withDefault []
-    in
     [ ( "prenatal_health_education", encodeEverySet encodePrenatalHealthEducationSign value.signs )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_health_education" )
     ]
-        ++ signsPhase2
+        ++ encodeEverySetNullable "health_education_signs_ph2" value.signsPhase2 encodePrenatalHealthEducationSign
 
 
 encodePrenatalHealthEducationSign : PrenatalHealthEducationSign -> Value
@@ -243,18 +237,12 @@ encodePrenatalFollowUp =
 
 encodePrenatalFollowUpValue : PrenatalFollowUpValue -> List ( String, Value )
 encodePrenatalFollowUpValue value =
-    let
-        resolutionDate =
-            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.resolutionDate
-                |> Maybe.withDefault []
-    in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "prenatal_assesment", encodePrenatalAssesment value.assesment )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_follow_up" )
     ]
-        ++ resolutionDate
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodePrenatalAssesment : PrenatalAssesment -> Value
@@ -293,36 +281,15 @@ encodePrenatalBloodGpRsTest =
 
 encodeBloodGpRsTestValue : BloodGpRsTestValue (EntityUuid a) -> List ( String, Value )
 encodeBloodGpRsTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        originatingEncounter =
-            Maybe.map
-                (\originEncounter ->
-                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
-                )
-                value.originatingEncounter
-                |> Maybe.withDefault []
-
-        results =
-            Maybe.map2
-                (\bloodGroup rhesus ->
-                    [ ( "blood_group", encodeBloodGroup bloodGroup )
-                    , ( "rhesus", encodeRhesus rhesus )
-                    ]
-                )
-                value.bloodGroup
-                value.rhesus
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ originatingEncounter
-        ++ results
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ encodeNullable "blood_group" value.bloodGroup encodeBloodGroup
+        ++ encodeNullable "rhesus" value.rhesus encodeRhesus
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_blood_gprs_test" )
            ]
@@ -345,24 +312,10 @@ encodePrenatalHemoglobinTest =
 
 encodeHemoglobinTestValue : HemoglobinTestValue -> List ( String, Value )
 encodeHemoglobinTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\hemoglobinCount ->
-                    [ ( "hemoglobin_count", float hemoglobinCount ) ]
-                )
-                value.hemoglobinCount
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "hemoglobin_count" value.hemoglobinCount float
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_hemoglobin_test" )
            ]
@@ -375,33 +328,14 @@ encodePrenatalHepatitisBTest =
 
 encodeHepatitisBTestValue : HepatitisBTestValue (EntityUuid a) -> List ( String, Value )
 encodeHepatitisBTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\testResult ->
-                    [ ( "test_result", encodeTestResult testResult ) ]
-                )
-                value.testResult
-                |> Maybe.withDefault []
-
-        originatingEncounter =
-            Maybe.map
-                (\originEncounter ->
-                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
-                )
-                value.originatingEncounter
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
-        ++ originatingEncounter
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_hepatitis_b_test" )
            ]
@@ -415,18 +349,6 @@ encodePrenatalHIVTest =
 encodeHIVTestValue : String -> HIVTestValue -> List ( String, Value )
 encodeHIVTestValue type_ value =
     let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
-                value.testResult
-                |> Maybe.withDefault []
-
         hivSigns =
             Maybe.map
                 (\signs ->
@@ -440,8 +362,9 @@ encodeHIVTestValue type_ value =
                 |> Maybe.withDefault (EverySet.singleton NoPrenatalHIVSign)
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
         ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns )
            , ( "deleted", bool False )
            , ( "type", string type_ )
@@ -455,29 +378,11 @@ encodePrenatalHIVPCRTest =
 
 encodeHIVPCRTestValue : HIVPCRTestValue -> List ( String, Value )
 encodeHIVPCRTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        hivViralLoadStatus =
-            Maybe.map
-                (\viralLoadStatus -> [ ( "hiv_viral_load_status", encodeViralLoadStatus viralLoadStatus ) ])
-                value.hivViralLoadStatus
-                |> Maybe.withDefault []
-
-        hivViralLoad =
-            Maybe.map
-                (\viralLoad -> [ ( "hiv_viral_load", float viralLoad ) ])
-                value.hivViralLoad
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ hivViralLoadStatus
-        ++ hivViralLoad
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "hiv_viral_load_status" value.hivViralLoadStatus encodeViralLoadStatus
+        ++ encodeNullable "hiv_viral_load" value.hivViralLoad float
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_hiv_pcr_test" )
            ]
@@ -506,22 +411,10 @@ encodePrenatalPartnerHIVTest =
 
 encodePartnerHIVTestValue : PartnerHIVTestValue -> List ( String, Value )
 encodePartnerHIVTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
-                value.testResult
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_partner_hiv_test" )
            ]
@@ -534,24 +427,12 @@ encodePrenatalMalariaTest =
 
 encodeMalariaTestValue : MalariaTestValue -> List ( String, Value )
 encodeMalariaTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
-                value.testResult
-                |> Maybe.withDefault []
-    in
     [ ( "test_execution_note", encodeTestExecutionNote value.executionNote )
     , ( "blood_smear_result", encodeBloodSmearResult value.bloodSmearResult )
     ]
-        ++ executionDate
-        ++ result
+        ++ encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_malaria_test" )
            ]
@@ -569,40 +450,14 @@ encodePrenatalRandomBloodSugarTest =
 
 encodeRandomBloodSugarTestValue : String -> RandomBloodSugarTestValue (EntityUuid a) -> List ( String, Value )
 encodeRandomBloodSugarTestValue type_ value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        testPrerequisites =
-            Maybe.map
-                (\prerequisites -> [ ( "test_prerequisites", encodeEverySet encodeTestPrerequisite prerequisites ) ])
-                value.testPrerequisites
-                |> Maybe.withDefault []
-
-        originatingEncounter =
-            Maybe.map
-                (\originEncounter ->
-                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
-                )
-                value.originatingEncounter
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\sugarCount ->
-                    [ ( "sugar_count", float sugarCount ) ]
-                )
-                value.sugarCount
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ testPrerequisites
-        ++ originatingEncounter
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ encodeNullable "sugar_count" value.sugarCount float
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]
@@ -629,38 +484,15 @@ encodePrenatalSyphilisTest =
 
 encodeSyphilisTestValue : SyphilisTestValue (EntityUuid a) -> List ( String, Value )
 encodeSyphilisTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
-                value.testResult
-                |> Maybe.withDefault []
-
-        illnessSymptoms =
-            Maybe.map
-                (\symptoms -> [ ( "illness_symptoms", encodeEverySet encodeIllnessSymptom symptoms ) ])
-                value.symptoms
-                |> Maybe.withDefault []
-
-        originatingEncounter =
-            Maybe.map
-                (\originEncounter ->
-                    [ ( "originating_encounter", encodeEntityUuid originEncounter ) ]
-                )
-                value.originatingEncounter
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
-        ++ illnessSymptoms
-        ++ originatingEncounter
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
+        ++ encodeEverySetNullable "illness_symptoms" value.symptoms encodeIllnessSymptom
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_syphilis_test" )
            ]
@@ -679,25 +511,8 @@ encodePrenatalUrineDipstickTest =
 encodeUrineDipstickTestValue : String -> UrineDipstickTestValue -> List ( String, Value )
 encodeUrineDipstickTestValue type_ value =
     let
-        testVariant =
-            Maybe.map
-                (\variant -> [ ( "test_variant", encodeTestVariant variant ) ])
-                value.testVariant
-                |> Maybe.withDefault []
-
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
         encodeField encoder fieldName fieldValue =
-            Maybe.map
-                (\value_ ->
-                    [ ( fieldName, encoder value_ ) ]
-                )
-                fieldValue
-                |> Maybe.withDefault []
+            encodeNullable fieldName fieldValue encoder
 
         protein =
             encodeField encodeProteinValue "protein" value.protein
@@ -727,8 +542,9 @@ encodeUrineDipstickTestValue type_ value =
             encodeField encodeBilirubinValue "bilirubin" value.bilirubin
     in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: testVariant
-        ++ executionDate
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "test_variant" value.testVariant encodeTestVariant
         ++ protein
         ++ ph
         ++ glucose
@@ -830,6 +646,9 @@ encodeTestExecutionNote value =
             TestNoteToBeDoneAtHospital ->
                 "to-be-done-at-hospital"
 
+            TestNoteRunConfirmedByLabTech ->
+                "run-confirmed-by-lab-tech"
+
 
 encodeTestResult : TestResult -> Value
 encodeTestResult =
@@ -856,6 +675,8 @@ encodeLabsResultsValue type_ value =
     , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
     ]
         ++ patientNotified
+        ++ encodeEverySetNullable "tests_with_follow_up" value.testsWithFollowUp encodeLaboratoryTest
+        ++ encodeNullable "review_state" value.reviewState encodeLabsResultsReviewState
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]
@@ -864,6 +685,11 @@ encodeLabsResultsValue type_ value =
 encodeLaboratoryTest : LaboratoryTest -> Value
 encodeLaboratoryTest =
     laboratoryTestToString >> string
+
+
+encodeLabsResultsReviewState : LabsResultsReviewState -> Value
+encodeLabsResultsReviewState =
+    reviewStateToString >> string
 
 
 encodePrenatalMentalHealth : PrenatalMentalHealth -> List ( String, Value )
@@ -920,21 +746,12 @@ encodePrenatalGUExam =
 
 encodeGUExamValue : GUExamValue -> List ( String, Value )
 encodeGUExamValue value =
-    let
-        postpartumHealingProblems =
-            Maybe.map
-                (\problems ->
-                    [ ( "postpartum_healing_problem", encodeEverySet encodePostpartumHealingProblem problems ) ]
-                )
-                value.postpartumHealingProblems
-                |> Maybe.withDefault []
-    in
     [ ( "vaginal_exam_signs", encodeEverySet encodeVaginalExamSign value.vaginalExamSigns )
     , ( "gu_exam_signs", encodeEverySet encodeGUExamSign value.guExamSigns )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_gu_exam" )
     ]
-        ++ postpartumHealingProblems
+        ++ encodeEverySetNullable "postpartum_healing_problem" value.postpartumHealingProblems encodePostpartumHealingProblem
 
 
 encodeVaginalExamSign : VaginalExamSign -> Value
@@ -1199,21 +1016,12 @@ encodeBreastExam =
 
 encodeBreastExamValue : BreastExamValue -> List ( String, Value )
 encodeBreastExamValue value =
-    let
-        dischargeType =
-            Maybe.map
-                (\type_ ->
-                    [ ( "discharge_type", encodeDischargeType type_ ) ]
-                )
-                value.dischargeType
-                |> Maybe.withDefault []
-    in
     [ ( "breast", encodeEverySet encodeBreastExamSign value.exam )
     , ( "breast_self_exam", bool value.selfGuidance )
     , ( "deleted", bool False )
     , ( "type", string "breast_exam" )
     ]
-        ++ dischargeType
+        ++ encodeNullable "discharge_type" value.dischargeType encodeDischargeType
 
 
 encodeBreastExamSign : BreastExamSign -> Value
@@ -1480,19 +1288,13 @@ encodeLastMenstrualPeriod =
 
 encodeLastMenstrualPeriodValue : LastMenstrualPeriodValue -> List ( String, Value )
 encodeLastMenstrualPeriodValue value =
-    let
-        notConfidentReason =
-            Maybe.map (\reason -> [ ( "not_confident_reason", encodeLmpDateNotConfidentReason reason ) ])
-                value.notConfidentReason
-                |> Maybe.withDefault []
-    in
     [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
     , ( "confident", bool value.confident )
     , ( "confirmation", bool value.confirmation )
     , ( "deleted", bool False )
     , ( "type", string "last_menstrual_period" )
     ]
-        ++ notConfidentReason
+        ++ encodeNullable "not_confident_reason" value.notConfidentReason encodeLmpDateNotConfidentReason
 
 
 encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
@@ -1639,21 +1441,12 @@ encodeMedication =
 
 encodeMedicationValue : MedicationValue -> List ( String, Value )
 encodeMedicationValue value =
-    let
-        encodeEverySetNullable name encoder maybeValue =
-            Maybe.map
-                (\value_ ->
-                    [ ( name, encodeEverySet encoder value_ ) ]
-                )
-                maybeValue
-                |> Maybe.withDefault []
-    in
-    encodeEverySetNullable "medication" encodeMedicationSign value.signs
-        ++ encodeEverySetNullable "hiv_treatment" encodeHIVTreatmentSign value.hivTreatment
-        ++ encodeEverySetNullable "hypertension_treatment" encodeMedicationTreatmentSign value.hypertensionTreatment
-        ++ encodeEverySetNullable "malaria_treatment" encodeMedicationTreatmentSign value.malariaTreatment
-        ++ encodeEverySetNullable "anemia_treatment" encodeMedicationTreatmentSign value.anemiaTreatment
-        ++ encodeEverySetNullable "syphilis_treatment" encodeMedicationTreatmentSign value.syphilisTreatment
+    encodeEverySetNullable "medication" value.signs encodeMedicationSign
+        ++ encodeEverySetNullable "hiv_treatment" value.hivTreatment encodeHIVTreatmentSign
+        ++ encodeEverySetNullable "hypertension_treatment" value.hypertensionTreatment encodeMedicationTreatmentSign
+        ++ encodeEverySetNullable "malaria_treatment" value.malariaTreatment encodeMedicationTreatmentSign
+        ++ encodeEverySetNullable "anemia_treatment" value.anemiaTreatment encodeMedicationTreatmentSign
+        ++ encodeEverySetNullable "syphilis_treatment" value.syphilisTreatment encodeMedicationTreatmentSign
         ++ [ ( "deleted", bool False )
            , ( "type", string "medication" )
            ]
@@ -1735,15 +1528,6 @@ encodeMuacInCm (MuacInCm cm) =
 
 encodeObstetricalExamValue : ObstetricalExamValue -> List ( String, Value )
 encodeObstetricalExamValue value =
-    let
-        fundalHeight =
-            Maybe.map
-                (\height ->
-                    [ ( "fundal_height", encodeHeightInCm height ) ]
-                )
-                value.fundalHeight
-                |> Maybe.withDefault []
-    in
     [ ( "fundal_palpable", bool value.fundalPalpable )
     , ( "fetal_presentation", encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
@@ -1752,7 +1536,7 @@ encodeObstetricalExamValue value =
     , ( "deleted", bool False )
     , ( "type", string "obstetrical_exam" )
     ]
-        ++ fundalHeight
+        ++ encodeNullable "fundal_height" value.fundalHeight encodeHeightInCm
 
 
 encodeObstetricalExam : ObstetricalExam -> List ( String, Value )
@@ -1892,15 +1676,6 @@ encodeObstetricHistoryStep2 =
 
 encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, Value )
 encodeObstetricHistoryStep2Value value =
-    let
-        cSectionReason =
-            Maybe.map
-                (\reason ->
-                    [ ( "c_section_reason", encodeEverySet encodeCSectionReason reason ) ]
-                )
-                value.cSectionReason
-                |> Maybe.withDefault []
-    in
     [ ( "c_sections", int value.cSections )
     , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
     , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
@@ -1908,7 +1683,7 @@ encodeObstetricHistoryStep2Value value =
     , ( "deleted", bool False )
     , ( "type", string "obstetric_history_step2" )
     ]
-        ++ cSectionReason
+        ++ encodeEverySetNullable "c_section_reason" value.cSectionReason encodeCSectionReason
 
 
 encodeBirthPlan : BirthPlan -> List ( String, Value )
@@ -2038,40 +1813,17 @@ encodeVitals =
 
 encodeVitalsValueWithType : String -> VitalsValue -> List ( String, Value )
 encodeVitalsValueWithType type_ value =
-    let
-        sysEntry =
-            Maybe.map (\sys -> [ ( "sys", float sys ) ])
-                value.sys
-                |> Maybe.withDefault []
-
-        diaEntry =
-            Maybe.map (\dia -> [ ( "dia", float dia ) ])
-                value.dia
-                |> Maybe.withDefault []
-
-        heartRateEntry =
-            Maybe.map (\heartRate -> [ ( "heart_rate", int heartRate ) ])
-                value.heartRate
-                |> Maybe.withDefault []
-
-        sysRepeatedEntry =
-            Maybe.map (\sysRepeated -> [ ( "sys_repeated", float sysRepeated ) ])
-                value.sysRepeated
-                |> Maybe.withDefault []
-
-        diaRepeatedEntry =
-            Maybe.map (\diaRepeated -> [ ( "dia_repeated", float diaRepeated ) ])
-                value.diaRepeated
-                |> Maybe.withDefault []
-    in
-    sysEntry
-        ++ diaEntry
-        ++ heartRateEntry
-        ++ sysRepeatedEntry
-        ++ diaRepeatedEntry
-        ++ [ ( "respiratory_rate", int value.respiratoryRate )
-           , ( "body_temperature", float value.bodyTemperature )
-           , ( "deleted", bool False )
+    [ ( "respiratory_rate", int value.respiratoryRate )
+    , ( "body_temperature", float value.bodyTemperature )
+    ]
+        ++ encodeNullable "sys" value.sys float
+        ++ encodeNullable "dia" value.dia float
+        ++ encodeNullable "heart_rate" value.heartRate int
+        -- Not all CT got the repeated fields. Therefore we use
+        -- encodeIfSet, to send the field only if it has a value.
+        ++ encodeIfSet "sys_repeated" value.sysRepeated float
+        ++ encodeIfSet "dia_repeated" value.diaRepeated float
+        ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]
 
@@ -2321,18 +2073,9 @@ encodeCovidTesting =
 
 encodeCovidTestingValue : CovidTestingValue -> List ( String, Value )
 encodeCovidTestingValue value =
-    let
-        optional =
-            Maybe.map
-                (\administrationNote ->
-                    [ ( "administration_note", encodeAdministrationNote administrationNote ) ]
-                )
-                value.administrationNote
-                |> Maybe.withDefault []
-    in
-    optional
-        ++ [ ( "rapid_test_result", encodeRapidTestResult value.result )
-           , ( "deleted", bool False )
+    ( "rapid_test_result", encodeRapidTestResult value.result )
+        :: encodeNullable "administration_note" value.administrationNote encodeAdministrationNote
+        ++ [ ( "deleted", bool False )
            , ( "type", string "covid_testing" )
            ]
 
@@ -2423,52 +2166,10 @@ encodeReasonForNonReferral =
 
 encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
 encodePrenatalReferralValue value =
-    let
-        sendToHC =
-            Maybe.map
-                (\signs ->
-                    if EverySet.isEmpty signs then
-                        []
-
-                    else
-                        [ ( "send_to_hc", encodeEverySet encodeSendToHCSign signs ) ]
-                )
-                value.sendToHCSigns
-                |> Maybe.withDefault []
-
-        reasonNotSentToHC =
-            Maybe.map (\reason -> [ ( "reason_not_sent_to_hc", encodeReasonForNonReferral reason ) ])
-                value.reasonForNotSendingToHC
-                |> Maybe.withDefault []
-
-        referToFacilitySigns =
-            Maybe.map
-                (\signs ->
-                    if EverySet.isEmpty signs then
-                        []
-
-                    else
-                        [ ( "referrals", encodeEverySet encodeReferToFacilitySign signs ) ]
-                )
-                value.referToFacilitySigns
-                |> Maybe.withDefault []
-
-        facilityNonReferralReasons =
-            Maybe.map
-                (\reason ->
-                    if EverySet.isEmpty reason then
-                        []
-
-                    else
-                        [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ]
-                )
-                value.facilityNonReferralReasons
-                |> Maybe.withDefault []
-    in
-    sendToHC
-        ++ reasonNotSentToHC
-        ++ referToFacilitySigns
-        ++ facilityNonReferralReasons
+    encodeEverySetNullable "send_to_hc" value.sendToHCSigns encodeSendToHCSign
+        ++ encodeNullable "reason_not_sent_to_hc" value.reasonForNotSendingToHC encodeReasonForNonReferral
+        ++ encodeEverySetNullable "referrals" value.referToFacilitySigns encodeReferToFacilitySign
+        ++ encodeEverySetNullable "reasons_for_non_referrals" value.facilityNonReferralReasons encodeNonReferralSign
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_send_to_hc" )
            ]
@@ -2655,11 +2356,6 @@ encodeFollowUpValueWithType type_ value =
 
                 _ ->
                     EverySet.singleton NormalChildNutrition
-
-        resolutionDate =
-            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.resolutionDate
-                |> Maybe.withDefault []
     in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
@@ -2667,7 +2363,7 @@ encodeFollowUpValueWithType type_ value =
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
-        ++ resolutionDate
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )
@@ -2677,17 +2373,11 @@ encodeAcuteIllnessFollowUp =
 
 encodeAcuteIllnessFollowUpValue : AcuteIllnessFollowUpValue -> List ( String, Value )
 encodeAcuteIllnessFollowUpValue value =
-    let
-        resolutionDate =
-            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.resolutionDate
-                |> Maybe.withDefault []
-    in
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_follow_up" )
     ]
-        ++ resolutionDate
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodeNutritionAssessment : NutritionAssessment -> Value
@@ -2980,38 +2670,13 @@ encodePrenatalMedicationDistribution =
 
 encodePrenatalMedicationDistributionValue : PrenatalMedicationDistributionValue -> List ( String, Value )
 encodePrenatalMedicationDistributionValue value =
-    let
-        treatment =
-            Maybe.map
-                (\signs ->
-                    if EverySet.isEmpty signs then
-                        []
-
-                    else
-                        [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign signs ) ]
-                )
-                value.recommendedTreatmentSigns
-                |> Maybe.withDefault []
-
-        avoidingGuidanceReason =
-            Maybe.map
-                (\signs ->
-                    if EverySet.isEmpty signs then
-                        []
-
-                    else
-                        [ ( "avoiding_guidance_reason", encodeEverySet encodeAvoidingGuidanceReason signs ) ]
-                )
-                value.avoidingGuidanceReason
-                |> Maybe.withDefault []
-    in
     [ ( "prescribed_medication", encodeEverySet encodeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_medication_distribution" )
     ]
-        ++ treatment
-        ++ avoidingGuidanceReason
+        ++ encodeEverySetNullable "recommended_treatment" value.recommendedTreatmentSigns encodeRecommendedTreatmentSign
+        ++ encodeEverySetNullable "avoiding_guidance_reason" value.avoidingGuidanceReason encodeAvoidingGuidanceReason
 
 
 encodeMedicationDistributionSign : MedicationDistributionSign -> Value
@@ -3642,47 +3307,6 @@ encodeAcuteIllnessTraceContactValue item =
 
 encodeContactTraceItem : ContactTraceItem -> List ( String, Value )
 encodeContactTraceItem item =
-    let
-        lastFollowUp =
-            Maybe.map
-                (\lastFollowUpDate ->
-                    [ ( "last_follow_up_date", Gizra.NominalDate.encodeYYYYMMDD lastFollowUpDate ) ]
-                )
-                item.lastFollowUpDate
-                |> Maybe.withDefault []
-
-        signsGeneral =
-            Maybe.map
-                (\generalSigns ->
-                    [ ( "symptoms_general", encodeEverySet encodeSymptomsGeneralSign generalSigns ) ]
-                )
-                item.generalSigns
-                |> Maybe.withDefault []
-
-        signsRespiratory =
-            Maybe.map
-                (\respiratorySigns ->
-                    [ ( "symptoms_respiratory", encodeEverySet encodeSymptomsRespiratorySign respiratorySigns ) ]
-                )
-                item.respiratorySigns
-                |> Maybe.withDefault []
-
-        signsGI =
-            Maybe.map
-                (\giSigns ->
-                    [ ( "symptoms_gi", encodeEverySet encodeSymptomsGISign giSigns ) ]
-                )
-                item.giSigns
-                |> Maybe.withDefault []
-
-        outcome =
-            Maybe.map
-                (\traceOutcome ->
-                    [ ( "trace_outcome", encodeTraceOutcome traceOutcome ) ]
-                )
-                item.traceOutcome
-                |> Maybe.withDefault []
-    in
     [ ( "referred_person", encodeEntityUuid item.personId )
     , ( "first_name", string item.firstName )
     , ( "second_name", string item.secondName )
@@ -3691,11 +3315,11 @@ encodeContactTraceItem item =
     , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD item.contactDate )
     , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD item.resolutionDate )
     ]
-        ++ lastFollowUp
-        ++ signsGeneral
-        ++ signsRespiratory
-        ++ signsGI
-        ++ outcome
+        ++ encodeNullable "last_follow_up_date" item.lastFollowUpDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "symptoms_general" item.generalSigns encodeSymptomsGeneralSign
+        ++ encodeEverySetNullable "symptoms_respiratory" item.respiratorySigns encodeSymptomsRespiratorySign
+        ++ encodeEverySetNullable "symptoms_gi" item.giSigns encodeSymptomsGISign
+        ++ encodeNullable "trace_outcome" item.traceOutcome encodeTraceOutcome
 
 
 encodeSymptomsGeneralSign : SymptomsGeneralSign -> Value
@@ -4084,34 +3708,6 @@ encodeWellChildPregnancySummary =
 
 encodePregnancySummaryValue : PregnancySummaryValue -> List ( String, Value )
 encodePregnancySummaryValue value =
-    let
-        apgar =
-            Maybe.map2
-                (\apgarOneMin apgarFiveMin ->
-                    [ ( "apgar_one_min", float apgarOneMin )
-                    , ( "apgar_five_min", float apgarFiveMin )
-                    ]
-                )
-                value.apgarOneMin
-                value.apgarFiveMin
-                |> Maybe.withDefault []
-
-        birthWeight =
-            Maybe.map
-                (\(WeightInGrm weight) ->
-                    [ ( "weight", float weight ) ]
-                )
-                value.birthWeight
-                |> Maybe.withDefault []
-
-        birthLength =
-            Maybe.map
-                (\(HeightInCm length) ->
-                    [ ( "height", float length ) ]
-                )
-                value.birthLength
-                |> Maybe.withDefault []
-    in
     [ ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.expectedDateConcluded )
     , ( "delivery_complications", encodeEverySet encodeDeliveryComplication value.deliveryComplications )
     , ( "pregnancy_summary_signs", encodeEverySet encodePregnancySummarySign value.signs )
@@ -4119,9 +3715,10 @@ encodePregnancySummaryValue value =
     , ( "deleted", bool False )
     , ( "type", string "well_child_pregnancy_summary" )
     ]
-        ++ apgar
-        ++ birthWeight
-        ++ birthLength
+        ++ encodeNullable "apgar_one_min" value.apgarOneMin float
+        ++ encodeNullable "apgar_five_min" value.apgarFiveMin float
+        ++ encodeNullableWithValueFunc "weight" (\(WeightInGrm weight) -> weight) value.birthWeight float
+        ++ encodeNullableWithValueFunc "height" (\(HeightInCm height) -> height) value.birthLength float
 
 
 encodeDeliveryComplication : DeliveryComplication -> Value
@@ -4230,24 +3827,13 @@ encodeWellChildNextVisit =
 
 encodeNextVisitValue : NextVisitValue -> List ( String, Value )
 encodeNextVisitValue value =
-    let
-        resolutionDate =
-            Maybe.map (\date -> [ ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.resolutionDate
-                |> Maybe.withDefault []
-
-        asapImmunisationDate =
-            Maybe.map (\date -> [ ( "asap_immunisation_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.asapImmunisationDate
-                |> Maybe.withDefault []
-    in
     [ ( "immunisation_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.immunisationDate )
     , ( "pediatric_visit_date", maybe Gizra.NominalDate.encodeYYYYMMDD value.pediatricVisitDate )
     , ( "deleted", bool False )
     , ( "type", string "well_child_next_visit" )
     ]
-        ++ resolutionDate
-        ++ asapImmunisationDate
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "asap_immunisation_date" value.asapImmunisationDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodeWellChildBCGImmunisation : WellChildBCGImmunisation -> List ( String, Value )
@@ -4317,19 +3903,12 @@ encodePrenatalSymptomReview =
 
 encodePrenatalSymptomReviewValue : PrenatalSymptomReviewValue -> List ( String, Value )
 encodePrenatalSymptomReviewValue value =
-    let
-        flankPainSign =
-            Maybe.map
-                (\sign -> [ ( "flank_pain_sign", encodePrenatalFlankPainSign sign ) ])
-                value.flankPainSign
-                |> Maybe.withDefault []
-    in
     [ ( "prenatal_symptoms", encodeEverySet encodePrenatalSymptom value.symptoms )
     , ( "prenatal_symptom_questions", encodeEverySet encodePrenatalSymptomQuestion value.symptomQuestions )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_symptom_review" )
     ]
-        ++ flankPainSign
+        ++ encodeNullable "flank_pain_sign" value.flankPainSign encodePrenatalFlankPainSign
 
 
 encodePrenatalSymptom : PrenatalSymptom -> Value
@@ -4354,29 +3933,12 @@ encodePrenatalOutsideCare =
 
 encodeOutsideCareValue : String -> (diagnosis -> Value) -> String -> OutsideCareValue diagnosis -> List ( String, Value )
 encodeOutsideCareValue fieldName diagnosisEncouder type_ value =
-    let
-        diagnoses =
-            Maybe.map
-                (\diagnoses_ ->
-                    [ ( fieldName, encodeEverySet diagnosisEncouder diagnoses_ ) ]
-                )
-                value.diagnoses
-                |> Maybe.withDefault []
-
-        medications =
-            Maybe.map
-                (\medications_ ->
-                    [ ( "outside_care_medications", encodeEverySet encodeOutsideCareMedication medications_ ) ]
-                )
-                value.medications
-                |> Maybe.withDefault []
-    in
     [ ( "outside_care_signs", encodeEverySet encodeOutsideCareSign value.signs )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
-        ++ diagnoses
-        ++ medications
+        ++ encodeEverySetNullable fieldName value.diagnoses diagnosisEncouder
+        ++ encodeEverySetNullable "outside_care_medications" value.medications encodeOutsideCareMedication
 
 
 encodeOutsideCareSign : OutsideCareSign -> Value
@@ -4419,27 +3981,10 @@ encodeNCDCreatinineTest =
 
 encodeCreatinineTestValue : CreatinineTestValue -> List ( String, Value )
 encodeCreatinineTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map2
-                (\creatinineResult bunResult ->
-                    [ ( "creatinine_result", float creatinineResult )
-                    , ( "bun_result", float bunResult )
-                    ]
-                )
-                value.creatinineResult
-                value.bunResult
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "creatinine_result" value.creatinineResult float
+        ++ encodeNullable "bun_result" value.bunResult float
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_creatinine_test" )
            ]
@@ -4470,38 +4015,13 @@ encodeNCDFamilyHistory =
 
 encodeNCDFamilyHistoryValue : NCDFamilyHistoryValue -> List ( String, Value )
 encodeNCDFamilyHistoryValue value =
-    let
-        hypertensionPredecessors =
-            Maybe.map
-                (\predecessors ->
-                    [ ( "hypertension_predecessors", encodeEverySet encodePredecessor predecessors ) ]
-                )
-                value.hypertensionPredecessors
-                |> Maybe.withDefault []
-
-        heartProblemPredecessors =
-            Maybe.map
-                (\predecessors ->
-                    [ ( "heart_problem_predecessors", encodeEverySet encodePredecessor predecessors ) ]
-                )
-                value.heartProblemPredecessors
-                |> Maybe.withDefault []
-
-        diabetesPredecessors =
-            Maybe.map
-                (\predecessors ->
-                    [ ( "diabetes_predecessors", encodeEverySet encodePredecessor predecessors ) ]
-                )
-                value.diabetesPredecessors
-                |> Maybe.withDefault []
-    in
     [ ( "ncd_family_history_signs", encodeEverySet encodeNCDFamilyHistorySign value.signs )
     , ( "deleted", bool False )
     , ( "type", string "ncd_family_history" )
     ]
-        ++ hypertensionPredecessors
-        ++ heartProblemPredecessors
-        ++ diabetesPredecessors
+        ++ encodeEverySetNullable "hypertension_predecessors" value.hypertensionPredecessors encodePredecessor
+        ++ encodeEverySetNullable "heart_problem_predecessors" value.heartProblemPredecessors encodePredecessor
+        ++ encodeEverySetNullable "diabetes_predecessors" value.diabetesPredecessors encodePredecessor
 
 
 encodeNCDFamilyHistorySign : NCDFamilyHistorySign -> Value
@@ -4560,27 +4080,10 @@ encodeNCDLiverFunctionTest =
 
 encodeLiverFunctionTestValue : LiverFunctionTestValue -> List ( String, Value )
 encodeLiverFunctionTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map2
-                (\altResult astResult ->
-                    [ ( "alt_result", float altResult )
-                    , ( "ast_result", float astResult )
-                    ]
-                )
-                value.altResult
-                value.astResult
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "alt_result" value.altResult float
+        ++ encodeNullable "ast_result" value.astResult float
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_liver_function_test" )
            ]
@@ -4653,22 +4156,9 @@ encodeNCDPregnancyTest =
 
 encodePregnancyTestValue : PregnancyTestValue -> List ( String, Value )
 encodePregnancyTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\testResult -> [ ( "test_result", encodeTestResult testResult ) ])
-                value.testResult
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_pregnancy_test" )
            ]
@@ -4686,13 +4176,8 @@ encodeNCDReferral =
 
 encodeReferralValue : ReferralValue -> List ( String, Value )
 encodeReferralValue value =
-    let
-        nonReferralReasons =
-            Maybe.map (\reason -> [ ( "reasons_for_non_referrals", encodeEverySet encodeNonReferralSign reason ) ])
-                value.nonReferralReasons
-                |> Maybe.withDefault []
-    in
-    (( "referrals", encodeEverySet encodeReferToFacilitySign value.referralSigns ) :: nonReferralReasons)
+    ( "referrals", encodeEverySet encodeReferToFacilitySign value.referralSigns )
+        :: encodeEverySetNullable "reasons_for_non_referrals" value.nonReferralReasons encodeNonReferralSign
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_referral" )
            ]
@@ -4705,30 +4190,13 @@ encodeNCDSocialHistory =
 
 encodeNCDSocialHistoryValue : NCDSocialHistoryValue -> List ( String, Value )
 encodeNCDSocialHistoryValue value =
-    let
-        beveragesPerWeek =
-            Maybe.map
-                (\perWeek ->
-                    [ ( "beverages_per_week", int perWeek ) ]
-                )
-                value.beveragesPerWeek
-                |> Maybe.withDefault []
-
-        cigarettesPerWeek =
-            Maybe.map
-                (\perWeek ->
-                    [ ( "cigarettes_per_week", int perWeek ) ]
-                )
-                value.cigarettesPerWeek
-                |> Maybe.withDefault []
-    in
     [ ( "ncd_social_history_signs", encodeEverySet encodeNCDSocialHistorySign value.signs )
     , ( "food_group", encodeFoodGroup value.foodGroup )
     , ( "deleted", bool False )
     , ( "type", string "ncd_social_history" )
     ]
-        ++ beveragesPerWeek
-        ++ cigarettesPerWeek
+        ++ encodeNullable "beverages_per_week" value.cigarettesPerWeek int
+        ++ encodeNullable "cigarettes_per_week" value.cigarettesPerWeek int
 
 
 encodeNCDSocialHistorySign : NCDSocialHistorySign -> Value
@@ -4803,44 +4271,16 @@ encodeChildScoreboardNCDA =
 
 encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
 encodeNCDAValueWithType type_ value =
-    let
-        receiveOption =
-            Maybe.map
-                (\option -> [ ( "receive_option", encodeReceiveOption option ) ])
-                value.receivesVitaminA
-                |> Maybe.withDefault []
-
-        birthWeight =
-            Maybe.map (\(WeightInGrm birthWeight_) -> [ ( "birth_weight", float birthWeight_ ) ])
-                value.birthWeight
-                |> Maybe.withDefault []
-
-        stuntingLevel =
-            Maybe.map
-                (\option -> [ ( "stunting_level", encodeStuntingLevel option ) ])
-                value.stuntingLevel
-                |> Maybe.withDefault []
-
-        weight =
-            Maybe.map (\(WeightInKg weight_) -> [ ( "weight", float weight_ ) ])
-                value.weight
-                |> Maybe.withDefault []
-
-        muac =
-            Maybe.map (\(MuacInCm muac_) -> [ ( "muac", float muac_ ) ])
-                value.muac
-                |> Maybe.withDefault []
-    in
     [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
     , ( "anc_visits_dates", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.ancVisitsDates )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
-        ++ birthWeight
-        ++ receiveOption
-        ++ stuntingLevel
-        ++ weight
-        ++ muac
+        ++ encodeNullable "receive_option" value.receivesVitaminA encodeReceiveOption
+        ++ encodeNullable "stunting_level" value.stuntingLevel encodeStuntingLevel
+        ++ encodeNullableWithValueFunc "birth_weight" (\(WeightInGrm weight) -> weight) value.birthWeight float
+        ++ encodeNullableWithValueFunc "weight" (\(WeightInKg weight) -> weight) value.weight float
+        ++ encodeNullableWithValueFunc "muac" (\(MuacInCm muac) -> muac) value.muac float
 
 
 encodeNCDASign : NCDASign -> Value
@@ -4865,33 +4305,13 @@ encodeNCDLipidPanelTest =
 
 encodeLipidPanelTestValue : LipidPanelTestValue -> List ( String, Value )
 encodeLipidPanelTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map5
-                (\unitOfMeasurement totalCholesterolResult ldlCholesterolResult hdlCholesterolResult triglycerides ->
-                    [ ( "unit_of_measurement", encodeUnitOfMeasurement unitOfMeasurement )
-                    , ( "total_cholesterol", float totalCholesterolResult )
-                    , ( "ldl_cholesterol", float ldlCholesterolResult )
-                    , ( "hdl_cholesterol", float hdlCholesterolResult )
-                    , ( "triglycerides", float triglycerides )
-                    ]
-                )
-                value.unitOfMeasurement
-                value.totalCholesterolResult
-                value.ldlCholesterolResult
-                value.hdlCholesterolResult
-                value.triglyceridesResult
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "unit_of_measurement" value.unitOfMeasurement encodeUnitOfMeasurement
+        ++ encodeNullable "total_cholesterol" value.totalCholesterolResult float
+        ++ encodeNullable "ldl_cholesterol" value.ldlCholesterolResult float
+        ++ encodeNullable "hdl_cholesterol" value.hdlCholesterolResult float
+        ++ encodeNullable "triglycerides" value.triglyceridesResult float
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_lipid_panel_test" )
            ]
@@ -4909,24 +4329,9 @@ encodeNCDHbA1cTest =
 
 encodeHbA1cTestValue : HbA1cTestValue -> List ( String, Value )
 encodeHbA1cTestValue value =
-    let
-        executionDate =
-            Maybe.map
-                (\date -> [ ( "execution_date", Gizra.NominalDate.encodeYYYYMMDD date ) ])
-                value.executionDate
-                |> Maybe.withDefault []
-
-        result =
-            Maybe.map
-                (\hba1cResult ->
-                    [ ( "hba1c_result", float hba1cResult ) ]
-                )
-                value.hba1cResult
-                |> Maybe.withDefault []
-    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
-        :: executionDate
-        ++ result
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "hba1c_result" value.hba1cResult float
         ++ [ ( "deleted", bool False )
            , ( "type", string "ncd_hba1c_test" )
            ]
