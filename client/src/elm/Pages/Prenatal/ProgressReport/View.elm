@@ -378,7 +378,12 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                                             (\( resultsId, _ ) value ->
                                                 button
                                                     [ class "ui primary fluid button"
-                                                    , onClick <| ReviewAndAcceptLabsResults assembled.participant.person encounterId resultsId value
+                                                    , onClick <|
+                                                        ReviewAndAcceptLabsResults
+                                                            assembled.participant.person
+                                                            encounterId
+                                                            resultsId
+                                                            value
                                                     ]
                                                     [ text <| translate language Translate.ReviewAndAccept ]
                                             )

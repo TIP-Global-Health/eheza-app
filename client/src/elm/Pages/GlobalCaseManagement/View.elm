@@ -895,10 +895,6 @@ viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
                             Date.compare currentDate item.value.resolutionDate == LT
 
                         roleDependantCondition =
-                            let
-                                diff =
-                                    EverySet.diff item.value.performedTests item.value.completedTests
-                            in
                             if isLabTech then
                                 -- If review was requested (by lab technician), or completed
                                 -- (by nurse) we do not display entry for lab technician.
@@ -907,10 +903,7 @@ viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
                                        -- vitals recheck, we do not display entry for lab technician.
                                        -- For nurse,all tests were completed condition des not apply,
                                        -- since there maybe follow up quesitons to fill.
-                                       (case EverySet.toList diff of
-                                            [] ->
-                                                False
-
+                                       (case EverySet.toList item.value.performedTests of
                                             [ TestVitalsRecheck ] ->
                                                 False
 
