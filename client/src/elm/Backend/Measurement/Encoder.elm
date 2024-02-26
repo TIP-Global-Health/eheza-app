@@ -1816,11 +1816,12 @@ encodeVitalsValueWithType type_ value =
     [ ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
     ]
-        ++ encodeNullable "sys" value.sys float
-        ++ encodeNullable "dia" value.dia float
-        ++ encodeNullable "heart_rate" value.heartRate int
-        -- Not all CT got the repeated fields. Therefore we use
+        -- Not all Vitals CTs got the sys, dia, sys_repeated,
+        -- dia_repeated and  heart_rate fields. Therefore we use
         -- encodeIfSet, to send the field only if it has a value.
+        ++ encodeIfSet "sys" value.sys float
+        ++ encodeIfSet "dia" value.dia float
+        ++ encodeIfSet "heart_rate" value.heartRate int
         ++ encodeIfSet "sys_repeated" value.sysRepeated float
         ++ encodeIfSet "dia_repeated" value.diaRepeated float
         ++ [ ( "deleted", bool False )
