@@ -1690,8 +1690,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                 if atPrenatalRecurrentPhase activePage then
                                                     generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
 
-                                                else
+                                                else if atPrenatalInitialPhase activePage then
                                                     generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
+
+                                                else
+                                                    []
                                         in
                                         labsResultsMsgs ++ possibleEndEncounterMsgs
                                     )
@@ -1761,8 +1764,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                         if atPrenatalRecurrentPhase activePage then
                                                             generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
 
-                                                        else
+                                                        else if atPrenatalInitialPhase activePage then
                                                             generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
+
+                                                        else
+                                                            []
                                                 in
                                                 labsResultsMsgs ++ possibleEndEncounterMsgs
                                             )
@@ -6314,63 +6320,55 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
             (\assembled ->
                 Maybe.map
                     (\( resultsId, results ) ->
-                        if
-                            EverySet.member test results.value.completedTests
-                                && EverySet.member test results.value.performedTests
-                        then
-                            -- Do not update value if we have it set up properly already.
-                            []
+                        let
+                            ( performedTests, completedTests ) =
+                                Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
 
-                        else
-                            let
-                                ( performedTests, completedTests ) =
-                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
+                            updatedValue =
+                                (\value ->
+                                    let
+                                        -- Since lab results can be entered right away (at poit of care),
+                                        -- or at latter stage (after test was ordered at lab), we
+                                        -- update both performed and completed tests.
+                                        -- Since data structure is EverySet, it will not create duplicacies.
+                                        updatedPerformedTests =
+                                            EverySet.insert test performedTests
 
-                                updatedValue =
-                                    (\value ->
-                                        let
-                                            -- Since lab results can be entered right away (at poit of care),
-                                            -- or at latter stage (after test was ordered at lab), we
-                                            -- update both performed and completed tests.
-                                            -- Since data structure is EverySet, it will not create duplicacies.
-                                            updatedPerformedTests =
-                                                EverySet.insert test performedTests
+                                        updatedCompletedTests =
+                                            EverySet.insert test completedTests
 
-                                            updatedCompletedTests =
-                                                EverySet.insert test completedTests
+                                        allLabsCompleted =
+                                            EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
 
-                                            allLabsCompleted =
-                                                EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
+                                        updatedTestsWithFollowUp =
+                                            -- Mark tests which results were entered by Lab Tech, and got
+                                            -- follow up questions that will have to be completed by nurse.
+                                            if isLabTech && List.member test [ TestHIV, TestSyphilis ] then
+                                                Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
+                                                    |> Maybe.withDefault (Just <| EverySet.singleton test)
 
-                                            updatedTestsWithFollowUp =
-                                                -- Mark tests which results were entered by Lab Tech, and got
-                                                -- follow up questions that will have to be completed by nurse.
-                                                if isLabTech && List.member test [ TestHIV, TestSyphilis ] then
-                                                    Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
-                                                        |> Maybe.withDefault (Just <| EverySet.singleton test)
+                                            else
+                                                value.testsWithFollowUp
 
-                                                else
-                                                    value.testsWithFollowUp
+                                        reviewState =
+                                            -- For lab technician, request review if all labs were
+                                            -- completed, and review state was not set previously.
+                                            if isLabTech && isNothing value.reviewState && allLabsCompleted then
+                                                Just LabsResultsReviewRequested
 
-                                            reviewState =
-                                                -- For lab technician, request review if all labs were
-                                                -- completed, and review state was not set previously.
-                                                if isLabTech && isNothing value.reviewState && allLabsCompleted then
-                                                    Just LabsResultsReviewRequested
-
-                                                else
-                                                    value.reviewState
-                                        in
-                                        { value
-                                            | performedTests = updatedPerformedTests
-                                            , completedTests = updatedCompletedTests
-                                            , testsWithFollowUp = updatedTestsWithFollowUp
-                                            , reviewState = reviewState
-                                        }
-                                    )
-                                        results.value
-                            in
-                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                                            else
+                                                value.reviewState
+                                    in
+                                    { value
+                                        | performedTests = updatedPerformedTests
+                                        , completedTests = updatedCompletedTests
+                                        , testsWithFollowUp = updatedTestsWithFollowUp
+                                        , reviewState = reviewState
+                                    }
+                                )
+                                    results.value
+                        in
+                        [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                     )
                     assembled.measurements.labsResults
             )
@@ -6453,6 +6451,19 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                         Nothing
                 )
             |> Maybe.withDefault []
+
+
+atPrenatalInitialPhase : Page -> Bool
+atPrenatalInitialPhase activePage =
+    case activePage of
+        UserPage (PrenatalEncounterPage _) ->
+            True
+
+        UserPage (PrenatalActivityPage _ _) ->
+            True
+
+        _ ->
+            False
 
 
 atPrenatalRecurrentPhase : Page -> Bool

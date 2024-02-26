@@ -1692,7 +1692,6 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
   // Populate data of the encounters.
   foreach ($result as $row) {
     $items[$row->field_individual_participant]['encounters'][$row->nid] = [
-      // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
     ];
   }
