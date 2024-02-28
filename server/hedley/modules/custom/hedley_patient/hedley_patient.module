@@ -35,6 +35,31 @@ function hedley_patient_menu() {
 }
 
 /**
+ * Implements hook_user_login().
+ *
+ * When Data Manager users log in, redirect them
+ * to Aggregated NCDA report page.
+ */
+function hedley_patient_user_login(&$edit, $account) {
+  $data_mananger_role = user_role_load_by_name('Data Manager');
+  if (!user_has_role($data_mananger_role->rid, $account)) {
+    return;
+  }
+
+  // Path of Aggregated NCDA report page.
+  $path = 'admin/reports/aggregated-ncda';
+  // The 'Location' HTTP header must be absolute.
+  $options['absolute'] = TRUE;
+  $url = url($path, $options);
+
+  header('Location: ' . $url, TRUE, 302);
+  // The "Location" header sends a redirect status code to the HTTP daemon. In
+  // some cases this can be wrong, so we make sure none other code
+  // gets executed upon redirection.
+  drupal_exit($url);
+}
+
+/**
  * Implements hook_node_insert().
  */
 function hedley_patient_node_insert($node) {

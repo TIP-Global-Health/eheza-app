@@ -11,11 +11,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra
-import Measurement.Model exposing (LaboratoryTask(..))
+import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, LaboratoryTask(..))
 import Measurement.Utils
     exposing
         ( creatinineResultFormAndTasks
         , creatinineResultFormWithDefault
+        , emptyContentAndTasksLaboratoryResultConfig
         , laboratoryTaskIconClass
         , lipidPanelResultFormAndTasks
         , lipidPanelResultFormWithDefault
@@ -97,6 +98,10 @@ viewActivity language currentDate activity assembled db model =
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate assembled model =
     let
+        isLabTech =
+            -- For now, NCD doesn not support Lab tech feature.
+            False
+
         measurements =
             assembled.measurements
 
@@ -142,7 +147,11 @@ viewLabResultsContent language currentDate assembled model =
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
                                 |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
-                                |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
+                                |> randomBloodSugarResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetRandomBloodSugar
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
@@ -150,6 +159,8 @@ viewLabResultsContent language currentDate assembled model =
                                 |> urineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
                                 |> urineDipstickResultFormAndTasks language
                                     currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
                                     SetProtein
                                     SetPH
                                     SetGlucose
@@ -266,6 +277,11 @@ viewLabResultsContent language currentDate assembled model =
             ]
         ]
     ]
+
+
+contentAndTasksLaboratorResultsConfig : ContentAndTasksLaboratoryResultConfig Msg NCDEncounterId
+contentAndTasksLaboratorResultsConfig =
+    emptyContentAndTasksLaboratoryResultConfig NoOp
 
 
 viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)

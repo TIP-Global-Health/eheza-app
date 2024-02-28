@@ -459,7 +459,7 @@ update msg model =
                                     data.prenatalRecurrentEncounterPages
                                         |> Dict.get id
                                         |> Maybe.withDefault Pages.Prenatal.RecurrentEncounter.Model.emptyModel
-                                        |> Pages.Prenatal.RecurrentEncounter.Update.update id subMsg
+                                        |> Pages.Prenatal.RecurrentEncounter.Update.update currentDate id subMsg
                             in
                             ( { data | prenatalRecurrentEncounterPages = Dict.insert id subModel data.prenatalRecurrentEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id) subCmd

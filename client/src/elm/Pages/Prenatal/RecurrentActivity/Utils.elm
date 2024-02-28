@@ -14,6 +14,7 @@ import Measurement.Utils
     exposing
         ( bloodSmearResultSet
         , expectUniversalTestResultTask
+        , testNotPerformedByWhyNotAtExecutionNote
         , testPerformedByExecutionNote
         , testPerformedByValue
         , vitalsFormWithDefault
@@ -126,8 +127,10 @@ laboratoryResultTaskCompleted currentDate isLabTech assembled task =
                 |> getMeasurementValueFunc
                 |> Maybe.map
                     (\value ->
-                        testPerformedByExecutionNote value.executionNote
-                            && (isJust <| getResultFieldFunc value)
+                        testNotPerformedByWhyNotAtExecutionNote value.executionNote
+                            || (testPerformedByExecutionNote value.executionNote
+                                    && (isJust <| getResultFieldFunc value)
+                               )
                     )
                 |> Maybe.withDefault False
     in
@@ -290,6 +293,12 @@ expectLaboratoryResultFollowUpsTask currentDate assembled task =
 
         TaskSyphilisTest ->
             wasFollowUpScheduled TestSyphilis
+                && -- Lab tech entered result showing positive Syphilis,
+                   -- which requires Syphilis symptoms question.
+                   (getMeasurementValueFunc assembled.measurements.syphilisTest
+                        |> Maybe.map (.testResult >> (==) (Just TestPositive))
+                        |> Maybe.withDefault False
+                   )
 
         -- Others are not in use for Prenatal.
         _ ->

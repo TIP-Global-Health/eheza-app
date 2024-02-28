@@ -2,6 +2,7 @@ module Pages.Prenatal.RecurrentEncounter.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isLabTechnician)
@@ -155,14 +156,40 @@ viewMainPageContent language currentDate nurse assembled model =
                     ]
 
         content =
+            let
+                ( label, action ) =
+                    let
+                        leaveEncounterTuple =
+                            ( Translate.LeaveEncounter, SetActivePage <| UserPage GlobalCaseManagementPage )
+                    in
+                    if not isLabTech && List.isEmpty pendingActivities then
+                        -- Nurse has completed all activities => end the
+                        -- encounter (by setting resolution date to today).
+                        Maybe.map2
+                            (\( resultsId, _ ) value ->
+                                ( Translate.EndEncounter
+                                , ConcludeEncounter
+                                    assembled.participant.person
+                                    assembled.id
+                                    resultsId
+                                    value
+                                )
+                            )
+                            assembled.measurements.labsResults
+                            (getMeasurementValueFunc assembled.measurements.labsResults)
+                            |> Maybe.withDefault leaveEncounterTuple
+
+                    else
+                        leaveEncounterTuple
+            in
             div [ class "ui full segment" ]
                 [ innerContent
                 , div [ class "actions" ]
                     [ button
                         [ class "ui fluid primary button"
-                        , onClick (SetActivePage <| UserPage GlobalCaseManagementPage)
+                        , onClick action
                         ]
-                        [ text <| translate language Translate.LeaveEncounter ]
+                        [ text <| translate language label ]
                     ]
                 ]
     in

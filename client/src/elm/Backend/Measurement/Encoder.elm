@@ -284,7 +284,10 @@ encodeBloodGpRsTestValue value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
-        ++ encodeNullable "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
         ++ encodeNullable "blood_group" value.bloodGroup encodeBloodGroup
         ++ encodeNullable "rhesus" value.rhesus encodeRhesus
         ++ [ ( "deleted", bool False )
@@ -328,7 +331,10 @@ encodeHepatitisBTestValue value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
-        ++ encodeNullable "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
         ++ encodeNullable "test_result" value.testResult encodeTestResult
         ++ [ ( "deleted", bool False )
            , ( "type", string "prenatal_hepatitis_b_test" )
@@ -447,7 +453,10 @@ encodeRandomBloodSugarTestValue type_ value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
-        ++ encodeNullable "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
         ++ encodeNullable "sugar_count" value.sugarCount float
         ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
@@ -478,7 +487,10 @@ encodeSyphilisTestValue value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
-        ++ encodeNullable "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
         ++ encodeNullable "test_result" value.testResult encodeTestResult
         ++ encodeEverySetNullable "illness_symptoms" value.symptoms encodeIllnessSymptom
         ++ [ ( "deleted", bool False )
@@ -633,6 +645,9 @@ encodeTestExecutionNote value =
 
             TestNoteToBeDoneAtHospital ->
                 "to-be-done-at-hospital"
+
+            TestNoteRunConfirmedByLabTech ->
+                "run-confirmed-by-lab-tech"
 
 
 encodeTestResult : TestResult -> Value
@@ -1806,11 +1821,12 @@ encodeVitalsValueWithType type_ value =
     [ ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
     ]
-        ++ encodeNullable "sys" value.sys float
-        ++ encodeNullable "dia" value.dia float
-        ++ encodeNullable "heart_rate" value.heartRate int
-        -- Not all CT got the repeated fields. Therefore we use
+        -- Not all Vitals CTs got the sys, dia, sys_repeated,
+        -- dia_repeated and  heart_rate fields. Therefore we use
         -- encodeIfSet, to send the field only if it has a value.
+        ++ encodeIfSet "sys" value.sys float
+        ++ encodeIfSet "dia" value.dia float
+        ++ encodeIfSet "heart_rate" value.heartRate int
         ++ encodeIfSet "sys_repeated" value.sysRepeated float
         ++ encodeIfSet "dia_repeated" value.diaRepeated float
         ++ [ ( "deleted", bool False )

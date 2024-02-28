@@ -44,14 +44,22 @@ type Msg
     | SaveVitals PersonId (Maybe ( VitalsId, Vitals ))
       -- Lab Results msgs
     | SetActiveLabResultsTask LaboratoryTask
+    | SetSyphilisTestFormBoolInput (Bool -> SyphilisResultForm PrenatalEncounterId -> SyphilisResultForm PrenatalEncounterId) Bool
+    | SetSyphilisTestExecutionNote TestExecutionNote
     | SetSyphilisTestResult String
     | SetIllnessSymptom IllnessSymptom
     | SaveSyphilisResult PersonId (Maybe ( PrenatalSyphilisTestId, PrenatalSyphilisTest )) (Maybe LaboratoryTask)
+    | SetHepatitisBTestFormBoolInput (Bool -> HepatitisBResultForm PrenatalEncounterId -> HepatitisBResultForm PrenatalEncounterId) Bool
+    | SetHepatitisBTestExecutionNote TestExecutionNote
     | SetHepatitisBTestResult String
     | SaveHepatitisBResult PersonId (Maybe ( PrenatalHepatitisBTestId, PrenatalHepatitisBTest )) (Maybe LaboratoryTask)
+    | SetBloodGpRsTestFormBoolInput (Bool -> BloodGpRsResultForm PrenatalEncounterId -> BloodGpRsResultForm PrenatalEncounterId) Bool
+    | SetBloodGpRsTestExecutionNote TestExecutionNote
     | SetBloodGroup String
     | SetRhesus String
     | SaveBloodGpRsResult PersonId (Maybe ( PrenatalBloodGpRsTestId, PrenatalBloodGpRsTest )) (Maybe LaboratoryTask)
+    | SetUrineDipstickTestFormBoolInput (Bool -> UrineDipstickResultForm -> UrineDipstickResultForm) Bool
+    | SetUrineDipstickTestExecutionNote TestExecutionNote
     | SetProtein String
     | SetPH String
     | SetGlucose String
@@ -62,19 +70,30 @@ type Msg
     | SetKetone String
     | SetBilirubin String
     | SaveUrineDipstickResult PersonId (Maybe ( PrenatalUrineDipstickTestId, PrenatalUrineDipstickTest )) (Maybe LaboratoryTask)
+    | SetHemoglobinTestFormBoolInput (Bool -> HemoglobinResultForm -> HemoglobinResultForm) Bool
+    | SetHemoglobinTestExecutionNote TestExecutionNote
     | SetHemoglobin String
     | SaveHemoglobinResult PersonId (Maybe ( PrenatalHemoglobinTestId, PrenatalHemoglobinTest )) (Maybe LaboratoryTask)
+    | SetRandomBloodSugarTestFormBoolInput (Bool -> RandomBloodSugarResultForm PrenatalEncounterId -> RandomBloodSugarResultForm PrenatalEncounterId) Bool
+    | SetRandomBloodSugarTestExecutionNote TestExecutionNote
     | SetRandomBloodSugar String
     | SaveRandomBloodSugarResult PersonId (Maybe ( PrenatalRandomBloodSugarTestId, PrenatalRandomBloodSugarTest )) (Maybe LaboratoryTask)
+    | SetHIVPCRTestFormBoolInput (Bool -> HIVPCRResultForm -> HIVPCRResultForm) Bool
+    | SetHIVPCRTestExecutionNote TestExecutionNote
     | SetHIVViralLoadUndetectable Bool
     | SetHIVViralLoad String
     | SaveHIVPCRResult PersonId (Maybe ( PrenatalHIVPCRTestId, PrenatalHIVPCRTest )) (Maybe LaboratoryTask)
     | SetHIVTestFormBoolInput (Bool -> HIVResultForm -> HIVResultForm) Bool
+    | SetHIVTestExecutionNote TestExecutionNote
     | SetHIVTestResult String
     | SaveHIVResult PersonId (Maybe ( PrenatalHIVTestId, PrenatalHIVTest )) (Maybe LaboratoryTask)
+    | SetPartnerHIVTestFormBoolInput (Bool -> PartnerHIVResultForm -> PartnerHIVResultForm) Bool
+    | SetPartnerHIVTestExecutionNote TestExecutionNote
     | SetPartnerHIVTestResult String
-    | SetMalariaTestResult String
     | SavePartnerHIVResult PersonId (Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )) (Maybe LaboratoryTask)
+    | SetMalariaTestFormBoolInput (Bool -> MalariaResultForm -> MalariaResultForm) Bool
+    | SetMalariaTestExecutionNote TestExecutionNote
+    | SetMalariaTestResult String
     | SetBloodSmearResult String
     | SaveMalariaResult PersonId (Maybe ( PrenatalMalariaTestId, PrenatalMalariaTest )) (Maybe LaboratoryTask)
       -- MalariaPreventionMsgs
