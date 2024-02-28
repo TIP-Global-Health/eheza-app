@@ -140,6 +140,11 @@ function hedley_admin_block_view($delta) {
     return;
   }
 
+  if (!hedley_admin_administrators_access()) {
+    // Only administrators can view the block.
+    return;
+  }
+
   $query = db_select('menu_links', 'm');
   $query->fields('m', ['link_path', 'link_title', 'options']);
   $query->condition('menu_name', 'menu-eheza-app-admin-menu');
