@@ -224,7 +224,7 @@ function hedley_standard_install() {
   // Set this as the administrator role.
   variable_set('user_admin_role', $admin_role->rid);
 
-  // Creating a E-ledger viewer role and add the permissions.
+  // Creating a E-ledger viewer role.
   $ledger_viewer_role = new stdClass();
   $ledger_viewer_role->name = 'E-ledger viewer';
   user_role_save($ledger_viewer_role);
@@ -233,6 +233,11 @@ function hedley_standard_install() {
   $nurse_role = new stdClass();
   $nurse_role->name = 'nurse';
   user_role_save($nurse_role);
+
+  // Creating an Aggregated NCDA viewer role.
+  $aggregated_ncda_viewer_role = new stdClass();
+  $aggregated_ncda_viewer_role->name = 'Aggregated NCDA viewer';
+  user_role_save($aggregated_ncda_viewer_role);
 
   $permissions = [];
   $nurse_permitted_types = [
@@ -677,4 +682,13 @@ function hedley_update_7039() {
   if (empty(variable_get('hedley_general_site_name', ''))) {
     variable_set('hedley_general_site_name', 'rwanda');
   }
+}
+
+/**
+ * Create 'Aggregated NCDA viewer' role.
+ */
+function hedley_update_7040() {
+  $aggregated_ncda_viewer_role = new stdClass();
+  $aggregated_ncda_viewer_role->name = 'Aggregated NCDA viewer';
+  user_role_save($aggregated_ncda_viewer_role);
 }
