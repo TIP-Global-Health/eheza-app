@@ -67,9 +67,9 @@ function hedley_ncda_menu() {
  *   TRUE if the user has access, FALSE otherwise.
  */
 function hedley_ncda_aggregated_ncda_report_access() {
-  $aggregated_ncda_viewer_role = user_role_load_by_name('Aggregated NCDA viewer');
+  $data_mananger_role = user_role_load_by_name('Data Manager');
 
-  return user_has_role($aggregated_ncda_viewer_role->rid) || hedley_admin_administrators_access();
+  return user_has_role($data_mananger_role->rid) || hedley_admin_administrators_access();
 }
 
 /**

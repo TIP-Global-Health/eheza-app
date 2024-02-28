@@ -229,15 +229,15 @@ function hedley_standard_install() {
   $ledger_viewer_role->name = 'E-ledger viewer';
   user_role_save($ledger_viewer_role);
 
+  // Creating a Data Manager role.
+  $data_manager_role = new stdClass();
+  $data_manager_role->name = 'Data Manager';
+  user_role_save($data_manager_role);
+
   // Creating a Nurse role and add the permissions.
   $nurse_role = new stdClass();
   $nurse_role->name = 'nurse';
   user_role_save($nurse_role);
-
-  // Creating an Aggregated NCDA viewer role.
-  $aggregated_ncda_viewer_role = new stdClass();
-  $aggregated_ncda_viewer_role->name = 'Aggregated NCDA viewer';
-  user_role_save($aggregated_ncda_viewer_role);
 
   $permissions = [];
   $nurse_permitted_types = [
@@ -685,10 +685,10 @@ function hedley_update_7039() {
 }
 
 /**
- * Create 'Aggregated NCDA viewer' role.
+ * Create 'Data Manager' role.
  */
 function hedley_update_7040() {
-  $aggregated_ncda_viewer_role = new stdClass();
-  $aggregated_ncda_viewer_role->name = 'Aggregated NCDA viewer';
-  user_role_save($aggregated_ncda_viewer_role);
+  $data_manager_role = new stdClass();
+  $data_manager_role->name = 'Data Manager';
+  user_role_save($data_manager_role);
 }

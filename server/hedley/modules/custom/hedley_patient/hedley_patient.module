@@ -37,12 +37,12 @@ function hedley_patient_menu() {
 /**
  * Implements hook_user_login().
  *
- * When Aggregated NCDA viewer users log in, redirect them
+ * When Data Manager users log in, redirect them
  * to Aggregated NCDA report page.
  */
 function hedley_patient_user_login(&$edit, $account) {
-  $aggregated_ncda_viewer_role = user_role_load_by_name('Aggregated NCDA viewer');
-  if (!user_has_role($aggregated_ncda_viewer_role->rid, $account)) {
+  $data_mananger_role = user_role_load_by_name('Data Manager');
+  if (!user_has_role($data_mananger_role->rid, $account)) {
     return;
   }
 
