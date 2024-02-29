@@ -1,7 +1,11 @@
 module Pages.GroupEncounterTypes.View exposing (view)
 
 import App.Model exposing (Msg(..))
+import AssocList as Dict
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
+import Backend.Model exposing (MsgIndexedDb(..))
+import Backend.Village.Utils exposing (getVillageClinicId)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -9,8 +13,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewBySyncStatus)
+import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
 
@@ -19,7 +24,7 @@ view language currentDate healthCenterId model =
     div
         [ class "wrap wrap-alt-2 page-encounter-types" ]
         [ viewHeader language
-        , viewContent language currentDate healthCenterId
+        , viewContent language currentDate model
             |> viewBySyncStatus language healthCenterId model.syncManager.syncInfoAuthorities
         ]
 
@@ -38,52 +43,60 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> HealthCenterId -> Html App.Model.Msg
-viewContent language currentDate healthCenterId =
-    -- let
-    --     encounterButton encounterType =
-    --         button
-    --             [ class "ui primary button encounter-type"
-    --             , onClick <| SetActivePage <| UserPage <| GroupEncounterParticipantsPage encounterType
-    --             ]
-    --             [ span [ class "text" ] [ text <| translate language <| Translate.GroupEncounterType encounterType isChw ]
-    --             , span [ class "icon-back" ] []
-    --             ]
-    --
-    --     buttons =
-    --         if isChw then
-    --             let
-    --                 childScoreboardButton =
-    --                     if ncdaEnabled features then
-    --                         encounterButton ChildScoreboardEncounter
-    --
-    --                     else
-    --                         emptyNode
-    --
-    --                 tuberculosiskManagementButton =
-    --                     if tuberculosisManagementEnabled features then
-    --                         encounterButton TuberculosisEncounter
-    --
-    --                     else
-    --                         emptyNode
-    --             in
-    --             [ encounterButton AcuteIllnessEncounter
-    --             , encounterButton AntenatalEncounter
-    --             , encounterButton NutritionEncounter
-    --             , encounterButton WellChildEncounter
-    --             , childScoreboardButton
-    --             , tuberculosiskManagementButton
-    --             ]
-    --
-    --         else
-    --             [ encounterButton AcuteIllnessEncounter
-    --             , encounterButton AntenatalEncounter
-    --             , encounterButton NutritionEncounter
-    --             , encounterButton NCDEncounter
-    --             , encounterButton WellChildEncounter
-    --             ]
-    -- in
-    -- p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
-    --     :: buttons
-    --     |> div [ class "ui full segment" ]
-    text "@todo"
+viewContent : Language -> NominalDate -> App.Model.Model -> Html App.Model.Msg
+viewContent language currentDate model =
+    let
+        encounterButton encounterType action =
+            button
+                [ class "ui primary button encounter-type"
+                , onClick action
+                ]
+                [ span [ class "text" ] [ text <| translate language <| Translate.GroupEncounterType encounterType ]
+                , span [ class "icon-back" ] []
+                ]
+
+        groupAssessmentButtonAction =
+            Maybe.andThen
+                (\villageId ->
+                    -- There is one clinic for each village, so, if we got village ID,
+                    -- we should be able to find the ID of its clinic.
+                    getVillageClinicId villageId model.indexedDb
+                        |> Maybe.map
+                            (\clinicId ->
+                                let
+                                    clinicSessions =
+                                        Dict.get clinicId model.indexedDb.sessionsByClinic
+                                            |> Maybe.andThen RemoteData.toMaybe
+                                            |> Maybe.map Dict.toList
+                                            |> Maybe.withDefault []
+
+                                    currentDaySessionId =
+                                        List.filter (Tuple.second >> .startDate >> (==) currentDate) clinicSessions
+                                            |> List.head
+                                            |> Maybe.map Tuple.first
+                                in
+                                currentDaySessionId
+                                    |> Maybe.map
+                                        (\sessionId ->
+                                            SessionPage sessionId AttendancePage
+                                                |> UserPage
+                                                |> SetActivePage
+                                        )
+                                    |> Maybe.withDefault
+                                        ({ startDate = currentDate
+                                         , endDate = Nothing
+                                         , clinicId = clinicId
+                                         , clinicType = Chw
+                                         }
+                                            |> PostSession
+                                            |> MsgIndexedDb
+                                        )
+                            )
+                )
+                model.villageId
+                |> Maybe.withDefault NoOp
+    in
+    div [ class "ui full segment" ]
+        [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
+        , encounterButton GroupEncounterNutrition groupAssessmentButtonAction
+        ]

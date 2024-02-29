@@ -365,9 +365,10 @@ emptyLoggedInModel site villageId nurse =
 
 
 type Msg
-    = -- Manage data we get from IndexedDb, and communication with the service
+    = NoOp
+      -- Manage data we get from IndexedDb, and communication with the service
       -- worker
-      MsgIndexedDb Backend.Model.MsgIndexedDb
+    | MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgSyncManager SyncManager.Model.Msg
       -- Messages that require login, or manage the login process

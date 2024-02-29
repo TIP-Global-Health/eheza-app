@@ -364,7 +364,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> oldPageWrapper configured.config model
 
                     ClinicalPage ->
-                        Pages.Clinical.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw model
+                        Pages.Clinical.View.view model.language currentDate healthCenterId isChw model
                             |> flexPageWrapper configured.config model
 
                     ClinicsPage ->

@@ -102,6 +102,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterProgramType(..)
         )
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
+import Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
 import Pages.MessagingCenter.Model exposing (MessagingTab(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
@@ -684,6 +685,7 @@ type TranslationId
     | GroupAssessment
     | Grams
     | Gravida
+    | GroupEncounterType GroupEncounterType
     | GroupOfFoods GroupOfFoods
     | Growth
     | HalfOfDosage String
@@ -6117,6 +6119,14 @@ translationSet trans =
             , kinyarwanda = Just "Inda zose watwise"
             , kirundi = Just "Umugore afise imbanyi canke yigeze gutwara inda"
             }
+
+        GroupEncounterType encounterType ->
+            case encounterType of
+                GroupEncounterNutrition ->
+                    translationSet ChildNutrition
+
+                GroupEncounterEducation ->
+                    translationSet HealthEducation
 
         HalfOfDosage dosage ->
             { english = "half of " ++ dosage ++ " dosage"

@@ -254,6 +254,9 @@ update msg model =
             model.syncManager.reverseGeoInfo
     in
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         MsgIndexedDb subMsg ->
             let
                 nurseId =
