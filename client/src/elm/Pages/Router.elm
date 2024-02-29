@@ -270,6 +270,9 @@ pageToFragment current =
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
 
+                GroupEncounterTypesPage ->
+                    Just "group-encounter-types/"
+
                 PregnancyOutcomePage initiator id ->
                     Just <| "pregnancy-outcome/" ++ fromEntityUuid id ++ "/" ++ recordPreganancyInitiatorToUrlFragment initiator
 
@@ -397,6 +400,7 @@ parser =
         , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (\id initiator -> UserPage <| DemographicsReportPage initiator id) (s "demographics-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
+        , map (UserPage <| GroupEncounterTypesPage) (s "group-encounter-types")
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
         , map (\id initiator -> UserPage <| PregnancyOutcomePage initiator id) (s "pregnancy-outcome" </> parseUuid </> parseRecordPreganancyInitiator)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)

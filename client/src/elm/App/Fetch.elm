@@ -21,6 +21,7 @@ import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
 import Pages.Device.Fetch
 import Pages.GlobalCaseManagement.Fetch
+import Pages.GroupEncounterTypes.Fetch
 import Pages.HomeVisit.Activity.Fetch
 import Pages.HomeVisit.Encounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
@@ -278,6 +279,10 @@ fetch model =
 
             UserPage IndividualEncounterTypesPage ->
                 Pages.IndividualEncounterTypes.Fetch.fetch
+                    |> List.map MsgIndexedDb
+
+            UserPage GroupEncounterTypesPage ->
+                Pages.GroupEncounterTypes.Fetch.fetch
                     |> List.map MsgIndexedDb
 
             UserPage (PregnancyOutcomePage _ id) ->

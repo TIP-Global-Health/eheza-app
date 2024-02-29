@@ -610,6 +610,7 @@ type TranslationId
     | DangerSignsTask DangerSignsTask
     | EmptyString
     | EncounterDate
+    | EncounterTypes
     | EncounterTypePageLabel DashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterWarningForDiagnosisPane EncounterWarning String
@@ -5221,6 +5222,12 @@ translationSet trans =
             { english = "Encounter Date"
             , kinyarwanda = Just "Itariki igikorwa cyakoreweho"
             , kirundi = Just "Itarike y'umubonano"
+            }
+
+        EncounterTypes ->
+            { english = "Encounter Types"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -22721,10 +22728,10 @@ translateActivePage page =
                     }
 
                 IndividualEncounterTypesPage ->
-                    { english = "Encounter Types"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EncounterTypes
+
+                GroupEncounterTypesPage ->
+                    translationSet EncounterTypes
 
                 PregnancyOutcomePage _ _ ->
                     { english = "Pregnancy Outcome"
