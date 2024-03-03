@@ -23,8 +23,7 @@ type SelectedEntity
 
 
 type alias PatientData =
-    { id : Int
-    , created : NominalDate
+    { created : NominalDate
     , birthDate : NominalDate
     , eddDate : NominalDate
     , lowBirthWeight : Maybe Bool

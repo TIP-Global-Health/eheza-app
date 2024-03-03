@@ -48,7 +48,6 @@ decodeSelectedEntity =
 decodePatientData : NominalDate -> Decoder PatientData
 decodePatientData currentDate =
     succeed PatientData
-        |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
         |> required "edd_date" decodeYYYYMMDD

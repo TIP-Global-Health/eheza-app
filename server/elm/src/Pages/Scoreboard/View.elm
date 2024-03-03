@@ -1374,8 +1374,18 @@ formatValues currentDate yearSelectorGap =
                     value
 
                 else
+                    -- Not showing data of future months.
                     ""
 
+            else if yearSelectorGap == -1 then
+                if index >= 10 then
+                    -- Showing data starting Nov 2023.
+                    -- For prior dates - dash for all rows.
+                    value
+
+                else
+                    "-"
+
             else
-                value
+                "-"
         )
