@@ -78,7 +78,7 @@ viewScoreboardData language currentDate data model =
                                                 resolveTargetDateForMonth gapInMonths currentDate
 
                                             ageInMonths =
-                                                diffMonths record.birthDate targetDateForMonth
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                                             gap =
                                                 ageInMonths - gapInMonths
@@ -169,7 +169,7 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
                                                 resolveTargetDateForMonth gapInMonths currentDate
 
                                             ageInMonths =
-                                                diffMonths record.birthDate targetDateForMonth
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                                             existedDuringExaminationMonth =
                                                 -- Making sure patient was already created during examination month.
@@ -554,7 +554,7 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                             ageInMonths =
                                                 -- Using EDD date to properly resolve the month of
                                                 -- prgnancy (as child may have been borm premature).
-                                                diffMonths record.eddDate targetDateForMonth
+                                                diffMonths (Date.floor Month record.eddDate) targetDateForMonth
 
                                             row1AsAgeInMonths =
                                                 List.map
@@ -643,7 +643,7 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                 Date.compare record.created targetDateForMonth == LT
 
                                             ageInMonths =
-                                                diffMonths record.birthDate targetDateForMonth
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                                             ageInMonthsForIndexCell =
                                                 ageInMonths - gapInMonths
@@ -858,7 +858,7 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                                                 Date.compare record.created targetDateForMonth == LT
 
                                             ageInMonths =
-                                                diffMonths record.birthDate targetDateForMonth
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                                             row2AsAgeInMonths =
                                                 List.map
@@ -992,7 +992,7 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 Date.compare record.created targetDateForMonth == LT
 
                                             ageInMonths =
-                                                diffMonths record.birthDate targetDateForMonth
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                                             row1AsAgeInMonths =
                                                 List.map
@@ -1187,7 +1187,7 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                                                 Date.compare record.created targetDateForMonth == LT
 
                                             ageInMonths =
-                                                diffMonths record.birthDate targetDateForMonth
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                                             row1AsAgeInMonths =
                                                 List.map
