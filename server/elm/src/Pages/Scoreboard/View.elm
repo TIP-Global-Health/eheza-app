@@ -269,40 +269,88 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                                                 Date.compare record.created targetDateForMonth == LT
 
                                             stuntingSevereAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.stunting.severe
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.stunting.severe
 
                                             stuntingModerateAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.stunting.moderate
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.stunting.moderate
 
                                             stuntingNormalAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.stunting.normal
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.stunting.normal
 
                                             underweightSevereAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.underweight.severe
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.underweight.severe
 
                                             underweightModerateAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.underweight.moderate
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.underweight.moderate
 
                                             underweightNormalAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.underweight.normal
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.underweight.normal
 
                                             wastingSevereAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.wasting.severe
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.wasting.severe
 
                                             wastingModerateAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.wasting.moderate
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.wasting.moderate
 
                                             wastingNormalAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.wasting.normal
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.wasting.normal
 
                                             muacSevereAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.muac.severe
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.muac.severe
 
                                             muacModerateAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.muac.moderate
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.muac.moderate
 
                                             muacNormalAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.muac.normal
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.muac.normal
 
                                             ( row1, row2, row3 ) =
                                                 if
@@ -396,13 +444,25 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 v
                                                 Date.compare record.created targetDateForMonth == LT
 
                                             severeAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.stunting.severe
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.stunting.severe
 
                                             moderateAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.stunting.moderate
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.stunting.moderate
 
                                             normalAsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.nutrition.stunting.normal
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.nutrition.stunting.normal
 
                                             row1 =
                                                 if
@@ -497,7 +557,11 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                 diffMonths record.eddDate targetDateForMonth
 
                                             row1AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.ancNewborn.row1
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.ancNewborn.row1
 
                                             gap =
                                                 gapInMonths - ageInMonths
@@ -585,16 +649,32 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                 ageInMonths - gapInMonths
 
                                             row2AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.universalIntervention.row2
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.universalIntervention.row2
 
                                             row3AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.universalIntervention.row3
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.universalIntervention.row3
 
                                             row4AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.universalIntervention.row4
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.universalIntervention.row4
 
                                             row5AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.universalIntervention.row5
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.universalIntervention.row5
 
                                             row1 =
                                                 if
@@ -781,13 +861,25 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
                                                 diffMonths record.birthDate targetDateForMonth
 
                                             row2AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.nutritionBehavior.row2
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.nutritionBehavior.row2
 
                                             row3AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.nutritionBehavior.row3
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.nutritionBehavior.row3
 
                                             row4AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.nutritionBehavior.row4
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.nutritionBehavior.row4
 
                                             gap =
                                                 ageInMonths - gapInMonths
@@ -903,22 +995,46 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 diffMonths record.birthDate targetDateForMonth
 
                                             row1AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.targetedInterventions.row1
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.targetedInterventions.row1
 
                                             row2AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.targetedInterventions.row2
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.targetedInterventions.row2
 
                                             row3AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.targetedInterventions.row3
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.targetedInterventions.row3
 
                                             row4AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.targetedInterventions.row4
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.targetedInterventions.row4
 
                                             row5AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.targetedInterventions.row5
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.targetedInterventions.row5
 
                                             row6AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.targetedInterventions.row6
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.targetedInterventions.row6
 
                                             gap =
                                                 ageInMonths - gapInMonths
@@ -1074,16 +1190,32 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                                                 diffMonths record.birthDate targetDateForMonth
 
                                             row1AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.infrastructureEnvironmentWash.row1
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.infrastructureEnvironmentWash.row1
 
                                             row2AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.infrastructureEnvironmentWash.row2
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.infrastructureEnvironmentWash.row2
 
                                             row3AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.infrastructureEnvironmentWash.row3
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.infrastructureEnvironmentWash.row3
 
                                             row5AsAgeInMonths =
-                                                List.map (\date -> diffMonths date targetDateForMonth) record.ncda.infrastructureEnvironmentWash.row5
+                                                List.map
+                                                    (\date ->
+                                                        diffMonths (Date.floor Month date) targetDateForMonth
+                                                    )
+                                                    record.ncda.infrastructureEnvironmentWash.row5
 
                                             row1 =
                                                 if

@@ -28688,7 +28688,10 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 											var row1AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.ancNewborn.row1);
 											var existedDuringExaminationMonth = _Utils_eq(
@@ -28788,73 +28791,109 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 											var underweightModerateAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.underweight.moderate);
 											var underweightNormalAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.underweight.normal);
 											var underweightSevereAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.underweight.severe);
 											var wastingModerateAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.wasting.moderate);
 											var wastingNormalAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.wasting.normal);
 											var wastingSevereAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.wasting.severe);
 											var stuntingSevereAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.stunting.severe);
 											var stuntingNormalAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.stunting.normal);
 											var stuntingModerateAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.stunting.moderate);
 											var muacSevereAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.muac.severe);
 											var muacNormalAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.muac.normal);
 											var muacModerateAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.muac.moderate);
 											var existedDuringExaminationMonth = _Utils_eq(
@@ -29128,25 +29167,37 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 											var row5AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.infrastructureEnvironmentWash.row5);
 											var row3AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.infrastructureEnvironmentWash.row3);
 											var row2AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.infrastructureEnvironmentWash.row2);
 											var row1AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.infrastructureEnvironmentWash.row1);
 											var existedDuringExaminationMonth = _Utils_eq(
@@ -29270,19 +29321,28 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
 											var row4AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.nutritionBehavior.row4);
 											var row3AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.nutritionBehavior.row3);
 											var row2AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.nutritionBehavior.row2);
 											var existedDuringExaminationMonth = _Utils_eq(
@@ -29396,19 +29456,28 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F7(
 											var severeAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.stunting.severe);
 											var normalAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.stunting.normal);
 											var moderateAsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.nutrition.stunting.moderate);
 											var existedDuringExaminationMonth = _Utils_eq(
@@ -29516,37 +29585,55 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F7(
 											var row6AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.targetedInterventions.row6);
 											var row5AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.targetedInterventions.row5);
 											var row4AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.targetedInterventions.row4);
 											var row3AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.targetedInterventions.row3);
 											var row2AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.targetedInterventions.row2);
 											var row1AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.targetedInterventions.row1);
 											var existedDuringExaminationMonth = _Utils_eq(
@@ -29929,25 +30016,37 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 											var row5AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.universalIntervention.row5);
 											var row4AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.universalIntervention.row4);
 											var row3AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.universalIntervention.row3);
 											var row2AsAgeInMonths = A2(
 												$elm$core$List$map,
 												function (date) {
-													return A2($author$project$Gizra$NominalDate$diffMonths, date, targetDateForMonth);
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
 												},
 												record.ncda.universalIntervention.row2);
 											var existedDuringExaminationMonth = _Utils_eq(
