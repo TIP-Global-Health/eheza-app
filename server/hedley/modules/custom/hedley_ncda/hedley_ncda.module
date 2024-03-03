@@ -398,7 +398,11 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
         continue;
       }
 
-      $data[] = json_decode($json_data);
+      $decoded = json_decode($json_data);
+      $decoded->id = $node->nid;
+      $decoded->created = date("Y-m-d", $node->created);
+
+      $data[] = $decoded;
     }
 
     $nid = end($ids);

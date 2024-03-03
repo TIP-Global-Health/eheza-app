@@ -58,7 +58,7 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Model exposing (Village)
 import Date exposing (Unit(..), isBetween)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
 import List.Extra
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (VaccinationProgressDict)
@@ -79,7 +79,6 @@ import Pages.GlobalCaseManagement.View
         , generateNutritionFollowUpEntries
         , generatePrenatalFollowUpEntries
         )
-import Pages.Utils exposing (getLastDayOfMonth)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language)
 import Utils.NominalDate exposing (sortByDate, sortByDateDesc)
@@ -1236,7 +1235,7 @@ generateTotalBeneficiariesMonthlyDuringPastYear currentDate stats =
                 let
                     maxJoinDate =
                         Date.add Months (-1 * index) currentDate
-                            |> getLastDayOfMonth
+                            |> toLastDayOfMonth
 
                     minGraduationDate =
                         Date.add Months (-1 * index) currentDate
@@ -1462,7 +1461,7 @@ filterStatsByPeriod fiterFunc currentDate period stats =
                     ( Date.add Months -1 currentDate
                         |> Date.floor Date.Month
                     , Date.add Months -1 currentDate
-                        |> getLastDayOfMonth
+                        |> toLastDayOfMonth
                     )
 
                 ThreeMonthsAgo ->
@@ -1470,7 +1469,7 @@ filterStatsByPeriod fiterFunc currentDate period stats =
                     ( Date.add Months -2 currentDate
                         |> Date.floor Date.Month
                     , Date.add Months -2 currentDate
-                        |> getLastDayOfMonth
+                        |> toLastDayOfMonth
                     )
 
         filterPartial =

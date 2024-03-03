@@ -39,7 +39,7 @@ import Date exposing (Month, Unit(..), numberToMonth)
 import Debug exposing (toString)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
+import Gizra.NominalDate exposing (NominalDate, isDiffTruthy, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -1664,8 +1664,7 @@ viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishe
                     let
                         maxJoinDate =
                             Date.add Months -1 currentDate
-                                |> Date.ceiling Date.Month
-                                |> Date.add Days -1
+                                |> toLastDayOfMonth
 
                         minGraduationDate =
                             Date.add Months -1 currentDate
