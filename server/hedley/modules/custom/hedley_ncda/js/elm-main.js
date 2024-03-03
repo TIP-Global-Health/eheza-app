@@ -5825,11 +5825,31 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
 	function (site, entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records, site: site};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F5(
-	function (birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
-		return {birthDate: birthDate, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
+var $author$project$Backend$Scoreboard$Model$PatientData = F7(
+	function (id, created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
+		return {birthDate: birthDate, created: created, eddDate: eddDate, id: id, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$int,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toInt(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not an integer');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
 var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
 	function (ancNewborn, universalIntervention, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
 		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions, universalIntervention: universalIntervention};
@@ -6651,7 +6671,6 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
-var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 	if (result.$ === 'Ok') {
 		var successValue = result.a;
@@ -6854,7 +6873,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues = function (c
 		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
 };
 var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
 	function (pathDecoder, valDecoder, fallback) {
@@ -7427,7 +7445,15 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 						'birth_date',
 						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData))))));
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'created',
+							$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'id',
+								$author$project$Gizra$Json$decodeInt,
+								$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData))))))));
 };
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
@@ -28064,15 +28090,106 @@ var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
 	return {$: 'ChaneYearGap', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$ModePercentages = {$: 'ModePercentages'};
+var $justinmimbs$date$Date$Month = {$: 'Month'};
 var $author$project$Translate$NewSelection = {$: 'NewSelection'};
 var $author$project$Pages$Scoreboard$Model$SetViewMode = function (a) {
 	return {$: 'SetViewMode', a: a};
 };
+var $elm$time$Time$Fri = {$: 'Fri'};
+var $elm$time$Time$Mon = {$: 'Mon'};
+var $elm$time$Time$Sat = {$: 'Sat'};
+var $elm$time$Time$Sun = {$: 'Sun'};
+var $elm$time$Time$Thu = {$: 'Thu'};
+var $elm$time$Time$Tue = {$: 'Tue'};
+var $elm$time$Time$Wed = {$: 'Wed'};
+var $justinmimbs$date$Date$weekdayToNumber = function (wd) {
+	switch (wd.$) {
+		case 'Mon':
+			return 1;
+		case 'Tue':
+			return 2;
+		case 'Wed':
+			return 3;
+		case 'Thu':
+			return 4;
+		case 'Fri':
+			return 5;
+		case 'Sat':
+			return 6;
+		default:
+			return 7;
+	}
+};
+var $justinmimbs$date$Date$daysSincePreviousWeekday = F2(
+	function (wd, date) {
+		return A2(
+			$elm$core$Basics$modBy,
+			7,
+			($justinmimbs$date$Date$weekdayNumber(date) + 7) - $justinmimbs$date$Date$weekdayToNumber(wd));
+	});
+var $justinmimbs$date$Date$firstOfMonth = F2(
+	function (y, m) {
+		return $justinmimbs$date$Date$RD(
+			($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + 1);
+	});
 var $justinmimbs$date$Date$month = A2(
 	$elm$core$Basics$composeR,
 	$justinmimbs$date$Date$toCalendarDate,
 	function ($) {
 		return $.month;
+	});
+var $justinmimbs$date$Date$monthToQuarter = function (m) {
+	return (($justinmimbs$date$Date$monthToNumber(m) + 2) / 3) | 0;
+};
+var $justinmimbs$date$Date$quarter = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToQuarter);
+var $justinmimbs$date$Date$quarterToMonth = function (q) {
+	return $justinmimbs$date$Date$numberToMonth((q * 3) - 2);
+};
+var $justinmimbs$date$Date$floor = F2(
+	function (interval, date) {
+		var rd = date.a;
+		switch (interval.$) {
+			case 'Year':
+				return $justinmimbs$date$Date$firstOfYear(
+					$justinmimbs$date$Date$year(date));
+			case 'Quarter':
+				return A2(
+					$justinmimbs$date$Date$firstOfMonth,
+					$justinmimbs$date$Date$year(date),
+					$justinmimbs$date$Date$quarterToMonth(
+						$justinmimbs$date$Date$quarter(date)));
+			case 'Month':
+				return A2(
+					$justinmimbs$date$Date$firstOfMonth,
+					$justinmimbs$date$Date$year(date),
+					$justinmimbs$date$Date$month(date));
+			case 'Week':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Mon, date));
+			case 'Monday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Mon, date));
+			case 'Tuesday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Tue, date));
+			case 'Wednesday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Wed, date));
+			case 'Thursday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Thu, date));
+			case 'Friday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Fri, date));
+			case 'Saturday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Sat, date));
+			case 'Sunday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Sun, date));
+			default:
+				return date;
+		}
 	});
 var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
 var $author$project$Pages$Scoreboard$View$generateMonthsGap = F2(
@@ -28109,6 +28226,51 @@ var $elm$core$List$repeatHelp = F3(
 var $elm$core$List$repeat = F2(
 	function (n, value) {
 		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $justinmimbs$date$Date$add = F3(
+	function (unit, n, _v0) {
+		var rd = _v0.a;
+		switch (unit.$) {
+			case 'Years':
+				return A3(
+					$justinmimbs$date$Date$add,
+					$justinmimbs$date$Date$Months,
+					12 * n,
+					$justinmimbs$date$Date$RD(rd));
+			case 'Months':
+				var date = $justinmimbs$date$Date$toCalendarDate(
+					$justinmimbs$date$Date$RD(rd));
+				var wholeMonths = ((12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1)) + n;
+				var m = $justinmimbs$date$Date$numberToMonth(
+					A2($elm$core$Basics$modBy, 12, wholeMonths) + 1);
+				var y = A2($justinmimbs$date$Date$floorDiv, wholeMonths, 12) + 1;
+				return $justinmimbs$date$Date$RD(
+					($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A2(
+						$elm$core$Basics$min,
+						date.day,
+						A2($justinmimbs$date$Date$daysInMonth, y, m)));
+			case 'Weeks':
+				return $justinmimbs$date$Date$RD(rd + (7 * n));
+			default:
+				return $justinmimbs$date$Date$RD(rd + n);
+		}
+	});
+var $justinmimbs$date$Date$Days = {$: 'Days'};
+var $author$project$Gizra$NominalDate$toLastDayOfMonth = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$floor($justinmimbs$date$Date$Month),
+	A2(
+		$elm$core$Basics$composeR,
+		A2($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, 1),
+		A2($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -1)));
+var $author$project$Pages$Scoreboard$View$resolveTargetDateForMonth = F2(
+	function (gapInMonths, currentDate) {
+		return (!gapInMonths) ? currentDate : $author$project$Gizra$NominalDate$toLastDayOfMonth(
+			A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * gapInMonths, currentDate));
 	});
 var $author$project$Translate$ANCNewborn = {$: 'ANCNewborn'};
 var $author$project$Pages$Scoreboard$Model$IronDuringPregnancy = {$: 'IronDuringPregnancy'};
@@ -28512,13 +28674,6 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var row1AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.ancNewborn.row1);
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.eddDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -28529,9 +28684,26 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var row1AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.ancNewborn.row1);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var row1 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths)) ? (accumValue.row1 + 1) : accumValue.row1;
+											var ageInMonths = A2(
+												$author$project$Gizra$NominalDate$diffMonths,
+												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.eddDate),
+												targetDateForMonth);
 											var gap = gapInMonths - ageInMonths;
-											var row2 = (record.ncda.ancNewborn.row2 && ((gap > 0) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row2 = (existedDuringExaminationMonth && ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
 											return {row1: row1, row2: row2};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -28608,78 +28780,6 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var wastingSevereAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.wasting.severe);
-					var wastingNormalAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.wasting.normal);
-					var wastingModerateAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.wasting.moderate);
-					var underweightSevereAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.underweight.severe);
-					var underweightNormalAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.underweight.normal);
-					var underweightModerateAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.underweight.moderate);
-					var stuntingSevereAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.stunting.severe);
-					var stuntingNormalAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.stunting.normal);
-					var stuntingModerateAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.stunting.moderate);
-					var muacSevereAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.muac.severe);
-					var muacNormalAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.muac.normal);
-					var muacModerateAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.muac.moderate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -28690,7 +28790,119 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var _v0 = (A2($elm$core$List$member, gapInMonths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacSevereAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((A2($elm$core$List$member, gapInMonths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacNormalAsAgeInMonths)))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var underweightModerateAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.underweight.moderate);
+											var underweightNormalAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.underweight.normal);
+											var underweightSevereAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.underweight.severe);
+											var wastingModerateAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.wasting.moderate);
+											var wastingNormalAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.wasting.normal);
+											var wastingSevereAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.wasting.severe);
+											var stuntingSevereAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.stunting.severe);
+											var stuntingNormalAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.stunting.normal);
+											var stuntingModerateAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.stunting.moderate);
+											var muacSevereAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.muac.severe);
+											var muacNormalAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.muac.normal);
+											var muacModerateAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.muac.moderate);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var _v0 = (existedDuringExaminationMonth && (A2($elm$core$List$member, gapInMonths, stuntingSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightSevereAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingSevereAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacSevereAsAgeInMonths))))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((existedDuringExaminationMonth && (A2($elm$core$List$member, gapInMonths, stuntingModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightModerateAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingModerateAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacModerateAsAgeInMonths))))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((existedDuringExaminationMonth && (A2($elm$core$List$member, gapInMonths, stuntingNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, underweightNormalAsAgeInMonths) || (A2($elm$core$List$member, gapInMonths, wastingNormalAsAgeInMonths) || A2($elm$core$List$member, gapInMonths, muacNormalAsAgeInMonths))))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
 											var row1 = _v0.a;
 											var row2 = _v0.b;
 											var row3 = _v0.c;
@@ -28830,7 +29042,6 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F7(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -28841,11 +29052,19 @@ var $author$project$Pages$Scoreboard$View$viewDemographicsPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var ageInMonths = A2(
+												$author$project$Gizra$NominalDate$diffMonths,
+												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
+												targetDateForMonth);
 											var gap = ageInMonths - gapInMonths;
-											var row2 = (!gap) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row3 = ((!gap) && _Utils_eq(
+											var row2 = (existedDuringExaminationMonth && (!gap)) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (existedDuringExaminationMonth && ((!gap) && _Utils_eq(
 												record.lowBirthWeight,
-												$elm$core$Maybe$Just(true))) ? (accumValue.row3 + 1) : accumValue.row3;
+												$elm$core$Maybe$Just(true)))) ? (accumValue.row3 + 1) : accumValue.row3;
 											return {row2: row2, row3: row3};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -28940,31 +29159,6 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var row5AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.infrastructureEnvironmentWash.row5);
-					var row3AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.infrastructureEnvironmentWash.row3);
-					var row2AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.infrastructureEnvironmentWash.row2);
-					var row1AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.infrastructureEnvironmentWash.row1);
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -28975,14 +29169,58 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var row5 = A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var row5AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.infrastructureEnvironmentWash.row5);
+											var row3AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.infrastructureEnvironmentWash.row3);
+											var row2AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.infrastructureEnvironmentWash.row2);
+											var row1AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.infrastructureEnvironmentWash.row1);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var row1 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths)) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row2 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths)) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths)) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row5 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths)) ? (accumValue.row5 + 1) : accumValue.row5;
+											var ageInMonths = A2(
+												$author$project$Gizra$NominalDate$diffMonths,
+												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
+												targetDateForMonth);
 											var row4 = function () {
 												var gap = ageInMonths - gapInMonths;
-												return (record.ncda.infrastructureEnvironmentWash.row4 && ((gap >= 0) && (gap < 24))) ? (accumValue.row4 + 1) : accumValue.row4;
+												return (existedDuringExaminationMonth && (record.ncda.infrastructureEnvironmentWash.row4 && ((gap >= 0) && (gap < 24)))) ? (accumValue.row4 + 1) : accumValue.row4;
 											}();
-											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -29078,25 +29316,6 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var row4AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.nutritionBehavior.row4);
-					var row3AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.nutritionBehavior.row3);
-					var row2AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.nutritionBehavior.row2);
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -29107,11 +29326,46 @@ var $author$project$Pages$Scoreboard$View$viewNutritionBehaviorPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
-											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var row4AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.nutritionBehavior.row4);
+											var row3AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.nutritionBehavior.row3);
+											var row2AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.nutritionBehavior.row2);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var row2 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths)) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths)) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row4 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths)) ? (accumValue.row4 + 1) : accumValue.row4;
+											var ageInMonths = A2(
+												$author$project$Gizra$NominalDate$diffMonths,
+												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
+												targetDateForMonth);
 											var gap = ageInMonths - gapInMonths;
-											var row1 = ((gap >= 0) && ((gap < 6) && record.ncda.nutritionBehavior.row1)) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row1 = (existedDuringExaminationMonth && ((gap >= 0) && ((gap < 6) && record.ncda.nutritionBehavior.row1))) ? (accumValue.row1 + 1) : accumValue.row1;
 											return {row1: row1, row2: row2, row3: row3, row4: row4};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -29200,24 +29454,6 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F7(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var severeAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.stunting.severe);
-					var normalAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.stunting.normal);
-					var moderateAsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.nutrition.stunting.moderate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -29228,9 +29464,40 @@ var $author$project$Pages$Scoreboard$View$viewStuntingPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var row3 = A2($elm$core$List$member, gapInMonths, normalAsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMonths, moderateAsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row1 = A2($elm$core$List$member, gapInMonths, severeAsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var severeAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.stunting.severe);
+											var normalAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.stunting.normal);
+											var moderateAsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.nutrition.stunting.moderate);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var row1 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, severeAsAgeInMonths)) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row2 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, moderateAsAgeInMonths)) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, normalAsAgeInMonths)) ? (accumValue.row3 + 1) : accumValue.row3;
 											return {row1: row1, row2: row2, row3: row3};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -29316,43 +29583,6 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F7(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var row6AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.targetedInterventions.row6);
-					var row5AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.targetedInterventions.row5);
-					var row4AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.targetedInterventions.row4);
-					var row3AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.targetedInterventions.row3);
-					var row2AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.targetedInterventions.row2);
-					var row1AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.targetedInterventions.row1);
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -29363,13 +29593,75 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F7(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var row6 = A2($elm$core$List$member, gapInMonths, row6AsAgeInMonths) ? (accumValue.row6 + 1) : accumValue.row6;
-											var row5 = A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
-											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
-											var row1 = A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths) ? (accumValue.row1 + 1) : accumValue.row1;
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var row6AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.targetedInterventions.row6);
+											var row5AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.targetedInterventions.row5);
+											var row4AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.targetedInterventions.row4);
+											var row3AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.targetedInterventions.row3);
+											var row2AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.targetedInterventions.row2);
+											var row1AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.targetedInterventions.row1);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var row1 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row1AsAgeInMonths)) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row4 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths)) ? (accumValue.row4 + 1) : accumValue.row4;
+											var row5 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths)) ? (accumValue.row5 + 1) : accumValue.row5;
+											var row6 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row6AsAgeInMonths)) ? (accumValue.row6 + 1) : accumValue.row6;
+											var ageInMonths = A2(
+												$author$project$Gizra$NominalDate$diffMonths,
+												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
+												targetDateForMonth);
 											var gap = ageInMonths - gapInMonths;
-											var row2 = (A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) && ((gap >= 0) && (gap < 24))) ? (accumValue.row2 + 1) : accumValue.row2;
-											var row3 = (A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) && ((gap >= 0) && (gap < 24))) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row2 = (existedDuringExaminationMonth && (A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) && ((gap >= 0) && (gap < 24)))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (existedDuringExaminationMonth && (A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) && ((gap >= 0) && (gap < 24)))) ? (accumValue.row3 + 1) : accumValue.row3;
 											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5, row6: row6};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -29453,139 +29745,15 @@ var $author$project$Pages$Scoreboard$View$viewTargetedInterventionsPane = F7(
 						rows))
 				]));
 	});
-var $justinmimbs$date$Date$Days = {$: 'Days'};
 var $author$project$Pages$Scoreboard$Model$Deworming = {$: 'Deworming'};
 var $author$project$Pages$Scoreboard$Model$ECDServices = {$: 'ECDServices'};
 var $author$project$Pages$Scoreboard$Model$Immunization = {$: 'Immunization'};
-var $justinmimbs$date$Date$Month = {$: 'Month'};
 var $author$project$Translate$NCDAUniversalInterventionItemLabel = function (a) {
 	return {$: 'NCDAUniversalInterventionItemLabel', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$OngeraMNP = {$: 'OngeraMNP'};
 var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention'};
 var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $justinmimbs$date$Date$add = F3(
-	function (unit, n, _v0) {
-		var rd = _v0.a;
-		switch (unit.$) {
-			case 'Years':
-				return A3(
-					$justinmimbs$date$Date$add,
-					$justinmimbs$date$Date$Months,
-					12 * n,
-					$justinmimbs$date$Date$RD(rd));
-			case 'Months':
-				var date = $justinmimbs$date$Date$toCalendarDate(
-					$justinmimbs$date$Date$RD(rd));
-				var wholeMonths = ((12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1)) + n;
-				var m = $justinmimbs$date$Date$numberToMonth(
-					A2($elm$core$Basics$modBy, 12, wholeMonths) + 1);
-				var y = A2($justinmimbs$date$Date$floorDiv, wholeMonths, 12) + 1;
-				return $justinmimbs$date$Date$RD(
-					($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A2(
-						$elm$core$Basics$min,
-						date.day,
-						A2($justinmimbs$date$Date$daysInMonth, y, m)));
-			case 'Weeks':
-				return $justinmimbs$date$Date$RD(rd + (7 * n));
-			default:
-				return $justinmimbs$date$Date$RD(rd + n);
-		}
-	});
-var $elm$time$Time$Fri = {$: 'Fri'};
-var $elm$time$Time$Mon = {$: 'Mon'};
-var $elm$time$Time$Sat = {$: 'Sat'};
-var $elm$time$Time$Sun = {$: 'Sun'};
-var $elm$time$Time$Thu = {$: 'Thu'};
-var $elm$time$Time$Tue = {$: 'Tue'};
-var $elm$time$Time$Wed = {$: 'Wed'};
-var $justinmimbs$date$Date$weekdayToNumber = function (wd) {
-	switch (wd.$) {
-		case 'Mon':
-			return 1;
-		case 'Tue':
-			return 2;
-		case 'Wed':
-			return 3;
-		case 'Thu':
-			return 4;
-		case 'Fri':
-			return 5;
-		case 'Sat':
-			return 6;
-		default:
-			return 7;
-	}
-};
-var $justinmimbs$date$Date$daysSincePreviousWeekday = F2(
-	function (wd, date) {
-		return A2(
-			$elm$core$Basics$modBy,
-			7,
-			($justinmimbs$date$Date$weekdayNumber(date) + 7) - $justinmimbs$date$Date$weekdayToNumber(wd));
-	});
-var $justinmimbs$date$Date$firstOfMonth = F2(
-	function (y, m) {
-		return $justinmimbs$date$Date$RD(
-			($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + 1);
-	});
-var $justinmimbs$date$Date$monthToQuarter = function (m) {
-	return (($justinmimbs$date$Date$monthToNumber(m) + 2) / 3) | 0;
-};
-var $justinmimbs$date$Date$quarter = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToQuarter);
-var $justinmimbs$date$Date$quarterToMonth = function (q) {
-	return $justinmimbs$date$Date$numberToMonth((q * 3) - 2);
-};
-var $justinmimbs$date$Date$floor = F2(
-	function (interval, date) {
-		var rd = date.a;
-		switch (interval.$) {
-			case 'Year':
-				return $justinmimbs$date$Date$firstOfYear(
-					$justinmimbs$date$Date$year(date));
-			case 'Quarter':
-				return A2(
-					$justinmimbs$date$Date$firstOfMonth,
-					$justinmimbs$date$Date$year(date),
-					$justinmimbs$date$Date$quarterToMonth(
-						$justinmimbs$date$Date$quarter(date)));
-			case 'Month':
-				return A2(
-					$justinmimbs$date$Date$firstOfMonth,
-					$justinmimbs$date$Date$year(date),
-					$justinmimbs$date$Date$month(date));
-			case 'Week':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Mon, date));
-			case 'Monday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Mon, date));
-			case 'Tuesday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Tue, date));
-			case 'Wednesday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Wed, date));
-			case 'Thursday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Thu, date));
-			case 'Friday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Fri, date));
-			case 'Saturday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Sat, date));
-			case 'Sunday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Sun, date));
-			default:
-				return date;
-		}
-	});
 var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = _List_fromArray(
 	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
 var $justinmimbs$date$Date$Weeks = {$: 'Weeks'};
@@ -29849,31 +30017,6 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var row5AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.universalIntervention.row5);
-					var row4AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.universalIntervention.row4);
-					var row3AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.universalIntervention.row3);
-					var row2AsAgeInMonths = A2(
-						$elm$core$List$map,
-						function (date) {
-							return A2($author$project$Gizra$NominalDate$diffMonths, date, currentDate);
-						},
-						record.ncda.universalIntervention.row2);
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -29884,13 +30027,57 @@ var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
-											var row5 = A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths) ? (accumValue.row5 + 1) : accumValue.row5;
-											var row4 = A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths) ? (accumValue.row4 + 1) : accumValue.row4;
-											var row3 = A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths) ? (accumValue.row3 + 1) : accumValue.row3;
-											var row2 = A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths) ? (accumValue.row2 + 1) : accumValue.row2;
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var row5AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.universalIntervention.row5);
+											var row4AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.universalIntervention.row4);
+											var row3AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.universalIntervention.row3);
+											var row2AsAgeInMonths = A2(
+												$elm$core$List$map,
+												function (date) {
+													return A2(
+														$author$project$Gizra$NominalDate$diffMonths,
+														A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, date),
+														targetDateForMonth);
+												},
+												record.ncda.universalIntervention.row2);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var row2 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row2AsAgeInMonths)) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row3 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row3AsAgeInMonths)) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row4 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row4AsAgeInMonths)) ? (accumValue.row4 + 1) : accumValue.row4;
+											var row5 = (existedDuringExaminationMonth && A2($elm$core$List$member, gapInMonths, row5AsAgeInMonths)) ? (accumValue.row5 + 1) : accumValue.row5;
+											var ageInMonths = A2(
+												$author$project$Gizra$NominalDate$diffMonths,
+												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
+												targetDateForMonth);
 											var ageInMonthsForIndexCell = ageInMonths - gapInMonths;
 											var row1 = function () {
-												if ((ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24)) {
+												if ((!existedDuringExaminationMonth) || ((ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24))) {
 													return accumValue.row1;
 												} else {
 													var referenceDate = A2(resolveLastDayForMonthX, ageInMonthsForIndexCell, record.birthDate);
@@ -30232,7 +30419,6 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 			$elm$core$List$foldl,
 			F2(
 				function (record, accum) {
-					var ageInMonths = A2($author$project$Gizra$NominalDate$diffMonths, record.birthDate, currentDate);
 					return A2(
 						$elm$core$List$indexedMap,
 						F2(
@@ -30243,8 +30429,16 @@ var $author$project$Pages$Scoreboard$View$viewScoreboardData = F4(
 									A2(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
+											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var existedDuringExaminationMonth = _Utils_eq(
+												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
+												$elm$core$Basics$LT);
+											var ageInMonths = A2(
+												$author$project$Gizra$NominalDate$diffMonths,
+												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
+												targetDateForMonth);
 											var gap = ageInMonths - gapInMonths;
-											return ((gap >= 0) && (gap < 24)) ? (accumValue + 1) : accumValue;
+											return (existedDuringExaminationMonth && ((gap >= 0) && (gap < 24))) ? (accumValue + 1) : accumValue;
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
 							}),
