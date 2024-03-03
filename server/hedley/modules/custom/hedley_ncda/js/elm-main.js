@@ -5825,31 +5825,11 @@ var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
 	function (site, entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records, site: site};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F7(
-	function (id, created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
-		return {birthDate: birthDate, created: created, eddDate: eddDate, id: id, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
+var $author$project$Backend$Scoreboard$Model$PatientData = F6(
+	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
+		return {birthDate: birthDate, created: created, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			$elm$json$Json$Decode$int,
-			A2(
-			$elm$json$Json$Decode$andThen,
-			function (s) {
-				var _v0 = $elm$core$String$toInt(s);
-				if (_v0.$ === 'Just') {
-					var value = _v0.a;
-					return $elm$json$Json$Decode$succeed(value);
-				} else {
-					return $elm$json$Json$Decode$fail('Not an integer');
-				}
-			},
-			$elm$json$Json$Decode$string)
-		]));
 var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
 	function (ancNewborn, universalIntervention, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
 		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions, universalIntervention: universalIntervention};
@@ -6671,6 +6651,7 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
+var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 	if (result.$ === 'Ok') {
 		var successValue = result.a;
@@ -6873,6 +6854,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues = function (c
 		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
 };
 var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
 	function (pathDecoder, valDecoder, fallback) {
@@ -7449,11 +7431,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 							'created',
 							$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-							A3(
-								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'id',
-								$author$project$Gizra$Json$decodeInt,
-								$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData))))))));
+							$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$PatientData)))))));
 };
 var $author$project$Backend$Scoreboard$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Scoreboard$Model$EntityDistrict = {$: 'EntityDistrict'};
