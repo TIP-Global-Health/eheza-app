@@ -81,6 +81,14 @@ function hedley_ncda_node_insert($node) {
     return;
   }
 
+  if ($node->type == 'person') {
+    // Generate initial NCDA data for newly created person.
+    // We need this to properly count 'childen under 2'.
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $node->nid, [
+      'person_id' => $node->nid,
+    ]);
+  }
+
   if ($node->type == 'village') {
     hedley_ncda_trigger_recalculation_for_new_village($node);
     return;
