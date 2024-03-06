@@ -81,12 +81,11 @@ function hedley_ncda_node_insert($node) {
     return;
   }
 
+  // Generate initial NCDA data for newly created person.
+  // We need this to properly count 'children under 2'.
   if ($node->type == 'person') {
-    // Generate initial NCDA data for newly created person.
-    // We need this to properly count 'childen under 2'.
-    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $node->nid, [
-      'person_id' => $node->nid,
-    ]);
+    hedley_ncda_trigger_recalculation_for_created_person($node);
+    return;
   }
 
   if ($node->type == 'village') {
@@ -1024,10 +1023,37 @@ function hedley_ncda_trigger_recalculation_for_new_village($node) {
 }
 
 /**
+ * Triggers calculation of NCDA data, for newly created person.
+ *
+ * @param object $node
+ *   The node object of a village.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_ncda_trigger_recalculation_for_created_person($node) {
+  $birth_date = strtotime($node->field_birth_date[LANGUAGE_NONE][0]['value']);
+  if (empty($birth_date)) {
+    // We must know the birthdate to decide if to generate NCDA data.
+    return;
+  }
+
+  if ($birth_date < strtotime("2016-01-01")) {
+    // Our first records are from 01 Jan 2018. NCDA is for children under 2y.
+    // Therefore, recalculation is needed only for those born starting 01 Jan 2016.
+    return FALSE;
+  }
+
+  // If we got this far, schedule generating NCDA data using AQ.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $node->nid, [
+    'person_id' => $node->nid,
+  ]);
+}
+
+/**
  * Triggers recalculation of person's NCDA data, when edited.
  *
  * Recalculation is required only when birth date is edited.
- * Note: currently, editing geo fields of person is not allowed.
+ * Note: Currently, editing geo fields of person is not allowed.
  *
  * @param object $node
  *   The node object of a village.
@@ -1042,6 +1068,12 @@ function hedley_ncda_trigger_recalculation_by_edited_person($node) {
   $birth_date_orig = $wrapper_orig->field_birth_date->value();
 
   if ($birth_date == $birth_date_orig) {
+    return;
+  }
+
+  if ($birth_date < strtotime("2016-01-01")) {
+    // Our first records are from 01 Jan 2018. NCDA is for children under 2y.
+    // Therefore, recalculation is needed only for those born starting 01 Jan 2016.
     return;
   }
 
