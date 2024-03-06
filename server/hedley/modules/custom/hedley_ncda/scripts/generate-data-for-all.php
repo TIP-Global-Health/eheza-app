@@ -34,7 +34,7 @@ $base_query
   ->addTag('exclude_deleted');
 
 if ($exclude_set) {
-  $base_query->addTag('exclude_set');
+  $base_query->fieldCondition('field_ncda_data', 'value', NULL, 'IS NULL');
 }
 
 $count_query = clone $base_query;
