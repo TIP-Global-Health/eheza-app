@@ -269,42 +269,6 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                                                 -- Making sure patient was already created during examination month.
                                                 Date.compare record.created targetDateForMonth == LT
 
-                                            stuntingSevereAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.stunting.severe
-
-                                            stuntingModerateAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.stunting.moderate
-
-                                            stuntingNormalAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.stunting.normal
-
-                                            underweightSevereAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.underweight.severe
-
-                                            underweightModerateAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.underweight.moderate
-
-                                            underweightNormalAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.underweight.normal
-
-                                            wastingSevereAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.wasting.severe
-
-                                            wastingModerateAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.wasting.moderate
-
-                                            wastingNormalAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.wasting.normal
-
                                             muacSevereAsAgeInMonths =
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.nutrition.muac.severe
@@ -320,31 +284,19 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                                             ( row1, row2, row3 ) =
                                                 if
                                                     existedDuringExaminationMonth
-                                                        && ((not <| List.isEmpty stuntingSevereAsAgeInMonths)
-                                                                || (not <| List.isEmpty underweightSevereAsAgeInMonths)
-                                                                || (not <| List.isEmpty wastingSevereAsAgeInMonths)
-                                                                || (not <| List.isEmpty muacSevereAsAgeInMonths)
-                                                           )
+                                                        && (not <| List.isEmpty muacSevereAsAgeInMonths)
                                                 then
                                                     ( accumValue.row1 + 1, accumValue.row2, accumValue.row3 )
 
                                                 else if
                                                     existedDuringExaminationMonth
-                                                        && ((not <| List.isEmpty stuntingModerateAsAgeInMonths)
-                                                                || (not <| List.isEmpty underweightModerateAsAgeInMonths)
-                                                                || (not <| List.isEmpty wastingModerateAsAgeInMonths)
-                                                                || (not <| List.isEmpty muacModerateAsAgeInMonths)
-                                                           )
+                                                        && (not <| List.isEmpty muacModerateAsAgeInMonths)
                                                 then
                                                     ( accumValue.row1, accumValue.row2 + 1, accumValue.row3 )
 
                                                 else if
                                                     existedDuringExaminationMonth
-                                                        && ((not <| List.isEmpty stuntingNormalAsAgeInMonths)
-                                                                || (not <| List.isEmpty underweightNormalAsAgeInMonths)
-                                                                || (not <| List.isEmpty wastingNormalAsAgeInMonths)
-                                                                || (not <| List.isEmpty muacNormalAsAgeInMonths)
-                                                           )
+                                                        && (not <| List.isEmpty muacNormalAsAgeInMonths)
                                                 then
                                                     ( accumValue.row1, accumValue.row2, accumValue.row3 + 1 )
 
