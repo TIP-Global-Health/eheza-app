@@ -1173,8 +1173,11 @@ function hedley_person_node_presave($node) {
   // Set node label.
   $first_name = $wrapper->field_first_name->value();
   $second_name = $wrapper->field_second_name->value();
-  $title = empty($first_name) ? $second_name : "$second_name $first_name";
-  $wrapper->title->set($title);
+
+  if (!empty($first_name) || !empty($second_name)) {
+    $title = empty($first_name) ? $second_name : "$second_name $first_name";
+    $wrapper->title->set($title);
+  }
 
   // If being deleted, verify person got no measurements.
   $deleted = $wrapper->field_deleted->value();
