@@ -1073,8 +1073,9 @@ function hedley_ncda_trigger_recalculation_by_edited_person($node) {
   }
 
   if ($birth_date < strtotime("2016-01-01")) {
-    // Our first records are from 01 Jan 2018. NCDA is for children under 2y.
-    // Therefore, recalculation is needed only for those born starting 01 Jan 2016.
+    // Our first records are from 01 Jan 2018. NCDA is for children
+    // under 2y. Therefore, recalculation is needed only for those
+    // born starting 01 Jan 2016.
     return;
   }
 
