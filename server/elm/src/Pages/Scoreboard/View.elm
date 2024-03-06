@@ -503,10 +503,6 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                             targetDateForMonth =
                                                 resolveTargetDateForMonth gapInMonths currentDate
 
-                                            existedDuringExaminationMonth =
-                                                -- Making sure patient was already created during examination month.
-                                                Date.compare record.created targetDateForMonth == LT
-
                                             ageInMonths =
                                                 -- Using EDD date to properly resolve the month of
                                                 -- prgnancy (as child may have been borm premature).
@@ -520,10 +516,10 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                 gapInMonths - ageInMonths
 
                                             row1 =
-                                                if
-                                                    existedDuringExaminationMonth
-                                                        && (not <| List.isEmpty row1AsAgeInMonths)
-                                                then
+                                                --  We do not a condition to check if child existed during
+                                                -- examination month because we're examining pregnancy months
+                                                -- and it's likely that child did not existy on the system.
+                                                if not <| List.isEmpty row1AsAgeInMonths then
                                                     accumValue.row1 + 1
 
                                                 else
@@ -531,8 +527,10 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
 
                                             row2 =
                                                 if
-                                                    existedDuringExaminationMonth
-                                                        && (record.ncda.ancNewborn.row2 && gap > 0)
+                                                    --  We do not a condition to check if child existed during
+                                                    -- examination month because we're examining pregnancy months
+                                                    -- and it's likely that child did not existy on the system.
+                                                    (record.ncda.ancNewborn.row2 && gap > 0)
                                                         && (gap < 10)
                                                 then
                                                     accumValue.row2 + 1

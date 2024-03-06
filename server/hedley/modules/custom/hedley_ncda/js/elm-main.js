@@ -28668,16 +28668,13 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
 												},
 												record.ncda.ancNewborn.row1);
-											var existedDuringExaminationMonth = _Utils_eq(
-												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
-												$elm$core$Basics$LT);
-											var row1 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row1AsAgeInMonths))) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row1 = (!$elm$core$List$isEmpty(row1AsAgeInMonths)) ? (accumValue.row1 + 1) : accumValue.row1;
 											var ageInMonths = A2(
 												$author$project$Gizra$NominalDate$diffMonths,
 												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.eddDate),
 												targetDateForMonth);
 											var gap = gapInMonths - ageInMonths;
-											var row2 = (existedDuringExaminationMonth && ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row2 = ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
 											return {row1: row1, row2: row2};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
