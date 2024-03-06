@@ -1182,3 +1182,13 @@ function hedley_ncda_resolve_immunization_bundles() {
     HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IMMUNISATION_BUNDLES
   );
 }
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Adds a condition to select entities that don't have field_ncda_data set.
+ */
+function hedley_ncda_query_exclude_set_alter(QueryAlterableInterface $query) {
+  $query->leftJoin('field_data_field_ncda_data', 'fnd', 'node.nid = fnd.entity_id');
+  $query->isNull('fnd.field_ncda_data_value');
+}
