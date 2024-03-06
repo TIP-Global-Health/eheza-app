@@ -28668,16 +28668,13 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
 												},
 												record.ncda.ancNewborn.row1);
-											var existedDuringExaminationMonth = _Utils_eq(
-												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
-												$elm$core$Basics$LT);
-											var row1 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row1AsAgeInMonths))) ? (accumValue.row1 + 1) : accumValue.row1;
+											var row1 = (!$elm$core$List$isEmpty(row1AsAgeInMonths)) ? (accumValue.row1 + 1) : accumValue.row1;
 											var ageInMonths = A2(
 												$author$project$Gizra$NominalDate$diffMonths,
 												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.eddDate),
 												targetDateForMonth);
 											var gap = gapInMonths - ageInMonths;
-											var row2 = (existedDuringExaminationMonth && ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10))) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row2 = ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
 											return {row1: row1, row2: row2};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -28765,60 +28762,6 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
 											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
-											var underweightModerateAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.underweight.moderate);
-											var underweightNormalAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.underweight.normal);
-											var underweightSevereAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.underweight.severe);
-											var wastingModerateAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.wasting.moderate);
-											var wastingNormalAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.wasting.normal);
-											var wastingSevereAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.wasting.severe);
-											var stuntingSevereAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.stunting.severe);
-											var stuntingNormalAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.stunting.normal);
-											var stuntingModerateAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.stunting.moderate);
 											var muacSevereAsAgeInMonths = A2(
 												$elm$core$List$filter,
 												function (date) {
@@ -28840,7 +28783,7 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 											var existedDuringExaminationMonth = _Utils_eq(
 												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
 												$elm$core$Basics$LT);
-											var _v0 = (existedDuringExaminationMonth && ((!$elm$core$List$isEmpty(stuntingSevereAsAgeInMonths)) || ((!$elm$core$List$isEmpty(underweightSevereAsAgeInMonths)) || ((!$elm$core$List$isEmpty(wastingSevereAsAgeInMonths)) || (!$elm$core$List$isEmpty(muacSevereAsAgeInMonths)))))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((existedDuringExaminationMonth && ((!$elm$core$List$isEmpty(stuntingModerateAsAgeInMonths)) || ((!$elm$core$List$isEmpty(underweightModerateAsAgeInMonths)) || ((!$elm$core$List$isEmpty(wastingModerateAsAgeInMonths)) || (!$elm$core$List$isEmpty(muacModerateAsAgeInMonths)))))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((existedDuringExaminationMonth && ((!$elm$core$List$isEmpty(stuntingNormalAsAgeInMonths)) || ((!$elm$core$List$isEmpty(underweightNormalAsAgeInMonths)) || ((!$elm$core$List$isEmpty(wastingNormalAsAgeInMonths)) || (!$elm$core$List$isEmpty(muacNormalAsAgeInMonths)))))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+											var _v0 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacSevereAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacModerateAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacNormalAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
 											var row1 = _v0.a;
 											var row2 = _v0.b;
 											var row3 = _v0.c;
