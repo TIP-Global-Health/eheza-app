@@ -30100,7 +30100,7 @@ var $author$project$Icons$iconForward = function (attrs) {
 };
 var $author$project$Pages$Utils$viewYearSelector = F3(
 	function (currentDate, gap, changeGapMsg) {
-		var minYear = 2018;
+		var minYear = 2023;
 		var forwardClass = (!gap) ? _List_fromArray(
 			[
 				$elm$svg$Svg$Attributes$class('hidden')

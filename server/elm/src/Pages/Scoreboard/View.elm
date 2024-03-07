@@ -464,9 +464,6 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.ancNewborn.row1
 
-                                            gap =
-                                                gapInMonths - ageInMonths
-
                                             row1 =
                                                 --  We do not a condition to check if child existed during
                                                 -- examination month because we're examining pregnancy months
@@ -478,6 +475,10 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                     accumValue.row1
 
                                             row2 =
+                                                let
+                                                    gap =
+                                                        gapInMonths - ageInMonths
+                                                in
                                                 if
                                                     --  We do not a condition to check if child existed during
                                                     -- examination month because we're examining pregnancy months
