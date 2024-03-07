@@ -22,6 +22,9 @@ $batch = drush_get_option('batch', 50);
 // Flag to generate NCDA data only if it was not generated already.
 $exclude_set = drush_get_option('exclude_set', FALSE);
 
+// Minimal child birthdate, from which we perform calculations.
+$birthdate_from = drush_get_option('birthdate_from', "2016-01-01");
+
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 240);
 
@@ -67,7 +70,7 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    $success = hedley_ncda_calculate_aggregated_data_for_person($node);
+    $success = hedley_ncda_calculate_aggregated_data_for_person($node, $birthdate_from);
     if ($success) {
       $total++;
     }
