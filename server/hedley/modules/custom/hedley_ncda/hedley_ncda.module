@@ -671,7 +671,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person) {
       'row1' => [],
       'row2' => [],
       'row3' => [],
-      'row4' => FALSE,
+      'row4' => [],
       'row5' => [],
     ],
   ];
@@ -802,7 +802,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person) {
           break;
 
         case 'insecticide-treated-bednets':
-          $data['ncda']['pane5']['row4'] = TRUE;
+          $data['ncda']['pane5']['row4'][] = $date_measured;
           break;
 
         case 'has-kitchen-garden':

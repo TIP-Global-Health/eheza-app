@@ -6925,8 +6925,8 @@ var $author$project$Backend$Scoreboard$Decoder$decodeInfrastructureEnvironmentWa
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 			'row4',
-			$elm$json$Json$Decode$bool,
-			false,
+			$author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues(currentDate),
+			_List_Nil,
 			A4(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 				'row3',
@@ -7203,7 +7203,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodeUniversalInterventionData =
 						$elm$json$Json$Decode$succeed($author$project$Backend$Scoreboard$Model$UniversalInterventionData))))));
 };
 var $author$project$Backend$Scoreboard$Model$emptyANCNewbornData = A2($author$project$Backend$Scoreboard$Model$ANCNewbornData, _List_Nil, false);
-var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, false, _List_Nil);
+var $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData = A5($author$project$Backend$Scoreboard$Model$InfrastructureEnvironmentWashData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData = A4($author$project$Backend$Scoreboard$Model$NutritionBehaviorData, false, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData = A6($author$project$Backend$Scoreboard$Model$TargetedInterventionsData, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
 var $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData = A5($author$project$Backend$Scoreboard$Model$UniversalInterventionData, $pzp1997$assoc_list$AssocList$empty, _List_Nil, _List_Nil, _List_Nil, _List_Nil);
@@ -29051,6 +29051,12 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
 												},
 												record.ncda.infrastructureEnvironmentWash.row5);
+											var row4AsAgeInMonths = A2(
+												$elm$core$List$filter,
+												function (date) {
+													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
+												},
+												record.ncda.infrastructureEnvironmentWash.row4);
 											var row3AsAgeInMonths = A2(
 												$elm$core$List$filter,
 												function (date) {
@@ -29075,15 +29081,12 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 											var row1 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row1AsAgeInMonths))) ? (accumValue.row1 + 1) : accumValue.row1;
 											var row2 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row2AsAgeInMonths))) ? (accumValue.row2 + 1) : accumValue.row2;
 											var row3 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row3AsAgeInMonths))) ? (accumValue.row3 + 1) : accumValue.row3;
+											var row4 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row4AsAgeInMonths))) ? (accumValue.row4 + 1) : accumValue.row4;
 											var row5 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row5AsAgeInMonths))) ? (accumValue.row5 + 1) : accumValue.row5;
 											var ageInMonths = A2(
 												$author$project$Gizra$NominalDate$diffMonths,
 												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
 												targetDateForMonth);
-											var row4 = function () {
-												var gap = ageInMonths - gapInMonths;
-												return (existedDuringExaminationMonth && (record.ncda.infrastructureEnvironmentWash.row4 && ((gap >= 0) && (gap < 24)))) ? (accumValue.row4 + 1) : accumValue.row4;
-											}();
 											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
