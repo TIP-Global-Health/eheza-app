@@ -5795,9 +5795,9 @@ translationSet trans =
                     }
 
         FillTheBlanks ->
-            { english = "Fill in the Blanks: Cyatsi, Hondo, Tuku & Ibipimo"
-            , kinyarwanda = Just "Uzuza ukoresheje: Cyatsi, Hondo, Tuku & Ibipimo"
-            , kirundi = Just "Uzuza aho atacanditsemwo: Urwatsi Rubisi, Umutoto uhishiye, Gutukura & Ibipimo"
+            { english = "Nutrition Information"
+            , kinyarwanda = Just "Amakuru ku mirire"
+            , kirundi = Just "Amakuru ku mirire"
             }
 
         FilterByName ->
