@@ -438,20 +438,24 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
  *
  * @param object $person
  *   Person node for which NCDA data is generated.
+ * @param string $birth_date_from
+ *  Minimal child birthdate, from which we perform calculations.
+ *  Our first records are from Jan 2018, so we default to
+ *  Jan 2016 to make sure we cover all children.
  *
  * @return bool
  *   True, if data was calculated for person.
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_ncda_calculate_aggregated_data_for_person($person) {
+function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_from = '2016-01-01') {
   $birth_date = strtotime($person->field_birth_date[LANGUAGE_NONE][0]['value']);
   if (empty($birth_date)) {
     // We must know the birthdate to be able to present NCDA data.
     return FALSE;
   }
 
-  if ($birth_date < strtotime("2016-01-01")) {
+  if ($birth_date < strtotime($birth_date_from)) {
     // We generate data for children only.
     // Our first records are from Jan 2018, so going back
     // Jan 2016 to make sure we cover all children.
