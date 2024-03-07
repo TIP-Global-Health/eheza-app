@@ -8001,17 +8001,9 @@ var $author$project$Translate$translationSet = function (transId) {
 							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'DiverseDiet':
-						return {
-							english: 'Does the child have a diverse diet?',
-							kinyarwanda: $elm$core$Maybe$Just('Umwana afata indyo yuzuye'),
-							kirundi: $elm$core$Maybe$Nothing
-						};
+						return {english: 'Diverse diet', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
-						return {
-							english: 'Number of times a child eats a day',
-							kinyarwanda: $elm$core$Maybe$Just('Inshuro umwana afata ifunguro ku munsi'),
-							kirundi: $elm$core$Maybe$Nothing
-						};
+						return {english: 'Appropriate frequency of meals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDATargetedInterventionsItemLabel':
 				var item = transId.a;
@@ -30106,7 +30098,7 @@ var $author$project$Icons$iconForward = function (attrs) {
 };
 var $author$project$Pages$Utils$viewYearSelector = F3(
 	function (currentDate, gap, changeGapMsg) {
-		var minYear = 2018;
+		var minYear = 2023;
 		var forwardClass = (!gap) ? _List_fromArray(
 			[
 				$elm$svg$Svg$Attributes$class('hidden')
