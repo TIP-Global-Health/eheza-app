@@ -8001,17 +8001,9 @@ var $author$project$Translate$translationSet = function (transId) {
 							kirundi: $elm$core$Maybe$Nothing
 						};
 					case 'DiverseDiet':
-						return {
-							english: 'Does the child have a diverse diet?',
-							kinyarwanda: $elm$core$Maybe$Just('Umwana afata indyo yuzuye'),
-							kirundi: $elm$core$Maybe$Nothing
-						};
+						return {english: 'Diverse diet', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
-						return {
-							english: 'Number of times a child eats a day',
-							kinyarwanda: $elm$core$Maybe$Just('Inshuro umwana afata ifunguro ku munsi'),
-							kirundi: $elm$core$Maybe$Nothing
-						};
+						return {english: 'Appropriate frequency of meals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'NCDATargetedInterventionsItemLabel':
 				var item = transId.a;
@@ -28673,8 +28665,10 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 												$author$project$Gizra$NominalDate$diffMonths,
 												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.eddDate),
 												targetDateForMonth);
-											var gap = gapInMonths - ageInMonths;
-											var row2 = ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
+											var row2 = function () {
+												var gap = gapInMonths - ageInMonths;
+												return ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
+											}();
 											return {row1: row1, row2: row2};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
