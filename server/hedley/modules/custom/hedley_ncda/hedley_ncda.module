@@ -456,9 +456,6 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
   }
 
   if ($birth_date < strtotime($birth_date_from)) {
-    // We generate data for children only.
-    // Our first records are from Jan 2018, so going back
-    // Jan 2016 to make sure we cover all children.
     return FALSE;
   }
 
