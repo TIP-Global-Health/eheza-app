@@ -41,6 +41,7 @@ function hedley_schedule_field_default_field_bases() {
         'cough-and-cold' => 'Simple Cough and Cold',
         'fever-of-unknown-origin' => 'Fever of Unknown Origin',
         'undetermined' => 'Undetermined - more evaluation needed',
+        'tuberculosis-suspect' => 'Tuberculosis Suspect',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

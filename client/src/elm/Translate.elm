@@ -1702,6 +1702,7 @@ type TranslationId
     | TuberculosisProvideDOTTodayQuestion
     | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
     | TuberculosisReasonMedicationsNotDistributed TuberculosisDOTSign
+    | TuberculosisSuspect
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
@@ -2202,6 +2203,9 @@ translationSet trans =
                     , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
                     }
 
+                DiagnosisTuberculosisSuspect ->
+                    translationSet TuberculosisSuspect
+
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
@@ -2293,6 +2297,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ntibisobanutse - Hakenewe Isuzuma Ryimbitse"
                     , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
                     }
+
+                DiagnosisTuberculosisSuspect ->
+                    translationSet TuberculosisSuspect
 
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
@@ -21161,6 +21168,12 @@ translationSet trans =
 
         TuberculosisReasonMedicationsNotDistributed reason ->
             translationSet <| TuberculosisReasonNotProvidedToday reason
+
+        TuberculosisSuspect ->
+            { english = "Tuberculosis Suspect"
+            , kinyarwanda = Nothing
+            , kirundi = Just "Nta Gupima/gusuzuma"
+            }
 
         TuberculosisSymptomQuestion symptom ->
             case symptom of
