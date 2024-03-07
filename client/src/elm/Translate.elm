@@ -6885,7 +6885,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "First Tuberculosis Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura rya mbere ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -6941,7 +6941,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "Tuberculosis Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -7004,7 +7004,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "Select Tuberculosis Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hitamo isura ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -7067,7 +7067,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "Subsequent Tuberculosis Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura rilkurikira ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -7108,7 +7108,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "TB Management"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwita ku murwayi w'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -20889,7 +20889,7 @@ translationSet trans =
             case activity of
                 Backend.TuberculosisActivity.Model.Diagnostics ->
                     { english = "Diagnostics"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusuzuma uburwayi"
                     , kirundi = Nothing
                     }
 
@@ -20904,7 +20904,7 @@ translationSet trans =
 
         TuberculosisDiagnosedQuestion ->
             { english = "Was this person diagnosed with Tuberculosis"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi yaba yaragaragaweho uburwayi bw'igituntu"
             , kirundi = Nothing
             }
 
@@ -20912,13 +20912,13 @@ translationSet trans =
             case sign of
                 TuberculosisPulmonary ->
                     { english = "Pulmonary (in the lungs)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igituntu cyo mu bihaha"
                     , kirundi = Nothing
                     }
 
                 TuberculosisExtrapulmonary ->
                     { english = "Extrapulmonary (outside the lungs)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igituntu gifata imyanya yo hanze y'ibihaha"
                     , kirundi = Nothing
                     }
 
@@ -20928,7 +20928,7 @@ translationSet trans =
 
         TuberculosisDistributeMedicationsQuestion ->
             { english = "Did you distribute the following medications"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba watanze iyi miti ikurikira"
             , kirundi = Nothing
             }
 
@@ -21029,7 +21029,7 @@ translationSet trans =
             case sign of
                 EducationFollowUpTesting ->
                     { english = "Have you provided the guidance for follow up testing"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba watanze ubujyanama ku bijyanye no gukoresha ibizaminii"
                     , kirundi = Nothing
                     }
 
@@ -21050,7 +21050,7 @@ translationSet trans =
 
         TuberculosisLocationQuestion ->
             { english = "Where is the Tuberculosis located"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni uwuhe mwanaya w'umubiri wagaragawemo igituntu"
             , kirundi = Nothing
             }
 
@@ -21058,13 +21058,13 @@ translationSet trans =
             case task of
                 Pages.Tuberculosis.Activity.Model.TaskPrescribedMedication ->
                     { english = "Prescribed Medication"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imiti yatanzwe"
                     , kirundi = Nothing
                     }
 
                 Pages.Tuberculosis.Activity.Model.TaskDOT ->
                     { english = "DOT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti unywerwa imbere y'ugukurikirana"
                     , kirundi = Nothing
                     }
 
@@ -22917,13 +22917,13 @@ translateActivePage page =
 
                 TuberculosisParticipantPage _ ->
                     { english = "Tuberculosis Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
                 TuberculosisEncounterPage _ ->
                     { english = "Tuberculosis Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
