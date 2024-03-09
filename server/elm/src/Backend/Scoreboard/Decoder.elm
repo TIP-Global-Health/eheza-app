@@ -237,7 +237,7 @@ decodeInfrastructureEnvironmentWashData currentDate =
         |> optional "row1" (decodeMonthlyValues currentDate) []
         |> optional "row2" (decodeMonthlyValues currentDate) []
         |> optional "row3" (decodeMonthlyValues currentDate) []
-        |> optional "row4" bool False
+        |> optional "row4" (decodeMonthlyValues currentDate) []
         |> optional "row5" (decodeMonthlyValues currentDate) []
 
 

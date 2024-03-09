@@ -464,9 +464,6 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.ancNewborn.row1
 
-                                            gap =
-                                                gapInMonths - ageInMonths
-
                                             row1 =
                                                 --  We do not a condition to check if child existed during
                                                 -- examination month because we're examining pregnancy months
@@ -478,6 +475,10 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                                     accumValue.row1
 
                                             row2 =
+                                                let
+                                                    gap =
+                                                        gapInMonths - ageInMonths
+                                                in
                                                 if
                                                     --  We do not a condition to check if child existed during
                                                     -- examination month because we're examining pregnancy months
@@ -1065,6 +1066,10 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.infrastructureEnvironmentWash.row3
 
+                                            row4AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.infrastructureEnvironmentWash.row4
+
                                             row5AsAgeInMonths =
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.infrastructureEnvironmentWash.row5
@@ -1100,15 +1105,9 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                                                     accumValue.row3
 
                                             row4 =
-                                                let
-                                                    gap =
-                                                        ageInMonths - gapInMonths
-                                                in
                                                 if
                                                     existedDuringExaminationMonth
-                                                        && record.ncda.infrastructureEnvironmentWash.row4
-                                                        && (gap >= 0)
-                                                        && (gap < 24)
+                                                        && (not <| List.isEmpty row4AsAgeInMonths)
                                                 then
                                                     accumValue.row4 + 1
 
