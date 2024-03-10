@@ -63,7 +63,7 @@ Make sure the following is installed:
 
 * Install backend first.
 * `cp src/elm/LocalConfig.Example.elm src/elm/LocalConfig.elm`
-* In new file change `module LocalConfig.Example exposing (localConfigs)` to `module LocalConfig exposing (localConfigs)`
+* In new file, change `module LocalConfig.Example exposing (localConfigs)` to `module LocalConfig exposing (localConfigs)`
 
 You may need to update `src/elm/LocalConfig.elm` if your local URLs are different from the default setting.
 
