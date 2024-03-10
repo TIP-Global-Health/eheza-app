@@ -23,7 +23,8 @@ type SelectedEntity
 
 
 type alias PatientData =
-    { birthDate : NominalDate
+    { created : NominalDate
+    , birthDate : NominalDate
     , eddDate : NominalDate
     , lowBirthWeight : Maybe Bool
     , nutrition : NutritionCriterionsData
@@ -174,14 +175,14 @@ type alias InfrastructureEnvironmentWashData =
     { row1 : List NominalDate
     , row2 : List NominalDate
     , row3 : List NominalDate
-    , row4 : Bool
+    , row4 : List NominalDate
     , row5 : List NominalDate
     }
 
 
 emptyInfrastructureEnvironmentWashData : InfrastructureEnvironmentWashData
 emptyInfrastructureEnvironmentWashData =
-    InfrastructureEnvironmentWashData [] [] [] False []
+    InfrastructureEnvironmentWashData [] [] [] [] []
 
 
 type Msg

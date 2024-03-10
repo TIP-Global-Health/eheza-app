@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, toLastDayOfMonth, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -24,7 +24,7 @@ time zone information.
 
 -}
 
-import Date
+import Date exposing (..)
 import Json.Decode exposing (Decoder, andThen, field, map2, string)
 import Json.Decode.Extra exposing (fromResult)
 import Json.Encode exposing (Value, object)
@@ -90,6 +90,18 @@ different day in a different time zone.
 fromLocalDateTime : Time.Posix -> NominalDate
 fromLocalDateTime =
     Date.fromPosix Time.utc
+
+{-| Given a date, return date representing it's last month day.
+
+    toLastDayOfMonth 2019-08-01" --> 2019-08-31"
+    toLastDayOfMonth 2017-02-20" --> 2017-02-28"
+
+-}
+toLastDayOfMonth : NominalDate -> NominalDate
+toLastDayOfMonth =
+    Date.floor Month
+        >> Date.add Months 1
+        >> Date.add Days -1
 
 
 {-| Decodes nominal date from string of the form "2017-02-20".
