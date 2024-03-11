@@ -582,17 +582,80 @@ viewSymptomsGeneralForm language currentDate measurements form =
 
 viewSymptomsRespiratoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsRespiratoryForm -> Html Msg
 viewSymptomsRespiratoryForm language currentDate measurements form =
+    let
+        respiratorySignsWithoutCough =
+            ( Tuple.first allSymptomsRespiratorySigns
+                |> List.filter ((/=) Cough)
+            , Tuple.second allSymptomsRespiratorySigns
+            )
+    in
     viewCheckBoxValueInput language
-        allSymptomsRespiratorySigns
+        respiratorySignsWithoutCough
         form.signs
         ToggleSymptomsRespiratorySign
         SetSymptomsRespiratorySignValue
         Translate.SymptomsRespiratorySign
+        |> List.append (viewCoughInputItem language form.signs)
         |> List.append
             [ viewQuestionLabel language Translate.PatientGotAnySymptoms
             , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
             ]
         |> div [ class "symptoms-form respiratory" ]
+
+
+viewCoughInputItem : Language -> Dict SymptomsRespiratorySign Int -> List (Html Msg)
+viewCoughInputItem language data =
+    let
+        currentValue =
+            Dict.get Cough data
+
+        isChecked =
+            isJust currentValue
+
+        periodSection =
+            Maybe.map
+                (\value ->
+                    let
+                        valueForInput =
+                            case value of
+                                7 ->
+                                    Just False
+
+                                15 ->
+                                    Just True
+
+                                _ ->
+                                    Nothing
+                    in
+                    viewBoolInput
+                        language
+                        valueForInput
+                        SetSymptomsRespiratoryCough
+                        "cough-period"
+                        (Just ( Translate.Period2WeeksOrMore, Translate.PeriodLessThan2Weeks ))
+                )
+                currentValue
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "six wide column" ]
+            [ div
+                [ class "ui checkbox activity"
+                , onClick <| ToggleSymptomsRespiratorySign Cough
+                ]
+                [ input
+                    [ type_ "checkbox"
+                    , checked isChecked
+                    , classList [ ( "checked", isChecked ) ]
+                    ]
+                    []
+                , label []
+                    [ text <| translate language (Translate.SymptomsRespiratorySign Cough) ]
+                ]
+            ]
+        ]
+    , periodSection
+    ]
 
 
 viewSymptomsGIForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGIForm -> Html Msg
