@@ -3789,7 +3789,7 @@ translationSet trans =
 
         ChildHasMalnutritionPhrase ->
             { english = "According to nutrition measurements, this child has acute malnutrition"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urebeye ku bipimo by'imirire, umwana afite imirire mibi ihutiyeho"
             , kirundi = Nothing
             }
 
@@ -5796,8 +5796,8 @@ translationSet trans =
 
         FillTheBlanks ->
             { english = "Nutrition Information"
-            , kinyarwanda = Just "Amakuru ku mirire"
-            , kirundi = Just "Amakuru ku mirire"
+            , kinyarwanda = Just "Amakuru ku Mirire"
+            , kirundi = Nothing
             }
 
         FilterByName ->
@@ -6064,7 +6064,7 @@ translationSet trans =
 
                 Legumes ->
                     { english = "Legumes (beans, peas, cereals)"
-                    , kinyarwanda = Just "Ibibyamisogwe (Ibishyimbo, amashyaza, ibinyampeke)"
+                    , kinyarwanda = Just "Ibinyamisogwe (Ibishyimbo, amashyaza, ibinyampeke)"
                     , kirundi = Just "Ibifungugwa bimeze nk'ibiharage/intete ziri mu bishishwa (ibiharage, ubushaza, intete)"
                     }
 
@@ -10408,7 +10408,7 @@ translationSet trans =
 
                 Backend.Measurement.Model.HasCleanWater ->
                     { english = "Provide counseling on how to prepare clean water like boiling it and using water purifier"
-                    , kinyarwanda = Just "Bagire inama y'uburyo bwo gusukura amazi nko kuyateka no gukoresha Sur’eau"
+                    , kinyarwanda = Just "Bagire inama y'uburyo bwo gusukura amazi nko kuyateka no gukoresha umuti usukura amazi"
                     , kirundi = Nothing
                     }
 
@@ -10569,7 +10569,7 @@ translationSet trans =
 
                 TreatedForAcuteMalnutrition ->
                     { english = "Is the child being treated"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ari kuvurwa"
                     , kirundi = Nothing
                     }
 
@@ -10635,7 +10635,7 @@ translationSet trans =
 
                 ChildTakingFBF ->
                     { english = "Is FBF being consumed"
-                    , kinyarwanda = Just "FBF ihabwa umwana nkuko bikwiriye"
+                    , kinyarwanda = Just "Shisha Kibondo ihabwa umwana nkuko bikwiriye"
                     , kirundi = Nothing
                     }
 
