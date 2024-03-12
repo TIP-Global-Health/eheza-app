@@ -1870,6 +1870,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                         && sendToHCDueToMedicationNonAdministration measurements
                         && (diagnosis /= Just DiagnosisPneuminialCovid19)
                    )
+                || (isChw && diagnosis == Just DiagnosisTuberculosisSuspect)
 
         NextStepsHealthEducation ->
             False
@@ -1880,7 +1881,11 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisLowRiskCovid19)
 
         NextStepsFollowUp ->
-            if List.member diagnosis [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
+            if diagnosis == Just DiagnosisTuberculosisSuspect then
+                -- @todo: do we need this for Subsequent Encounter?
+                True
+
+            else if List.member diagnosis [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
                 -- In these cases patient is sent to hospital, and
                 -- there's no need for CHW to follow up.
                 False
