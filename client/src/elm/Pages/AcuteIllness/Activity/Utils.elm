@@ -3051,3 +3051,13 @@ withDefaultValue : a -> Maybe a -> EverySet a
 withDefaultValue default maybe =
     Maybe.map List.singleton maybe
         |> fromListWithDefaultValue default
+
+
+symptomMaxDuration : Int
+symptomMaxDuration =
+    14
+
+
+coughLessThan2WeeksConstant : Int
+coughLessThan2WeeksConstant =
+    7

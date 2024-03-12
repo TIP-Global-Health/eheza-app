@@ -617,15 +617,14 @@ viewCoughInputItem language data =
                 (\value ->
                     let
                         valueForInput =
-                            case value of
-                                7 ->
-                                    Just False
+                            if value == coughLessThan2WeeksConstant then
+                                Just False
 
-                                15 ->
-                                    Just True
+                            else if value == symptomMaxDuration then
+                                Just True
 
-                                _ ->
-                                    Nothing
+                            else
+                                Nothing
                     in
                     viewBoolInput
                         language

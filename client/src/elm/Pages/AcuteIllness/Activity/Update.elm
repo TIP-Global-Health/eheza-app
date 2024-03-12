@@ -242,13 +242,13 @@ update currentDate site selectedHealthCenter id db msg model =
             let
                 valueToSet =
                     if moreThan2Weeks then
-                        "15"
+                        symptomMaxDuration
 
                     else
-                        "7"
+                        coughLessThan2WeeksConstant
 
                 extraMsgs =
-                    [ SetSymptomsRespiratorySignValue Cough valueToSet ]
+                    [ SetSymptomsRespiratorySignValue Cough (String.fromInt valueToSet) ]
             in
             sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs noChange
 
