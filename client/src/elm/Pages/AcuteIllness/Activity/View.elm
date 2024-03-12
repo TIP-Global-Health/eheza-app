@@ -631,7 +631,7 @@ viewCoughInputItem language data =
                         valueForInput
                         SetSymptomsRespiratoryCough
                         "cough-period"
-                        (Just ( Translate.Period2WeeksOrMore, Translate.PeriodLessThan2Weeks ))
+                        (Just ( Translate.PeriodMoreThan2Weeks, Translate.Period2WeeksOrLess ))
                 )
                 currentValue
                 |> Maybe.withDefault emptyNode

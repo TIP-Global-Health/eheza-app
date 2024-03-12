@@ -1122,8 +1122,8 @@ type TranslationId
     | PediatricVisit
     | People
     | Percentage
-    | Period2WeeksOrMore
-    | PeriodLessThan2Weeks
+    | Period2WeeksOrLess
+    | PeriodMoreThan2Weeks
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
@@ -12779,14 +12779,14 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        Period2WeeksOrMore ->
-            { english = "2 Weeks or more"
+        Period2WeeksOrLess ->
+            { english = "2 Weeks or less"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
-        PeriodLessThan2Weeks ->
-            { english = "Less than 2 weeks"
+        PeriodMoreThan2Weeks ->
+            { english = "More than 2 weeks"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
