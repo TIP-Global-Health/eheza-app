@@ -2452,7 +2452,10 @@ nonCovid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasureme
 nonCovid19DiagnosisPath currentDate person isChw measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
-        if feverRecorded measurements then
+        if coughFor2WeeksOrMore measurements then
+            Just DiagnosisTuberculosisSuspect
+
+        else if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByMalariaRDT measurements
 
         else if respiratoryInfectionDangerSignsPresent measurements then
@@ -2848,6 +2851,17 @@ respiratoryInfectionDangerSignsPresent measurements =
         measurements.symptomsRespiratory
         measurements.acuteFindings
         |> Maybe.withDefault False
+
+
+coughFor2WeeksOrMore : AcuteIllnessMeasurements -> Bool
+coughFor2WeeksOrMore =
+    .symptomsRespiratory
+        >> getMeasurementValueFunc
+        >> Maybe.andThen
+            (Dict.get Cough
+                >> Maybe.map (\period -> period >= symptomMaxDuration)
+            )
+        >> Maybe.withDefault False
 
 
 gastrointestinalInfectionDangerSignsPresent : Bool -> AcuteIllnessMeasurements -> Bool
