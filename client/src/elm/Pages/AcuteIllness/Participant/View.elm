@@ -15,7 +15,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.AcuteIllness.Encounter.Utils exposing (getAcuteIllnessDiagnosisForParticipant)
 import Pages.AcuteIllness.Participant.Model exposing (..)
-import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
+import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive, noPursueAcuteIllnessDiagnoses)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, compareAcuteIllnessEncountersDesc)
 import RemoteData exposing (RemoteData(..))
@@ -88,9 +88,11 @@ viewHeader language initiator model =
 viewContent : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Model -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
 viewContent language currentDate selectedHealthCenter personId isChw db model sessions =
     let
+        _ =
+            Debug.log "" model.viewMode
+
         activeSessions =
-            sessions
-                |> Dict.toList
+            Dict.toList sessions
                 |> List.filter
                     (\( _, session ) ->
                         (session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter)
@@ -125,44 +127,43 @@ viewManageIllnessesContent language currentDate selectedHealthCenter personId is
                 |> List.head
 
         ( createIllnessNavigateToEncounterAction, createIllnessNavigateToEncounterButtonDisabled ) =
-            lastActiveSession
-                |> Maybe.map
-                    (\( sessionId, session ) ->
-                        if session.startDate /= currentDate then
-                            -- Session was not started today, therefore, we know
-                            -- it's first encounter was not started today, which indicates
-                            -- subsequent visit option is needed.
-                            -- This option will be provided at `active Illnesses` section.
-                            ( startIllnessAction, False )
+            Maybe.map
+                (\( sessionId, session ) ->
+                    if session.startDate /= currentDate then
+                        -- Session was not started today, therefore, we know
+                        -- it's first encounter was not started today, which indicates
+                        -- subsequent visit option is needed.
+                        -- This option will be provided at `active Illnesses` section.
+                        ( startIllnessAction, False )
 
-                        else
-                            let
-                                sessionEncounters =
-                                    getAcuteIllnessEncountersForParticipant db sessionId
-                                        |> List.filter (Tuple.second >> filterByEncounterTypeCondition isChw)
+                    else
+                        let
+                            sessionEncounters =
+                                getAcuteIllnessEncountersForParticipant db sessionId
+                                    |> List.filter (Tuple.second >> filterByEncounterTypeCondition isChw)
 
-                                mActiveEncounterId =
-                                    List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
-                                        |> List.head
-                                        |> Maybe.map Tuple.first
+                            mActiveEncounterId =
+                                List.filter (Tuple.second >> isDailyEncounterActive currentDate) sessionEncounters
+                                    |> List.head
+                                    |> Maybe.map Tuple.first
 
-                                encounterWasCompletedToday =
-                                    sessionEncounters
-                                        |> List.filter
-                                            (\( _, encounter ) ->
-                                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
-                                            )
-                                        |> List.isEmpty
-                                        |> not
-                            in
-                            ( mActiveEncounterId
-                                |> Maybe.map navigateToEncounterAction
-                                |> Maybe.withDefault startIllnessAction
-                            , -- We do not allow to create multiple illnesses on the same day.
-                              -- Therefore, we disable the button.
-                              encounterWasCompletedToday
-                            )
-                    )
+                            encounterWasCompletedToday =
+                                sessionEncounters
+                                    |> List.filter
+                                        (\( _, encounter ) ->
+                                            encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                                        )
+                                    |> List.isEmpty
+                                    |> not
+                        in
+                        ( Maybe.map navigateToEncounterAction mActiveEncounterId
+                            |> Maybe.withDefault startIllnessAction
+                        , -- We do not allow to create multiple illnesses on the same day.
+                          -- Therefore, we disable the button.
+                          encounterWasCompletedToday
+                        )
+                )
+                lastActiveSession
                 |> Maybe.withDefault ( startIllnessAction, False )
 
         startIllnessAction =
@@ -179,7 +180,7 @@ viewManageIllnessesContent language currentDate selectedHealthCenter personId is
         activeIllnessesExists =
             List.map Tuple.first activeSessions
                 |> List.filterMap (getAcuteIllnessDiagnosisForParticipant db >> Maybe.map Tuple.second)
-                |> List.filter (\diagnosis -> not <| List.member diagnosis [ DiagnosisFeverOfUnknownOrigin, NoAcuteIllnessDiagnosis ])
+                |> List.filter (\diagnosis -> not <| List.member diagnosis noPursueAcuteIllnessDiagnoses)
                 |> List.isEmpty
                 |> not
 
@@ -346,9 +347,9 @@ viewActiveIllness language currentDate selectedHealthCenter isChw db viewMode se
     in
     Maybe.andThen
         (\diagnosis ->
-            if diagnosis == DiagnosisFeverOfUnknownOrigin then
-                -- Do not show illness if diagnosis is
-                -- fever of unknown origin.
+            if List.member diagnosis noPursueAcuteIllnessDiagnoses then
+                -- Do not show illness if diagnosis does not
+                -- require subsequent encounters.
                 Nothing
 
             else
