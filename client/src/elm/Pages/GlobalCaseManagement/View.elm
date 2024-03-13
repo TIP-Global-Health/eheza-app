@@ -140,12 +140,14 @@ viewContentForChw language currentDate village model db followUps =
         immunizationFollowUpsPane =
             viewImmunizationPane language currentDate immunizationFollowUps db model
 
+        ( tuberculosisFollowUpsForExisitingParticipants, tuberculosisFollowUpsForNewParticipants ) =
+            generateTuberculosisFollowUps currentDate db followUpsForResidents tbSuspectAcuteIllnessFollowUps
+
         tuberculosisFollowUps =
-            generateTuberculosisFollowUps currentDate db followUpsForResidents
-                |> fillPersonName Tuple.second db
+            fillPersonName Tuple.second db tuberculosisFollowUpsForExisitingParticipants
 
         tuberculosisFollowUpsPane =
-            viewTuberculosisPane language currentDate tuberculosisFollowUps tbSuspectAcuteIllnessFollowUps db model
+            viewTuberculosisPane language currentDate tuberculosisFollowUps db model
 
         panes =
             [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
@@ -755,11 +757,10 @@ viewTuberculosisPane :
     Language
     -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
-    -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewTuberculosisPane language currentDate itemsDict acuteIllnessItemsDict db model =
+viewTuberculosisPane language currentDate itemsDict db model =
     let
         limitDate =
             -- Set limit date for tomorrow, so that we

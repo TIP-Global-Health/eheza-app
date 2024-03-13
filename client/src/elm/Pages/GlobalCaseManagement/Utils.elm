@@ -6,6 +6,7 @@ import Backend.Measurement.Model
     exposing
         ( FollowUpMeasurements
         , FollowUpOption(..)
+        , FollowUpValue
         , LaboratoryTest(..)
         , LabsResultsValue
         , NCDLabsResults
@@ -240,9 +241,37 @@ generateTuberculosisFollowUps :
     NominalDate
     -> ModelIndexedDb
     -> FollowUpMeasurements
-    -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
-generateTuberculosisFollowUps limitDate db followUps =
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
+    ->
+        ( Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
+        , Dict PersonId TuberculosisFollowUpItem
+        )
+generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
     let
+        acuteIllnessItemsByPerson =
+            Dict.foldl
+                (\( _, personId ) item accum ->
+                    Dict.get personId accum
+                        |> Maybe.map
+                            (\current ->
+                                if Date.compare current.dateMeasured item.dateMeasured == LT then
+                                    Dict.insert personId item accum
+
+                                else
+                                    accum
+                            )
+                        |> Maybe.withDefault (Dict.insert personId item accum)
+                )
+                Dict.empty
+                followUpsFromAcuteIllness
+                |> Dict.map
+                    (\_ item ->
+                        TuberculosisFollowUpItem item.dateMeasured
+                            item.personName
+                            Nothing
+                            (FollowUpValue item.value.options item.value.resolutionDate)
+                    )
+
         encountersData =
             generateTuberculosisEncounters followUps
                 |> EverySet.toList
@@ -253,42 +282,45 @@ generateTuberculosisFollowUps limitDate db followUps =
                             |> Maybe.map (\encounter -> ( encounterId, encounter.participant ))
                     )
                 |> Dict.fromList
+
+        itemsFromTuberculosis =
+            Dict.values followUps.tuberculosis
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+                |> List.foldl
+                    (\item accum ->
+                        let
+                            encounterData =
+                                item.encounterId
+                                    |> Maybe.andThen
+                                        (\encounterId -> Dict.get encounterId encountersData)
+                        in
+                        encounterData
+                            |> Maybe.map
+                                (\participantId ->
+                                    let
+                                        personId =
+                                            item.participantId
+
+                                        newItem =
+                                            TuberculosisFollowUpItem item.dateMeasured "" item.encounterId item.value
+                                    in
+                                    Dict.get ( participantId, personId ) accum
+                                        |> Maybe.map
+                                            (\member ->
+                                                if Date.compare newItem.dateMeasured member.dateMeasured == GT then
+                                                    Dict.insert ( participantId, personId ) newItem accum
+
+                                                else
+                                                    accum
+                                            )
+                                        |> Maybe.withDefault
+                                            (Dict.insert ( participantId, personId ) newItem accum)
+                                )
+                            |> Maybe.withDefault accum
+                    )
+                    Dict.empty
     in
-    Dict.values followUps.tuberculosis
-        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
-        |> List.foldl
-            (\item accum ->
-                let
-                    encounterData =
-                        item.encounterId
-                            |> Maybe.andThen
-                                (\encounterId -> Dict.get encounterId encountersData)
-                in
-                encounterData
-                    |> Maybe.map
-                        (\participantId ->
-                            let
-                                personId =
-                                    item.participantId
-
-                                newItem =
-                                    TuberculosisFollowUpItem item.dateMeasured "" item.encounterId item.value
-                            in
-                            Dict.get ( participantId, personId ) accum
-                                |> Maybe.map
-                                    (\member ->
-                                        if Date.compare newItem.dateMeasured member.dateMeasured == GT then
-                                            Dict.insert ( participantId, personId ) newItem accum
-
-                                        else
-                                            accum
-                                    )
-                                |> Maybe.withDefault
-                                    (Dict.insert ( participantId, personId ) newItem accum)
-                        )
-                    |> Maybe.withDefault accum
-            )
-            Dict.empty
+    ( Dict.empty, Dict.empty )
 
 
 filterResolvedFollowUps : NominalDate -> Maybe NominalDate -> Bool
