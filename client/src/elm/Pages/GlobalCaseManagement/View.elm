@@ -116,8 +116,15 @@ viewContentForChw language currentDate village model db followUps =
             generateAcuteIllnessFollowUps currentDate db followUpsForResidents
                 |> fillPersonName Tuple.second db
 
+        ( tbSuspectAcuteIllnessFollowUps, nonTBSuspectAcuteIllnessFollowUps ) =
+            Dict.partition
+                (\_ item ->
+                    item.value.diagnosis == Just DiagnosisTuberculosisSuspect
+                )
+                acuteIllnessFollowUps
+
         acuteIllnessFollowUpsPane =
-            viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
+            viewAcuteIllnessPane language currentDate nonTBSuspectAcuteIllnessFollowUps db model
 
         prenatalFollowUps =
             generatePrenatalFollowUps currentDate db followUpsForResidents
@@ -138,7 +145,7 @@ viewContentForChw language currentDate village model db followUps =
                 |> fillPersonName Tuple.second db
 
         tuberculosisFollowUpsPane =
-            viewTuberculosisPane language currentDate tuberculosisFollowUps db model
+            viewTuberculosisPane language currentDate tuberculosisFollowUps tbSuspectAcuteIllnessFollowUps db model
 
         panes =
             [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
@@ -559,13 +566,21 @@ generateAcuteIllnessFollowUpEntryData language currentDate limitDate db ( partic
                                 List.map Tuple.second allEncountersWithIds
 
                             diagnosis =
-                                allEncounters
-                                    |> List.filter
+                                -- At TB management feature, we started recording the
+                                -- diagnosis on follow up.
+                                -- Therefore, we try to resolve it from follow up,
+                                -- and fallback to more heavy resolving by running through
+                                -- all encounters.
+                                Maybe.Extra.or
+                                    item.value.diagnosis
+                                    (List.filter
                                         -- We filters out encounters that got no diagnosis set,
                                         -- to get most recent diagnosis made for the illness.
                                         (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
-                                    |> List.head
-                                    |> Maybe.map .diagnosis
+                                        allEncounters
+                                        |> List.head
+                                        |> Maybe.map .diagnosis
+                                    )
 
                             encounterSequenceNumber =
                                 allEncounters
@@ -595,7 +610,7 @@ viewAcuteIllnessFollowUpEntry language currentDate entry =
             entry.item
 
         dueOption =
-            followUpDueOptionByDate currentDate item.dateMeasured item.value
+            followUpDueOptionByDate currentDate item.dateMeasured item.value.options
 
         assessment =
             [ p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis entry.diagnosis ] ]
@@ -740,10 +755,11 @@ viewTuberculosisPane :
     Language
     -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewTuberculosisPane language currentDate itemsDict db model =
+viewTuberculosisPane language currentDate itemsDict acuteIllnessItemsDict db model =
     let
         limitDate =
             -- Set limit date for tomorrow, so that we

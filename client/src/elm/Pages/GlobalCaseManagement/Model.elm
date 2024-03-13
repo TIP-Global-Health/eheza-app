@@ -2,7 +2,14 @@ module Pages.GlobalCaseManagement.Model exposing (..)
 
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (FollowUpOption, FollowUpValue, NutritionFollowUpValue, PrenatalFollowUpValue)
+import Backend.Measurement.Model
+    exposing
+        ( AcuteIllnessFollowUpValue
+        , FollowUpOption
+        , FollowUpValue
+        , NutritionFollowUpValue
+        , PrenatalFollowUpValue
+        )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -63,7 +70,7 @@ type alias AcuteIllnessFollowUpItem =
     -- we need to store sequence number, to be able to order
     -- follow ups correctly.
     , encounterSequenceNumber : Int
-    , value : EverySet FollowUpOption
+    , value : AcuteIllnessFollowUpValue
     }
 
 

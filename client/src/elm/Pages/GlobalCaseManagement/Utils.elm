@@ -90,7 +90,11 @@ generateNutritionFollowUps limitDate followUps =
         |> generateFollowUpItems wellChild
 
 
-generateAcuteIllnessFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
+generateAcuteIllnessFollowUps :
+    NominalDate
+    -> ModelIndexedDb
+    -> FollowUpMeasurements
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
 generateAcuteIllnessFollowUps limitDate db followUps =
     let
         encountersData =
@@ -122,7 +126,7 @@ generateAcuteIllnessFollowUps limitDate db followUps =
                                     item.participantId
 
                                 newItem =
-                                    AcuteIllnessFollowUpItem item.dateMeasured "" item.encounterId encounterSequenceNumber item.value.options
+                                    AcuteIllnessFollowUpItem item.dateMeasured "" item.encounterId encounterSequenceNumber item.value
                             in
                             Dict.get ( participantId, personId ) accum
                                 |> Maybe.map
