@@ -29,6 +29,7 @@ class HedleyRestfulAcuteIllnessFollowUp extends HedleyRestfulAcuteIllnessActivit
    */
   protected $dateFields = [
     'field_date_concluded',
+    'field_acute_illness_diagnosis',
   ];
 
 }
