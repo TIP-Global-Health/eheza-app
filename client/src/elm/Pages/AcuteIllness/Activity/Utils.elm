@@ -2350,7 +2350,13 @@ if Covid RDT could not be perfrmed.
 -}
 covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 covid19DiagnosisPath currentDate person isChw measurements =
-    if not <| covid19SuspectDiagnosed measurements then
+    if
+        (not <| covid19SuspectDiagnosed measurements)
+            || -- In case we have cought symptom for more than 2 weeks,
+               -- we must diagnose Tuberculosis suspect.
+               -- Therefore, we need to exit COVID19 path/
+               coughForMoreThan2Weeks measurements
+    then
         Nothing
 
     else
