@@ -4,7 +4,7 @@ import Activity.Model exposing (Activity)
 import Activity.Utils
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessActivity.Utils
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.AcuteIllnessEncounter.Utils
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.ChildScoreboardActivity.Utils

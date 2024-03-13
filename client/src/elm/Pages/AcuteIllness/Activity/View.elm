@@ -12,7 +12,7 @@ module Pages.AcuteIllness.Activity.View exposing
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
@@ -36,8 +36,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model
     exposing
-        ( FollowUpForm
-        , HealthEducationForm
+        ( HealthEducationForm
         , InvokationModule(..)
         , OngoingTreatmentReviewForm
         , VitalsForm
@@ -45,8 +44,7 @@ import Measurement.Model
         )
 import Measurement.Utils
     exposing
-        ( followUpFormWithDefault
-        , healthEducationFormWithDefault
+        ( healthEducationFormWithDefault
         , muacFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
@@ -1930,7 +1928,10 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                                         SaveHealthEducation personId measurements.healthEducation nextTask
 
                                     NextStepsFollowUp ->
-                                        SaveFollowUp personId measurements.followUp nextTask
+                                        SaveFollowUp personId
+                                            (Maybe.map Tuple.second assembled.diagnosis)
+                                            measurements.followUp
+                                            nextTask
 
                                     NextStepsContactTracing ->
                                         SaveContactsTracing personId measurements.contactsTracing nextTask

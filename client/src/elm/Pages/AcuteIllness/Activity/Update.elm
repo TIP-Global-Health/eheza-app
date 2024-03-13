@@ -33,7 +33,6 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
         ( ongoingTreatmentReviewFormWithDefault
-        , toFollowUpValueWithDefault
         , toHealthEducationValueWithDefault
         , toMuacValueWithDefault
         , toOngoingTreatmentReviewValueWithDefault
@@ -1781,7 +1780,7 @@ update currentDate site selectedHealthCenter id db msg model =
             , []
             )
 
-        SaveFollowUp personId saved nextTask ->
+        SaveFollowUp personId diagnosis saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1792,9 +1791,11 @@ update currentDate site selectedHealthCenter id db msg model =
                 extraMsgs =
                     generateNextStepsMsgs nextTask
 
-                appMsgs =
+                followUpForm =
                     model.nextStepsData.followUpForm
-                        |> toFollowUpValueWithDefault measurement
+
+                appMsgs =
+                    toFollowUpValueWithDefault measurement { followUpForm | diagnosis = diagnosis }
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveFollowUp personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id

@@ -2,7 +2,7 @@ module Pages.AcuteIllness.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
@@ -3038,6 +3038,34 @@ toContactsTracingValueWithDefault saved form =
 toContactsTracingValue : ContactsTracingForm -> Maybe (List ContactTraceItem)
 toContactsTracingValue form =
     Maybe.map Dict.values form.contacts
+
+
+followUpFormWithDefault : FollowUpForm -> Maybe AcuteIllnessFollowUpValue -> FollowUpForm
+followUpFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { option = or form.option (EverySet.toList value.options |> List.head)
+                , diagnosis = or form.diagnosis value.diagnosis
+                , resolutionDate = or form.resolutionDate value.resolutionDate
+                }
+            )
+
+
+toFollowUpValueWithDefault : Maybe AcuteIllnessFollowUpValue -> FollowUpForm -> Maybe AcuteIllnessFollowUpValue
+toFollowUpValueWithDefault saved form =
+    followUpFormWithDefault form saved
+        |> toFollowUpValue
+
+
+toFollowUpValue : FollowUpForm -> Maybe AcuteIllnessFollowUpValue
+toFollowUpValue form =
+    Maybe.map
+        (\options ->
+            AcuteIllnessFollowUpValue options form.diagnosis form.resolutionDate
+        )
+        (Maybe.map (List.singleton >> EverySet.fromList) form.option)
 
 
 

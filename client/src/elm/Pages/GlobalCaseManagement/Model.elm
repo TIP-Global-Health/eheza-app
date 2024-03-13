@@ -1,6 +1,6 @@
 module Pages.GlobalCaseManagement.Model exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FollowUpOption, FollowUpValue, NutritionFollowUpValue, PrenatalFollowUpValue)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)

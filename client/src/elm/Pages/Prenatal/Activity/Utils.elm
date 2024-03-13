@@ -4320,14 +4320,6 @@ toBirthPlanValue form =
         |> andMap (Maybe.map EverySet.fromList form.familyPlanning)
 
 
-fromFollowUpValue : Maybe PrenatalFollowUpValue -> FollowUpForm
-fromFollowUpValue saved =
-    { option = Maybe.andThen (.options >> EverySet.toList >> List.head) saved
-    , assesment = Maybe.map .assesment saved
-    , resolutionDate = Maybe.andThen .resolutionDate saved
-    }
-
-
 followUpFormWithDefault : FollowUpForm -> Maybe PrenatalFollowUpValue -> FollowUpForm
 followUpFormWithDefault form saved =
     saved

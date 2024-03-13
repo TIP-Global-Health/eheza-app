@@ -1,7 +1,8 @@
 module Pages.GlobalCaseManagement.Update exposing (update)
 
 import App.Model
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType(..), emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
