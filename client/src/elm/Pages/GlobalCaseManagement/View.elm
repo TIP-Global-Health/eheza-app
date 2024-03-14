@@ -143,11 +143,17 @@ viewContentForChw language currentDate village model db followUps =
         ( tuberculosisFollowUpsForExisitingParticipants, tuberculosisFollowUpsForNewParticipants ) =
             generateTuberculosisFollowUps currentDate db followUpsForResidents tbSuspectAcuteIllnessFollowUps
 
-        tuberculosisFollowUps =
+        _ =
+            Debug.log "" tuberculosisFollowUpsForNew
+
+        tuberculosisFollowUpsForExisting =
             fillPersonName Tuple.second db tuberculosisFollowUpsForExisitingParticipants
 
+        tuberculosisFollowUpsForNew =
+            fillPersonName identity db tuberculosisFollowUpsForNewParticipants
+
         tuberculosisFollowUpsPane =
-            viewTuberculosisPane language currentDate tuberculosisFollowUps db model
+            viewTuberculosisPane language currentDate tuberculosisFollowUpsForExisting tuberculosisFollowUpsForNew db model
 
         panes =
             [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
@@ -757,10 +763,11 @@ viewTuberculosisPane :
     Language
     -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
+    -> Dict PersonId TuberculosisFollowUpItem
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewTuberculosisPane language currentDate itemsDict db model =
+viewTuberculosisPane language currentDate itemsDictForExisting itemsDictForNew db model =
     let
         limitDate =
             -- Set limit date for tomorrow, so that we
@@ -768,7 +775,7 @@ viewTuberculosisPane language currentDate itemsDict db model =
             Date.add Days 1 currentDate
 
         entries =
-            generateTuberculosisFollowUpEntries language currentDate limitDate itemsDict db
+            generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForExisting db
 
         content =
             if List.isEmpty entries then
@@ -809,7 +816,7 @@ generateTuberculosisFollowUpEntryData language currentDate limitDate db ( partic
     if item.dateMeasured == currentDate then
         -- We do not display follow ups that were scheduled today,
         -- since we should not allow starting an encounter, if there
-        -- was already and encounter completed today (where follow up
+        -- was already an encounter completed today (where follow up
         -- was scheduled).
         Nothing
 
