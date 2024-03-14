@@ -89,9 +89,6 @@ viewHeader language initiator model =
 viewContent : Language -> NominalDate -> HealthCenterId -> PersonId -> Bool -> ModelIndexedDb -> Model -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html Msg
 viewContent language currentDate selectedHealthCenter personId isChw db model sessions =
     let
-        _ =
-            Debug.log "" model.viewMode
-
         activeSessions =
             Dict.toList sessions
                 |> List.filter
