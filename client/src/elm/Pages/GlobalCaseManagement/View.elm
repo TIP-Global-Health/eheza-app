@@ -143,9 +143,6 @@ viewContentForChw language currentDate village model db followUps =
         ( tuberculosisFollowUpsForExisitingParticipants, tuberculosisFollowUpsForNewParticipants ) =
             generateTuberculosisFollowUps currentDate db followUpsForResidents tbSuspectAcuteIllnessFollowUps
 
-        _ =
-            Debug.log "" tuberculosisFollowUpsForNew
-
         tuberculosisFollowUpsForExisting =
             fillPersonName Tuple.second db tuberculosisFollowUpsForExisitingParticipants
 
@@ -221,17 +218,16 @@ viewContentForNurse language currentDate isLabTech model db followUps =
 
 
 viewEntryPopUp : Language -> NominalDate -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)
-viewEntryPopUp language currentDate dialogState =
-    dialogState
-        |> Maybe.map
-            (\dataType ->
-                case dataType of
-                    FollowUpPrenatal data ->
-                        viewStartFollowUpPrenatalEncounterDialog language currentDate data
+viewEntryPopUp language currentDate =
+    Maybe.map
+        (\dataType ->
+            case dataType of
+                FollowUpPrenatal data ->
+                    viewStartFollowUpPrenatalEncounterDialog language currentDate data
 
-                    _ ->
-                        viewStartFollowUpEncounterDialog language dataType
-            )
+                _ ->
+                    viewStartFollowUpEncounterDialog language dataType
+        )
 
 
 viewStartFollowUpEncounterDialog : Language -> FollowUpEncounterDataType -> Html Msg
@@ -775,7 +771,7 @@ viewTuberculosisPane language currentDate itemsDictForExisting itemsDictForNew d
             Date.add Days 1 currentDate
 
         entries =
-            generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForExisting db
+            generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForExisting itemsDictForNew db
 
         content =
             if List.isEmpty entries then
@@ -796,12 +792,32 @@ generateTuberculosisFollowUpEntries :
     -> NominalDate
     -> NominalDate
     -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
+    -> Dict PersonId TuberculosisFollowUpItem
     -> ModelIndexedDb
     -> List TuberculosisFollowUpEntry
-generateTuberculosisFollowUpEntries language currentDate limitDate itemsDict db =
-    Dict.map (generateTuberculosisFollowUpEntryData language currentDate limitDate db) itemsDict
-        |> Dict.values
-        |> Maybe.Extra.values
+generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForExisting itemsDictForNew db =
+    let
+        entriesForExisting =
+            Dict.map (generateTuberculosisFollowUpEntryData language currentDate limitDate db) itemsDictForExisting
+                |> Dict.values
+                |> Maybe.Extra.values
+
+        entriesForNew =
+            Dict.toList itemsDictForNew
+                |> List.filterMap
+                    (\( personId, item ) ->
+                        if Date.compare item.dateMeasured limitDate == LT then
+                            TuberculosisFollowUpEntry
+                                Nothing
+                                personId
+                                item
+                                |> Just
+
+                        else
+                            Nothing
+                    )
+    in
+    entriesForExisting ++ entriesForNew
 
 
 generateTuberculosisFollowUpEntryData :
@@ -847,7 +863,7 @@ generateTuberculosisFollowUpEntryData language currentDate limitDate db ( partic
                         -- there was no other encounter that has resolved this follow up.
                         if item.encounterId == Just encounterId then
                             TuberculosisFollowUpEntry
-                                participantId
+                                (Just participantId)
                                 personId
                                 item
                                 |> Just

@@ -122,7 +122,7 @@ type alias TuberculosisFollowUpItem =
 
 
 type alias TuberculosisFollowUpEntry =
-    { participantId : IndividualEncounterParticipantId
+    { participantId : Maybe IndividualEncounterParticipantId
     , personId : PersonId
     , item : TuberculosisFollowUpItem
     }
@@ -170,7 +170,7 @@ type alias FollowUpPrenatalData =
 type alias FollowUpTuberculosisData =
     { personId : PersonId
     , personName : String
-    , participantId : IndividualEncounterParticipantId
+    , participantId : Maybe IndividualEncounterParticipantId
     }
 
 
