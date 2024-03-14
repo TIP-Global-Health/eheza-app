@@ -130,7 +130,7 @@ $villages = get_villages($health_center_id);
 $data = [];
 foreach ($villages as $village) {
   // Get the duplicates for this village.
-  $results = get_duplicates($village, $health_center_id);
+  $results = get_duplicates($health_center_id, $village);
 
   // Add teh results to teh $data array.
   foreach ($results as $result) {
