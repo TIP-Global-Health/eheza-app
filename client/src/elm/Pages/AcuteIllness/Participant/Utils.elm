@@ -1,5 +1,6 @@
-module Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
+module Pages.AcuteIllness.Participant.Utils exposing (..)
 
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isNothing)
@@ -11,3 +12,10 @@ date or outcome set.
 isAcuteIllnessActive : NominalDate -> IndividualEncounterParticipant -> Bool
 isAcuteIllnessActive currentDate session =
     isNothing session.endDate || isNothing session.outcome
+
+
+{-| Diagnoses that do not require subsequent encounters.
+-}
+noPursueAcuteIllnessDiagnoses : List AcuteIllnessDiagnosis
+noPursueAcuteIllnessDiagnoses =
+    [ DiagnosisFeverOfUnknownOrigin, DiagnosisTuberculosisSuspect ]

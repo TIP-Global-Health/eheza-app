@@ -485,7 +485,7 @@ viewBoolInput :
 viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
     let
         ( yesTransId, noTransId ) =
-            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
+            Maybe.withDefault ( Translate.Yes, Translate.No ) optionsTranslationIds
 
         inputWidth =
             if isJust optionsTranslationIds then

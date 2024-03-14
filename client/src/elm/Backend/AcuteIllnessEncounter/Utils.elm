@@ -52,6 +52,9 @@ acuteIllnessDiagnosisToString diagnosis =
         DiagnosisUndeterminedMoreEvaluationNeeded ->
             "undetermined"
 
+        DiagnosisTuberculosisSuspect ->
+            "tuberculosis-suspect"
+
         NoAcuteIllnessDiagnosis ->
             "none"
 
@@ -100,6 +103,9 @@ acuteIllnessDiagnosisFromString diagnosis =
 
         "undetermined" ->
             Just DiagnosisUndeterminedMoreEvaluationNeeded
+
+        "tuberculosis-suspect" ->
+            Just DiagnosisTuberculosisSuspect
 
         "none" ->
             Just NoAcuteIllnessDiagnosis
