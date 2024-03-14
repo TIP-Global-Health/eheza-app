@@ -36,7 +36,7 @@ viewYearSelector currentDate gap changeGapMsg =
                 []
 
         minYear =
-            2018
+            2023
     in
     div [ class "year-selector" ]
         [ Icons.iconBack <|

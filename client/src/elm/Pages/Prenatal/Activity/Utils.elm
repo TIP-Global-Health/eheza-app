@@ -2913,7 +2913,7 @@ healthEducationFormInputsAndTasksForChw language assembled form =
             -- so, we do not need to add them explicitly.
             let
                 familyPlanningInput =
-                    healthEducationFormFamilyPlanningInput language SetHealthEducationSubActivityBoolInput True form
+                    healthEducationFormFamilyPlanningInput language SetHealthEducationBoolInput True form
 
                 thirdEnconterInputs =
                     [ hemorrhagingInput, familyPlanningInput, breastfeedingInput ]

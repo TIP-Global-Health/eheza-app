@@ -4,9 +4,9 @@ import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Model exposing (ScoreboardData)
-import Date
+import Date exposing (Interval(..), Unit(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -15,6 +15,7 @@ import Pages.Scoreboard.Utils exposing (..)
 import Pages.Utils exposing (viewYearSelector)
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
+import Utils.NominalDate exposing (equalByYearAndMonth)
 
 
 view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
@@ -68,20 +69,30 @@ viewScoreboardData language currentDate data model =
         childrenUnder2 =
             List.foldl
                 (\record accum ->
-                    let
-                        ageInMonths =
-                            diffMonths record.birthDate currentDate
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            ageInMonths =
+                                                diffMonths record.birthDate targetDateForMonth
+
                                             gap =
                                                 ageInMonths - gapInMonths
+
+                                            existedDuringExaminationMonth =
+                                                -- Making sure patient was already created during examination month.
+                                                Date.compare record.created targetDateForMonth == LT
                                         in
-                                        if gap >= 0 && gap < 24 then
+                                        if
+                                            existedDuringExaminationMonth
+                                                && (gap >= 0)
+                                                && (gap < 24)
+                                        then
                                             accumValue + 1
 
                                         else
@@ -106,6 +117,20 @@ viewScoreboardData language currentDate data model =
         , viewTargetedInterventionsPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         , viewInfrastructureEnvironmentWashPane language currentDate model.yearSelectorGap monthsGap childrenUnder2 model.viewMode data
         ]
+
+
+{-| Resolves date for last day of examined month.
+For, current month, it's current date. For past month,
+it's last day of that month.
+-}
+resolveTargetDateForMonth : Int -> NominalDate -> NominalDate
+resolveTargetDateForMonth gapInMonths currentDate =
+    if gapInMonths == 0 then
+        currentDate
+
+    else
+        Date.add Months (-1 * gapInMonths) currentDate
+            |> toLastDayOfMonth
 
 
 viewAggregatedChildScoreboardPane : Language -> ScoreboardData -> Html any
@@ -135,28 +160,38 @@ viewDemographicsPane language currentDate yearSelectorGap monthsGap childrenUnde
         valuesByRow =
             List.foldl
                 (\record accum ->
-                    let
-                        ageInMonths =
-                            diffMonths record.birthDate currentDate
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            ageInMonths =
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+
+                                            existedDuringExaminationMonth =
+                                                -- Making sure patient was already created during examination month.
+                                                Date.compare record.created targetDateForMonth == LT
+
                                             gap =
                                                 ageInMonths - gapInMonths
 
                                             row2 =
-                                                if gap == 0 then
+                                                if existedDuringExaminationMonth && gap == 0 then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
                                             row3 =
-                                                if gap == 0 && record.lowBirthWeight == Just True then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (gap == 0)
+                                                        && (record.lowBirthWeight == Just True)
+                                                then
                                                     accumValue.row3 + 1
 
                                                 else
@@ -221,71 +256,47 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
         valuesByRow =
             List.foldl
                 (\record accum ->
-                    let
-                        stuntingSevereAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.severe
-
-                        stuntingModerateAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.moderate
-
-                        stuntingNormalAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.normal
-
-                        underweightSevereAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.underweight.severe
-
-                        underweightModerateAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.underweight.moderate
-
-                        underweightNormalAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.underweight.normal
-
-                        wastingSevereAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.wasting.severe
-
-                        wastingModerateAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.wasting.moderate
-
-                        wastingNormalAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.wasting.normal
-
-                        muacSevereAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.muac.severe
-
-                        muacModerateAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.muac.moderate
-
-                        muacNormalAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.muac.normal
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            existedDuringExaminationMonth =
+                                                -- Making sure patient was already created during examination month.
+                                                Date.compare record.created targetDateForMonth == LT
+
+                                            muacSevereAsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.nutrition.muac.severe
+
+                                            muacModerateAsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.nutrition.muac.moderate
+
+                                            muacNormalAsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.nutrition.muac.normal
+
                                             ( row1, row2, row3 ) =
                                                 if
-                                                    List.member gapInMonths stuntingSevereAsAgeInMonths
-                                                        || List.member gapInMonths underweightSevereAsAgeInMonths
-                                                        || List.member gapInMonths wastingSevereAsAgeInMonths
-                                                        || List.member gapInMonths muacSevereAsAgeInMonths
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty muacSevereAsAgeInMonths)
                                                 then
                                                     ( accumValue.row1 + 1, accumValue.row2, accumValue.row3 )
 
                                                 else if
-                                                    List.member gapInMonths stuntingModerateAsAgeInMonths
-                                                        || List.member gapInMonths underweightModerateAsAgeInMonths
-                                                        || List.member gapInMonths wastingModerateAsAgeInMonths
-                                                        || List.member gapInMonths muacModerateAsAgeInMonths
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty muacModerateAsAgeInMonths)
                                                 then
                                                     ( accumValue.row1, accumValue.row2 + 1, accumValue.row3 )
 
                                                 else if
-                                                    List.member gapInMonths stuntingNormalAsAgeInMonths
-                                                        || List.member gapInMonths underweightNormalAsAgeInMonths
-                                                        || List.member gapInMonths wastingNormalAsAgeInMonths
-                                                        || List.member gapInMonths muacNormalAsAgeInMonths
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty muacNormalAsAgeInMonths)
                                                 then
                                                     ( accumValue.row1, accumValue.row2, accumValue.row3 + 1 )
 
@@ -336,38 +347,56 @@ viewStuntingPane language currentDate yearSelectorGap monthsGap childrenUnder2 v
         valuesByRow =
             List.foldl
                 (\record accum ->
-                    let
-                        severeAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.severe
-
-                        moderateAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.moderate
-
-                        normalAsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.nutrition.stunting.normal
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            existedDuringExaminationMonth =
+                                                -- Making sure patient was already created during examination month.
+                                                Date.compare record.created targetDateForMonth == LT
+
+                                            severeAsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.nutrition.stunting.severe
+
+                                            moderateAsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.nutrition.stunting.moderate
+
+                                            normalAsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.nutrition.stunting.normal
+
                                             row1 =
-                                                if List.member gapInMonths severeAsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty severeAsAgeInMonths)
+                                                then
                                                     accumValue.row1 + 1
 
                                                 else
                                                     accumValue.row1
 
                                             row2 =
-                                                if List.member gapInMonths moderateAsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty moderateAsAgeInMonths)
+                                                then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
                                             row3 =
-                                                if List.member gapInMonths normalAsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty normalAsAgeInMonths)
+                                                then
                                                     accumValue.row3 + 1
 
                                                 else
@@ -417,33 +446,46 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
         valuesByRow =
             List.foldl
                 (\record accum ->
-                    let
-                        ageInMonths =
-                            -- Using EDD date to properly resolve the month of
-                            -- prgnancy (as child may have been borm premature).
-                            diffMonths record.eddDate currentDate
-
-                        row1AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.ancNewborn.row1
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
-                                            gap =
-                                                gapInMonths - ageInMonths
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            ageInMonths =
+                                                -- Using EDD date to properly resolve the month of
+                                                -- prgnancy (as child may have been borm premature).
+                                                diffMonths (Date.floor Month record.eddDate) targetDateForMonth
+
+                                            row1AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.ancNewborn.row1
 
                                             row1 =
-                                                if List.member gapInMonths row1AsAgeInMonths then
+                                                --  We do not a condition to check if child existed during
+                                                -- examination month because we're examining pregnancy months
+                                                -- and it's likely that child did not existy on the system.
+                                                if not <| List.isEmpty row1AsAgeInMonths then
                                                     accumValue.row1 + 1
 
                                                 else
                                                     accumValue.row1
 
                                             row2 =
-                                                if record.ncda.ancNewborn.row2 && gap > 0 && gap < 10 then
+                                                let
+                                                    gap =
+                                                        gapInMonths - ageInMonths
+                                                in
+                                                if
+                                                    --  We do not a condition to check if child existed during
+                                                    -- examination month because we're examining pregnancy months
+                                                    -- and it's likely that child did not existy on the system.
+                                                    (record.ncda.ancNewborn.row2 && gap > 0)
+                                                        && (gap < 10)
+                                                then
                                                     accumValue.row2 + 1
 
                                                 else
@@ -491,33 +533,47 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
         valuesByRow =
             List.foldl
                 (\record accum ->
-                    let
-                        ageInMonths =
-                            diffMonths record.birthDate currentDate
-
-                        row2AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row2
-
-                        row3AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row3
-
-                        row4AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row4
-
-                        row5AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.universalIntervention.row5
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            existedDuringExaminationMonth =
+                                                -- Making sure patient was already created during examination month.
+                                                Date.compare record.created targetDateForMonth == LT
+
+                                            ageInMonths =
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+
                                             ageInMonthsForIndexCell =
                                                 ageInMonths - gapInMonths
 
+                                            row2AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.universalIntervention.row2
+
+                                            row3AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.universalIntervention.row3
+
+                                            row4AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.universalIntervention.row4
+
+                                            row5AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.universalIntervention.row5
+
                                             row1 =
-                                                if (ageInMonthsForIndexCell < 0) || (ageInMonthsForIndexCell >= 24) then
+                                                if
+                                                    not existedDuringExaminationMonth
+                                                        || (ageInMonthsForIndexCell < 0)
+                                                        || (ageInMonthsForIndexCell >= 24)
+                                                then
                                                     accumValue.row1
 
                                                 else
@@ -570,7 +626,10 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
-                                                if List.member gapInMonths row2AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row2AsAgeInMonths)
+                                                then
                                                     accumValue.row2 + 1
 
                                                 else
@@ -581,7 +640,10 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
-                                                if List.member gapInMonths row3AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row3AsAgeInMonths)
+                                                then
                                                     accumValue.row3 + 1
 
                                                 else
@@ -592,7 +654,10 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
-                                                if List.member gapInMonths row4AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row4AsAgeInMonths)
+                                                then
                                                     accumValue.row4 + 1
 
                                                 else
@@ -603,7 +668,10 @@ viewUniversalInterventionPane language currentDate site yearSelectorGap monthsGa
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
-                                                if List.member gapInMonths row5AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row5AsAgeInMonths)
+                                                then
                                                     accumValue.row5 + 1
 
                                                 else
@@ -668,51 +736,74 @@ viewNutritionBehaviorPane language currentDate yearSelectorGap monthsGap childre
         valuesByRow =
             List.foldl
                 (\record accum ->
-                    let
-                        ageInMonths =
-                            diffMonths record.birthDate currentDate
-
-                        row2AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row2
-
-                        row3AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row3
-
-                        row4AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.nutritionBehavior.row4
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            existedDuringExaminationMonth =
+                                                -- Making sure patient was already created during examination month.
+                                                Date.compare record.created targetDateForMonth == LT
+
+                                            ageInMonths =
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+
+                                            row2AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.nutritionBehavior.row2
+
+                                            row3AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.nutritionBehavior.row3
+
+                                            row4AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.nutritionBehavior.row4
+
                                             gap =
                                                 ageInMonths - gapInMonths
 
                                             row1 =
-                                                if gap >= 0 && gap < 6 && record.ncda.nutritionBehavior.row1 then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (gap >= 0)
+                                                        && (gap < 6)
+                                                        && record.ncda.nutritionBehavior.row1
+                                                then
                                                     accumValue.row1 + 1
 
                                                 else
                                                     accumValue.row1
 
                                             row2 =
-                                                if List.member gapInMonths row2AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row2AsAgeInMonths)
+                                                then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
                                             row3 =
-                                                if List.member gapInMonths row3AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row3AsAgeInMonths)
+                                                then
                                                     accumValue.row3 + 1
 
                                                 else
                                                     accumValue.row3
 
                                             row4 =
-                                                if List.member gapInMonths row4AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row4AsAgeInMonths)
+                                                then
                                                     accumValue.row4 + 1
 
                                                 else
@@ -770,34 +861,46 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
         valuesByRow =
             List.foldl
                 (\record accum ->
-                    let
-                        ageInMonths =
-                            diffMonths record.birthDate currentDate
-
-                        row1AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row1
-
-                        row2AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row2
-
-                        row3AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row3
-
-                        row4AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row4
-
-                        row5AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row5
-
-                        row6AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.targetedInterventions.row6
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            existedDuringExaminationMonth =
+                                                -- Making sure patient was already created during examination month.
+                                                Date.compare record.created targetDateForMonth == LT
+
+                                            ageInMonths =
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+
+                                            row1AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.targetedInterventions.row1
+
+                                            row2AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.targetedInterventions.row2
+
+                                            row3AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.targetedInterventions.row3
+
+                                            row4AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.targetedInterventions.row4
+
+                                            row5AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.targetedInterventions.row5
+
+                                            row6AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.targetedInterventions.row6
+
                                             gap =
                                                 ageInMonths - gapInMonths
 
@@ -806,7 +909,10 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 -- children age is up until 2 years old.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
-                                                if List.member gapInMonths row1AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row1AsAgeInMonths)
+                                                then
                                                     accumValue.row1 + 1
 
                                                 else
@@ -815,7 +921,12 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                             row2 =
                                                 -- Manutrition treatment can be given to children older that 2 years, therefore,
                                                 -- we must verify that at given month, child age is between 0 and 24 months.
-                                                if List.member gapInMonths row2AsAgeInMonths && gap >= 0 && gap < 24 then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row2AsAgeInMonths)
+                                                        && (gap >= 0)
+                                                        && (gap < 24)
+                                                then
                                                     accumValue.row2 + 1
 
                                                 else
@@ -824,7 +935,12 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                             row3 =
                                                 -- Diarrhea treatment can be given to children older that 2 years, therefore,
                                                 -- we must verify that at given month, child age is between 0 and 24 months.
-                                                if List.member gapInMonths row3AsAgeInMonths && gap >= 0 && gap < 24 then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row3AsAgeInMonths)
+                                                        && (gap >= 0)
+                                                        && (gap < 24)
+                                                then
                                                     accumValue.row3 + 1
 
                                                 else
@@ -835,7 +951,10 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
-                                                if List.member gapInMonths row4AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row4AsAgeInMonths)
+                                                then
                                                     accumValue.row4 + 1
 
                                                 else
@@ -846,7 +965,10 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
-                                                if List.member gapInMonths row5AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row5AsAgeInMonths)
+                                                then
                                                     accumValue.row5 + 1
 
                                                 else
@@ -857,7 +979,10 @@ viewTargetedInterventionsPane language currentDate yearSelectorGap monthsGap chi
                                                 -- reaches age of 2 years.
                                                 -- NCDA data is also for childern that up until 2 years old, so
                                                 -- no need to check child age for given month.
-                                                if List.member gapInMonths row6AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row6AsAgeInMonths)
+                                                then
                                                     accumValue.row6 + 1
 
                                                 else
@@ -913,62 +1038,87 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
         valuesByRow =
             List.foldl
                 (\record accum ->
-                    let
-                        ageInMonths =
-                            diffMonths record.birthDate currentDate
-
-                        row1AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.infrastructureEnvironmentWash.row1
-
-                        row2AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.infrastructureEnvironmentWash.row2
-
-                        row3AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.infrastructureEnvironmentWash.row3
-
-                        row5AsAgeInMonths =
-                            List.map (\date -> diffMonths date currentDate) record.ncda.infrastructureEnvironmentWash.row5
-                    in
                     List.indexedMap
                         (\index accumValue ->
                             Dict.get index monthsGap
                                 |> Maybe.map
                                     (\gapInMonths ->
                                         let
+                                            targetDateForMonth =
+                                                resolveTargetDateForMonth gapInMonths currentDate
+
+                                            existedDuringExaminationMonth =
+                                                -- Making sure patient was already created during examination month.
+                                                Date.compare record.created targetDateForMonth == LT
+
+                                            ageInMonths =
+                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
+
+                                            row1AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.infrastructureEnvironmentWash.row1
+
+                                            row2AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.infrastructureEnvironmentWash.row2
+
+                                            row3AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.infrastructureEnvironmentWash.row3
+
+                                            row4AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.infrastructureEnvironmentWash.row4
+
+                                            row5AsAgeInMonths =
+                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                    record.ncda.infrastructureEnvironmentWash.row5
+
                                             row1 =
-                                                if List.member gapInMonths row1AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row1AsAgeInMonths)
+                                                then
                                                     accumValue.row1 + 1
 
                                                 else
                                                     accumValue.row1
 
                                             row2 =
-                                                if List.member gapInMonths row2AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row2AsAgeInMonths)
+                                                then
                                                     accumValue.row2 + 1
 
                                                 else
                                                     accumValue.row2
 
                                             row3 =
-                                                if List.member gapInMonths row3AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row3AsAgeInMonths)
+                                                then
                                                     accumValue.row3 + 1
 
                                                 else
                                                     accumValue.row3
 
                                             row4 =
-                                                let
-                                                    gap =
-                                                        ageInMonths - gapInMonths
-                                                in
-                                                if record.ncda.infrastructureEnvironmentWash.row4 && gap >= 0 && gap < 24 then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row4AsAgeInMonths)
+                                                then
                                                     accumValue.row4 + 1
 
                                                 else
                                                     accumValue.row4
 
                                             row5 =
-                                                if List.member gapInMonths row5AsAgeInMonths then
+                                                if
+                                                    existedDuringExaminationMonth
+                                                        && (not <| List.isEmpty row5AsAgeInMonths)
+                                                then
                                                     accumValue.row5 + 1
 
                                                 else
@@ -1075,8 +1225,18 @@ formatValues currentDate yearSelectorGap =
                     value
 
                 else
+                    -- Not showing data of future months.
                     ""
 
+            else if yearSelectorGap == -1 then
+                if index >= 10 then
+                    -- Showing data starting Nov 2023.
+                    -- For prior dates - dash for all rows.
+                    value
+
+                else
+                    "-"
+
             else
-                value
+                "-"
         )

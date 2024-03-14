@@ -6,6 +6,7 @@ import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (..)
 import Date
 import EverySet exposing (EverySet)
+import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
@@ -47,6 +48,7 @@ decodeSelectedEntity =
 decodePatientData : NominalDate -> Decoder PatientData
 decodePatientData currentDate =
     succeed PatientData
+        |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
         |> required "edd_date" decodeYYYYMMDD
         |> optional "low_birth_weight" (maybe bool) Nothing
@@ -235,7 +237,7 @@ decodeInfrastructureEnvironmentWashData currentDate =
         |> optional "row1" (decodeMonthlyValues currentDate) []
         |> optional "row2" (decodeMonthlyValues currentDate) []
         |> optional "row3" (decodeMonthlyValues currentDate) []
-        |> optional "row4" bool False
+        |> optional "row4" (decodeMonthlyValues currentDate) []
         |> optional "row5" (decodeMonthlyValues currentDate) []
 
 
