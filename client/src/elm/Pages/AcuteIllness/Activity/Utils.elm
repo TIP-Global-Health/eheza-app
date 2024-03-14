@@ -1870,6 +1870,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                         && sendToHCDueToMedicationNonAdministration measurements
                         && (diagnosis /= Just DiagnosisPneuminialCovid19)
                    )
+                || (isChw && diagnosis == Just DiagnosisTuberculosisSuspect)
 
         NextStepsHealthEducation ->
             False
@@ -1880,7 +1881,11 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisLowRiskCovid19)
 
         NextStepsFollowUp ->
-            if List.member diagnosis [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
+            if diagnosis == Just DiagnosisTuberculosisSuspect then
+                -- @todo: do we need this for Subsequent Encounter?
+                True
+
+            else if List.member diagnosis [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
                 -- In these cases patient is sent to hospital, and
                 -- there's no need for CHW to follow up.
                 False
@@ -2345,7 +2350,13 @@ if Covid RDT could not be perfrmed.
 -}
 covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 covid19DiagnosisPath currentDate person isChw measurements =
-    if not <| covid19SuspectDiagnosed measurements then
+    if
+        (not <| covid19SuspectDiagnosed measurements)
+            || -- In case we have cought symptom for more than 2 weeks,
+               -- we must diagnose Tuberculosis suspect.
+               -- Therefore, we need to exit COVID19 path/
+               coughForMoreThan2Weeks measurements
+    then
         Nothing
 
     else
@@ -2452,7 +2463,10 @@ nonCovid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasureme
 nonCovid19DiagnosisPath currentDate person isChw measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
-        if feverRecorded measurements then
+        if coughForMoreThan2Weeks measurements then
+            Just DiagnosisTuberculosisSuspect
+
+        else if feverRecorded measurements then
             resolveAcuteIllnessDiagnosisByMalariaRDT measurements
 
         else if respiratoryInfectionDangerSignsPresent measurements then
@@ -2850,6 +2864,20 @@ respiratoryInfectionDangerSignsPresent measurements =
         |> Maybe.withDefault False
 
 
+coughForMoreThan2Weeks : AcuteIllnessMeasurements -> Bool
+coughForMoreThan2Weeks =
+    .symptomsRespiratory
+        >> getMeasurementValueFunc
+        >> Maybe.andThen
+            (Dict.get Cough
+                >> Maybe.map
+                    -- For more than 2 weeks, value is set to
+                    -- max duration of a symptom.
+                    ((==) symptomMaxDuration)
+            )
+        >> Maybe.withDefault False
+
+
 gastrointestinalInfectionDangerSignsPresent : Bool -> AcuteIllnessMeasurements -> Bool
 gastrointestinalInfectionDangerSignsPresent fever measurements =
     Maybe.map
@@ -3051,3 +3079,13 @@ withDefaultValue : a -> Maybe a -> EverySet a
 withDefaultValue default maybe =
     Maybe.map List.singleton maybe
         |> fromListWithDefaultValue default
+
+
+symptomMaxDuration : Int
+symptomMaxDuration =
+    14
+
+
+coughLessThan2WeeksConstant : Int
+coughLessThan2WeeksConstant =
+    7

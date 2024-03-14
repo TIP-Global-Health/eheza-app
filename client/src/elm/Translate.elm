@@ -1122,6 +1122,8 @@ type TranslationId
     | PediatricVisit
     | People
     | Percentage
+    | Period2WeeksOrLess
+    | PeriodMoreThan2Weeks
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
@@ -1702,6 +1704,7 @@ type TranslationId
     | TuberculosisProvideDOTTodayQuestion
     | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
     | TuberculosisReasonMedicationsNotDistributed TuberculosisDOTSign
+    | TuberculosisSuspect
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
@@ -2202,6 +2205,9 @@ translationSet trans =
                     , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
                     }
 
+                DiagnosisTuberculosisSuspect ->
+                    translationSet TuberculosisSuspect
+
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
@@ -2293,6 +2299,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ntibisobanutse - Hakenewe Isuzuma Ryimbitse"
                     , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
                     }
+
+                DiagnosisTuberculosisSuspect ->
+                    translationSet TuberculosisSuspect
 
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
@@ -12770,6 +12779,18 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        Period2WeeksOrLess ->
+            { english = "2 Weeks or less"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PeriodMoreThan2Weeks ->
+            { english = "More than 2 weeks"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PersistentStorage authorized ->
             if authorized then
                 { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
@@ -21161,6 +21182,12 @@ translationSet trans =
 
         TuberculosisReasonMedicationsNotDistributed reason ->
             translationSet <| TuberculosisReasonNotProvidedToday reason
+
+        TuberculosisSuspect ->
+            { english = "Tuberculosis Suspect"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         TuberculosisSymptomQuestion symptom ->
             case symptom of
