@@ -42,6 +42,7 @@ Primary ports:
 1. `cp .ddev/config.local.yaml.example .ddev/config.local.yaml`. Note that by default, installation is performed for Rwanda site. If you wish to install for Burundi site, set `EHEZA_SITE=burundi` at `.ddev/local.config.yaml`.
 1. ddev restart
 1. `cp client/src/elm/LocalConfig.Example.elm client/src/elm/LocalConfig.elm`
+1. * In new file, change `module LocalConfig.Example exposing (localConfigs)` to `module LocalConfig exposing (localConfigs)` 
 1. `ddev gulp`
 1. Open the [app](http://localhost:3000) in the browser, typically it listens on port 3000.
 1. Use `12345678` as the pairing code (tied to Device nodes at the Drupal side).
@@ -63,6 +64,7 @@ Make sure the following is installed:
 
 * Install backend first.
 * `cp src/elm/LocalConfig.Example.elm src/elm/LocalConfig.elm`
+* In new file, change `module LocalConfig.Example exposing (localConfigs)` to `module LocalConfig exposing (localConfigs)`
 
 You may need to update `src/elm/LocalConfig.elm` if your local URLs are different from the default setting.
 

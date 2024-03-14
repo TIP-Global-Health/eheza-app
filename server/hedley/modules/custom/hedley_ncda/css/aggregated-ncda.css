@@ -1,13 +1,22 @@
 body,
-#page-wrapper #main-wrapper {
+#page-wrapper #main-wrapper,
+#page-wrapper #page {
   background: #0393db;
+}
+
+body.admin-menu #page-wrapper #header {
+  display: none;
 }
 
 #skip-link {
   visibility: hidden;
 }
 
-#page-wrapper #header,
+#page-wrapper #header #logo,
+#page-wrapper #header #name-and-slogan,
+#page-wrapper #header #main-menu,
+#page-wrapper #header #secondary-menu h2,
+#page-wrapper #header #secondary-menu #secondary-menu-links .first,
 #page-wrapper #footer-wrapper,
 #main-wrapper #breadcrumb,
 #main-wrapper #sidebar-first,
@@ -27,7 +36,7 @@ body,
 .page-content {
   min-height: 768px;
   margin-bottom: 20px;
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
 .page-content .header {
