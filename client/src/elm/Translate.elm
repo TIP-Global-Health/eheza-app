@@ -9227,7 +9227,7 @@ translationSet trans =
 
                 MenuStockManagement ->
                     { english = "Stock Management"
-                    , kinyarwanda = Just "Imi"
+                    , kinyarwanda = Just "Ububiko bw'imiti"
                     , kirundi = Just "Ugucunga ububiko"
                     }
 
@@ -20020,7 +20020,7 @@ translationSet trans =
 
         StockManagement ->
             { english = "Stock Management"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ububiko bw'imiti"
             , kirundi = Just "Ugucunga ububiko"
             }
 
@@ -20667,7 +20667,7 @@ translationSet trans =
 
         StartingStock ->
             { english = "Starting Stock"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ububiko bwatangiranywe"
             , kirundi = Just "Ugutangura ububiko"
             }
 
@@ -22799,7 +22799,7 @@ translateActivePage page =
 
                 StockManagementPage ->
                     { english = "Stock Management"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ububiko bw'imiti"
                     , kirundi = Just "Ugucunga ububiko"
                     }
 
