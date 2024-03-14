@@ -21186,7 +21186,7 @@ translationSet trans =
         TuberculosisSuspect ->
             { english = "Tuberculosis Suspect"
             , kinyarwanda = Nothing
-            , kirundi = Just "Nta Gupima/gusuzuma"
+            , kirundi = Nothing
             }
 
         TuberculosisSymptomQuestion symptom ->
