@@ -555,6 +555,7 @@ type TranslationId
     | DateOfContact
     | DatePregnancyConcluded
     | DashboardLabel
+    | Dashboards
     | DateReceived
     | DateOfBirth
     | DayAbbrev
@@ -4482,6 +4483,12 @@ translationSet trans =
             { english = "Dashboard"
             , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
             , kirundi = Just "Urubaho"
+            }
+
+        Dashboards ->
+            { english = "Dashboards"
+            , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
+            , kirundi = Just "Imbaho"
             }
 
         DateReceived ->
@@ -9191,10 +9198,7 @@ translationSet trans =
                     }
 
                 MenuDashboards ->
-                    { english = "Dashboards"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Imbaho"
-                    }
+                    translationSet Dashboards
 
                 MenuCaseManagement ->
                     translationSet CaseManagement
@@ -22567,10 +22571,7 @@ translateActivePage page =
                     }
 
                 DashboardPage _ ->
-                    { english = "Dashboards"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Imbaho"
-                    }
+                    translationSet Dashboards
 
                 GlobalCaseManagementPage ->
                     { english = "Case Management"
