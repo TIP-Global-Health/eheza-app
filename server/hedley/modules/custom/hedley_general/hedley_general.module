@@ -288,7 +288,7 @@ function hedley_general_get_content_type_fields($type) {
 /**
  * Implements hook_query_TAG_alter().
  *
- * Add to a query which to get all entities that have field_deleted set
+ * Adds a condition to select entities that have field_deleted set
  * to False, or not set at all (an indication that entity is not deleted).
  */
 function hedley_general_query_exclude_deleted_alter(QueryAlterableInterface $query) {

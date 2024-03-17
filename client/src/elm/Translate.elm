@@ -556,6 +556,7 @@ type TranslationId
     | DateOfContact
     | DatePregnancyConcluded
     | DashboardLabel
+    | Dashboards
     | DateReceived
     | DateOfBirth
     | DayAbbrev
@@ -1125,6 +1126,8 @@ type TranslationId
     | PediatricVisit
     | People
     | Percentage
+    | Period2WeeksOrLess
+    | PeriodMoreThan2Weeks
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
@@ -1705,6 +1708,7 @@ type TranslationId
     | TuberculosisProvideDOTTodayQuestion
     | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
     | TuberculosisReasonMedicationsNotDistributed TuberculosisDOTSign
+    | TuberculosisSuspect
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
@@ -2205,6 +2209,9 @@ translationSet trans =
                     , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
                     }
 
+                DiagnosisTuberculosisSuspect ->
+                    translationSet TuberculosisSuspect
+
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
@@ -2296,6 +2303,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ntibisobanutse - Hakenewe Isuzuma Ryimbitse"
                     , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
                     }
+
+                DiagnosisTuberculosisSuspect ->
+                    translationSet TuberculosisSuspect
 
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
@@ -3793,7 +3803,7 @@ translationSet trans =
 
         ChildHasMalnutritionPhrase ->
             { english = "According to nutrition measurements, this child has acute malnutrition"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urebeye ku bipimo by'imirire, umwana afite imirire mibi ihutiyeho"
             , kirundi = Nothing
             }
 
@@ -4476,6 +4486,12 @@ translationSet trans =
             { english = "Dashboard"
             , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
             , kirundi = Just "Urubaho"
+            }
+
+        Dashboards ->
+            { english = "Dashboards"
+            , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
+            , kirundi = Just "Imbaho"
             }
 
         DateReceived ->
@@ -5793,9 +5809,9 @@ translationSet trans =
                     }
 
         FillTheBlanks ->
-            { english = "Fill in the Blanks: Cyatsi, Hondo, Tuku & Ibipimo"
-            , kinyarwanda = Just "Uzuza ukoresheje: Cyatsi, Hondo, Tuku & Ibipimo"
-            , kirundi = Just "Uzuza aho atacanditsemwo: Urwatsi Rubisi, Umutoto uhishiye, Gutukura & Ibipimo"
+            { english = "Nutrition Information"
+            , kinyarwanda = Just "Amakuru ku Mirire"
+            , kirundi = Nothing
             }
 
         FilterByName ->
@@ -6068,7 +6084,7 @@ translationSet trans =
 
                 Legumes ->
                     { english = "Legumes (beans, peas, cereals)"
-                    , kinyarwanda = Just "Ibibyamisogwe (Ibishyimbo, amashyaza, ibinyampeke)"
+                    , kinyarwanda = Just "Ibinyamisogwe (Ibishyimbo, amashyaza, ibinyampeke)"
                     , kirundi = Just "Ibifungugwa bimeze nk'ibiharage/intete ziri mu bishishwa (ibiharage, ubushaza, intete)"
                     }
 
@@ -9199,10 +9215,7 @@ translationSet trans =
                     }
 
                 MenuDashboards ->
-                    { english = "Dashboards"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Imbaho"
-                    }
+                    translationSet Dashboards
 
                 MenuCaseManagement ->
                     translationSet CaseManagement
@@ -10396,7 +10409,7 @@ translationSet trans =
 
                 Backend.Measurement.Model.HasCleanWater ->
                     { english = "Provide counseling on how to prepare clean water like boiling it and using water purifier"
-                    , kinyarwanda = Just "Bagire inama y'uburyo bwo gusukura amazi nko kuyateka no gukoresha Sur’eau"
+                    , kinyarwanda = Just "Bagire inama y'uburyo bwo gusukura amazi nko kuyateka no gukoresha umuti usukura amazi"
                     , kirundi = Nothing
                     }
 
@@ -10551,7 +10564,7 @@ translationSet trans =
 
                 TreatedForAcuteMalnutrition ->
                     { english = "Is the child being treated"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umwana ari kuvurwa"
                     , kirundi = Nothing
                     }
 
@@ -10617,7 +10630,7 @@ translationSet trans =
 
                 ChildTakingFBF ->
                     { english = "Is FBF being consumed"
-                    , kinyarwanda = Just "FBF ihabwa umwana nkuko bikwiriye"
+                    , kinyarwanda = Just "Shisha Kibondo ihabwa umwana nkuko bikwiriye"
                     , kirundi = Nothing
                     }
 
@@ -12783,6 +12796,18 @@ translationSet trans =
 
         Percentage ->
             { english = "%"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Period2WeeksOrLess ->
+            { english = "2 Weeks or less"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PeriodMoreThan2Weeks ->
+            { english = "More than 2 weeks"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -21179,6 +21204,12 @@ translationSet trans =
         TuberculosisReasonMedicationsNotDistributed reason ->
             translationSet <| TuberculosisReasonNotProvidedToday reason
 
+        TuberculosisSuspect ->
+            { english = "Tuberculosis Suspect"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         TuberculosisSymptomQuestion symptom ->
             case symptom of
                 SymptomNightSweats ->
@@ -22557,10 +22588,7 @@ translateActivePage page =
                     }
 
                 DashboardPage _ ->
-                    { english = "Dashboards"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Imbaho"
-                    }
+                    translationSet Dashboards
 
                 GlobalCaseManagementPage ->
                     { english = "Case Management"

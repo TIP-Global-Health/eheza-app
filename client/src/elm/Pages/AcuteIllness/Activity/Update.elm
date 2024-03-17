@@ -238,6 +238,20 @@ update currentDate site selectedHealthCenter id db msg model =
                     )
                 |> Maybe.withDefault noChange
 
+        SetSymptomsRespiratoryCough moreThan2Weeks ->
+            let
+                valueToSet =
+                    if moreThan2Weeks then
+                        symptomMaxDuration
+
+                    else
+                        coughLessThan2WeeksConstant
+
+                extraMsgs =
+                    [ SetSymptomsRespiratorySignValue Cough (String.fromInt valueToSet) ]
+            in
+            sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs noChange
+
         SetSymptomsGIIntractableVomiting value ->
             let
                 updatedForm =

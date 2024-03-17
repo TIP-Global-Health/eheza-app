@@ -18,7 +18,7 @@ import Backend.Utils exposing (reportToWhatsAppEnabled)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -433,12 +433,7 @@ resolveSelectedDateForMonthSelector currentDate monthGap =
 
     else
         Date.add Date.Months (-1 * monthGap) currentDate
-            |> getLastDayOfMonth
-
-
-getLastDayOfMonth : NominalDate -> NominalDate
-getLastDayOfMonth =
-    Date.ceiling Date.Month >> Date.add Date.Days -1
+            |> toLastDayOfMonth
 
 
 
@@ -485,7 +480,7 @@ viewBoolInput :
 viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
     let
         ( yesTransId, noTransId ) =
-            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
+            Maybe.withDefault ( Translate.Yes, Translate.No ) optionsTranslationIds
 
         inputWidth =
             if isJust optionsTranslationIds then

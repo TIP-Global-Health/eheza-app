@@ -30,6 +30,7 @@ type Msg
     | SetSymptomsGeneralSignValue SymptomsGeneralSign String
     | SetSymptomsGISignValue SymptomsGISign String
     | SetSymptomsRespiratorySignValue SymptomsRespiratorySign String
+    | SetSymptomsRespiratoryCough Bool
     | SetSymptomsGIIntractableVomiting Bool
     | SaveSymptomsGeneral PersonId (Maybe ( SymptomsGeneralId, SymptomsGeneral )) (Maybe SymptomsTask)
     | SaveSymptomsRespiratory PersonId (Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )) (Maybe SymptomsTask)
