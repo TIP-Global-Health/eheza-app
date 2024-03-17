@@ -22453,7 +22453,7 @@ translateActivePage page =
 
                 DashboardPage _ ->
                     { english = "Dashboards"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
                     , kirundi = Just "Imbaho"
                     }
 
