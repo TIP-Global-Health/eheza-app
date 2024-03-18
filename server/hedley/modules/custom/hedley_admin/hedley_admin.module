@@ -416,3 +416,57 @@ function hedley_admin_administrators_access() {
 
   return user_has_role($admin_role->rid);
 }
+
+/**
+ * Gets the node ID of the health center.
+ *
+ * @param string $health_center_name
+ *   The name of a healthcenter.
+ *
+ * @return string
+ *   The node ID of the health center.
+ */
+function get_health_center_id($health_center_name = NULL) {
+  if ($health_center_name) {
+    $health_center_name = str_replace(['_', '-', '.'], ' ', $health_center_name);
+    $results = db_query("SELECT nid FROM node WHERE title = :title AND type = :type", array(
+      ':title' => $health_center_name,
+      ':type' => 'health_center',
+    ));
+    if (!$results->fetchField()) {
+      $results = db_query("SELECT nid FROM node WHERE title LIKE :title AND type = :type", array(
+        ':title' => db_like($health_center_name) . '%',
+        ':type' => 'health_center',
+      ));
+      if (!$results->fetchField()) {
+        drush_print('No health centers match the name provided');
+        exit(1);
+      }
+      elseif (!$results->fetchField()) {
+        return db_query("SELECT nid FROM node WHERE title LIKE :title AND type = :type LIMIT 1", array(
+          ':title' => db_like($health_center_name) . '%',
+          ':type' => 'health_center',
+        ))->fetchField();
+      }
+      else {
+        $results = db_query("SELECT nid FROM node WHERE title LIKE :title AND type = :type", array(
+          ':title' => db_like($health_center_name) . '%',
+          ':type' => 'health_center',
+        ));
+        drush_print('Multiple health centers match the name provided including ' .
+          get_health_center($results->fetchField()) . ', ' . get_health_center($results->fetchField()) .
+          ", etc. \r\nPlease use a more specific name");
+        exit(1);
+      }
+    }
+    else {
+      return db_query("SELECT nid FROM node WHERE title = :title AND type = :type", array(
+        ':title' => $health_center_name,
+        ':type' => 'health_center',
+      ))->fetchField();
+    }
+  }
+  else {
+    return NULL;
+  }
+}
