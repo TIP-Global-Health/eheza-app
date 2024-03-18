@@ -1,7 +1,7 @@
 module Pages.AcuteIllness.Encounter.Utils exposing (..)
 
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)

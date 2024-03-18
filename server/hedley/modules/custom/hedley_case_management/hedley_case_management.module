@@ -25,8 +25,15 @@ function hedley_case_management_node_insert($node) {
     return;
   }
 
+  // Acute Illness follow up where diagnosis is Tuberculosis suspect affects
+  // Tuberculosis case management instead of Acute Illness case management.
+  if ($node->type == 'acute_illness_follow_up') {
+    $node->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'] == 'tuberculosis-suspect' ?
+      hedley_case_management_handle_tuberculosis_insert_trigger($node) :
+      hedley_case_management_handle_acute_illness_insert_trigger($node);
+  }
+
   $acute_illness_triggers = [
-    'acute_illness_follow_up',
     'acute_illness_encounter',
   ];
   if (in_array($node->type, $acute_illness_triggers)) {
@@ -361,6 +368,9 @@ function hedley_case_management_handle_tuberculosis_insert_trigger($node) {
 /**
  * Marks tuberculosis follow-ups belonging to person as resolved.
  *
+ * Also, marks acute illness follow-ups belonging to person as resolved,
+ * in case their diagnose is TB suspect.
+ *
  * @param int $person_id
  *   Person ID.
  * @param int $to_nid
@@ -383,11 +393,30 @@ function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $to_
   }
 
   $result = $query->execute();
-  if (empty($result['node'])) {
+  $tb_follow_ups = !empty($result['node']) ? array_keys($result['node']) : [];
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'acute_illness_follow_up')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->fieldCondition('field_acute_illness_diagnosis', 'value', 'tuberculosis-suspect')
+    ->addTag('exclude_resolved')
+    ->range(0, $limit);
+
+  if (!empty($to_nid)) {
+    $query->propertyCondition('nid', $to_nid, '<');
+  }
+
+  $result = $query->execute();
+  $ai_follow_ups = !empty($result['node']) ? array_keys($result['node']) : [];
+
+  if (empty($tb_follow_ups) && empty($ai_follow_ups)) {
     return;
   }
 
-  foreach (array_keys($result['node']) as $follow_up) {
+  foreach (array_merge($tb_follow_ups, $ai_follow_ups) as $follow_up) {
     hedley_case_management_resolve_follow_up($follow_up);
   }
 }

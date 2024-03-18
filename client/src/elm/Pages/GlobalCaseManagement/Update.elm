@@ -1,7 +1,8 @@
 module Pages.GlobalCaseManagement.Update exposing (update)
 
 import App.Model
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType(..), emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
@@ -134,7 +135,19 @@ startFollowUpEncounterWellChild currentDate selectedHealthCenter db data =
 
 startFollowUpEncounterTuberculosis : NominalDate -> HealthCenterId -> FollowUpTuberculosisData -> List App.Model.Msg
 startFollowUpEncounterTuberculosis currentDate selectedHealthCenter data =
-    [ emptyTuberculosisEncounter data.participantId currentDate (Just selectedHealthCenter)
-        |> Backend.Model.PostTuberculosisEncounter
-        |> App.Model.MsgIndexedDb
-    ]
+    -- If participant was provided, we create new encounter for existing participant.
+    Maybe.map
+        (\participantId ->
+            [ emptyTuberculosisEncounter participantId currentDate (Just selectedHealthCenter)
+                |> Backend.Model.PostTuberculosisEncounter
+                |> App.Model.MsgIndexedDb
+            ]
+        )
+        data.participantId
+        |> -- Participant was not provided, so we create new participant (which
+           -- also creates encounter for newly created participant).
+           Maybe.withDefault
+            [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter selectedHealthCenter
+                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                |> App.Model.MsgIndexedDb
+            ]

@@ -8,7 +8,7 @@ module Pages.WellChild.ProgressReport.View exposing
     )
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
@@ -778,7 +778,7 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
                                     InitiatorGroupNutritionProgressReport sessionId personId
 
                                 Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator personId ->
-                                    Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord patientRecordInitiator personId
+                                    Backend.AcuteIllnessEncounter.Types.InitiatorPatientRecord patientRecordInitiator personId
 
                                 InitiatorChildScoreboard childScoreboardEncounterId ->
                                     InitiatorChildScoreboardProgressReport childScoreboardEncounterId

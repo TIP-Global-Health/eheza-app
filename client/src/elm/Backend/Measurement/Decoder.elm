@@ -1,6 +1,7 @@
 module Backend.Measurement.Decoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
@@ -2458,13 +2459,14 @@ decodeNutritionFollowUpValue =
 
 decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
 decodeAcuteIllnessFollowUp =
-    decodeAcuteIllnessMeasurement decodeFollowUpValue
+    decodeAcuteIllnessMeasurement decodeAcuteIllnessFollowUpValue
 
 
-decodeFollowUpValue : Decoder FollowUpValue
-decodeFollowUpValue =
-    succeed FollowUpValue
+decodeAcuteIllnessFollowUpValue : Decoder AcuteIllnessFollowUpValue
+decodeAcuteIllnessFollowUpValue =
+    succeed AcuteIllnessFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> optional "acute_illness_diagnosis" (nullable decodeAcuteIllnessDiagnosis) Nothing
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
@@ -5478,6 +5480,13 @@ decodeTuberculosisDOTSign =
 decodeTuberculosisFollowUp : Decoder TuberculosisFollowUp
 decodeTuberculosisFollowUp =
     decodeTuberculosisMeasurement decodeFollowUpValue
+
+
+decodeFollowUpValue : Decoder FollowUpValue
+decodeFollowUpValue =
+    succeed FollowUpValue
+        |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
 decodeTuberculosisHealthEducation : Decoder TuberculosisHealthEducation

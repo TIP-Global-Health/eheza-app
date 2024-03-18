@@ -1,6 +1,7 @@
 module Backend.AcuteIllnessEncounter.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Types exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator)
@@ -95,41 +96,6 @@ emptyModel =
     }
 
 
-type AcuteIllnessEncounterType
-    = AcuteIllnessEncounterNurse
-    | AcuteIllnessEncounterNurseSubsequent
-    | AcuteIllnessEncounterCHW
-
-
-type AcuteIllnessDiagnosis
-    = DiagnosisCovid19Suspect
-    | DiagnosisSevereCovid19
-    | DiagnosisPneuminialCovid19
-    | DiagnosisLowRiskCovid19
-    | DiagnosisMalariaComplicated
-    | DiagnosisMalariaUncomplicated
-    | DiagnosisMalariaUncomplicatedAndPregnant
-    | DiagnosisGastrointestinalInfectionComplicated
-    | DiagnosisGastrointestinalInfectionUncomplicated
-    | DiagnosisSimpleColdAndCough
-    | DiagnosisRespiratoryInfectionComplicated
-    | DiagnosisRespiratoryInfectionUncomplicated
-    | DiagnosisFeverOfUnknownOrigin
-    | DiagnosisUndeterminedMoreEvaluationNeeded
-    | DiagnosisTuberculosisSuspect
-    | NoAcuteIllnessDiagnosis
-
-
-type AcuteIllnessProgressReportInitiator
-    = InitiatorEncounterPage
-    | InitiatorIndividualNutritionProgressReport NutritionEncounterId
-    | InitiatorWellChildProgressReport WellChildEncounterId
-    | InitiatorGroupNutritionProgressReport SessionId PersonId
-    | InitiatorPatientRecord PatientRecordInitiator PersonId
-    | InitiatorNCDProgressReport NCDProgressReportInitiator
-    | InitiatorChildScoreboardProgressReport ChildScoreboardEncounterId
-
-
 type Msg
     = CloseAcuteIllnessEncounter
     | SetAcuteIllnessDiagnosis AcuteIllnessDiagnosis
@@ -174,7 +140,7 @@ type Msg
     | HandleSavedNutrition (WebData ())
     | SaveHealthEducation PersonId (Maybe HealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
-    | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) FollowUpValue
+    | SaveFollowUp PersonId (Maybe AcuteIllnessFollowUpId) AcuteIllnessFollowUpValue
     | HandleSavedFollowUp (WebData ())
     | SaveCoreExam PersonId (Maybe AcuteIllnessCoreExamId) AcuteIllnessCoreExamValue
     | HandleSavedCoreExam (WebData ())
