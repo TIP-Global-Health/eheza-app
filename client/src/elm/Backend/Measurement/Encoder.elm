@@ -1,6 +1,7 @@
 module Backend.Measurement.Encoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
@@ -2374,15 +2375,16 @@ encodeNutritionFollowUpValueWithType type_ value =
 
 encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )
 encodeAcuteIllnessFollowUp =
-    encodeAcuteIllnessMeasurement (encodeFollowUpValueWithType "acute_illness_follow_up")
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessFollowUpValue
 
 
-encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
-encodeFollowUpValueWithType type_ value =
+encodeAcuteIllnessFollowUpValue : AcuteIllnessFollowUpValue -> List ( String, Value )
+encodeAcuteIllnessFollowUpValue value =
     [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "deleted", bool False )
-    , ( "type", string type_ )
+    , ( "type", string "acute_illness_follow_up" )
     ]
+        ++ encodeNullable "acute_illness_diagnosis" value.diagnosis encodeAcuteIllnessDiagnosis
         ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
@@ -4443,6 +4445,15 @@ encodeTuberculosisDOTSign =
 encodeTuberculosisFollowUp : TuberculosisFollowUp -> List ( String, Value )
 encodeTuberculosisFollowUp =
     encodeTuberculosisMeasurement (encodeFollowUpValueWithType "tuberculosis_follow_up")
+
+
+encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
+encodeFollowUpValueWithType type_ value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodeTuberculosisHealthEducation : TuberculosisHealthEducation -> List ( String, Value )

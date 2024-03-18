@@ -1,6 +1,6 @@
 module Backend.IndividualEncounterParticipant.Model exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)

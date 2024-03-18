@@ -5,6 +5,7 @@ and cached in local storage.
 -}
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
@@ -2124,11 +2125,12 @@ type HealthEducationSign
 
 
 type alias AcuteIllnessFollowUp =
-    AcuteIllnessMeasurement FollowUpValue
+    AcuteIllnessMeasurement AcuteIllnessFollowUpValue
 
 
-type alias FollowUpValue =
+type alias AcuteIllnessFollowUpValue =
     { options : EverySet FollowUpOption
+    , diagnosis : Maybe AcuteIllnessDiagnosis
     , resolutionDate : Maybe NominalDate
     }
 
@@ -2905,6 +2907,12 @@ type TuberculosisDOTSign
 
 type alias TuberculosisFollowUp =
     TuberculosisMeasurement FollowUpValue
+
+
+type alias FollowUpValue =
+    { options : EverySet FollowUpOption
+    , resolutionDate : Maybe NominalDate
+    }
 
 
 type alias TuberculosisHealthEducation =

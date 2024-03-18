@@ -1,7 +1,7 @@
 module Pages.AcuteIllness.Activity.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Form
@@ -96,7 +96,7 @@ type Msg
     | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp PersonId (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
+    | SaveFollowUp PersonId (Maybe AcuteIllnessDiagnosis) (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
     | SetContactsTracingFormState ContactsTracingFormState
     | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
     | SetContactsTracingInput String
@@ -359,6 +359,13 @@ type alias NextStepsData =
     }
 
 
+type alias FollowUpForm =
+    { option : Maybe FollowUpOption
+    , diagnosis : Maybe AcuteIllnessDiagnosis
+    , resolutionDate : Maybe NominalDate
+    }
+
+
 emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { isolationForm = IsolationForm Nothing Nothing Nothing Nothing
@@ -367,7 +374,7 @@ emptyNextStepsData =
     , sendToHCForm = emptySendToHCForm
     , medicationDistributionForm = MedicationDistributionForm Nothing Nothing Nothing Nothing Nothing Nothing
     , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = emptyFollowUpForm
+    , followUpForm = FollowUpForm Nothing Nothing Nothing
     , contactsTracingForm = emptyContactsTracingForm
     , activeTask = Nothing
     }

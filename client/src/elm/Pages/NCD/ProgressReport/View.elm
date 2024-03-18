@@ -1,7 +1,7 @@
 module Pages.NCD.ProgressReport.View exposing (view)
 
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model

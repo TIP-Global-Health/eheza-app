@@ -6,6 +6,7 @@ import Backend.Measurement.Model
     exposing
         ( FollowUpMeasurements
         , FollowUpOption(..)
+        , FollowUpValue
         , LaboratoryTest(..)
         , LabsResultsValue
         , NCDLabsResults
@@ -90,7 +91,11 @@ generateNutritionFollowUps limitDate followUps =
         |> generateFollowUpItems wellChild
 
 
-generateAcuteIllnessFollowUps : NominalDate -> ModelIndexedDb -> FollowUpMeasurements -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
+generateAcuteIllnessFollowUps :
+    NominalDate
+    -> ModelIndexedDb
+    -> FollowUpMeasurements
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
 generateAcuteIllnessFollowUps limitDate db followUps =
     let
         encountersData =
@@ -122,7 +127,7 @@ generateAcuteIllnessFollowUps limitDate db followUps =
                                     item.participantId
 
                                 newItem =
-                                    AcuteIllnessFollowUpItem item.dateMeasured "" item.encounterId encounterSequenceNumber item.value.options
+                                    AcuteIllnessFollowUpItem item.dateMeasured "" item.encounterId encounterSequenceNumber item.value
                             in
                             Dict.get ( participantId, personId ) accum
                                 |> Maybe.map
@@ -232,13 +237,67 @@ generateImmunizationFollowUps limitDate followUps =
             Dict.empty
 
 
+{-| We have 2 sources for case management entries of Tuberculosis pane.
+One is Acute illness follow up, in case Tuberculosis suspect is diagnosed.
+Other is the follow ups from Tuberculosis management encounter.
+So, in order to combine these 2, we'll have to include AI follows for person,
+as part of Tuberculosis follow ups.
+Currently, all Tuberculosis encounters are derived from single participant (as
+there's no option to 'end' Tuberculosis illness), so this solution is valid.
+In case we'll have multiple Tuberculosis illnesses in future, this wil need to
+be revised.
+There's also an option that patient did not attend Tuberculosis encounter, and
+there's no participant. This is why we return second dictionary derived from
+AI follow ups. It's enrty will have a different action of starting first
+Tuberculosis encounter, which will also create the participant.
+-}
 generateTuberculosisFollowUps :
     NominalDate
     -> ModelIndexedDb
     -> FollowUpMeasurements
-    -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
-generateTuberculosisFollowUps limitDate db followUps =
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) AcuteIllnessFollowUpItem
+    ->
+        ( Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
+        , Dict PersonId TuberculosisFollowUpItem
+        )
+generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
     let
+        -- As theoretically, there can be multiple illnesses where
+        -- Tuberculosis suspect is diagnosed, we resolve the most recent
+        -- follow up per patient.
+        acuteIllnessItemsByPerson =
+            -- Filter out resolved follow ups.
+            Dict.filter
+                (\_ item ->
+                    item.value |> .resolutionDate |> filterResolvedFollowUps limitDate
+                )
+                followUpsFromAcuteIllness
+                -- Genrated dict with most recent follow up per patient.
+                |> Dict.foldl
+                    (\( _, personId ) item accum ->
+                        Dict.get personId accum
+                            |> Maybe.map
+                                (\current ->
+                                    if Date.compare current.dateMeasured item.dateMeasured == LT then
+                                        Dict.insert personId item accum
+
+                                    else
+                                        accum
+                                )
+                            |> Maybe.withDefault (Dict.insert personId item accum)
+                    )
+                    Dict.empty
+                -- Translate Acute Illness follow ups items into
+                -- Tuberculosis follow ups items, so we can merge them with
+                -- 'generic' Tuberculosis follow ups items.
+                |> Dict.map
+                    (\_ item ->
+                        TuberculosisFollowUpItem item.dateMeasured
+                            item.personName
+                            Nothing
+                            (FollowUpValue item.value.options item.value.resolutionDate)
+                    )
+
         encountersData =
             generateTuberculosisEncounters followUps
                 |> EverySet.toList
@@ -249,42 +308,69 @@ generateTuberculosisFollowUps limitDate db followUps =
                             |> Maybe.map (\encounter -> ( encounterId, encounter.participant ))
                     )
                 |> Dict.fromList
+
+        itemsFromTuberculosis =
+            Dict.values followUps.tuberculosis
+                |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+                |> List.foldl
+                    (\item accum ->
+                        let
+                            encounterData =
+                                item.encounterId
+                                    |> Maybe.andThen
+                                        (\encounterId -> Dict.get encounterId encountersData)
+                        in
+                        encounterData
+                            |> Maybe.map
+                                (\participantId ->
+                                    let
+                                        personId =
+                                            item.participantId
+
+                                        newItem =
+                                            TuberculosisFollowUpItem item.dateMeasured "" item.encounterId item.value
+                                    in
+                                    Dict.get ( participantId, personId ) accum
+                                        |> Maybe.map
+                                            (\member ->
+                                                if Date.compare newItem.dateMeasured member.dateMeasured == GT then
+                                                    Dict.insert ( participantId, personId ) newItem accum
+
+                                                else
+                                                    accum
+                                            )
+                                        |> Maybe.withDefault
+                                            (Dict.insert ( participantId, personId ) newItem accum)
+                                )
+                            |> Maybe.withDefault accum
+                    )
+                    Dict.empty
     in
-    Dict.values followUps.tuberculosis
-        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
-        |> List.foldl
-            (\item accum ->
-                let
-                    encounterData =
-                        item.encounterId
-                            |> Maybe.andThen
-                                (\encounterId -> Dict.get encounterId encountersData)
-                in
-                encounterData
-                    |> Maybe.map
-                        (\participantId ->
-                            let
-                                personId =
-                                    item.participantId
+    Dict.foldl
+        (\( participantId, personId ) item ( accum, acuteIllnessDict ) ->
+            Dict.get personId acuteIllnessDict
+                |> Maybe.map
+                    (\itemFromAcuteIllness ->
+                        ( -- In case acute illness item is more recent that the one we have
+                          -- from Tuberculosis encounter, replace it.
+                          if Date.compare item.dateMeasured itemFromAcuteIllness.dateMeasured == LT then
+                            Dict.insert ( participantId, personId )
+                                -- When replacing, we assign encounter ID, as acute illness
+                                -- does not have it set.
+                                { itemFromAcuteIllness | encounterId = item.encounterId }
+                                accum
 
-                                newItem =
-                                    TuberculosisFollowUpItem item.dateMeasured "" item.encounterId item.value
-                            in
-                            Dict.get ( participantId, personId ) accum
-                                |> Maybe.map
-                                    (\member ->
-                                        if Date.compare newItem.dateMeasured member.dateMeasured == GT then
-                                            Dict.insert ( participantId, personId ) newItem accum
-
-                                        else
-                                            accum
-                                    )
-                                |> Maybe.withDefault
-                                    (Dict.insert ( participantId, personId ) newItem accum)
+                          else
+                            accum
+                        , -- Item for person was found in 'generic' Tuberculosis dict,
+                          -- No matter if it's used or dropped, we remove it from Acute Illness dict,
+                          Dict.remove personId acuteIllnessDict
                         )
-                    |> Maybe.withDefault accum
-            )
-            Dict.empty
+                    )
+                |> Maybe.withDefault ( accum, acuteIllnessDict )
+        )
+        ( Dict.empty, acuteIllnessItemsByPerson )
+        itemsFromTuberculosis
 
 
 filterResolvedFollowUps : NominalDate -> Maybe NominalDate -> Bool

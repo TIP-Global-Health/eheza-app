@@ -1,6 +1,6 @@
 module Backend.AcuteIllnessEncounter.Utils exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.NCDEncounter.Utils
 import Backend.PatientRecord.Utils
 import Maybe.Extra

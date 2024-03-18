@@ -2,6 +2,7 @@ module Pages.PatientRecord.View exposing (view)
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
+import Backend.AcuteIllnessEncounter.Types
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender(..))
@@ -447,7 +448,7 @@ viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db =
                 (\( data, _ ) ->
                     viewAcuteIllnessDiagnosisEntry
                         language
-                        (Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord initiator personId)
+                        (Backend.AcuteIllnessEncounter.Types.InitiatorPatientRecord initiator personId)
                         db
                         SetActivePage
                         data

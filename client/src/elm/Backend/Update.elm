@@ -6,7 +6,8 @@ import App.Model
 import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.AcuteIllnessEncounter.Update
 import Backend.ChildScoreboardActivity.Utils
 import Backend.ChildScoreboardEncounter.Model
@@ -7471,7 +7472,7 @@ generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw after id =
                 else
                     let
                         navigateToProgressReportMsg =
-                            App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Model.InitiatorEncounterPage id))
+                            App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Types.InitiatorEncounterPage id))
                     in
                     if assembled.initialEncounter then
                         [ navigateToProgressReportMsg ]

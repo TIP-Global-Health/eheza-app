@@ -42,7 +42,7 @@ choices about what to show the user, rather than the details).
 
 import Activity.Model exposing (Activity)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)

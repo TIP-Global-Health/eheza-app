@@ -1,7 +1,7 @@
 module Pages.Dashboard.View exposing (chwCard, view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Dashboard.Model
     exposing
         ( AcuteIllnessDataItem
