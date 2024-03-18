@@ -5,6 +5,7 @@ import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardE
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
+import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
