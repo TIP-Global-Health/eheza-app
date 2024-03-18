@@ -73,6 +73,7 @@ var tableForType = {
     core_physical_exam: 'shards',
     covid_testing: 'shards',
     danger_signs: 'shards',
+    education_session: 'shards',    
     exposure: 'shards',
     family_planning: 'shards',
     follow_up: 'shards',
