@@ -93,8 +93,8 @@ function hedley_group_education_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-education_session-field_participaiting_patients'.
-  $field_instances['node-education_session-field_participaiting_patients'] = array(
+  // 'node-education_session-field_participating_patients'.
+  $field_instances['node-education_session-field_participating_patients'] = array(
     'bundle' => 'education_session',
     'default_value' => NULL,
     'deleted' => 0,
@@ -118,7 +118,7 @@ function hedley_group_education_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_participaiting_patients',
+    'field_name' => 'field_participating_patients',
     'label' => 'Participaiting Patients',
     'required' => 0,
     'settings' => array(

@@ -44,14 +44,14 @@ function hedley_group_education_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_participaiting_patients'.
-  $field_bases['field_participaiting_patients'] = array(
+  // Exported field_base: 'field_participating_patients'.
+  $field_bases['field_participating_patients'] = array(
     'active' => 1,
     'cardinality' => -1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_participaiting_patients',
+    'field_name' => 'field_participating_patients',
     'indexes' => array(
       'target_id' => array(
         0 => 'target_id',
