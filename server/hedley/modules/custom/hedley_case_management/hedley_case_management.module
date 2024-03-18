@@ -378,7 +378,7 @@ function hedley_case_management_handle_tuberculosis_insert_trigger($node) {
  * @param int $limit
  *   Maximal number of follow-ups to load. Defaults to 200.
  */
-function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $to_nid = NULL, $limit = 1000) {
+function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $to_nid = NULL, $limit = 200) {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
