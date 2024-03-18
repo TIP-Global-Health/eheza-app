@@ -99,7 +99,7 @@ class HedleyRestfulEdicationSession extends HedleyRestfulSyncBase {
       $item->nurse = $item->uuid_nurse;
       unset($item->uuid_nurse);
 
-      $item->village = $item->uuid_village_ref;
+      $item->village_ref = $item->uuid_village_ref;
       unset($item->uuid_individual_participant);
 
       $item->education_topics = explode(',', $item->education_topics);
