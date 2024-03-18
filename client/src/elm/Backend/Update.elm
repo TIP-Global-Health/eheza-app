@@ -4838,6 +4838,15 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             in
             ( { model | computedDashboards = Dict.insert uuid updatedComputedDashboard model.computedDashboards }, recalc )
 
+        EducationSessionRevision uuid data ->
+            let
+                educationSessions =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.educationSessions
+            in
+            ( { model | educationSessions = educationSessions }
+            , recalc
+            )
+
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId

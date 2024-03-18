@@ -541,6 +541,7 @@ type Revision
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
     | DashboardStatsRevision HealthCenterId DashboardStatsRaw
+    | EducationSessionRevision EducationSessionId EducationSession
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp

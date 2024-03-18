@@ -142,6 +142,9 @@ decodeRevision =
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
 
+                    "education_session" ->
+                        decodeWithUuid EducationSessionRevision decodeEducationSession
+
                     "exposure" ->
                         decodeWithUuid ExposureRevision decodeExposure
 
