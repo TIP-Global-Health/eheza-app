@@ -247,7 +247,7 @@ there's no option to 'end' Tuberculosis illness), so this solution is valid.
 In case we'll have multiple Tuberculosis illnesses in future, this wil need to
 be revised.
 There's also an option that patient did not attend Tuberculosis encounter, and
-there's no participant. This is why we return second dictionary derrived from
+there's no participant. This is why we return second dictionary derived from
 AI follow ups. It's enrty will have a different action of starting first
 Tuberculosis encounter, which will also create the participant.
 -}
