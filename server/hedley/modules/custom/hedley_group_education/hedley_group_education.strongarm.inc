@@ -14,6 +14,27 @@ function hedley_group_education_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_education_session';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_education_session'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_education_session';
+  $strongarm->value = '[node:content-type] - [node:field-village-ref:title] - [node:field-scheduled-date:value:custom:Y-m-d]';
+  $export['auto_entitylabel_pattern_node_education_session'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_education_session';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_education_session'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__education_session';
   $strongarm->value = array(
     'view_modes' => array(),

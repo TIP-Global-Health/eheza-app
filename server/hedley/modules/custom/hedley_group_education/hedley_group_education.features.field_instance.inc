@@ -48,6 +48,50 @@ function hedley_group_education_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-education_session-field_nurse'.
+  $field_instances['node-education_session-field_nurse'] = array(
+    'bundle' => 'education_session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-education_session-field_participaiting_patients'.
   $field_instances['node-education_session-field_participaiting_patients'] = array(
@@ -280,6 +324,7 @@ function hedley_group_education_field_default_field_instances() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Education Topics');
+  t('Nurse');
   t('Participaiting Patients');
   t('Scheduled Date');
   t('Shards');
