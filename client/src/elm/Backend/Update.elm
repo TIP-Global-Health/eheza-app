@@ -15,6 +15,8 @@ import Backend.ChildScoreboardEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Model
+import Backend.EducationSession.Update
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
@@ -3524,6 +3526,24 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , appMsgs
             )
 
+        MsgEducationSession sessionId subMsg ->
+            let
+                encounter =
+                    Dict.get sessionId model.educationSessions
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get sessionId model.educationSessionRequests
+                        |> Maybe.withDefault Backend.EducationSession.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.EducationSession.Update.update currentDate sessionId encounter subMsg requests
+            in
+            ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
+            , Cmd.map (MsgEducationSession sessionId) subCmd
+            , appMsgs
+            )
+
         MsgTraceContact traceContactId subMsg ->
             let
                 traceContact =
@@ -4428,6 +4448,35 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         |> RemoteData.withDefault []
             in
             ( { model | postTuberculosisEncounter = Dict.insert participantId data model.postTuberculosisEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostEducationSession educationSession ->
+            ( { model | postEducationSession = Loading }
+            , sw.post educationSessionEndpoint educationSession
+                |> toCmd (RemoteData.fromResult >> HandlePostedEducationSession)
+            , []
+            )
+
+        HandlePostedEducationSession data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( educationSessionId, _ ) ->
+                            [-- @todo
+                             -- App.Model.SetActivePage <|
+                             --     UserPage <|
+                             --         Pages.Page.EducationSessionPage educationSessionId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postEducationSession = data }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
