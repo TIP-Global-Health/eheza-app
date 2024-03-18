@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains \HedleyRestfulEdicationSession.
+ * Contains \HedleyRestfulEducationSession.
  */
 
 /**
- * Class HedleyRestfulEdicationSession.
+ * Class HedleyRestfulEducationSession.
  */
-class HedleyRestfulEdicationSession extends HedleyRestfulSyncBase {
+class HedleyRestfulEducationSession extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
