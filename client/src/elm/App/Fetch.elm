@@ -20,6 +20,7 @@ import Pages.Clinical.Fetch
 import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
 import Pages.Device.Fetch
+import Pages.EducationSession.Fetch
 import Pages.GlobalCaseManagement.Fetch
 import Pages.GroupEncounterTypes.Fetch
 import Pages.HomeVisit.Activity.Fetch
@@ -361,6 +362,10 @@ fetch model =
 
             UserPage (TuberculosisActivityPage id _) ->
                 Pages.Tuberculosis.Activity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (EducationSessionPage id) ->
+                Pages.EducationSession.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage id) ->

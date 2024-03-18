@@ -4467,10 +4467,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 appMsgs =
                     RemoteData.map
                         (\( educationSessionId, _ ) ->
-                            [-- @todo
-                             -- App.Model.SetActivePage <|
-                             --     UserPage <|
-                             --         Pages.Page.EducationSessionPage educationSessionId
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.EducationSessionPage educationSessionId
                             ]
                         )
                         data

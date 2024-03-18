@@ -48,6 +48,8 @@ import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.EducationSession.Model
+import Pages.EducationSession.Update
 import Pages.GlobalCaseManagement.Update
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Activity.Update
@@ -575,6 +577,19 @@ update msg model =
                             in
                             ( { data | tuberculosisEncounterPages = Dict.insert id subModel data.tuberculosisEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageTuberculosisEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageEducationSession id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.educationSessionPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
+                                        |> Pages.EducationSession.Update.update subMsg
+                            in
+                            ( { data | educationSessionPages = Dict.insert id subModel data.educationSessionPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageEducationSession id) subCmd
                             , extraMsgs
                             )
 

@@ -22978,6 +22978,12 @@ translateActivePage page =
                     , kirundi = Nothing
                     }
 
+                EducationSessionPage _ ->
+                    { english = "Group Education"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
 
 translateChartPhrase : ChartPhrase -> TranslationSet String
 translateChartPhrase phrase =
