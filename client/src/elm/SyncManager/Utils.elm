@@ -1855,6 +1855,9 @@ siteFeatureFromString str =
         "tuberculosis_management" ->
             Just FeatureTuberculosisManagement
 
+        "group_education" ->
+            Just FeatureGroupEducation
+
         _ ->
             Nothing
 
@@ -1873,6 +1876,9 @@ siteFeatureToString feature =
 
         FeatureTuberculosisManagement ->
             "tuberculosis_management"
+
+        FeatureGroupEducation ->
+            "group_education"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature

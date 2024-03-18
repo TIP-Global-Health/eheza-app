@@ -706,6 +706,7 @@ type SiteFeature
     | FeatureReportToWhatsApp
     | FeatureStockManagement
     | FeatureTuberculosisManagement
+    | FeatureGroupEducation
 
 
 type Msg
