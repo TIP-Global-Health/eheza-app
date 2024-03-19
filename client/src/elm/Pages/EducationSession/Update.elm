@@ -13,3 +13,9 @@ update msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetViewMode mode ->
+            ( { model | viewMode = Just mode }
+            , Cmd.none
+            , []
+            )

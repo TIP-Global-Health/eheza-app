@@ -6,13 +6,19 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    {}
+    { viewMode : Maybe ViewMode }
 
 
 emptyModel : Model
 emptyModel =
-    {}
+    { viewMode = Nothing }
+
+
+type ViewMode
+    = ModeTopics
+    | ModeAttendance
 
 
 type Msg
     = SetActivePage Page
+    | SetViewMode ViewMode

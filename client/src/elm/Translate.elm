@@ -710,6 +710,8 @@ type TranslationId
     | HealthEducationProvided
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
+    | HealthTopics
+    | HealthTopicsQuestion
     | Heart
     | HeartburnReliefMethod HeartburnReliefMethod
     | HeartburnRecommendedTreatmentHeader
@@ -6296,6 +6298,18 @@ translationSet trans =
             { english = "Do you have health insurance"
             , kinyarwanda = Just "Ufite ubwishingizi bwo kwivuza"
             , kirundi = Just "Mbega urafise ikigo kikuvuza (Asiransi y'amagara/Asiransi ikuvuza)"
+            }
+
+        HealthTopics ->
+            { english = "Health Topics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HealthTopicsQuestion ->
+            { english = "Which Health Education topics will be covered today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Heart ->
