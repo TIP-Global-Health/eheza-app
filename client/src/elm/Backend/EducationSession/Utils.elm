@@ -21,6 +21,9 @@ educationTopicToString topic =
         TopicChildhoodIllnesses ->
             "childhood-illnesses"
 
+        TopicMalnutrition ->
+            "malnutrition"
+
         TopicANCPostpartum ->
             "anc-postpartum"
 
@@ -51,6 +54,9 @@ educationTopicFromString str =
 
         "childhood-illnesses" ->
             Just TopicChildhoodIllnesses
+
+        "malnutrition" ->
+            Just TopicMalnutrition
 
         "anc-postpartum" ->
             Just TopicANCPostpartum

@@ -19,22 +19,24 @@ update :
     -> Msg
     -> Model
     -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate sessionId maybeEncounter msg model =
+update currentDate sessionId maybeSession msg model =
     case msg of
-        CloseEducationSession ->
-            maybeEncounter
+        Close ->
+            maybeSession
                 |> unwrap ( model, Cmd.none, [] )
-                    (\encounter ->
-                        ( { model | updateEducationSession = Loading }
-                        , { encounter | endDate = Just currentDate }
-                            |> sw.patchFull educationSessionEndpoint sessionId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedEducationSession)
-                        , []
-                        )
+                    (\session ->
+                        update currentDate sessionId maybeSession (Update { session | endDate = Just currentDate }) model
                     )
 
-        HandleClosedEducationSession data ->
+        Update session ->
+            ( { model | updateEducationSession = Loading }
+            , sw.patchFull educationSessionEndpoint sessionId session
+                |> withoutDecoder
+                |> toCmd (RemoteData.fromResult >> HandleUpdated)
+            , []
+            )
+
+        HandleUpdated data ->
             ( { model | updateEducationSession = data }
             , Cmd.none
             , triggerRollbarOnFailure data
