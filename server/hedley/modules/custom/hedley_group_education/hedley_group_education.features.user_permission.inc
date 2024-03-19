@@ -14,35 +14,48 @@ function hedley_group_education_user_default_permissions() {
   // Exported permission: 'create education_session content'.
   $permissions['create education_session content'] = array(
     'name' => 'create education_session content',
-    'roles' => array(),
+    'roles' => array(
+      'E-ledger viewer' => 'E-ledger viewer',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
   // Exported permission: 'delete any education_session content'.
   $permissions['delete any education_session content'] = array(
     'name' => 'delete any education_session content',
-    'roles' => array(),
+    'roles' => array(
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
   // Exported permission: 'delete own education_session content'.
   $permissions['delete own education_session content'] = array(
     'name' => 'delete own education_session content',
-    'roles' => array(),
+    'roles' => array(
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
   // Exported permission: 'edit any education_session content'.
   $permissions['edit any education_session content'] = array(
     'name' => 'edit any education_session content',
-    'roles' => array(),
+    'roles' => array(
+      'E-ledger viewer' => 'E-ledger viewer',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
   // Exported permission: 'edit own education_session content'.
   $permissions['edit own education_session content'] = array(
     'name' => 'edit own education_session content',
-    'roles' => array(),
+    'roles' => array(
+      'E-ledger viewer' => 'E-ledger viewer',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
