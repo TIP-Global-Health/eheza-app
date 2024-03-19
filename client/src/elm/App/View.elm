@@ -650,7 +650,12 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> flexPageWrapper configured.config model
 
                     GroupEncounterTypesPage ->
-                        Pages.GroupEncounterTypes.View.view model.language currentDate healthCenterId model
+                        Pages.GroupEncounterTypes.View.view model.language
+                            currentDate
+                            features
+                            healthCenterId
+                            (Tuple.first loggedInModel.nurse)
+                            model
                             |> flexPageWrapper configured.config model
 
                     PregnancyOutcomePage initiator id ->
