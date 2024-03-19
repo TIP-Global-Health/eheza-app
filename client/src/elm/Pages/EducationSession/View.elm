@@ -53,7 +53,7 @@ viewHeaderAndContent language currentDate id model session =
                 )
                 model.viewMode
     in
-    div [ class "page-activity education-seesion" ]
+    div [ class "page-activity education-session" ]
         [ header
         , div [ class "ui unstackable items" ]
             [ content ]
