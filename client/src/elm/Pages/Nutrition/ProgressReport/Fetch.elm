@@ -12,28 +12,22 @@ import RemoteData exposing (RemoteData(..))
 fetch : NutritionEncounterId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
-        encounter =
+        participantId =
             Dict.get id db.nutritionEncounters
-                |> Maybe.withDefault NotAsked
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map .participant
 
-        fetchCmds =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ ->
-                        Dict.get encounter_.participant db.individualParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-                |> RemoteData.map
-                    (\participant ->
-                        [ Backend.Model.FetchRelationshipsForPerson participant.person
+        maybePersonId =
+            Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants) participantId
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map .person
 
-                        -- These 2 commands load data for Group context.
-                        , Backend.Model.FetchChildMeasurements participant.person
-                        , Backend.Model.FetchExpectedSessions participant.person
-                        ]
-                            ++ Pages.AcuteIllness.Participant.Fetch.fetch participant.person db
-                            ++ fetchFamilyMembers participant.person db
-                    )
-                |> RemoteData.withDefault []
+        fetchAcuteIllnessDataMsgs =
+            Maybe.map
+                (\personId ->
+                    Pages.AcuteIllness.Participant.Fetch.fetch personId db
+                )
+                maybePersonId
+                |> Maybe.withDefault []
     in
-    Pages.Nutrition.Encounter.Fetch.fetch id db ++ fetchCmds
+    Pages.Nutrition.Encounter.Fetch.fetch id db ++ fetchAcuteIllnessDataMsgs

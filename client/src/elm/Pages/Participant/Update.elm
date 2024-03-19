@@ -3,6 +3,7 @@ module Pages.Participant.Update exposing (updateChild, updateMother)
 import Activity.Model exposing (ChildActivity(..), MotherActivity)
 import App.Ports exposing (bindDropZone)
 import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
+import EverySet exposing (EverySet)
 import Measurement.Model
 import Measurement.Update
 import Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..))
@@ -63,7 +64,7 @@ updateChild msg model childForm =
                             Cmd.none
             in
             ChildUpdateReturns
-                { model | selectedActivity = Just val }
+                { model | selectedActivity = Just val, dialogState = Nothing }
                 cmd
                 childForm
                 Nothing
@@ -94,9 +95,17 @@ updateChild msg model childForm =
                 Nothing
                 Nothing
 
-        SetWarningPopupState state ->
+        SkipActivity activity ->
             ChildUpdateReturns
-                { model | warningPopupState = state }
+                { model | skippedActivities = EverySet.insert activity model.skippedActivities, dialogState = Nothing }
+                Cmd.none
+                childForm
+                Nothing
+                Nothing
+
+        SetDialogState state ->
+            ChildUpdateReturns
+                { model | dialogState = state }
                 Cmd.none
                 childForm
                 Nothing
@@ -147,9 +156,17 @@ updateMother msg model motherForm measurements =
                 Nothing
                 Nothing
 
-        SetWarningPopupState state ->
+        SkipActivity activity ->
             MotherUpdateReturns
-                { model | warningPopupState = state }
+                { model | skippedActivities = EverySet.insert activity model.skippedActivities, dialogState = Nothing }
+                Cmd.none
+                motherForm
+                Nothing
+                Nothing
+
+        SetDialogState state ->
+            MotherUpdateReturns
+                { model | dialogState = state }
                 Cmd.none
                 motherForm
                 Nothing

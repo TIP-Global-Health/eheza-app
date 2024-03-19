@@ -9,7 +9,7 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Model
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -41,8 +41,8 @@ import Pages.ChildScoreboard.Activity.Model
 import Pages.ChildScoreboard.Activity.Update
 import Pages.ChildScoreboard.Encounter.Model
 import Pages.ChildScoreboard.Encounter.Update
-import Pages.ChildScoreboard.Report.Model
-import Pages.ChildScoreboard.Report.Update
+import Pages.ChildScoreboard.ProgressReport.Model
+import Pages.ChildScoreboard.ProgressReport.Update
 import Pages.Clinics.Update
 import Pages.Dashboard.Model
 import Pages.Dashboard.Update
@@ -228,10 +228,17 @@ update msg model =
         loggedInData =
             getLoggedInData model
 
-        isChw =
-            loggedInData
-                |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
-                |> Maybe.withDefault False
+        ( isChw, isLabTech ) =
+            Maybe.map
+                (Tuple.second
+                    >> .nurse
+                    >> Tuple.second
+                    >> (\nurse ->
+                            ( isCommunityHealthWorker nurse, isLabTechnician nurse )
+                       )
+                )
+                loggedInData
+                |> Maybe.withDefault ( False, False )
 
         site =
             model.syncManager.syncInfoGeneral.site
@@ -246,8 +253,7 @@ update msg model =
         MsgIndexedDb subMsg ->
             let
                 nurseId =
-                    loggedInData
-                        |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+                    Maybe.map (Tuple.second >> .nurse >> Tuple.first) loggedInData
 
                 ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb model.language
@@ -260,6 +266,7 @@ update msg model =
                         model.healthCenterId
                         model.villageId
                         isChw
+                        isLabTech
                         model.activePage
                         model.syncManager
                         subMsg
@@ -448,7 +455,7 @@ update msg model =
                                     data.prenatalRecurrentEncounterPages
                                         |> Dict.get id
                                         |> Maybe.withDefault Pages.Prenatal.RecurrentEncounter.Model.emptyModel
-                                        |> Pages.Prenatal.RecurrentEncounter.Update.update id subMsg
+                                        |> Pages.Prenatal.RecurrentEncounter.Update.update currentDate id subMsg
                             in
                             ( { data | prenatalRecurrentEncounterPages = Dict.insert id subModel data.prenatalRecurrentEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id) subCmd
@@ -557,7 +564,7 @@ update msg model =
                                     data.prenatalActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.Prenatal.Activity.Model.emptyModel
-                                        |> Pages.Prenatal.Activity.Update.update model.language currentDate id model.indexedDb subMsg
+                                        |> Pages.Prenatal.Activity.Update.update model.language currentDate id isLabTech model.indexedDb subMsg
                             in
                             ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
@@ -570,7 +577,7 @@ update msg model =
                                     data.prenatalRecurrentActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyModel
-                                        |> Pages.Prenatal.RecurrentActivity.Update.update model.language currentDate id model.indexedDb subMsg
+                                        |> Pages.Prenatal.RecurrentActivity.Update.update model.language currentDate id isLabTech model.indexedDb subMsg
                             in
                             ( { data | prenatalRecurrentActivityPages = Dict.insert ( id, activity ) subModel data.prenatalRecurrentActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity) subCmd
@@ -587,6 +594,7 @@ update msg model =
                                             currentDate
                                             originEncounterId
                                             labEncounterId
+                                            isLabTech
                                             model.indexedDb
                                             subMsg
                             in
@@ -760,8 +768,8 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     Dict.get id data.childScoreboardReportPages
-                                        |> Maybe.withDefault Pages.ChildScoreboard.Report.Model.emptyModel
-                                        |> Pages.ChildScoreboard.Report.Update.update subMsg
+                                        |> Maybe.withDefault Pages.ChildScoreboard.ProgressReport.Model.emptyModel
+                                        |> Pages.ChildScoreboard.ProgressReport.Update.update subMsg
                             in
                             ( { data | childScoreboardReportPages = Dict.insert id subModel data.childScoreboardReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardReport id) subCmd
@@ -928,9 +936,9 @@ update msg model =
                                                         -- When accessing Dashboard page, reset
                                                         -- the page to initial state - selected month,
                                                         -- for example will be set to current month.
-                                                        UserPage (DashboardPage MainPage) ->
+                                                        UserPage (DashboardPage PageMain) ->
                                                             Pages.Dashboard.Model.Reset model.villageId
-                                                                |> MsgPageDashboard MainPage
+                                                                |> MsgPageDashboard PageMain
                                                                 |> MsgLoggedIn
                                                                 |> List.singleton
 

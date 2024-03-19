@@ -63,6 +63,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , taskCompleted
         , tasksBarId
         , viewCheckBoxMultipleSelectInput
@@ -226,7 +227,7 @@ viewActivity :
 viewActivity language currentDate zscores site id activity isChw assembled db model =
     let
         previousValuesSet =
-            resolvePreviousValuesSetForChild currentDate assembled.participant.person db
+            resolvePreviousValuesSetForChild currentDate site assembled.participant.person db
     in
     case activity of
         Height ->
@@ -743,7 +744,6 @@ viewNCDAContent language currentDate zscores site id assembled data db =
         config =
             { atHealthCenter = True
             , showTasksTray = True
-            , behindOnVaccinations = Nothing
             , pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
@@ -782,7 +782,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
             allNextStepsTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

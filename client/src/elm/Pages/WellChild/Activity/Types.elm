@@ -32,3 +32,10 @@ type NextStepsTask
     | TaskSendToHC
     | TaskFollowUp
     | TaskNextVisit
+
+
+type HomeVisitTask
+    = TaskCaring
+    | TaskFeeding
+    | TaskHygiene
+    | TaskFoodSecurity

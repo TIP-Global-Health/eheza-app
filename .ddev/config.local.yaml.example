@@ -50,4 +50,7 @@ hooks:
     - exec: drush mi --group=default --user=1
     - exec: drush mi --group=counseling --user=1
     - exec: drush mi --group=forms --user=1
+    - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/health_center.csv"
+    - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/person.csv"
+    - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/village.csv"
     - exec: drush uli

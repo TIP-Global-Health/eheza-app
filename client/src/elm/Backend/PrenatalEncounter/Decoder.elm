@@ -1,4 +1,4 @@
-module Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounter)
+module Backend.PrenatalEncounter.Decoder exposing (decodePrenatalDiagnosis, decodePrenatalEncounter, decodePrenatalEncounterType)
 
 import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -113,49 +113,94 @@ decodePrenatalDiagnosis =
                         succeed DiagnosisEclampsia
 
                     "hiv" ->
-                        succeed DiagnosisHIV
+                        succeed DiagnosisHIVInitialPhase
+
+                    "hiv-recurrent" ->
+                        succeed DiagnosisHIVRecurrentPhase
+
+                    "hiv-detectable-viral-load-initial" ->
+                        succeed DiagnosisHIVDetectableViralLoadInitialPhase
 
                     "hiv-detectable-viral-load" ->
-                        succeed DiagnosisHIVDetectableViralLoad
+                        succeed DiagnosisHIVDetectableViralLoadRecurrentPhase
 
                     "partner-hiv" ->
-                        succeed DiagnosisDiscordantPartnership
+                        succeed DiagnosisDiscordantPartnershipInitialPhase
+
+                    "partner-hiv-recurrent" ->
+                        succeed DiagnosisDiscordantPartnershipRecurrentPhase
+
+                    "syphilis-initial" ->
+                        succeed DiagnosisSyphilisInitialPhase
 
                     "syphilis" ->
-                        succeed DiagnosisSyphilis
+                        succeed DiagnosisSyphilisRecurrentPhase
+
+                    "syphilis-complications-initial" ->
+                        succeed DiagnosisSyphilisWithComplicationsInitialPhase
 
                     "syphilis-complications" ->
-                        succeed DiagnosisSyphilisWithComplications
+                        succeed DiagnosisSyphilisWithComplicationsRecurrentPhase
+
+                    "neurosyphilis-initial" ->
+                        succeed DiagnosisNeurosyphilisInitialPhase
 
                     "neurosyphilis" ->
-                        succeed DiagnosisNeurosyphilis
+                        succeed DiagnosisNeurosyphilisRecurrentPhase
+
+                    "hepatitis-b-initial" ->
+                        succeed DiagnosisHepatitisBInitialPhase
 
                     "hepatitis-b" ->
-                        succeed DiagnosisHepatitisB
+                        succeed DiagnosisHepatitisBRecurrentPhase
 
                     "malaria" ->
-                        succeed DiagnosisMalaria
+                        succeed DiagnosisMalariaInitialPhase
+
+                    "malaria-recurrent" ->
+                        succeed DiagnosisMalariaRecurrentPhase
 
                     "malaria-continued" ->
-                        succeed DiagnosisMalariaMedicatedContinued
+                        succeed DiagnosisMalariaMedicatedContinuedInitialPhase
+
+                    "malaria-continued-recurrent" ->
+                        succeed DiagnosisMalariaMedicatedContinuedRecurrentPhase
 
                     "malaria-anemia" ->
-                        succeed DiagnosisMalariaWithAnemia
+                        succeed DiagnosisMalariaWithAnemiaInitialPhase
+
+                    "malaria-anemia-recurrent" ->
+                        succeed DiagnosisMalariaWithAnemiaRecurrentPhase
 
                     "malaria-anemia-continued" ->
-                        succeed DiagnosisMalariaWithAnemiaMedicatedContinued
+                        succeed DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+
+                    "malaria-anemia-continued-recurrent" ->
+                        succeed DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
 
                     "malaria-severe-anemia" ->
-                        succeed DiagnosisMalariaWithSevereAnemia
+                        succeed DiagnosisMalariaWithSevereAnemiaInitialPhase
+
+                    "malaria-severe-anemia-recurrent" ->
+                        succeed DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+
+                    "anemia-initial" ->
+                        succeed DiagnosisModerateAnemiaInitialPhase
 
                     "anemia" ->
-                        succeed DiagnosisModerateAnemia
+                        succeed DiagnosisModerateAnemiaRecurrentPhase
+
+                    "severe-anemia-initial" ->
+                        succeed DiagnosisSevereAnemiaInitialPhase
 
                     "severe-anemia" ->
-                        succeed DiagnosisSevereAnemia
+                        succeed DiagnosisSevereAnemiaRecurrentPhase
+
+                    "severe-anemia-complications-initial" ->
+                        succeed DiagnosisSevereAnemiaWithComplicationsInitialPhase
 
                     "severe-anemia-complications" ->
-                        succeed DiagnosisSevereAnemiaWithComplications
+                        succeed DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
 
                     "miscarriage" ->
                         succeed DiagnosisMiscarriage
@@ -253,14 +298,23 @@ decodePrenatalDiagnosis =
                     "tuberculosis" ->
                         succeed DiagnosisTuberculosis
 
+                    "diabetes-initial" ->
+                        succeed DiagnosisDiabetesInitialPhase
+
                     "diabetes" ->
-                        succeed DiagnosisDiabetes
+                        succeed DiagnosisDiabetesRecurrentPhase
+
+                    "gestational-diabetes-initial" ->
+                        succeed DiagnosisGestationalDiabetesInitialPhase
 
                     "gestational-diabetes" ->
-                        succeed DiagnosisGestationalDiabetes
+                        succeed DiagnosisGestationalDiabetesRecurrentPhase
+
+                    "rhesus-negative-initial" ->
+                        succeed DiagnosisRhesusNegativeInitialPhase
 
                     "rhesus-negative" ->
-                        succeed DiagnosisRhesusNegative
+                        succeed DiagnosisRhesusNegativeRecurrentPhase
 
                     "depression-not-likely" ->
                         succeed DiagnosisDepressionNotLikely

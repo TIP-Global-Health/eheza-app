@@ -29,6 +29,7 @@ type CaseManagementFilter
     | FilterContactsTrace
     | FilterPrenatalLabs
     | FilterNCDLabs
+    | FilterImmunization
 
 
 type FollowUpDueOption
@@ -91,14 +92,34 @@ type alias PrenatalFollowUpEntry =
     }
 
 
+type alias ImmunizationFollowUpItem =
+    { dateMeasured : NominalDate
+    , dueDate : NominalDate
+    , personName : String
+    }
+
+
+type alias ImmunizationFollowUpEntry =
+    { personId : PersonId
+    , item : ImmunizationFollowUpItem
+    }
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
     | FollowUpPrenatal FollowUpPrenatalData
+    | FollowUpImmunization FollowUpImmunizationData
     | CaseManagementContactsTracing
 
 
 type alias FollowUpNutritionData =
+    { personId : PersonId
+    , personName : String
+    }
+
+
+type alias FollowUpImmunizationData =
     { personId : PersonId
     , personName : String
     }
@@ -143,6 +164,8 @@ type alias PrenatalLabsEntryData =
 type LabsEntryState
     = LabsEntryPending
     | LabsEntryClosingSoon
+    | LabsEntryReadyForReview
+    | LabsEntryReviewed
 
 
 type alias NCDLabsEntryData =
@@ -151,6 +174,14 @@ type alias NCDLabsEntryData =
     , encounterId : NCDEncounterId
     , state : LabsEntryState
     , label : String
+    }
+
+
+type alias FollowUpPatients =
+    { nutrition : List PersonId
+    , acuteIllness : List PersonId
+    , prenatal : List PersonId
+    , immunization : List PersonId
     }
 
 

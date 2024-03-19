@@ -8,6 +8,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (emptyPrenatalEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
@@ -46,6 +47,9 @@ update currentDate healthCenterId msg db model =
 
                                     FollowUpAcuteIllness data ->
                                         startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data
+
+                                    FollowUpImmunization data ->
+                                        startFollowUpEncounterWellChild currentDate selectedHealthCenter db data
 
                                     -- We should never get here, as Prenatal Encounter got it's own action.
                                     FollowUpPrenatal _ ->
@@ -106,3 +110,19 @@ startFollowUpEncounterAcuteIllness currentDate selectedHealthCenter db data =
         |> Backend.Model.PostAcuteIllnessEncounter
         |> App.Model.MsgIndexedDb
     ]
+
+
+startFollowUpEncounterWellChild : NominalDate -> HealthCenterId -> ModelIndexedDb -> FollowUpNutritionData -> List App.Model.Msg
+startFollowUpEncounterWellChild currentDate selectedHealthCenter db data =
+    resolveIndividualParticipantForPerson data.personId WellChildEncounter db
+        |> Maybe.map
+            -- If well child participant exists, create new encounter for it.
+            (\sessionId ->
+                [ emptyWellChildEncounter sessionId currentDate PediatricCareChw (Just selectedHealthCenter)
+                    |> Backend.Model.PostWellChildEncounter
+                    |> App.Model.MsgIndexedDb
+                ]
+            )
+        -- We should never get here, since Next Visist follow up is generated from content of
+        -- Well Child encounter, which means that participant must exist.
+        |> Maybe.withDefault []

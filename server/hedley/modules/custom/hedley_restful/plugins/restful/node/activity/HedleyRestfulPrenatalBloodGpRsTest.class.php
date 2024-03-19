@@ -24,6 +24,13 @@ class HedleyRestfulPrenatalBloodGpRsTest extends HedleyRestfulPrenatalActivityBa
   /**
    * {@inheritdoc}
    */
+  protected $multiFields = [
+    'field_test_prerequisites',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $dateFields = [
     'field_execution_date',
   ];

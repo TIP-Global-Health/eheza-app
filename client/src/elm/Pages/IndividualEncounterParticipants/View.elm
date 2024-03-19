@@ -95,16 +95,9 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         |> Maybe.withDefault False
 
                 WellChildEncounter ->
-                    if isChw then
-                        -- CHW can run only Newborn exam, which is
-                        -- performed for children up to 2 months old.
-                        isNewborn currentDate person
-                            |> Maybe.withDefault False
-
-                    else
-                        isPersonAnAdult currentDate person
-                            |> Maybe.map not
-                            |> Maybe.withDefault False
+                    isPersonAnAdult currentDate person
+                        |> Maybe.map not
+                        |> Maybe.withDefault False
 
                 HomeVisitEncounter ->
                     -- We do not have direct access to Home Visit encounter.

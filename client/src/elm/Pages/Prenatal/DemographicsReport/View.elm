@@ -72,12 +72,16 @@ viewHeader language initiator =
                 InitiatorRecurrentEncounterPage prenatalEncounterId ->
                     iconForView (PrenatalRecurrentEncounterPage prenatalEncounterId)
 
+                Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
+                    iconForView (PatientRecordPage InitiatorParticipantDirectory patientId)
+
                 -- This option is not in use for Demographics report.
                 InitiatorNewEncounter _ ->
                     emptyNode
 
-                Backend.PrenatalEncounter.Model.InitiatorPatientRecord patientId ->
-                    iconForView (PatientRecordPage InitiatorParticipantDirectory patientId)
+                -- This option is not in use for Demographics report.
+                InitiatorCaseManagement _ ->
+                    emptyNode
     in
     div
         [ class "ui basic segment head" ]

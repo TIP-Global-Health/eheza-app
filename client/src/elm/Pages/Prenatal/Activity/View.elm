@@ -30,7 +30,9 @@ import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model
     exposing
         ( ContentAndTasksForPerformedLaboratoryTestConfig
+        , ContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , ContentAndTasksLaboratoryTestInitialConfig
+        , ContentAndTasksLaboratoryUniversalTestInitialConfig
         , CorePhysicalExamForm
         , InvokationModule(..)
         , LaboratoryTask(..)
@@ -41,11 +43,17 @@ import Measurement.Model
         )
 import Measurement.Utils
     exposing
-        ( corePhysicalExamFormWithDefault
+        ( bloodGpRsTestFormWithDefault
+        , corePhysicalExamFormWithDefault
         , emptyContentAndTasksForPerformedLaboratoryTestConfig
+        , emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , emptyContentAndTasksLaboratoryTestInitialConfig
+        , emptyContentAndTasksLaboratoryUniversalTestInitialConfig
         , familyPlanningFormWithDefault
-        , hivTestFormWithDefault
+        , hemoglobinTestFormWithDefault
+        , hepatitisBTestFormWithDefault
+        , hivPCRTestFormWithDefault
+        , hivTestUniversalFormWithDefault
         , laboratoryTaskIconClass
         , malariaTestFormWithDefault
         , nonRDTFormWithDefault
@@ -53,15 +61,22 @@ import Measurement.Utils
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
         , randomBloodSugarFormWithDefault
-        , urineDipstickFormWithDefault
+        , randomBloodSugarUniversalFormWithDefault
+        , syphilisTestFormWithDefault
+        , urineDipstickUniversalFormWithDefault
         , vaccinationFormWithDefault
-        , viewHIVTestForm
+        , viewBloodGpRsTestForm
+        , viewHIVPCRTestForm
+        , viewHIVTestUniversalForm
+        , viewHemoglobinTestForm
+        , viewHepatitisBTestForm
         , viewMalariaTestForm
         , viewNonRDTForm
         , viewNonRDTFormCheckKnownAsPositive
         , viewPartnerHIVTestForm
-        , viewRandomBloodSugarForm
-        , viewUrineDipstickForm
+        , viewRandomBloodSugarTestUniversalForm
+        , viewSyphilisTestForm
+        , viewUrineDipstickTestUniversalForm
         , vitalsFormWithDefault
         )
 import Measurement.View
@@ -89,6 +104,7 @@ import Pages.Utils
         ( customSaveButton
         , isTaskCompleted
         , maybeToBoolTask
+        , resolveActiveTask
         , saveButton
         , taskCompleted
         , tasksBarId
@@ -413,23 +429,29 @@ viewPregnancyDatingContent language currentDate assembled data =
                             Maybe.map
                                 (\range ->
                                     let
-                                        dateFrom =
+                                        ( dateFrom, dateDefault ) =
                                             case range of
                                                 Pages.Prenatal.Activity.Types.OneMonth ->
-                                                    Date.add Months -1 currentDate
+                                                    ( Date.add Months -1 currentDate
+                                                    , Date.add Months -1 currentDate
+                                                    )
 
                                                 Pages.Prenatal.Activity.Types.ThreeMonths ->
-                                                    Date.add Months -3 currentDate
+                                                    ( Date.add Months -3 currentDate
+                                                    , Date.add Months -3 currentDate
+                                                    )
 
                                                 SixMonthsOrMore ->
-                                                    Date.add Months -36 currentDate
+                                                    ( Date.add Months -12 currentDate
+                                                    , Date.add Months -6 currentDate
+                                                    )
 
                                         dateSelectorConfig =
                                             { select = SetLmpDate
                                             , close = SetLmpDateSelectorState Nothing
                                             , dateFrom = dateFrom
                                             , dateTo = currentDate
-                                            , dateDefault = Just dateFrom
+                                            , dateDefault = Just dateDefault
                                             }
                                     in
                                     [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
@@ -630,16 +652,7 @@ viewHistoryContent language currentDate assembled data =
                 |> Dict.fromList
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
@@ -688,16 +701,16 @@ viewHistoryContent language currentDate assembled data =
             , setSyphilisMedicationMsg = SetOutsideCareSyphilisMedication
             , setAnemiaMedicationMsg = SetOutsideCareAnemiaMedication
             , setHIVMedicationMsg = SetOutsideCareHIVMedication
-            , malariaDiagnoses = [ DiagnosisMalaria ]
+            , malariaDiagnoses = [ DiagnosisMalariaInitialPhase ]
             , hypertensionDiagnoses =
                 [ DiagnosisGestationalHypertensionImmediate
                 , DiagnosisChronicHypertensionImmediate
                 , DiagnosisModeratePreeclampsiaInitialPhase
                 ]
-            , syphilisDiagnoses = [ DiagnosisSyphilis ]
-            , anemiaDiagnoses = [ DiagnosisModerateAnemia ]
-            , hivDiagnoses = [ DiagnosisHIV ]
-            , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalaria
+            , syphilisDiagnoses = [ DiagnosisSyphilisRecurrentPhase ]
+            , anemiaDiagnoses = [ DiagnosisModerateAnemiaRecurrentPhase ]
+            , hivDiagnoses = [ DiagnosisHIVInitialPhase ]
+            , malariaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisMalariaInitialPhase
             , resolveHypertensionHeaderTransId =
                 \diagnoses ->
                     if List.member DiagnosisModeratePreeclampsiaInitialPhase diagnoses then
@@ -705,9 +718,9 @@ viewHistoryContent language currentDate assembled data =
 
                     else
                         Translate.Hypertension
-            , syphilisHeaderTransId = Translate.PrenatalDiagnosis DiagnosisSyphilis
-            , anemiaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisModerateAnemia
-            , hivHeaderTransId = Translate.PrenatalDiagnosis DiagnosisHIV
+            , syphilisHeaderTransId = Translate.PrenatalDiagnosis DiagnosisSyphilisRecurrentPhase
+            , anemiaHeaderTransId = Translate.PrenatalDiagnosis DiagnosisModerateAnemiaRecurrentPhase
+            , hivHeaderTransId = Translate.PrenatalDiagnosis DiagnosisHIVInitialPhase
             , diagnosesLeftColumn = outsideCareDiagnosesLeftColumn
             , diagnosesRightColumn = outsideCareDiagnosesRightColumn
             , otherDiagnosis = DiagnosisOther
@@ -874,16 +887,7 @@ viewExaminationContent language currentDate assembled data =
             resolveExaminationTasks assembled
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -1426,7 +1430,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
             List.filter (expectLaboratoryTask currentDate assembled) laboratoryTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -1463,8 +1467,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskHIVTest ->
                             measurements.hivTest
                                 |> getMeasurementValueFunc
-                                |> hivTestFormWithDefault data.hivTestForm
-                                |> viewHIVTestForm language
+                                |> hivTestUniversalFormWithDefault data.hivTestForm
+                                |> viewHIVTestUniversalForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
@@ -1472,22 +1476,20 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskSyphilisTest ->
                             measurements.syphilisTest
                                 |> getMeasurementValueFunc
-                                |> nonRDTFormWithDefault data.syphilisTestForm
-                                |> viewNonRDTForm language
+                                |> syphilisTestFormWithDefault data.syphilisTestForm
+                                |> viewSyphilisTestForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
-                                    TaskSyphilisTest
 
                         TaskHepatitisBTest ->
                             measurements.hepatitisBTest
                                 |> getMeasurementValueFunc
-                                |> nonRDTFormWithDefault data.hepatitisBTestForm
-                                |> viewNonRDTFormCheckKnownAsPositive language
+                                |> hepatitisBTestFormWithDefault data.hepatitisBTestForm
+                                |> viewHepatitisBTestForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
-                                    TaskHepatitisBTest
 
                         TaskMalariaTest ->
                             measurements.malariaTest
@@ -1501,18 +1503,17 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskBloodGpRsTest ->
                             measurements.bloodGpRsTest
                                 |> getMeasurementValueFunc
-                                |> nonRDTFormWithDefault data.bloodGpRsTestForm
-                                |> viewNonRDTForm language
+                                |> bloodGpRsTestFormWithDefault data.bloodGpRsTestForm
+                                |> viewBloodGpRsTestForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
-                                    TaskBloodGpRsTest
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
                                 |> getMeasurementValueFunc
-                                |> urineDipstickFormWithDefault data.urineDipstickTestForm
-                                |> viewUrineDipstickForm language
+                                |> urineDipstickUniversalFormWithDefault data.urineDipstickTestForm
+                                |> viewUrineDipstickTestUniversalForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
@@ -1520,18 +1521,17 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskHemoglobinTest ->
                             measurements.hemoglobinTest
                                 |> getMeasurementValueFunc
-                                |> nonRDTFormWithDefault data.hemoglobinTestForm
-                                |> viewNonRDTForm language
+                                |> hemoglobinTestFormWithDefault data.hemoglobinTestForm
+                                |> viewHemoglobinTestForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
-                                    TaskHemoglobinTest
 
                         TaskRandomBloodSugarTest ->
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
-                                |> randomBloodSugarFormWithDefault data.randomBloodSugarTestForm
-                                |> viewRandomBloodSugarForm language
+                                |> randomBloodSugarUniversalFormWithDefault data.randomBloodSugarTestForm
+                                |> viewRandomBloodSugarTestUniversalForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
@@ -1539,12 +1539,11 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                         TaskHIVPCRTest ->
                             measurements.hivPCRTest
                                 |> getMeasurementValueFunc
-                                |> nonRDTFormWithDefault data.hivPCRTestForm
-                                |> viewNonRDTForm language
+                                |> hivPCRTestFormWithDefault data.hivPCRTestForm
+                                |> viewHIVPCRTestForm language
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
-                                    TaskHIVPCRTest
 
                         TaskPartnerHIVTest ->
                             measurements.partnerHIVTest
@@ -1923,16 +1922,7 @@ viewNextStepsContent language currentDate isChw assembled data =
             resolveNextStepsTasks currentDate assembled
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasksConsideringShowWaitTask then
-                        Just task
-
-                    else
-                        List.head tasksConsideringShowWaitTask
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasksConsideringShowWaitTask)
+            resolveActiveTask tasksConsideringShowWaitTask data.activeTask
 
         tasksConsideringShowWaitTask =
             if showWaitTask then
@@ -2322,16 +2312,7 @@ viewTreatmentReviewContent language currentDate assembled data =
                 |> Dict.fromList
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         ( tasksCompleted, totalTasks ) =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
@@ -2426,7 +2407,7 @@ viewImmunisationContent language currentDate site assembled data =
             List.filter (expectImmunisationTask currentDate assembled) immunisationTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -3809,76 +3790,63 @@ viewNewbornEnrolmentForm language currentDate assembled =
         ]
 
 
-contentAndTasksLaboratoryTestInitialConfig : ContentAndTasksLaboratoryTestInitialConfig Msg
+contentAndTasksLaboratoryTestInitialConfig : ContentAndTasksLaboratoryUniversalTestInitialConfig Msg
 contentAndTasksLaboratoryTestInitialConfig =
-    emptyContentAndTasksLaboratoryTestInitialConfig NoOp
+    emptyContentAndTasksLaboratoryUniversalTestInitialConfig NoOp
         |> (\config ->
                 { config
                     | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
                     , setHIVTestExecutionNoteMsg = SetHIVTestExecutionNote
-                    , setHIVTestResultMsg = SetHIVTestResult
+                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
+                    , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
                     , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
                     , setSyphilisTestExecutionNoteMsg = SetSyphilisTestExecutionNote
                     , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
                     , setHepatitisBTestExecutionNoteMsg = SetHepatitisBTestExecutionNote
-                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
-                    , setMalariaTestExecutionNoteMsg = SetMalariaTestExecutionNote
-                    , setMalariaTestResultMsg = SetMalariaTestResult
-                    , setBloodSmearResultMsg = SetBloodSmearResultMsg
                     , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
                     , setBloodGpRsTestExecutionNoteMsg = SetBloodGpRsTestExecutionNote
+                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
+                    , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
+                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
+                    , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
+                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
+                    , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
                     , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
                     , setUrineDipstickTestExecutionNoteMsg = SetUrineDipstickTestExecutionNote
                     , setUrineDipstickTestVariantMsg = SetUrineDipstickTestVariant
-                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
-                    , setHemoglobinTestExecutionNoteMsg = SetHemoglobinTestExecutionNote
-                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
-                    , setRandomBloodSugarTestExecutionNoteMsg = SetRandomBloodSugarTestExecutionNote
-                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
-                    , setHIVPCRTestExecutionNoteMsg = SetHIVPCRTestExecutionNote
                     , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
                     , setPartnerHIVTestExecutionNoteMsg = SetPartnerHIVTestExecutionNote
-                    , setPartnerHIVTestResultMsg = SetPartnerHIVTestResult
                 }
            )
 
 
-contentAndTasksForPerformedLaboratoryTestConfig : ContentAndTasksForPerformedLaboratoryTestConfig Msg
+contentAndTasksForPerformedLaboratoryTestConfig : ContentAndTasksForPerformedLaboratoryUniversalTestConfig Msg
 contentAndTasksForPerformedLaboratoryTestConfig =
-    emptyContentAndTasksForPerformedLaboratoryTestConfig NoOp
+    emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig NoOp
         |> (\config ->
                 { config
-                    | setHIVTestFormBoolInputMsg = SetHIVTestFormBoolInput
-                    , setHIVTestExecutionDateMsg = SetHIVTestExecutionDate
-                    , setHIVTestDateSelectorStateMsg = SetHIVTestDateSelectorState
-                    , setSyphilisTestFormBoolInputMsg = SetSyphilisTestFormBoolInput
-                    , setSyphilisTestExecutionDateMsg = SetSyphilisTestExecutionDate
-                    , setSyphilisTestDateSelectorStateMsg = SetSyphilisTestDateSelectorState
-                    , setHepatitisBTestFormBoolInputMsg = SetHepatitisBTestFormBoolInput
-                    , setHepatitisBTestExecutionDateMsg = SetHepatitisBTestExecutionDate
-                    , setHepatitisBTestDateSelectorStateMsg = SetHepatitisBTestDateSelectorState
-                    , setMalariaTestFormBoolInputMsg = SetMalariaTestFormBoolInput
-                    , setMalariaTestExecutionDateMsg = SetMalariaTestExecutionDate
-                    , setMalariaTestDateSelectorStateMsg = SetMalariaTestDateSelectorState
-                    , setBloodGpRsTestFormBoolInputMsg = SetBloodGpRsTestFormBoolInput
-                    , setBloodGpRsTestExecutionDateMsg = SetBloodGpRsTestExecutionDate
-                    , setBloodGpRsTestDateSelectorStateMsg = SetBloodGpRsTestDateSelectorState
-                    , setUrineDipstickTestFormBoolInputMsg = SetUrineDipstickTestFormBoolInput
-                    , setUrineDipstickTestExecutionDateMsg = SetUrineDipstickTestExecutionDate
-                    , setUrineDipstickTestDateSelectorStateMsg = SetUrineDipstickTestDateSelectorState
-                    , setHemoglobinTestFormBoolInputMsg = SetHemoglobinTestFormBoolInput
-                    , setHemoglobinTestExecutionDateMsg = SetHemoglobinTestExecutionDate
-                    , setHemoglobinTestDateSelectorStateMsg = SetHemoglobinTestDateSelectorState
-                    , setRandomBloodSugarTestFormBoolInputMsg = SetRandomBloodSugarTestFormBoolInput
-                    , setRandomBloodSugarTestExecutionDateMsg = SetRandomBloodSugarTestExecutionDate
-                    , setRandomBloodSugarTestDateSelectorStateMsg = SetRandomBloodSugarTestDateSelectorState
+                    | setHIVTestResultMsg = SetHIVTestResult
+                    , setMalariaTestResultMsg = SetMalariaTestResult
+                    , setBloodSmearResultMsg = SetBloodSmearResult
+                    , setSyphilisTestResultMsg = SetSyphilisTestResult
+                    , setIllnessSymptomMsg = SetIllnessSymptom
+                    , setHepatitisBTestResultMsg = SetHepatitisBTestResult
+                    , setBloodGroupMsg = SetBloodGroup
+                    , setRhesusMsg = SetRhesus
+                    , setHemoglobinCountMsg = SetHemoglobinCount
                     , setRandomBloodSugarResultMsg = SetRandomBloodSugarResult
-                    , setHIVPCRTestFormBoolInputMsg = SetHIVPCRTestFormBoolInput
-                    , setHIVPCRTestExecutionDateMsg = SetHIVPCRTestExecutionDate
-                    , setHIVPCRTestDateSelectorStateMsg = SetHIVPCRTestDateSelectorState
-                    , setPartnerHIVTestFormBoolInputMsg = SetPartnerHIVTestFormBoolInput
-                    , setPartnerHIVTestExecutionDateMsg = SetPartnerHIVTestExecutionDate
-                    , setPartnerHIVTestDateSelectorStateMsg = SetPartnerHIVTestDateSelectorState
+                    , setHIVViralLoadMsg = SetHIVViralLoad
+                    , setHIVViralLoadUndetectableMsg = SetHIVViralLoadUndetectable
+                    , setProteinMsg = SetProtein
+                    , setPHMsg = SetPH
+                    , setGlucoseMsg = SetGlucose
+                    , setLeukocytesMsg = SetLeukocytes
+                    , setNitriteMsg = SetNitrite
+                    , setUrobilinogenMsg = SetUrobilinogen
+                    , setHaemoglobinMsg = SetHaemoglobin
+                    , setKetoneMsg = SetKetone
+                    , setBilirubinMsg = SetBilirubin
+                    , setPartnerHIVTestResultMsg = SetPartnerHIVTestResult
                 }
            )
 

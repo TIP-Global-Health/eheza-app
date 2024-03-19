@@ -32,6 +32,7 @@ type Role
     = RoleAdministrator
     | RoleCHW
     | RoleNurse
+    | RoleLabTech
 
 
 type ResilienceRole

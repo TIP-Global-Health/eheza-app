@@ -57,6 +57,7 @@ import Pages.Utils
         ( getCurrentReasonForMedicationNonAdministration
         , isTaskCompleted
         , nonAdministrationReasonToSign
+        , resolveActiveTask
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -434,7 +435,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -639,7 +640,7 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                 |> List.filter (expectPhysicalExamTask currentDate person isChw assembled.initialEncounter)
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -924,7 +925,7 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
             List.filter (expectLaboratoryTask currentDate isChw assembled) laboratoryTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -1573,7 +1574,7 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
             resolveNextStepsTasks currentDate isChw assembled
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

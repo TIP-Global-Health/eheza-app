@@ -48,7 +48,15 @@ import Pages.ChildScoreboard.Activity.Utils exposing (..)
 import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewLabel, viewPersonDetailsExtended, viewSaveAction)
+import Pages.Utils
+    exposing
+        ( isTaskCompleted
+        , resolveActiveTask
+        , tasksBarId
+        , viewLabel
+        , viewPersonDetailsExtended
+        , viewSaveAction
+        )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -125,15 +133,6 @@ viewNCDAContent language currentDate zscores site assembled db data =
         config =
             { atHealthCenter = False
             , showTasksTray = True
-            , behindOnVaccinations =
-                generateSuggestedVaccinations currentDate
-                    site
-                    assembled.person
-                    assembled.vaccinationHistory
-                    assembled.vaccinationProgress
-                    |> List.isEmpty
-                    |> not
-                    |> Just
             , pregnancySummary = getNewbornExamPregnancySummary personId db
             , ncdaNeverFilled = resolveNCDANeverFilled currentDate personId db
             , ncdaNotFilledAfterAgeOfSixMonths = resolveNCDANotFilledAfterAgeOfSixMonths currentDate personId assembled.person db
@@ -179,7 +178,7 @@ viewImmunisationContent language currentDate site assembled db data =
             List.filter (expectImmunisationTask currentDate site assembled.person assembled.vaccinationHistory) immunisationTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -535,7 +534,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                     , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
                     , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
                     , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site vaccineType initialOpvAdministered
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site assembled.person.birthDate vaccineType initialOpvAdministered
                     , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
                     , firstDoseExpectedFrom =
                         initialVaccinationDateByBirthDate site
@@ -556,7 +555,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                     else
                         let
                             initialOpvAdministeredByProgress =
-                                wasInitialOpvAdministeredByVaccinationProgress assembled.person assembled.vaccinationProgress
+                                wasInitialOpvAdministeredByVaccinationProgress assembled.person.birthDate assembled.vaccinationProgress
                         in
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 

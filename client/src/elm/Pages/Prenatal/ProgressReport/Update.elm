@@ -1,12 +1,13 @@
 module Pages.Prenatal.ProgressReport.Update exposing (update)
 
 import App.Model
+import Backend.Measurement.Model exposing (LabsResultsReviewState(..))
 import Backend.Model
 import Backend.PrenatalEncounter.Model
 import Components.ReportToWhatsAppDialog.Model
 import Components.ReportToWhatsAppDialog.Update
 import Gizra.Update exposing (sequenceExtra)
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Report.Model exposing (LabResultsMode(..))
 
@@ -73,3 +74,13 @@ update msg model =
                         |> Maybe.withDefault { model | components = Nothing }
             in
             ( updatedModel, Cmd.none, [] )
+
+        ReviewAndAcceptLabsResults personId encounterId labsResultsId value ->
+            ( model
+            , Cmd.none
+            , [ Backend.PrenatalEncounter.Model.SaveLabsResults personId (Just labsResultsId) { value | reviewState = Just LabsResultsReviewCompleted }
+                    |> Backend.Model.MsgPrenatalEncounter encounterId
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
+                |> sequenceExtra update [ SetActivePage <| UserPage <| PrenatalRecurrentEncounterPage encounterId ]

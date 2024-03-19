@@ -2366,6 +2366,14 @@ div.page-activity.well-child {
         }
       }
     }
+
+    .form-input.select {
+        background: $color-white;
+        border: 2px solid $color-light-gray;
+        color: $color-text;
+        padding: 5px;
+        width: 50%;
+    }
   }
 }
 
@@ -2628,12 +2636,15 @@ div.page-report {
 div.page-report.clinical,
 div.page-report.demographics,
 div.page-report.ncd {
-  padding: 0 20px 35px 20px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  padding: 0 20px 35px 20px;
+
 
   .ui.unstackable.items {
+    overflow-x: hidden;
     overflow-y: auto;
 
     .pane-heading {

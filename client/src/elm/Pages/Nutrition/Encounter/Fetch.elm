@@ -17,8 +17,7 @@ fetch id db =
                 |> Maybe.map .participant
 
         maybePersonId =
-            Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
-                participantId
+            Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants) participantId
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map .person
     in

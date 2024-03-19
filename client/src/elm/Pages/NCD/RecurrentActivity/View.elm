@@ -11,11 +11,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra
-import Measurement.Model exposing (LaboratoryTask(..))
+import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, LaboratoryTask(..))
 import Measurement.Utils
     exposing
         ( creatinineResultFormAndTasks
         , creatinineResultFormWithDefault
+        , emptyContentAndTasksLaboratoryResultConfig
         , laboratoryTaskIconClass
         , lipidPanelResultFormAndTasks
         , lipidPanelResultFormWithDefault
@@ -36,6 +37,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , tasksBarId
         , viewPersonDetailsExtended
         , viewSaveAction
@@ -96,14 +98,18 @@ viewActivity language currentDate activity assembled db model =
 viewLabResultsContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewLabResultsContent language currentDate assembled model =
     let
+        isLabTech =
+            -- For now, NCD doesn not support Lab tech feature.
+            False
+
         measurements =
             assembled.measurements
 
         tasks =
-            resolveLaboratoryResultTask currentDate assembled
+            resolveLaboratoryResultTasks currentDate assembled
 
         activeTask =
-            Maybe.Extra.or model.labResultsData.activeTask (List.head tasks)
+            resolveActiveTask tasks model.labResultsData.activeTask
 
         viewTask task =
             let
@@ -141,7 +147,11 @@ viewLabResultsContent language currentDate assembled model =
                             measurements.randomBloodSugarTest
                                 |> getMeasurementValueFunc
                                 |> randomBloodSugarResultFormWithDefault model.labResultsData.randomBloodSugarTestForm
-                                |> randomBloodSugarResultFormAndTasks language currentDate SetRandomBloodSugar
+                                |> randomBloodSugarResultFormAndTasks language
+                                    currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
+                                    SetRandomBloodSugar
 
                         TaskUrineDipstickTest ->
                             measurements.urineDipstickTest
@@ -149,6 +159,8 @@ viewLabResultsContent language currentDate assembled model =
                                 |> urineDipstickResultFormWithDefault model.labResultsData.urineDipstickTestForm
                                 |> urineDipstickResultFormAndTasks language
                                     currentDate
+                                    isLabTech
+                                    contentAndTasksLaboratorResultsConfig
                                     SetProtein
                                     SetPH
                                     SetGlucose
@@ -267,6 +279,11 @@ viewLabResultsContent language currentDate assembled model =
     ]
 
 
+contentAndTasksLaboratorResultsConfig : ContentAndTasksLaboratoryResultConfig Msg NCDEncounterId
+contentAndTasksLaboratorResultsConfig =
+    emptyContentAndTasksLaboratoryResultConfig NoOp
+
+
 viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
 viewNextStepsContent language currentDate assembled data =
     let
@@ -277,16 +294,7 @@ viewNextStepsContent language currentDate assembled data =
             resolveNextStepsTasks currentDate assembled
 
         activeTask =
-            Maybe.map
-                (\task ->
-                    if List.member task tasks then
-                        Just task
-
-                    else
-                        List.head tasks
-                )
-                data.activeTask
-                |> Maybe.withDefault (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

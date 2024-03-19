@@ -19,7 +19,7 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NCDActivity.Utils exposing (getAllActivities)
+import Backend.NCDActivity.Utils exposing (allActivities)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..), NCDProgressReportInitiator)
 import Backend.Person.Model exposing (Person)
 import Components.ReportToWhatsAppDialog.Model
@@ -197,6 +197,14 @@ viewContent language currentDate site features initiator db model assembled =
     let
         derivedContent =
             let
+                isLabTech =
+                    -- For now, NCD does not allow access for lab technicians.
+                    False
+
+                isResultsReviewer =
+                    -- For now, NCD does not allow access for labs results reviewers.
+                    False
+
                 labResultsConfig =
                     { hivPCR = False
                     , partnerHIV = False
@@ -217,7 +225,12 @@ viewContent language currentDate site features initiator db model assembled =
                     case mode of
                         LabResultsCurrent currentMode ->
                             [ generateLabsResultsPaneData currentDate assembled
-                                |> viewLabResultsPane language currentDate currentMode SetLabResultsMode labResultsConfig
+                                |> viewLabResultsPane language
+                                    currentDate
+                                    (isLabTech || isResultsReviewer)
+                                    currentMode
+                                    SetLabResultsMode
+                                    labResultsConfig
                             ]
 
                         LabResultsHistory historyMode ->
@@ -270,7 +283,12 @@ viewContent language currentDate site features initiator db model assembled =
                                     Maybe.map
                                         (\_ ->
                                             generateLabsResultsPaneData currentDate assembled
-                                                |> viewLabResultsPane language currentDate LabResultsCurrentMain SetLabResultsMode labResultsConfig
+                                                |> viewLabResultsPane language
+                                                    currentDate
+                                                    (isLabTech || isResultsReviewer)
+                                                    LabResultsCurrentMain
+                                                    SetLabResultsMode
+                                                    labResultsConfig
                                                 |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentNCDLabsResults)
                                         )
                                         model.components
@@ -281,7 +299,7 @@ viewContent language currentDate site features initiator db model assembled =
                                         Backend.NCDEncounter.Types.InitiatorEncounterPage _ ->
                                             let
                                                 ( _, pendingActivities ) =
-                                                    List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled) getAllActivities
+                                                    List.filter (Pages.NCD.Activity.Utils.expectActivity currentDate assembled) allActivities
                                                         |> List.partition (Pages.NCD.Activity.Utils.activityCompleted currentDate assembled)
 
                                                 allowEndEncounter =

@@ -9,38 +9,59 @@ import Backend.Dashboard.Model
         , AssembledData
         , CaseManagement
         , CaseNutritionTotal
+        , ChildScoreboardDataItem
         , DashboardStats
+        , NCDDataItem
         , Nutrition
+        , NutritionDataItem
+        , NutritionEncounterDataItem
         , NutritionPageData
         , NutritionValue
+        , PMTCTDataItem
         , ParticipantStats
         , Periods
+        , PrenatalDataItem
+        , SPVDataItem
         , TotalBeneficiaries
         , emptyNutritionValue
         )
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.Village.Utils exposing (getVillageById)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
 import Debug exposing (toString)
 import EverySet
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
+import Gizra.NominalDate exposing (NominalDate, isDiffTruthy, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe exposing (Maybe)
-import Maybe.Extra exposing (isNothing)
+import Maybe.Extra exposing (isJust, isNothing)
+import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
-import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
+import Pages.Page
+    exposing
+        ( AcuteIllnessSubPage(..)
+        , ChildWellnessSubPage(..)
+        , DashboardPage(..)
+        , NCDSubPage(..)
+        , NutritionSubPage(..)
+        , Page(..)
+        , UserPage(..)
+        )
+import Pages.Prenatal.Utils exposing (preeclampsiaDiagnoses, severeAnemiaDiagnoses, syphilisDiagnoses)
 import Pages.Utils
     exposing
         ( calculatePercentage
@@ -55,22 +76,22 @@ import Scale
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import Translate exposing (Language, TranslationId, translate, translateText)
+import SyncManager.Model exposing (Site)
+import Translate exposing (Language, TranslationId, translate, translateText, translationSet)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 import Utils.Html exposing (spinner, viewModal)
+import Utils.NominalDate exposing (sortByDateDesc)
 
 
-{-| Shows a dashboard page.
--}
-view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
-view language page currentDate healthCenterId isChw nurse model db =
+view : Language -> DashboardPage -> NominalDate -> Site -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
+view language page currentDate site healthCenterId isChw nurse model db =
     let
         header =
             case page of
-                MainPage ->
+                PageMain ->
                     let
                         label =
                             if isChw then
@@ -81,28 +102,39 @@ view language page currentDate healthCenterId isChw nurse model db =
                     in
                     viewHeader language label PinCodePage
 
-                ChwPage chwDashboardPage ->
-                    case chwDashboardPage of
-                        AcuteIllnessPage _ ->
-                            viewHeader language (Translate.CaseManagementFilterLabel FilterAcuteIllness) (UserPage <| DashboardPage MainPage)
+                PageAcuteIllness _ ->
+                    viewHeader language Translate.AcuteIllness (UserPage <| DashboardPage PageMain)
 
-                        NutritionPage ->
-                            viewHeader language (Translate.CaseManagementFilterLabel FilterNutrition) (UserPage <| DashboardPage MainPage)
-
-                        AntenatalPage ->
-                            viewHeader language (Translate.CaseManagementFilterLabel FilterAntenatal) (UserPage <| DashboardPage MainPage)
-
-                NursePage nurseDashboardPage ->
+                PageNutrition subPage ->
                     let
-                        goBackPage =
-                            case nurseDashboardPage of
-                                StatsPage ->
-                                    UserPage <| DashboardPage MainPage
+                        label =
+                            if isChw then
+                                Translate.HomeVisit
 
-                                CaseManagementPage ->
+                            else
+                                Translate.ChildNutrition
+
+                        goBackPage =
+                            case subPage of
+                                PageCharts ->
+                                    UserPage <| DashboardPage PageMain
+
+                                PageStats ->
+                                    UserPage <| DashboardPage <| PageNutrition PageCharts
+
+                                PageCaseManagement ->
                                     UserPage <| DashboardPage model.latestPage
                     in
-                    viewHeader language Translate.DashboardLabel goBackPage
+                    viewHeader language label goBackPage
+
+                PagePrenatal ->
+                    viewHeader language Translate.AntenatalCare (UserPage <| DashboardPage PageMain)
+
+                PageNCD _ ->
+                    viewHeader language Translate.NCDs (UserPage <| DashboardPage PageMain)
+
+                PageChildWellness _ ->
+                    viewHeader language Translate.Pediatrics (UserPage <| DashboardPage PageMain)
 
         content =
             Dict.get healthCenterId db.computedDashboards
@@ -112,34 +144,43 @@ view language page currentDate healthCenterId isChw nurse model db =
                         let
                             ( pageContent, pageClass ) =
                                 case page of
-                                    MainPage ->
-                                        ( viewMainPage language currentDate healthCenterId isChw nurse assembled db model
+                                    PageMain ->
+                                        ( viewPageMain language currentDate healthCenterId isChw assembled db model
                                         , "main"
                                         )
 
-                                    NursePage nurseDashboardPage ->
-                                        case nurseDashboardPage of
-                                            StatsPage ->
-                                                ( viewStatsPage language currentDate False nurse assembled.stats healthCenterId db model, "stats" )
+                                    PageAcuteIllness subPage ->
+                                        ( viewAcuteIllnessPage language currentDate healthCenterId isChw subPage assembled db model
+                                        , "acute-illness"
+                                        )
 
-                                            CaseManagementPage ->
-                                                ( viewCaseManagementPage language currentDate assembled.stats db model, "case" )
+                                    PageNutrition subPage ->
+                                        ( viewNutritionPage language
+                                            currentDate
+                                            healthCenterId
+                                            isChw
+                                            nurse
+                                            subPage
+                                            assembled.stats
+                                            assembled.nutritionPageData
+                                            db
+                                            model
+                                        , "nutrition"
+                                        )
 
-                                    ChwPage chwDashboardPage ->
-                                        case chwDashboardPage of
-                                            AcuteIllnessPage acuteIllnessPage ->
-                                                ( viewAcuteIllnessPage language currentDate healthCenterId acuteIllnessPage assembled db model, "acute-illness" )
+                                    PagePrenatal ->
+                                        ( viewPrenatalPage language currentDate isChw assembled db model, "prenatal" )
 
-                                            NutritionPage ->
-                                                ( viewNutritionPage language currentDate True nurse assembled.nutritionPageData db model, "nutrition" )
+                                    PageNCD subPage ->
+                                        ( viewNCDPage language currentDate healthCenterId subPage assembled db model, "ncd" )
 
-                                            AntenatalPage ->
-                                                ( viewAntenatalPage language currentDate assembled db model, "prenatal" )
+                                    PageChildWellness subPage ->
+                                        ( viewChildWellnessPage language currentDate site healthCenterId subPage assembled db model, "child-wellness" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
                                 :: pageContent
-                                ++ [ viewCustomModal language isChw nurse assembled.stats db model
+                                ++ [ viewCustomModal language page isChw nurse assembled.stats db model
                                    , div [ class "timestamp" ]
                                         [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ assembled.stats.timestamp ++ " UTC" ]
                                    ]
@@ -166,37 +207,42 @@ viewHeader language label goBackPage =
         ]
 
 
-viewMainPage : Language -> NominalDate -> HealthCenterId -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewMainPage language currentDate healthCenterId isChw nurse assembled db model =
+viewPageMain : Language -> NominalDate -> HealthCenterId -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPageMain language currentDate healthCenterId isChw assembled db model =
     if isChw then
-        viewChwMainPage language currentDate healthCenterId assembled db model
+        viewPageMainForChw language currentDate healthCenterId assembled db model
 
     else
-        viewNutritionPage language currentDate False nurse assembled.nutritionPageData db model
+        viewPageMainForNurse language currentDate healthCenterId assembled db model
 
 
-viewChwMainPage : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewChwMainPage language currentDate healthCenterId assembled db model =
+viewPageMainForNurse : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPageMainForNurse language currentDate healthCenterId assembled db model =
+    [ viewMenuForNurse language ]
+
+
+viewPageMainForChw : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPageMainForChw language currentDate healthCenterId assembled db model =
     let
-        selectedDate =
+        dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         -- ANC
         encountersForSelectedMonth =
-            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+            getEncountersForSelectedMonth dateLastDayOfSelectedMonth assembled.acuteIllnessData
 
         diagnosedCases =
             countAcuteIllnessDiagnosedCases encountersForSelectedMonth
 
         -- Prenatal
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth True assembled.prenatalData
 
         totalNewborn =
-            countNewbornForSelectedMonth selectedDate assembled.prenatalData
+            countNewbornForSelectedMonth dateLastDayOfSelectedMonth assembled.prenatalData
 
         limitDate =
-            Date.ceiling Date.Month selectedDate
+            Date.ceiling Date.Month dateLastDayOfSelectedMonth
 
         village =
             Maybe.andThen (getVillageById db) model.selectedVillageFilter
@@ -212,8 +258,8 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
                 followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
-    [ viewChwMenu language
-    , monthSelector language selectedDate model
+    [ viewMenuForChw language
+    , monthSelector language dateLastDayOfSelectedMonth model
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.AcuteIllnessDiagnosed) (String.fromInt diagnosedCases)
@@ -224,12 +270,36 @@ viewChwMainPage language currentDate healthCenterId assembled db model =
     , div [ class "case-management-label" ] [ text <| translate language <| Translate.CaseManagement ]
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.CaseManagementFilterLabel FilterAcuteIllness) (String.fromInt totalAcuteIllnessFollowUps)
-            , chwCard language (Translate.CaseManagementFilterLabel FilterNutrition) (String.fromInt totalNutritionFollowUps)
-            , chwCard language (Translate.CaseManagementFilterLabel FilterAntenatal) (String.fromInt totalPrenatalFollowUps)
+            [ chwCard language Translate.AcuteIllness (String.fromInt totalAcuteIllnessFollowUps)
+            , chwCard language Translate.HomeVisit (String.fromInt totalNutritionFollowUps)
+            , chwCard language Translate.AntenatalCare (String.fromInt totalPrenatalFollowUps)
             ]
         ]
     ]
+
+
+viewNutritionPage :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> Bool
+    -> Nurse
+    -> NutritionSubPage
+    -> DashboardStats
+    -> NutritionPageData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewNutritionPage language currentDate healthCenterId isChw nurse activePage stats data db model =
+    case activePage of
+        PageCharts ->
+            viewNutritionChartsPage language currentDate isChw nurse activePage data db model
+
+        PageStats ->
+            viewStatsPage language currentDate isChw nurse stats healthCenterId db model
+
+        PageCaseManagement ->
+            viewCaseManagementPage language currentDate stats db model
 
 
 viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -500,12 +570,12 @@ viewFiltersPane language page db model =
     let
         filters =
             case page of
-                MainPage ->
-                    [ labelSelected, programTypeFilterButton ]
+                PageNutrition subPage ->
+                    case subPage of
+                        PageCharts ->
+                            [ labelSelected, programTypeFilterButton ]
 
-                NursePage nursePage ->
-                    case nursePage of
-                        StatsPage ->
+                        PageStats ->
                             let
                                 periodButton period =
                                     button
@@ -520,10 +590,10 @@ viewFiltersPane language page db model =
                             in
                             List.map periodButton filterPeriodsForStatsPage
 
-                        CaseManagementPage ->
+                        PageCaseManagement ->
                             []
 
-                ChwPage _ ->
+                _ ->
                     [ labelSelected, programTypeFilterButton ]
 
         programTypeFilterButton =
@@ -566,42 +636,83 @@ viewFiltersPane language page db model =
         filters
 
 
-viewChwMenu : Language -> Html Msg
-viewChwMenu language =
-    div [ class "ui segment chw-filters" ]
-        [ viewChwMenuButton language AntenatalPage Nothing
-        , viewChwMenuButton language NutritionPage Nothing
-        , viewChwMenuButton language (AcuteIllnessPage OverviewPage) Nothing
+viewMenuForNurse : Language -> Html Msg
+viewMenuForNurse language =
+    div []
+        [ div [ class "ui segment page-filters nurse" ]
+            [ viewMenuButton language PagePrenatal Nothing
+            , viewMenuButton language (PageNutrition PageCharts) Nothing
+            , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+            ]
+        , div [ class "ui segment page-filters nurse center" ]
+            [ viewMenuButton language (PageNCD PageHypertension) Nothing
+            , viewMenuButton language (PageChildWellness PageChildWellnessOverview) Nothing
+            ]
         ]
 
 
-viewAcuteIllnessMenu : Language -> AcuteIllnessDashboardPage -> Html Msg
+viewMenuForChw : Language -> Html Msg
+viewMenuForChw language =
+    div [ class "ui segment page-filters" ]
+        [ viewMenuButton language PagePrenatal Nothing
+        , viewMenuButton language (PageNutrition PageCharts) Nothing
+        , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+        ]
+
+
+viewAcuteIllnessMenu : Language -> AcuteIllnessSubPage -> Html Msg
 viewAcuteIllnessMenu language activePage =
-    div [ class "ui segment chw-filters" ]
-        [ viewChwMenuButton language (AcuteIllnessPage OverviewPage) (Just <| AcuteIllnessPage activePage)
-        , viewChwMenuButton language (AcuteIllnessPage Covid19Page) (Just <| AcuteIllnessPage activePage)
-        , viewChwMenuButton language (AcuteIllnessPage MalariaPage) (Just <| AcuteIllnessPage activePage)
-        , viewChwMenuButton language (AcuteIllnessPage GastroPage) (Just <| AcuteIllnessPage activePage)
+    div [ class "ui segment page-filters" ]
+        [ viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) (Just <| PageAcuteIllness activePage)
+        , viewMenuButton language (PageAcuteIllness PageCovid19) (Just <| PageAcuteIllness activePage)
+        , viewMenuButton language (PageAcuteIllness PageMalaria) (Just <| PageAcuteIllness activePage)
+        , viewMenuButton language (PageAcuteIllness PageGastro) (Just <| PageAcuteIllness activePage)
         ]
 
 
-viewChwMenuButton : Language -> ChwDashboardPage -> Maybe ChwDashboardPage -> Html Msg
-viewChwMenuButton language targetPage activePage =
+viewNCDMenu : Language -> NCDSubPage -> Html Msg
+viewNCDMenu language activePage =
+    div [ class "ui segment page-filters" ]
+        [ viewMenuButton language (PageNCD PageHypertension) (Just <| PageNCD activePage)
+        , viewMenuButton language (PageNCD PageHIV) (Just <| PageNCD activePage)
+        , viewMenuButton language (PageNCD PageDiabetes) (Just <| PageNCD activePage)
+        ]
+
+
+viewChildWellnessMenu : Language -> ChildWellnessSubPage -> Html Msg
+viewChildWellnessMenu language activePage =
+    div [ class "ui segment page-filters center" ]
+        [ viewMenuButton language (PageChildWellness PageChildWellnessOverview) (Just <| PageChildWellness activePage)
+        , viewMenuButton language (PageChildWellness PageChildWellnessNutrition) (Just <| PageChildWellness activePage)
+        ]
+
+
+viewMenuButton : Language -> DashboardPage -> Maybe DashboardPage -> Html Msg
+viewMenuButton language targetPage activePage =
     let
         label =
-            if isNothing activePage && targetPage == AcuteIllnessPage OverviewPage then
-                -- On Main page, and target is Acute Illness page.
-                Translate.CaseManagementFilterLabel FilterAcuteIllness
+            case ( activePage, targetPage ) of
+                ( Nothing, PageAcuteIllness PageAcuteIllnessOverview ) ->
+                    -- On Main page, and target is Acute Illness page.
+                    Translate.AcuteIllness
 
-            else
-                Translate.EncounterTypePageLabel targetPage
+                ( Nothing, PageNCD PageHypertension ) ->
+                    -- On Main page, and target is Acute Illness page.
+                    Translate.NCDs
+
+                ( Nothing, PageChildWellness PageChildWellnessOverview ) ->
+                    -- On Main page, and target is Acute Illness page.
+                    Translate.ChildWellness
+
+                _ ->
+                    Translate.EncounterTypePageLabel targetPage
     in
     button
         [ classList
             [ ( "active", activePage == Just targetPage )
             , ( "primary ui button", True )
             ]
-        , DashboardPage (ChwPage targetPage)
+        , DashboardPage targetPage
             |> UserPage
             |> SetActivePage
             |> onClick
@@ -613,21 +724,56 @@ viewAcuteIllnessPage :
     Language
     -> NominalDate
     -> HealthCenterId
-    -> AcuteIllnessDashboardPage
+    -> Bool
+    -> AcuteIllnessSubPage
     -> AssembledData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewAcuteIllnessPage language currentDate healthCenterId activePage assembled db model =
+viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assembled db model =
     let
-        selectedDate =
+        dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
+        dataForNurses =
+            List.filterMap
+                (\illness ->
+                    let
+                        nurseEncounters =
+                            List.filter isAcuteIllnessNurseEncounter illness.encounters
+                    in
+                    if List.isEmpty nurseEncounters then
+                        Nothing
+
+                    else
+                        Just { illness | encounters = nurseEncounters }
+                )
+                assembled.acuteIllnessData
+
+        dataForChws =
+            List.filterMap
+                (\illness ->
+                    let
+                        chwEncounters =
+                            List.filter (isAcuteIllnessNurseEncounter >> not) illness.encounters
+                    in
+                    if List.isEmpty chwEncounters then
+                        Nothing
+
+                    else
+                        Just { illness | encounters = chwEncounters }
+                )
+                assembled.acuteIllnessData
+
         encountersForSelectedMonth =
-            getAcuteIllnessEncountersForSelectedMonth selectedDate assembled.acuteIllnessData
+            if isChw then
+                getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataForChws
+
+            else
+                getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataForNurses
 
         limitDate =
-            Date.ceiling Date.Month selectedDate
+            Date.ceiling Date.Month dateLastDayOfSelectedMonth
 
         village =
             Maybe.andThen (getVillageById db) model.selectedVillageFilter
@@ -644,35 +790,48 @@ viewAcuteIllnessPage language currentDate healthCenterId activePage assembled db
 
         pageContent =
             case activePage of
-                OverviewPage ->
-                    viewAcuteIllnessOverviewPage language encountersForSelectedMonth model
+                PageAcuteIllnessOverview ->
+                    viewAcuteIllnessOverviewPage language isChw encountersForSelectedMonth model
 
-                Covid19Page ->
-                    viewCovid19Page language encountersForSelectedMonth managedCovid model
+                PageCovid19 ->
+                    viewCovid19Page language isChw encountersForSelectedMonth managedCovid model
 
-                MalariaPage ->
-                    viewMalariaPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
+                PageMalaria ->
+                    viewMalariaPage language isChw dateLastDayOfSelectedMonth assembled.acuteIllnessData encountersForSelectedMonth managedMalaria model
 
-                GastroPage ->
-                    viewGastroPage language selectedDate assembled.acuteIllnessData encountersForSelectedMonth managedGI model
+                PageGastro ->
+                    viewGastroPage language isChw dateLastDayOfSelectedMonth assembled.acuteIllnessData encountersForSelectedMonth managedGI model
     in
     [ viewAcuteIllnessMenu language activePage
-    , monthSelector language selectedDate model
+    , monthSelector language dateLastDayOfSelectedMonth model
     ]
         ++ pageContent
 
 
-viewAcuteIllnessOverviewPage : Language -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
-viewAcuteIllnessOverviewPage language encounters model =
+viewAcuteIllnessOverviewPage : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Model -> List (Html Msg)
+viewAcuteIllnessOverviewPage language isChw encounters model =
     let
         totalAssesments =
-            countAcuteIllnessAssesments encounters
+            countAcuteIllnessAssessments encounters
 
         ( sentToHC, managedLocally ) =
             countAcuteIllnessCasesByTreatmentApproach encounters
 
-        undeterminedCases =
-            countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
+        secondRow =
+            if isChw then
+                let
+                    undeterminedCases =
+                        countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisUndeterminedMoreEvaluationNeeded ] False encounters
+                in
+                div [ class "ui centered grid" ]
+                    [ div [ class "three column row" ]
+                        [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
+                        , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
+                        ]
+                    ]
+
+            else
+                emptyNode
 
         feverOfUnknownOriginCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisFeverOfUnknownOrigin ] False encounters
@@ -695,7 +854,7 @@ viewAcuteIllnessOverviewPage language encounters model =
         giCases =
             countAcuteIllnessCasesByPossibleDiagnosises [ DiagnosisGastrointestinalInfectionComplicated ] True encounters
 
-        feverByCauses =
+        chartData =
             List.filter (Tuple.second >> (/=) 0)
                 [ ( FeverCauseCovid19, covidCases )
                 , ( FeverCauseMalaria, malariaCases )
@@ -703,135 +862,191 @@ viewAcuteIllnessOverviewPage language encounters model =
                 , ( FeverCauseGI, giCases )
                 , ( FeverCauseUnknown, feverOfUnknownOriginCases )
                 ]
+
+        ( levelCases, referrals ) =
+            if isChw then
+                ( Translate.CommunityLevelCases, Translate.HealthCenterReferrals )
+
+            else
+                ( Translate.HealthCenterLevelCases, Translate.HospitalReferrals )
     in
     [ div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.TotalAssessment) (String.fromInt totalAssesments)
-            , chwCard language (Translate.Dashboard Translate.CommunityLevelCases) (String.fromInt managedLocally)
-            , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+            , chwCard language (Translate.Dashboard levelCases) (String.fromInt managedLocally)
+            , chwCard language (Translate.Dashboard referrals) (String.fromInt sentToHC)
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosisUndetermined) (String.fromInt undeterminedCases)
-            , chwCard language (Translate.Dashboard Translate.FeverOfUnknownOrigin) (String.fromInt feverOfUnknownOriginCases)
-            ]
+    , secondRow
+    , div [ class "ui blue segment donut-chart left" ]
+        [ viewDonutChart language
+            (Translate.Dashboard Translate.FeversByCause)
+            (Translate.FeverCause >> Translate.Dashboard)
+            feverCauseToColor
+            feverCausesColors
+            chartData
         ]
-    , div [ class "ui blue segment donut-chart fever" ]
-        [ viewFeverDistributionDonutChart language feverByCauses ]
     ]
 
 
-viewFeverDistributionDonutChart : Language -> List ( FeverCause, Int ) -> Html Msg
-viewFeverDistributionDonutChart language feverByCauses =
-    if List.isEmpty feverByCauses then
+viewDonutChart : Language -> TranslationId -> (a -> TranslationId) -> (a -> Color) -> Dict a Color -> List ( a, Int ) -> Html Msg
+viewDonutChart language label translationFunc toColorFunc colors data =
+    if List.isEmpty data then
         div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
 
     else
         div [ class "ui center aligned grid" ]
             [ div [ class "middle aligned row" ]
                 [ div [ class "content" ]
-                    [ viewPieChart feverCausesColors feverByCauses
+                    [ viewPieChart colors data
                     , div [ class "in-chart" ]
-                        [ translateText language <| Translate.Dashboard Translate.FeversByCause ]
-                    , viewPieChartLegend language (Translate.FeverCause >> Translate.Dashboard) feverCauseToColor feverByCauses
+                        [ translateText language label ]
+                    , viewPieChartLegend language translationFunc toColorFunc data
                     ]
                 ]
             ]
 
 
-viewCovid19Page : Language -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewCovid19Page language encounters managedCovid model =
+viewCovid19Page : Language -> Bool -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewCovid19Page language isChw encounters managedCovid model =
     let
-        callsTo114 =
-            countDiagnosedWithCovidCallsTo114 encounters
-
-        sentToHC =
-            countDiagnosedWithCovidSentToHC encounters
-
         managedAtHome =
             countDiagnosedWithCovidManagedAtHome encounters
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
-            , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
-            , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+    if isChw then
+        let
+            callsTo114 =
+                countDiagnosedWithCovidCallsTo114 encounters
+
+            sentToHC =
+                countDiagnosedWithCovidSentToHC encounters
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.CallsTo114) (String.fromInt callsTo114)
+                , chwCard language (Translate.Dashboard Translate.HealthCenterReferrals) (String.fromInt sentToHC)
+                , chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.PatientCurrentlyUnderCare) (String.fromInt managedCovid) ]
+
+    else
+        let
+            -- Not viewd for now, as https://github.com/TIP-Global-Health/eheza-app/issues/959 is on hold.
+            hospitalReferralsCard =
+                let
+                    -- @todo: implement once issue is off hold.
+                    sentToHospital =
+                        0
+                in
+                chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row center" ]
+                [ chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
+                ]
+            ]
         ]
-    ]
 
 
-viewMalariaPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewMalariaPage language selectedDate acuteIllnessData encountersForSelectedMonth managedMalaria model =
+viewMalariaPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewMalariaPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encountersForSelectedMonth managedMalaria model =
     let
         totalDaignosed =
             countDiagnosedWithMalaria encountersForSelectedMonth
-
-        uncomplicatedMalariaManagedByChw =
-            countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
 
         uncomplicatedMalariaAndPregnantSentToHC =
             countUncomplicatedMalariaAndPregnantSentToHC encountersForSelectedMonth
 
         complicatedMalariaSentToHC =
             countComplicatedMalariaSentToHC encountersForSelectedMonth
-
-        resolvedMalariaCases =
-            countResolvedMalariaCasesForSelectedMonth selectedDate acuteIllnessData
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
+    if isChw then
+        let
+            uncomplicatedMalariaManagedByChw =
+                countUncomplicatedMalariaManagedByChw encountersForSelectedMonth
+
+            resolvedMalariaCases =
+                countResolvedMalariaCasesForSelectedMonth dateLastDayOfSelectedMonth acuteIllnessData
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaByChws) (String.fromInt uncomplicatedMalariaManagedByChw)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedMalariaInPregnancyReferredToHc) (String.fromInt uncomplicatedMalariaAndPregnantSentToHC)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC)
+                , chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria)
+                ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.ComplicatedMalariaReferredToHC) (String.fromInt complicatedMalariaSentToHC)
-            , chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedMalariaCases ++ " : " ++ String.fromInt managedMalaria)
+
+    else
+        let
+            sentToHospital =
+                countUncomplicatedMalariaSentToHC encountersForSelectedMonth
+                    + uncomplicatedMalariaAndPregnantSentToHC
+                    + complicatedMalariaSentToHC
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
+                ]
             ]
         ]
-    ]
 
 
-viewGastroPage : Language -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
-viewGastroPage language selectedDate acuteIllnessData encountersForSelectedMonth managedGI model =
+viewGastroPage : Language -> Bool -> NominalDate -> List AcuteIllnessDataItem -> List AcuteIllnessEncounterDataItem -> Int -> Model -> List (Html Msg)
+viewGastroPage language isChw dateLastDayOfSelectedMonth acuteIllnessData encountersForSelectedMonth managedGI model =
     let
         totalDaignosed =
             countDiagnosedWithGI encountersForSelectedMonth
 
-        uncomplicatedGIManagedByChw =
-            countUncomplicatedGIManagedByChw encountersForSelectedMonth
-
         complicatedGISentToHC =
             countComplicatedGISentToHC encountersForSelectedMonth
-
-        resolvedGICases =
-            countResolvedGICasesForSelectedMonth selectedDate acuteIllnessData
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
-            , chwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw)
-            , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
+    if isChw then
+        let
+            uncomplicatedGIManagedByChw =
+                countUncomplicatedGIManagedByChw encountersForSelectedMonth
+
+            resolvedGICases =
+                countResolvedGICasesForSelectedMonth dateLastDayOfSelectedMonth acuteIllnessData
+        in
+        [ div [ class "ui grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.UncomplicatedGIInfectionByCHWS) (String.fromInt uncomplicatedGIManagedByChw)
+                , chwCard language (Translate.Dashboard Translate.ComplicatedGIInfectionsReferredToHc) (String.fromInt complicatedGISentToHC)
+                ]
+            ]
+        , div [ class "ui centered grid" ]
+            [ div [ class "three column row" ]
+                [ chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI)
+                ]
             ]
         ]
-    , div [ class "ui centered grid" ]
-        [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.ResolvedCases) (String.fromInt resolvedGICases ++ " : " ++ String.fromInt managedGI)
+
+    else
+        [ div [ class "ui grid" ]
+            [ div [ class "two column row" ]
+                [ chwCard language (Translate.Dashboard Translate.DiagnosedCases) (String.fromInt totalDaignosed)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt complicatedGISentToHC)
+                ]
             ]
         ]
-    ]
 
 
-viewNutritionPage : Language -> NominalDate -> Bool -> Nurse -> NutritionPageData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewNutritionPage language currentDate isChw nurse data db model =
+viewNutritionChartsPage : Language -> NominalDate -> Bool -> Nurse -> NutritionSubPage -> NutritionPageData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewNutritionChartsPage language currentDate isChw nurse activePage data db model =
     let
         links =
             case model.programTypeFilter of
@@ -861,43 +1076,154 @@ viewNutritionPage language currentDate isChw nurse data db model =
     ]
 
 
-viewAntenatalPage : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewAntenatalPage language currentDate assembled db model =
+viewPrenatalPage : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPrenatalPage language currentDate isChw assembled db model =
     let
-        selectedDate =
+        dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         newlyIdentifiedPreganancies =
-            countNewlyIdentifiedPregananciesForSelectedMonth selectedDate assembled.prenatalData
+            countNewlyIdentifiedPregananciesForSelectedMonth dateLastDayOfSelectedMonth isChw assembled.prenatalData
 
         currentlyPregnant =
-            countCurrentlyPregnantForSelectedMonth currentDate selectedDate assembled.prenatalData
+            countCurrentlyPregnantForSelectedMonth dateLastDayOfSelectedMonth isChw assembled.prenatalData
 
-        pregnanciesDueWithin4Month =
-            countPregnanciesDueWithin4MonthsForSelectedMonth selectedDate assembled.prenatalData
+        pregnanciesDueWithin4Months =
+            countPregnanciesDueWithin4MonthsForSelectedMonth dateLastDayOfSelectedMonth isChw assembled.prenatalData
 
         currentlyPregnantWithDangerSigns =
-            countCurrentlyPregnantWithDangerSignsForSelectedMonth currentDate selectedDate assembled.prenatalData
+            countCurrentlyPregnantWithDangerSignsForSelectedMonth dateLastDayOfSelectedMonth isChw assembled.prenatalData
 
-        deliveriesAtHome =
-            countDeliveriesAtLocationForSelectedMonth selectedDate HomeDelivery assembled.prenatalData
+        secondRow =
+            let
+                deliveriesAtFacility =
+                    countDeliveriesAtLocationForSelectedMonth dateLastDayOfSelectedMonth FacilityDelivery assembled.prenatalData
+            in
+            if isChw then
+                let
+                    deliveriesAtHome =
+                        countDeliveriesAtLocationForSelectedMonth dateLastDayOfSelectedMonth HomeDelivery assembled.prenatalData
+                in
+                [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
+                , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
+                , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+                ]
 
-        deliveriesAtFacility =
-            countDeliveriesAtLocationForSelectedMonth selectedDate FacilityDelivery assembled.prenatalData
+            else
+                let
+                    pregnanciesWith4VisitsOrMore =
+                        countPregnanciesWith4VisitsOrMoreForSelectedMonth dateLastDayOfSelectedMonth assembled.prenatalData
+
+                    hospitalReferrals =
+                        countHospitalReferralsForSelectedMonth dateLastDayOfSelectedMonth assembled.prenatalData
+                in
+                [ chwCard language (Translate.Dashboard Translate.PregnanciesWith4VisitsOrMore) (String.fromInt pregnanciesWith4VisitsOrMore)
+                , chwCard language (Translate.Dashboard Translate.HealthCenterDeliveries) (String.fromInt deliveriesAtFacility)
+                , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt hospitalReferrals)
+                ]
+
+        dataForNurses =
+            List.filterMap
+                (\pregnancy ->
+                    let
+                        nurseEncounters =
+                            List.filter isNurseEncounter pregnancy.encounters
+                    in
+                    if List.isEmpty nurseEncounters then
+                        Nothing
+
+                    else
+                        Just { pregnancy | encounters = nurseEncounters }
+                )
+                assembled.prenatalData
+
+        prenatalDiagnosesSection =
+            if isChw then
+                []
+
+            else
+                viewPrenatalDiagnosesSection language dateLastDayOfSelectedMonth currentlyPregnantWithDangerSigns dataForNurses
     in
-    [ monthSelector language selectedDate model
+    [ monthSelector language dateLastDayOfSelectedMonth model
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language (Translate.Dashboard Translate.NewPregnancy) (String.fromInt newlyIdentifiedPreganancies)
             , chwCard language (Translate.Dashboard Translate.CurrentPregnancies) (String.fromInt currentlyPregnant)
-            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Month)
+            , chwCard language (Translate.Dashboard Translate.Within4MonthsOfDueDate) (String.fromInt pregnanciesDueWithin4Months)
             ]
         ]
-    , div [ class "ui centered grid" ]
+    , div [ class "ui grid" ]
         [ div [ class "three column row" ]
-            [ chwCard language (Translate.Dashboard Translate.WithDangerSigns) (String.fromInt currentlyPregnantWithDangerSigns)
-            , chwCard language (Translate.Dashboard Translate.HomeDeliveries) (String.fromInt deliveriesAtHome)
-            , chwCard language (Translate.Dashboard Translate.HealthFacilityDeliveries) (String.fromInt deliveriesAtFacility)
+            secondRow
+        ]
+    ]
+        ++ prenatalDiagnosesSection
+
+
+viewPrenatalDiagnosesSection : Language -> NominalDate -> Int -> List PrenatalDataItem -> List (Html Msg)
+viewPrenatalDiagnosesSection language currentDate currentlyPregnantWithDangerSigns data =
+    let
+        totalHighRiskPregnancies =
+            newlyDiagnosesSyphilisPregnancies
+                ++ newlyDiagnosesPreeclampsiaPregnancies
+                ++ newlyDiagnosesEclampsiaPregnancies
+                ++ newlyDiagnosesSevereAnemiaPregnancies
+                ++ newlyDiagnosesAcuteMalnutritionPregnancies
+                ++ newlyDiagnosesGestationalDiabetesPregnancies
+                ++ newlyDiagnosesHIVPregnancies
+                |> List.map .identifier
+                |> EverySet.fromList
+                |> EverySet.size
+                |> (+) currentlyPregnantWithDangerSigns
+
+        newlyDiagnosesSyphilisPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate syphilisDiagnoses data
+
+        newlyDiagnosesPreeclampsiaPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate preeclampsiaDiagnoses data
+
+        newlyDiagnosesEclampsiaPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate [ DiagnosisEclampsia ] data
+
+        newlyDiagnosesSevereAnemiaPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate severeAnemiaDiagnoses data
+
+        newlyDiagnosesAcuteMalnutritionPregnancies =
+            filterNewlyDiagnosesMalnutritionForSelectedMonth currentDate data
+
+        newlyDiagnosesGestationalDiabetesPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate
+                [ DiagnosisGestationalDiabetesInitialPhase, DiagnosisGestationalDiabetesRecurrentPhase ]
+                data
+
+        newlyDiagnosesHIVPregnancies =
+            filterNewlyDiagnosesCasesForSelectedMonth currentDate
+                [ DiagnosisHIVInitialPhase, DiagnosisHIVRecurrentPhase ]
+                data
+    in
+    [ div [ class "separator" ] []
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.TotalHighRiskPregnancies (String.fromInt totalHighRiskPregnancies) ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.Syphilis (String.fromInt <| List.length newlyDiagnosesSyphilisPregnancies)
+            , chwCard language Translate.Preeclampsia (String.fromInt <| List.length newlyDiagnosesPreeclampsiaPregnancies)
+            , chwCard language Translate.Eclampsia (String.fromInt <| List.length newlyDiagnosesEclampsiaPregnancies)
+            ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.SevereAnemia (String.fromInt <| List.length newlyDiagnosesSevereAnemiaPregnancies)
+            , chwCard language Translate.AcuteMalnutrition (String.fromInt <| List.length newlyDiagnosesAcuteMalnutritionPregnancies)
+            , chwCard language Translate.DangerSigns (String.fromInt currentlyPregnantWithDangerSigns)
+            ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language Translate.GestationalDiabetes (String.fromInt <| List.length newlyDiagnosesGestationalDiabetesPregnancies)
+            , chwCard language Translate.HIV (String.fromInt <| List.length newlyDiagnosesHIVPregnancies)
             ]
         ]
     ]
@@ -1338,8 +1664,7 @@ viewBeneficiariesTable language currentDate stats currentPeriodStats malnourishe
                     let
                         maxJoinDate =
                             Date.add Months -1 currentDate
-                                |> Date.ceiling Date.Month
-                                |> Date.add Days -1
+                                |> toLastDayOfMonth
 
                         minGraduationDate =
                             Date.add Months -1 currentDate
@@ -1485,7 +1810,7 @@ viewDashboardPagesLinks language =
     div [ class "dashboards-links" ]
         [ div
             [ class "ui segment stats"
-            , DashboardPage (NursePage StatsPage)
+            , DashboardPage (PageNutrition PageStats)
                 |> UserPage
                 |> SetActivePage
                 |> onClick
@@ -1500,7 +1825,7 @@ viewDashboardPagesLinks language =
             ]
         , div
             [ class "ui segment case"
-            , DashboardPage (NursePage CaseManagementPage)
+            , DashboardPage (PageNutrition PageCaseManagement)
                 |> UserPage
                 |> SetActivePage
                 |> onClick
@@ -1847,8 +2172,8 @@ viewPieChartLegend language translateFunc colorFunc signs =
         )
 
 
-viewCustomModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewCustomModal language isChw nurse stats db model =
+viewCustomModal : Language -> DashboardPage -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewCustomModal language page isChw nurse stats db model =
     model.modalState
         |> Maybe.map
             (\state ->
@@ -1857,7 +2182,7 @@ viewCustomModal language isChw nurse stats db model =
                         viewStatsTableModal language title data
 
                     FiltersModal ->
-                        viewFiltersModal language isChw nurse stats db model
+                        viewFiltersModal language page isChw nurse stats db model
             )
         |> viewModal
 
@@ -1891,8 +2216,8 @@ viewStatsTableModal language title data =
         ]
 
 
-viewFiltersModal : Language -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewFiltersModal language isChw nurse stats db model =
+viewFiltersModal : Language -> DashboardPage -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersModal language page isChw nurse stats db model =
     let
         programTypeFilterInputSection =
             if isChw then
@@ -1901,15 +2226,28 @@ viewFiltersModal language isChw nurse stats db model =
 
             else
                 let
+                    options =
+                        case page of
+                            -- Nutrition group types filters are only relevant
+                            -- on Nutrition page. For all others It's either
+                            -- All Programs, or selected village.
+                            PageNutrition PageCharts ->
+                                [ FilterAllPrograms
+                                , FilterProgramFbf
+                                , FilterProgramPmtct
+                                , FilterProgramSorwathe
+                                , FilterProgramAchi
+                                , FilterProgramCommunity
+                                ]
+
+                            _ ->
+                                [ FilterAllPrograms
+                                , FilterProgramCommunity
+                                ]
+
                     programTypeFilterInput =
                         viewCustomSelectListInput (Just model.programTypeFilter)
-                            [ FilterAllPrograms
-                            , FilterProgramFbf
-                            , FilterProgramPmtct
-                            , FilterProgramSorwathe
-                            , FilterProgramAchi
-                            , FilterProgramCommunity
-                            ]
+                            options
                             filterProgramTypeToString
                             SetFilterProgramType
                             (Translate.FilterProgramType >> Translate.Dashboard >> translate language)
@@ -2102,5 +2440,588 @@ resolvePreviousMonth thisMonth =
 
 
 monthSelector : Language -> NominalDate -> Model -> Html Msg
-monthSelector language selectedDate model =
-    viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap
+monthSelector language dateLastDayOfSelectedMonth model =
+    viewMonthSelector language dateLastDayOfSelectedMonth model.monthGap maxMonthGap ChangeMonthGap
+
+
+viewNCDPage :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> NCDSubPage
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewNCDPage language currentDate healthCenterId activePage assembled db model =
+    let
+        dateLastDayOfSelectedMonth =
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
+
+        pageContent =
+            case activePage of
+                PageHypertension ->
+                    viewHypertensionPage language dateLastDayOfSelectedMonth assembled.ncdData model
+
+                PageHIV ->
+                    viewHIVPage language dateLastDayOfSelectedMonth assembled.ncdData assembled.pmtctData
+
+                PageDiabetes ->
+                    viewDiabetesPage language dateLastDayOfSelectedMonth assembled.ncdData assembled.prenatalData model
+    in
+    [ viewNCDMenu language activePage
+    , monthSelector language dateLastDayOfSelectedMonth model
+    ]
+        ++ pageContent
+
+
+viewHypertensionPage : Language -> NominalDate -> List NCDDataItem -> Model -> List (Html Msg)
+viewHypertensionPage language dateLastDayOfSelectedMonth dataItems model =
+    let
+        totalCases =
+            countTotalNumberOfPatientsWithHypertension dateLastDayOfSelectedMonth dataItems
+
+        newCases =
+            countNewlyIdentifieHypertensionCasesForSelectedMonth dateLastDayOfSelectedMonth dataItems
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "two column row" ]
+            [ chwCard language (Translate.Dashboard Translate.HypertensionCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.HypertensionNewCases) (String.fromInt newCases)
+            ]
+        ]
+    ]
+
+
+viewHIVPage : Language -> NominalDate -> List NCDDataItem -> List PMTCTDataItem -> List (Html Msg)
+viewHIVPage language dateLastDayOfSelectedMonth dataItems pmtctData =
+    let
+        patientsWithHIV =
+            generatePatientsWithHIV dateLastDayOfSelectedMonth dataItems
+
+        totalCases =
+            List.length patientsWithHIV
+
+        -- Patients with HIV that participate at PMTCT group.
+        managedByPMTCT =
+            List.filter
+                (\id ->
+                    List.any
+                        (\pmtctParticipant ->
+                            (pmtctParticipant.identifier == id)
+                                && -- PMTCT participation started at current month or before.
+                                   withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth pmtctParticipant.startDate
+                                && -- PMTCT participation ends at current month or after.
+                                   withinOrAfterSelectedMonth dateLastDayOfSelectedMonth pmtctParticipant.endDate
+                        )
+                        pmtctData
+                )
+                patientsWithHIV
+                |> List.length
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "two column row" ]
+            [ chwCard language (Translate.Dashboard Translate.TotalCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.ManagedByPMTCT) (String.fromInt managedByPMTCT)
+            ]
+        ]
+    ]
+
+
+viewDiabetesPage : Language -> NominalDate -> List NCDDataItem -> List PrenatalDataItem -> Model -> List (Html Msg)
+viewDiabetesPage language dateLastDayOfSelectedMonth dataItems prenatalDataItems model =
+    let
+        totalCases =
+            countTotalNumberOfPatientsWithDiabetes dateLastDayOfSelectedMonth dataItems
+
+        newCases =
+            countNewlyIdentifiedDiabetesCasesForSelectedMonth dateLastDayOfSelectedMonth dataItems
+
+        gestationalCases =
+            let
+                dataForNurses =
+                    List.filterMap
+                        (\pregnancy ->
+                            let
+                                nurseEncounters =
+                                    List.filter isNurseEncounter pregnancy.encounters
+                            in
+                            if List.isEmpty nurseEncounters then
+                                Nothing
+
+                            else
+                                Just { pregnancy | encounters = nurseEncounters }
+                        )
+                        prenatalDataItems
+            in
+            countTotalNumberOfPatientsWithGestationalDiabetes dateLastDayOfSelectedMonth dataForNurses
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.TotalDiabeticCases) (String.fromInt totalCases)
+            , chwCard language (Translate.Dashboard Translate.DiabetesNewCases) (String.fromInt newCases)
+            , chwCard language Translate.GestationalDiabetes (String.fromInt gestationalCases)
+            ]
+        ]
+    ]
+
+
+viewChildWellnessPage :
+    Language
+    -> NominalDate
+    -> Site
+    -> HealthCenterId
+    -> ChildWellnessSubPage
+    -> AssembledData
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewChildWellnessPage language currentDate site healthCenterId activePage assembled db model =
+    let
+        dateLastDayOfSelectedMonth =
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
+
+        pageContent =
+            case activePage of
+                PageChildWellnessOverview ->
+                    viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth assembled.spvData assembled.childScoreboardData
+
+                PageChildWellnessNutrition ->
+                    viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled
+    in
+    [ viewChildWellnessMenu language activePage
+    , monthSelector language dateLastDayOfSelectedMonth model
+    ]
+        ++ pageContent
+
+
+viewChildWellnessOverviewPage : Language -> Site -> NominalDate -> List SPVDataItem -> List ChildScoreboardDataItem -> List (Html Msg)
+viewChildWellnessOverviewPage language site dateLastDayOfSelectedMonth spvDataItems childScoreboardDataItem =
+    let
+        numberOfChildrenSeen =
+            getEncountersForSelectedMonth dateLastDayOfSelectedMonth spvDataItems
+                |> List.filter isNurseEncounter
+                |> List.length
+
+        -- For each participant, we resolve last SPV encounter.
+        ecdDataItems =
+            List.filterMap
+                (\item ->
+                    List.filter
+                        (\encounter ->
+                            isNurseEncounter encounter
+                                && withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth encounter.startDate
+                        )
+                        item.encounters
+                        |> List.sortWith (sortByDateDesc .startDate)
+                        |> List.head
+                )
+                spvDataItems
+
+        isNurseEncounter =
+            .encounterType >> (==) PediatricCare
+
+        ecdOnTrack =
+            List.filter
+                (\encounter -> EverySet.member NoECDMilstoneWarning encounter.warnings)
+                ecdDataItems
+                |> List.length
+
+        ecdBehind =
+            List.length ecdDataItems - ecdOnTrack
+
+        spvDataDict =
+            List.map (\item -> ( item.identifier, item )) spvDataItems
+                |> Dict.fromList
+
+        childScoreboardDict =
+            List.map (\item -> ( item.identifier, item )) childScoreboardDataItem
+                |> Dict.fromList
+
+        allIdentifiers =
+            Dict.keys spvDataDict
+                ++ Dict.keys childScoreboardDict
+                |> EverySet.fromList
+
+        immunizationDataItems =
+            EverySet.foldl
+                (\identifier accum ->
+                    let
+                        spvItem =
+                            Dict.get identifier spvDataDict
+
+                        childScoreboardItem =
+                            Dict.get identifier childScoreboardDict
+                    in
+                    case ( spvItem, childScoreboardItem ) of
+                        ( Just spv, Just childScoreboard ) ->
+                            { birthDate = Just spv.birthDate
+                            , gender = spv.gender
+                            , vaccinationProgress = generateVaccinationProgressDict site spv.gender spv.encounters childScoreboard.encounters
+                            }
+                                :: accum
+
+                        ( Just spv, Nothing ) ->
+                            { birthDate = Just spv.birthDate
+                            , gender = spv.gender
+                            , vaccinationProgress = generateVaccinationProgressDict site spv.gender spv.encounters []
+                            }
+                                :: accum
+
+                        ( Nothing, Just childScoreboard ) ->
+                            { birthDate = Just childScoreboard.birthDate
+                            , gender = childScoreboard.gender
+                            , vaccinationProgress = generateVaccinationProgressDict site childScoreboard.gender [] childScoreboard.encounters
+                            }
+                                :: accum
+
+                        ( Nothing, Nothing ) ->
+                            -- We never get here.
+                            accum
+                )
+                []
+                allIdentifiers
+
+        isImmunizationOnTrack item =
+            let
+                -- Filter out vaccinations that were performed
+                -- after the reference date.
+                vaccinationProgressOnReferrenceDate =
+                    Dict.map
+                        (\_ dosesDict ->
+                            Dict.filter
+                                (\_ administeredDate ->
+                                    Date.compare administeredDate dateLastDayOfSelectedMonth == LT
+                                )
+                                dosesDict
+                        )
+                        item.vaccinationProgress
+
+                futureVaccinations =
+                    generateFutureVaccinationsData dateLastDayOfSelectedMonth site item.birthDate item.gender False vaccinationProgressOnReferrenceDate
+
+                closestDateForVaccination =
+                    List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
+                        |> List.sortWith Date.compare
+                        |> List.head
+            in
+            Maybe.map
+                (\closestDate ->
+                    -- Closest date when vaccine is required is after last
+                    -- day of selected month / current date, if current month
+                    -- is selected.
+                    Date.compare closestDate dateLastDayOfSelectedMonth == GT
+                )
+                closestDateForVaccination
+                |> Maybe.withDefault
+                    -- This indicates that there're no future vaccinations to be
+                    -- done, and therefore, patient is on track.
+                    True
+
+        immunizationOnTrack =
+            List.filter isImmunizationOnTrack immunizationDataItems
+                |> List.length
+
+        immunizationBehind =
+            List.length immunizationDataItems - immunizationOnTrack
+
+        ecdChartData =
+            [ ( Translate.OnTrack, ecdOnTrack )
+            , ( Translate.Behind, ecdBehind )
+            ]
+
+        immunizationChartData =
+            [ ( Translate.OnTrack, immunizationOnTrack )
+            , ( Translate.Behind, immunizationBehind )
+            ]
+
+        toColorFunc item =
+            case item of
+                Translate.OnTrack ->
+                    Color.rgb (27 / 255) (207 / 255) (193 / 255)
+
+                _ ->
+                    Color.rgb (240 / 255) (111 / 255) (107 / 255)
+
+        colors =
+            [ ( Translate.OnTrack, Color.rgb (27 / 255) (207 / 255) (193 / 255) )
+            , ( Translate.Behind, Color.rgb (240 / 255) (111 / 255) (107 / 255) )
+            ]
+                |> Dict.fromList
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "three column row center" ]
+            [ chwCard language (Translate.Dashboard Translate.NumberOfChildrenSeen) (String.fromInt numberOfChildrenSeen) ]
+        ]
+    , div [ class "ui blue segment donut-chart left" ]
+        [ viewDonutChart language
+            (Translate.Dashboard Translate.ECDOnTrackLabel)
+            identity
+            toColorFunc
+            colors
+            ecdChartData
+        ]
+    , div [ class "ui blue segment donut-chart left" ]
+        [ viewDonutChart language
+            (Translate.Dashboard Translate.ImmunizationOnTrackLabel)
+            identity
+            toColorFunc
+            colors
+            immunizationChartData
+        ]
+    ]
+
+
+viewChildWellnessNutritionPage : Language -> NominalDate -> AssembledData -> List (Html Msg)
+viewChildWellnessNutritionPage language dateLastDayOfSelectedMonth assembled =
+    let
+        dataItems =
+            mergeDicts spvDict nutritionIndividualDict
+                |> mergeDicts nutritionGroupDict
+                |> Dict.toList
+                |> List.map (\( identifier, encounters ) -> NutritionDataItem identifier encounters)
+
+        mergeDicts d1 d2 =
+            Dict.merge
+                (\key value -> Dict.insert key value)
+                -- In case we got both values for months, we give preference to
+                -- the one with more recent date.
+                (\key value1 value2 ->
+                    value1
+                        ++ value2
+                        |> -- Sort DESC by date, so it will be easier to resolve l
+                           -- ast occurance of encounter values.
+                           List.sortWith (sortByDateDesc .startDate)
+                        |> Dict.insert key
+                )
+                (\key value -> Dict.insert key value)
+                d1
+                d2
+                Dict.empty
+
+        spvDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (.encounterType >> (==) PediatricCare) .warnings item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.spvData
+                |> itemsToDict
+
+        nutritionIndividualDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (.encounterType >> (==) NutritionEncounterNurse) (always EverySet.empty) item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.nutritionIndividualData
+                |> itemsToDict
+
+        nutritionGroupDict =
+            List.filterMap
+                (\item ->
+                    let
+                        encounters =
+                            generateEncounters (always True) (always EverySet.empty) item.encounters
+                    in
+                    if List.isEmpty encounters then
+                        Nothing
+
+                    else
+                        Just <| NutritionDataItem item.identifier encounters
+                )
+                assembled.nutritionGroupData
+                |> itemsToDict
+
+        generateEncounters isNurseEncounterFunc resolveWarningsFunc =
+            List.filterMap
+                (\encounter ->
+                    if isNurseEncounterFunc encounter then
+                        Just <|
+                            NutritionEncounterDataItem encounter.startDate
+                                (resolveWarningsFunc encounter)
+                                encounter.zscoreStunting
+                                encounter.zscoreUnderweight
+                                encounter.zscoreWasting
+                                encounter.muac
+                                encounter.nutritionSigns
+
+                    else
+                        Nothing
+                )
+
+        itemsToDict =
+            List.map
+                (\item ->
+                    ( item.identifier, item.encounters )
+                )
+                >> Dict.fromList
+
+        encountersForSelectedMonth =
+            getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataItems
+
+        -- Percent of good nutrition encounters from total encounters
+        -- performed during selected month.
+        percentOfGoodNutrition =
+            let
+                goodNutritionEncounters =
+                    List.filter isGoodNutritionEncounter encountersForSelectedMonth
+                        |> List.length
+            in
+            round (100 * toFloat goodNutritionEncounters / toFloat totalEncountersCompleted)
+
+        -- Total Nutrition encounters performed during selected month.
+        totalEncountersCompleted =
+            List.length encountersForSelectedMonth
+
+        -- Number of children who had moderate or acute wasting diagnosed
+        -- at encounter during selected month or previously, and did not have
+        -- an encounter afterwards that indicated that condition was resolved.
+        totalBeneficiariesWasting =
+            countCurrentlyDiagnosedByValue .zscoreWasting (\zscore -> zscore < 2)
+
+        -- Number of children who are had firs diagnosis of wasting during
+        -- selected month.
+        incidentsOfWasting =
+            List.filter
+                (\item ->
+                    let
+                        wastingDates =
+                            List.filterMap
+                                (\encounter ->
+                                    Maybe.andThen
+                                        (\zscore ->
+                                            if zscore < -2 then
+                                                Just encounter.startDate
+
+                                            else
+                                                Nothing
+                                        )
+                                        encounter.zscoreWasting
+                                )
+                                item.encounters
+                    in
+                    (not <| List.isEmpty wastingDates) && List.all (withinSelectedMonth dateLastDayOfSelectedMonth) wastingDates
+                )
+                itemsWithinOrBeforeSelectedMonth
+                |> List.length
+
+        -- Number of children who had moderate or acute stunting diagnosed at
+        -- encounter during selected month or previously, and did not have an
+        -- encounter afterwards that indicated that condition was resolved.
+        numberOfStunting =
+            countCurrentlyDiagnosedByValue .zscoreStunting (\zscore -> zscore < 2)
+
+        -- Number of Children who had either micro or macrocephaly diagnosed at
+        -- encounter during selected month or previously, and did not have an
+        -- encounter afterwards that indicated that condition was resolved.
+        numberOfCephaly =
+            countCurrentlyDiagnosedByValue
+                (\encounter ->
+                    if
+                        EverySet.isEmpty encounter.warnings
+                            || EverySet.member NoHeadCircumferenceWarning encounter.warnings
+                    then
+                        Nothing
+
+                    else
+                        Just encounter.warnings
+                )
+                (\warnings ->
+                    List.any
+                        (\warning ->
+                            EverySet.member warning warnings
+                        )
+                        [ WarningHeadCircumferenceMicrocephaly, WarningHeadCircumferenceMacrocephaly ]
+                )
+
+        -- Number children who had malnutrition diagnosed at encounter during
+        -- selected month or previously, and did not have an encounter
+        -- afterwards that indicated that condition was resolved.
+        numberOfDiagnosedMalnorished =
+            countCurrentlyDiagnosedByValue Just (isGoodNutritionEncounter >> not)
+
+        itemsWithinOrBeforeSelectedMonth =
+            List.map
+                (\item ->
+                    let
+                        encounters =
+                            List.filter (.startDate >> withinOrBeforeSelectedMonth dateLastDayOfSelectedMonth) item.encounters
+                    in
+                    { item | encounters = encounters }
+                )
+                dataItems
+
+        isGoodNutritionEncounter encounter =
+            (case EverySet.toList encounter.nutritionSigns of
+                [] ->
+                    True
+
+                [ NormalChildNutrition ] ->
+                    True
+
+                _ ->
+                    False
+            )
+                && (Maybe.map (\muac -> muac > 12.5) encounter.muac
+                        |> Maybe.withDefault True
+                   )
+                && (Maybe.Extra.values [ encounter.zscoreStunting, encounter.zscoreUnderweight, encounter.zscoreWasting ]
+                        |> List.all (\zscore -> zscore >= -2)
+                   )
+
+        countCurrentlyDiagnosedByValue valueMappingFunc valueConditionFunc =
+            List.filter
+                (\item ->
+                    let
+                        valuesWithDate =
+                            List.filterMap
+                                (\encounter ->
+                                    valueMappingFunc encounter
+                                        |> Maybe.map (\value -> ( encounter.startDate, value ))
+                                )
+                                item.encounters
+
+                        lastValueDate =
+                            List.head valuesWithDate
+                                |> Maybe.map Tuple.first
+
+                        lastDiagnosisDate =
+                            List.filter (Tuple.second >> valueConditionFunc) valuesWithDate
+                                |> List.head
+                                |> Maybe.map Tuple.first
+                    in
+                    isJust lastDiagnosisDate && lastValueDate == lastDiagnosisDate
+                )
+                itemsWithinOrBeforeSelectedMonth
+                |> List.length
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.GoodNutritionLabel) (String.fromInt percentOfGoodNutrition)
+            , chwCard language (Translate.Dashboard Translate.TotalEncountersLabel) (String.fromInt totalEncountersCompleted)
+            , chwCard language (Translate.Dashboard Translate.TotalBeneficiariesWasting) (String.fromInt totalBeneficiariesWasting)
+            ]
+        , div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.IncidentsOfWasting) (String.fromInt incidentsOfWasting)
+            , chwCard language (Translate.Dashboard Translate.NumberOfStunting) (String.fromInt numberOfStunting)
+            , chwCard language (Translate.Dashboard Translate.NumberOfCephaly) (String.fromInt numberOfCephaly)
+            ]
+        , div [ class "three column row center" ]
+            [ chwCard language (Translate.Dashboard Translate.NumberOfDiagnosedMalnourished) (String.fromInt numberOfDiagnosedMalnorished) ]
+        ]
+    ]

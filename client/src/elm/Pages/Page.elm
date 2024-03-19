@@ -1,12 +1,4 @@
-module Pages.Page exposing
-    ( AcuteIllnessDashboardPage(..)
-    , ChwDashboardPage(..)
-    , DashboardPage(..)
-    , NurseDashboardPage(..)
-    , Page(..)
-    , SessionPage(..)
-    , UserPage(..)
-    )
+module Pages.Page exposing (..)
 
 {-| A module that defines a type which controls what the user wishes
 to be shown at the moment.
@@ -197,7 +189,7 @@ type UserPage
     | ChildScoreboardParticipantPage PersonId
     | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- Child Scoreboard activities index.
     | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
-    | ChildScoreboardReportPage ChildScoreboardEncounterId -- Scorecard.
+    | ChildScoreboardProgressReportPage ChildScoreboardEncounterId -- Scorecard.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
@@ -205,30 +197,37 @@ type UserPage
     | StockManagementPage
 
 
-{-| We group together the pages that can only be viewed in the Dashboard
--}
 type DashboardPage
-    = MainPage
-    | NursePage NurseDashboardPage
-    | ChwPage ChwDashboardPage
+    = PageMain
+    | PageNutrition NutritionSubPage
+    | PageAcuteIllness AcuteIllnessSubPage
+    | PagePrenatal
+    | PageNCD NCDSubPage
+    | PageChildWellness ChildWellnessSubPage
 
 
-type NurseDashboardPage
-    = StatsPage
-    | CaseManagementPage
+type NutritionSubPage
+    = PageCharts
+    | PageStats
+    | PageCaseManagement
 
 
-type ChwDashboardPage
-    = AcuteIllnessPage AcuteIllnessDashboardPage
-    | NutritionPage
-    | AntenatalPage
+type AcuteIllnessSubPage
+    = PageAcuteIllnessOverview
+    | PageCovid19
+    | PageMalaria
+    | PageGastro
 
 
-type AcuteIllnessDashboardPage
-    = OverviewPage
-    | Covid19Page
-    | MalariaPage
-    | GastroPage
+type NCDSubPage
+    = PageHypertension
+    | PageHIV
+    | PageDiabetes
+
+
+type ChildWellnessSubPage
+    = PageChildWellnessOverview
+    | PageChildWellnessNutrition
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

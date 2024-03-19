@@ -18,7 +18,7 @@ import Backend.Utils exposing (reportToWhatsAppEnabled)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -423,9 +423,17 @@ viewMonthSelector language selectedDate monthGap maxGap changeMonthGapMsg =
         ]
 
 
+{-| If current month is selected, returns current date.
+If any of previous months is selected, returns last day of selected months.
+-}
 resolveSelectedDateForMonthSelector : NominalDate -> Int -> NominalDate
 resolveSelectedDateForMonthSelector currentDate monthGap =
-    Date.add Date.Months (-1 * monthGap) currentDate
+    if monthGap == 0 then
+        currentDate
+
+    else
+        Date.add Date.Months (-1 * monthGap) currentDate
+            |> toLastDayOfMonth
 
 
 
@@ -902,19 +910,42 @@ viewEndEncounterDialog language heading message confirmAction cancelAction =
         ]
 
 
+viewSkipNCDADialog : Language -> msg -> msg -> Html msg
+viewSkipNCDADialog language confirmAction cancelAction =
+    div [ class "ui tiny active modal" ]
+        [ div [ class "content" ]
+            [ p [] [ text <| translate language Translate.SkipNCDADialogQuestion ] ]
+        , div
+            [ class "actions" ]
+            [ div [ class "two ui buttons" ]
+                [ button
+                    [ class "ui primary fluid button"
+                    , onClick confirmAction
+                    ]
+                    [ text <| translate language Translate.SkipNCDADialogConfirm ]
+                , button
+                    [ class "ui fluid button"
+                    , onClick cancelAction
+                    ]
+                    [ text <| translate language Translate.SkipNCDADialogReject ]
+                ]
+            ]
+        ]
+
+
 viewStartEncounterButton : Language -> msg -> Html msg
 viewStartEncounterButton language action =
     viewEncounterActionButton language Translate.StartEncounter "primary" True action
 
 
-viewEndEncounterButton : Language -> Bool -> (Bool -> msg) -> Html msg
+viewEndEncounterButton : Language -> Bool -> msg -> Html msg
 viewEndEncounterButton language =
     viewEndEncounterButtonCustomColor language "primary"
 
 
-viewEndEncounterButtonCustomColor : Language -> String -> Bool -> (Bool -> msg) -> Html msg
-viewEndEncounterButtonCustomColor language buttonColor allowEndEncounter setDialogStateMsgs =
-    viewEncounterActionButton language Translate.EndEncounter buttonColor allowEndEncounter (setDialogStateMsgs True)
+viewEndEncounterButtonCustomColor : Language -> String -> Bool -> msg -> Html msg
+viewEndEncounterButtonCustomColor language buttonColor =
+    viewEncounterActionButton language Translate.EndEncounter buttonColor
 
 
 viewEncounterActionButton : Language -> TranslationId -> String -> Bool -> msg -> Html msg
@@ -1304,3 +1335,17 @@ setMuacValueForSite site s =
 
         _ ->
             String.toFloat s
+
+
+resolveActiveTask : List t -> Maybe t -> Maybe t
+resolveActiveTask options selected =
+    Maybe.map
+        (\task ->
+            if List.member task options then
+                Just task
+
+            else
+                List.head options
+        )
+        selected
+        |> Maybe.withDefault (List.head options)

@@ -199,13 +199,13 @@ viewModeMain language currentDate nurseId nurse lastUpdated data model =
                 , span [ class "icon-back" ] []
                 ]
 
-        selectedDate =
+        dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
         ( selectedMonthReceived, selectedMonthIssued, selectedMonthStock ) =
             let
                 selectedMonthYear =
-                    dateToMonthYear selectedDate
+                    dateToMonthYear dateLastDayOfSelectedMonth
             in
             Dict.get selectedMonthYear data
                 |> Maybe.map
@@ -267,7 +267,7 @@ viewModeMain language currentDate nurseId nurse lastUpdated data model =
                     ]
                 ]
     in
-    [ viewMonthSelector language selectedDate model.monthGap maxMonthGap ChangeMonthGap
+    [ viewMonthSelector language dateLastDayOfSelectedMonth model.monthGap maxMonthGap ChangeMonthGap
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
             [ chwCard language Translate.MTDIn selectedMonthReceived
@@ -301,11 +301,11 @@ viewModeMonthDetails :
     -> List (Html Msg)
 viewModeMonthDetails language currentDate monthGap lastUpdated data =
     let
-        selectedDate =
+        dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate monthGap
 
         monthYear =
-            dateToMonthYear selectedDate
+            dateToMonthYear dateLastDayOfSelectedMonth
 
         headerRow =
             div [ class "row header" ]
@@ -482,7 +482,7 @@ viewModeMonthDetails language currentDate monthGap lastUpdated data =
                 , div [ class "cell signature" ] [ signature ]
                 ]
     in
-    [ viewMonthSelector language selectedDate monthGap maxMonthGap ChangeDetailsMonthGap
+    [ viewMonthSelector language dateLastDayOfSelectedMonth monthGap maxMonthGap ChangeDetailsMonthGap
     , div [ class "pane month-details" ]
         [ div [ class "pane-heading" ]
             [ text <| translate language Translate.History ]

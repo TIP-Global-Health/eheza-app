@@ -88,12 +88,13 @@ import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils
     exposing
-        ( generateAssembledData
+        ( allowEndingEcounter
+        , generateAssembledData
         , pediatricCareMilestoneToComparable
         , resolveDateForPediatricCareMilestone
         , resolvePediatricCareMilestoneOnDate
         )
-import Pages.WellChild.Encounter.View exposing (allowEndingEcounter, partitionActivities)
+import Pages.WellChild.Encounter.View exposing (partitionActivities)
 import Pages.WellChild.ProgressReport.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -162,12 +163,12 @@ view language currentDate zscores site features id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEncounter = allowEndingEcounter pendingActivities
+                        , allowEndEncounter = allowEndingEcounter currentDate pendingActivities assembled
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp
                         }
-                    , mandatoryNutritionAssessmentTasksCompleted currentDate isChw assembled db
+                    , mandatoryNutritionAssessmentTasksCompleted currentDate assembled
                     )
                 )
                 assembledData
@@ -314,6 +315,9 @@ viewHeader language initiator diagnosisMode setActivePageMsg setDiagnosisModeMsg
 
                                     Backend.PatientRecord.Model.InitiatorPatientRecord personId ->
                                         UserPage (PatientRecordPage Backend.PatientRecord.Model.InitiatorParticipantDirectory personId)
+
+                            Pages.WellChild.ProgressReport.Model.InitiatorChildScoreboard childScoreboardEncounterId ->
+                                UserPage (ChildScoreboardEncounterPage childScoreboardEncounterId)
                 in
                 setActivePageMsg targetPage
     in
@@ -625,7 +629,7 @@ viewActions language features initiator activeTab msgReportToWhatsAppDialogMsg b
                                         )
 
                                 TabNCDAScoreboard ->
-                                    viewEndEncounterButton language data.allowEndEncounter data.setEndEncounterDialogStateMsg
+                                    viewEndEncounterButton language data.allowEndEncounter (data.setEndEncounterDialogStateMsg True)
 
                 endEncounterDialog =
                     if data.showEndEncounterDialog then
@@ -775,6 +779,9 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
 
                                 Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord patientRecordInitiator personId ->
                                     Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord patientRecordInitiator personId
+
+                                InitiatorChildScoreboard childScoreboardEncounterId ->
+                                    InitiatorChildScoreboardProgressReport childScoreboardEncounterId
                     in
                     viewAcuteIllnessDiagnosisEntry language acuteIllnessProgressReportInitiator db setActivePageMsg data
                 )
@@ -833,6 +840,12 @@ resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutrit
                         )
 
                     Pages.WellChild.ProgressReport.Model.InitiatorPatientRecord _ _ ->
+                        ( always True
+                        , always True
+                        , always True
+                        )
+
+                    InitiatorChildScoreboard _ ->
                         ( always True
                         , always True
                         , always True
@@ -1972,7 +1985,7 @@ viewANCNewbornPane language currentDate db childId child allNCDAQuestionnaires =
     div [ class "pane anc-newborn" ]
         [ viewPaneHeading language Translate.ANCNewborn
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDAANCNewbornItemLabel RegularCheckups)
                 pregnancyValuesForRegularPrenatalVisits
@@ -2072,7 +2085,7 @@ viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQu
     div [ class "pane nutrition-behavior" ]
         [ viewPaneHeading language Translate.NutritionBehavior
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDANutritionBehaviorItemLabel Pages.WellChild.ProgressReport.Model.BreastfedSixMonths)
                 pregnancyValues
@@ -2126,7 +2139,7 @@ viewInfrastructureEnvironmentWashPane language currentDate child allQuestionnair
     div [ class "pane infrastructure-environment-wash" ]
         [ viewPaneHeading language Translate.InfrastructureEnvironmentWash
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDAInfrastructureEnvironmentWashItemLabel Pages.WellChild.ProgressReport.Model.HasToilets)
                 pregnancyValues
@@ -2370,7 +2383,7 @@ viewTargetedInterventionsPane language currentDate child db allQuestionnairesByA
     div [ class "pane targeted-interventions" ]
         [ viewPaneHeading language Translate.TargetedInterventions
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDATargetedInterventionsItemLabel FBFGiven)
                 pregnancyValues
@@ -2449,7 +2462,7 @@ viewUniversalInterventionsPane language currentDate site child db nurseQuestionn
                                             vaccinationProgress
 
                                     futureVaccinations =
-                                        generateFutureVaccinationsData currentDate site child False vaccinationProgressOnReferrenceDate
+                                        generateFutureVaccinationsData currentDate site child.birthDate child.gender False vaccinationProgressOnReferrenceDate
 
                                     closestDateForVaccination =
                                         List.filterMap (Tuple.second >> Maybe.map Tuple.second) futureVaccinations
@@ -2568,7 +2581,7 @@ viewUniversalInterventionsPane language currentDate site child db nurseQuestionn
     div [ class "pane universal-interventions" ]
         [ viewPaneHeading language Translate.UniversalInterventions
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDAUniversalInterventionsItemLabel Immunization)
                 pregnancyValues
@@ -2928,7 +2941,7 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
     div [ class "pane fill-the-blanks" ]
         [ viewPaneHeading language Translate.FillTheBlanks
         , div [ class "pane-content" ]
-            [ viewTableHeader
+            [ viewTableHeader language
             , viewTableRow language
                 (Translate.NCDAFillTheBlanksItemLabel HeightToAge)
                 pregnancyValues
@@ -2953,12 +2966,12 @@ viewFillTheBlanksPane language currentDate zscores child db allNCDAQuestionnaire
         ]
 
 
-viewTableHeader : Html any
-viewTableHeader =
+viewTableHeader : Language -> Html any
+viewTableHeader language =
     div [ class "table-header" ]
-        [ div [ class "activity" ] [ text "Activity" ]
+        [ div [ class "activity" ] [ text <| translate language Translate.Activity ]
         , div [ class "flex-column pregnancy" ]
-            [ div [ class "column-heading" ] [ text "Pregnancy (1-9)" ]
+            [ div [ class "column-heading" ] [ text <| translate language Translate.Pregnancy ]
             , List.repeat 9 ""
                 |> List.indexedMap
                     (\index _ ->
@@ -2967,7 +2980,7 @@ viewTableHeader =
                 |> div [ class "months" ]
             ]
         , div [ class "flex-column 0-5" ]
-            [ div [ class "column-heading" ] [ text "Child (0-5)" ]
+            [ div [ class "column-heading" ] [ text <| translate language Translate.Child0to5 ]
             , List.repeat 6 ""
                 |> List.indexedMap
                     (\index _ ->
@@ -2976,7 +2989,7 @@ viewTableHeader =
                 |> div [ class "months" ]
             ]
         , div [ class "flex-column 6-24" ]
-            [ div [ class "column-heading" ] [ text "Child (6-24 months)" ]
+            [ div [ class "column-heading" ] [ text <| translate language Translate.Child6to24 ]
             , List.repeat 19 ""
                 |> List.indexedMap
                     (\index _ ->

@@ -10,7 +10,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (expectRandomBloodSugarResultTask, testPerformedByValue, vitalsFormWithDefault)
+import Measurement.Utils
+    exposing
+        ( bloodSmearResultSet
+        , expectUniversalTestResultTask
+        , testNotPerformedByWhyNotAtExecutionNote
+        , testPerformedByExecutionNote
+        , testPerformedByValue
+        , vitalsFormWithDefault
+        )
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
@@ -29,11 +37,11 @@ import Translate
 import Translate.Model exposing (Language(..))
 
 
-expectActivity : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
-expectActivity currentDate assembled activity =
+expectActivity : NominalDate -> Bool -> AssembledData -> PrenatalRecurrentActivity -> Bool
+expectActivity currentDate isLabTech assembled activity =
     case activity of
         LabResults ->
-            resolveLaboratoryResultTask currentDate assembled
+            resolveLaboratoryResultTasks currentDate isLabTech assembled
                 |> List.isEmpty
                 |> not
 
@@ -50,65 +58,88 @@ expectActivity currentDate assembled activity =
         RecurrentMalariaPrevention ->
             expectMalariaPreventionActivity PhaseRecurrent assembled
 
+        LabsResultsFollowUps ->
+            resolveLaboratoryResultFollowUpsTasks currentDate assembled
+                |> List.isEmpty
+                |> not
 
-activityCompleted : NominalDate -> AssembledData -> PrenatalRecurrentActivity -> Bool
-activityCompleted currentDate assembled activity =
+
+activityCompleted : NominalDate -> Bool -> AssembledData -> PrenatalRecurrentActivity -> Bool
+activityCompleted currentDate isLabTech assembled activity =
     case activity of
         LabResults ->
-            (not <| expectActivity currentDate assembled LabResults)
-                || (resolveLaboratoryResultTask currentDate assembled
-                        |> List.all (laboratoryResultTaskCompleted currentDate assembled)
+            (not <| expectActivity currentDate isLabTech assembled LabResults)
+                || (resolveLaboratoryResultTasks currentDate isLabTech assembled
+                        |> List.all (laboratoryResultTaskCompleted currentDate isLabTech assembled)
                    )
 
         RecurrentNextSteps ->
-            (not <| expectActivity currentDate assembled RecurrentNextSteps)
+            (not <| expectActivity currentDate isLabTech assembled RecurrentNextSteps)
                 || (resolveNextStepsTasks currentDate assembled
                         |> List.all (nextStepsTaskCompleted currentDate assembled)
                    )
 
         RecurrentExamination ->
-            (not <| expectActivity currentDate assembled RecurrentExamination)
+            (not <| expectActivity currentDate isLabTech assembled RecurrentExamination)
                 || (resolveExaminationTasks currentDate assembled
                         |> List.all (examinationMeasurementTaken assembled)
                    )
 
         RecurrentMalariaPrevention ->
-            (not <| expectActivity currentDate assembled RecurrentMalariaPrevention)
+            (not <| expectActivity currentDate isLabTech assembled RecurrentMalariaPrevention)
                 || isJust assembled.measurements.malariaPrevention
+
+        LabsResultsFollowUps ->
+            (not <| expectActivity currentDate isLabTech assembled LabsResultsFollowUps)
+                || (resolveLaboratoryResultFollowUpsTasks currentDate assembled
+                        |> List.all (laboratoryResultFollowUpsTaskCompleted currentDate assembled)
+                   )
 
 
 laboratoryResultTasks : List LaboratoryTask
 laboratoryResultTasks =
-    [ TaskSyphilisTest
+    [ TaskPartnerHIVTest
+    , TaskHIVTest
+    , TaskHIVPCRTest
+    , TaskSyphilisTest
     , TaskHepatitisBTest
+    , TaskMalariaTest
     , TaskBloodGpRsTest
     , TaskUrineDipstickTest
     , TaskHemoglobinTest
     , TaskRandomBloodSugarTest
-    , TaskHIVPCRTest
     ]
 
 
-resolveLaboratoryResultTask : NominalDate -> AssembledData -> List LaboratoryTask
-resolveLaboratoryResultTask currentDate assembled =
-    List.filter (expectLaboratoryResultTask currentDate assembled) laboratoryResultTasks
+resolveLaboratoryResultTasks : NominalDate -> Bool -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultTasks currentDate isLabTech assembled =
+    List.filter (expectLaboratoryResultTask currentDate isLabTech assembled) laboratoryResultTasks
 
 
-laboratoryResultTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
-laboratoryResultTaskCompleted currentDate assembled task =
+laboratoryResultTaskCompleted : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
+laboratoryResultTaskCompleted currentDate isLabTech assembled task =
     let
         taskExpected =
-            expectLaboratoryResultTask currentDate assembled
+            expectLaboratoryResultTask currentDate isLabTech assembled
 
         testResultsCompleted getMeasurementFunc getResultFieldFunc =
             getMeasurementFunc assembled.measurements
                 |> getMeasurementValueFunc
-                |> Maybe.andThen getResultFieldFunc
-                |> isJust
+                |> Maybe.map
+                    (\value ->
+                        testNotPerformedByWhyNotAtExecutionNote value.executionNote
+                            || (testPerformedByExecutionNote value.executionNote
+                                    && (isJust <| getResultFieldFunc value)
+                               )
+                    )
+                |> Maybe.withDefault False
     in
     case task of
+        TaskPartnerHIVTest ->
+            (not <| taskExpected TaskPartnerHIVTest) || testResultsCompleted .partnerHIVTest .testResult
+
         TaskHIVTest ->
-            not <| taskExpected TaskHIVTest
+            (not <| taskExpected TaskHIVTest) || testResultsCompleted .hivTest .testResult
 
         TaskSyphilisTest ->
             (not <| taskExpected TaskSyphilisTest) || testResultsCompleted .syphilisTest .testResult
@@ -117,7 +148,17 @@ laboratoryResultTaskCompleted currentDate assembled task =
             (not <| taskExpected TaskHepatitisBTest) || testResultsCompleted .hepatitisBTest .testResult
 
         TaskMalariaTest ->
-            not <| taskExpected TaskMalariaTest
+            let
+                resultSet =
+                    getMeasurementValueFunc assembled.measurements.malariaTest
+                        |> Maybe.map
+                            (\value ->
+                                (testPerformedByExecutionNote value.executionNote && isJust value.testResult)
+                                    || bloodSmearResultSet value.bloodSmearResult
+                            )
+                        |> Maybe.withDefault False
+            in
+            (not <| taskExpected TaskMalariaTest) || resultSet
 
         TaskBloodGpRsTest ->
             (not <| taskExpected TaskBloodGpRsTest) || testResultsCompleted .bloodGpRsTest .bloodGroup
@@ -134,9 +175,6 @@ laboratoryResultTaskCompleted currentDate assembled task =
         TaskHIVPCRTest ->
             (not <| taskExpected TaskHIVPCRTest) || testResultsCompleted .hivPCRTest .hivViralLoadStatus
 
-        TaskPartnerHIVTest ->
-            not <| taskExpected TaskPartnerHIVTest
-
         TaskCompletePreviousTests ->
             not <| taskExpected TaskCompletePreviousTests
 
@@ -145,26 +183,40 @@ laboratoryResultTaskCompleted currentDate assembled task =
             False
 
 
-expectLaboratoryResultTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
-expectLaboratoryResultTask currentDate assembled task =
+expectLaboratoryResultTask : NominalDate -> Bool -> AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryResultTask currentDate isLabTech assembled task =
     let
         wasTestPerformed getMeasurementFunc =
             getMeasurementFunc assembled.measurements
                 |> getMeasurementValueFunc
-                |> testPerformedByValue
+                |> Maybe.map expectUniversalTestResultTask
+                |> Maybe.withDefault False
+
+        -- For nurses, we don't want to show laboratory task if its results were
+        -- set by Lab tech, and it got follow up questions (filled by nurse),
+        -- as that task will be shown at Lab Results Follow Ups activity.
+        followUpWasNotScheduled test =
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.andThen .testsWithFollowUp
+                |> Maybe.map (EverySet.member test >> not)
+                |> Maybe.withDefault True
     in
     case task of
         TaskHIVTest ->
-            False
+            wasTestPerformed .hivTest
+                && (isLabTech || followUpWasNotScheduled TestHIV)
+
+        TaskPartnerHIVTest ->
+            wasTestPerformed .partnerHIVTest
 
         TaskSyphilisTest ->
-            wasTestPerformed .syphilisTest
+            wasTestPerformed .syphilisTest && (isLabTech || followUpWasNotScheduled TestSyphilis)
 
         TaskHepatitisBTest ->
             wasTestPerformed .hepatitisBTest
 
         TaskMalariaTest ->
-            False
+            wasTestPerformed .malariaTest
 
         TaskBloodGpRsTest ->
             wasTestPerformed .bloodGpRsTest
@@ -176,18 +228,77 @@ expectLaboratoryResultTask currentDate assembled task =
             wasTestPerformed .hemoglobinTest
 
         TaskRandomBloodSugarTest ->
-            getMeasurementValueFunc assembled.measurements.randomBloodSugarTest
-                |> Maybe.map expectRandomBloodSugarResultTask
-                |> Maybe.withDefault False
+            wasTestPerformed .randomBloodSugarTest
 
         TaskHIVPCRTest ->
             wasTestPerformed .hivPCRTest
 
-        TaskPartnerHIVTest ->
-            False
-
         TaskCompletePreviousTests ->
             False
+
+        -- Others are not in use for Prenatal.
+        _ ->
+            False
+
+
+laboratoryResultFollowUpsTasks : List LaboratoryTask
+laboratoryResultFollowUpsTasks =
+    [ TaskHIVTest
+    , TaskSyphilisTest
+    ]
+
+
+resolveLaboratoryResultFollowUpsTasks : NominalDate -> AssembledData -> List LaboratoryTask
+resolveLaboratoryResultFollowUpsTasks currentDate assembled =
+    List.filter (expectLaboratoryResultFollowUpsTask currentDate assembled) laboratoryResultFollowUpsTasks
+
+
+laboratoryResultFollowUpsTaskCompleted : NominalDate -> AssembledData -> LaboratoryTask -> Bool
+laboratoryResultFollowUpsTaskCompleted currentDate assembled task =
+    let
+        taskExpected =
+            expectLaboratoryResultFollowUpsTask currentDate assembled
+
+        testFollowUpCompleted getMeasurementFunc getResultFieldFunc pendingValue =
+            getMeasurementFunc assembled.measurements
+                |> getMeasurementValueFunc
+                |> Maybe.andThen getResultFieldFunc
+                |> Maybe.map (EverySet.member pendingValue >> not)
+                |> Maybe.withDefault False
+    in
+    case task of
+        TaskHIVTest ->
+            (not <| taskExpected TaskHIVTest) || testFollowUpCompleted .hivTest .hivSigns PrenatalHIVSignPendingInput
+
+        TaskSyphilisTest ->
+            (not <| taskExpected TaskSyphilisTest) || testFollowUpCompleted .syphilisTest .symptoms IllnessSymptomPendingInput
+
+        -- Others are not in use for Prenatal.
+        _ ->
+            False
+
+
+expectLaboratoryResultFollowUpsTask : NominalDate -> AssembledData -> LaboratoryTask -> Bool
+expectLaboratoryResultFollowUpsTask currentDate assembled task =
+    let
+        wasFollowUpScheduled test =
+            getMeasurementValueFunc assembled.measurements.labsResults
+                |> Maybe.andThen .testsWithFollowUp
+                |> Maybe.map (EverySet.member test)
+                |> Maybe.withDefault False
+    in
+    case task of
+        TaskHIVTest ->
+            wasFollowUpScheduled TestHIV
+
+        TaskSyphilisTest ->
+            wasFollowUpScheduled TestSyphilis
+                && -- Lab tech entered result showing positive Syphilis,
+                   -- which requires Syphilis symptoms question.
+                   (getMeasurementValueFunc assembled.measurements.syphilisTest
+                        |> Maybe.map (.testResult >> (==) (Just TestPositive))
+                        |> Maybe.withDefault False
+                   )
 
         -- Others are not in use for Prenatal.
         _ ->
@@ -216,12 +327,19 @@ expectNextStepsTask currentDate assembled task =
                         |> List.isEmpty
                         |> not
                     )
-                        || diagnosedSyphilis assembled
+                        || (diagnosedMalariaByPhase PrenatalEncounterPhaseRecurrent assembled
+                                && (not <| referToHospitalDueToAdverseEventForMalariaTreatment assembled)
+                           )
+                        || diagnosedSyphilisByPhase PrenatalEncounterPhaseRecurrent assembled
                         || diagnosedHypertension PrenatalEncounterPhaseRecurrent assembled
                    )
 
         NextStepsHealthEducation ->
-            diagnosedAnyOf (DiagnosisHIVDetectableViralLoad :: diabetesDiagnoses) assembled
+            -- Emergency referral is not required.
+            (not <| emergencyReferalRequired assembled)
+                && (provideHIVEducation PrenatalEncounterPhaseRecurrent assembled.measurements
+                        || diagnosedAnyOf (DiagnosisHIVDetectableViralLoadRecurrentPhase :: diabetesDiagnosesRecurrentPhase) assembled
+                   )
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -233,12 +351,13 @@ nextStepsTaskCompleted currentDate assembled task =
 
         NextStepsMedicationDistribution ->
             let
-                medicationDistributionRequired =
-                    resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
-                        |> List.isEmpty
-                        |> not
-
                 medicationDistributionCompleted =
+                    let
+                        medicationDistributionRequired =
+                            resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseRecurrent assembled
+                                |> List.isEmpty
+                                |> not
+                    in
                     if medicationDistributionRequired then
                         let
                             allowedSigns =
@@ -249,8 +368,15 @@ nextStepsTaskCompleted currentDate assembled task =
                     else
                         True
 
+                malariaTreatmentCompleted =
+                    if diagnosedMalariaByPhase PrenatalEncounterPhaseRecurrent assembled then
+                        recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForMalaria assembled.measurements
+
+                    else
+                        True
+
                 syphilisTreatmentCompleted =
-                    if diagnosedSyphilis assembled then
+                    if diagnosedSyphilisByPhase PrenatalEncounterPhaseRecurrent assembled then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForSyphilis assembled.measurements
 
                     else
@@ -264,6 +390,7 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
             in
             medicationDistributionCompleted
+                && malariaTreatmentCompleted
                 && syphilisTreatmentCompleted
                 && hypertensionTreatmentCompleted
 
@@ -401,60 +528,11 @@ examinationTasksCompletedFromTotal assembled data task =
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled form =
-    let
-        detectableViralLoad =
-            if diagnosed DiagnosisHIVDetectableViralLoad assembled then
-                ( [ viewCustomLabel language Translate.DetectableViralLoad "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationHivDetectableViralLoadInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.hivDetectableViralLoad
-                        (SetHealthEducationBoolInput (\value form_ -> { form_ | hivDetectableViralLoad = Just value }))
-                        "hiv-detectable-viral-load"
-                        Nothing
-                  ]
-                , Just form.hivDetectableViralLoad
-                )
-
-            else
-                ( [], Nothing )
-
-        diabetes =
-            if diagnosedAnyOf diabetesDiagnoses assembled then
-                let
-                    header =
-                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetes assembled then
-                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetes
-
-                        else
-                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetes
-                in
-                ( [ viewCustomLabel language header "" "label header"
-                  , viewCustomLabel language Translate.PrenatalHealthEducationDiabetesInform "." "label paragraph"
-                  , viewQuestionLabel language Translate.PrenatalHealthEducationAppropriateProvided
-                  , viewBoolInput
-                        language
-                        form.diabetes
-                        (SetHealthEducationBoolInput (\value form_ -> { form_ | diabetes = Just value }))
-                        "diabetes"
-                        Nothing
-                  ]
-                , Just form.diabetes
-                )
-
-            else
-                ( [], Nothing )
-
-        inputsAndTasks =
-            [ detectableViralLoad
-            , diabetes
-            ]
-    in
-    ( List.concatMap Tuple.first inputsAndTasks
-    , List.map Tuple.second inputsAndTasks
-        |> Maybe.Extra.values
-    )
+    healthEducationFormInputsAndTasksForNurse language
+        PrenatalEncounterPhaseRecurrent
+        SetHealthEducationBoolInput
+        assembled
+        form
 
 
 toHealthEducationValueWithDefault : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
@@ -474,19 +552,19 @@ healthEducationFormWithDefault form saved =
             (\value ->
                 { hivDetectableViralLoad = or form.hivDetectableViralLoad (Maybe.map (EverySet.member EducationHIVDetectableViralLoad) value.signsPhase2)
                 , diabetes = or form.diabetes (Maybe.map (EverySet.member EducationDiabetes) value.signsPhase2)
+                , positiveHIV = or form.positiveHIV (Maybe.map (EverySet.member EducationPositiveHIV) value.signsPhase2)
+                , saferSexHIV = or form.saferSexHIV (Maybe.map (EverySet.member EducationSaferSexHIV) value.signsPhase2)
+                , partnerTesting = or form.partnerTesting (Maybe.map (EverySet.member EducationPartnerTesting) value.signsPhase2)
+                , familyPlanning = or form.familyPlanning (Maybe.map (EverySet.member EducationFamilyPlanning) value.signsPhase2)
 
                 -- Signs that do not participate at recurrent phase. Resolved directly from value.
                 , expectations = EverySet.member EducationExpectations value.signs |> Just
                 , visitsReview = EverySet.member EducationVisitsReview value.signs |> Just
                 , warningSigns = EverySet.member EducationWarningSigns value.signs |> Just
                 , hemorrhaging = EverySet.member EducationHemorrhaging value.signs |> Just
-                , familyPlanning = EverySet.member EducationFamilyPlanning value.signs |> Just
                 , breastfeeding = EverySet.member EducationBreastfeeding value.signs |> Just
                 , immunization = EverySet.member EducationImmunization value.signs |> Just
                 , hygiene = EverySet.member EducationHygiene value.signs |> Just
-                , positiveHIV = EverySet.member EducationPositiveHIV value.signs |> Just
-                , saferSexHIV = EverySet.member EducationSaferSexHIV value.signs |> Just
-                , partnerTesting = EverySet.member EducationPartnerTesting value.signs |> Just
                 , nauseaVomiting = EverySet.member EducationNauseaVomiting value.signs |> Just
                 , legCramps = EverySet.member EducationLegCramps value.signs |> Just
                 , lowBackPain = EverySet.member EducationLowBackPain value.signs |> Just
@@ -505,7 +583,11 @@ healthEducationFormWithDefault form saved =
 
 toHealthEducationValue : Maybe PrenatalHealthEducationValue -> HealthEducationForm -> Maybe PrenatalHealthEducationValue
 toHealthEducationValue saved form =
-    [ ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
+    [ ifNullableTrue EducationPositiveHIV form.positiveHIV
+    , ifNullableTrue EducationSaferSexHIV form.saferSexHIV
+    , ifNullableTrue EducationPartnerTesting form.partnerTesting
+    , ifNullableTrue EducationFamilyPlanning form.familyPlanning
+    , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
     , ifNullableTrue EducationDiabetes form.diabetes
     ]
         |> Maybe.Extra.combine
@@ -559,9 +641,12 @@ matchRequiredReferralFacility assembled facility =
             False
 
         FacilityARVProgram ->
-            False
+            referToARVProgram assembled
 
         FacilityNCDProgram ->
+            -- NCD proram referral is based on diagnoses made at
+            -- previous encounters, and therefore, can appear
+            -- only on initial phase.
             False
 
         -- Explicit NCD facility.
@@ -577,6 +662,14 @@ matchRequiredReferralFacility assembled facility =
             False
 
 
+referToARVProgram : AssembledData -> Bool
+referToARVProgram assembled =
+    (diagnosed DiagnosisHIVRecurrentPhase assembled && hivProgramAtHC assembled.measurements)
+        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+
+
 referralFacilities : List ReferralFacility
 referralFacilities =
-    [ FacilityHospital ]
+    [ FacilityHospital
+    , FacilityARVProgram
+    ]

@@ -1,5 +1,7 @@
 module Pages.Prenatal.RecurrentEncounter.Model exposing (..)
 
+import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (LabsResultsValue)
 import Pages.Page exposing (Page)
 
 
@@ -20,6 +22,7 @@ type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
     | SetSelectedTab Tab
+    | ConcludeEncounter PersonId PrenatalEncounterId PrenatalLabsResultsId LabsResultsValue
 
 
 type Tab
