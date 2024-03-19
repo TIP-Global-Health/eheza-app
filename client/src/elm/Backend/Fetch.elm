@@ -346,6 +346,11 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchEducationSession id ->
+            Dict.get id model.educationSessions
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchStockManagementMeasurements id ->
             Dict.get id model.stockManagementMeasurements
                 |> Maybe.withDefault NotAsked
