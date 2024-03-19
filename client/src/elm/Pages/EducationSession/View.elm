@@ -145,13 +145,13 @@ viewParticipantsContent :
     -> Model
     -> EverySet PersonId
     -> Html Msg
-viewParticipantsContent language currentDate villageId session db model participants =
+viewParticipantsContent language currentDate villageId session db model selectedParticipants =
     div [ class "search-wrapper" ]
         [ div [ class "ui full segment" ]
             [ viewSearchForm language
                 currentDate
                 villageId
-                participants
+                selectedParticipants
                 db
                 model
             ]
@@ -183,7 +183,7 @@ viewParticipantsContent language currentDate villageId session db model particip
 
 
 viewSearchForm : Language -> NominalDate -> VillageId -> EverySet PersonId -> ModelIndexedDb -> Model -> Html Msg
-viewSearchForm language currentDate villageId participants db model =
+viewSearchForm language currentDate villageId selectedParticipants db model =
     let
         searchForm =
             Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput
@@ -193,7 +193,16 @@ viewSearchForm language currentDate villageId participants db model =
 
         results =
             if String.isEmpty searchValue then
-                Nothing
+                EverySet.toList selectedParticipants
+                    |> List.filterMap
+                        (\participantId ->
+                            Dict.get participantId db.people
+                                |> Maybe.andThen RemoteData.toMaybe
+                                |> Maybe.map (\participant -> ( participantId, participant ))
+                        )
+                    |> Dict.fromList
+                    |> Success
+                    |> Just
 
             else
                 Dict.get searchValue db.personSearches
@@ -210,20 +219,24 @@ viewSearchForm language currentDate villageId participants db model =
                     |> Just
 
         summary =
-            let
-                viewSummary data =
-                    Dict.size data
-                        |> Translate.ReportResultsOfParticipantsSearch
-                        |> translate language
-                        |> text
-            in
-            Maybe.map (viewWebData language viewSummary identity) results
-                |> Maybe.withDefault emptyNode
+            if not <| String.isEmpty searchValue then
+                let
+                    viewSummary data =
+                        Dict.size data
+                            |> Translate.ReportResultsOfParticipantsSearch
+                            |> translate language
+                            |> text
+                in
+                Maybe.map (viewWebData language viewSummary identity) results
+                    |> Maybe.withDefault emptyNode
+
+            else
+                emptyNode
 
         searchResultsParticipants =
             Maybe.withDefault (Success Dict.empty) results
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant participants)
+                |> Dict.map (viewParticipant selectedParticipants)
                 |> Dict.values
 
         searchHelper =

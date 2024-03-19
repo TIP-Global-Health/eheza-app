@@ -87,15 +87,19 @@ update msg model =
 
         ToggleAttendance currentParticipants participant ->
             let
-                participantsUpdated =
+                ( participantsUpdated, fetchMsg ) =
                     if EverySet.member participant currentParticipants then
-                        EverySet.remove participant currentParticipants
+                        ( EverySet.remove participant currentParticipants, [] )
 
                     else
-                        EverySet.insert participant currentParticipants
+                        ( EverySet.insert participant currentParticipants
+                        , [ Backend.Model.FetchPerson participant
+                                |> App.Model.MsgIndexedDb
+                          ]
+                        )
             in
             ( model
             , Cmd.none
-            , []
+            , fetchMsg
             )
                 |> sequenceExtra update [ SetViewMode <| ModeAttendance participantsUpdated ]
