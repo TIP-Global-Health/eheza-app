@@ -439,6 +439,7 @@ type TranslationId
     | BloodSmearLabel
     | BloodSmearResult BloodSmearResult
     | BloodSmearTestResult
+    | BloodInSputumQuestion
     | BMI
     | BMIHelper
     | BodyTemperature
@@ -1020,6 +1021,7 @@ type TranslationId
     | NextPediatricVisit Bool
     | NextSteps
     | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
+    | NightSweatsQuestion
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -1535,6 +1537,7 @@ type TranslationId
     | SelectedHCSyncing
     | Send
     | SendToHC
+    | SevereFatigueQuestion
     | ReportToWhatsApp
     | ReportToWhatsAppComponentsSelectionHeader Components.ReportToWhatsAppDialog.Model.ReportType
     | ReportToWhatsAppConfirmationBeforeExecutingHeader
@@ -1754,6 +1757,7 @@ type TranslationId
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
+    | WeightLossQuestion
     | WelcomeUser String
     | Wellbeing
     | WellChildActivityTitle WellChildActivity
@@ -3452,6 +3456,12 @@ translationSet trans =
             { english = "Malaria Blood Test Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        BloodInSputumQuestion ->
+            { english = "Do you have blood in sputum"
+            , kinyarwanda = Just "Waba ugira ikororwa kirimo amaraso"
+            , kirundi = Just "Mbega urafise amaraso mu bikororwa"
             }
 
         BMI ->
@@ -5273,7 +5283,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "Do you want to start a Tuberculosis Management encounter for"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urashaka gutangira isura ryo gukurikirana umurwayi w'igituntu witwa"
                     , kirundi = Nothing
                     }
 
@@ -6901,7 +6911,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "First Tuberculosis Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura rya mbere ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -6957,7 +6967,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "Tuberculosis Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -7020,7 +7030,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "Select Tuberculosis Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hitamo isura ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -7083,7 +7093,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "Subsequent Tuberculosis Visit"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura rilkurikira ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -7124,7 +7134,7 @@ translationSet trans =
 
                 TuberculosisEncounter ->
                     { english = "TB Management"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwita ku murwayi w'igituntu"
                     , kirundi = Nothing
                     }
 
@@ -11570,6 +11580,12 @@ translationSet trans =
                     -- We qualify it as Medication distribution, to keep
                     -- consistant with other types of Covid steps.
                     translationSet MedicationDistribution
+
+        NightSweatsQuestion ->
+            { english = "Do you have night sweats"
+            , kinyarwanda = Just "Waba ubira ibyuya nijoro"
+            , kirundi = Just "Mbega urabira ivyuya mw'ijoro"
+            }
 
         No ->
             { english = "No"
@@ -16090,28 +16106,16 @@ translationSet trans =
                     }
 
                 SymptomQuestionNightSweats ->
-                    { english = "Do you have night sweats"
-                    , kinyarwanda = Just "Waba ubira ibyuya nijoro"
-                    , kirundi = Just "Mbega urabira ivyuya mw'ijoro"
-                    }
+                    translationSet NightSweatsQuestion
 
                 SymptomQuestionBloodInSputum ->
-                    { english = "Do you have blood in sputum"
-                    , kinyarwanda = Just "Waba ugira ikororwa kirimo amaraso"
-                    , kirundi = Just "Mbega urafise amaraso mu bikororwa"
-                    }
+                    translationSet BloodInSputumQuestion
 
                 SymptomQuestionWeightLoss ->
-                    { english = "Do you have weight loss"
-                    , kinyarwanda = Just "Waba waratakaje ibiro"
-                    , kirundi = Just "Mbega urata ibiro"
-                    }
+                    translationSet WeightLossQuestion
 
                 SymptomQuestionSevereFatigue ->
-                    { english = "Do you have severe fatigue"
-                    , kinyarwanda = Just "Waba ugira umunaniro ukabije"
-                    , kirundi = Just "Mbega urafise uburuhe burengeje"
-                    }
+                    translationSet SevereFatigueQuestion
 
                 SymptomQuestionVaginalItching ->
                     { english = "Do you experience vaginal itching"
@@ -19538,6 +19542,12 @@ translationSet trans =
             , kirundi = Just "Rungika kw'ivuriro"
             }
 
+        SevereFatigueQuestion ->
+            { english = "Do you have severe fatigue"
+            , kinyarwanda = Just "Waba ugira umunaniro ukabije"
+            , kirundi = Just "Mbega urafise uburuhe burengeje"
+            }
+
         ReportToWhatsApp ->
             { english = "Send via WhatsApp"
             , kinyarwanda = Nothing
@@ -20914,7 +20924,7 @@ translationSet trans =
             case activity of
                 Backend.TuberculosisActivity.Model.Diagnostics ->
                     { english = "Diagnostics"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusuzuma uburwayi"
                     , kirundi = Nothing
                     }
 
@@ -20929,7 +20939,7 @@ translationSet trans =
 
         TuberculosisDiagnosedQuestion ->
             { english = "Was this person diagnosed with Tuberculosis"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu murwayi yaba yaragaragaweho uburwayi bw'igituntu"
             , kirundi = Nothing
             }
 
@@ -20937,13 +20947,13 @@ translationSet trans =
             case sign of
                 TuberculosisPulmonary ->
                     { english = "Pulmonary (in the lungs)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igituntu cyo mu bihaha"
                     , kirundi = Nothing
                     }
 
                 TuberculosisExtrapulmonary ->
                     { english = "Extrapulmonary (outside the lungs)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igituntu gifata imyanya yo hanze y'ibihaha"
                     , kirundi = Nothing
                     }
 
@@ -20953,13 +20963,13 @@ translationSet trans =
 
         TuberculosisDistributeMedicationsQuestion ->
             { english = "Did you distribute the following medications"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba watanze iyi miti ikurikira"
             , kirundi = Nothing
             }
 
         TuberculosisFollowUpLabel ->
             { english = "Tuberculosis Follow up"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukurikirana umurwayi w'igituntu"
             , kirundi = Nothing
             }
 
@@ -20967,7 +20977,7 @@ translationSet trans =
             case stage of
                 FollowUpTestingMonth1 ->
                     { english = "Reassess treatment according to results, continue first-line treatment if drug susceptible."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Genzura imiti ugendeye ku bisubizo byabonetse, ukomeze imiti y'ikiciro cya mbere niba ari koroherwa."
                     , kirundi = Nothing
                     }
 
@@ -20976,19 +20986,19 @@ translationSet trans =
 
                 FollowUpTestingEndMonth2 ->
                     { english = "If positive, Culture and DST - Continuation phase."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Niba akigaragaza igituntu, kilitire na DST ari negatifu, umurwayi akomeza imiti yo mu cyiciro gikurikiyeho(RH mu mezi ane)."
                     , kirundi = Nothing
                     }
 
                 FollowUpTestingEndMonth5 ->
                     { english = "If positive, Culture and DST, and retest after 15 days."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Niba akigaragaza igituntu, ikizamini cya Kilitire na DSt cyogera gukorwa mu minsi 15."
                     , kirundi = Nothing
                     }
 
                 FollowUpTestingEndMonth6 ->
                     { english = "If positive, Culture and DST, and retest after 15 days, if negative - cured."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Niba yarakigargaza igituntu ariko ikizamini cy akilitire na DST bikaba negatifu nyuma y'iminsi 15, uwo murwayi aba yarakize."
                     , kirundi = Nothing
                     }
 
@@ -20996,31 +21006,31 @@ translationSet trans =
             case stage of
                 FollowUpTestingMonth1 ->
                     { english = "Month 1"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ukwezi kwa 1"
                     , kirundi = Nothing
                     }
 
                 FollowUpTestingMonth2 ->
                     { english = "Month 2"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ukwezi kwa 2"
                     , kirundi = Nothing
                     }
 
                 FollowUpTestingEndMonth2 ->
                     { english = "End Month 2"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Arangije ukwezi kwa 2"
                     , kirundi = Nothing
                     }
 
                 FollowUpTestingEndMonth5 ->
                     { english = "End Month 5"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Arangije ukwezi kwa 5"
                     , kirundi = Nothing
                     }
 
                 FollowUpTestingEndMonth6 ->
                     { english = "End Month 6"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Arangije ukwezi kwa 6"
                     , kirundi = Nothing
                     }
 
@@ -21028,7 +21038,7 @@ translationSet trans =
             case stage of
                 FollowUpTestingMonth1 ->
                     { english = "xPert, Culture, and DST"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikizamini cya Jenexpati, Kilitire na DST"
                     , kirundi = Nothing
                     }
 
@@ -21037,13 +21047,13 @@ translationSet trans =
 
                 FollowUpTestingEndMonth2 ->
                     { english = "Smear microposy at the end of the intensive phase"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gupima igituntu hakoreshejwe mikorosikopi umurwayi arangije imiti y'ikiciro cya mbere"
                     , kirundi = Nothing
                     }
 
                 FollowUpTestingEndMonth5 ->
                     { english = "Smear microposy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gupima hakoreshejwe mikorosikopi"
                     , kirundi = Nothing
                     }
 
@@ -21054,7 +21064,7 @@ translationSet trans =
             case sign of
                 EducationFollowUpTesting ->
                     { english = "Have you provided the guidance for follow up testing"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba watanze ubujyanama ku bijyanye no gukoresha ibizaminii"
                     , kirundi = Nothing
                     }
 
@@ -21075,7 +21085,7 @@ translationSet trans =
 
         TuberculosisLocationQuestion ->
             { english = "Where is the Tuberculosis located"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni uwuhe mwanaya w'umubiri wagaragawemo igituntu"
             , kirundi = Nothing
             }
 
@@ -21083,13 +21093,13 @@ translationSet trans =
             case task of
                 Pages.Tuberculosis.Activity.Model.TaskPrescribedMedication ->
                     { english = "Prescribed Medication"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imiti yatanzwe"
                     , kirundi = Nothing
                     }
 
                 Pages.Tuberculosis.Activity.Model.TaskDOT ->
                     { english = "DOT"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umuti unywerwa imbere y'ugukurikirana"
                     , kirundi = Nothing
                     }
 
@@ -21117,19 +21127,19 @@ translationSet trans =
             case medication of
                 MedicationRHZE ->
                     { english = "RHZE x 2 months (Initiation phase)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Atangira afata imiti ya RHZE mu gihe cy'amezi abiri"
                     , kirundi = Nothing
                     }
 
                 MedicationRH ->
                     { english = "RH x 4 months (Continuation phase)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Akomeza afata imiti ya RH mu gihe cy'amezi 4"
                     , kirundi = Nothing
                     }
 
                 MedicationOther ->
                     { english = "Other - include HIV dosing, Pediatric dosing, etc"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indi miti - harimo Iya Virusi iteera SIDA, imiti y'abana,..."
                     , kirundi = Nothing
                     }
 
@@ -21138,7 +21148,7 @@ translationSet trans =
 
         TuberculosisPrescribedMedicationsQuestion ->
             { english = "What are the medications that were prescribed"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
             , kirundi = Nothing
             }
 
@@ -21150,7 +21160,7 @@ translationSet trans =
 
         TuberculosisProvideDOTTodayQuestion ->
             { english = "Will you provide DOT/TDO today"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urakurikirana uko umurwayi afata imiti uyu munsi"
             , kirundi = Nothing
             }
 
@@ -21162,19 +21172,19 @@ translationSet trans =
 
                 DOTNegativeTakenToday ->
                     { english = "Meds already taken today"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Imiti y'uyu munsi yafashwe"
                     , kirundi = Nothing
                     }
 
                 DOTNegativeUnavailable ->
                     { english = "Meds unavailable"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nta miti ihari"
                     , kirundi = Nothing
                     }
 
                 DOTNegativeSideEffects ->
                     { english = "Advised to hold b/c of side effects"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Yagiriwe inama yo kuba aretse gufata imiti kuko iri kumutera ingaruka"
                     , kirundi = Nothing
                     }
 
@@ -21196,28 +21206,16 @@ translationSet trans =
         TuberculosisSymptomQuestion symptom ->
             case symptom of
                 SymptomNightSweats ->
-                    { english = "Do you have night sweats"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet NightSweatsQuestion
 
                 SymptomBloodInSputum ->
-                    { english = "Do you have blood in sputum"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet BloodInSputumQuestion
 
                 SymptomWeightLoss ->
-                    { english = "Do you have weight loss"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet WeightLossQuestion
 
                 SymptomSevereFatigue ->
-                    { english = "Do you have severe fatigue"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet SevereFatigueQuestion
 
                 NoTuberculosisSymptoms ->
                     translationSet EmptyString
@@ -21652,6 +21650,12 @@ translationSet trans =
             { english = "Weight"
             , kinyarwanda = Just "Ibiro"
             , kirundi = Just "Uburemere"
+            }
+
+        WeightLossQuestion ->
+            { english = "Do you have weight loss"
+            , kinyarwanda = Just "Waba waratakaje ibiro"
+            , kirundi = Just "Mbega urata ibiro"
             }
 
         WelcomeUser name ->
@@ -22661,7 +22665,7 @@ translateActivePage page =
 
                         TuberculosisEncounter ->
                             { english = "Tuberculosis Participants"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Abitabiriye muri service y'indwara y'igituntu"
                             , kirundi = Nothing
                             }
 
@@ -22945,19 +22949,19 @@ translateActivePage page =
 
                 TuberculosisParticipantPage _ ->
                     { english = "Tuberculosis Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
                 TuberculosisEncounterPage _ ->
                     { english = "Tuberculosis Encounter"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
                 TuberculosisActivityPage _ _ ->
                     { english = "Tuberculosis Activity"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Igikorwa ku ndwara y'igituntu"
                     , kirundi = Nothing
                     }
 
