@@ -2782,10 +2782,7 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.Muac ->
-                    { english = "MUAC"
-                    , kinyarwanda = Just "Ikizigira cy'akaboko"
-                    , kirundi = Just "(CMB) Uburyo bwo gupima vuba na vuba ingwara yo gufungura nabi"
-                    }
+                    translationSet MUAC
 
                 ChildActivity Activity.Model.NutritionSigns ->
                     translationSet Nutrition
@@ -10883,10 +10880,7 @@ translationSet trans =
                     }
 
                 MuacValue ->
-                    { english = "MUAC"
-                    , kinyarwanda = Just "Ikizigira"
-                    , kirundi = Just "(CMB) Uburyo bwo gupima vuba na vuba ingwara yo gufungura nabi"
-                    }
+                    translationSet MUAC
 
                 EdemaPresent ->
                     { english = "Edema"
@@ -12061,10 +12055,7 @@ translationSet trans =
         NutritionActivityTitle activity ->
             case activity of
                 Backend.NutritionActivity.Model.Muac ->
-                    { english = "MUAC"
-                    , kinyarwanda = Just "Ikizigira cy'akaboko"
-                    , kirundi = Just "(CMB) Uburyo bwo gupima vuba na vuba ingwara yo gufungura nabi"
-                    }
+                    translationSet MUAC
 
                 Backend.NutritionActivity.Model.Height ->
                     { english = "Height"
@@ -12170,10 +12161,7 @@ translationSet trans =
                     }
 
                 TaskMuac ->
-                    { english = "MUAC"
-                    , kinyarwanda = Just "Ikizigira cy'akaboko"
-                    , kirundi = Nothing
-                    }
+                    translationSet MUAC
 
                 TaskNutrition ->
                     translationSet Nutrition
@@ -12927,10 +12915,7 @@ translationSet trans =
                     }
 
                 PhysicalExamMuac ->
-                    { english = "Muac"
-                    , kinyarwanda = Just "Ikizigira"
-                    , kirundi = Just "(CMB) Uburyo bwo gupima vuba na vuba ingwara yo gufungura nabi"
-                    }
+                    translationSet MUAC
 
                 PhysicalExamAcuteFindings ->
                     { english = "Acute Findings"
@@ -23176,10 +23161,7 @@ translateDashboard trans =
                     }
 
                 Dashboard.MUAC ->
-                    { english = "MUAC"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "(CMB) Uburyo bwo gupima vuba na vuba ingwara yo gufungura nabi:"
-                    }
+                    translationSet MUAC
 
                 MissedSession ->
                     { english = "Missed Sessions"
