@@ -34,7 +34,7 @@ function hedley_group_education_field_default_field_bases() {
         'malaria' => 'Malaria',
         'childhood-illnesses' => 'Childhood Illnesses',
         'anc-postpartum' => 'ANC & Postpartum',
-        'malnutrition' -> 'Malnutrition',
+        'malnutrition' => 'Malnutrition',
         'family-planning' => 'Family Planning',
         'gender' => 'Gender',
         'ncd' => 'NCD',
