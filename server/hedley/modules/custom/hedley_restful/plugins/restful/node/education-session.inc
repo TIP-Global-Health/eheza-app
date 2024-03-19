@@ -7,7 +7,7 @@
 
 $plugin = array(
   'label' => t('Education Session'),
-  'resource' => 'education_session',
+  'resource' => 'education-session',
   'name' => 'education-session',
   'entity_type' => 'node',
   'bundle' => 'education_session',
