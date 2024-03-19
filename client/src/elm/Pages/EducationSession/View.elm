@@ -5,6 +5,9 @@ import Backend.EducationSession.Model exposing (EducationSession, EducationTopic
 import Backend.Entities exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (isPersonAnAdult)
+import Backend.Village.Utils exposing (personLivesInVillage)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -16,21 +19,27 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewEncounterActionButton, viewQuestionLabel)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
+import Utils.Html exposing (thumbnailImage)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> EducationSessionId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> Maybe VillageId -> EducationSessionId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate mVillageId id db model =
     let
         session =
             Dict.get id db.educationSessions
                 |> Maybe.withDefault NotAsked
+
+        villageId =
+            Maybe.map Success mVillageId
+                |> Maybe.withDefault NotAsked
     in
-    viewWebData language (viewHeaderAndContent language currentDate id model) identity session
+    RemoteData.append villageId session
+        |> viewWebData language (viewHeaderAndContent language currentDate id db model) identity
 
 
-viewHeaderAndContent : Language -> NominalDate -> EducationSessionId -> Model -> EducationSession -> Html Msg
-viewHeaderAndContent language currentDate id model session =
+viewHeaderAndContent : Language -> NominalDate -> EducationSessionId -> ModelIndexedDb -> Model -> ( VillageId, EducationSession ) -> Html Msg
+viewHeaderAndContent language currentDate id db model ( villageId, session ) =
     let
         header =
             viewHeader language viewMode session
@@ -41,7 +50,7 @@ viewHeaderAndContent language currentDate id model session =
                     viewTopicsContent language currentDate id session topics
 
                 ModeAttendance participants ->
-                    viewParticipantsContent language currentDate session participants
+                    viewParticipantsContent language currentDate villageId session db model participants
 
         viewMode =
             Maybe.withDefault
@@ -126,6 +135,140 @@ viewTopicsContent language currentDate id session topics =
         ]
 
 
-viewParticipantsContent : Language -> NominalDate -> EducationSession -> EverySet PersonId -> Html Msg
-viewParticipantsContent language currentDate session participants =
-    emptyNode
+viewParticipantsContent :
+    Language
+    -> NominalDate
+    -> VillageId
+    -> EducationSession
+    -> ModelIndexedDb
+    -> Model
+    -> EverySet PersonId
+    -> Html Msg
+viewParticipantsContent language currentDate villageId session db model participants =
+    viewSearchForm language
+        currentDate
+        villageId
+        participants
+        db
+        model
+
+
+
+-- div [ class "ui full segment" ]
+--     [ div [ class "ui full blue segment" ]
+--         [ h3 [ class "ui header" ]
+--             [ text <| translate language Translate.CheckIn ]
+--         , p [] [ text <| translate language Translate.ClickTheCheckMark ]
+--         , viewNameFilter language model.filter SetFilter
+--         , viewToggleDisplay language model
+--         , div [ class "search-middle" ]
+--             [ div [ class "ui middle aligned divided list" ] mothers ]
+--         , div [ class "search-bottom" ]
+--             [ div
+--                 [ class "register-actions" ]
+--                 [ button
+--                     [ class "ui primary button fluid"
+--                     , onClick <| SetActivePage <| UserPage <| PersonsPage Nothing (GroupEncounterOrigin sessionId)
+--                     ]
+--                     [ text <| translate language Translate.AddNewParticipant ]
+--                 ]
+--             ]
+--         ]
+--     ]
+
+
+viewSearchForm : Language -> NominalDate -> VillageId -> EverySet PersonId -> ModelIndexedDb -> Model -> Html Msg
+viewSearchForm language currentDate villageId participants db model =
+    let
+        searchForm =
+            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput
+
+        searchValue =
+            Maybe.withDefault "" model.search
+
+        results =
+            if String.isEmpty searchValue then
+                Nothing
+
+            else
+                Dict.get searchValue db.personSearches
+                    |> Maybe.withDefault NotAsked
+                    |> RemoteData.map
+                        (Dict.filter
+                            (\_ filteredPerson ->
+                                personLivesInVillage filteredPerson db villageId
+                                    && (isPersonAnAdult currentDate filteredPerson
+                                            |> Maybe.withDefault False
+                                       )
+                            )
+                        )
+                    |> Just
+
+        summary =
+            Maybe.map (viewWebData language viewSummary identity) results
+                |> Maybe.withDefault emptyNode
+
+        viewSummary data =
+            Dict.size data
+                |> Translate.ReportResultsOfParticipantsSearch
+                |> translate language
+                |> text
+
+        searchResultsParticipants =
+            Maybe.withDefault (Success Dict.empty) results
+                |> RemoteData.withDefault Dict.empty
+                |> Dict.map (viewParticipant participants)
+                |> Dict.values
+
+        searchHelper =
+            Translate.SearchHelper
+    in
+    div [ class "registration-page search" ]
+        [ div
+            [ class "search-top" ]
+            [ p
+                [ class "search-helper" ]
+                [ text <| translate language searchHelper ]
+            , searchForm
+            ]
+        , div
+            [ class "search-middle" ]
+            [ div
+                [ class "results-summary" ]
+                [ summary ]
+            , div
+                [ class "ui unstackable items participants-list" ]
+                searchResultsParticipants
+            ]
+        ]
+
+
+viewParticipant : EverySet PersonId -> PersonId -> Person -> Html Msg
+viewParticipant selectedParticipants participantId participant =
+    let
+        checkIn =
+            if EverySet.member participantId selectedParticipants then
+                span
+                    [ class "link-checked-in"
+
+                    -- , onClick <| SetCheckedIn attendanceId participantId False
+                    ]
+                    [ span [ class "icon-checked-in" ] [] ]
+
+            else
+                span
+                    [ class "link-check-in"
+
+                    -- , onClick <| SetCheckedIn attendanceId participantId True
+                    ]
+                    [ span [ class "icon-check-in" ] [] ]
+    in
+    div
+        [ class "item" ]
+        [ thumbnailImage "participant ui avatar image" participant.avatarUrl participant.name 110 110
+        , div
+            [ class "content" ]
+            [ div [ class "header" ] [ text participant.name ]
+            ]
+        , checkIn
+        ]

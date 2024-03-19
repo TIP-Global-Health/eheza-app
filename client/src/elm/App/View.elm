@@ -980,7 +980,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.educationSessionPages
                                     |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
                         in
-                        Pages.EducationSession.View.view model.language currentDate id model.indexedDb page_
+                        Pages.EducationSession.View.view model.language currentDate model.villageId id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageEducationSession id)
                             |> flexPageWrapper configured.config model
 

@@ -21,6 +21,7 @@ import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
 import Pages.Device.Fetch
 import Pages.EducationSession.Fetch
+import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Fetch
 import Pages.GroupEncounterTypes.Fetch
 import Pages.HomeVisit.Activity.Fetch
@@ -365,8 +366,18 @@ fetch model =
                     |> List.map MsgIndexedDb
 
             UserPage (EducationSessionPage id) ->
-                Pages.EducationSession.Fetch.fetch id model.indexedDb
-                    |> List.map MsgIndexedDb
+                getLoggedInData model
+                    |> Maybe.map
+                        (\( _, loggedIn ) ->
+                            let
+                                page_ =
+                                    Dict.get id loggedIn.educationSessionPages
+                                        |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
+                            in
+                            Pages.EducationSession.Fetch.fetch id page_
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
 
             UserPage (NutritionProgressReportPage id) ->
                 Pages.Nutrition.ProgressReport.Fetch.fetch id model.indexedDb

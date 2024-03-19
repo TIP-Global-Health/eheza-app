@@ -3,8 +3,10 @@ module Pages.EducationSession.Update exposing (update)
 import App.Model
 import Backend.EducationSession.Model
 import Backend.Model
+import Debouncer.Basic as Debouncer exposing (provideInput)
 import EverySet exposing (EverySet)
 import Gizra.Update exposing (sequenceExtra)
+import Maybe.Extra
 import Pages.EducationSession.Model exposing (..)
 
 
@@ -47,3 +49,38 @@ update msg model =
               ]
             )
                 |> sequenceExtra update [ SetViewMode <| ModeAttendance session.participants ]
+
+        MsgDebouncer subMsg ->
+            let
+                ( subModel, subCmd, extraMsg ) =
+                    Debouncer.update subMsg model.debouncer
+            in
+            ( { model | debouncer = subModel }
+            , Cmd.map MsgDebouncer subCmd
+            , []
+            )
+                |> sequenceExtra update (Maybe.Extra.toList extraMsg)
+
+        SetSearch search ->
+            let
+                trimmed =
+                    String.trim search
+
+                maybeSearch =
+                    if String.isEmpty trimmed then
+                        Nothing
+
+                    else
+                        Just trimmed
+            in
+            ( { model | search = maybeSearch }
+            , Cmd.none
+            , []
+            )
+
+        SetInput input ->
+            ( { model | input = input }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra update [ MsgDebouncer <| provideInput <| SetSearch input ]
