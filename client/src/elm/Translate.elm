@@ -554,6 +554,7 @@ type TranslationId
     | DateOfContact
     | DatePregnancyConcluded
     | DashboardLabel
+    | Dashboards
     | DateReceived
     | DateOfBirth
     | DayAbbrev
@@ -3188,13 +3189,13 @@ translationSet trans =
 
         Balance ->
             { english = "Balance"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibisigaye"
             , kirundi = Nothing
             }
 
         BatchNumberAbbrev ->
             { english = "Batch #"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nomero #"
             , kirundi = Nothing
             }
 
@@ -4461,7 +4462,7 @@ translationSet trans =
 
         CurrentStock ->
             { english = "Current Stock"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibiri mu bubiko"
             , kirundi = Nothing
             }
 
@@ -4475,6 +4476,12 @@ translationSet trans =
             { english = "Dashboard"
             , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
             , kirundi = Just "Urubaho rw’amakuru"
+            }
+
+        Dashboards ->
+            { english = "Dashboards"
+            , kinyarwanda = Just "Ikibaho cy’amakuru y’ingenzi"
+            , kirundi = Just "Imbaho"
             }
 
         DateReceived ->
@@ -4695,7 +4702,7 @@ translationSet trans =
 
         Details ->
             { english = "Details"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Mu buryo burambuye"
             , kirundi = Nothing
             }
 
@@ -5547,7 +5554,7 @@ translationSet trans =
 
         ExpirityDate ->
             { english = "Expirity Date"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki bizarangiraho"
             , kirundi = Nothing
             }
 
@@ -6749,13 +6756,13 @@ translationSet trans =
 
         IdentityPopupHeader ->
             { english = "You are not properly logged in to E-Heza."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntago wingiye neza muri E-heza nkuko byagenwe"
             , kirundi = Nothing
             }
 
         IdentityPopupInstructions ->
             { english = "To proceed, you must log out and log back in as then correct user."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukomeza, ugomba gusohoka muri sisisteme ukongera ukinjira nk'umukozi ubishinzwe"
             , kirundi = Nothing
             }
 
@@ -7177,7 +7184,7 @@ translationSet trans =
 
         IsThisYouQuestion ->
             { english = "Is this you"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uyu ni wowe"
             , kirundi = Just "Uyu ni wewe"
             }
 
@@ -9116,7 +9123,7 @@ translationSet trans =
 
         LoggedInAsPhrase ->
             { english = "You are logged in as"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Winjiye nka"
             , kirundi = Just "Winjiye nka"
             }
 
@@ -9208,10 +9215,7 @@ translationSet trans =
                     }
 
                 MenuDashboards ->
-                    { english = "Dashboards"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Ibibaho vy’amakuru"
-                    }
+                    translationSet Dashboards
 
                 MenuCaseManagement ->
                     translationSet CaseManagement
@@ -9227,7 +9231,7 @@ translationSet trans =
 
                 MenuStockManagement ->
                     { english = "Stock Management"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ububiko bw'imiti"
                     , kirundi = Just "Ugucunga ububiko"
                     }
 
@@ -12395,7 +12399,7 @@ translationSet trans =
 
         Observations ->
             { english = "Observations"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igenzura"
             , kirundi = Just "Imyihwezo"
             }
 
@@ -12775,7 +12779,7 @@ translationSet trans =
 
         Patients ->
             { english = "Patients"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abagenerwabikorwa"
             , kirundi = Just "Abagwayi"
             }
 
@@ -16836,7 +16840,7 @@ translationSet trans =
 
         Received ->
             { english = "Received"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibyakiriwe"
             , kirundi = Just "yaronse"
             }
 
@@ -16848,7 +16852,7 @@ translationSet trans =
 
         ReceivedFrom ->
             { english = "Received From"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Byatanzwe na"
             , kirundi = Just "Nakuye kwa"
             }
 
@@ -19929,7 +19933,7 @@ translationSet trans =
 
         Signature ->
             { english = "Signature"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umukono"
             , kirundi = Just "Umukono"
             }
 
@@ -19999,31 +20003,31 @@ translationSet trans =
             case value of
                 ReasonInputError ->
                     { english = "Error in input"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikosa mu kwinjiza"
                     , kirundi = Just "Ikosa mu kwinjiza"
                     }
 
                 ReasonExpiration ->
                     { english = "Expired stock"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibiri mu bubiko byataye igihe"
                     , kirundi = Just "Ububiko bwataye igihe"
                     }
 
                 ReasonMissing ->
                     { english = "Missing stock / unaccounted for"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hari ibibura mu bubiko / Ibitarabazwe"
                     , kirundi = Just "Ububiko bwabuze / Ibiri m'ububiko bidaharuye"
                     }
 
                 ReasonOther ->
                     { english = "Other"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibindi"
                     , kirundi = Just "Ibindi"
                     }
 
         StockManagement ->
             { english = "Stock Management"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ububiko bw'imiti"
             , kirundi = Just "Ugucunga ububiko"
             }
 
@@ -20031,31 +20035,31 @@ translationSet trans =
             case value of
                 MenuReceiveStock ->
                     { english = "Receive Stock"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwakira ibijya mu bubiko"
                     , kirundi = Just "Ukuronka ivyo gushira m'ububiko"
                     }
 
                 MenuViewMonthDetails ->
                     { english = "View current month details"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kureba ibyakozwe muri uku kwezi mu byuro burambuye"
                     , kirundi = Just "Raba neza/ Subiramwo ivyanditse vyose vy'uku kwezi"
                     }
 
                 MenuCorrectEntry ->
                     { english = "Correct entry"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gukosora ibyinjijwe"
                     , kirundi = Just "Kwinjiza neza"
                     }
 
         StockManagementBatchNumberQuestion ->
             { english = "What is the batch number"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare w'ibyakiriwe"
             , kirundi = Just "Inimero y'umurwi/ya karundo ni iyihe"
             }
 
         StockManagementCorrectionTypeLabel ->
             { english = "Please select the type of the correct"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo ubwoko bwo gukosora "
             , kirundi = Just "Hitamwo ico ubona arico"
             }
 
@@ -20063,55 +20067,55 @@ translationSet trans =
             case value of
                 EntryAddition ->
                     { english = "Addition"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kongeraho"
                     , kirundi = Just "Guteranya"
                     }
 
                 EntrySubstraction ->
                     { english = "Substraction"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kugabanya"
                     , kirundi = Just "Gukuramwo"
                     }
 
         StockManagementCorrectionReasonLabel ->
             { english = "Please select the reason for the correct"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo impamvu yo gukosora"
             , kirundi = Just "Hitamwo impamvu y'ukuri"
             }
 
         StockManagementDateExpiresQuestion ->
             { english = "What is the expiration date"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki bizarangiriraho ni iyihe"
             , kirundi = Just "Itarike izorangirirako niyihe"
             }
 
         StockManagementEnterSignatureLabel ->
             { english = "Please enter your signature"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Shyiraho umukono wawe"
             , kirundi = Just "Nimwinjize umukono wanyu"
             }
 
         StockManagementQuantityAddedQuestion ->
             { english = "How much stock is being received"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hakirwe ibintu bingana gute"
             , kirundi = Just "Mbega aronka ivyo abika bingana gute"
             }
 
         StockManagementQuantityCorrectionLabel ->
             { english = "Please enter the quantity"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Injiza ingano y'ibakiriwe"
             , kirundi = Just "Nimwinjize igitigiri"
             }
 
         StockManagementSelectDateLabel ->
             { english = "Select a date for this entry"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo itariki yo kwandika ibi"
             , kirundi = Just "Hitamwo itarike yuru ngwinjizo/itarike yo kwinjiza"
             }
 
         StockManagementSupplierQuestion ->
             { english = "Where was this received from"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibi byakiriwe biturutse hehe"
             , kirundi = Just "Iyi yakiririwe hehe"
             }
 
@@ -20119,13 +20123,13 @@ translationSet trans =
             case value of
                 SupplierMOH ->
                     { english = "MOH (Ministry of Health)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Minisiteri y'ubuzima"
                     , kirundi = Nothing
                     }
 
                 SupplierRBC ->
                     { english = "RBC (Rwanda Biomedical Center)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "RBC"
                     , kirundi = Nothing
                     }
 
@@ -20137,13 +20141,13 @@ translationSet trans =
 
                 SupplierRMSCentral ->
                     { english = "RWANDA MEDICAL SUPPLY (RMS)-Central Level"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigo k'igihugu gishinzwe ibijyanye n'imiti(RMS)-Ku rwego rw'intara"
                     , kirundi = Nothing
                     }
 
                 SupplierRMSDistrict ->
                     { english = "RWANDA MEDICAL SUPPLY (RMS)-District Level"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikigo k'igihugu gishinzwe ibijyanye n'imiti(RMS)-Ku rwego rw'akarere"
                     , kirundi = Nothing
                     }
 
@@ -20670,7 +20674,7 @@ translationSet trans =
 
         StartingStock ->
             { english = "Starting Stock"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ububiko bwatangiranywe"
             , kirundi = Just "Ugutangura ububiko"
             }
 
@@ -22455,10 +22459,7 @@ translateActivePage page =
                     }
 
                 DashboardPage _ ->
-                    { english = "Dashboards"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Imbaho"
-                    }
+                    translationSet Dashboards
 
                 GlobalCaseManagementPage ->
                     { english = "Case Management"
@@ -22802,7 +22803,7 @@ translateActivePage page =
 
                 StockManagementPage ->
                     { english = "Stock Management"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ububiko bw'imiti"
                     , kirundi = Just "Ugucunga ububiko"
                     }
 
