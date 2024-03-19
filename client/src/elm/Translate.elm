@@ -23602,8 +23602,6 @@ translateDashboard trans =
             , kirundi = Just "Bikaze"
             }
 
-
-
         SeverelyMalnourished ->
             { english = "Severely Malnourished"
             , kinyarwanda = Nothing
