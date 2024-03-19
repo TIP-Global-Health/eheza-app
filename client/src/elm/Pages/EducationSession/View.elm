@@ -64,8 +64,7 @@ viewHeaderAndContent language currentDate id db model ( villageId, session ) =
     in
     div [ class "page-activity education-session" ]
         [ header
-        , div [ class "ui unstackable items" ]
-            [ content ]
+        , content
         ]
 
 
@@ -118,7 +117,7 @@ viewTopicsContent language currentDate id session topics =
                     []
                     (EverySet.toList topics)
                     Nothing
-                    (SetEducationTopic topics)
+                    (ToggleEducationTopic topics)
                     Translate.EducationTopic
                 ]
 
@@ -129,9 +128,11 @@ viewTopicsContent language currentDate id session topics =
                 (not <| EverySet.isEmpty topics)
                 (SaveTopics id { session | topics = topics })
     in
-    div [ class "ui full segment" ]
-        [ innerContent
-        , saveButton
+    div [ class "ui unstackable items" ]
+        [ div [ class "ui full segment" ]
+            [ innerContent
+            , saveButton
+            ]
         ]
 
 
@@ -145,12 +146,16 @@ viewParticipantsContent :
     -> EverySet PersonId
     -> Html Msg
 viewParticipantsContent language currentDate villageId session db model participants =
-    viewSearchForm language
-        currentDate
-        villageId
-        participants
-        db
-        model
+    div [ class "search-wrapper" ]
+        [ div [ class "ui full segment" ]
+            [ viewSearchForm language
+                currentDate
+                villageId
+                participants
+                db
+                model
+            ]
+        ]
 
 
 
@@ -205,14 +210,15 @@ viewSearchForm language currentDate villageId participants db model =
                     |> Just
 
         summary =
+            let
+                viewSummary data =
+                    Dict.size data
+                        |> Translate.ReportResultsOfParticipantsSearch
+                        |> translate language
+                        |> text
+            in
             Maybe.map (viewWebData language viewSummary identity) results
                 |> Maybe.withDefault emptyNode
-
-        viewSummary data =
-            Dict.size data
-                |> Translate.ReportResultsOfParticipantsSearch
-                |> translate language
-                |> text
 
         searchResultsParticipants =
             Maybe.withDefault (Success Dict.empty) results
@@ -221,13 +227,13 @@ viewSearchForm language currentDate villageId participants db model =
                 |> Dict.values
 
         searchHelper =
-            Translate.SearchHelper
+            Translate.ClickTheCheckMarkEducationSesison
     in
     div [ class "registration-page search" ]
-        [ div
-            [ class "search-top" ]
-            [ p
-                [ class "search-helper" ]
+        [ h3 [ class "ui header" ]
+            [ text <| translate language Translate.CheckIn ]
+        , div [ class "search-top" ]
+            [ p [ class "search-helper" ]
                 [ text <| translate language searchHelper ]
             , searchForm
             ]
@@ -249,17 +255,15 @@ viewParticipant selectedParticipants participantId participant =
         checkIn =
             if EverySet.member participantId selectedParticipants then
                 span
-                    [ class "link-checked-in"
-
-                    -- , onClick <| SetCheckedIn attendanceId participantId False
+                    [ class "button-checked-in"
+                    , onClick <| ToggleAttendance selectedParticipants participantId
                     ]
                     [ span [ class "icon-checked-in" ] [] ]
 
             else
                 span
-                    [ class "link-check-in"
-
-                    -- , onClick <| SetCheckedIn attendanceId participantId True
+                    [ class "button-check-in"
+                    , onClick <| ToggleAttendance selectedParticipants participantId
                     ]
                     [ span [ class "icon-check-in" ] [] ]
     in

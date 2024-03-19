@@ -25,7 +25,7 @@ update msg model =
             , []
             )
 
-        SetEducationTopic currentTopics topic ->
+        ToggleEducationTopic currentTopics topic ->
             let
                 topicsUpdated =
                     if EverySet.member topic currentTopics then
@@ -84,3 +84,18 @@ update msg model =
             , []
             )
                 |> sequenceExtra update [ MsgDebouncer <| provideInput <| SetSearch input ]
+
+        ToggleAttendance currentParticipants participant ->
+            let
+                participantsUpdated =
+                    if EverySet.member participant currentParticipants then
+                        EverySet.remove participant currentParticipants
+
+                    else
+                        EverySet.insert participant currentParticipants
+            in
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra update [ SetViewMode <| ModeAttendance participantsUpdated ]

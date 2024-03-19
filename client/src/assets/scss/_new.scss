@@ -2536,13 +2536,33 @@ div.page-activity.tuberculosis {
 
 div.page-activity.education-session {
 
-  .ui.full.segment .full.content {
+  .ui.full.segment {
 
-    .ui.checkbox.activity {
-      margin-bottom: 15px;
+    .full.content {
+
+      .ui.checkbox.activity {
+        margin-bottom: 15px;
+      }
+    }
+
+    .registration-page.search {
+      min-height: 780px;
+
+      .items.participants-list .item {
+        margin-bottom: 30px;
+        padding: 0 30px;
+
+        .content {
+          margin-top: 15px;
+        }
+
+        .button-check-in,
+        .button-checked-in  {
+          margin-top: 30px;
+        }
+      }
     }
   }
-
 }
 
 

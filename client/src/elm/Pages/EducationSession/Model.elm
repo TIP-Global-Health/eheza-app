@@ -32,8 +32,9 @@ type ViewMode
 type Msg
     = SetActivePage Page
     | SetViewMode ViewMode
-    | SetEducationTopic (EverySet EducationTopic) EducationTopic
+    | ToggleEducationTopic (EverySet EducationTopic) EducationTopic
     | SaveTopics EducationSessionId EducationSession
     | MsgDebouncer (Debouncer.Msg Msg)
     | SetInput String
     | SetSearch String
+    | ToggleAttendance (EverySet PersonId) PersonId

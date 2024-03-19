@@ -497,6 +497,7 @@ type TranslationId
     | ChwActivity
     | Clear
     | ClickTheCheckMark
+    | ClickTheCheckMarkEducationSesison
     | ClinicType ClinicType
     | Clinical
     | ClinicalProgressReport
@@ -3980,6 +3981,12 @@ translationSet trans =
             { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             , kirundi = Just "Fyonda ku kemeza ko umurezi canke umuvyeyi ahari. Akamenyetso kemeza gaca gasa n'icatsi kibisi mu gihe umurezi/umuvyeyi ariwe kandi yinjijwe mu mashine."
+            }
+
+        ClickTheCheckMarkEducationSesison ->
+            { english = "Click the check mark if the participant is in attendance. The check mark will appear green when a participant has been signed in."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         ClinicType clinicType ->
