@@ -96,6 +96,7 @@ fromLocalDateTime =
 {-| Given a date, return date representing it's last month day.
 
     toLastDayOfMonth 2019 - 8 - 1 " --> 2019-08-31"
+
     toLastDayOfMonth 2017 - 2 - 20 " --> 2017-02-28"
 
 -}
