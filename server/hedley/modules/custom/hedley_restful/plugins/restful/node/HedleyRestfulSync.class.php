@@ -472,7 +472,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           }
           elseif (in_array($key, $multiEntitiesFields) && !empty($value)) {
             foreach ($value as $uuid) {
-              $data[$key][] = hedley_restful_uuid_to_nid($uuid);
+              if (Uuid::isValid($uuid)) {
+                $data[$key][] = hedley_restful_uuid_to_nid($uuid);
+              }
             }
           }
           elseif (in_array($key, $freeTextFields) && !empty($value)) {

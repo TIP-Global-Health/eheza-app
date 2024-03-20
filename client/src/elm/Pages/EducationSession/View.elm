@@ -168,7 +168,7 @@ viewSearchForm : Language -> NominalDate -> VillageId -> EverySet PersonId -> Mo
 viewSearchForm language currentDate villageId selectedParticipants db model =
     let
         searchForm =
-            Pages.Utils.viewNameFilter language model.input SetInput
+            Pages.Utils.viewCustomNameFilter language model.input SetInput Translate.PlaceholderEnterParticipantName
 
         searchValue =
             Maybe.withDefault "" model.search
