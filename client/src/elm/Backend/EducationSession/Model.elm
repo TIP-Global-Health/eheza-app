@@ -58,6 +58,5 @@ emptyModel =
 
 
 type Msg
-    = Close
-    | Update EducationSession
+    = Update (EducationSession -> EducationSession)
     | HandleUpdated (WebData ())

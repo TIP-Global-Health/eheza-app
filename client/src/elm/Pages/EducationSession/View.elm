@@ -50,7 +50,7 @@ viewHeaderAndContent language currentDate id db model ( villageId, session ) =
                     viewTopicsContent language currentDate id session topics
 
                 ModeAttendance participants ->
-                    viewParticipantsContent language currentDate villageId session db model participants
+                    viewParticipantsContent language currentDate villageId id session db model participants
 
         viewMode =
             Maybe.withDefault
@@ -97,7 +97,7 @@ viewHeader language viewMode session =
 
 
 viewTopicsContent : Language -> NominalDate -> EducationSessionId -> EducationSession -> EverySet EducationTopic -> Html Msg
-viewTopicsContent language currentDate id session topics =
+viewTopicsContent language currentDate id session selectedTopics =
     let
         innerContent =
             div [ class "full content" ]
@@ -115,9 +115,9 @@ viewTopicsContent language currentDate id session topics =
                     , TopicNCD
                     ]
                     []
-                    (EverySet.toList topics)
+                    (EverySet.toList selectedTopics)
                     Nothing
-                    (ToggleEducationTopic topics)
+                    (ToggleEducationTopic selectedTopics)
                     Translate.EducationTopic
                 ]
 
@@ -125,8 +125,8 @@ viewTopicsContent language currentDate id session topics =
             viewEncounterActionButton language
                 Translate.Save
                 "primary"
-                (not <| EverySet.isEmpty topics)
-                (SaveTopics id { session | topics = topics })
+                (not <| EverySet.isEmpty selectedTopics)
+                (SaveTopics session.participants selectedTopics)
     in
     div [ class "ui unstackable items" ]
         [ div [ class "ui full segment" ]
@@ -140,12 +140,13 @@ viewParticipantsContent :
     Language
     -> NominalDate
     -> VillageId
+    -> EducationSessionId
     -> EducationSession
     -> ModelIndexedDb
     -> Model
     -> EverySet PersonId
     -> Html Msg
-viewParticipantsContent language currentDate villageId session db model selectedParticipants =
+viewParticipantsContent language currentDate villageId id session db model selectedParticipants =
     div [ class "search-wrapper" ]
         [ div [ class "ui full segment" ]
             [ viewSearchForm language
@@ -154,39 +155,20 @@ viewParticipantsContent language currentDate villageId session db model selected
                 selectedParticipants
                 db
                 model
+            , viewEncounterActionButton language
+                Translate.EndEncounter
+                "primary"
+                (not <| EverySet.isEmpty selectedParticipants)
+                EndEncounter
             ]
         ]
-
-
-
--- div [ class "ui full segment" ]
---     [ div [ class "ui full blue segment" ]
---         [ h3 [ class "ui header" ]
---             [ text <| translate language Translate.CheckIn ]
---         , p [] [ text <| translate language Translate.ClickTheCheckMark ]
---         , viewNameFilter language model.filter SetFilter
---         , viewToggleDisplay language model
---         , div [ class "search-middle" ]
---             [ div [ class "ui middle aligned divided list" ] mothers ]
---         , div [ class "search-bottom" ]
---             [ div
---                 [ class "register-actions" ]
---                 [ button
---                     [ class "ui primary button fluid"
---                     , onClick <| SetActivePage <| UserPage <| PersonsPage Nothing (GroupEncounterOrigin sessionId)
---                     ]
---                     [ text <| translate language Translate.AddNewParticipant ]
---                 ]
---             ]
---         ]
---     ]
 
 
 viewSearchForm : Language -> NominalDate -> VillageId -> EverySet PersonId -> ModelIndexedDb -> Model -> Html Msg
 viewSearchForm language currentDate villageId selectedParticipants db model =
     let
         searchForm =
-            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput
+            Pages.Utils.viewNameFilter language model.input SetInput
 
         searchValue =
             Maybe.withDefault "" model.search

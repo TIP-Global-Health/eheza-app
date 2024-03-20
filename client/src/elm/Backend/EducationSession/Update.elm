@@ -21,20 +21,18 @@ update :
     -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate sessionId maybeSession msg model =
     case msg of
-        Close ->
-            maybeSession
-                |> unwrap ( model, Cmd.none, [] )
-                    (\session ->
-                        update currentDate sessionId maybeSession (Update { session | endDate = Just currentDate }) model
+        Update updateFunc ->
+            unwrap ( model, Cmd.none, [] )
+                (\session ->
+                    ( { model | updateEducationSession = Loading }
+                    , updateFunc session
+                        |> sw.patchFull educationSessionEndpoint sessionId
+                        |> withoutDecoder
+                        |> toCmd (RemoteData.fromResult >> HandleUpdated)
+                    , []
                     )
-
-        Update session ->
-            ( { model | updateEducationSession = Loading }
-            , sw.patchFull educationSessionEndpoint sessionId session
-                |> withoutDecoder
-                |> toCmd (RemoteData.fromResult >> HandleUpdated)
-            , []
-            )
+                )
+                maybeSession
 
         HandleUpdated data ->
             ( { model | updateEducationSession = data }

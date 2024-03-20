@@ -2,19 +2,22 @@ module Pages.EducationSession.Update exposing (update)
 
 import App.Model
 import Backend.EducationSession.Model
+import Backend.Entities exposing (..)
 import Backend.Model
 import Debouncer.Basic as Debouncer exposing (provideInput)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra
 import Pages.EducationSession.Model exposing (..)
+import Pages.Page exposing (Page(..))
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : NominalDate -> EducationSessionId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate id msg model =
     case msg of
         SetActivePage page ->
-            ( model
+            ( { model | viewMode = Nothing }
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
@@ -38,17 +41,17 @@ update msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra update [ SetViewMode <| ModeTopics topicsUpdated ]
+                |> sequenceExtra (update currentDate id) [ SetViewMode <| ModeTopics topicsUpdated ]
 
-        SaveTopics sessionId session ->
+        SaveTopics participants topics ->
             ( model
             , Cmd.none
-            , [ Backend.EducationSession.Model.Update session
-                    |> Backend.Model.MsgEducationSession sessionId
+            , [ Backend.EducationSession.Model.Update (\session -> { session | topics = topics })
+                    |> Backend.Model.MsgEducationSession id
                     |> App.Model.MsgIndexedDb
               ]
             )
-                |> sequenceExtra update [ SetViewMode <| ModeAttendance session.participants ]
+                |> sequenceExtra (update currentDate id) [ SetViewMode <| ModeAttendance participants ]
 
         MsgDebouncer subMsg ->
             let
@@ -59,7 +62,7 @@ update msg model =
             , Cmd.map MsgDebouncer subCmd
             , []
             )
-                |> sequenceExtra update (Maybe.Extra.toList extraMsg)
+                |> sequenceExtra (update currentDate id) (Maybe.Extra.toList extraMsg)
 
         SetSearch search ->
             let
@@ -83,7 +86,7 @@ update msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra update [ MsgDebouncer <| provideInput <| SetSearch input ]
+                |> sequenceExtra (update currentDate id) [ MsgDebouncer <| provideInput <| SetSearch input ]
 
         ToggleAttendance currentParticipants participant ->
             let
@@ -102,4 +105,26 @@ update msg model =
             , Cmd.none
             , fetchMsg
             )
-                |> sequenceExtra update [ SetViewMode <| ModeAttendance participantsUpdated ]
+                |> sequenceExtra (update currentDate id)
+                    [ SetViewMode <| ModeAttendance participantsUpdated
+                    , SaveAttendance participantsUpdated
+                    ]
+
+        SaveAttendance participants ->
+            ( model
+            , Cmd.none
+            , [ Backend.EducationSession.Model.Update (\session -> { session | participants = participants })
+                    |> Backend.Model.MsgEducationSession id
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
+
+        EndEncounter ->
+            ( model
+            , Cmd.none
+            , [ Backend.EducationSession.Model.Update (\session -> { session | endDate = Just currentDate })
+                    |> Backend.Model.MsgEducationSession id
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
+                |> sequenceExtra (update currentDate id) [ SetActivePage PinCodePage ]

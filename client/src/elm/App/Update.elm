@@ -586,7 +586,7 @@ update msg model =
                                     data.educationSessionPages
                                         |> Dict.get id
                                         |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
-                                        |> Pages.EducationSession.Update.update subMsg
+                                        |> Pages.EducationSession.Update.update currentDate id subMsg
                             in
                             ( { data | educationSessionPages = Dict.insert id subModel data.educationSessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageEducationSession id) subCmd
