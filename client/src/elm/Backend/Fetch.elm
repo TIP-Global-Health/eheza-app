@@ -141,6 +141,11 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPeopleInVillage id ->
+            Dict.get id model.peopleInVillage
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchPerson id ->
             Dict.get id model.people
                 |> Maybe.withDefault NotAsked
@@ -462,6 +467,9 @@ forget msg model =
 
         FetchPeopleByName search ->
             { model | personSearches = Dict.remove (String.trim search) model.personSearches }
+
+        FetchPeopleInVillage id ->
+            { model | peopleInVillage = Dict.remove id model.peopleInVillage }
 
         FetchPerson id ->
             { model | people = Dict.remove id model.people }

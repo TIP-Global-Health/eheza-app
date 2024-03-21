@@ -83,7 +83,7 @@ import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
 import Backend.Utils exposing (..)
-import Backend.Village.Utils exposing (getVillageClinicId)
+import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
@@ -1317,7 +1317,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             -- We'll limit the search to 500 each for now ... basically,
             -- just to avoid truly pathological cases.
             ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
-            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
+            , sw.selectRange personEndpoint (ParamsNameContains trimmed) 0 (Just 500)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
@@ -1329,7 +1329,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             )
 
         FetchPeopleInVillage id ->
-            Dict.get id model.villages
+            getVillageById model id
                 |> Maybe.map
                     (\village ->
                         let
@@ -1343,8 +1343,8 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                     , village.village
                                     ]
                         in
-                        ( { model | personSearches = Dict.insert id Loading model.personSearches }
-                        , sw.selectRange personEndpoint { geoFields = Just geoFields } 0 (Just 5000)
+                        ( { model | peopleInVillage = Dict.insert id Loading model.peopleInVillage }
+                        , sw.selectRange personEndpoint (ParamsGeoFields geoFields) 0 (Just 5000)
                             |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleInVillage id)
                         , []
                         )
@@ -1352,7 +1352,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 |> Maybe.withDefault noChange
 
         HandleFetchedPeopleInVillage id data ->
-            ( { model | personSearches = Dict.insert id data model.peopleInVillage }
+            ( { model | peopleInVillage = Dict.insert id data model.peopleInVillage }
             , Cmd.none
             , []
             )

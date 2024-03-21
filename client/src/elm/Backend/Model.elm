@@ -120,7 +120,7 @@ type alias ModelIndexedDb =
     -- Tracks searchs for participants by name. The key is the phrase we are
     -- searching for.
     , personSearches : Dict String (WebData (Dict PersonId Person))
-    , pepleInVillage : Dict VillageId (WebData (Dict PersonId Person))
+    , peopleInVillage : Dict VillageId (WebData (Dict PersonId Person))
 
     -- A simple cache of several things.
     , people : Dict PersonId (WebData Person)
@@ -239,7 +239,7 @@ emptyModelIndexedDb =
     , people = Dict.empty
     , traceContacts = Dict.empty
     , personSearches = Dict.empty
-    , pepleInVillage = Dict.empty
+    , peopleInVillage = Dict.empty
     , prenatalEncounterRequests = Dict.empty
     , nutritionEncounterRequests = Dict.empty
     , acuteIllnessEncounterRequests = Dict.empty

@@ -95,7 +95,7 @@ personEndpoint : ReadWriteEndPoint Error PersonId Person Person PersonEndpointPa
 personEndpoint =
     swEndpoint "nodes/person" decodePerson
         |> withValueEncoder (\val -> Json.Encode.object (encodePerson val))
-        |> withParamsEncoder encodePersonParams
+        |> withParamsEncoder encodePersonEndpointParams
 
 
 type PersonEndpointParams
