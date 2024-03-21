@@ -13,6 +13,7 @@ import Backend.Measurement.Model
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Utils exposing (tuberculosisManagementEnabled)
 import Backend.Village.Model exposing (Village)
 import Backend.Village.Utils exposing (isVillageResident)
 import Date exposing (Unit(..))
@@ -21,16 +22,22 @@ import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.Utils
 import RemoteData exposing (WebData)
+import SyncManager.Model exposing (SiteFeature)
 
 
-chwFilters : List CaseManagementFilter
-chwFilters =
+chwFilters : EverySet SiteFeature -> List CaseManagementFilter
+chwFilters features =
     [ FilterAcuteIllness
     , FilterAntenatal
     , FilterNutrition
     , FilterImmunization
-    , FilterTuberculosis
     ]
+        ++ (if tuberculosisManagementEnabled features then
+                [ FilterTuberculosis ]
+
+            else
+                []
+           )
 
 
 nurseFilters : List CaseManagementFilter

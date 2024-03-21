@@ -23,7 +23,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (defaultIconForPerson, generateFullName, isPersonAFertileWoman)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import EverySet
+import EverySet exposing (EverySet)
 import Form
 import Form.Input
 import GeoLocation.Model exposing (GeoInfo)
@@ -82,7 +82,7 @@ import Pages.Utils
         , viewTextInput
         )
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
@@ -90,11 +90,22 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site geoInfo id isChw activity db model =
+view :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> GeoInfo
+    -> AcuteIllnessEncounterId
+    -> Bool
+    -> AcuteIllnessActivity
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate site features geoInfo id isChw activity db model =
     let
         assembled =
-            generateAssembledData currentDate id isChw db
+            generateAssembledData currentDate features id isChw db
     in
     viewWebData language (viewHeaderAndContent language currentDate site geoInfo id isChw activity db model) identity assembled
 
