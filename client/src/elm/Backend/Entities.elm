@@ -1605,11 +1605,3 @@ type alias TuberculosisTreatmentReviewId =
 
 type TuberculosisTreatmentReviewUuidType
     = TuberculosisTreatmentReviewUuidType
-
-
-type alias EducationSessionId =
-    EntityUuid EducationSessionUuidType
-
-
-type EducationSessionUuidType
-    = EducationSessionUuidType

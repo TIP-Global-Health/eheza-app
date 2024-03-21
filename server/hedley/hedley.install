@@ -699,10 +699,3 @@ function hedley_update_7040() {
 function hedley_update_7041() {
   module_enable(['hedley_tuberculosis']);
 }
-
-/**
- * Enable the Hedley Group Education module.
- */
-function hedley_update_7042() {
-  module_enable(['hedley_group_education']);
-}

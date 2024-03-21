@@ -419,9 +419,6 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityDashboardStats _ ->
                 text "Dashboard Statistics"
 
-            BackendAuthorityEducationSession identifier ->
-                text ("Education Session at village ID " ++ fromEntityUuid identifier.entity.village)
-
             BackendAuthorityExposure identifier ->
                 viewMeasurement identifier "Exposure"
 
