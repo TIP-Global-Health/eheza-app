@@ -10287,7 +10287,7 @@ translationSet trans =
 
         MUAC ->
             { english = "MUAC"
-            , kinyarwanda = Just "Ikizigira"
+            , kinyarwanda = Just "Ikizigira cy'akaboko"
             , kirundi = Just "(CMB) Uburyo bwo gupima vuba na vuba ingwara yo gufungura nabi"
             }
 
@@ -13249,6 +13249,7 @@ translationSet trans =
         PrenatalActivityTitle activity ->
             case activity of
                 Backend.PrenatalActivity.Model.DangerSigns ->
+                    -- The Kirundi translation for Prenatal danger is different from general danger sign
                     { english = "Danger Signs"
                     , kinyarwanda = Just "Ibimenyetso mpuruza"
                     , kirundi = Just "Imbanyi igeramiwe"
