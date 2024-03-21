@@ -5,6 +5,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticip
 import Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeToString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,12 +17,13 @@ import Pages.AcuteIllness.Outcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (taskCompleted, viewLabel, viewSelectListInput)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> IndividualEncounterParticipantId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw db model =
+view : Language -> NominalDate -> EverySet SiteFeature -> IndividualEncounterParticipantId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate features id isChw db model =
     let
         firstEncounterId =
             getAcuteIllnessEncountersForParticipant db id
@@ -32,7 +34,7 @@ view language currentDate id isChw db model =
             firstEncounterId
                 |> Maybe.map
                     (\encounterId ->
-                        generateAssembledData currentDate encounterId isChw db
+                        generateAssembledData currentDate features encounterId isChw db
                     )
                 |> Maybe.withDefault NotAsked
 
