@@ -1,6 +1,6 @@
 module Pages.Report.View exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (labExpirationPeriod)

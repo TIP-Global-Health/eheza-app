@@ -16,7 +16,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTopic)
@@ -58,6 +58,7 @@ import Backend.ResilienceSurvey.Model
         ( ResilienceSurveyQuestion(..)
         , ResilienceSurveyQuestionOption(..)
         )
+import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), PediatricCareMilestone(..))
 import Components.ReportToWhatsAppDialog.Model
@@ -86,7 +87,6 @@ import Pages.AcuteIllness.Activity.Types
         , NextStepsTask(..)
         , OngoingTreatmentTask(..)
         , PhysicalExamTask(..)
-        , PriorTreatmentTask(..)
         , SymptomReliefType(..)
         , SymptomsTask(..)
         )
@@ -134,6 +134,7 @@ import Pages.Report.Model
         )
 import Pages.StockManagement.Model exposing (CorrectionEntryType(..), StockManagementMenu(..))
 import Pages.TraceContact.Model exposing (NoContactReason(..))
+import Pages.Tuberculosis.Activity.Model exposing (TuberculosisFollowUpTestingStage(..))
 import Pages.WellChild.Activity.Types
     exposing
         ( HomeVisitTask(..)
@@ -438,6 +439,7 @@ type TranslationId
     | BloodSmearLabel
     | BloodSmearResult BloodSmearResult
     | BloodSmearTestResult
+    | BloodInSputumQuestion
     | BMI
     | BMIHelper
     | BodyTemperature
@@ -659,6 +661,7 @@ type TranslationId
     | FoodGroup FoodGroup
     | FoodSecurity
     | FollowPostpartumProtocols
+    | FollowUp
     | FollowUpWithPatientIn
     | FollowUpWithPatientOn
     | FollowUpByChwLabel
@@ -700,6 +703,7 @@ type TranslationId
     | HeadHair
     | HealthCenter
     | HealthCenterDetermined
+    | HealthEducation
     | HealthEducationNotProvided
     | HealthEducationProvided
     | HealthEducationProvidedQuestion
@@ -910,6 +914,7 @@ type TranslationId
     | MedicationTreatingHypertensionQuestion
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
+    | Medication
     | MedicationCausesSideEffectsQuestion
     | MedicationDistributionHelperAnemia
     | MedicationDistributionHelperDiscordantPartnership
@@ -1016,6 +1021,7 @@ type TranslationId
     | NextPediatricVisit Bool
     | NextSteps
     | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
+    | NightSweatsQuestion
     | No
     | NoActivitiesCompleted
     | NoActivitiesCompletedForThisParticipant
@@ -1042,6 +1048,7 @@ type TranslationId
     | NoChildrenRegisteredInTheSystem
     | NotAvailable
     | NotFollowingRecommendationQuestion
+    | NotIndicated
     | NotTaken
     | NumberOfAbortions
     | NumberOfChildrenUnder5
@@ -1105,6 +1112,7 @@ type TranslationId
     | PatientGotDiabetesHeader
     | PatientProgress
     | PatientRecord
+    | PatientRefused
     | PatientInformation
     | PatientIsolatedQuestion Bool
     | PatientNotYetSeenAtHCLabel
@@ -1117,6 +1125,8 @@ type TranslationId
     | PediatricVisit
     | People
     | Percentage
+    | Period2WeeksOrLess
+    | PeriodMoreThan2Weeks
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
@@ -1214,7 +1224,7 @@ type TranslationId
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
     | PreviousMeasurementNotFound
-    | PriorTreatmentTask PriorTreatmentTask
+    | PriorTreatmentTask Pages.AcuteIllness.Activity.Types.PriorTreatmentTask
     | Programs
     | ProgressPhotos
     | ProgressReport
@@ -1526,6 +1536,8 @@ type TranslationId
     | SelectedHCNotSynced
     | SelectedHCSyncing
     | Send
+    | SendToHC
+    | SevereFatigueQuestion
     | ReportToWhatsApp
     | ReportToWhatsAppComponentsSelectionHeader Components.ReportToWhatsAppDialog.Model.ReportType
     | ReportToWhatsAppConfirmationBeforeExecutingHeader
@@ -1606,6 +1618,7 @@ type TranslationId
     | SymptomsGISignAbbrev SymptomsGISign
     | SymptomsRespiratorySign SymptomsRespiratorySign
     | SymptomsTask SymptomsTask
+    | SymptomReview
     | Syphilis
     | SyphilisRecommendedTreatmentHeader
     | SyphilisRecommendedTreatmentHelper
@@ -1662,6 +1675,7 @@ type TranslationId
     | TreatmentDetailsHypertension Bool RecommendedTreatmentSign
     | TreatmentDetailsMalaria RecommendedTreatmentSign
     | TreatmentDetailsSyphilis RecommendedTreatmentSign
+    | TreatmentReview
     | TreatmentReviewQuestionAdverseEvents
     | TreatmentReviewQuestionAdverseEventsHospitalization
     | TreatmentReviewQuestionMedicationByPMTCT
@@ -1672,10 +1686,30 @@ type TranslationId
     | TreatmentReviewWarningPopupMessage
     | TreatmentReviewWarningPopupInstructions
     | TrySyncing
-    | TuberculosisPast
-    | TuberculosisPresent
+    | Tuberculosis
+    | TuberculosisActivityTitle TuberculosisActivity
+    | TuberculosisDiagnosis TuberculosisDiagnosis
+    | TuberculosisDiagnosedQuestion
+    | TuberculosisDistributeMedicationsQuestion
+    | TuberculosisFollowUpLabel
+    | TuberculosisFollowUpTestingStageInstructions TuberculosisFollowUpTestingStage
+    | TuberculosisFollowUpTestingStageLabel TuberculosisFollowUpTestingStage
+    | TuberculosisFollowUpTestingStageTest TuberculosisFollowUpTestingStage
+    | TuberculosisHealthEducationQuestion TuberculosisHealthEducationSign
     | TuberculosisInstructions
     | TuberculosisInstructionsFollowed
+    | TuberculosisLocationQuestion
+    | TuberculosisMedicationTask Pages.Tuberculosis.Activity.Model.MedicationTask
+    | TuberculosisNextStepsTask Pages.Tuberculosis.Activity.Model.NextStepsTask
+    | TuberculosisPast
+    | TuberculosisPrescribedMedication TuberculosisPrescribedMedication
+    | TuberculosisPrescribedMedicationsQuestion
+    | TuberculosisPresent
+    | TuberculosisProvideDOTTodayQuestion
+    | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
+    | TuberculosisReasonMedicationsNotDistributed TuberculosisDOTSign
+    | TuberculosisSuspect
+    | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
     | Type
@@ -1723,6 +1757,7 @@ type TranslationId
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
+    | WeightLossQuestion
     | WelcomeUser String
     | Wellbeing
     | WellChildActivityTitle WellChildActivity
@@ -2175,6 +2210,9 @@ translationSet trans =
                     , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
                     }
 
+                DiagnosisTuberculosisSuspect ->
+                    translationSet TuberculosisSuspect
+
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
                     , kinyarwanda = Nothing
@@ -2266,6 +2304,9 @@ translationSet trans =
                     , kinyarwanda = Just "Ntibisobanutse - Hakenewe Isuzuma Ryimbitse"
                     , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
                     }
+
+                DiagnosisTuberculosisSuspect ->
+                    translationSet TuberculosisSuspect
 
                 NoAcuteIllnessDiagnosis ->
                     { english = "No Diagnosis"
@@ -2621,22 +2662,13 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.FollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi"
-                    , kirundi = Just "Kurikirana"
-                    }
+                    translationSet FollowUp
 
                 ChildActivity Activity.Model.HealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 ChildActivity Activity.Model.SendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    , kirundi = Just "Rungika kw'ivuriro"
-                    }
+                    translationSet SendToHC
 
                 ChildActivity Activity.Model.NCDA ->
                     translationSet ChildScorecard
@@ -2650,10 +2682,7 @@ translationSet trans =
                     }
 
                 MotherActivity Lactation ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 MotherActivity MotherFbf ->
                     { english = "Enter the amount of CSB++ (FBF) distributed below."
@@ -2723,7 +2752,7 @@ translationSet trans =
                 ChildActivity Activity.Model.HealthEducation ->
                     { english = "Health Education:"
                     , kinyarwanda = Just "Inyigisho ku buzima:"
-                    , kirundi = Just "Inyigisho z'amagara:"
+                    , kirundi = Just "Inyigisho ntugamagara"
                     }
 
                 ChildActivity Activity.Model.SendToHC ->
@@ -2806,22 +2835,13 @@ translationSet trans =
                     }
 
                 ChildActivity Activity.Model.FollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi"
-                    , kirundi = Just "Kurikirana"
-                    }
+                    translationSet FollowUp
 
                 ChildActivity Activity.Model.HealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 ChildActivity Activity.Model.SendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    , kirundi = Just "Rungika kw'ivuriro"
-                    }
+                    translationSet SendToHC
 
                 ChildActivity Activity.Model.NCDA ->
                     translationSet ChildScorecard
@@ -2856,10 +2876,7 @@ translationSet trans =
         AcuteIllnessActivityTitle activity ->
             case activity of
                 AcuteIllnessSymptoms ->
-                    { english = "Symptom Review"
-                    , kinyarwanda = Just "Kongera kureba ibimenyetso"
-                    , kirundi = Just "Isubiramwo ry'ikimenyetso"
-                    }
+                    translationSet SymptomReview
 
                 AcuteIllnessPhysicalExam ->
                     { english = "Physical Exam"
@@ -2886,16 +2903,10 @@ translationSet trans =
                     }
 
                 AcuteIllnessNextSteps ->
-                    { english = "Next Steps"
-                    , kinyarwanda = Just "Ibikurikiyeho"
-                    , kirundi = Just "Intambwe zikurkira"
-                    }
+                    translationSet NextSteps
 
                 AcuteIllnessOngoingTreatment ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                    translationSet TreatmentReview
 
                 AcuteIllnessDangerSigns ->
                     translationSet DangerSigns
@@ -3229,10 +3240,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         BeatsPerMinuteUnitLabel ->
             { english = "Beats per minute"
@@ -3445,6 +3453,12 @@ translationSet trans =
             { english = "Malaria Blood Test Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        BloodInSputumQuestion ->
+            { english = "Do you have blood in sputum"
+            , kinyarwanda = Just "Waba ugira ikororwa kirimo amaraso"
+            , kirundi = Just "Mbega urafise amaraso mu bikororwa"
             }
 
         BMI ->
@@ -3702,6 +3716,9 @@ translationSet trans =
                 FilterImmunization ->
                     translationSet Immunisation
 
+                FilterTuberculosis ->
+                    translationSet Tuberculosis
+
         CaseManagementPaneHeader encounterType ->
             case encounterType of
                 Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
@@ -3739,6 +3756,9 @@ translationSet trans =
 
                 FilterImmunization ->
                     translationSet Immunisation
+
+                FilterTuberculosis ->
+                    translationSet Tuberculosis
 
         Celsius ->
             { english = "Celsius"
@@ -3924,10 +3944,7 @@ translationSet trans =
                     }
 
                 ActionHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku Buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 ActionBirthPlan ->
                     { english = "Birth Plan"
@@ -5244,10 +5261,7 @@ translationSet trans =
                     }
 
                 ChildScoreboardEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 HomeVisitEncounter ->
                     { english = "Do you want to start a Home Visit assessment for"
@@ -5256,20 +5270,17 @@ translationSet trans =
                     }
 
                 InmmunizationEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 NutritionEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 NCDEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
+                    translationSet EmptyString
+
+                TuberculosisEncounter ->
+                    { english = "Do you want to start a Tuberculosis Management encounter for"
+                    , kinyarwanda = Just "Urashaka gutangira isura ryo gukurikirana umurwayi w'igituntu witwa"
                     , kirundi = Nothing
                     }
 
@@ -5367,10 +5378,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         EndEncounter ->
             { english = "End Encounter"
@@ -5854,6 +5862,12 @@ translationSet trans =
             , kirundi = Just "Umutekano mu mfunguro"
             }
 
+        FollowUp ->
+            { english = "Follow Up"
+            , kinyarwanda = Just "Gukurikirana umurwayi"
+            , kirundi = Just "Kurikirana"
+            }
+
         FollowPostpartumProtocols ->
             { english = "Follow Postpartum Protocols"
             , kinyarwanda = Just "Kurikiza amabwiriza yo kwita ku mubyeyi wabyaye"
@@ -6244,6 +6258,12 @@ translationSet trans =
             , kirundi = Just "Ivuriro ryatoye ko iki ari"
             }
 
+        HealthEducation ->
+            { english = "Health Education"
+            , kinyarwanda = Just "Inyigisho ku buzima"
+            , kirundi = Just "Inyigisho ntugamagara"
+            }
+
         HealthEducationNotProvided ->
             { english = "No health education provided"
             , kinyarwanda = Just "Nta nyigisho ku buzima zatanzwe"
@@ -6525,10 +6545,7 @@ translationSet trans =
                     }
 
                 HIVTreatmentNoMedicinePatientRefused ->
-                    { english = "Patient Refused"
-                    , kinyarwanda = Just "Umurwayi yabyanze"
-                    , kirundi = Just "Umugwayi yanse"
-                    }
+                    translationSet PatientRefused
 
                 HIVTreatmentNoMedicineOther ->
                     { english = "Other"
@@ -6538,10 +6555,7 @@ translationSet trans =
 
                 -- We do not require translation for other signs.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         Home ->
             { english = "Home"
@@ -6693,10 +6707,7 @@ translationSet trans =
 
                 -- We're not required to view this option.
                 TreatementUpdateHospitalize ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         HypertensionRecommendedTreatmentUpdateNoCurrentTreatment ->
             { english = "The patient is currently receiving no treatment"
@@ -6746,10 +6757,7 @@ translationSet trans =
 
                 -- We should never get here.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         IdentityPopupHeader ->
             { english = "You are not properly logged in to E-Heza."
@@ -6898,6 +6906,12 @@ translationSet trans =
                     , kirundi = Just "Isuzumwa ryambere ry’ingaburo"
                     }
 
+                TuberculosisEncounter ->
+                    { english = "First Tuberculosis Encounter"
+                    , kinyarwanda = Just "Isura rya mbere ku ndwara y'igituntu"
+                    , kirundi = Nothing
+                    }
+
                 WellChildEncounter ->
                     { english = "First Standard Pediatric Visit Encounter"
                     , kinyarwanda = Just "Isura rya mbere ku mwana"
@@ -6946,6 +6960,12 @@ translationSet trans =
                     { english = "Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma ry’imirire"
                     , kirundi = Just "Isuzumwa ry’ingaburo"
+                    }
+
+                TuberculosisEncounter ->
+                    { english = "Tuberculosis Encounter"
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
+                    , kirundi = Nothing
                     }
 
                 WellChildEncounter ->
@@ -7005,6 +7025,12 @@ translationSet trans =
                     , kirundi = Just "Hitamo isuzumwa ry'ingaburo"
                     }
 
+                TuberculosisEncounter ->
+                    { english = "Select Tuberculosis Visit"
+                    , kinyarwanda = Just "Hitamo isura ku ndwara y'igituntu"
+                    , kirundi = Nothing
+                    }
+
                 WellChildEncounter ->
                     if isChw then
                         { english = "Select Well Child Visit"
@@ -7062,6 +7088,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                TuberculosisEncounter ->
+                    { english = "Subsequent Tuberculosis Visit"
+                    , kinyarwanda = Just "Isura rilkurikira ku ndwara y'igituntu"
+                    , kirundi = Nothing
+                    }
+
                 WellChildEncounter ->
                     { english = "Subsequent Standard Pediatric Visit"
                     , kinyarwanda = Nothing
@@ -7096,6 +7128,12 @@ translationSet trans =
 
                 NutritionEncounter ->
                     translationSet ChildNutrition
+
+                TuberculosisEncounter ->
+                    { english = "TB Management"
+                    , kinyarwanda = Just "Kwita ku murwayi w'igituntu"
+                    , kirundi = Nothing
+                    }
 
                 WellChildEncounter ->
                     if isChw then
@@ -7238,90 +7276,57 @@ translationSet trans =
                 TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 TaskUrineDipstickTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 TaskHemoglobinTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 TaskRandomBloodSugarTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskHIVPCRTest ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskCreatinineTest ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskLiverFunctionTest ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskLipidPanelTest ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskHbA1cTest ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskPartnerHIVTest ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskCompletePreviousTests ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         KnownPositive ->
             { english = "Known Positive"
@@ -8226,10 +8231,7 @@ translationSet trans =
 
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         LaboratoryTaskDate task ->
             case task of
@@ -8325,10 +8327,7 @@ translationSet trans =
 
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         LaboratoryTaskResult task ->
             case task of
@@ -8424,10 +8423,7 @@ translationSet trans =
 
                 -- Not in use, so no translation is needed.
                 TaskCompletePreviousTests ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         LaboratoryTaskResultsHelper ->
             { english = "When ready, update test results via case management"
@@ -8693,10 +8689,7 @@ translationSet trans =
                     -- depends on prerequesit - has patient eaten before
                     -- the test or not.
                     -- Therefore RandomBloodSugarResultNormalRange set is used.
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 LabResultsHistoryHemoglobin _ ->
                     { english = "11-16.5 g/dL"
@@ -9737,6 +9730,12 @@ translationSet trans =
                     , kirundi = Just "Akahise k'ingorane y'ingwara yo mu mutwe"
                     }
 
+        Medication ->
+            { english = "Medication"
+            , kinyarwanda = Just "Gufata Imiti"
+            , kirundi = Just "Gufata Imiti"
+            }
+
         MedicationCausesSideEffectsQuestion ->
             { english = "Did you experience adverse events of the medication"
             , kinyarwanda = Just "Waba hari ibintu wabonye bidasanzwe(bitewe n'imiti wafashe)"
@@ -9950,22 +9949,13 @@ translationSet trans =
                     }
 
                 NoMedicationDistributionSigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 NoMedicationDistributionSignsInitialPhase ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 NoMedicationDistributionSignsRecurrentPhase ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         MedicationDoxycycline ->
             -- Names of Medication, therefore,
@@ -10468,10 +10458,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NCDASignHelperHeader sign ->
             case sign of
@@ -10489,10 +10476,7 @@ translationSet trans =
 
                 -- Other signs don't have helper dialog.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NCDASignQuestion sign ->
             case sign of
@@ -10703,16 +10687,10 @@ translationSet trans =
                     }
 
                 Backend.NCDActivity.Model.NextSteps ->
-                    { english = "Next Steps"
-                    , kinyarwanda = Just "Ibikurikiyeho"
-                    , kirundi = Just "Intambwe zikurkira"
-                    }
+                    translationSet NextSteps
 
                 Backend.NCDActivity.Model.SymptomReview ->
-                    { english = "Symptom Review"
-                    , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
-                    , kirundi = Just "Isubiramwo ry'ikimenyetso"
-                    }
+                    translationSet SymptomReview
 
                 Backend.NCDActivity.Model.OutsideCare ->
                     translationSet OutsideCareLabel
@@ -11043,16 +11021,10 @@ translationSet trans =
                     translationSet Diabetes
 
                 DiagnosisRenalComplications ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 NoNCDDiagnosis ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NCDExaminationTask task ->
             case task of
@@ -11089,10 +11061,7 @@ translationSet trans =
                     }
 
                 NoNCDFamilyHistorySigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NCDGuidanceSignQuestion sign ->
             case sign of
@@ -11103,10 +11072,7 @@ translationSet trans =
                     }
 
                 NoNCDGuidanceSigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NCDHealthEducationHeader ->
             { english = "Stage One Hypertension"
@@ -11167,10 +11133,7 @@ translationSet trans =
         NCDNextStepsTask task ->
             case task of
                 Pages.NCD.Activity.Types.TaskHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 Pages.NCD.Activity.Types.TaskMedicationDistribution ->
                     translationSet MedicationDistribution
@@ -11370,10 +11333,7 @@ translationSet trans =
                     }
 
                 Backend.NCDActivity.Model.RecurrentNextSteps ->
-                    { english = "Next Steps"
-                    , kinyarwanda = Just "Ibikurikiyeho"
-                    , kirundi = Just "Intambwe zikurkira"
-                    }
+                    translationSet NextSteps
 
         NCDRecurrentNextStepsTask task ->
             case task of
@@ -11477,10 +11437,7 @@ translationSet trans =
                     }
 
                 NoNCDSocialHistorySigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         Neck ->
             { english = "Neck"
@@ -11593,10 +11550,7 @@ translationSet trans =
 
                 Pages.AcuteIllness.Activity.Types.NextStepsSendToHC ->
                     if isChw then
-                        { english = "Send to Health Center"
-                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                        , kirundi = Just "Rungika kw'ivuriro"
-                        }
+                        translationSet SendToHC
 
                     else
                         { english = "Refer to Hospital"
@@ -11605,16 +11559,10 @@ translationSet trans =
                         }
 
                 Pages.AcuteIllness.Activity.Types.NextStepsHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 Pages.AcuteIllness.Activity.Types.NextStepsFollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi"
-                    , kirundi = Just "Kurikirana"
-                    }
+                    translationSet FollowUp
 
                 Pages.AcuteIllness.Activity.Types.NextStepsContactTracing ->
                     { english = "Contact Tracing"
@@ -11626,6 +11574,12 @@ translationSet trans =
                     -- We qualify it as Medication distribution, to keep
                     -- consistant with other types of Covid steps.
                     translationSet MedicationDistribution
+
+        NightSweatsQuestion ->
+            { english = "Do you have night sweats"
+            , kinyarwanda = Just "Waba ubira ibyuya nijoro"
+            , kirundi = Just "Mbega urabira ivyuya mw'ijoro"
+            }
 
         No ->
             { english = "No"
@@ -11746,10 +11700,7 @@ translationSet trans =
                     }
 
                 ReasonForNonReferralNotIndicated ->
-                    { english = "Not indicated"
-                    , kinyarwanda = Just "Ntibyasabwe"
-                    , kirundi = Just "Ntivyerekanywe"
-                    }
+                    translationSet NotIndicated
 
                 ReasonForNonReferralOther ->
                     { english = "Other"
@@ -11859,10 +11810,7 @@ translationSet trans =
 
                 -- Other options are not relevant for Immunisation.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         AdministrationNoteForWellChildImmunisation note ->
             case note of
@@ -11904,10 +11852,7 @@ translationSet trans =
 
                 -- Other options are not relevant for Immunisation.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NoParticipantsCompleted ->
             { english = "No participants have completed all their activities yet."
@@ -11961,6 +11906,12 @@ translationSet trans =
             { english = "Why recommendations were not followed"
             , kinyarwanda = Just "Nta bipimo byafashwe"
             , kirundi = Just "Kubera iki ivyifuzo bitakurikijwe"
+            }
+
+        NotIndicated ->
+            { english = "Not indicated"
+            , kinyarwanda = Just "Ikizamini nticyasabwe"
+            , kirundi = Just "Ntivyerekanywe"
             }
 
         NotTaken ->
@@ -12047,10 +11998,7 @@ translationSet trans =
                     translationSet ChildScorecard
 
                 Backend.NutritionActivity.Model.NextSteps ->
-                    { english = "Next Steps"
-                    , kinyarwanda = Just "Ibikurikiyeho"
-                    , kirundi = Just "Intambwe zikurkira"
-                    }
+                    translationSet NextSteps
 
         NutritionActivityTitle activity ->
             case activity of
@@ -12082,10 +12030,7 @@ translationSet trans =
                     translationSet ChildScorecard
 
                 Backend.NutritionActivity.Model.NextSteps ->
-                    { english = "Next Steps"
-                    , kinyarwanda = Just "Ibikurikiyeho"
-                    , kirundi = Just "Intambwe zikurkira"
-                    }
+                    translationSet NextSteps
 
         NutritionAssessment assessment ->
             case assessment of
@@ -12273,10 +12218,7 @@ translationSet trans =
                     }
 
                 NoNutritionFeedingSigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NutritionFoodSecuritySignQuestion sign ->
             case sign of
@@ -12287,10 +12229,7 @@ translationSet trans =
                     }
 
                 NoNutritionFoodSecuritySigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NutritionHelper ->
             { english = "Explain to the mother how to check the malnutrition signs for their own child."
@@ -12319,24 +12258,15 @@ translationSet trans =
                     }
 
                 NoNutritionHygieneSigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         NutritionNextStepsTask task ->
             case task of
                 Measurement.Model.NextStepsSendToHC ->
-                    { english = "Send to Health Center"
-                    , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                    , kirundi = Just "Rungika kw'ivuriro"
-                    }
+                    translationSet SendToHC
 
                 Measurement.Model.NextStepsHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 NextStepContributingFactors ->
                     { english = "Contributing Factors"
@@ -12345,10 +12275,7 @@ translationSet trans =
                     }
 
                 NextStepFollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi"
-                    , kirundi = Just "Kurikirana"
-                    }
+                    translationSet FollowUp
 
         NutritionSupplementType type_ ->
             case type_ of
@@ -12504,10 +12431,7 @@ translationSet trans =
         OngoingTreatmentTask task ->
             case task of
                 OngoingTreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                    translationSet TreatmentReview
 
         OnlySickChild ->
             { english = "Only Sick Child"
@@ -12708,6 +12632,12 @@ translationSet trans =
             , kirundi = Just "Icegeranyo c'umugwayi"
             }
 
+        PatientRefused ->
+            { english = "Patient refused"
+            , kinyarwanda = Just "Umurwayi yabyanze"
+            , kirundi = Just "Umugwayi yanse"
+            }
+
         PatientInformation ->
             { english = "Patient Information"
             , kinyarwanda = Just "Amakuru k'umurwayi"
@@ -12853,6 +12783,18 @@ translationSet trans =
 
         Percentage ->
             { english = "%"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Period2WeeksOrLess ->
+            { english = "2 Weeks or less"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PeriodMoreThan2Weeks ->
+            { english = "More than 2 weeks"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -13192,10 +13134,7 @@ translationSet trans =
                     }
 
                 NoPregnancySummarySigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         PregnancyTestResult result ->
             case result of
@@ -13292,10 +13231,7 @@ translationSet trans =
                     }
 
                 Backend.PrenatalActivity.Model.HealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 BirthPlan ->
                     { english = "Birth Plan"
@@ -13304,10 +13240,7 @@ translationSet trans =
                     }
 
                 Backend.PrenatalActivity.Model.NextSteps ->
-                    { english = "Next Steps"
-                    , kinyarwanda = Just "Ibikurikiyeho"
-                    , kirundi = Just "Intambwe zikurkira"
-                    }
+                    translationSet NextSteps
 
                 Backend.PrenatalActivity.Model.PregnancyOutcome ->
                     { english = "Pregnancy Outcome"
@@ -13322,22 +13255,13 @@ translationSet trans =
                     }
 
                 Backend.PrenatalActivity.Model.Medication ->
-                    { english = "Medication"
-                    , kinyarwanda = Just "Gufata Imiti"
-                    , kirundi = Just "Gufata Imiti"
-                    }
+                    translationSet Medication
 
                 Backend.PrenatalActivity.Model.SymptomReview ->
-                    { english = "Symptom Review"
-                    , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
-                    , kirundi = Just "Isubiramwo ry'ikimenyetso"
-                    }
+                    translationSet SymptomReview
 
                 PrenatalTreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                    translationSet TreatmentReview
 
                 MaternalMentalHealth ->
                     { english = "Maternal Mental Health"
@@ -13364,10 +13288,7 @@ translationSet trans =
                     }
 
                 PostpartumTreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                    translationSet TreatmentReview
 
         PrenatalRecurrentActivitiesTitle activity ->
             case activity of
@@ -13378,10 +13299,7 @@ translationSet trans =
                     }
 
                 Backend.PrenatalActivity.Model.RecurrentNextSteps ->
-                    { english = "Next Steps"
-                    , kinyarwanda = Just "Ibikurikiyeho"
-                    , kirundi = Just "Intambwe zikurkira"
-                    }
+                    translationSet NextSteps
 
                 RecurrentExamination ->
                     { english = "Examination"
@@ -14817,18 +14735,12 @@ translationSet trans =
 
                 -- Non Not Urgent diagnoses.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         PrenatalEncounterType encounterType ->
             case encounterType of
                 NurseEncounter ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 NursePostpartumEncounter ->
                     { english = "Postpartum"
@@ -14978,10 +14890,7 @@ translationSet trans =
 
                 -- Other signs do not reflect a diagnosis.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         PrenatalHealthEducationLabel sign ->
             case sign of
@@ -15058,10 +14967,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         PrenatalHealthEducationAppropriateProvided ->
             { english = "Have you provided the appropriate health education to the patient"
@@ -15145,10 +15051,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         PrenatalHealthEducationDiabetesInform ->
             { english = "Counsel patient on healthy nutrition and exercise practices"
@@ -15280,10 +15183,7 @@ translationSet trans =
 
                 Pages.Prenatal.Activity.Types.NextStepsSendToHC ->
                     if isChw then
-                        { english = "Send to Health Center"
-                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                        , kirundi = Just "Rungika kw'ivuriro"
-                        }
+                        translationSet SendToHC
 
                     else
                         { english = "Referral"
@@ -15292,10 +15192,7 @@ translationSet trans =
                         }
 
                 Pages.Prenatal.Activity.Types.NextStepsHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 Pages.Prenatal.Activity.Types.NextStepsNewbornEnrolment ->
                     { english = "Newborn Enrollment"
@@ -15324,10 +15221,7 @@ translationSet trans =
                     translationSet MedicationDistribution
 
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
         PrenatalARVProgramInstructions forPostpartum ->
             if forPostpartum then
@@ -15787,10 +15681,7 @@ translationSet trans =
 
                 -- There's not question for this sign.
                 NoOutsideCareSigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         OutsideCareMedicationDosage medication ->
             case medication of
@@ -15898,10 +15789,7 @@ translationSet trans =
 
                 -- Dosage is not applicable for other options.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         OutsideCareMedicationLabel medication ->
             case medication of
@@ -16038,10 +15926,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         PrenatalPhotoHelper ->
             { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
@@ -16210,28 +16095,16 @@ translationSet trans =
                     }
 
                 SymptomQuestionNightSweats ->
-                    { english = "Do you have night sweats"
-                    , kinyarwanda = Just "Waba ubira ibyuya nijoro"
-                    , kirundi = Just "Mbega urabira ivyuya mw'ijoro"
-                    }
+                    translationSet NightSweatsQuestion
 
                 SymptomQuestionBloodInSputum ->
-                    { english = "Do you have blood in sputum"
-                    , kinyarwanda = Just "Waba ugira ikororwa kirimo amaraso"
-                    , kirundi = Just "Mbega urafise amaraso mu bikororwa"
-                    }
+                    translationSet BloodInSputumQuestion
 
                 SymptomQuestionWeightLoss ->
-                    { english = "Do you have weight loss"
-                    , kinyarwanda = Just "Waba waratakaje ibiro"
-                    , kirundi = Just "Mbega urata ibiro"
-                    }
+                    translationSet WeightLossQuestion
 
                 SymptomQuestionSevereFatigue ->
-                    { english = "Do you have severe fatigue"
-                    , kinyarwanda = Just "Waba ugira umunaniro ukabije"
-                    , kirundi = Just "Mbega urafise uburuhe burengeje"
-                    }
+                    translationSet SevereFatigueQuestion
 
                 SymptomQuestionVaginalItching ->
                     { english = "Do you experience vaginal itching"
@@ -16311,10 +16184,7 @@ translationSet trans =
                     }
 
                 TestNoteNotIndicated ->
-                    { english = "Not Indicated"
-                    , kinyarwanda = Just "Ikizamini nticyasabwe"
-                    , kirundi = Just "Ntivyerekanywe"
-                    }
+                    translationSet NotIndicated
 
                 TestNoteKnownAsPositive ->
                     { english = "Known as Positive"
@@ -16452,11 +16322,8 @@ translationSet trans =
 
         PriorTreatmentTask task ->
             case task of
-                TreatmentReview ->
-                    { english = "Treatment Review"
-                    , kinyarwanda = Just "Kureba imiti yahawe"
-                    , kirundi = Just "Isubiramwo ry'imiti"
-                    }
+                Pages.AcuteIllness.Activity.Types.TreatmentReview ->
+                    translationSet TreatmentReview
 
         Programs ->
             { english = "Programs"
@@ -16720,10 +16587,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         ReasonForNotIsolating reason ->
             case reason of
@@ -16774,11 +16638,8 @@ translationSet trans =
                     , kirundi = Just "Ukubura ry'indongozo nziza yo gukoresha ivyo wize"
                     }
 
-                PatientRefused ->
-                    { english = "Patient refused"
-                    , kinyarwanda = Just "Umurwayi yabyanze"
-                    , kirundi = Just "Umugwayi yanse"
-                    }
+                Backend.Measurement.Model.PatientRefused ->
+                    translationSet PatientRefused
 
                 PatientTooIll ->
                     { english = "Patient too ill"
@@ -16819,10 +16680,7 @@ translationSet trans =
                     }
 
                 NoReasonForNotTakingSign ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         Received ->
             { english = "Received"
@@ -16948,10 +16806,7 @@ translationSet trans =
                     }
 
                 NonePatientRefused ->
-                    { english = "Patient refused"
-                    , kinyarwanda = Just "Umurwayi yabyanze"
-                    , kirundi = Just "Umugwayi yanse"
-                    }
+                    translationSet PatientRefused
 
                 NoneOtherRecommendationSite ->
                     { english = "Other"
@@ -17176,10 +17031,7 @@ translationSet trans =
 
                 -- Dosage is not applicable for other options.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         RecommendedTreatmentSignLabelForProgressReport sign ->
             case sign of
@@ -17643,10 +17495,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         ReferToHospitalForFurtherEvaluation ->
             { english = "Refer patient to hospital for further evaluation"
@@ -18968,10 +18817,7 @@ translationSet trans =
 
                 _ ->
                     -- Not in use.
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         ResilienceKickOffBirthDateQuestion ->
             { english = "What is your birth date"
@@ -19679,6 +19525,18 @@ translationSet trans =
             , kirundi = Just "Rungika"
             }
 
+        SendToHC ->
+            { english = "Send to Health Center"
+            , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
+            , kirundi = Just "Rungika kw'ivuriro"
+            }
+
+        SevereFatigueQuestion ->
+            { english = "Do you have severe fatigue"
+            , kinyarwanda = Just "Waba ugira umunaniro ukabije"
+            , kirundi = Just "Mbega urafise uburuhe burengeje"
+            }
+
         ReportToWhatsApp ->
             { english = "Send via WhatsApp"
             , kinyarwanda = Nothing
@@ -19702,10 +19560,7 @@ translationSet trans =
                 -- Not in use, because AcuteIllness does not allow
                 -- components selection.
                 Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
                 Components.ReportToWhatsAppDialog.Model.ReportNCD ->
                     { english = "Please select which sections of the NCD Report you would like to send:"
@@ -19974,10 +19829,7 @@ translationSet trans =
                     }
 
                 NoSpecialityCareSigns ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
@@ -20526,6 +20378,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+        SymptomReview ->
+            { english = "Symptom Review"
+            , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
+            , kirundi = Just "Isubiramwo ry'ikimenyetso"
+            }
+
         Syphilis ->
             { english = "Syphilis"
             , kinyarwanda = Just "Mburugu"
@@ -20842,10 +20700,7 @@ translationSet trans =
                 }
 
             else
-                { english = ""
-                , kinyarwanda = Nothing
-                , kirundi = Nothing
-                }
+                translationSet EmptyString
 
         TreatmentDetailsHypertension forModeratePreeclamsia sign ->
             let
@@ -20889,10 +20744,7 @@ translationSet trans =
 
                 -- All others are not Hypertension treatments.
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         TreatmentDetailsMalaria sign ->
             case sign of
@@ -20909,10 +20761,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         TreatmentDetailsSyphilis sign ->
             case sign of
@@ -20947,10 +20796,13 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
+
+        TreatmentReview ->
+            { english = "Treatment Review"
+            , kinyarwanda = Just "Kureba imiti yahawe"
+            , kirundi = Just "Isubiramwo ry'imiti"
+            }
 
         TreatmentReviewQuestionAdverseEvents ->
             { english = "Have you experienced any adverse events"
@@ -21051,17 +20903,162 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        TuberculosisPast ->
-            { english = "Tuberculosis in the past"
-            , kinyarwanda = Just "Yigeze kurwara igituntu"
-            , kirundi = Just "Akahise k'igituntu"
+        Tuberculosis ->
+            { english = "Tuberculosis"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
-        TuberculosisPresent ->
-            { english = "Tuberculosis in the present"
-            , kinyarwanda = Just "Arwaye igituntu"
-            , kirundi = Just "Akubu k'igituntu"
+        TuberculosisActivityTitle activity ->
+            case activity of
+                Backend.TuberculosisActivity.Model.Diagnostics ->
+                    { english = "Diagnostics"
+                    , kinyarwanda = Just "Gusuzuma uburwayi"
+                    , kirundi = Nothing
+                    }
+
+                Backend.TuberculosisActivity.Model.Medication ->
+                    translationSet Medication
+
+                Backend.TuberculosisActivity.Model.SymptomReview ->
+                    translationSet SymptomReview
+
+                Backend.TuberculosisActivity.Model.NextSteps ->
+                    translationSet NextSteps
+
+        TuberculosisDiagnosedQuestion ->
+            { english = "Was this person diagnosed with Tuberculosis"
+            , kinyarwanda = Just "Uyu murwayi yaba yaragaragaweho uburwayi bw'igituntu"
+            , kirundi = Nothing
             }
+
+        TuberculosisDiagnosis sign ->
+            case sign of
+                TuberculosisPulmonary ->
+                    { english = "Pulmonary (in the lungs)"
+                    , kinyarwanda = Just "Igituntu cyo mu bihaha"
+                    , kirundi = Nothing
+                    }
+
+                TuberculosisExtrapulmonary ->
+                    { english = "Extrapulmonary (outside the lungs)"
+                    , kinyarwanda = Just "Igituntu gifata imyanya yo hanze y'ibihaha"
+                    , kirundi = Nothing
+                    }
+
+                NoTuberculosis ->
+                    -- Not in use.
+                    translationSet EmptyString
+
+        TuberculosisDistributeMedicationsQuestion ->
+            { english = "Did you distribute the following medications"
+            , kinyarwanda = Just "Waba watanze iyi miti ikurikira"
+            , kirundi = Nothing
+            }
+
+        TuberculosisFollowUpLabel ->
+            { english = "Tuberculosis Follow up"
+            , kinyarwanda = Just "Gukurikirana umurwayi w'igituntu"
+            , kirundi = Nothing
+            }
+
+        TuberculosisFollowUpTestingStageInstructions stage ->
+            case stage of
+                FollowUpTestingMonth1 ->
+                    { english = "Reassess treatment according to results, continue first-line treatment if drug susceptible."
+                    , kinyarwanda = Just "Genzura imiti ugendeye ku bisubizo byabonetse, ukomeze imiti y'ikiciro cya mbere niba ari koroherwa."
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingMonth2 ->
+                    translationSet <| TuberculosisFollowUpTestingStageInstructions FollowUpTestingMonth1
+
+                FollowUpTestingEndMonth2 ->
+                    { english = "If positive, Culture and DST - Continuation phase."
+                    , kinyarwanda = Just "Niba akigaragaza igituntu, kilitire na DST ari negatifu, umurwayi akomeza imiti yo mu cyiciro gikurikiyeho(RH mu mezi ane)."
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth5 ->
+                    { english = "If positive, Culture and DST, and retest after 15 days."
+                    , kinyarwanda = Just "Niba akigaragaza igituntu, ikizamini cya Kilitire na DSt cyogera gukorwa mu minsi 15."
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth6 ->
+                    { english = "If positive, Culture and DST, and retest after 15 days, if negative - cured."
+                    , kinyarwanda = Just "Niba yarakigargaza igituntu ariko ikizamini cy akilitire na DST bikaba negatifu nyuma y'iminsi 15, uwo murwayi aba yarakize."
+                    , kirundi = Nothing
+                    }
+
+        TuberculosisFollowUpTestingStageLabel stage ->
+            case stage of
+                FollowUpTestingMonth1 ->
+                    { english = "Month 1"
+                    , kinyarwanda = Just "Ukwezi kwa 1"
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingMonth2 ->
+                    { english = "Month 2"
+                    , kinyarwanda = Just "Ukwezi kwa 2"
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth2 ->
+                    { english = "End Month 2"
+                    , kinyarwanda = Just "Arangije ukwezi kwa 2"
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth5 ->
+                    { english = "End Month 5"
+                    , kinyarwanda = Just "Arangije ukwezi kwa 5"
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth6 ->
+                    { english = "End Month 6"
+                    , kinyarwanda = Just "Arangije ukwezi kwa 6"
+                    , kirundi = Nothing
+                    }
+
+        TuberculosisFollowUpTestingStageTest stage ->
+            case stage of
+                FollowUpTestingMonth1 ->
+                    { english = "xPert, Culture, and DST"
+                    , kinyarwanda = Just "Ikizamini cya Jenexpati, Kilitire na DST"
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingMonth2 ->
+                    translationSet <| TuberculosisFollowUpTestingStageTest FollowUpTestingMonth1
+
+                FollowUpTestingEndMonth2 ->
+                    { english = "Smear microposy at the end of the intensive phase"
+                    , kinyarwanda = Just "Gupima igituntu hakoreshejwe mikorosikopi umurwayi arangije imiti y'ikiciro cya mbere"
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth5 ->
+                    { english = "Smear microposy"
+                    , kinyarwanda = Just "Gupima hakoreshejwe mikorosikopi"
+                    , kirundi = Nothing
+                    }
+
+                FollowUpTestingEndMonth6 ->
+                    translationSet <| TuberculosisFollowUpTestingStageTest FollowUpTestingEndMonth5
+
+        TuberculosisHealthEducationQuestion sign ->
+            case sign of
+                EducationFollowUpTesting ->
+                    { english = "Have you provided the guidance for follow up testing"
+                    , kinyarwanda = Just "Waba watanze ubujyanama ku bijyanye no gukoresha ibizaminii"
+                    , kirundi = Nothing
+                    }
+
+                NoTuberculosisHealthEducationSigns ->
+                    translationSet EmptyString
 
         TuberculosisInstructions ->
             { english = "Follow TB protocols"
@@ -21074,6 +21071,143 @@ translationSet trans =
             , kinyarwanda = Just "Hakurikijwe amabwiriza yo kuvura igitintu"
             , kirundi = Just "Inyandiko Ntumberezo zerekeye Igituntu zakurikijwe"
             }
+
+        TuberculosisLocationQuestion ->
+            { english = "Where is the Tuberculosis located"
+            , kinyarwanda = Just "Ni uwuhe mwanaya w'umubiri wagaragawemo igituntu"
+            , kirundi = Nothing
+            }
+
+        TuberculosisMedicationTask task ->
+            case task of
+                Pages.Tuberculosis.Activity.Model.TaskPrescribedMedication ->
+                    { english = "Prescribed Medication"
+                    , kinyarwanda = Just "Imiti yatanzwe"
+                    , kirundi = Nothing
+                    }
+
+                Pages.Tuberculosis.Activity.Model.TaskDOT ->
+                    { english = "DOT"
+                    , kinyarwanda = Just "Umuti unywerwa imbere y'ugukurikirana"
+                    , kirundi = Nothing
+                    }
+
+                Pages.Tuberculosis.Activity.Model.TaskTreatmentReview ->
+                    translationSet TreatmentReview
+
+        TuberculosisNextStepsTask task ->
+            case task of
+                Pages.Tuberculosis.Activity.Model.TaskHealthEducation ->
+                    translationSet HealthEducation
+
+                Pages.Tuberculosis.Activity.Model.TaskReferral ->
+                    translationSet SendToHC
+
+                Pages.Tuberculosis.Activity.Model.TaskFollowUp ->
+                    translationSet FollowUp
+
+        TuberculosisPast ->
+            { english = "Tuberculosis in the past"
+            , kinyarwanda = Just "Yigeze kurwara igituntu"
+            , kirundi = Just "Akahise k'igituntu"
+            }
+
+        TuberculosisPrescribedMedication medication ->
+            case medication of
+                MedicationRHZE ->
+                    { english = "RHZE x 2 months (Initiation phase)"
+                    , kinyarwanda = Just "Atangira afata imiti ya RHZE mu gihe cy'amezi abiri"
+                    , kirundi = Nothing
+                    }
+
+                MedicationRH ->
+                    { english = "RH x 4 months (Continuation phase)"
+                    , kinyarwanda = Just "Akomeza afata imiti ya RH mu gihe cy'amezi 4"
+                    , kirundi = Nothing
+                    }
+
+                MedicationOther ->
+                    { english = "Other - include HIV dosing, Pediatric dosing, etc"
+                    , kinyarwanda = Just "Indi miti - harimo Iya Virusi iteera SIDA, imiti y'abana,..."
+                    , kirundi = Nothing
+                    }
+
+                NoTuberculosisPrescribedMedications ->
+                    translationSet EmptyString
+
+        TuberculosisPrescribedMedicationsQuestion ->
+            { english = "What are the medications that were prescribed"
+            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
+            , kirundi = Nothing
+            }
+
+        TuberculosisPresent ->
+            { english = "Tuberculosis in the present"
+            , kinyarwanda = Just "Arwaye igituntu"
+            , kirundi = Just "Akubu k'igituntu"
+            }
+
+        TuberculosisProvideDOTTodayQuestion ->
+            { english = "Will you provide DOT/TDO today"
+            , kinyarwanda = Just "Urakurikirana uko umurwayi afata imiti uyu munsi"
+            , kirundi = Nothing
+            }
+
+        TuberculosisReasonNotProvidedToday reason ->
+            case reason of
+                -- Not in use
+                DOTPositive ->
+                    translationSet EmptyString
+
+                DOTNegativeTakenToday ->
+                    { english = "Meds already taken today"
+                    , kinyarwanda = Just "Imiti y'uyu munsi yafashwe"
+                    , kirundi = Nothing
+                    }
+
+                DOTNegativeUnavailable ->
+                    { english = "Meds unavailable"
+                    , kinyarwanda = Just "Nta miti ihari"
+                    , kirundi = Nothing
+                    }
+
+                DOTNegativeSideEffects ->
+                    { english = "Advised to hold b/c of side effects"
+                    , kinyarwanda = Just "Yagiriwe inama yo kuba aretse gufata imiti kuko iri kumutera ingaruka"
+                    , kirundi = Nothing
+                    }
+
+                DOTNegativePatientRefused ->
+                    translationSet PatientRefused
+
+                DOTNegativeNotIndicated ->
+                    translationSet NotIndicated
+
+        TuberculosisReasonMedicationsNotDistributed reason ->
+            translationSet <| TuberculosisReasonNotProvidedToday reason
+
+        TuberculosisSuspect ->
+            { english = "Tuberculosis Suspect"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TuberculosisSymptomQuestion symptom ->
+            case symptom of
+                SymptomNightSweats ->
+                    translationSet NightSweatsQuestion
+
+                SymptomBloodInSputum ->
+                    translationSet BloodInSputumQuestion
+
+                SymptomWeightLoss ->
+                    translationSet WeightLossQuestion
+
+                SymptomSevereFatigue ->
+                    translationSet SevereFatigueQuestion
+
+                NoTuberculosisSymptoms ->
+                    translationSet EmptyString
 
         TuberculosisWarning ->
             { english = "Patient is high risk for active Tuberculosis"
@@ -21126,10 +21260,7 @@ translationSet trans =
                     }
 
                 NoUbudehe ->
-                    { english = ""
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EmptyString
 
         UndeterminedDiagnoses ->
             { english = "Undetermined Diagnoses"
@@ -21510,6 +21641,12 @@ translationSet trans =
             , kirundi = Just "Uburemere"
             }
 
+        WeightLossQuestion ->
+            { english = "Do you have weight loss"
+            , kinyarwanda = Just "Waba waratakaje ibiro"
+            , kirundi = Just "Mbega urata ibiro"
+            }
+
         WelcomeUser name ->
             { english = "Welcome " ++ name
             , kinyarwanda = Just <| "Murakaza neza " ++ name
@@ -21537,10 +21674,7 @@ translationSet trans =
                     }
 
                 WellChildMedication ->
-                    { english = "Medication"
-                    , kinyarwanda = Just "Gufata imiti"
-                    , kirundi = Just "Gufata Imiti"
-                    }
+                    translationSet Medication
 
                 WellChildPregnancySummary ->
                     { english = "Birth History"
@@ -21555,10 +21689,7 @@ translationSet trans =
                     }
 
                 WellChildNextSteps ->
-                    { english = "Next Steps"
-                    , kinyarwanda = Just "Ibikurikiyeho"
-                    , kirundi = Just "Intambwe zikurkira"
-                    }
+                    translationSet NextSteps
 
                 WellChildPhoto ->
                     { english = "Photo"
@@ -21575,10 +21706,7 @@ translationSet trans =
         WellChildDangerSignsTask task ->
             case task of
                 Pages.WellChild.Activity.Types.TaskSymptomsReview ->
-                    { english = "Symptom Review"
-                    , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
-                    , kirundi = Just "Isubiramwo ry'ikimenyetso"
-                    }
+                    translationSet SymptomReview
 
                 Pages.WellChild.Activity.Types.TaskVitals ->
                     { english = "Vitals"
@@ -22048,17 +22176,11 @@ translationSet trans =
                     }
 
                 TaskHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Just "Inyigisho ku buzima"
-                    , kirundi = Just "Inyigisho ntugamagara"
-                    }
+                    translationSet HealthEducation
 
                 TaskSendToHC ->
                     if isChw then
-                        { english = "Send to Health Center"
-                        , kinyarwanda = Just "Ohereza Ku kigo nderabuzima"
-                        , kirundi = Just "Rungika kw'ivuriro"
-                        }
+                        translationSet SendToHC
 
                     else
                         { english = "Refer to Program"
@@ -22067,10 +22189,7 @@ translationSet trans =
                         }
 
                 TaskFollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Just "Gukurikirana umurwayi"
-                    , kirundi = Just "Kurikirana"
-                    }
+                    translationSet FollowUp
 
                 TaskNextVisit ->
                     { english = "Next Visit"
@@ -22533,6 +22652,12 @@ translateActivePage page =
                             , kirundi = Nothing
                             }
 
+                        TuberculosisEncounter ->
+                            { english = "Tuberculosis Participants"
+                            , kinyarwanda = Just "Abitabiriye muri service y'indwara y'igituntu"
+                            , kirundi = Nothing
+                            }
+
                         WellChildEncounter ->
                             { english = "Standard Pediatric Visit Participant"
                             , kinyarwanda = Nothing
@@ -22584,10 +22709,7 @@ translateActivePage page =
                             }
 
                         NextStepsPage _ _ ->
-                            { english = "Next Steps"
-                            , kinyarwanda = Just "Ibikurikiyeho"
-                            , kirundi = Just "Intambwe zikurkira"
-                            }
+                            translationSet NextSteps
 
                         ProgressReportPage _ ->
                             { english = "Progress Report"
@@ -22813,6 +22935,24 @@ translateActivePage page =
 
                 ChildScoreboardProgressReportPage _ ->
                     translationSet ChildScorecard
+
+                TuberculosisParticipantPage _ ->
+                    { english = "Tuberculosis Encounter"
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
+                    , kirundi = Nothing
+                    }
+
+                TuberculosisEncounterPage _ ->
+                    { english = "Tuberculosis Encounter"
+                    , kinyarwanda = Just "Isura ku ndwara y'igituntu"
+                    , kirundi = Nothing
+                    }
+
+                TuberculosisActivityPage _ _ ->
+                    { english = "Tuberculosis Activity"
+                    , kinyarwanda = Just "Igikorwa ku ndwara y'igituntu"
+                    , kirundi = Nothing
+                    }
 
 
 translateChartPhrase : ChartPhrase -> TranslationSet String

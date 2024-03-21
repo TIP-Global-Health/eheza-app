@@ -42,7 +42,7 @@ view language currentDate selectedHealthCenter id isChw initiator db model =
         [ viewHeader language isChw initiator
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewPrenatalActions language currentDate selectedHealthCenter id isChw db model) identity prenatalSessions
+            [ viewWebData language (viewActions language currentDate selectedHealthCenter id isChw db model) identity prenatalSessions
             ]
         ]
 
@@ -67,13 +67,11 @@ viewHeader language isChw initiator =
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage goBackPage
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
-viewPrenatalActions :
+viewActions :
     Language
     -> NominalDate
     -> HealthCenterId
@@ -83,7 +81,7 @@ viewPrenatalActions :
     -> Model
     -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
     -> Html Msg
-viewPrenatalActions language currentDate selectedHealthCenter id isChw db model prenatalSessions =
+viewActions language currentDate selectedHealthCenter id isChw db model prenatalSessions =
     let
         activePregnancyData =
             prenatalSessions
@@ -152,10 +150,10 @@ viewPrenatalActions language currentDate selectedHealthCenter id isChw db model 
                     hasNurseEncounter =
                         not <| List.isEmpty nurseEncounters
                 in
-                viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePregnancyData chwEncounters hasNurseEncounter
+                viewActionsForChw language currentDate selectedHealthCenter id db activePregnancyData chwEncounters hasNurseEncounter
 
             else
-                viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId nurseEncounters
+                viewActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId nurseEncounters
 
         recordPregnancyOutcomeSection =
             [ div [ class "separator" ] []
@@ -210,7 +208,7 @@ warningPopup language currentDate navigateToPregnancyOutcomeAction =
             ]
 
 
-viewPrenatalActionsForNurse :
+viewActionsForNurse :
     Language
     -> NominalDate
     -> HealthCenterId
@@ -219,7 +217,7 @@ viewPrenatalActionsForNurse :
     -> Maybe IndividualEncounterParticipantId
     -> List ( PrenatalEncounterId, PrenatalEncounter )
     -> List (Html Msg)
-viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId encounters =
+viewActionsForNurse language currentDate selectedHealthCenter id db maybeSessionId encounters =
     let
         ( maybeActiveEncounterId, lastEncounterType, encounterWasCompletedToday ) =
             List.head encounters
@@ -340,7 +338,7 @@ viewPrenatalActionsForNurse language currentDate selectedHealthCenter id db mayb
     ]
 
 
-viewPrenatalActionsForChw :
+viewActionsForChw :
     Language
     -> NominalDate
     -> HealthCenterId
@@ -350,7 +348,7 @@ viewPrenatalActionsForChw :
     -> List ( PrenatalEncounterId, PrenatalEncounter )
     -> Bool
     -> List (Html Msg)
-viewPrenatalActionsForChw language currentDate selectedHealthCenter id db activePregnancyData encounters hasNurseEncounter =
+viewActionsForChw language currentDate selectedHealthCenter id db activePregnancyData encounters hasNurseEncounter =
     let
         maybeSessionId =
             Maybe.map Tuple.first activePregnancyData

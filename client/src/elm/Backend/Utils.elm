@@ -15,6 +15,7 @@ import Backend.Measurement.Model
         , NutritionMeasurements
         , PrenatalMeasurements
         , StockManagementMeasurements
+        , TuberculosisMeasurements
         , WellChildMeasurements
         )
 import Backend.Model exposing (..)
@@ -152,6 +153,16 @@ mapChildScoreboardMeasurements id func model =
             model
 
 
+mapTuberculosisMeasurements : Maybe TuberculosisEncounterId -> (TuberculosisMeasurements -> TuberculosisMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapTuberculosisMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | tuberculosisMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.tuberculosisMeasurements }
+
+        Nothing ->
+            model
+
+
 mapStockManagementMeasurements : Maybe HealthCenterId -> (StockManagementMeasurements -> StockManagementMeasurements) -> ModelIndexedDb -> ModelIndexedDb
 mapStockManagementMeasurements id func model =
     case id of
@@ -262,3 +273,8 @@ reportToWhatsAppEnabled =
 stockManagementEnabled : EverySet SiteFeature -> Bool
 stockManagementEnabled =
     EverySet.member FeatureStockManagement
+
+
+tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
+tuberculosisManagementEnabled =
+    EverySet.member FeatureTuberculosisManagement

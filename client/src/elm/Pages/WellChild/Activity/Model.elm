@@ -420,7 +420,7 @@ type alias NextStepsData =
     { contributingFactorsForm : ContributingFactorsForm
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
-    , followUpForm : FollowUpForm
+    , followUpForm : NutritionFollowUpForm
     , nextVisitForm : NextVisitForm
     , activeTask : Maybe Pages.WellChild.Activity.Types.NextStepsTask
     }
@@ -430,7 +430,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { contributingFactorsForm = emptyContributingFactorsForm
     , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = emptyFollowUpForm
+    , followUpForm = emptyNutritionFollowUpForm
     , sendToHCForm = emptySendToHCForm
     , nextVisitForm = emptyNextVisitForm
     , activeTask = Nothing

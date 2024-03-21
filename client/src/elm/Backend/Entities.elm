@@ -1533,3 +1533,75 @@ type alias WellChildCaringId =
 
 type WellChildCaringIdUuidType
     = WellChildCaringIdUuidType
+
+
+type alias TuberculosisEncounterId =
+    EntityUuid TuberculosisEncounterUuidType
+
+
+type TuberculosisEncounterUuidType
+    = TuberculosisEncounterUuidType
+
+
+type alias TuberculosisDOTId =
+    EntityUuid TuberculosisDOTUuidType
+
+
+type TuberculosisDOTUuidType
+    = TuberculosisDOTUuidType
+
+
+type alias TuberculosisDiagnosticsId =
+    EntityUuid TuberculosisDiagnosticsUuidType
+
+
+type TuberculosisDiagnosticsUuidType
+    = TuberculosisDiagnosticsUuidType
+
+
+type alias TuberculosisFollowUpId =
+    EntityUuid TuberculosisFollowUpUuidType
+
+
+type TuberculosisFollowUpUuidType
+    = TuberculosisFollowUpUuidType
+
+
+type alias TuberculosisHealthEducationId =
+    EntityUuid TuberculosisHealthEducationUuidType
+
+
+type TuberculosisHealthEducationUuidType
+    = TuberculosisHealthEducationUuidType
+
+
+type alias TuberculosisMedicationId =
+    EntityUuid TuberculosisMedicationUuidType
+
+
+type TuberculosisMedicationUuidType
+    = TuberculosisMedicationUuidType
+
+
+type alias TuberculosisReferralId =
+    EntityUuid TuberculosisReferralUuidType
+
+
+type TuberculosisReferralUuidType
+    = TuberculosisReferralUuidType
+
+
+type alias TuberculosisSymptomReviewId =
+    EntityUuid TuberculosisSymptomReviewUuidType
+
+
+type TuberculosisSymptomReviewUuidType
+    = TuberculosisSymptomReviewUuidType
+
+
+type alias TuberculosisTreatmentReviewId =
+    EntityUuid TuberculosisTreatmentReviewUuidType
+
+
+type TuberculosisTreatmentReviewUuidType
+    = TuberculosisTreatmentReviewUuidType

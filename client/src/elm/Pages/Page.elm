@@ -42,7 +42,7 @@ choices about what to show the user, rather than the details).
 
 import Activity.Model exposing (Activity)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
@@ -55,6 +55,7 @@ import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.Person.Model exposing (Initiator)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
+import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 
 
@@ -190,6 +191,9 @@ type UserPage
     | ChildScoreboardEncounterPage ChildScoreboardEncounterId -- Child Scoreboard activities index.
     | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
     | ChildScoreboardProgressReportPage ChildScoreboardEncounterId -- Scorecard.
+    | TuberculosisParticipantPage PersonId
+    | TuberculosisEncounterPage TuberculosisEncounterId -- Child Scoreboard activities index.
+    | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Child Scoreboard activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

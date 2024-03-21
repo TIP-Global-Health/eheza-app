@@ -1,8 +1,8 @@
 module Pages.AcuteIllness.Outcome.View exposing (view)
 
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Encoder exposing (acuteIllnessOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..), allAcuteIllnessOutcome)
+import Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeToString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Gizra.NominalDate exposing (NominalDate)

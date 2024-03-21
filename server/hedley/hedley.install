@@ -692,3 +692,10 @@ function hedley_update_7040() {
   $data_manager_role->name = 'Data Manager';
   user_role_save($data_manager_role);
 }
+
+/**
+ * Enable the Hedley Tuberculosis module.
+ */
+function hedley_update_7041() {
+  module_enable(['hedley_tuberculosis']);
+}

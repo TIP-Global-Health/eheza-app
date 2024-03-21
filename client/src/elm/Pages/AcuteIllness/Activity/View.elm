@@ -12,7 +12,7 @@ module Pages.AcuteIllness.Activity.View exposing
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
@@ -34,12 +34,21 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
-import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Model
+    exposing
+        ( HealthEducationForm
+        , InvokationModule(..)
+        , OngoingTreatmentReviewForm
+        , VitalsForm
+        , VitalsFormMode(..)
+        )
 import Measurement.Utils
     exposing
         ( healthEducationFormWithDefault
         , muacFormWithDefault
+        , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
+        , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
 import Measurement.View exposing (renderDatePart, viewSendToHealthCenterForm, viewSendToHospitalForm)
@@ -571,17 +580,79 @@ viewSymptomsGeneralForm language currentDate measurements form =
 
 viewSymptomsRespiratoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsRespiratoryForm -> Html Msg
 viewSymptomsRespiratoryForm language currentDate measurements form =
+    let
+        respiratorySignsWithoutCough =
+            ( Tuple.first allSymptomsRespiratorySigns
+                |> List.filter ((/=) Cough)
+            , Tuple.second allSymptomsRespiratorySigns
+            )
+    in
     viewCheckBoxValueInput language
-        allSymptomsRespiratorySigns
+        respiratorySignsWithoutCough
         form.signs
         ToggleSymptomsRespiratorySign
         SetSymptomsRespiratorySignValue
         Translate.SymptomsRespiratorySign
+        |> List.append (viewCoughInputItem language form.signs)
         |> List.append
             [ viewQuestionLabel language Translate.PatientGotAnySymptoms
             , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
             ]
         |> div [ class "symptoms-form respiratory" ]
+
+
+viewCoughInputItem : Language -> Dict SymptomsRespiratorySign Int -> List (Html Msg)
+viewCoughInputItem language data =
+    let
+        currentValue =
+            Dict.get Cough data
+
+        isChecked =
+            isJust currentValue
+
+        periodSection =
+            Maybe.map
+                (\value ->
+                    let
+                        valueForInput =
+                            if value == coughLessThan2WeeksConstant then
+                                Just False
+
+                            else if value == symptomMaxDuration then
+                                Just True
+
+                            else
+                                Nothing
+                    in
+                    viewBoolInput
+                        language
+                        valueForInput
+                        SetSymptomsRespiratoryCough
+                        "cough-period"
+                        (Just ( Translate.PeriodMoreThan2Weeks, Translate.Period2WeeksOrLess ))
+                )
+                currentValue
+                |> Maybe.withDefault emptyNode
+    in
+    [ div [ class "ui grid" ]
+        [ div [ class "six wide column" ]
+            [ div
+                [ class "ui checkbox activity"
+                , onClick <| ToggleSymptomsRespiratorySign Cough
+                ]
+                [ input
+                    [ type_ "checkbox"
+                    , checked isChecked
+                    , classList [ ( "checked", isChecked ) ]
+                    ]
+                    []
+                , label []
+                    [ text <| translate language (Translate.SymptomsRespiratorySign Cough) ]
+                ]
+            ]
+        ]
+    , periodSection
+    ]
 
 
 viewSymptomsGIForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGIForm -> Html Msg
@@ -1857,7 +1928,10 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                                         SaveHealthEducation personId measurements.healthEducation nextTask
 
                                     NextStepsFollowUp ->
-                                        SaveFollowUp personId measurements.followUp nextTask
+                                        SaveFollowUp personId
+                                            (Maybe.map Tuple.second assembled.diagnosis)
+                                            measurements.followUp
+                                            nextTask
 
                                     NextStepsContactTracing ->
                                         SaveContactsTracing personId measurements.contactsTracing nextTask
@@ -2526,7 +2600,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
             tasks
                 |> List.map
                     (\task ->
-                        ( task, ongoingTreatmentTasksCompletedFromTotal measurements data task )
+                        ( task, ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data task )
                     )
                 |> Dict.fromList
 
@@ -2540,7 +2614,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                     measurements.treatmentOngoing
                         |> getMeasurementValueFunc
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewOngoingTreatmentReviewForm language currentDate SetTotalMissedDoses measurements
+                        |> viewOngoingTreatmentReviewForm language currentDate
 
         actions =
             let
@@ -2571,164 +2645,20 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
     ]
 
 
-viewOngoingTreatmentReviewForm : Language -> NominalDate -> (String -> Msg) -> AcuteIllnessMeasurements -> OngoingTreatmentReviewForm -> Html Msg
-viewOngoingTreatmentReviewForm language currentDate setMissedDosesMsg measurements form =
+viewOngoingTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
+viewOngoingTreatmentReviewForm language currentDate form =
     let
-        takenAsPrescribedUpdateFunc value form_ =
-            if value then
-                { form_ | takenAsPrescribed = Just True, reasonForNotTaking = Nothing, reasonForNotTakingDirty = True }
-
-            else
-                { form_ | takenAsPrescribed = Just False }
-
-        missedDosesUpdateFunc value form_ =
-            if value then
-                { form_ | missedDoses = Just True }
-
-            else
-                { form_ | missedDoses = Just False, totalMissedDoses = Nothing, totalMissedDosesDirty = True }
-
-        feelingBetterUpdateFunc value form_ =
-            { form_ | feelingBetter = Just value }
-
-        sideEffectsUpdateFunc value form_ =
-            if value then
-                { form_ | sideEffects = Just value }
-
-            else
-                { form_ | sideEffects = Just value, adverseEvents = Nothing, adverseEventsDirty = True }
-
-        takenAsPrescribedSection =
-            let
-                takenAsPrescribed =
-                    form.takenAsPrescribed
-                        |> Maybe.withDefault True
-
-                reasonForNotTakingInput =
-                    if not takenAsPrescribed then
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "fifteen wide column" ]
-                                [ viewQuestionLabel language Translate.WhyNot ]
-                            ]
-                        , viewCheckBoxSelectInput language
-                            [ NotTakingAdverseEvent, NotTakingNoMoney ]
-                            [ NotTakingMemoryProblems, NotTakingOther ]
-                            form.reasonForNotTaking
-                            SetReasonForNotTaking
-                            Translate.ReasonForNotTaking
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationTakenAsPrescribedQuestion
-            , viewBoolInput
-                language
-                form.takenAsPrescribed
-                (SetOngoingTreatmentReviewBoolInput takenAsPrescribedUpdateFunc)
-                "taken-as-prescribed"
-                Nothing
-            ]
-                ++ reasonForNotTakingInput
-
-        missedDosesSection =
-            let
-                missedDoses =
-                    form.missedDoses
-                        |> Maybe.withDefault False
-
-                totalMissedDosesInput =
-                    if missedDoses then
-                        let
-                            options =
-                                List.repeat 22 ""
-                                    |> List.indexedMap (\index _ -> index)
-
-                            missedDosesInput =
-                                viewCustomSelectListInput form.totalMissedDoses
-                                    options
-                                    String.fromInt
-                                    setMissedDosesMsg
-                                    String.fromInt
-                                    ""
-                                    True
-                        in
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "four wide column" ]
-                                [ viewQuestionLabel language Translate.HowManyDoses ]
-                            , div [ class "four wide column" ]
-                                [ missedDosesInput ]
-                            ]
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationDosesMissedQuestion
-            , viewBoolInput
-                language
-                form.missedDoses
-                (SetOngoingTreatmentReviewBoolInput missedDosesUpdateFunc)
-                "missed-doses"
-                Nothing
-            ]
-                ++ totalMissedDosesInput
-
-        sideEffectsSection =
-            let
-                sideEffects =
-                    form.sideEffects
-                        |> Maybe.withDefault False
-
-                adverseEventsInput =
-                    if sideEffects then
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "fifteen wide column" ]
-                                [ viewQuestionLabel language Translate.AcuteIllnessAdverseEventKindsQuestion ]
-                            ]
-                        , viewCheckBoxMultipleSelectInput language
-                            [ AdverseEventRashOrItching
-                            , AdverseEventFever
-                            , AdverseEventDiarrhea
-                            ]
-                            [ AdverseEventVomiting
-                            , AdverseEventFatigue
-                            , AdverseEventOther
-                            ]
-                            (form.adverseEvents |> Maybe.withDefault [])
-                            Nothing
-                            SetAdverseEvent
-                            Translate.AcuteIllnessAdverseEvent
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationCausesSideEffectsQuestion
-            , viewBoolInput
-                language
-                form.sideEffects
-                (SetOngoingTreatmentReviewBoolInput sideEffectsUpdateFunc)
-                "side-effects"
-                Nothing
-            ]
-                ++ adverseEventsInput
+        ( inputs, _ ) =
+            treatmentReviewInputsAndTasks language
+                currentDate
+                SetOngoingTreatmentReviewBoolInput
+                SetReasonForNotTaking
+                SetTotalMissedDoses
+                SetAdverseEvent
+                form
     in
-    takenAsPrescribedSection
-        ++ missedDosesSection
-        ++ [ viewQuestionLabel language Translate.MedicationFeelBetterAfterTakingQuestion
-           , viewBoolInput
-                language
-                form.feelingBetter
-                (SetOngoingTreatmentReviewBoolInput feelingBetterUpdateFunc)
-                "feeling-better"
-                Nothing
-           ]
-        ++ sideEffectsSection
-        |> div [ class "ui form ongoing-treatment-review" ]
+    div [ class "ui form ongoing-treatment-review" ]
+        inputs
 
 
 viewAcuteIllnessDangerSigns : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> DangerSignsData -> List (Html Msg)
@@ -2816,7 +2746,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
 
 viewReviewDangerSignsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ReviewDangerSignsForm -> Html Msg
 viewReviewDangerSignsForm language currentDate measurements form =
-    div [ class "ui form ongoing-treatment-review" ]
+    div [ class "ui form danger-signs" ]
         [ viewQuestionLabel language Translate.ConditionImprovingQuestion
         , viewBoolInput
             language

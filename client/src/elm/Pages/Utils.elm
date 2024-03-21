@@ -1,7 +1,7 @@
 module Pages.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (HealthCenterId, PersonId)
 import Backend.Measurement.Model
     exposing
@@ -480,7 +480,7 @@ viewBoolInput :
 viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
     let
         ( yesTransId, noTransId ) =
-            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
+            Maybe.withDefault ( Translate.Yes, Translate.No ) optionsTranslationIds
 
         inputWidth =
             if isJust optionsTranslationIds then

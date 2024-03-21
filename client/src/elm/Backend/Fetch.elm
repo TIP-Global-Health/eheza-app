@@ -317,6 +317,35 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchTuberculosisEncounter id ->
+            Dict.get id model.tuberculosisEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchTuberculosisEncounters ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.tuberculosisEncounters)) ids
+
+        FetchTuberculosisEncountersForParticipant id ->
+            Dict.get id model.tuberculosisEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchTuberculosisEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.tuberculosisEncountersByParticipant)) ids
+
+        FetchTuberculosisMeasurements id ->
+            Dict.get id model.tuberculosisMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchStockManagementMeasurements id ->
             Dict.get id model.stockManagementMeasurements
                 |> Maybe.withDefault NotAsked
@@ -509,6 +538,15 @@ forget msg model =
 
         FetchChildScoreboardMeasurements id ->
             { model | childScoreboardMeasurements = Dict.remove id model.childScoreboardMeasurements }
+
+        FetchTuberculosisEncounter id ->
+            { model | tuberculosisEncounters = Dict.remove id model.tuberculosisEncounters }
+
+        FetchTuberculosisEncountersForParticipant id ->
+            { model | tuberculosisEncountersByParticipant = Dict.remove id model.tuberculosisEncountersByParticipant }
+
+        FetchTuberculosisMeasurements id ->
+            { model | tuberculosisMeasurements = Dict.remove id model.tuberculosisMeasurements }
 
         FetchStockManagementMeasurements id ->
             { model | stockManagementMeasurements = Dict.remove id model.stockManagementMeasurements }

@@ -1,6 +1,6 @@
 module Backend.AcuteIllnessEncounter.Utils exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.NCDEncounter.Utils
 import Backend.PatientRecord.Utils
 import Maybe.Extra
@@ -52,6 +52,9 @@ acuteIllnessDiagnosisToString diagnosis =
         DiagnosisUndeterminedMoreEvaluationNeeded ->
             "undetermined"
 
+        DiagnosisTuberculosisSuspect ->
+            "tuberculosis-suspect"
+
         NoAcuteIllnessDiagnosis ->
             "none"
 
@@ -100,6 +103,9 @@ acuteIllnessDiagnosisFromString diagnosis =
 
         "undetermined" ->
             Just DiagnosisUndeterminedMoreEvaluationNeeded
+
+        "tuberculosis-suspect" ->
+            Just DiagnosisTuberculosisSuspect
 
         "none" ->
             Just NoAcuteIllnessDiagnosis

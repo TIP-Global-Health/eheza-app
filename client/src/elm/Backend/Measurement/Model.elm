@@ -5,6 +5,7 @@ and cached in local storage.
 -}
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
@@ -66,6 +67,10 @@ type alias NCDMeasurement value =
 
 type alias ChildScoreboardMeasurement value =
     Measurement ChildScoreboardEncounterId value
+
+
+type alias TuberculosisMeasurement value =
+    Measurement TuberculosisEncounterId value
 
 
 
@@ -229,10 +234,10 @@ type alias ContributingFactors =
 
 
 type alias FollowUp =
-    GroupMeasurement FollowUpValue
+    GroupMeasurement NutritionFollowUpValue
 
 
-type alias FollowUpValue =
+type alias NutritionFollowUpValue =
     { options : EverySet FollowUpOption
     , assesment : EverySet NutritionAssessment
     , resolutionDate : Maybe NominalDate
@@ -368,7 +373,7 @@ type alias NutritionContributingFactors =
 
 
 type alias NutritionFollowUp =
-    NutritionMeasurement FollowUpValue
+    NutritionMeasurement NutritionFollowUpValue
 
 
 
@@ -2125,6 +2130,7 @@ type alias AcuteIllnessFollowUp =
 
 type alias AcuteIllnessFollowUpValue =
     { options : EverySet FollowUpOption
+    , diagnosis : Maybe AcuteIllnessDiagnosis
     , resolutionDate : Maybe NominalDate
     }
 
@@ -2239,7 +2245,7 @@ type alias WellChildContributingFactors =
 
 
 type alias WellChildFollowUp =
-    WellChildMeasurement FollowUpValue
+    WellChildMeasurement NutritionFollowUpValue
 
 
 type alias WellChildHeadCircumference =
@@ -2863,6 +2869,105 @@ type alias ChildScoreboardRotarixImmunisation =
 
 
 
+-- Tuberculosis:
+
+
+type alias TuberculosisDiagnostics =
+    TuberculosisMeasurement TuberculosisDiagnosticsValue
+
+
+type alias TuberculosisDiagnosticsValue =
+    TuberculosisDiagnosis
+
+
+type TuberculosisDiagnosis
+    = TuberculosisPulmonary
+    | TuberculosisExtrapulmonary
+    | NoTuberculosis
+
+
+type alias TuberculosisDOT =
+    TuberculosisMeasurement TuberculosisDOTValue
+
+
+type alias TuberculosisDOTValue =
+    { sign : TuberculosisDOTSign
+    , medicationDistributionSign : TuberculosisDOTSign
+    }
+
+
+type TuberculosisDOTSign
+    = DOTPositive
+    | DOTNegativeTakenToday
+    | DOTNegativeUnavailable
+    | DOTNegativeSideEffects
+    | DOTNegativePatientRefused
+    | DOTNegativeNotIndicated
+
+
+type alias TuberculosisFollowUp =
+    TuberculosisMeasurement FollowUpValue
+
+
+type alias FollowUpValue =
+    { options : EverySet FollowUpOption
+    , resolutionDate : Maybe NominalDate
+    }
+
+
+type alias TuberculosisHealthEducation =
+    TuberculosisMeasurement TuberculosisHealthEducationValue
+
+
+type alias TuberculosisHealthEducationValue =
+    EverySet TuberculosisHealthEducationSign
+
+
+type TuberculosisHealthEducationSign
+    = EducationFollowUpTesting
+    | NoTuberculosisHealthEducationSigns
+
+
+type alias TuberculosisMedication =
+    TuberculosisMeasurement TuberculosisMedicationValue
+
+
+type alias TuberculosisMedicationValue =
+    EverySet TuberculosisPrescribedMedication
+
+
+type TuberculosisPrescribedMedication
+    = MedicationRHZE
+    | MedicationRH
+    | MedicationOther
+    | NoTuberculosisPrescribedMedications
+
+
+type alias TuberculosisReferral =
+    TuberculosisMeasurement SendToHCValue
+
+
+type alias TuberculosisSymptomReview =
+    TuberculosisMeasurement TuberculosisSymptomReviewValue
+
+
+type alias TuberculosisSymptomReviewValue =
+    EverySet TuberculosisSymptom
+
+
+type TuberculosisSymptom
+    = SymptomNightSweats
+    | SymptomBloodInSputum
+    | SymptomWeightLoss
+    | SymptomSevereFatigue
+    | NoTuberculosisSymptoms
+
+
+type alias TuberculosisTreatmentReview =
+    TuberculosisMeasurement TreatmentOngoingValue
+
+
+
 -- Stock Management:
 
 
@@ -3132,6 +3237,7 @@ type alias FollowUpMeasurements =
     , acuteIllness : Dict AcuteIllnessFollowUpId AcuteIllnessFollowUp
     , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
+    , tuberculosis : Dict TuberculosisFollowUpId TuberculosisFollowUp
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
     , ncdLabs : Dict NCDLabsResultsId NCDLabsResults
@@ -3225,6 +3331,18 @@ type alias ChildScoreboardMeasurements =
     , opvImmunisation : Maybe ( ChildScoreboardOPVImmunisationId, ChildScoreboardOPVImmunisation )
     , pcv13Immunisation : Maybe ( ChildScoreboardPCV13ImmunisationId, ChildScoreboardPCV13Immunisation )
     , rotarixImmunisation : Maybe ( ChildScoreboardRotarixImmunisationId, ChildScoreboardRotarixImmunisation )
+    }
+
+
+type alias TuberculosisMeasurements =
+    { diagnostics : Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics )
+    , dot : Maybe ( TuberculosisDOTId, TuberculosisDOT )
+    , followUp : Maybe ( TuberculosisFollowUpId, TuberculosisFollowUp )
+    , healthEducation : Maybe ( TuberculosisHealthEducationId, TuberculosisHealthEducation )
+    , medication : Maybe ( TuberculosisMedicationId, TuberculosisMedication )
+    , referral : Maybe ( TuberculosisReferralId, TuberculosisReferral )
+    , symptomReview : Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview )
+    , treatmentReview : Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview )
     }
 
 

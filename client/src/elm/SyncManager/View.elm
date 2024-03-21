@@ -734,6 +734,33 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityTreatmentReview identifier ->
                 viewMeasurement identifier "Treatment Review"
 
+            BackendAuthorityTuberculosisDiagnostics identifier ->
+                viewMeasurement identifier "TuberculosisDiagnostics"
+
+            BackendAuthorityTuberculosisDOT identifier ->
+                viewMeasurement identifier "TuberculosisDOT"
+
+            BackendAuthorityTuberculosisEncounter identifier ->
+                text ("Tuberculosis Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityTuberculosisFollowUp identifier ->
+                viewMeasurement identifier "TuberculosisFollowUp"
+
+            BackendAuthorityTuberculosisHealthEducation identifier ->
+                viewMeasurement identifier "TuberculosisHealthEducation"
+
+            BackendAuthorityTuberculosisMedication identifier ->
+                viewMeasurement identifier "TuberculosisMedication"
+
+            BackendAuthorityTuberculosisReferral identifier ->
+                viewMeasurement identifier "TuberculosisReferral"
+
+            BackendAuthorityTuberculosisSymptomReview identifier ->
+                viewMeasurement identifier "TuberculosisSymptomReview"
+
+            BackendAuthorityTuberculosisTreatmentReview identifier ->
+                viewMeasurement identifier "TuberculosisTreatmentReview"
+
             BackendAuthorityVitals identifier ->
                 viewMeasurement identifier "Vitals"
 

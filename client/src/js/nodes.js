@@ -130,6 +130,9 @@
                 else if (type === 'child-scoreboard-measurements') {
                   return viewMeasurements('child_scoreboard_encounter', uuid);
                 }
+                else if (type === 'tuberculosis-measurements') {
+                  return viewMeasurements('tuberculosis_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
@@ -516,6 +519,9 @@
                     else if (key === 'child_scoreboard_encounter') {
                         target = node.child_scoreboard_encounter;
                     }
+                    else if (key === 'tuberculosis_encounter') {
+                        target = node.tuberculosis_encounter;
+                    }
                     else if (key === 'newborn') {
                         target = node.newborn;
                     }
@@ -567,13 +573,14 @@
       'nutrition_follow_up',
       'prenatal_follow_up',
       'well_child_follow_up',
+      'tuberculosis_follow_up',
       'acute_illness_trace_contact',
       'prenatal_labs_results',
       'ncd_labs_results',
       'well_child_next_visit'
     ];
 
-    // These are tupes of follow ups that need to be loaded, even if they
+    // These are types of follow ups that need to be loaded, even if they
     // were resolved during period of past 6 months.
     // This is required to present data at Dashboard statistics.
     var resolvedFollowUpMeasurementsTypes = [
@@ -862,6 +869,7 @@
                   'ncd_encounter',
                   'nutrition_encounter',
                   'prenatal_encounter',
+                  'tuberculosis_encounter',
                   'well_child_encounter'
                 ];
                 if (encounterTypes.includes(type)) {

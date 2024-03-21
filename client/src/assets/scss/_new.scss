@@ -1273,6 +1273,10 @@ div.page-activity.trace-contact  {
       min-height: 210px;
     }
 
+    .symptoms-form.respiratory .cough-period label {
+      font-size: 22px;
+    }
+
     .symptoms-form.gi .symptoms {
       margin-bottom: 30px;
     }
@@ -2328,7 +2332,8 @@ div.page-activity.prenatal {
 }
 
 div.page-activity.ncd,
-div.page-activity.well-child {
+div.page-activity.well-child,
+div.page-activity.tuberculosis {
 
   .ui.full.segment .full.content {
 
@@ -2475,6 +2480,58 @@ div.page-activity.child-scoreboard {
       margin: 2.5rem 0 -2.5rem 0;
     }
   }
+}
+
+div.page-activity.tuberculosis {
+
+  .ui.full.segment .full.content {
+
+    .ui.form.dot .prescribed-medications {
+      padding: 20px;
+
+      p {
+        margin-bottom: 5px;
+      }
+    }
+
+    .ui.form.health-education .follow-up-testing-table {
+      border: 1px solid black;
+      margin-bottom: 20px;
+
+      .row {
+        border-bottom: 1px solid black;
+        display: flex;
+        justify-content: center;
+
+        .item {
+          float: left;
+          font-size: 18px;
+          line-height: 24px;
+          padding: 10px;
+        }
+
+        .item.label {
+          border-right: 1px solid black;
+          margin-bottom: 0;
+          width: 14%;
+        }
+
+        .item.test {
+          border-right: 1px solid black;
+          width: 30%;
+        }
+
+        .item.guidance {
+          width: 55%;
+        }
+      }
+
+      .row:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
 }
 
 div.page-outcome {
@@ -3770,7 +3827,9 @@ div.page-encounter.ncd,
 div.page-activity.ncd,
 div.page-encounter.child-scoreboard,
 div.page-activity.child-scoreboard,
-div.page-report.child-scoreboard {
+div.page-report.child-scoreboard,
+div.page-encounter.tuberculosis,
+div.page-activity.tuberculosis {
 
   .details {
     padding-left: 25px;
@@ -4198,9 +4257,10 @@ div.page-report.child-scoreboard {
       background-color: $color-white;
       border-radius: 3px;
       color: $color-dark-gray;
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 600;
-      padding: 15px;
+      margin-right: 0;
+      padding: 10px;
       text-transform: none;
     }
 

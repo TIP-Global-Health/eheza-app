@@ -22,6 +22,7 @@ import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
+import Backend.TuberculosisEncounter.Decoder exposing (decodeTuberculosisEncounter)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
 import Json.Decode exposing (..)
@@ -473,6 +474,33 @@ decodeRevision =
 
                     "treatment_ongoing" ->
                         decodeWithUuid TreatmentOngoingRevision decodeTreatmentOngoing
+
+                    "tuberculosis_diagnostics" ->
+                        decodeWithUuid TuberculosisDiagnosticsRevision decodeTuberculosisDiagnostics
+
+                    "tuberculosis_dot" ->
+                        decodeWithUuid TuberculosisDOTRevision decodeTuberculosisDOT
+
+                    "tuberculosis_encounter" ->
+                        decodeWithUuid TuberculosisEncounterRevision decodeTuberculosisEncounter
+
+                    "tuberculosis_follow_up" ->
+                        decodeWithUuid TuberculosisFollowUpRevision decodeTuberculosisFollowUp
+
+                    "tuberculosis_health_education" ->
+                        decodeWithUuid TuberculosisHealthEducationRevision decodeTuberculosisHealthEducation
+
+                    "tuberculosis_medication" ->
+                        decodeWithUuid TuberculosisMedicationRevision decodeTuberculosisMedication
+
+                    "tuberculosis_referral" ->
+                        decodeWithUuid TuberculosisReferralRevision decodeTuberculosisReferral
+
+                    "tuberculosis_symptom_review" ->
+                        decodeWithUuid TuberculosisSymptomReviewRevision decodeTuberculosisSymptomReview
+
+                    "tuberculosis_treatment_review" ->
+                        decodeWithUuid TuberculosisTreatmentReviewRevision decodeTuberculosisTreatmentReview
 
                     "village" ->
                         decodeWithUuid VillageRevision decodeVillage
