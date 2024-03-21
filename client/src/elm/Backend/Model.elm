@@ -328,6 +328,7 @@ type MsgIndexedDb
     | FetchEditableSessionMeasurements SessionId
     | FetchEditableSessionSummaryByActivity SessionId
     | FetchEditableSessionSummaryByParticipant SessionId
+    | FetchEducationSession EducationSessionId
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions PersonId
@@ -393,6 +394,7 @@ type MsgIndexedDb
     | HandleFetchedChildScoreboardEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict ChildScoreboardEncounterId ChildScoreboardEncounter))
     | HandleFetchedChildScoreboardMeasurements ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
+    | HandleFetchedEducationSession EducationSessionId (WebData EducationSession)
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
     | HandleFetchedExpectedSessions PersonId (WebData (Dict SessionId Session))

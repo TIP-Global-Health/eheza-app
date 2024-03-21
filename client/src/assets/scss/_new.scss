@@ -2534,6 +2534,45 @@ div.page-activity.tuberculosis {
 
 }
 
+div.page-activity.education-session {
+
+  .ui.full.segment {
+
+    .full.content {
+
+      .ui.checkbox.activity {
+        margin-bottom: 15px;
+      }
+    }
+
+    .registration-page.search {
+      min-height: 780px;
+
+      .items.participants-list {
+        max-height: 400px;
+        overflow: auto;
+
+        .item {
+          margin-bottom: 30px;
+          max-height: 400px;
+          overflow: auto;
+          padding: 0 30px;
+
+          .content {
+            margin-top: 15px;
+          }
+
+          .button-check-in,
+          .button-checked-in  {
+            margin-top: 30px;
+          }
+        }
+      }
+    }
+  }
+}
+
+
 div.page-outcome {
 
   .tasks-count {

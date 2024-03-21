@@ -36,6 +36,7 @@ type EducationTopic
     | TopicMentalHealth
     | TopicMalaria
     | TopicChildhoodIllnesses
+    | TopicMalnutrition
     | TopicANCPostpartum
     | TopicFamilyPlanning
     | TopicGender
@@ -57,5 +58,5 @@ emptyModel =
 
 
 type Msg
-    = CloseEducationSession
-    | HandleClosedEducationSession (WebData ())
+    = Update (EducationSession -> EducationSession)
+    | HandleUpdated (WebData ())
