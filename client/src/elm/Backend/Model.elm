@@ -29,6 +29,7 @@ import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -104,6 +105,7 @@ type alias ModelIndexedDb =
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
     , resilienceMessageRequests : Dict NurseId Backend.ResilienceMessage.Model.Model
     , stockUpdateRequests : Dict NurseId Backend.StockUpdate.Model.Model
+    , educationSessionRequests : Dict EducationSessionId Backend.EducationSession.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -131,6 +133,7 @@ type alias ModelIndexedDb =
     , tuberculosisEncounters : Dict TuberculosisEncounterId (WebData TuberculosisEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     , traceContacts : Dict AcuteIllnessTraceContactId (WebData AcuteIllnessTraceContact)
+    , educationSessions : Dict EducationSessionId (WebData EducationSession)
 
     -- Cache things organized in certain ways.
     , individualParticipantsByPerson : Dict PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
@@ -187,6 +190,7 @@ type alias ModelIndexedDb =
     , postNCDEncounter : Dict IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
     , postChildScoreboardEncounter : Dict IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
     , postTuberculosisEncounter : Dict IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
+    , postEducationSession : WebData ( EducationSessionId, EducationSession )
     }
 
 
@@ -228,6 +232,7 @@ emptyModelIndexedDb =
     , childScoreboardEncountersByParticipant = Dict.empty
     , tuberculosisEncounters = Dict.empty
     , tuberculosisEncountersByParticipant = Dict.empty
+    , educationSessions = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
     , people = Dict.empty
@@ -241,6 +246,7 @@ emptyModelIndexedDb =
     , ncdEncounterRequests = Dict.empty
     , childScoreboardEncounterRequests = Dict.empty
     , tuberculosisEncounterRequests = Dict.empty
+    , educationSessionRequests = Dict.empty
     , traceContactRequests = Dict.empty
     , individualEncounterParticipantRequests = Dict.empty
     , nurseRequests = Dict.empty
@@ -272,6 +278,7 @@ emptyModelIndexedDb =
     , postNCDEncounter = Dict.empty
     , postChildScoreboardEncounter = Dict.empty
     , postTuberculosisEncounter = Dict.empty
+    , postEducationSession = NotAsked
     }
 
 
@@ -451,6 +458,7 @@ type MsgIndexedDb
     | PostNCDEncounter NCDEncounter
     | PostChildScoreboardEncounter ChildScoreboardEncounter
     | PostTuberculosisEncounter TuberculosisEncounter
+    | PostEducationSession EducationSession
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PatchPersonInitator PersonId (WebData Person)
@@ -466,6 +474,7 @@ type MsgIndexedDb
     | HandlePostedNCDEncounter IndividualEncounterParticipantId (WebData ( NCDEncounterId, NCDEncounter ))
     | HandlePostedChildScoreboardEncounter IndividualEncounterParticipantId (WebData ( ChildScoreboardEncounterId, ChildScoreboardEncounter ))
     | HandlePostedTuberculosisEncounter IndividualEncounterParticipantId (WebData ( TuberculosisEncounterId, TuberculosisEncounter ))
+    | HandlePostedEducationSession (WebData ( EducationSessionId, EducationSession ))
       -- Operations we may want to perform when logout is clicked.
     | HandleLogout
       -- Process some revisions we've received from the backend. In some cases,
@@ -482,6 +491,7 @@ type MsgIndexedDb
     | MsgNCDEncounter NCDEncounterId Backend.NCDEncounter.Model.Msg
     | MsgChildScoreboardEncounter ChildScoreboardEncounterId Backend.ChildScoreboardEncounter.Model.Msg
     | MsgTuberculosisEncounter TuberculosisEncounterId Backend.TuberculosisEncounter.Model.Msg
+    | MsgEducationSession EducationSessionId Backend.EducationSession.Model.Msg
     | MsgTraceContact AcuteIllnessTraceContactId Backend.TraceContact.Model.Msg
     | MsgIndividualEncounterParticipant IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | MsgNurse NurseId Backend.Nurse.Model.Msg
@@ -531,6 +541,7 @@ type Revision
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
     | DashboardStatsRevision HealthCenterId DashboardStatsRaw
+    | EducationSessionRevision EducationSessionId EducationSession
     | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | FollowUpRevision FollowUpId FollowUp

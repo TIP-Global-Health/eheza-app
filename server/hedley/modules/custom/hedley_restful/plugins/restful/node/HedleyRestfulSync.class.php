@@ -178,6 +178,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'report_to_whatsapp',
       'stock_management',
       'tuberculosis_management',
+      'group_education',
     ];
     $enabled_features = array_filter(
       $available_features,

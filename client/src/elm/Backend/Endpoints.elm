@@ -14,6 +14,9 @@ import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCoun
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Decoder exposing (decodeEducationSession)
+import Backend.EducationSession.Encoder exposing (encodeEducationSession)
+import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -1427,3 +1430,9 @@ tuberculosisTreatmentReviewEndpoint : ReadWriteEndPoint Error TuberculosisTreatm
 tuberculosisTreatmentReviewEndpoint =
     swEndpoint "nodes/tuberculosis_treatment_review" decodeTuberculosisTreatmentReview
         |> withValueEncoder (object << encodeTuberculosisTreatmentReview)
+
+
+educationSessionEndpoint : ReadWriteEndPoint Error EducationSessionId EducationSession EducationSession ()
+educationSessionEndpoint =
+    swEndpoint "nodes/education_session" decodeEducationSession
+        |> withValueEncoder (object << encodeEducationSession)

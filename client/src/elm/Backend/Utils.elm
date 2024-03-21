@@ -278,3 +278,8 @@ stockManagementEnabled =
 tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
 tuberculosisManagementEnabled =
     EverySet.member FeatureTuberculosisManagement
+
+
+groupEducationEnabled : EverySet SiteFeature -> Bool
+groupEducationEnabled =
+    EverySet.member FeatureGroupEducation
