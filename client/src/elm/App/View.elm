@@ -427,6 +427,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     GlobalCaseManagementPage ->
                         Pages.GlobalCaseManagement.View.view model.language
                             currentDate
+                            features
                             healthCenterId
                             model.villageId
                             isLabTech
