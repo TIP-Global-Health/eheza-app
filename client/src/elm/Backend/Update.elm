@@ -1667,7 +1667,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate isChw model newModel)
+                                Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate features isChw model newModel)
                                     encounterId
                                     person
                                     |> Maybe.withDefault []
@@ -2328,7 +2328,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2343,7 +2343,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2358,7 +2358,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2373,7 +2373,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2388,7 +2388,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2403,7 +2403,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -2418,7 +2418,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -7350,18 +7350,18 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before 
         |> Maybe.withDefault []
 
 
-generateSuspectedDiagnosisMsgs : NominalDate -> Bool -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
-generateSuspectedDiagnosisMsgs currentDate isChw before after id person =
+generateSuspectedDiagnosisMsgs : NominalDate -> EverySet SiteFeature -> Bool -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
+generateSuspectedDiagnosisMsgs currentDate features isChw before after id person =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             if assembledAfter.initialEncounter then
                 generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter
 
             else
-                generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw assembledAfter
+                generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw assembledAfter
         )
-        (RemoteData.toMaybe <| Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw before)
-        (RemoteData.toMaybe <| Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw after)
+        (RemoteData.toMaybe <| Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate features id isChw before)
+        (RemoteData.toMaybe <| Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate features id isChw after)
         |> Maybe.withDefault []
 
 
@@ -7478,12 +7478,17 @@ generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
             ]
 
 
-generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Bool -> Pages.AcuteIllness.Encounter.Model.AssembledData -> List App.Model.Msg
-generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
+generateSuspectedDiagnosisMsgsSubsequentEncounter :
+    NominalDate
+    -> EverySet SiteFeature
+    -> Bool
+    -> Pages.AcuteIllness.Encounter.Model.AssembledData
+    -> List App.Model.Msg
+generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw data =
     if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         let
             diagnosisByCurrentEncounterMeasurements =
-                resolveAcuteIllnessDiagnosis currentDate isChw data
+                resolveAcuteIllnessDiagnosis currentDate features isChw data
                     |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
             setDiagnosisMsg =
@@ -7530,9 +7535,9 @@ updateAcuteIllnessDiagnosisMsg id diagnosis =
         |> App.Model.MsgIndexedDb
 
 
-generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> Bool -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
-generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw after id =
-    Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate id isChw after
+generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> EverySet SiteFeature -> Bool -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw after id =
+    Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate features id isChw after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->

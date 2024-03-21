@@ -66,7 +66,7 @@ view :
 view language currentDate site features id isChw initiator db model =
     let
         assembled =
-            generateAssembledData currentDate id isChw db
+            generateAssembledData currentDate features id isChw db
     in
     viewWebData language (viewContent language currentDate site features id isChw initiator model) identity assembled
 

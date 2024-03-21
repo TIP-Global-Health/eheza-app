@@ -430,6 +430,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     GlobalCaseManagementPage ->
                         Pages.GlobalCaseManagement.View.view model.language
                             currentDate
+                            features
                             healthCenterId
                             model.villageId
                             isLabTech
@@ -727,7 +728,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.acuteIllnessEncounterPages
                                     |> Maybe.withDefault Pages.AcuteIllness.Encounter.Model.emptyModel
                         in
-                        Pages.AcuteIllness.Encounter.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.AcuteIllness.Encounter.View.view model.language currentDate features id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -740,6 +741,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         Pages.AcuteIllness.Activity.View.view model.language
                             currentDate
                             site
+                            features
                             geoInfo
                             id
                             isChw
@@ -773,7 +775,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.acuteIllnessOutcomePages
                                     |> Maybe.withDefault Pages.AcuteIllness.Outcome.Model.emptyModel
                         in
-                        Pages.AcuteIllness.Outcome.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.AcuteIllness.Outcome.View.view model.language currentDate features id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
                             |> flexPageWrapper configured.config model
 

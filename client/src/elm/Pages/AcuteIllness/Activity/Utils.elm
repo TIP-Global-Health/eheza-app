@@ -8,6 +8,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
+import Backend.Utils exposing (tuberculosisManagementEnabled)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
@@ -35,6 +36,7 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         )
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, TranslationId)
 
 
@@ -1882,7 +1884,9 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
 
         NextStepsFollowUp ->
             if diagnosis == Just DiagnosisTuberculosisSuspect then
-                -- @todo: do we need this for Subsequent Encounter?
+                -- This is only at initial encounter, as Tuberculosis Suspect
+                -- diagnosis is not tracked (does not have and option for
+                -- subsequent encounters).
                 True
 
             else if List.member diagnosis [ Just DiagnosisSevereCovid19, Just DiagnosisFeverOfUnknownOrigin ] then
@@ -2235,8 +2239,8 @@ ageDependentARINextStep currentDate person =
             )
 
 
-resolveAcuteIllnessDiagnosis : NominalDate -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosis currentDate isChw assembled =
+resolveAcuteIllnessDiagnosis : NominalDate -> EverySet SiteFeature -> Bool -> AssembledData -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosis currentDate features isChw assembled =
     if assembled.initialEncounter then
         -- First we check for Covid19.
         let
@@ -2247,7 +2251,7 @@ resolveAcuteIllnessDiagnosis currentDate isChw assembled =
             covid19AcuteIllnessDiagnosis
 
         else
-            nonCovid19DiagnosisPath currentDate assembled.person isChw assembled.measurements
+            nonCovid19DiagnosisPath currentDate features assembled.person isChw assembled.measurements
 
     else
         malariaRapidTestResult assembled.measurements
@@ -2459,11 +2463,11 @@ rapidTestPositive result =
     List.member result [ RapidTestPositiveAndPregnant, RapidTestPositive ]
 
 
-nonCovid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-nonCovid19DiagnosisPath currentDate person isChw measurements =
+nonCovid19DiagnosisPath : NominalDate -> EverySet SiteFeature -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+nonCovid19DiagnosisPath currentDate features person isChw measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements then
-        if coughForMoreThan2Weeks measurements then
+        if tuberculosisManagementEnabled features && coughForMoreThan2Weeks measurements then
             Just DiagnosisTuberculosisSuspect
 
         else if feverRecorded measurements then
