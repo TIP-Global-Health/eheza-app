@@ -512,25 +512,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
-        FetchPeopleByName name ->
-            let
-                trimmed =
-                    String.trim name
-            in
-            -- We'll limit the search to 500 each for now ... basically,
-            -- just to avoid truly pathological cases.
-            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
-            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
-            , []
-            )
-
-        HandleFetchedPeopleByName name data ->
-            ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
-            , Cmd.none
-            , []
-            )
-
         FetchIndividualEncounterParticipant id ->
             ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
             , sw.get individualEncounterParticipantEndpoint id
@@ -1309,11 +1290,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 in
                 ( { model | people = peopleUpdated }
                 , sw.getMany personEndpoint ids
-                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedPeople)
                 , []
                 )
 
-        HandleFetchPeople webData ->
+        HandleFetchedPeople webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
                     noChange
@@ -1327,6 +1308,54 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , Cmd.none
                     , []
                     )
+
+        FetchPeopleByName name ->
+            let
+                trimmed =
+                    String.trim name
+            in
+            -- We'll limit the search to 500 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
+            , []
+            )
+
+        HandleFetchedPeopleByName trimmed data ->
+            ( { model | personSearches = Dict.insert trimmed data model.personSearches }
+            , Cmd.none
+            , []
+            )
+
+        FetchPeopleInVillage id ->
+            Dict.get id model.villages
+                |> Maybe.map
+                    (\village ->
+                        let
+                            geoFields =
+                                String.join "-|-"
+                                    [ village.province
+                                    , village.province
+                                    , village.district
+                                    , village.sector
+                                    , village.cell
+                                    , village.village
+                                    ]
+                        in
+                        ( { model | personSearches = Dict.insert id Loading model.personSearches }
+                        , sw.selectRange personEndpoint { geoFields = Just geoFields } 0 (Just 5000)
+                            |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleInVillage id)
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        HandleFetchedPeopleInVillage id data ->
+            ( { model | personSearches = Dict.insert id data model.peopleInVillage }
+            , Cmd.none
+            , []
+            )
 
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }

@@ -120,6 +120,7 @@ type alias ModelIndexedDb =
     -- Tracks searchs for participants by name. The key is the phrase we are
     -- searching for.
     , personSearches : Dict String (WebData (Dict PersonId Person))
+    , pepleInVillage : Dict VillageId (WebData (Dict PersonId Person))
 
     -- A simple cache of several things.
     , people : Dict PersonId (WebData Person)
@@ -238,6 +239,7 @@ emptyModelIndexedDb =
     , people = Dict.empty
     , traceContacts = Dict.empty
     , personSearches = Dict.empty
+    , pepleInVillage = Dict.empty
     , prenatalEncounterRequests = Dict.empty
     , nutritionEncounterRequests = Dict.empty
     , acuteIllnessEncounterRequests = Dict.empty
@@ -357,8 +359,9 @@ type MsgIndexedDb
     | FetchNCDMeasurements NCDEncounterId
     | FetchParticipantForms
     | FetchParticipantsForPerson PersonId
-    | FetchPeopleByName String
     | FetchPeople (List PersonId)
+    | FetchPeopleByName String
+    | FetchPeopleInVillage VillageId
     | FetchPerson PersonId
     | FetchPrenatalEncounter PrenatalEncounterId
     | FetchPrenatalEncounters (List PrenatalEncounterId)
@@ -423,9 +426,10 @@ type MsgIndexedDb
     | HandleFetchedNCDMeasurements NCDEncounterId (WebData NCDMeasurements)
     | HandleFetchedParticipantForms (WebData (Dict ParticipantFormId ParticipantForm))
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
+    | HandleFetchedPeople (WebData (Dict PersonId Person))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))
+    | HandleFetchedPeopleInVillage VillageId (WebData (Dict PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
-    | HandleFetchPeople (WebData (Dict PersonId Person))
     | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)
     | HandleFetchedPrenatalEncounters (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     | HandleFetchedPrenatalEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
