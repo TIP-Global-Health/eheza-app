@@ -1535,6 +1535,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , []
                     )
 
+        FetchEducationSession id ->
+            ( { model | educationSessions = Dict.insert id Loading model.educationSessions }
+            , sw.get educationSessionEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedEducationSession id)
+            , []
+            )
+
+        HandleFetchedEducationSession id data ->
+            ( { model | educationSessions = Dict.insert id data model.educationSessions }
+            , Cmd.none
+            , []
+            )
+
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
             , sw.get sessionEndpoint sessionId
@@ -4467,10 +4480,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 appMsgs =
                     RemoteData.map
                         (\( educationSessionId, _ ) ->
-                            [-- @todo
-                             -- App.Model.SetActivePage <|
-                             --     UserPage <|
-                             --         Pages.Page.EducationSessionPage educationSessionId
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.EducationSessionPage educationSessionId
                             ]
                         )
                         data

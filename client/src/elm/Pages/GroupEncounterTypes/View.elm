@@ -3,8 +3,10 @@ module Pages.GroupEncounterTypes.View exposing (view)
 import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Clinic.Model exposing (ClinicType(..))
+import Backend.EducationSession.Model exposing (emptyEducationSession)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (MsgIndexedDb(..))
+import Backend.Utils exposing (groupEducationEnabled)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -16,15 +18,16 @@ import Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> HealthCenterId -> App.Model.Model -> Html App.Model.Msg
-view language currentDate healthCenterId model =
+view : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> NurseId -> App.Model.Model -> Html App.Model.Msg
+view language currentDate features healthCenterId nurseId model =
     div
         [ class "wrap wrap-alt-2 page-encounter-types" ]
         [ viewHeader language
-        , viewContent language currentDate model
+        , viewContent language currentDate features healthCenterId nurseId model
             |> viewBySyncStatus language healthCenterId model.syncManager.syncInfoAuthorities
         ]
 
@@ -43,17 +46,23 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> App.Model.Model -> Html App.Model.Msg
-viewContent language currentDate model =
+viewContent : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> NurseId -> App.Model.Model -> Html App.Model.Msg
+viewContent language currentDate features healthCenterId nurseId model =
     let
-        encounterButton encounterType action =
-            button
-                [ class "ui primary button encounter-type"
-                , onClick action
-                ]
-                [ span [ class "text" ] [ text <| translate language <| Translate.GroupEncounterType encounterType ]
-                , span [ class "icon-back" ] []
-                ]
+        groupEncounterEducationButton =
+            if groupEducationEnabled features then
+                Maybe.map
+                    (\villageId ->
+                        emptyEducationSession currentDate nurseId villageId (Just healthCenterId)
+                            |> PostEducationSession
+                            |> MsgIndexedDb
+                            |> encounterButton GroupEncounterEducation
+                    )
+                    model.villageId
+                    |> Maybe.withDefault emptyNode
+
+            else
+                emptyNode
 
         groupAssessmentButtonAction =
             Maybe.andThen
@@ -95,8 +104,18 @@ viewContent language currentDate model =
                 )
                 model.villageId
                 |> Maybe.withDefault NoOp
+
+        encounterButton encounterType action =
+            button
+                [ class "ui primary button encounter-type"
+                , onClick action
+                ]
+                [ span [ class "text" ] [ text <| translate language <| Translate.GroupEncounterType encounterType ]
+                , span [ class "icon-back" ] []
+                ]
     in
     div [ class "ui full segment" ]
         [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
         , encounterButton GroupEncounterNutrition groupAssessmentButtonAction
+        , groupEncounterEducationButton
         ]

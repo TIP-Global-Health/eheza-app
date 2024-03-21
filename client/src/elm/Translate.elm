@@ -20,6 +20,7 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), 
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTopic)
+import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -497,6 +498,7 @@ type TranslationId
     | ChwActivity
     | Clear
     | ClickTheCheckMark
+    | ClickTheCheckMarkEducationSesison
     | ClinicType ClinicType
     | Clinical
     | ClinicalProgressReport
@@ -601,6 +603,7 @@ type TranslationId
     | EddHeader
     | Edema
     | EditResults
+    | EducationTopic EducationTopic
     | Ega
     | EgaHeader
     | EgaWeeks
@@ -711,6 +714,8 @@ type TranslationId
     | HealthEducationProvided
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
+    | HealthTopics
+    | HealthTopicsQuestion
     | Heart
     | HeartburnReliefMethod HeartburnReliefMethod
     | HeartburnRecommendedTreatmentHeader
@@ -3985,6 +3990,12 @@ translationSet trans =
             , kirundi = Just "Fyonda ku kemeza ko umurezi canke umuvyeyi ahari. Akamenyetso kemeza gaca gasa n'icatsi kibisi mu gihe umurezi/umuvyeyi ariwe kandi yinjijwe mu mashine."
             }
 
+        ClickTheCheckMarkEducationSesison ->
+            { english = "Click the check mark if the participant is in attendance. The check mark will appear green when a participant has been signed in."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         ClinicType clinicType ->
             case clinicType of
                 Achi ->
@@ -5183,6 +5194,65 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        EducationTopic topic ->
+            case topic of
+                TopicTuberculosis ->
+                    translationSet Tuberculosis
+
+                TopicSTD ->
+                    { english = "STDs & Prevention of HIV"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicMentalHealth ->
+                    { english = "Mental Health Diseases & Epilepsy"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicMalaria ->
+                    { english = "Malarial diseases and the use of mosquito nets"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicChildhoodIllnesses ->
+                    { english = "Childhood illnesses (Prevention, danger signs & emergency case management)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicMalnutrition ->
+                    { english = "Malnutrition (The prevention and fight against diseases caused by malnutrition)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicANCPostpartum ->
+                    { english = "Antenatal Care, Postnatal Care & Danger Signs in Pregnancy"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicFamilyPlanning ->
+                    { english = "Family Planning & Sexual and reproductive health"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicGender ->
+                    { english = "Gender equality, Gender-Based Violence (GBV) & Behavior change"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicNCD ->
+                    { english = "Non-Communicable Diseases(Diabetes , Hypertension & Asthma)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         Ega ->
             { english = "EGA"
             , kinyarwanda = Just "Ibyumweru inda imaze"
@@ -6303,6 +6373,18 @@ translationSet trans =
             { english = "Do you have health insurance"
             , kinyarwanda = Just "Ufite ubwishingizi bwo kwivuza"
             , kirundi = Just "Mbega urafise ikigo kikuvuza (Asiransi y'amagara/Asiransi ikuvuza)"
+            }
+
+        HealthTopics ->
+            { english = "Health Topics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HealthTopicsQuestion ->
+            { english = "Which Health Education topics will be covered today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Heart ->
@@ -22968,6 +23050,12 @@ translateActivePage page =
                 TuberculosisActivityPage _ _ ->
                     { english = "Tuberculosis Activity"
                     , kinyarwanda = Just "Igikorwa ku ndwara y'igituntu"
+                    , kirundi = Nothing
+                    }
+
+                EducationSessionPage _ ->
+                    { english = "Group Education"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 

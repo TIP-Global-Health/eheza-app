@@ -254,19 +254,16 @@ matchMotherAndHerChildren filter offlineSession motherId mother =
     motherContainsFilter || childrenContainsFilter ()
 
 
-normalizeFilter : String -> String
-normalizeFilter filterInput =
-    filterInput
-        |> String.toLower
-        |> String.trim
-
-
 viewNameFilter : Language -> String -> (String -> msg) -> Html msg
 viewNameFilter language filterInput setFilterMsg =
-    div
-        [ class "ui action input small" ]
+    viewCustomNameFilter language filterInput setFilterMsg Translate.FilterByName
+
+
+viewCustomNameFilter : Language -> String -> (String -> msg) -> TranslationId -> Html msg
+viewCustomNameFilter language filterInput setFilterMsg placeholderTransId =
+    div [ class "ui action input small" ]
         [ input
-            [ placeholder <| translate language Translate.FilterByName
+            [ placeholder <| translate language placeholderTransId
             , type_ "text"
             , onInput setFilterMsg
             , value filterInput
@@ -281,6 +278,11 @@ viewNameFilter language filterInput setFilterMsg =
             ]
             [ text <| translate language Translate.Clear ]
         ]
+
+
+normalizeFilter : String -> String
+normalizeFilter =
+    String.toLower >> String.trim
 
 
 viewLabel : Language -> TranslationId -> Html any

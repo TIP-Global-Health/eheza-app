@@ -195,6 +195,7 @@ type UserPage
     | TuberculosisParticipantPage PersonId
     | TuberculosisEncounterPage TuberculosisEncounterId -- Child Scoreboard activities index.
     | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Child Scoreboard activity.
+    | EducationSessionPage EducationSessionId -- Education Session page.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
