@@ -187,7 +187,7 @@ viewContentForChw language currentDate features village model db followUps =
                     )
     in
     div [ class "ui unstackable items" ] <|
-        viewFilters language chwFilters model
+        viewFilters language (chwFilters features) model
             :: panes
 
 
