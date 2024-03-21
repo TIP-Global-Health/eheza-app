@@ -22,6 +22,7 @@ import Backend.Relationship.Model exposing (Relationship)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (Session)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Components.ReportToWhatsAppDialog.Model exposing (ReportType)
@@ -195,6 +196,15 @@ type BackendAuthorityEntity
     | BackendAuthorityTravelHistory (BackendEntity TravelHistory)
     | BackendAuthorityTreatmentOngoing (BackendEntity TreatmentOngoing)
     | BackendAuthorityTreatmentReview (BackendEntity TreatmentReview)
+    | BackendAuthorityTuberculosisDiagnostics (BackendEntity TuberculosisDiagnostics)
+    | BackendAuthorityTuberculosisDOT (BackendEntity TuberculosisDOT)
+    | BackendAuthorityTuberculosisEncounter (BackendEntity TuberculosisEncounter)
+    | BackendAuthorityTuberculosisFollowUp (BackendEntity TuberculosisFollowUp)
+    | BackendAuthorityTuberculosisHealthEducation (BackendEntity TuberculosisHealthEducation)
+    | BackendAuthorityTuberculosisMedication (BackendEntity TuberculosisMedication)
+    | BackendAuthorityTuberculosisReferral (BackendEntity TuberculosisReferral)
+    | BackendAuthorityTuberculosisSymptomReview (BackendEntity TuberculosisSymptomReview)
+    | BackendAuthorityTuberculosisTreatmentReview (BackendEntity TuberculosisTreatmentReview)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
     | BackendAuthorityWellChildAlbendazole (BackendEntity WellChildAlbendazole)
@@ -695,6 +705,7 @@ type SiteFeature
     = FeatureNCDA
     | FeatureReportToWhatsApp
     | FeatureStockManagement
+    | FeatureTuberculosisManagement
 
 
 type Msg

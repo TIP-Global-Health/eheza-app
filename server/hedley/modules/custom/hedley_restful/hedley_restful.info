@@ -14,5 +14,7 @@ files[] = plugins/restful/node/activity/HedleyRestfulAcuteIllnessActivityBase.cl
 files[] = plugins/restful/node/activity/HedleyRestfulHomeVisitActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulWellChildActivityBase.class.php
 files[] = plugins/restful/node/activity/HedleyRestfulChildScoreboardActivityBase.class.php
+files[] = plugins/restful/node/activity/HedleyRestfulTuberculosisActivityBase.class.php
+
 files[] = plugins/restful/node/HedleyRestfulEntityBaseNode.php
 files[] = plugins/restful/node/HedleyRestfulSyncBase.class.php

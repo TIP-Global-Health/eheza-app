@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 22);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 23);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -52,6 +52,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'prenatal_encounter' => 'prenatal-encounters',
   'relationship' => 'relationships',
   'session' => 'sessions',
+  'tuberculosis_encounter' => 'tuberculosis-encounter',
   'well_child_encounter' => 'well-child-encounter',
   // Measurements.
   'acute_findings' => 'acute-findings',
@@ -179,6 +180,14 @@ const HEDLEY_RESTFUL_SHARDED = [
   'travel_history' => 'travel-histories',
   'treatment_history' => 'treatment-histories',
   'treatment_ongoing' => 'treatment-ongoing',
+  'tuberculosis_diagnostics' => 'tuberculosis-diagnostics',
+  'tuberculosis_dot' => 'tuberculosis-dot',
+  'tuberculosis_follow_up' => 'tuberculosis-follow-up',
+  'tuberculosis_health_education' => 'tuberculosis-health-education',
+  'tuberculosis_medication' => 'tuberculosis-medication',
+  'tuberculosis_referral' => 'tuberculosis-referral',
+  'tuberculosis_symptom_review' => 'tuberculosis-symptom-review',
+  'tuberculosis_treatment_review' => 'tuberculosis-treatment-review',
   'vitals' => 'vitals',
   'weight' => 'weights',
   'well_child_albendazole' => 'well-child-albendazole',

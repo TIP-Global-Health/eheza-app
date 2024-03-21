@@ -1,12 +1,14 @@
 module Pages.GlobalCaseManagement.Update exposing (update)
 
 import App.Model
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType(..), emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (emptyPrenatalEncounter)
+import Backend.TuberculosisEncounter.Model exposing (emptyTuberculosisEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
 import Gizra.NominalDate exposing (NominalDate)
@@ -50,6 +52,9 @@ update currentDate healthCenterId msg db model =
 
                                     FollowUpImmunization data ->
                                         startFollowUpEncounterWellChild currentDate selectedHealthCenter db data
+
+                                    FollowUpTuberculosis data ->
+                                        startFollowUpEncounterTuberculosis currentDate selectedHealthCenter data
 
                                     -- We should never get here, as Prenatal Encounter got it's own action.
                                     FollowUpPrenatal _ ->
@@ -126,3 +131,23 @@ startFollowUpEncounterWellChild currentDate selectedHealthCenter db data =
         -- We should never get here, since Next Visist follow up is generated from content of
         -- Well Child encounter, which means that participant must exist.
         |> Maybe.withDefault []
+
+
+startFollowUpEncounterTuberculosis : NominalDate -> HealthCenterId -> FollowUpTuberculosisData -> List App.Model.Msg
+startFollowUpEncounterTuberculosis currentDate selectedHealthCenter data =
+    -- If participant was provided, we create new encounter for existing participant.
+    Maybe.map
+        (\participantId ->
+            [ emptyTuberculosisEncounter participantId currentDate (Just selectedHealthCenter)
+                |> Backend.Model.PostTuberculosisEncounter
+                |> App.Model.MsgIndexedDb
+            ]
+        )
+        data.participantId
+        |> -- Participant was not provided, so we create new participant (which
+           -- also creates encounter for newly created participant).
+           Maybe.withDefault
+            [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter selectedHealthCenter
+                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                |> App.Model.MsgIndexedDb
+            ]

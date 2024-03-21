@@ -54,7 +54,7 @@ function hedley_patient_user_login(&$edit, $account) {
 
   header('Location: ' . $url, TRUE, 302);
   // The "Location" header sends a redirect status code to the HTTP daemon. In
-  // some cases this can be wrong, so we make sure none other
+  // some cases this can be wrong, so we make sure none other code
   // gets executed upon redirection.
   drupal_exit($url);
 }

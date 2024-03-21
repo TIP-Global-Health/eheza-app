@@ -1,6 +1,7 @@
 module Backend.Measurement.Encoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
@@ -928,6 +929,11 @@ encodeNCDMeasurement =
 encodeChildScoreboardMeasurement : (value -> List ( String, Value )) -> ChildScoreboardMeasurement value -> List ( String, Value )
 encodeChildScoreboardMeasurement =
     encodeMeasurement "child_scoreboard_encounter"
+
+
+encodeTuberculosisMeasurement : (value -> List ( String, Value )) -> TuberculosisMeasurement value -> List ( String, Value )
+encodeTuberculosisMeasurement =
+    encodeMeasurement "tuberculosis_encounter"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
@@ -2329,21 +2335,21 @@ encodeContributingFactorsSign sign =
 
 encodeFollowUp : FollowUp -> List ( String, Value )
 encodeFollowUp =
-    encodeGroupMeasurement (encodeFollowUpValueWithType "follow_up")
+    encodeGroupMeasurement (encodeNutritionFollowUpValueWithType "follow_up")
 
 
 encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
 encodeNutritionFollowUp =
-    encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
+    encodeNutritionMeasurement (encodeNutritionFollowUpValueWithType "nutrition_follow_up")
 
 
 encodeWellChildFollowUp : WellChildFollowUp -> List ( String, Value )
 encodeWellChildFollowUp =
-    encodeWellChildMeasurement (encodeFollowUpValueWithType "well_child_follow_up")
+    encodeWellChildMeasurement (encodeNutritionFollowUpValueWithType "well_child_follow_up")
 
 
-encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
-encodeFollowUpValueWithType type_ value =
+encodeNutritionFollowUpValueWithType : String -> NutritionFollowUpValue -> List ( String, Value )
+encodeNutritionFollowUpValueWithType type_ value =
     let
         assesment =
             EverySet.toList value.assesment
@@ -2378,6 +2384,7 @@ encodeAcuteIllnessFollowUpValue value =
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_follow_up" )
     ]
+        ++ encodeNullable "acute_illness_diagnosis" value.diagnosis encodeAcuteIllnessDiagnosis
         ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
@@ -3107,17 +3114,17 @@ encodeAcuteIllnessMuac =
 
 encodeTreatmentOngoing : TreatmentOngoing -> List ( String, Value )
 encodeTreatmentOngoing =
-    encodeAcuteIllnessMeasurement encodeTreatmentOngoingValue
+    encodeAcuteIllnessMeasurement (encodeTreatmentOngoingValueWithType "treatment_ongoing")
 
 
-encodeTreatmentOngoingValue : TreatmentOngoingValue -> List ( String, Value )
-encodeTreatmentOngoingValue value =
+encodeTreatmentOngoingValueWithType : String -> TreatmentOngoingValue -> List ( String, Value )
+encodeTreatmentOngoingValueWithType type_ value =
     [ ( "treatment_ongoing", encodeEverySet encodeTreatmentOngoingSign value.signs )
     , ( "reason_for_not_taking", encodeReasonForNotTakingSign value.reasonForNotTaking )
     , ( "missed_doses", int value.missedDoses )
     , ( "adverse_events", encodeEverySet encodeAdverseEvent value.adverseEvents )
     , ( "deleted", bool False )
-    , ( "type", string "treatment_ongoing" )
+    , ( "type", string type_ )
     ]
 
 
@@ -4396,3 +4403,118 @@ encodeWellChildCaring =
 encodeWellChildFoodSecurity : WellChildFoodSecurity -> List ( String, Value )
 encodeWellChildFoodSecurity =
     encodeWellChildMeasurement (encodeNutritionFoodSecurityValueWithType "well_child_food_security")
+
+
+encodeTuberculosisDiagnostics : TuberculosisDiagnostics -> List ( String, Value )
+encodeTuberculosisDiagnostics =
+    encodeTuberculosisMeasurement encodeTuberculosisDiagnosticsValue
+
+
+encodeTuberculosisDiagnosticsValue : TuberculosisDiagnosticsValue -> List ( String, Value )
+encodeTuberculosisDiagnosticsValue value =
+    [ ( "tuberculosis_diagnosis", encodeTuberculosisDiagnosis value )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_diagnostics" )
+    ]
+
+
+encodeTuberculosisDiagnosis : TuberculosisDiagnosis -> Value
+encodeTuberculosisDiagnosis =
+    tuberculosisDiagnosisToString >> string
+
+
+encodeTuberculosisDOT : TuberculosisDOT -> List ( String, Value )
+encodeTuberculosisDOT =
+    encodeTuberculosisMeasurement encodeTuberculosisDOTValue
+
+
+encodeTuberculosisDOTValue : TuberculosisDOTValue -> List ( String, Value )
+encodeTuberculosisDOTValue value =
+    [ ( "dot_signs", encodeTuberculosisDOTSign value.sign )
+    , ( "dot_meds_distribution_sign", encodeTuberculosisDOTSign value.medicationDistributionSign )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_dot" )
+    ]
+
+
+encodeTuberculosisDOTSign : TuberculosisDOTSign -> Value
+encodeTuberculosisDOTSign =
+    tuberculosisDOTSignToString >> string
+
+
+encodeTuberculosisFollowUp : TuberculosisFollowUp -> List ( String, Value )
+encodeTuberculosisFollowUp =
+    encodeTuberculosisMeasurement (encodeFollowUpValueWithType "tuberculosis_follow_up")
+
+
+encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
+encodeFollowUpValueWithType type_ value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
+
+
+encodeTuberculosisHealthEducation : TuberculosisHealthEducation -> List ( String, Value )
+encodeTuberculosisHealthEducation =
+    encodeTuberculosisMeasurement encodeTuberculosisHealthEducationValue
+
+
+encodeTuberculosisHealthEducationValue : TuberculosisHealthEducationValue -> List ( String, Value )
+encodeTuberculosisHealthEducationValue value =
+    [ ( "tb_health_education_signs", encodeEverySet encodeTuberculosisHealthEducationSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_health_education" )
+    ]
+
+
+encodeTuberculosisHealthEducationSign : TuberculosisHealthEducationSign -> Value
+encodeTuberculosisHealthEducationSign =
+    tuberculosisHealthEducationSignToString >> string
+
+
+encodeTuberculosisMedication : TuberculosisMedication -> List ( String, Value )
+encodeTuberculosisMedication =
+    encodeTuberculosisMeasurement encodeTuberculosisMedicationValue
+
+
+encodeTuberculosisMedicationValue : TuberculosisMedicationValue -> List ( String, Value )
+encodeTuberculosisMedicationValue value =
+    [ ( "prescribed_tb_medications", encodeEverySet encodeTuberculosisPrescribedMedication value )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_medication" )
+    ]
+
+
+encodeTuberculosisPrescribedMedication : TuberculosisPrescribedMedication -> Value
+encodeTuberculosisPrescribedMedication =
+    tuberculosisPrescribedMedicationToString >> string
+
+
+encodeTuberculosisReferral : TuberculosisReferral -> List ( String, Value )
+encodeTuberculosisReferral =
+    encodeTuberculosisMeasurement (encodeSendToHCValueWithType "tuberculosis_referral")
+
+
+encodeTuberculosisSymptomReview : TuberculosisSymptomReview -> List ( String, Value )
+encodeTuberculosisSymptomReview =
+    encodeTuberculosisMeasurement encodeTuberculosisSymptomReviewValue
+
+
+encodeTuberculosisSymptomReviewValue : TuberculosisSymptomReviewValue -> List ( String, Value )
+encodeTuberculosisSymptomReviewValue value =
+    [ ( "tuberculosis_symptoms", encodeEverySet encodeTuberculosisSymptom value )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_symptom_review" )
+    ]
+
+
+encodeTuberculosisSymptom : TuberculosisSymptom -> Value
+encodeTuberculosisSymptom =
+    tuberculosisSymptomToString >> string
+
+
+encodeTuberculosisTreatmentReview : TuberculosisTreatmentReview -> List ( String, Value )
+encodeTuberculosisTreatmentReview =
+    encodeTuberculosisMeasurement (encodeTreatmentOngoingValueWithType "tuberculosis_treatment_review")

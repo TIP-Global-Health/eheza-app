@@ -96,6 +96,11 @@ import Pages.Session.View
 import Pages.StockManagement.View
 import Pages.TraceContact.Model
 import Pages.TraceContact.View
+import Pages.Tuberculosis.Activity.Model
+import Pages.Tuberculosis.Activity.View
+import Pages.Tuberculosis.Encounter.Model
+import Pages.Tuberculosis.Encounter.View
+import Pages.Tuberculosis.Participant.View
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Activity.View
 import Pages.WellChild.Encounter.Model
@@ -422,6 +427,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     GlobalCaseManagementPage ->
                         Pages.GlobalCaseManagement.View.view model.language
                             currentDate
+                            features
                             healthCenterId
                             model.villageId
                             isLabTech
@@ -512,6 +518,10 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
                     ChildScoreboardParticipantPage id ->
                         Pages.ChildScoreboard.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper configured.config model
+
+                    TuberculosisParticipantPage id ->
+                        Pages.Tuberculosis.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper configured.config model
 
                     IndividualEncounterParticipantsPage encounterType ->
@@ -706,7 +716,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.acuteIllnessEncounterPages
                                     |> Maybe.withDefault Pages.AcuteIllness.Encounter.Model.emptyModel
                         in
-                        Pages.AcuteIllness.Encounter.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.AcuteIllness.Encounter.View.view model.language currentDate features id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -719,6 +729,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         Pages.AcuteIllness.Activity.View.view model.language
                             currentDate
                             site
+                            features
                             geoInfo
                             id
                             isChw
@@ -752,7 +763,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.acuteIllnessOutcomePages
                                     |> Maybe.withDefault Pages.AcuteIllness.Outcome.Model.emptyModel
                         in
-                        Pages.AcuteIllness.Outcome.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.AcuteIllness.Outcome.View.view model.language currentDate features id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
                             |> flexPageWrapper configured.config model
 
@@ -931,6 +942,26 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardReport encounterId)
+                            |> flexPageWrapper configured.config model
+
+                    TuberculosisEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.tuberculosisEncounterPages
+                                    |> Maybe.withDefault Pages.Tuberculosis.Encounter.Model.emptyModel
+                        in
+                        Pages.Tuberculosis.Encounter.View.view model.language currentDate site id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageTuberculosisEncounter id)
+                            |> flexPageWrapper configured.config model
+
+                    TuberculosisActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.tuberculosisActivityPages
+                                    |> Maybe.withDefault Pages.Tuberculosis.Activity.Model.emptyModel
+                        in
+                        Pages.Tuberculosis.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity)
                             |> flexPageWrapper configured.config model
 
                     TraceContactPage traceContactId ->

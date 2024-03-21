@@ -61,6 +61,9 @@ import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (Session)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
+import Backend.TuberculosisEncounter.Decoder exposing (decodeTuberculosisEncounter)
+import Backend.TuberculosisEncounter.Encoder exposing (encodeTuberculosisEncounter)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
@@ -1364,3 +1367,63 @@ wellChildCaringEndpoint : ReadWriteEndPoint Error WellChildCaringId WellChildCar
 wellChildCaringEndpoint =
     swEndpoint "nodes/well_child_caring" decodeWellChildCaring
         |> withValueEncoder (object << encodeWellChildCaring)
+
+
+tuberculosisEncounterEndpoint : ReadWriteEndPoint Error TuberculosisEncounterId TuberculosisEncounter TuberculosisEncounter (List IndividualEncounterParticipantId)
+tuberculosisEncounterEndpoint =
+    swEndpoint "nodes/tuberculosis_encounter" decodeTuberculosisEncounter
+        |> withValueEncoder (object << encodeTuberculosisEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+tuberculosisMeasurementsEndpoint : ReadOnlyEndPoint Error TuberculosisEncounterId TuberculosisMeasurements ()
+tuberculosisMeasurementsEndpoint =
+    swEndpoint "nodes/tuberculosis-measurements" decodeTuberculosisMeasurements
+
+
+tuberculosisDiagnosticsEndpoint : ReadWriteEndPoint Error TuberculosisDiagnosticsId TuberculosisDiagnostics TuberculosisDiagnostics ()
+tuberculosisDiagnosticsEndpoint =
+    swEndpoint "nodes/tuberculosis_diagnostics" decodeTuberculosisDiagnostics
+        |> withValueEncoder (object << encodeTuberculosisDiagnostics)
+
+
+tuberculosisDOTEndpoint : ReadWriteEndPoint Error TuberculosisDOTId TuberculosisDOT TuberculosisDOT ()
+tuberculosisDOTEndpoint =
+    swEndpoint "nodes/tuberculosis_dot" decodeTuberculosisDOT
+        |> withValueEncoder (object << encodeTuberculosisDOT)
+
+
+tuberculosisFollowUpEndpoint : ReadWriteEndPoint Error TuberculosisFollowUpId TuberculosisFollowUp TuberculosisFollowUp ()
+tuberculosisFollowUpEndpoint =
+    swEndpoint "nodes/tuberculosis_follow_up" decodeTuberculosisFollowUp
+        |> withValueEncoder (object << encodeTuberculosisFollowUp)
+
+
+tuberculosisHealthEducationEndpoint : ReadWriteEndPoint Error TuberculosisHealthEducationId TuberculosisHealthEducation TuberculosisHealthEducation ()
+tuberculosisHealthEducationEndpoint =
+    swEndpoint "nodes/tuberculosis_health_education" decodeTuberculosisHealthEducation
+        |> withValueEncoder (object << encodeTuberculosisHealthEducation)
+
+
+tuberculosisMedicationEndpoint : ReadWriteEndPoint Error TuberculosisMedicationId TuberculosisMedication TuberculosisMedication ()
+tuberculosisMedicationEndpoint =
+    swEndpoint "nodes/tuberculosis_medication" decodeTuberculosisMedication
+        |> withValueEncoder (object << encodeTuberculosisMedication)
+
+
+tuberculosisReferralEndpoint : ReadWriteEndPoint Error TuberculosisReferralId TuberculosisReferral TuberculosisReferral ()
+tuberculosisReferralEndpoint =
+    swEndpoint "nodes/tuberculosis_referral" decodeTuberculosisReferral
+        |> withValueEncoder (object << encodeTuberculosisReferral)
+
+
+tuberculosisSymptomReviewEndpoint : ReadWriteEndPoint Error TuberculosisSymptomReviewId TuberculosisSymptomReview TuberculosisSymptomReview ()
+tuberculosisSymptomReviewEndpoint =
+    swEndpoint "nodes/tuberculosis_symptom_review" decodeTuberculosisSymptomReview
+        |> withValueEncoder (object << encodeTuberculosisSymptomReview)
+
+
+tuberculosisTreatmentReviewEndpoint : ReadWriteEndPoint Error TuberculosisTreatmentReviewId TuberculosisTreatmentReview TuberculosisTreatmentReview ()
+tuberculosisTreatmentReviewEndpoint =
+    swEndpoint "nodes/tuberculosis_treatment_review" decodeTuberculosisTreatmentReview
+        |> withValueEncoder (object << encodeTuberculosisTreatmentReview)

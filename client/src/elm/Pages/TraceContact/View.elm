@@ -1,7 +1,7 @@
 module Pages.TraceContact.View exposing (view)
 
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ContactTraceItem)
 import Backend.Model exposing (ModelIndexedDb)

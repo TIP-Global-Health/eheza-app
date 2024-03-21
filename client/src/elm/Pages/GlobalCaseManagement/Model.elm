@@ -1,8 +1,15 @@
 module Pages.GlobalCaseManagement.Model exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (FollowUpOption, FollowUpValue, PrenatalFollowUpValue)
+import Backend.Measurement.Model
+    exposing
+        ( AcuteIllnessFollowUpValue
+        , FollowUpOption
+        , FollowUpValue
+        , NutritionFollowUpValue
+        , PrenatalFollowUpValue
+        )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
@@ -30,6 +37,7 @@ type CaseManagementFilter
     | FilterPrenatalLabs
     | FilterNCDLabs
     | FilterImmunization
+    | FilterTuberculosis
 
 
 type FollowUpDueOption
@@ -43,7 +51,7 @@ type FollowUpDueOption
 type alias NutritionFollowUpItem =
     { dateMeasured : NominalDate
     , personName : String
-    , value : FollowUpValue
+    , value : NutritionFollowUpValue
     }
 
 
@@ -62,7 +70,7 @@ type alias AcuteIllnessFollowUpItem =
     -- we need to store sequence number, to be able to order
     -- follow ups correctly.
     , encounterSequenceNumber : Int
-    , value : EverySet FollowUpOption
+    , value : AcuteIllnessFollowUpValue
     }
 
 
@@ -105,11 +113,27 @@ type alias ImmunizationFollowUpEntry =
     }
 
 
+type alias TuberculosisFollowUpItem =
+    { dateMeasured : NominalDate
+    , personName : String
+    , encounterId : Maybe TuberculosisEncounterId
+    , value : FollowUpValue
+    }
+
+
+type alias TuberculosisFollowUpEntry =
+    { participantId : Maybe IndividualEncounterParticipantId
+    , personId : PersonId
+    , item : TuberculosisFollowUpItem
+    }
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
     | FollowUpPrenatal FollowUpPrenatalData
     | FollowUpImmunization FollowUpImmunizationData
+    | FollowUpTuberculosis FollowUpTuberculosisData
     | CaseManagementContactsTracing
 
 
@@ -140,6 +164,13 @@ type alias FollowUpPrenatalData =
     , encounterType : PrenatalEncounterType
     , hasNurseEncounter : Bool
     , dateMeasured : NominalDate
+    }
+
+
+type alias FollowUpTuberculosisData =
+    { personId : PersonId
+    , personName : String
+    , participantId : Maybe IndividualEncounterParticipantId
     }
 
 
@@ -182,6 +213,7 @@ type alias FollowUpPatients =
     , acuteIllness : List PersonId
     , prenatal : List PersonId
     , immunization : List PersonId
+    , tuberculosis : List PersonId
     }
 
 

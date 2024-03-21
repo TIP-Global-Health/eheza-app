@@ -1,6 +1,7 @@
 module Backend.Measurement.Decoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
@@ -60,6 +61,11 @@ decodeNCDMeasurement =
 decodeChildScoreboardMeasurement : Decoder value -> Decoder (Measurement ChildScoreboardEncounterId value)
 decodeChildScoreboardMeasurement =
     decodeMeasurement "child_scoreboard_encounter"
+
+
+decodeTuberculosisMeasurement : Decoder value -> Decoder (Measurement TuberculosisEncounterId value)
+decodeTuberculosisMeasurement =
+    decodeMeasurement "tuberculosis_encounter"
 
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
@@ -203,6 +209,7 @@ decodeFollowUpMeasurements =
         |> optional "acute_illness_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessFollowUp)) Dict.empty
         |> optional "prenatal_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalFollowUp)) Dict.empty
         |> optional "well_child_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeWellChildFollowUp)) Dict.empty
+        |> optional "tuberculosis_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeTuberculosisFollowUp)) Dict.empty
         |> optional "acute_illness_trace_contact" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessTraceContact)) Dict.empty
         |> optional "prenatal_labs_results" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalLabsResults)) Dict.empty
         |> optional "ncd_labs_results" (map Dict.fromList <| list (decodeWithEntityUuid decodeNCDLabsResults)) Dict.empty
@@ -294,6 +301,19 @@ decodeChildScoreboardMeasurements =
         |> optional "child_scoreboard_opv_iz" (decodeHead decodeChildScoreboardOPVImmunisation) Nothing
         |> optional "child_scoreboard_pcv13_iz" (decodeHead decodeChildScoreboardPCV13Immunisation) Nothing
         |> optional "child_scoreboard_rotarix_iz" (decodeHead decodeChildScoreboardRotarixImmunisation) Nothing
+
+
+decodeTuberculosisMeasurements : Decoder TuberculosisMeasurements
+decodeTuberculosisMeasurements =
+    succeed TuberculosisMeasurements
+        |> optional "tuberculosis_diagnostics" (decodeHead decodeTuberculosisDiagnostics) Nothing
+        |> optional "tuberculosis_dot" (decodeHead decodeTuberculosisDOT) Nothing
+        |> optional "tuberculosis_followUp" (decodeHead decodeTuberculosisFollowUp) Nothing
+        |> optional "tuberculosis_health_education" (decodeHead decodeTuberculosisHealthEducation) Nothing
+        |> optional "tuberculosis_medication" (decodeHead decodeTuberculosisMedication) Nothing
+        |> optional "tuberculosis_referral" (decodeHead decodeTuberculosisReferral) Nothing
+        |> optional "tuberculosis_symptom_review" (decodeHead decodeTuberculosisSymptomReview) Nothing
+        |> optional "tuberculosis_treatment_review" (decodeHead decodeTuberculosisTreatmentReview) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -2416,22 +2436,22 @@ decodeContributingFactorsValue =
 
 decodeFollowUp : Decoder FollowUp
 decodeFollowUp =
-    decodeGroupMeasurement decodeFollowUpValue
+    decodeGroupMeasurement decodeNutritionFollowUpValue
 
 
 decodeNutritionFollowUp : Decoder NutritionFollowUp
 decodeNutritionFollowUp =
-    decodeNutritionMeasurement decodeFollowUpValue
+    decodeNutritionMeasurement decodeNutritionFollowUpValue
 
 
 decodeWellChildFollowUp : Decoder WellChildFollowUp
 decodeWellChildFollowUp =
-    decodeWellChildMeasurement decodeFollowUpValue
+    decodeWellChildMeasurement decodeNutritionFollowUpValue
 
 
-decodeFollowUpValue : Decoder FollowUpValue
-decodeFollowUpValue =
-    succeed FollowUpValue
+decodeNutritionFollowUpValue : Decoder NutritionFollowUpValue
+decodeNutritionFollowUpValue =
+    succeed NutritionFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
         |> custom decodeNutritionAssessment
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
@@ -2446,6 +2466,7 @@ decodeAcuteIllnessFollowUpValue : Decoder AcuteIllnessFollowUpValue
 decodeAcuteIllnessFollowUpValue =
     succeed AcuteIllnessFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> optional "acute_illness_diagnosis" (nullable decodeAcuteIllnessDiagnosis) Nothing
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
@@ -3874,12 +3895,16 @@ decodeAcuteIllnessMuac =
 
 decodeTreatmentOngoing : Decoder TreatmentOngoing
 decodeTreatmentOngoing =
+    decodeAcuteIllnessMeasurement decodeTreatmentOngoingValue
+
+
+decodeTreatmentOngoingValue : Decoder TreatmentOngoingValue
+decodeTreatmentOngoingValue =
     succeed TreatmentOngoingValue
         |> required "treatment_ongoing" (decodeEverySet decodeTreatmentOngoingSign)
         |> required "reason_for_not_taking" decodeReasonForNotTaking
         |> required "missed_doses" decodeInt
         |> required "adverse_events" (decodeEverySet decodeAdverseEvent)
-        |> decodeAcuteIllnessMeasurement
 
 
 decodeTreatmentOngoingSign : Decoder TreatmentOngoingSign
@@ -5406,3 +5431,135 @@ decodeWellChildFoodSecurity =
 decodeWellChildCaring : Decoder WellChildCaring
 decodeWellChildCaring =
     decodeWellChildMeasurement decodeNutritionCaringValue
+
+
+decodeTuberculosisDiagnostics : Decoder TuberculosisDiagnostics
+decodeTuberculosisDiagnostics =
+    decodeTuberculosisMeasurement decodeTuberculosisDiagnosticsValue
+
+
+decodeTuberculosisDiagnosticsValue : Decoder TuberculosisDiagnosticsValue
+decodeTuberculosisDiagnosticsValue =
+    field "tuberculosis_diagnosis" decodeTuberculosisDiagnosis
+
+
+decodeTuberculosisDiagnosis : Decoder TuberculosisDiagnosis
+decodeTuberculosisDiagnosis =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisDiagnosisFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisDiagnosis" |> fail)
+            )
+
+
+decodeTuberculosisDOT : Decoder TuberculosisDOT
+decodeTuberculosisDOT =
+    decodeTuberculosisMeasurement decodeTuberculosisDOTValue
+
+
+decodeTuberculosisDOTValue : Decoder TuberculosisDOTValue
+decodeTuberculosisDOTValue =
+    succeed TuberculosisDOTValue
+        |> required "dot_signs" decodeTuberculosisDOTSign
+        |> required "dot_meds_distribution_sign" decodeTuberculosisDOTSign
+
+
+decodeTuberculosisDOTSign : Decoder TuberculosisDOTSign
+decodeTuberculosisDOTSign =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisDOTSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisDOTSign" |> fail)
+            )
+
+
+decodeTuberculosisFollowUp : Decoder TuberculosisFollowUp
+decodeTuberculosisFollowUp =
+    decodeTuberculosisMeasurement decodeFollowUpValue
+
+
+decodeFollowUpValue : Decoder FollowUpValue
+decodeFollowUpValue =
+    succeed FollowUpValue
+        |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+
+
+decodeTuberculosisHealthEducation : Decoder TuberculosisHealthEducation
+decodeTuberculosisHealthEducation =
+    decodeTuberculosisMeasurement decodeTuberculosisHealthEducationValue
+
+
+decodeTuberculosisHealthEducationValue : Decoder TuberculosisHealthEducationValue
+decodeTuberculosisHealthEducationValue =
+    decodeEverySet decodeTuberculosisHealthEducationSign
+        |> field "tb_health_education_signs"
+
+
+decodeTuberculosisHealthEducationSign : Decoder TuberculosisHealthEducationSign
+decodeTuberculosisHealthEducationSign =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisHealthEducationSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisHealthEducationSign" |> fail)
+            )
+
+
+decodeTuberculosisMedication : Decoder TuberculosisMedication
+decodeTuberculosisMedication =
+    decodeTuberculosisMeasurement decodeTuberculosisMedicationValue
+
+
+decodeTuberculosisMedicationValue : Decoder TuberculosisMedicationValue
+decodeTuberculosisMedicationValue =
+    decodeEverySet decodeTuberculosisPrescribedMedication
+        |> field "prescribed_tb_medications"
+
+
+decodeTuberculosisPrescribedMedication : Decoder TuberculosisPrescribedMedication
+decodeTuberculosisPrescribedMedication =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisPrescribedMedicationFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisPrescribedMedication" |> fail)
+            )
+
+
+decodeTuberculosisReferral : Decoder TuberculosisReferral
+decodeTuberculosisReferral =
+    decodeTuberculosisMeasurement decodeSendToHCValue
+
+
+decodeTuberculosisSymptomReview : Decoder TuberculosisSymptomReview
+decodeTuberculosisSymptomReview =
+    decodeTuberculosisMeasurement decodeTuberculosisSymptomReviewValue
+
+
+decodeTuberculosisSymptomReviewValue : Decoder TuberculosisSymptomReviewValue
+decodeTuberculosisSymptomReviewValue =
+    decodeEverySet decodeTuberculosisSymptom
+        |> field "tuberculosis_symptoms"
+
+
+decodeTuberculosisSymptom : Decoder TuberculosisSymptom
+decodeTuberculosisSymptom =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisSymptomFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisSymptom" |> fail)
+            )
+
+
+decodeTuberculosisTreatmentReview : Decoder TuberculosisTreatmentReview
+decodeTuberculosisTreatmentReview =
+    decodeTuberculosisMeasurement decodeTreatmentOngoingValue

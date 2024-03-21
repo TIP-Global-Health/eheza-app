@@ -32,8 +32,10 @@ import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Utils
     exposing
-        ( toHealthEducationValueWithDefault
+        ( ongoingTreatmentReviewFormWithDefault
+        , toHealthEducationValueWithDefault
         , toMuacValueWithDefault
+        , toOngoingTreatmentReviewValueWithDefault
         , toSendToHCValueWithDefault
         , toVitalsValueWithDefault
         )
@@ -234,6 +236,20 @@ update currentDate site selectedHealthCenter id db msg model =
                         )
                     )
                 |> Maybe.withDefault noChange
+
+        SetSymptomsRespiratoryCough moreThan2Weeks ->
+            let
+                valueToSet =
+                    if moreThan2Weeks then
+                        symptomMaxDuration
+
+                    else
+                        coughLessThan2WeeksConstant
+
+                extraMsgs =
+                    [ SetSymptomsRespiratorySignValue Cough (String.fromInt valueToSet) ]
+            in
+            sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs noChange
 
         SetSymptomsGIIntractableVomiting value ->
             let
@@ -1764,7 +1780,7 @@ update currentDate site selectedHealthCenter id db msg model =
             , []
             )
 
-        SaveFollowUp personId saved nextTask ->
+        SaveFollowUp personId diagnosis saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1775,9 +1791,11 @@ update currentDate site selectedHealthCenter id db msg model =
                 extraMsgs =
                     generateNextStepsMsgs nextTask
 
-                appMsgs =
+                followUpForm =
                     model.nextStepsData.followUpForm
-                        |> toFollowUpValueWithDefault measurement
+
+                appMsgs =
+                    toFollowUpValueWithDefault measurement { followUpForm | diagnosis = diagnosis }
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveFollowUp personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id

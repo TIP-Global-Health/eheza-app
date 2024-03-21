@@ -2,8 +2,8 @@ module Pages.AcuteIllness.Outcome.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Decoder exposing (acuteIllnessOutcomeFromString)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.IndividualEncounterParticipant.Utils exposing (acuteIllnessOutcomeFromString)
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.AcuteIllness.Outcome.Model exposing (..)

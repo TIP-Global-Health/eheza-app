@@ -736,7 +736,7 @@ update currentDate site id db msg model =
                 appMsgs =
                     model.nextStepsData.followUpForm
                         |> (\form -> { form | assesment = Just assesment })
-                        |> toFollowUpValueWithDefault measurement
+                        |> toNutritionFollowUpValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->

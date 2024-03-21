@@ -23,6 +23,7 @@ import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Date exposing (Unit(..))
@@ -327,6 +328,11 @@ getNCDEncountersForParticipant =
 getChildScoreboardEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( ChildScoreboardEncounterId, ChildScoreboardEncounter )
 getChildScoreboardEncountersForParticipant =
     getParticipantEncountersByEncounterType .childScoreboardEncountersByParticipant
+
+
+getTuberculosisEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( TuberculosisEncounterId, TuberculosisEncounter )
+getTuberculosisEncountersForParticipant =
+    getParticipantEncountersByEncounterType .tuberculosisEncountersByParticipant
 
 
 getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )

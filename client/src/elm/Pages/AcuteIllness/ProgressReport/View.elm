@@ -1,7 +1,7 @@
 module Pages.AcuteIllness.ProgressReport.View exposing (view)
 
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
@@ -66,7 +66,7 @@ view :
 view language currentDate site features id isChw initiator db model =
     let
         assembled =
-            generateAssembledData currentDate id isChw db
+            generateAssembledData currentDate features id isChw db
     in
     viewWebData language (viewContent language currentDate site features id isChw initiator model) identity assembled
 

@@ -53,4 +53,8 @@ hooks:
     - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/health_center.csv"
     - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/person.csv"
     - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/village.csv"
+    # Enabling features:
+    - exec: drush vset hedley_admin_feature_ncda_enabled 1
+    - exec: drush vset hedley_admin_feature_stock_management_enabled 1
+    - exec: drush vset hedley_admin_feature_tuberculosis_management_enabled 1
     - exec: drush uli

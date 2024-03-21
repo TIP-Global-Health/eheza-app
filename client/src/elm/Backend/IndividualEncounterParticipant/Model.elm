@@ -1,6 +1,6 @@
 module Backend.IndividualEncounterParticipant.Model exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
@@ -50,8 +50,9 @@ type alias Model =
 
 
 type Msg
-    = ClosePrenatalSession Date PregnancyOutcome DeliveryLocation
+    = ClosePrenatalSession NominalDate PregnancyOutcome DeliveryLocation
     | CloseAcuteIllnessSession AcuteIllnessOutcome
+    | CloseTuberculosisSession TuberculosisOutcome
     | SetEddDate NominalDate
     | SetNewborn PersonId
     | HandleUpdatedIndividualEncounterParticipant (WebData ())
@@ -72,6 +73,7 @@ type IndividualEncounterType
     | InmmunizationEncounter
     | NCDEncounter
     | NutritionEncounter
+    | TuberculosisEncounter
     | WellChildEncounter
 
 
@@ -83,6 +85,16 @@ type DeliveryLocation
 type IndividualEncounterParticipantOutcome
     = AcuteIllness AcuteIllnessOutcome
     | Pregnancy PregnancyOutcome
+    | Tuberculosis TuberculosisOutcome
+
+
+type AcuteIllnessOutcome
+    = OutcomeIllnessResolved
+    | OutcomeLostToFollowUp
+    | OutcomeMovedOutsideCA
+    | OutcomePatientDied
+    | OutcomeReferredToHC
+    | OutcomeOther
 
 
 type PregnancyOutcome
@@ -93,6 +105,10 @@ type PregnancyOutcome
     | OutcomeAbortions
 
 
+type TuberculosisOutcome
+    = OutcomeNotDiagnosed
+
+
 allPregnancyOutcome : List PregnancyOutcome
 allPregnancyOutcome =
     [ OutcomeLiveAtTerm
@@ -101,15 +117,6 @@ allPregnancyOutcome =
     , OutcomeStillPreTerm
     , OutcomeAbortions
     ]
-
-
-type AcuteIllnessOutcome
-    = OutcomeIllnessResolved
-    | OutcomeLostToFollowUp
-    | OutcomeMovedOutsideCA
-    | OutcomePatientDied
-    | OutcomeReferredToHC
-    | OutcomeOther
 
 
 allAcuteIllnessOutcome : List AcuteIllnessOutcome

@@ -24,6 +24,7 @@ import Backend.ResilienceMessage.Encoder
 import Backend.ResilienceSurvey.Encoder
 import Backend.Session.Encoder
 import Backend.StockUpdate.Encoder
+import Backend.TuberculosisEncounter.Encoder
 import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
@@ -862,6 +863,33 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityTreatmentReview identifier ->
             getIdentifier identifier "treatment_history"
 
+        BackendAuthorityTuberculosisDiagnostics identifier ->
+            getIdentifier identifier "tuberculosis_diagnostics"
+
+        BackendAuthorityTuberculosisDOT identifier ->
+            getIdentifier identifier "tuberculosis_dot"
+
+        BackendAuthorityTuberculosisEncounter identifier ->
+            getIdentifier identifier "tuberculosis_encounter"
+
+        BackendAuthorityTuberculosisFollowUp identifier ->
+            getIdentifier identifier "tuberculosis_follow_up"
+
+        BackendAuthorityTuberculosisHealthEducation identifier ->
+            getIdentifier identifier "tuberculosis_health_education"
+
+        BackendAuthorityTuberculosisMedication identifier ->
+            getIdentifier identifier "tuberculosis_medication"
+
+        BackendAuthorityTuberculosisReferral identifier ->
+            getIdentifier identifier "tuberculosis_referral"
+
+        BackendAuthorityTuberculosisSymptomReview identifier ->
+            getIdentifier identifier "tuberculosis_symptom_review"
+
+        BackendAuthorityTuberculosisTreatmentReview identifier ->
+            getIdentifier identifier "tuberculosis_treatment_review"
+
         BackendAuthorityVitals identifier ->
             getIdentifier identifier "vitals"
 
@@ -1573,6 +1601,33 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityTreatmentReview identifier ->
             encode Backend.Measurement.Encoder.encodeTreatmentReview identifier
 
+        BackendAuthorityTuberculosisDiagnostics identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisDiagnostics identifier
+
+        BackendAuthorityTuberculosisDOT identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisDOT identifier
+
+        BackendAuthorityTuberculosisEncounter identifier ->
+            encode Backend.TuberculosisEncounter.Encoder.encodeTuberculosisEncounter identifier
+
+        BackendAuthorityTuberculosisFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisFollowUp identifier
+
+        BackendAuthorityTuberculosisHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisHealthEducation identifier
+
+        BackendAuthorityTuberculosisMedication identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisMedication identifier
+
+        BackendAuthorityTuberculosisReferral identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisReferral identifier
+
+        BackendAuthorityTuberculosisSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisSymptomReview identifier
+
+        BackendAuthorityTuberculosisTreatmentReview identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisTreatmentReview identifier
+
         BackendAuthorityVitals identifier ->
             encode Backend.Measurement.Encoder.encodeVitals identifier
 
@@ -1797,6 +1852,9 @@ siteFeatureFromString str =
         "stock_management" ->
             Just FeatureStockManagement
 
+        "tuberculosis_management" ->
+            Just FeatureTuberculosisManagement
+
         _ ->
             Nothing
 
@@ -1812,6 +1870,9 @@ siteFeatureToString feature =
 
         FeatureStockManagement ->
             "stock_management"
+
+        FeatureTuberculosisManagement ->
+            "tuberculosis_management"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature
@@ -2328,6 +2389,33 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityTreatmentReview identifier ->
             TreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisDiagnostics identifier ->
+            TuberculosisDiagnosticsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisDOT identifier ->
+            TuberculosisDOTRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisEncounter identifier ->
+            TuberculosisEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisFollowUp identifier ->
+            TuberculosisFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisHealthEducation identifier ->
+            TuberculosisHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisMedication identifier ->
+            TuberculosisMedicationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisReferral identifier ->
+            TuberculosisReferralRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisSymptomReview identifier ->
+            TuberculosisSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisTreatmentReview identifier ->
+            TuberculosisTreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityVitals identifier ->
             VitalsRevision (toEntityUuid identifier.uuid) identifier.entity

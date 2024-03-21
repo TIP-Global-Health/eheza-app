@@ -102,6 +102,10 @@ import Pages.Session.Update
 import Pages.StockManagement.Update
 import Pages.TraceContact.Model
 import Pages.TraceContact.Update
+import Pages.Tuberculosis.Activity.Model
+import Pages.Tuberculosis.Activity.Update
+import Pages.Tuberculosis.Encounter.Model
+import Pages.Tuberculosis.Encounter.Update
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Activity.Update
 import Pages.WellChild.Encounter.Model
@@ -558,6 +562,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageTuberculosisEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.tuberculosisEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.Tuberculosis.Encounter.Model.emptyModel
+                                        |> Pages.Tuberculosis.Encounter.Update.update subMsg
+                            in
+                            ( { data | tuberculosisEncounterPages = Dict.insert id subModel data.tuberculosisEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageTuberculosisEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -696,6 +713,19 @@ update msg model =
                             in
                             ( { data | childScoreboardActivityPages = Dict.insert ( id, activity ) subModel data.childScoreboardActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageTuberculosisActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.tuberculosisActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.Tuberculosis.Activity.Model.emptyModel
+                                        |> Pages.Tuberculosis.Activity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | tuberculosisActivityPages = Dict.insert ( id, activity ) subModel data.tuberculosisActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity) subCmd
                             , extraMsgs
                             )
 
