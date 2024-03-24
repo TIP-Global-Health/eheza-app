@@ -91,44 +91,26 @@ swEndpoint path decodeValue =
         |> withKeyEncoder fromEntityUuid
 
 
-personEndpoint : ReadWriteEndPoint Error PersonId Person Person PersonEndpointParams
+personEndpoint : ReadWriteEndPoint Error PersonId Person Person PersonParams
 personEndpoint =
     swEndpoint "nodes/person" decodePerson
         |> withValueEncoder (\val -> Json.Encode.object (encodePerson val))
-        |> withParamsEncoder encodePersonEndpointParams
+        |> withParamsEncoder encodePersonParams
 
 
-type PersonEndpointParams
+type PersonParams
     = ParamsNameContains String
     | ParamsGeoFields String
 
 
-
--- | NoPersonEndpointParams
---
--- type alias PersonParams =
---     { nameContains : Maybe String
---     , geoFields : Maybe String
---     }
-
-
-encodePersonEndpointParams : PersonEndpointParams -> List ( String, String )
-encodePersonEndpointParams params =
+encodePersonParams : PersonParams -> List ( String, String )
+encodePersonParams params =
     case params of
         ParamsNameContains value ->
             [ ( "name_contains", value ) ]
 
         ParamsGeoFields value ->
             [ ( "geo_fields", value ) ]
-
-
-
--- encodePersonParams : PersonParams -> List ( String, String )
--- encodePersonParams params =
---     Maybe.Extra.values
---         [ Maybe.map (\nameContains -> ( "name_contains", nameContains )) params.nameContains
---         , Maybe.map (\geoFields -> ( "geo_fields", geoFields )) params.geoFields
---         ]
 
 
 relationshipEndpoint : ReadWriteEndPoint Error RelationshipId Relationship Relationship RelationshipParams
