@@ -1334,9 +1334,8 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     (\village ->
                         let
                             geoFields =
-                                String.join "-|-"
+                                String.join "|"
                                     [ village.province
-                                    , village.province
                                     , village.district
                                     , village.sector
                                     , village.cell
