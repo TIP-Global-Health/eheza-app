@@ -16,7 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.EducationSession.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewEncounterActionButton, viewQuestionLabel)
+import Pages.Utils exposing (matchFilter, normalizeFilter, viewCheckBoxMultipleSelectInput, viewEncounterActionButton, viewQuestionLabel)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
@@ -167,61 +167,36 @@ viewParticipantsContent language currentDate villageId id session db model selec
 viewSearchForm : Language -> NominalDate -> VillageId -> EverySet PersonId -> ModelIndexedDb -> Model -> Html Msg
 viewSearchForm language currentDate villageId selectedParticipants db model =
     let
-        searchForm =
-            Pages.Utils.viewCustomNameFilter language model.input SetInput Translate.PlaceholderEnterParticipantName
-
-        searchValue =
-            Maybe.withDefault "" model.search
+        filterForm =
+            Pages.Utils.viewCustomNameFilter language model.filter SetFilter Translate.PlaceholderEnterParticipantName
 
         results =
-            if String.isEmpty searchValue then
-                EverySet.toList selectedParticipants
-                    |> List.filterMap
-                        (\participantId ->
-                            Dict.get participantId db.people
-                                |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.map (\participant -> ( participantId, participant ))
-                        )
-                    |> Dict.fromList
-                    |> Success
-                    |> Just
+            if String.isEmpty model.filter && model.initialResultsDisplay == InitialResultsHidden then
+                Dict.empty
 
             else
-                Dict.get searchValue db.personSearches
-                    |> Maybe.withDefault NotAsked
-                    |> RemoteData.map
+                let
+                    filter =
+                        normalizeFilter model.filter
+                in
+                Dict.get villageId db.peopleInVillage
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map
                         (Dict.filter
                             (\_ filteredPerson ->
-                                personLivesInVillage filteredPerson db villageId
+                                matchFilter filter filteredPerson.name
                                     && (isPersonAnAdult currentDate filteredPerson
                                             |> Maybe.withDefault False
                                        )
                             )
                         )
-                    |> Just
+                    |> Maybe.withDefault Dict.empty
 
-        summary =
-            if not <| String.isEmpty searchValue then
-                let
-                    viewSummary data =
-                        Dict.size data
-                            |> Translate.ReportResultsOfParticipantsSearch
-                            |> translate language
-                            |> text
-                in
-                Maybe.map (viewWebData language viewSummary identity) results
-                    |> Maybe.withDefault emptyNode
-
-            else
-                emptyNode
-
-        searchResultsParticipants =
-            Maybe.withDefault (Success Dict.empty) results
-                |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant selectedParticipants)
+        filterResultsParticipants =
+            Dict.map (viewParticipant selectedParticipants) results
                 |> Dict.values
 
-        searchHelper =
+        helper =
             Translate.ClickTheCheckMarkEducationSesison
     in
     div [ class "registration-page search" ]
@@ -229,18 +204,40 @@ viewSearchForm language currentDate villageId selectedParticipants db model =
             [ text <| translate language Translate.CheckIn ]
         , div [ class "search-top" ]
             [ p [ class "search-helper" ]
-                [ text <| translate language searchHelper ]
-            , searchForm
+                [ text <| translate language helper ]
+            , filterForm
+            , viewToggleDisplay language model
             ]
         , div
             [ class "search-middle" ]
             [ div
-                [ class "results-summary" ]
-                [ summary ]
-            , div
                 [ class "ui unstackable items participants-list" ]
-                searchResultsParticipants
+                filterResultsParticipants
             ]
+        ]
+
+
+viewToggleDisplay : Language -> Model -> Html Msg
+viewToggleDisplay language model =
+    let
+        ( label, action ) =
+            if String.isEmpty model.filter then
+                ( Translate.EducationSessionInitialResultsDisplay model.initialResultsDisplay
+                , ToggleInitialResultsDisplay
+                )
+
+            else
+                ( Translate.EducationSessionInitialResultsDisplay InitialResultsHidden
+                , Reset
+                )
+    in
+    div [ class "toggle-initial-display" ]
+        [ span [] [ text <| translate language Translate.Or ]
+        , span
+            [ class "toggle-text"
+            , onClick action
+            ]
+            [ text <| translate language label ]
         ]
 
 

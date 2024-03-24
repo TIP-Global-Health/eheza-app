@@ -2,7 +2,6 @@ module Pages.EducationSession.Model exposing (..)
 
 import Backend.EducationSession.Model exposing (..)
 import Backend.Entities exposing (..)
-import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
@@ -10,18 +9,16 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { viewMode : Maybe ViewMode
-    , debouncer : Debouncer Msg Msg
-    , search : Maybe String
-    , input : String
+    , initialResultsDisplay : InitialResultsDisplay
+    , filter : String
     }
 
 
 emptyModel : Model
 emptyModel =
     { viewMode = Nothing
-    , debouncer = debounce 500 |> toDebouncer
-    , search = Nothing
-    , input = ""
+    , initialResultsDisplay = InitialResultsHidden
+    , filter = ""
     }
 
 
@@ -30,14 +27,19 @@ type ViewMode
     | ModeAttendance (EverySet PersonId)
 
 
+type InitialResultsDisplay
+    = InitialResultsHidden
+    | InitialResultsShown
+
+
 type Msg
     = SetActivePage Page
     | SetViewMode ViewMode
     | ToggleEducationTopic (EverySet EducationTopic) EducationTopic
     | SaveTopics (EverySet PersonId) (EverySet EducationTopic)
-    | MsgDebouncer (Debouncer.Msg Msg)
-    | SetInput String
-    | SetSearch String
+    | SetFilter String
+    | ToggleInitialResultsDisplay
+    | Reset
     | ToggleAttendance (EverySet PersonId) PersonId
     | SaveAttendance (EverySet PersonId)
     | EndEncounter
