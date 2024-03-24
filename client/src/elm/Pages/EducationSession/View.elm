@@ -156,7 +156,7 @@ viewParticipantsContent language currentDate villageId id session db model selec
                 db
                 model
             , viewEncounterActionButton language
-                Translate.EndEncounter
+                Translate.RecordGroupEducation
                 "primary"
                 (not <| EverySet.isEmpty selectedParticipants)
                 EndEncounter

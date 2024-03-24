@@ -1276,6 +1276,7 @@ type TranslationId
     | RecommendedTreatmentSignLabel RecommendedTreatmentSign
     | RecommendedTreatmentSignLabelForProgressReport RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
+    | RecordGroupEducation
     | RecordPregnancyOutcome
     | RectalHemorrhoids
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
@@ -17441,6 +17442,12 @@ translationSet trans =
             { english = "Record Acute Illness Outcome"
             , kinyarwanda = Just "Andika iherezo ry'indwara ifatiyeho"
             , kirundi = Just "Andika inyishu z'ingwara ikomeye"
+            }
+
+        RecordGroupEducation ->
+            { english = "Record Group Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         RecordPregnancyOutcome ->
