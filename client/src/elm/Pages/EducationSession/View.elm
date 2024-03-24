@@ -170,49 +170,66 @@ viewSearchForm language currentDate villageId selectedParticipants db model =
         filterForm =
             Pages.Utils.viewCustomNameFilter language model.filter SetFilter Translate.PlaceholderEnterParticipantName
 
+        candidates =
+            Dict.get villageId db.peopleInVillage
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (Dict.filter
+                        (\_ filteredPerson ->
+                            isPersonAnAdult currentDate filteredPerson
+                                |> Maybe.withDefault False
+                        )
+                    )
+                |> Maybe.withDefault Dict.empty
+
         results =
             if String.isEmpty model.filter && model.initialResultsDisplay == InitialResultsHidden then
                 Dict.empty
 
             else
+                candidates
+
+        resultsForView =
+            if Dict.isEmpty candidates then
+                [ div [ class "ui message warning" ]
+                    [ text <| translate language Translate.EducationSessionNoCandidatesInVillage ]
+                ]
+
+            else
                 let
                     filter =
                         normalizeFilter model.filter
-                in
-                Dict.get villageId db.peopleInVillage
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.map
-                        (Dict.filter
+
+                    filteredResults =
+                        Dict.filter
                             (\_ filteredPerson ->
                                 matchFilter filter filteredPerson.name
-                                    && (isPersonAnAdult currentDate filteredPerson
-                                            |> Maybe.withDefault False
-                                       )
                             )
-                        )
-                    |> Maybe.withDefault Dict.empty
+                            results
+                in
+                if
+                    (not <| String.isEmpty model.filter)
+                        && Dict.isEmpty filteredResults
+                then
+                    [ span [] [ text <| translate language Translate.NoMatchesFound ] ]
 
-        filterResultsParticipants =
-            Dict.map (viewParticipant selectedParticipants) results
-                |> Dict.values
-
-        helper =
-            Translate.ClickTheCheckMarkEducationSesison
+                else
+                    Dict.map (viewParticipant selectedParticipants) filteredResults
+                        |> Dict.values
     in
     div [ class "registration-page search" ]
         [ h3 [ class "ui header" ]
             [ text <| translate language Translate.CheckIn ]
         , div [ class "search-top" ]
             [ p [ class "search-helper" ]
-                [ text <| translate language helper ]
+                [ text <| translate language Translate.ClickTheCheckMarkEducationSesison ]
             , filterForm
             , viewToggleDisplay language model
             ]
         , div
             [ class "search-middle" ]
-            [ div
-                [ class "ui unstackable items participants-list" ]
-                filterResultsParticipants
+            [ div [ class "ui unstackable items participants-list" ]
+                resultsForView
             ]
         ]
 

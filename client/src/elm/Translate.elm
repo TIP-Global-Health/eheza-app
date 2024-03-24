@@ -605,6 +605,7 @@ type TranslationId
     | Edema
     | EditResults
     | EducationTopic EducationTopic
+    | EducationSessionNoCandidatesInVillage
     | EducationSessionInitialResultsDisplay Pages.EducationSession.Model.InitialResultsDisplay
     | Ega
     | EgaHeader
@@ -5255,6 +5256,12 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+        EducationSessionNoCandidatesInVillage ->
+            { english = "This village gto no candidates for Group Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         EducationSessionInitialResultsDisplay display ->
             case display of
