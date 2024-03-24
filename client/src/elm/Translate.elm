@@ -5258,7 +5258,7 @@ translationSet trans =
                     }
 
         EducationSessionNoCandidatesInVillage ->
-            { english = "This village gto no candidates for Group Education"
+            { english = "This village got no candidates for Group Education"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
