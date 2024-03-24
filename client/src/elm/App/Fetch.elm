@@ -374,7 +374,7 @@ fetch model =
                                     Dict.get id loggedIn.educationSessionPages
                                         |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
                             in
-                            Pages.EducationSession.Fetch.fetch id model.indexedDb page_
+                            Pages.EducationSession.Fetch.fetch id model.villageId model.indexedDb page_
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []

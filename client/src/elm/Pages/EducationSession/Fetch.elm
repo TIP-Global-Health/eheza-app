@@ -8,27 +8,14 @@ import Pages.EducationSession.Model exposing (Model)
 import RemoteData
 
 
-fetch : EducationSessionId -> ModelIndexedDb -> Model -> List MsgIndexedDb
-fetch id db model =
-    let
-        fetchSessionParticipants =
-            Dict.get id db.educationSessions
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map (.participants >> EverySet.toList >> FetchPeople >> List.singleton)
-                |> Maybe.withDefault []
-
-        fetchPeopleByName =
-            let
-                trimmed =
-                    Maybe.withDefault "" model.search
-                        |> String.trim
-            in
-            if String.isEmpty trimmed then
-                []
-
-            else
-                [ FetchPeopleByName trimmed ]
-    in
-    [ FetchVillages, FetchEducationSession id ]
-        ++ fetchSessionParticipants
-        ++ fetchPeopleByName
+fetch : EducationSessionId -> Maybe VillageId -> ModelIndexedDb -> Model -> List MsgIndexedDb
+fetch id mVillageId db model =
+    Maybe.map
+        (\villageId ->
+            [ FetchVillages
+            , FetchEducationSession id
+            , FetchPeopleInVillage villageId
+            ]
+        )
+        mVillageId
+        |> Maybe.withDefault []
