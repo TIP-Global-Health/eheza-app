@@ -46,7 +46,8 @@ type CountryCode
     | CountryCodeTanzania
     | CountryCodeBurundi
     | CountryCodeUSACanada
-      -- @todo: delete this.
+      -- We have this for testing only.
+      -- Israel will not appear in available options.
     | CountryCodeIsrael
 
 
