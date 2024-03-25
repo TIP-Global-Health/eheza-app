@@ -98,16 +98,19 @@ personEndpoint =
         |> withParamsEncoder encodePersonParams
 
 
-type alias PersonParams =
-    { nameContains : Maybe String
-    }
+type PersonParams
+    = ParamsNameContains String
+    | ParamsGeoFields String
 
 
 encodePersonParams : PersonParams -> List ( String, String )
 encodePersonParams params =
-    Maybe.Extra.values
-        [ Maybe.map (\name -> ( "name_contains", name )) params.nameContains
-        ]
+    case params of
+        ParamsNameContains value ->
+            [ ( "name_contains", value ) ]
+
+        ParamsGeoFields value ->
+            [ ( "geo_fields", value ) ]
 
 
 relationshipEndpoint : ReadWriteEndPoint Error RelationshipId Relationship Relationship RelationshipParams

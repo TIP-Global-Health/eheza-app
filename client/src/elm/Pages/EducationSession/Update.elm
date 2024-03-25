@@ -4,7 +4,6 @@ import App.Model
 import Backend.EducationSession.Model
 import Backend.Entities exposing (..)
 import Backend.Model
-import Debouncer.Basic as Debouncer exposing (provideInput)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -53,40 +52,31 @@ update currentDate id msg model =
             )
                 |> sequenceExtra (update currentDate id) [ SetViewMode <| ModeAttendance participants ]
 
-        MsgDebouncer subMsg ->
-            let
-                ( subModel, subCmd, extraMsg ) =
-                    Debouncer.update subMsg model.debouncer
-            in
-            ( { model | debouncer = subModel }
-            , Cmd.map MsgDebouncer subCmd
+        SetFilter filter ->
+            ( { model | filter = filter }
+            , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate id) (Maybe.Extra.toList extraMsg)
 
-        SetSearch search ->
+        Reset ->
+            ( { model | filter = "", initialResultsDisplay = InitialResultsShown }
+            , Cmd.none
+            , []
+            )
+
+        ToggleInitialResultsDisplay ->
             let
-                trimmed =
-                    String.trim search
-
-                maybeSearch =
-                    if String.isEmpty trimmed then
-                        Nothing
+                display =
+                    if model.initialResultsDisplay == InitialResultsHidden then
+                        InitialResultsShown
 
                     else
-                        Just trimmed
+                        InitialResultsHidden
             in
-            ( { model | search = maybeSearch }
+            ( { model | initialResultsDisplay = display }
             , Cmd.none
             , []
             )
-
-        SetInput input ->
-            ( { model | input = input }
-            , Cmd.none
-            , []
-            )
-                |> sequenceExtra (update currentDate id) [ MsgDebouncer <| provideInput <| SetSearch input ]
 
         ToggleAttendance currentParticipants participant ->
             let

@@ -102,6 +102,7 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod
         , FilterProgramType(..)
         )
+import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
 import Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
 import Pages.MessagingCenter.Model exposing (MessagingTab(..))
@@ -604,6 +605,8 @@ type TranslationId
     | Edema
     | EditResults
     | EducationTopic EducationTopic
+    | EducationSessionNoCandidatesInVillage
+    | EducationSessionInitialResultsDisplay Pages.EducationSession.Model.InitialResultsDisplay
     | Ega
     | EgaHeader
     | EgaWeeks
@@ -1274,6 +1277,7 @@ type TranslationId
     | RecommendedTreatmentSignLabel RecommendedTreatmentSign
     | RecommendedTreatmentSignLabelForProgressReport RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
+    | RecordGroupEducation
     | RecordPregnancyOutcome
     | RectalHemorrhoids
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
@@ -5248,7 +5252,27 @@ translationSet trans =
                     }
 
                 TopicNCD ->
-                    { english = "Non-Communicable Diseases(Diabetes , Hypertension & Asthma)"
+                    { english = "Non-Communicable Diseases(Diabetes, Hypertension & Asthma)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        EducationSessionNoCandidatesInVillage ->
+            { english = "This village got no candidates for Group Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        EducationSessionInitialResultsDisplay display ->
+            case display of
+                Pages.EducationSession.Model.InitialResultsHidden ->
+                    { english = "Display all participants"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Pages.EducationSession.Model.InitialResultsShown ->
+                    { english = "Hide all participants"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -17425,6 +17449,12 @@ translationSet trans =
             { english = "Record Acute Illness Outcome"
             , kinyarwanda = Just "Andika iherezo ry'indwara ifatiyeho"
             , kirundi = Just "Andika inyishu z'ingwara ikomeye"
+            }
+
+        RecordGroupEducation ->
+            { english = "Record Group Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         RecordPregnancyOutcome ->

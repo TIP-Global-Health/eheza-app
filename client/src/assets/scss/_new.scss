@@ -2548,6 +2548,23 @@ div.page-activity.education-session {
     .registration-page.search {
       min-height: 780px;
 
+      .search-top {
+        margin-bottom: 40px;
+
+        .toggle-initial-display {
+          cursor: pointer;
+          line-height: 50px;
+          margin-bottom: 10px;
+          padding-left: 1rem;
+
+          .toggle-text {
+            color: $color-primary;
+            font-weight: bold;
+            margin-left: 10px;
+          }
+        }
+      }
+
       .items.participants-list {
         max-height: 400px;
         overflow: auto;

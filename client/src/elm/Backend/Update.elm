@@ -83,7 +83,7 @@ import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
 import Backend.Utils exposing (..)
-import Backend.Village.Utils exposing (getVillageClinicId)
+import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
@@ -508,25 +508,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 , motherMeasurements = motherMeasurements
                 , childMeasurements = childMeasurements
               }
-            , Cmd.none
-            , []
-            )
-
-        FetchPeopleByName name ->
-            let
-                trimmed =
-                    String.trim name
-            in
-            -- We'll limit the search to 500 each for now ... basically,
-            -- just to avoid truly pathological cases.
-            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
-            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
-            , []
-            )
-
-        HandleFetchedPeopleByName name data ->
-            ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
             , Cmd.none
             , []
             )
@@ -1309,11 +1290,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 in
                 ( { model | people = peopleUpdated }
                 , sw.getMany personEndpoint ids
-                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedPeople)
                 , []
                 )
 
-        HandleFetchPeople webData ->
+        HandleFetchedPeople webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
                     noChange
@@ -1327,6 +1308,53 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , Cmd.none
                     , []
                     )
+
+        FetchPeopleByName name ->
+            let
+                trimmed =
+                    String.trim name
+            in
+            -- We'll limit the search to 500 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            , sw.selectRange personEndpoint (ParamsNameContains trimmed) 0 (Just 500)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
+            , []
+            )
+
+        HandleFetchedPeopleByName trimmed data ->
+            ( { model | personSearches = Dict.insert trimmed data model.personSearches }
+            , Cmd.none
+            , []
+            )
+
+        FetchPeopleInVillage id ->
+            getVillageById model id
+                |> Maybe.map
+                    (\village ->
+                        let
+                            geoFields =
+                                String.join "|"
+                                    [ village.province
+                                    , village.district
+                                    , village.sector
+                                    , village.cell
+                                    , village.village
+                                    ]
+                        in
+                        ( { model | peopleInVillage = Dict.insert id Loading model.peopleInVillage }
+                        , sw.selectRange personEndpoint (ParamsGeoFields geoFields) 0 (Just 5000)
+                            |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleInVillage id)
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        HandleFetchedPeopleInVillage id data ->
+            ( { model | peopleInVillage = Dict.insert id data model.peopleInVillage }
+            , Cmd.none
+            , []
+            )
 
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }
