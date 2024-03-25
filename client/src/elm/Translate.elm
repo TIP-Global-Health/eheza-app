@@ -5252,7 +5252,7 @@ translationSet trans =
                     }
 
                 TopicNCD ->
-                    { english = "Non-Communicable Diseases(Diabetes , Hypertension & Asthma)"
+                    { english = "Non-Communicable Diseases(Diabetes, Hypertension & Asthma)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
