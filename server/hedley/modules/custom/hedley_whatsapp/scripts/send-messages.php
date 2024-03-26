@@ -73,8 +73,6 @@ catch (ConfigurationException $e) {
   return;
 }
 
-$message_template = variable_get('hedley_whatsapp_message_template', hedley_whatsapp_get_progress_report_messasge_template());
-
 $processed = 0;
 while ($processed < $total) {
   // Free up memory.
@@ -129,6 +127,9 @@ while ($processed < $total) {
     if (strpos($image_uri, 'http://') === 0) {
       $image_uri = str_replace('http://', 'https://', $image_uri);
     }
+
+    $language = $wrapper->field_laguage->value();
+    $message_template = hedley_whatsapp_get_progress_report_messasge_template($language);
 
     drush_print('Forwarding message to vendor...');
     $message = format_string($message_template, [
