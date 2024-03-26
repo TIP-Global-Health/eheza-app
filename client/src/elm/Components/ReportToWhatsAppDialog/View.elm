@@ -523,7 +523,7 @@ viewConfirmationBeforeExecuting language currentDate site reportType personId ph
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| Execute reportType personId phoneNumberForWhatsApp
+                , onClick <| Execute language reportType personId phoneNumberForWhatsApp
                 ]
                 [ text <| translate language Translate.Send ]
             ]

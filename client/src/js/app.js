@@ -1225,6 +1225,7 @@ function makeProgressReportScreenshot(elementId, data) {
              screenshot: json.url,
              person: data.personId,
              date_measured: today.toISOString().split('T')[0],
+             language: data.language,
              report_type: data.reportType,
              phone_number: data.phoneNumber,
              syncStage: 0,
