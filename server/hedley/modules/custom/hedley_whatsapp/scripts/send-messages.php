@@ -103,7 +103,6 @@ while ($processed < $total) {
       continue;
     }
 
-
     $fid = $node->field_screenshot[LANGUAGE_NONE][0]['fid'];
     if (empty($fid)) {
       continue;
@@ -123,7 +122,9 @@ while ($processed < $total) {
     $patient_name = "$second_name $first_name";
 
     $file = file_load($fid);
-    $copy = file_copy($file, 'public://' . $file->filename);
+    // Copy file to public repository, so it can be
+    // fetched by Twilio without authentication.
+    $copy = file_copy($file, 'public://' . $file->filename, FILE_EXISTS_REPLACE);
     $image_uri = file_create_url($copy->uri);
     if (strpos($image_uri, 'http://') === 0) {
       $image_uri = str_replace('http://', 'https://', $image_uri);
