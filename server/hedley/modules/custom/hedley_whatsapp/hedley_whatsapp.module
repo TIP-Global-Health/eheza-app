@@ -11,6 +11,7 @@ define('HEDLEY_WHATSAPP_ENGLISH_CODE', 'en');
 
 /**
  * Returns the progress report message template based on language.
+ *
  * If no template is set for the language, defaults to English template.
  *
  * @param string $language
