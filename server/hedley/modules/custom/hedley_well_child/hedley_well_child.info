@@ -8,6 +8,7 @@ dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = hedley_device
 dependencies[] = hedley_ncda
+dependencies[] = hedley_nutrition
 dependencies[] = hedley_schedule
 dependencies[] = image
 dependencies[] = list
