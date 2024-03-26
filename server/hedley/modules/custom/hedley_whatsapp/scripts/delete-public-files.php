@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Deletes screenshots that were copied to public folder during delivery process.
+ * Deletes screenshots copied to public folder during delivery process.
  *
- * It should not take long for file to be fetched, so we keep only those that were
- * created during past hour.
+ * It should not take long for file to be fetched, so we keep only those that
+ * were created during past hour.
  *
  * Execution: drush scr
  *   profiles/hedley/modules/custom/hedley_whatsapp/scripts/delete-public-files.php.
