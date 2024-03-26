@@ -130,7 +130,7 @@ while ($processed < $total) {
       $image_uri = str_replace('http://', 'https://', $image_uri);
     }
 
-    $language = $wrapper->field_laguage->value();
+    $language = $wrapper->field_language->value();
     $message_template = hedley_whatsapp_get_progress_report_messasge_template($language);
 
     drush_print('Forwarding message to vendor...');
