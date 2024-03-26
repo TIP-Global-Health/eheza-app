@@ -7,6 +7,12 @@
 
 include_once 'hedley_whatsapp.features.inc';
 
+/**
+ * Returns default English template.
+ *
+ * @return string
+ *   Default English template
+ */
 function hedley_whatsapp_get_progress_report_messasge_template() {
   return "Hi from Tip Global Health!\n\nThe @report-type progress report for @patient-name from @date.\n\n Thank you.";
 }
