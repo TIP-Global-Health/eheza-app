@@ -763,7 +763,6 @@
 
                 if (type === 'person') {
                     var nameContains = params.get('name_contains');
-
                     if (nameContains) {
                         // For the case when there's more than one word as an input,
                         // we generate an array of lowercase words.
@@ -806,6 +805,24 @@
 
                             return Promise.resolve();
                         });
+                    }
+                    else {
+                        var geoFields = params.get('geo_fields');
+                        if (geoFields) {
+                            var fields = geoFields.split('|');
+                            modifyQuery = modifyQuery.then(function () {
+                                criteria.province = fields[0];
+                                criteria.district = fields[1];
+                                criteria.sector = fields[2];
+                                criteria.cell = fields[3];
+                                criteria.village = fields[4];
+                                query = table.where(criteria);
+
+                                countQuery = query.clone();
+
+                                return Promise.resolve();
+                            });
+                        }
                     }
                 }
 

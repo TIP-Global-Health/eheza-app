@@ -9,8 +9,7 @@ fetch : IndividualEncounterType -> Model -> List MsgIndexedDb
 fetch encounterType model =
     let
         trimmed =
-            model.search
-                |> Maybe.withDefault ""
+            Maybe.withDefault "" model.search
                 |> String.trim
     in
     [ FetchHealthCenters, FetchVillages ]

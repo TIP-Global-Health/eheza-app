@@ -164,7 +164,8 @@ type UserPage
     | PrenatalRecurrentEncounterPage PrenatalEncounterId -- prenatal recurrent activities index
     | PrenatalRecurrentActivityPage PrenatalEncounterId PrenatalRecurrentActivity -- record prenatal recurrent activity
     | PrenatalLabsHistoryPage PrenatalEncounterId PrenatalEncounterId LaboratoryTest
-    | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
+    | IndividualEncounterTypesPage -- this is where we select the type of individual encounter we're interested in.
+    | GroupEncounterTypesPage -- this is where we select the type of group encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage IndividualParticipantInitiator PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
@@ -194,6 +195,7 @@ type UserPage
     | TuberculosisParticipantPage PersonId
     | TuberculosisEncounterPage TuberculosisEncounterId -- Child Scoreboard activities index.
     | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Child Scoreboard activity.
+    | EducationSessionPage EducationSessionId -- Education Session page.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage

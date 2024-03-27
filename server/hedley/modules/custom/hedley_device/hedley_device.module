@@ -293,6 +293,17 @@ function hedley_device_assign_shards($node, $wrapper) {
         $shards = $health_centeter_id ? [$health_centeter_id] : [];
         break;
 
+      case 'education_session':
+        // Shard is assigned only when session is created, as there is no
+        // option for village to change when session is edited.
+        if (empty($node->original)) {
+          // Assign shards based on HC of the village, to which session belongs.
+          $village_id = $wrapper->field_village_ref->getIdentifier();
+          $shard = hedley_general_shard_by_health_center($village_id);
+          $shards = !$shard ? [] : [$shard];
+        }
+        break;
+
       // Handling individual_participant and all kinds of measurements.
       // Shards are assigned based on Person for which measurement was taken.
       default:

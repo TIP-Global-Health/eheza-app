@@ -14,6 +14,9 @@ import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCoun
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Decoder exposing (decodeEducationSession)
+import Backend.EducationSession.Encoder exposing (encodeEducationSession)
+import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -95,16 +98,19 @@ personEndpoint =
         |> withParamsEncoder encodePersonParams
 
 
-type alias PersonParams =
-    { nameContains : Maybe String
-    }
+type PersonParams
+    = ParamsNameContains String
+    | ParamsGeoFields String
 
 
 encodePersonParams : PersonParams -> List ( String, String )
 encodePersonParams params =
-    Maybe.Extra.values
-        [ Maybe.map (\name -> ( "name_contains", name )) params.nameContains
-        ]
+    case params of
+        ParamsNameContains value ->
+            [ ( "name_contains", value ) ]
+
+        ParamsGeoFields value ->
+            [ ( "geo_fields", value ) ]
 
 
 relationshipEndpoint : ReadWriteEndPoint Error RelationshipId Relationship Relationship RelationshipParams
@@ -1427,3 +1433,9 @@ tuberculosisTreatmentReviewEndpoint : ReadWriteEndPoint Error TuberculosisTreatm
 tuberculosisTreatmentReviewEndpoint =
     swEndpoint "nodes/tuberculosis_treatment_review" decodeTuberculosisTreatmentReview
         |> withValueEncoder (object << encodeTuberculosisTreatmentReview)
+
+
+educationSessionEndpoint : ReadWriteEndPoint Error EducationSessionId EducationSession EducationSession ()
+educationSessionEndpoint =
+    swEndpoint "nodes/education_session" decodeEducationSession
+        |> withValueEncoder (object << encodeEducationSession)

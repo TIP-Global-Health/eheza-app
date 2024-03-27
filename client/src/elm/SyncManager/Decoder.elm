@@ -12,6 +12,7 @@ import Backend.ChildScoreboardEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
+import Backend.EducationSession.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
@@ -583,6 +584,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeDangerSigns
                             BackendAuthorityDangerSigns
+
+                    "education_session" ->
+                        doDecode
+                            Backend.EducationSession.Decoder.decodeEducationSession
+                            BackendAuthorityEducationSession
 
                     "exposure" ->
                         doDecode

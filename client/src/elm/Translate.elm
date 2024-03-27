@@ -20,6 +20,7 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), 
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTopic)
+import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
@@ -101,7 +102,9 @@ import Pages.Dashboard.Model as Dashboard
         , FilterPeriod
         , FilterProgramType(..)
         )
+import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
+import Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
 import Pages.MessagingCenter.Model exposing (MessagingTab(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
@@ -496,6 +499,7 @@ type TranslationId
     | ChwActivity
     | Clear
     | ClickTheCheckMark
+    | ClickTheCheckMarkEducationSesison
     | ClinicType ClinicType
     | Clinical
     | ClinicalProgressReport
@@ -600,6 +604,9 @@ type TranslationId
     | EddHeader
     | Edema
     | EditResults
+    | EducationTopic EducationTopic
+    | EducationSessionNoCandidatesInVillage
+    | EducationSessionInitialResultsDisplay Pages.EducationSession.Model.InitialResultsDisplay
     | Ega
     | EgaHeader
     | EgaWeeks
@@ -612,6 +619,7 @@ type TranslationId
     | DangerSignsTask DangerSignsTask
     | EmptyString
     | EncounterDate
+    | EncounterTypes
     | EncounterTypePageLabel DashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
     | EncounterWarningForDiagnosisPane EncounterWarning String
@@ -685,6 +693,7 @@ type TranslationId
     | GroupAssessment
     | Grams
     | Gravida
+    | GroupEncounterType GroupEncounterType
     | GroupOfFoods GroupOfFoods
     | Growth
     | HalfOfDosage String
@@ -708,6 +717,8 @@ type TranslationId
     | HealthEducationProvided
     | HealthEducationProvidedQuestion
     | HealthInsuranceQuestion
+    | HealthTopics
+    | HealthTopicsQuestion
     | Heart
     | HeartburnReliefMethod HeartburnReliefMethod
     | HeartburnRecommendedTreatmentHeader
@@ -1266,6 +1277,7 @@ type TranslationId
     | RecommendedTreatmentSignLabel RecommendedTreatmentSign
     | RecommendedTreatmentSignLabelForProgressReport RecommendedTreatmentSign
     | RecordAcuteIllnessOutcome
+    | RecordGroupEducation
     | RecordPregnancyOutcome
     | RectalHemorrhoids
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
@@ -3982,6 +3994,12 @@ translationSet trans =
             , kirundi = Just "Fyonda ku kemeza ko umurezi canke umuvyeyi ahari. Akamenyetso kemeza gaca gasa n'icatsi kibisi mu gihe umurezi/umuvyeyi ariwe kandi yinjijwe mu mashine."
             }
 
+        ClickTheCheckMarkEducationSesison ->
+            { english = "Click the check mark if the participant is in attendance. The check mark will appear green when a participant has been signed in."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         ClinicType clinicType ->
             case clinicType of
                 Achi ->
@@ -5180,6 +5198,85 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        EducationTopic topic ->
+            case topic of
+                TopicTuberculosis ->
+                    translationSet Tuberculosis
+
+                TopicSTD ->
+                    { english = "STDs & Prevention of HIV"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicMentalHealth ->
+                    { english = "Mental Health Diseases & Epilepsy"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicMalaria ->
+                    { english = "Malarial diseases and the use of mosquito nets"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicChildhoodIllnesses ->
+                    { english = "Childhood illnesses (Prevention, danger signs & emergency case management)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicMalnutrition ->
+                    { english = "Malnutrition (The prevention and fight against diseases caused by malnutrition)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicANCPostpartum ->
+                    { english = "Antenatal Care, Postnatal Care & Danger Signs in Pregnancy"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicFamilyPlanning ->
+                    { english = "Family Planning & Sexual and reproductive health"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicGender ->
+                    { english = "Gender equality, Gender-Based Violence (GBV) & Behavior change"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TopicNCD ->
+                    { english = "Non-Communicable Diseases(Diabetes, Hypertension & Asthma)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        EducationSessionNoCandidatesInVillage ->
+            { english = "This village got no candidates for Group Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        EducationSessionInitialResultsDisplay display ->
+            case display of
+                Pages.EducationSession.Model.InitialResultsHidden ->
+                    { english = "Display all participants"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Pages.EducationSession.Model.InitialResultsShown ->
+                    { english = "Hide all participants"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         Ega ->
             { english = "EGA"
             , kinyarwanda = Just "Ibyumweru inda imaze"
@@ -5244,6 +5341,12 @@ translationSet trans =
             { english = "Encounter Date"
             , kinyarwanda = Just "Itariki igikorwa cyakoreweho"
             , kirundi = Just "Itarike y'umubonano"
+            }
+
+        EncounterTypes ->
+            { english = "Encounter Types"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -6134,6 +6237,14 @@ translationSet trans =
             , kirundi = Just "Inday ya"
             }
 
+        GroupEncounterType encounterType ->
+            case encounterType of
+                GroupEncounterNutrition ->
+                    translationSet ChildNutrition
+
+                GroupEncounterEducation ->
+                    translationSet HealthEducation
+
         HalfOfDosage dosage ->
             { english = "half of " ++ dosage ++ " dosage"
             , kinyarwanda = Nothing
@@ -6286,6 +6397,18 @@ translationSet trans =
             { english = "Do you have health insurance"
             , kinyarwanda = Just "Ufite ubwishingizi bwo kwivuza"
             , kirundi = Just "Mbega urafise ikigo kikuvuza (Asiransi y'amagara/Asiransi ikuvuza)"
+            }
+
+        HealthTopics ->
+            { english = "Health Topics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HealthTopicsQuestion ->
+            { english = "Which Health Education topics will be covered today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Heart ->
@@ -17328,6 +17451,12 @@ translationSet trans =
             , kirundi = Just "Andika inyishu z'ingwara ikomeye"
             }
 
+        RecordGroupEducation ->
+            { english = "Record Group Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         RecordPregnancyOutcome ->
             { english = "Record Pregnancy Outcome"
             , kinyarwanda = Just "Andika iherezo ry'inda"
@@ -22742,10 +22871,10 @@ translateActivePage page =
                     }
 
                 IndividualEncounterTypesPage ->
-                    { english = "Encounter Types"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet EncounterTypes
+
+                GroupEncounterTypesPage ->
+                    translationSet EncounterTypes
 
                 PregnancyOutcomePage _ _ ->
                     { english = "Pregnancy Outcome"
@@ -22951,6 +23080,12 @@ translateActivePage page =
                 TuberculosisActivityPage _ _ ->
                     { english = "Tuberculosis Activity"
                     , kinyarwanda = Just "Igikorwa ku ndwara y'igituntu"
+                    , kirundi = Nothing
+                    }
+
+                EducationSessionPage _ ->
+                    { english = "Group Education"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 

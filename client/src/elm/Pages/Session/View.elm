@@ -139,7 +139,7 @@ viewEditableSession language currentDate zscores site features isChw nurse sessi
     case page of
         ActivitiesPage ->
             model.activitiesPage
-                |> Pages.Activities.View.view language nurse ( sessionId, session )
+                |> Pages.Activities.View.view language isChw ( sessionId, session )
                 |> Html.map MsgActivities
 
         ActivityPage activityType ->
@@ -177,12 +177,12 @@ viewEditableSession language currentDate zscores site features isChw nurse sessi
                         |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)
 
         AttendancePage ->
-            Pages.Attendance.View.view language nurse ( sessionId, session ) model.attendancePage
+            Pages.Attendance.View.view language isChw ( sessionId, session ) model.attendancePage
                 |> Html.map MsgAttendance
 
         ParticipantsPage ->
             model.participantsPage
-                |> Pages.Participants.View.view language nurse ( sessionId, session )
+                |> Pages.Participants.View.view language isChw ( sessionId, session )
                 |> Html.map MsgParticipants
 
         ProgressReportPage childId ->
