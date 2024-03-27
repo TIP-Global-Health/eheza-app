@@ -32,7 +32,6 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.Village.Utils exposing (getVillageById)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
@@ -244,9 +243,6 @@ viewPageMainForChw language currentDate healthCenterId assembled db model =
         limitDate =
             Date.ceiling Date.Month dateLastDayOfSelectedMonth
 
-        village =
-            Maybe.andThen (getVillageById db) model.selectedVillageFilter
-
         followUps =
             Dict.get healthCenterId db.followUpMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -254,7 +250,7 @@ viewPageMainForChw language currentDate healthCenterId assembled db model =
         -- Case Management
         ( totalNutritionFollowUps, totalAcuteIllnessFollowUps, totalPrenatalFollowUps ) =
             Maybe.map2 (getFollowUpsTotals language currentDate limitDate db)
-                village
+                model.selectedVillageFilter
                 followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
@@ -775,16 +771,13 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         limitDate =
             Date.ceiling Date.Month dateLastDayOfSelectedMonth
 
-        village =
-            Maybe.andThen (getVillageById db) model.selectedVillageFilter
-
         followUps =
             Dict.get healthCenterId db.followUpMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
 
         ( managedCovid, managedMalaria, managedGI ) =
             Maybe.map2 (getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db)
-                village
+                model.selectedVillageFilter
                 followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
 

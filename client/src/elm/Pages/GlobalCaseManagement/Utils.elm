@@ -558,79 +558,6 @@ labsResultsTestData currentDate results =
         )
 
 
-generateFollowUpsForResidents :
-    NominalDate
-    -> Village
-    -> ModelIndexedDb
-    -> FollowUpMeasurements
-    -> FollowUpPatients
-    -> FollowUpMeasurements
-generateFollowUpsForResidents currentDate village db followUps followUpPatients =
-    let
-        residentsForNutrition =
-            filterResidents db village followUpPatients.nutrition
-
-        residentsForAccuteIllness =
-            filterResidents db village followUpPatients.acuteIllness
-
-        residentsForPrenatal =
-            filterResidents db village followUpPatients.prenatal
-
-        residentsForImmunization =
-            filterResidents db village followUpPatients.immunization
-
-        nutritionGroup =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForNutrition
-                )
-                followUps.nutritionGroup
-
-        nutritionIndividual =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForNutrition
-                )
-                followUps.nutritionIndividual
-
-        wellChild =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForNutrition
-                )
-                followUps.wellChild
-
-        acuteIllness =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForAccuteIllness
-                )
-                followUps.acuteIllness
-
-        prenatal =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForPrenatal
-                )
-                followUps.prenatal
-
-        nextVisit =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForImmunization
-                )
-                followUps.nextVisit
-    in
-    { followUps
-        | nutritionGroup = nutritionGroup
-        , nutritionIndividual = nutritionIndividual
-        , wellChild = wellChild
-        , acuteIllness = acuteIllness
-        , prenatal = prenatal
-        , nextVisit = nextVisit
-    }
-
-
 resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> FollowUpPatients
 resolveUniquePatientsFromFollowUps limitDate followUps =
     let
@@ -662,15 +589,18 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
     }
 
 
-filterResidents : ModelIndexedDb -> Village -> List PersonId -> List PersonId
-filterResidents db village =
-    List.filter
-        (\personId ->
-            Dict.get personId db.people
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (\person ->
-                        isVillageResident person village
-                    )
-                |> Maybe.withDefault False
-        )
+filterFollowUpsOfResidents : List PersonId -> FollowUpMeasurements -> FollowUpMeasurements
+filterFollowUpsOfResidents residents followUps =
+    { followUps
+        | nutritionGroup = filterByParticipant residents followUps.nutritionGroup
+        , nutritionIndividual = filterByParticipant residents followUps.nutritionIndividual
+        , wellChild = filterByParticipant residents followUps.wellChild
+        , acuteIllness = filterByParticipant residents followUps.acuteIllness
+        , prenatal = filterByParticipant residents followUps.prenatal
+        , nextVisit = filterByParticipant residents followUps.nextVisit
+    }
+
+
+filterByParticipant : List PersonId -> Dict id { a | participantId : PersonId } -> Dict id { a | participantId : PersonId }
+filterByParticipant residents followUps =
+    Dict.filter (\_ followUp -> List.member followUp.participantId residents) followUps
