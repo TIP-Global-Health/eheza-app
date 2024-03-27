@@ -55,7 +55,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.Village.Model exposing (Village)
+import Backend.Village.Utils exposing (resolveVillageResidents)
 import Date exposing (Unit(..), isBetween)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
@@ -67,11 +67,10 @@ import Pages.Dashboard.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils
     exposing
         ( fillPersonName
+        , filterFollowUpsOfResidents
         , generateAcuteIllnessFollowUps
-        , generateFollowUpsForResidents
         , generateNutritionFollowUps
         , generatePrenatalFollowUps
-        , resolveUniquePatientsFromFollowUps
         )
 import Pages.GlobalCaseManagement.View
     exposing
@@ -1078,32 +1077,31 @@ countDeliveriesAtLocationForSelectedMonth dateLastDayOfSelectedMonth location =
 --
 
 
-getFollowUpsTotals : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> Village -> FollowUpMeasurements -> ( Int, Int, Int )
-getFollowUpsTotals language currentDate limitDate db village followUps =
+getFollowUpsTotals : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getFollowUpsTotals language currentDate limitDate db villageId allFollowUps =
     let
-        followUpsToLimitDate =
-            filterFollowUpMeasurementsByLimitDate limitDate followUps
+        villageResidents =
+            resolveVillageResidents villageId db
 
-        followUpsForResidents =
-            resolveUniquePatientsFromFollowUps limitDate followUpsToLimitDate
-                |> generateFollowUpsForResidents limitDate village db followUpsToLimitDate
+        followUps =
+            filterFollowUpsOfResidents villageResidents allFollowUps
 
         nutritionFollowUps =
-            generateNutritionFollowUps limitDate followUpsForResidents
+            generateNutritionFollowUps limitDate followUps
                 |> fillPersonName identity db
 
         nutritionEntries =
             generateNutritionFollowUpEntries language limitDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps limitDate db followUpsForResidents
+            generateAcuteIllnessFollowUps limitDate db followUps
                 |> fillPersonName Tuple.second db
 
         acuteIllnessEntries =
             generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         prenatalFollowUps =
-            generatePrenatalFollowUps limitDate db followUpsForResidents
+            generatePrenatalFollowUps limitDate db followUps
                 |> fillPersonName Tuple.second db
 
         prenatalEntries =
@@ -1115,18 +1113,24 @@ getFollowUpsTotals language currentDate limitDate db village followUps =
     )
 
 
-getAcuteIllnessFollowUpsBreakdownByDiagnosis : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> Village -> FollowUpMeasurements -> ( Int, Int, Int )
-getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db village followUps =
+getAcuteIllnessFollowUpsBreakdownByDiagnosis :
+    Language
+    -> NominalDate
+    -> NominalDate
+    -> ModelIndexedDb
+    -> VillageId
+    -> FollowUpMeasurements
+    -> ( Int, Int, Int )
+getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db villageId allFollowUps =
     let
-        followUpsToLimitDate =
-            filterFollowUpMeasurementsByLimitDate limitDate followUps
+        villageResidents =
+            resolveVillageResidents villageId db
 
-        followUpsForResidents =
-            resolveUniquePatientsFromFollowUps limitDate followUpsToLimitDate
-                |> generateFollowUpsForResidents limitDate village db followUpsToLimitDate
+        followUps =
+            filterFollowUpsOfResidents villageResidents allFollowUps
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps limitDate db followUpsForResidents
+            generateAcuteIllnessFollowUps limitDate db followUps
                 |> fillPersonName Tuple.second db
 
         acuteIllnessEntries =
