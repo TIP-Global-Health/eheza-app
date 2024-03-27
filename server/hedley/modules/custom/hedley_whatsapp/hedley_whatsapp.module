@@ -10,24 +10,34 @@ include_once 'hedley_whatsapp.features.inc';
 define('HEDLEY_WHATSAPP_ENGLISH_CODE', 'en');
 
 /**
- * Returns the progress report message template based on language.
+ * Returns the progress report message template.
  *
+ * SID is resolved using system domain and language.
  * If no template is set for the language, defaults to English template.
  *
+ * @param string $domain
+ *   System domain.
  * @param string $language
  *   The language code for the template.
  *
  * @return string
  *   The progress report message template.
  */
-function hedley_whatsapp_get_progress_report_messasge_template($language) {
-  $default = 'Hi from Tip Global Health. The @report-type progress report for @patient-name from @date. Thank you.';
-  $english_template_variable = 'hedley_whatsapp_message_template_' . HEDLEY_WHATSAPP_ENGLISH_CODE;
-  $english_template = variable_get($english_template_variable, $default);
-  if ($language == HEDLEY_WHATSAPP_ENGLISH_CODE) {
-    return $english_template;
+function hedley_whatsapp_get_progress_report_template_sid($domain, $language) {
+  $live_domain = variable_get('hedley_general_live_domain', 'eheza.global');
+  if ($domain == $live_domain) {
+    $env = 'live';
+  }
+  else {
+    $env = explode('-', $domain)[0];
   }
 
-  $template_variable = "hedley_whatsapp_message_template_$language";
-  return variable_get($template_variable, $english_template);
+  $english_template_variable = "hedley_whatsapp_template_sid_{$env}_" . HEDLEY_WHATSAPP_ENGLISH_CODE;
+  $english_template_sid = variable_get($english_template_variable, '');
+  if ($language == HEDLEY_WHATSAPP_ENGLISH_CODE) {
+    return $english_template_sid;
+  }
+
+  $template_variable = "hedley_whatsapp_template_sid_{$env}_$language";
+  return variable_get($template_variable, $english_template_sid);
 }

@@ -19,7 +19,7 @@ if (!drupal_is_cli()) {
 
 $twilio_sid = variable_get('hedley_whatsapp_twilio_sid', '');
 if (empty($twilio_sid)) {
-  drush_print("Twilio SID not set. Aborting.");
+  drush_print("Twilio account SID not set. Aborting.");
   return;
 }
 
@@ -29,7 +29,11 @@ if (empty($twilio_token)) {
   return;
 }
 
-$twilio_sender_number = variable_get('hedley_whatsapp_twilio_sender_number', '+14155238886');
+$twilio_messaging_service_sid = variable_get('hedley_whatsapp_twilio_messaging_service_sid', '');
+if (empty($twilio_token)) {
+  drush_print("Twilio messaging service SID not set. Aborting.");
+  return;
+}
 
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
@@ -76,6 +80,7 @@ catch (ConfigurationException $e) {
 }
 
 $processed = 0;
+$template_sid = '';
 while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
@@ -100,11 +105,26 @@ while ($processed < $total) {
     $wrapper = entity_metadata_wrapper('node', $node);
     $phone_number = $wrapper->field_phone_number->value();
     if (empty($phone_number)) {
+      drush_print("Failed to pull destination number for node ID $node->nid. Giving up on it.");
       continue;
     }
 
     $fid = $node->field_screenshot[LANGUAGE_NONE][0]['fid'];
     if (empty($fid)) {
+      drush_print("Failed to pull the file for node ID $node->nid. Giving up on it.");
+      continue;
+    }
+    $file = file_load($fid);
+    // Copy file to public repository, so it can be
+    // fetched by Twilio without authentication.
+    $copy = file_copy($file, 'public://' . $file->filename, FILE_EXISTS_REPLACE);
+    $image_uri = file_create_url($copy->uri);
+    $parsed_uri = parse_url($image_uri);
+
+    $language = $wrapper->field_language->value();
+    $template_sid = hedley_whatsapp_get_progress_report_template_sid($parsed_uri['host'], $language);
+    if (empty($template_sid)) {
+      drush_print("Failed to pull message template SID for node ID $node->nid. Giving up on it.");
       continue;
     }
 
@@ -121,31 +141,18 @@ while ($processed < $total) {
     }
     $patient_name = "$second_name $first_name";
 
-    $file = file_load($fid);
-    // Copy file to public repository, so it can be
-    // fetched by Twilio without authentication.
-    $copy = file_copy($file, 'public://' . $file->filename, FILE_EXISTS_REPLACE);
-    $image_uri = file_create_url($copy->uri);
-    if (strpos($image_uri, 'http://') === 0) {
-      $image_uri = str_replace('http://', 'https://', $image_uri);
-    }
-
-    $language = $wrapper->field_language->value();
-    $message_template = hedley_whatsapp_get_progress_report_messasge_template($language);
-
     drush_print('Forwarding message to vendor...');
-    $message = format_string($message_template, [
-      '@report-type' => $report_type,
-      '@patient-name' => $patient_name,
-      '@date' => $date,
-    ]);
-
     try {
       $result = $twilio->messages
         ->create("whatsapp:$phone_number", [
-          "from" => "whatsapp:$twilio_sender_number",
-          "body" => $message,
-          "mediaUrl" => [$image_uri],
+          "contentSid" => $template_sid,
+          "from" => $twilio_messaging_service_sid,
+          "contentVariables" => json_encode([
+            "1" => $report_type,
+            "2" => $patient_name,
+            "3" => $date,
+            "4" => substr($parsed_uri['path'], 1),
+          ]),
         ]);
 
       $wrapper->field_date_concluded->set(time());
