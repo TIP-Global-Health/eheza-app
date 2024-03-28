@@ -10,12 +10,12 @@ resilienceSurveyTypeToString surveyType =
             "monthly"
 
 
-
 resilienceSurveyTypeFromString : String -> Maybe ResilienceSurveyType
 resilienceSurveyTypeFromString value =
     case value of
         "monthly" ->
             Just ResilienceSurveyQuarterly
+
         _ ->
             Nothing
 
