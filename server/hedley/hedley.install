@@ -706,3 +706,10 @@ function hedley_update_7041() {
 function hedley_update_7042() {
   module_enable(['hedley_group_education']);
 }
+
+/**
+ * Enable the Hedley HIV module.
+ */
+function hedley_update_7043() {
+  module_enable(['hedley_hiv']);
+}
