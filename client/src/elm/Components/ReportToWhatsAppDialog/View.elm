@@ -490,9 +490,8 @@ viewConfirmationBeforeExecuting language currentDate site reportType personId ph
     let
         phoneNumberForWhatsApp =
             if String.startsWith "+" phoneNumber then
-                -- International number with country code.
-                -- Trim '+' and add 00  prefix.
-                "00" ++ String.dropLeft 1 phoneNumber
+                -- International number with country code. Leave as is.
+                phoneNumber
 
             else
                 let
@@ -501,13 +500,13 @@ viewConfirmationBeforeExecuting language currentDate site reportType personId ph
                 in
                 if String.startsWith "0" phoneNumber then
                     -- Local number with no country code.
-                    -- Trim leading 0, and add 00 and country code.
-                    "00" ++ countryCodeToString localCountryCode ++ trimLeadingZeros phoneNumber
+                    -- Trim leading 0, add '+' and country code.
+                    "+" ++ countryCodeToString localCountryCode ++ trimLeadingZeros phoneNumber
 
                 else
                     -- Local numberm without leading 0.
-                    -- Add 00 and country code.
-                    "00" ++ countryCodeToString localCountryCode ++ phoneNumber
+                    -- Add '+' and country code.
+                    "+" ++ countryCodeToString localCountryCode ++ phoneNumber
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.ReportToWhatsAppConfirmationBeforeExecutingHeader ]
@@ -524,7 +523,7 @@ viewConfirmationBeforeExecuting language currentDate site reportType personId ph
                 [ text <| translate language Translate.No ]
             , button
                 [ class "ui primary fluid button"
-                , onClick <| Execute reportType personId phoneNumberForWhatsApp
+                , onClick <| Execute language reportType personId phoneNumberForWhatsApp
                 ]
                 [ text <| translate language Translate.Send ]
             ]

@@ -3,6 +3,7 @@ module Components.ReportToWhatsAppDialog.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
+import Translate.Model exposing (Language)
 
 
 type alias Model =
@@ -99,6 +100,6 @@ type Msg msg
     | SetCountryCode String
     | UpdatePhoneAtProfile PersonId Person String
     | SetReportComponents msg String
-    | Execute ReportType PersonId String
+    | Execute Language ReportType PersonId String
     | CancelExecute (Maybe msg)
     | SetExecutionResult (Maybe msg) String

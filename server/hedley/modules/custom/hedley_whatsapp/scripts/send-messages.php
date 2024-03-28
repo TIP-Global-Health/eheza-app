@@ -8,37 +8,33 @@
  *   profiles/hedley/modules/custom/hedley_whatsapp/scripts/send-messages.php.
  */
 
-use CMText\TextClient;
-use CMText\Message;
-use CMText\Channels;
-use CMText\RichContent\Messages\TemplateMessage;
-use CMText\RichContent\Templates\Whatsapp\WhatsappTemplate;
-use CMText\RichContent\Templates\Whatsapp\Language;
-use CMText\RichContent\Templates\Whatsapp\ComponentHeader;
-use CMText\RichContent\Templates\Whatsapp\ComponentBody;
-use CMText\RichContent\Templates\Whatsapp\ComponentParameterImage;
-use CMText\RichContent\Templates\Whatsapp\ComponentParameterText;
-use CMText\RichContent\Templates\Whatsapp\ComponentParameterDatetime;
-use CMText\RichContent\Messages\MediaContent;
+use Twilio\Rest\Client;
+use Twilio\Exceptions\TwilioException;
+use Twilio\Exceptions\ConfigurationException;
 
 if (!drupal_is_cli()) {
   // Prevent execution from browser.
   return;
 }
 
-$key = variable_get('hedley_whatsapp_api_key', '');
-if (empty($key)) {
-  drush_print("API key not set. Aborting.");
+$twilio_sid = variable_get('hedley_whatsapp_twilio_sid', '');
+if (empty($twilio_sid)) {
+  drush_print("Twilio account SID not set. Aborting.");
   return;
 }
 
-$template_namespace_id = variable_get('hedley_whatsapp_template_namespace_id', '');
-if (empty($template_namespace_id)) {
-  drush_print("WhatsApp template namespace ID not set. Aborting.");
+$twilio_token = variable_get('hedley_whatsapp_twilio_token', '');
+if (empty($twilio_token)) {
+  drush_print("Twilio token not set. Aborting.");
   return;
 }
 
-$client = new TextClient($key);
+$twilio_messaging_service_sid = variable_get('hedley_whatsapp_twilio_messaging_service_sid', '');
+if (empty($twilio_token)) {
+  drush_print("Twilio messaging service SID not set. Aborting.");
+  return;
+}
+
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
 
@@ -70,12 +66,21 @@ $total = $executed->rowCount();
 
 if ($total == 0) {
   drush_print("There are no $type messages to deliver.");
-  exit;
+  return;
 }
 
 drush_print("Located $total $type messages for delivery.");
 
+try {
+  $twilio = new Client($twilio_sid, $twilio_token);
+}
+catch (ConfigurationException $e) {
+  drush_print('Failed to load Twilio client.');
+  return;
+}
+
 $processed = 0;
+$template_sid = '';
 while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
@@ -95,25 +100,38 @@ while ($processed < $total) {
     break;
   }
 
-  $messages = [];
-  $mapping = [];
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
     $wrapper = entity_metadata_wrapper('node', $node);
     $phone_number = $wrapper->field_phone_number->value();
     if (empty($phone_number)) {
+      drush_print("Failed to pull destination number for node ID $node->nid. Giving up on it.");
       continue;
     }
 
     $fid = $node->field_screenshot[LANGUAGE_NONE][0]['fid'];
     if (empty($fid)) {
+      drush_print("Failed to pull the file for node ID $node->nid. Giving up on it.");
+      continue;
+    }
+    $file = file_load($fid);
+    // Copy file to public repository, so it can be
+    // fetched by Twilio without authentication.
+    $copy = file_copy($file, 'public://' . $file->filename, FILE_EXISTS_REPLACE);
+    $image_uri = file_create_url($copy->uri);
+    $parsed_uri = parse_url($image_uri);
+
+    $language = $wrapper->field_language->value();
+    $template_sid = hedley_whatsapp_get_progress_report_template_sid($parsed_uri['host'], $language);
+    if (empty($template_sid)) {
+      drush_print("Failed to pull message template SID for node ID $node->nid. Giving up on it.");
       continue;
     }
 
-    $file = file_load($fid);
     $report_type = $wrapper->field_report_type->value();
+
     $date = date('d-m-Y', $wrapper->field_date_measured->value());
-    $datetime = DateTime::createFromFormat('!d-m-Y', $date, new DateTimeZone("UTC"));
+
     $patient_id = $wrapper->field_person->getIdentifier();
     $wrapper_patient = entity_metadata_wrapper('node', $patient_id);
     $first_name = trim($wrapper_patient->field_first_name->value());
@@ -123,84 +141,24 @@ while ($processed < $total) {
     }
     $patient_name = "$second_name $first_name";
 
+    drush_print('Forwarding message to vendor...');
     try {
-      $reference = $patient_name . '-' . $node->created;
-      $mapping[$reference] = $node;
+      $result = $twilio->messages
+        ->create("whatsapp:$phone_number", [
+          "contentSid" => $template_sid,
+          "from" => $twilio_messaging_service_sid,
+          "contentVariables" => json_encode([
+            "1" => $report_type,
+            "2" => $patient_name,
+            "3" => $date,
+            "4" => substr($parsed_uri['path'], 1),
+          ]),
+        ]);
 
-      $image_uri = file_create_url($file->uri);
-      if (strpos($image_uri, 'http://') === 0) {
-        $image_uri = str_replace('http://', 'https://', $image_uri);
-      }
-
-      drush_print("Image: $image_uri");
-
-      $header_param =
-        new ComponentParameterImage(
-          new MediaContent(
-            $file->filename,
-            $image_uri,
-            $file->filemime
-          )
-        );
-
-      $body_param1 = new ComponentParameterText($report_type);
-      $body_param2 = new ComponentParameterText($patient_name);
-      $body_param3 = new ComponentParameterDatetime($date, $datetime);
-
-      $message = new Message(
-        '',
-        'Tip Global Health',
-        [$phone_number],
-        $reference
-      );
-      $message
-        ->WithChannels([Channels::WHATSAPP])
-        ->WithTemplate(
-          new TemplateMessage(
-            new WhatsappTemplate(
-              $template_namespace_id,
-              'progress_report',
-              new Language('en'),
-              [
-                new ComponentHeader([$header_param]),
-                new ComponentBody([$body_param1, $body_param2, $body_param3]),
-              ]
-            )
-          )
-        );
-      $messages[] = $message;
-    }
-    catch (Exception $exception) {
-      $attempts = $wrapper->field_delivery_attempts->value();
-      $wrapper->field_delivery_attempts->set($attempts + 1);
-      $wrapper->save();
-    }
-  }
-
-  drush_print('Forwarding messages to vendor...');
-
-  $result = $client->send($messages);
-
-  drush_print("Status code: $result->statusCode");
-  drush_print("Status message: $result->statusMessage");
-
-  $details = $result->details;
-  foreach ($details as $delivery_result) {
-    if (empty($delivery_result->reference)) {
-      continue;
-    }
-
-    $node = $mapping[$delivery_result->reference];
-    if (empty($node)) {
-      continue;
-    }
-
-    $wrapper = entity_metadata_wrapper('node', $node);
-    if ($delivery_result->messageErrorCode === 0) {
       $wrapper->field_date_concluded->set(time());
       $wrapper->save();
     }
-    else {
+    catch (TwilioException $e) {
       $attempts = $wrapper->field_delivery_attempts->value();
       $wrapper->field_delivery_attempts->set($attempts + 1);
       $wrapper->save();

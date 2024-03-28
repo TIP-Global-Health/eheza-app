@@ -35,6 +35,7 @@ import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
+import Translate.Model exposing (Language)
 
 
 {-| The "general" entities are ones that currently don't belong to a specific
@@ -644,6 +645,7 @@ type alias BackendWhatsAppEntity =
     { localId : Int
     , personId : String
     , dateMeasured : NominalDate
+    , language : Language
     , reportType : ReportType
     , phoneNumber : String
     , screenshot : Int

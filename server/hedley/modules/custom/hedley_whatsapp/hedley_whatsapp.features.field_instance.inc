@@ -63,7 +63,7 @@ function hedley_whatsapp_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 6,
+      'weight' => 7,
     ),
   );
 
@@ -173,6 +173,43 @@ function hedley_whatsapp_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-whatsapp_record-field_language'.
+  $field_instances['node-whatsapp_record-field_language'] = array(
+    'bundle' => 'whatsapp_record',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_language',
+    'label' => 'Language',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 3,
+    ),
+  );
+
   // Exported field_instance: 'node-whatsapp_record-field_person'.
   $field_instances['node-whatsapp_record-field_person'] = array(
     'bundle' => 'whatsapp_record',
@@ -253,7 +290,7 @@ function hedley_whatsapp_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 4,
+      'weight' => 5,
     ),
   );
 
@@ -290,7 +327,7 @@ function hedley_whatsapp_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -340,7 +377,7 @@ function hedley_whatsapp_field_default_field_instances() {
         'progress_indicator' => 'throbber',
       ),
       'type' => 'image_image',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -389,6 +426,7 @@ function hedley_whatsapp_field_default_field_instances() {
   t('Date Measured');
   t('Date delivered to vendor');
   t('Delivery Attempts');
+  t('Language');
   t('Person');
   t('Phone number');
   t('Report type');
