@@ -7265,7 +7265,7 @@ translationSet trans =
                     translationSet ChildScorecard
 
                 HIVEncounter ->
-                    { english = "TB Management"
+                    { english = "HIV Management"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
