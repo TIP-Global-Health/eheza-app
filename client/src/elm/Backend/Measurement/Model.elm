@@ -3346,6 +3346,10 @@ type alias TuberculosisMeasurements =
     }
 
 
+type alias HIVMeasurements =
+    {}
+
+
 {-| A set of measurements that includes all required data for
 Stock management data presentation.
 -}
