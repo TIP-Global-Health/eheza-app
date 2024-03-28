@@ -1,8 +1,9 @@
-module Pages.Tuberculosis.Participant.View exposing (view)
+module Pages.HIV.Participant.View exposing (view)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
+import Backend.HIVEncounter.Model
 import Backend.IndividualEncounterParticipant.Model
     exposing
         ( IndividualEncounterParticipant
@@ -10,8 +11,7 @@ import Backend.IndividualEncounterParticipant.Model
         )
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
-import Backend.TuberculosisEncounter.Model
+import Backend.NutritionEncounter.Utils exposing (getHIVEncountersForParticipant)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -31,7 +31,7 @@ view language currentDate selectedHealthCenter id db =
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-participant tuberculosis" ]
+        [ class "wrap wrap-alt-2 page-participant hiv" ]
         [ viewHeader language
         , div
             [ class "ui full segment" ]
@@ -49,7 +49,7 @@ viewHeader language =
             [ text <|
                 translate language <|
                     Translate.IndividualEncounterLabel
-                        Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter
+                        Backend.IndividualEncounterParticipant.Model.HIVEncounter
                         True
             ]
         , span
@@ -58,7 +58,7 @@ viewHeader language =
                 App.Model.SetActivePage <|
                     UserPage <|
                         IndividualEncounterParticipantsPage
-                            Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter
+                            Backend.IndividualEncounterParticipant.Model.HIVEncounter
             ]
             [ span [ class "icon-back" ] [] ]
         ]
@@ -78,14 +78,14 @@ viewActions language currentDate selectedHealthCenter id db sessions =
             [ text <|
                 translate language <|
                     Translate.IndividualEncounterSelectVisit
-                        Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter
+                        Backend.IndividualEncounterParticipant.Model.HIVEncounter
                         True
             ]
-        , viewTuberculosisAction language currentDate selectedHealthCenter id db sessions
+        , viewHIVAction language currentDate selectedHealthCenter id db sessions
         ]
 
 
-viewTuberculosisAction :
+viewHIVAction :
     Language
     -> NominalDate
     -> HealthCenterId
@@ -93,13 +93,13 @@ viewTuberculosisAction :
     -> ModelIndexedDb
     -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant
     -> Html App.Model.Msg
-viewTuberculosisAction language currentDate selectedHealthCenter id db sessions =
+viewHIVAction language currentDate selectedHealthCenter id db sessions =
     let
         maybeSessionId =
             Dict.toList sessions
                 |> List.filter
                     (\( _, session ) ->
-                        (session.encounterType == Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter)
+                        (session.encounterType == Backend.IndividualEncounterParticipant.Model.HIVEncounter)
                             && isNothing session.endDate
                     )
                 |> List.head
@@ -111,7 +111,7 @@ viewTuberculosisAction language currentDate selectedHealthCenter id db sessions 
         -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
             Maybe.map
-                (getTuberculosisEncountersForParticipant db
+                (getHIVEncountersForParticipant db
                     >> (\list ->
                             ( List.filter (Tuple.second >> isDailyEncounterActive currentDate) list
                                 |> List.head
@@ -134,17 +134,17 @@ viewTuberculosisAction language currentDate selectedHealthCenter id db sessions 
                 |> Maybe.withDefault
                     (maybeSessionId
                         |> Maybe.map
-                            -- If tuberculosis session exists, create new encounter for it.
+                            -- If HIV session exists, create new encounter for it.
                             (\sessionId ->
-                                [ Backend.TuberculosisEncounter.Model.emptyTuberculosisEncounter sessionId currentDate (Just selectedHealthCenter)
-                                    |> Backend.Model.PostTuberculosisEncounter
+                                [ Backend.HIVEncounter.Model.emptyHIVEncounter sessionId currentDate (Just selectedHealthCenter)
+                                    |> Backend.Model.PostHIVEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick
                                 ]
                             )
-                        -- If tuberculosis session does not exist, create it.
+                        -- If hiv session does not exist, create it.
                         |> Maybe.withDefault
-                            [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter selectedHealthCenter
+                            [ emptyIndividualEncounterParticipant currentDate id Backend.IndividualEncounterParticipant.Model.HIVEncounter selectedHealthCenter
                                 |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
@@ -152,7 +152,7 @@ viewTuberculosisAction language currentDate selectedHealthCenter id db sessions 
                     )
 
         navigateToEncounterAction id_ =
-            [ Pages.Page.TuberculosisEncounterPage id_
+            [ Pages.Page.HIVEncounterPage id_
                 |> UserPage
                 |> App.Model.SetActivePage
                 |> onClick
@@ -169,7 +169,7 @@ viewTuberculosisAction language currentDate selectedHealthCenter id db sessions 
             [ text <|
                 translate language <|
                     Translate.IndividualEncounterLabel
-                        Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter
+                        Backend.IndividualEncounterParticipant.Model.HIVEncounter
                         True
             ]
         , div [ class "icon-back" ] []
