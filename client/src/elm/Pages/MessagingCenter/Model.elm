@@ -24,7 +24,7 @@ type alias Model =
     , expandedMessages : EverySet ResilienceMessageId
     , messageOptionsDialogState : Maybe MessageOptionsDialogState
     , kickOffForm : KickOffForm
-    , monthlySurveyForm : MonthlySurveyForm
+    , quarterlySurveyForm : QuarterlySurveyForm
     , surveyScoreDialogState : Maybe SurveyScoreDialogState
     }
 
@@ -36,7 +36,7 @@ emptyModel =
     , expandedMessages = EverySet.empty
     , messageOptionsDialogState = Nothing
     , kickOffForm = emptyKickOffForm
-    , monthlySurveyForm = emptyMonthlySurveyForm
+    , quarterlySurveyForm = emptyQuarterlySurveyForm
     , surveyScoreDialogState = Nothing
     }
 
@@ -79,17 +79,17 @@ emptyKickOffForm =
     }
 
 
-type alias MonthlySurveyForm =
+type alias QuarterlySurveyForm =
     Dict ResilienceSurveyQuestion ResilienceSurveyQuestionOption
 
 
-emptyMonthlySurveyForm : MonthlySurveyForm
-emptyMonthlySurveyForm =
+emptyQuarterlySurveyForm : QuarterlySurveyForm
+emptyQuarterlySurveyForm =
     Dict.empty
 
 
 type SurveyScoreDialogState
-    = MonthlySurveyScore Int
+    = QuarterlySurveyScore Int
 
 
 type Msg
@@ -102,8 +102,8 @@ type Msg
     | SetUbudehe String
     | SetMaritalStatus String
     | SaveKickOffSurvey NurseId Nurse
-    | SetMonthlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
-    | SaveMonthlySurvey NurseId
+    | SetQuarterlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
+    | SaveQuarterlySurvey NurseId
     | SetSurveyScoreDialogState (Maybe SurveyScoreDialogState)
     | SetActiveTab MessagingTab
     | ScrollTab Int

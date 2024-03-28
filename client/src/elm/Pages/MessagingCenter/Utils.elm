@@ -12,8 +12,8 @@ import RemoteData
 import Time exposing (posixToMillis)
 
 
-monthlySurveyQuestions : List ResilienceSurveyQuestion
-monthlySurveyQuestions =
+quarterlySurveyQuestions : List ResilienceSurveyQuestion
+quarterlySurveyQuestions =
     [ ResilienceSurveyQuestion1
     , ResilienceSurveyQuestion2
     , ResilienceSurveyQuestion3
