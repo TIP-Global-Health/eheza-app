@@ -80,8 +80,8 @@ view language currentTime nurseId nurse db model =
                                         Dict.values surveys
                                             |> List.sortWith (sortByDateDesc .dateMeasured)
 
-                                    runMonthlySurvery =
-                                        List.filter (.surveyType >> (==) ResilienceSurveyMonthly) surveysSorted
+                                    runQuarterlySurvey =
+                                        List.filter (.surveyType >> (==) ResilienceSurveyQuarterly) surveysSorted
                                             |> List.head
                                             |> Maybe.map
                                                 (\survey ->
@@ -93,8 +93,8 @@ view language currentTime nurseId nurse db model =
                                             -- it is the beginning of the Program(Baseline).
                                             |> Maybe.withDefault (Date.diff Months programStartDate currentDate == 0)
                                 in
-                                if runMonthlySurvery then
-                                    viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
+                                if runQuarterlySurvey then
+                                    viewQuarterlySurvey language currentDate nurseId model.quarterlySurveyForm
 
                                 else
                                     messagingCenterView
@@ -247,11 +247,11 @@ viewKickOffSurvey language currentDate nurseId nurse form =
         ]
 
 
-viewMonthlySurvey : Language -> NominalDate -> NurseId -> MonthlySurveyForm -> Html Msg
-viewMonthlySurvey language currentDate nurseId form =
+viewQuarterlySurvey : Language -> NominalDate -> NurseId -> QuarterlySurveyForm -> Html Msg
+viewQuarterlySurvey language currentDate nurseId form =
     let
         questionInput question =
-            [ viewCustomLabel language (Translate.ResilienceMonthlySurveyQuestion question) "." "label"
+            [ viewCustomLabel language (Translate.ResilienceQuarterlySurveyQuestion question) "." "label"
             , viewCustomLabel language Translate.ChooseOne ":" "instructions"
             , viewCheckBoxSelectInput language
                 [ ResilienceSurveyQuestionOption0
@@ -262,7 +262,7 @@ viewMonthlySurvey language currentDate nurseId form =
                 ]
                 []
                 (Dict.get question form)
-                (SetMonthlySurveyAnswer question)
+                (SetQuarterlySurveyAnswer question)
                 Translate.ResilienceSurveyQuestionOption
             ]
 
@@ -270,18 +270,18 @@ viewMonthlySurvey language currentDate nurseId form =
             Dict.size form
 
         totalTasks =
-            List.length monthlySurveyQuestions
+            List.length quarterlySurveyQuestions
     in
     div [ class "ui unstackable items" ]
         [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
-                    List.concatMap questionInput monthlySurveyQuestions
+                    List.concatMap questionInput quarterlySurveyQuestions
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveMonthlySurvey nurseId
+                        , onClick <| SaveQuarterlySurvey nurseId
                         ]
                         [ text <| translate language Translate.Save ]
                     ]
@@ -298,11 +298,11 @@ surveyScoreDialog language =
     Maybe.map
         (\dialogState ->
             case dialogState of
-                MonthlySurveyScore score ->
+                QuarterlySurveyScore score ->
                     let
                         data =
                             ( p [ class "score" ] [ text <| String.fromInt score ++ "/20" ]
-                            , p [ class "interpretation" ] [ text <| translate language <| Translate.MonthlySurveyScoreInterpretation score ]
+                            , p [ class "interpretation" ] [ text <| translate language <| Translate.QuarterlySurveyScoreInterpretation score ]
                             , SetSurveyScoreDialogState Nothing
                             )
                     in

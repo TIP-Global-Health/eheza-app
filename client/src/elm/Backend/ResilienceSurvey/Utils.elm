@@ -6,22 +6,16 @@ import Backend.ResilienceSurvey.Model exposing (..)
 resilienceSurveyTypeToString : ResilienceSurveyType -> String
 resilienceSurveyTypeToString surveyType =
     case surveyType of
-        ResilienceSurveyMonthly ->
+        ResilienceSurveyQuarterly ->
             "monthly"
 
-        ResilienceSurveyQuaterly ->
-            "quaterly"
 
 
 resilienceSurveyTypeFromString : String -> Maybe ResilienceSurveyType
 resilienceSurveyTypeFromString value =
     case value of
         "monthly" ->
-            Just ResilienceSurveyMonthly
-
-        "quaterly" ->
-            Just ResilienceSurveyQuaterly
-
+            Just ResilienceSurveyQuarterly
         _ ->
             Nothing
 

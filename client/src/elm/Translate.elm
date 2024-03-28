@@ -955,7 +955,7 @@ type TranslationId
     | ModeratePreeclampsia
     | Month
     | MonthAbbrev
-    | MonthlySurveyScoreInterpretation Int
+    | QuarterlySurveyScoreInterpretation Int
     | MonthSinglePlural Int
     | MonthsOfStock
     | MotherId
@@ -1464,7 +1464,7 @@ type TranslationId
     | ResilienceMessageEndOfSecondMonthBullet3
     | ResilienceMessageEndOfSecondMonthBullet4
     | ResilienceMessageEndOfSecondMonthBullet5
-    | ResilienceMonthlySurveyQuestion ResilienceSurveyQuestion
+    | ResilienceQuarterlySurveyQuestion ResilienceSurveyQuestion
     | ResilienceKickOffBirthDateQuestion
     | ResilienceKickOffEducationLevelQuestion
     | ResilienceKickOffGenderQuestion
@@ -10207,7 +10207,7 @@ translationSet trans =
             , kirundi = Just "am"
             }
 
-        MonthlySurveyScoreInterpretation score ->
+        QuarterlySurveyScoreInterpretation score ->
             if score < 14 then
                 { english = "Low resilient copers"
                 , kinyarwanda = Nothing
@@ -18789,7 +18789,7 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        ResilienceMonthlySurveyQuestion question ->
+        ResilienceQuarterlySurveyQuestion question ->
             case question of
                 ResilienceSurveyQuestion1 ->
                     { english = "I look for creative ways to alter difficult situations"
