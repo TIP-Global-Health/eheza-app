@@ -62,9 +62,16 @@ viewContent language currentDate features healthCenterId isChw model =
                         else
                             emptyNode
 
-                    tuberculosiskManagementButton =
+                    tuberculosisManagementButton =
                         if tuberculosisManagementEnabled features then
                             encounterButton TuberculosisEncounter
+
+                        else
+                            emptyNode
+
+                    hivManagementButton =
+                        if hivManagementEnabled features then
+                            encounterButton HIVEncounter
 
                         else
                             emptyNode
@@ -74,7 +81,8 @@ viewContent language currentDate features healthCenterId isChw model =
                 , encounterButton NutritionEncounter
                 , encounterButton WellChildEncounter
                 , childScoreboardButton
-                , tuberculosiskManagementButton
+                , tuberculosisManagementButton
+                , hivManagementButton
                 ]
 
             else
