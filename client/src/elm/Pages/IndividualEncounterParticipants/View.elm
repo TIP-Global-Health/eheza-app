@@ -89,22 +89,14 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                 AntenatalEncounter ->
                     isPersonAFertileWoman currentDate person
 
-                NutritionEncounter ->
-                    isPersonAnAdult currentDate person
-                        |> Maybe.map not
-                        |> Maybe.withDefault False
+                ChildScoreboardEncounter ->
+                    isChw && isChildUnderAgeOf2 currentDate person
 
-                WellChildEncounter ->
-                    isPersonAnAdult currentDate person
-                        |> Maybe.map not
-                        |> Maybe.withDefault False
+                HIVEncounter ->
+                    isChw
 
                 HomeVisitEncounter ->
                     -- We do not have direct access to Home Visit encounter.
-                    False
-
-                InmmunizationEncounter ->
-                    -- Not in use (possibly future development).
                     False
 
                 NCDEncounter ->
@@ -113,11 +105,22 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         person.birthDate
                         |> Maybe.withDefault False
 
-                ChildScoreboardEncounter ->
-                    isChw && isChildUnderAgeOf2 currentDate person
+                NutritionEncounter ->
+                    isPersonAnAdult currentDate person
+                        |> Maybe.map not
+                        |> Maybe.withDefault False
 
                 TuberculosisEncounter ->
                     isChw
+
+                WellChildEncounter ->
+                    isPersonAnAdult currentDate person
+                        |> Maybe.map not
+                        |> Maybe.withDefault False
+
+                InmmunizationEncounter ->
+                    -- Not in use (possibly future development).
+                    False
 
         -- For CHW nurse, we present people only from the village that was selected.
         chwCondition person =
@@ -214,28 +217,32 @@ viewParticipant language currentDate encounterType db id person =
                 AntenatalEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage id ]
 
-                NutritionEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage id ]
+                ChildScoreboardEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
 
-                WellChildEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage id ]
+                HIVEncounter ->
+                    --@todo
+                    []
 
                 HomeVisitEncounter ->
                     -- We do not have direct access to Home Visit encounter.
                     []
 
-                InmmunizationEncounter ->
-                    -- Not in use (possibly future development).
-                    []
-
                 NCDEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| NCDParticipantPage InitiatorParticipantsPage id ]
 
-                ChildScoreboardEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
+                NutritionEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage id ]
 
                 TuberculosisEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| TuberculosisParticipantPage id ]
+
+                WellChildEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage id ]
+
+                InmmunizationEncounter ->
+                    -- Not implemented (possibly future development).
+                    []
 
         viewAction =
             div [ class "action" ]

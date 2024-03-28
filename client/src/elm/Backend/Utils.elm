@@ -283,3 +283,8 @@ tuberculosisManagementEnabled =
 groupEducationEnabled : EverySet SiteFeature -> Bool
 groupEducationEnabled =
     EverySet.member FeatureGroupEducation
+
+
+hivManagementEnabled : EverySet SiteFeature -> Bool
+hivManagementEnabled =
+    EverySet.member FeatureHIVManagement

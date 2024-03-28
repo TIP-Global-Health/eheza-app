@@ -573,20 +573,20 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             , title = Translate.People
                             }
 
-                        NutritionEncounter ->
-                            { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
+                        ChildScoreboardEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage ChildScoreboardEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -5 today
-                            , birthDateSelectorTo = today
+                            , birthDateSelectorFrom = Date.add Years -2 today
+                            , birthDateSelectorTo = Date.add Days -1 today
                             , title = Translate.People
                             }
 
-                        WellChildEncounter ->
-                            { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
-                            , expectedAge = ExpectChild
+                        HIVEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage HIVEncounter)
+                            , expectedAge = ExpectAdultOrChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today
+                            , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -616,12 +616,12 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             , title = Translate.People
                             }
 
-                        ChildScoreboardEncounter ->
-                            { goBackPage = UserPage (IndividualEncounterParticipantsPage ChildScoreboardEncounter)
+                        NutritionEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -2 today
-                            , birthDateSelectorTo = Date.add Days -1 today
+                            , birthDateSelectorFrom = Date.add Years -5 today
+                            , birthDateSelectorTo = today
                             , title = Translate.People
                             }
 
@@ -630,6 +630,15 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             , expectedAge = ExpectAdultOrChild
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -120 today
+                            , birthDateSelectorTo = today
+                            , title = Translate.People
+                            }
+
+                        WellChildEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
+                            , expectedAge = ExpectChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -13 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }

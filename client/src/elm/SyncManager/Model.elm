@@ -704,11 +704,12 @@ type Site
 
 
 type SiteFeature
-    = FeatureNCDA
+    = FeatureGroupEducation
+    | FeatureHIVManagement
+    | FeatureNCDA
     | FeatureReportToWhatsApp
     | FeatureStockManagement
     | FeatureTuberculosisManagement
-    | FeatureGroupEducation
 
 
 type Msg
