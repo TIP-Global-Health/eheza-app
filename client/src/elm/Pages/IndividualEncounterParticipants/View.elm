@@ -221,8 +221,7 @@ viewParticipant language currentDate encounterType db id person =
                     [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
 
                 HIVEncounter ->
-                    --@todo
-                    []
+                    [ onClick <| SetActivePage <| UserPage <| HIVParticipantPage id ]
 
                 HomeVisitEncounter ->
                     -- We do not have direct access to Home Visit encounter.

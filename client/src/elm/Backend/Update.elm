@@ -4107,8 +4107,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                         ChildScoreboardParticipantPage personId
 
                                                     HIVEncounter ->
-                                                        --@todo
-                                                        IndividualEncounterTypesPage
+                                                        HIVParticipantPage personId
 
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.
@@ -4650,10 +4649,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 appMsgs =
                     RemoteData.map
                         (\( hivEncounterId, _ ) ->
-                            [--  @todo:
-                             -- App.Model.SetActivePage <|
-                             --     UserPage <|
-                             --         Pages.Page.HIVEncounterPage hivEncounterId
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.HIVEncounterPage hivEncounterId
                             ]
                         )
                         data
