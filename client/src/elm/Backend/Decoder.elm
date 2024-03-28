@@ -6,6 +6,7 @@ import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.EducationSession.Decoder exposing (decodeEducationSession)
+import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
@@ -175,6 +176,9 @@ decodeRevision =
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
+
+                    "hiv_encounter" ->
+                        decodeWithUuid HIVEncounterRevision decodeHIVEncounter
 
                     "home_visit_encounter" ->
                         decodeWithUuid HomeVisitEncounterRevision decodeHomeVisitEncounter

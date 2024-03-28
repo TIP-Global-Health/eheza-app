@@ -5146,6 +5146,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        HIVEncounterRevision uuid data ->
+            let
+                hivEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.hivEncounters
+
+                hivEncountersByParticipant =
+                    Dict.remove data.participant model.hivEncountersByParticipant
+            in
+            ( { model
+                | hivEncounters = hivEncounters
+                , hivEncountersByParticipant = hivEncountersByParticipant
+              }
+            , recalc
+            )
+
         HomeVisitEncounterRevision uuid data ->
             let
                 homeVisitEncounters =
