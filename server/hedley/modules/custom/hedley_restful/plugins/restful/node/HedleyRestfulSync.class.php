@@ -179,6 +179,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'stock_management',
       'tuberculosis_management',
       'group_education',
+      'hiv_management',
     ];
     $enabled_features = array_filter(
       $available_features,
