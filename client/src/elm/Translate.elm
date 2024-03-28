@@ -5366,6 +5366,12 @@ translationSet trans =
                 ChildScoreboardEncounter ->
                     translationSet EmptyString
 
+                HIVEncounter ->
+                    { english = "Do you want to start a HIV Management encounter for"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 HomeVisitEncounter ->
                     { english = "Do you want to start a Home Visit assessment for"
                     , kinyarwanda = Just "Urashaka gutangira igikorwa cyo gusura mu rugo"
@@ -7005,6 +7011,12 @@ translationSet trans =
                     , kirundi = Just "Ukubonana ubwa mbere kw'ikarata y'ikurikiranwa ry'umwana"
                     }
 
+                HIVEncounter ->
+                    { english = "First HIV Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 HomeVisitEncounter ->
                     { english = "First Home Visit Encounter"
                     , kinyarwanda = Just "Gusura abarwayi mu rugo bwambere"
@@ -7059,6 +7071,12 @@ translationSet trans =
                     { english = "Child Scorecard Encounter"
                     , kinyarwanda = Just "Isuzuma ku Ifish y'Imikurire y'Umwana"
                     , kirundi = Just "Ukubonana kw'ikarata y'ikurikiranwa ry'umwana"
+                    }
+
+                HIVEncounter ->
+                    { english = "HIV Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 HomeVisitEncounter ->
@@ -7121,6 +7139,12 @@ translationSet trans =
                 ChildScoreboardEncounter ->
                     { english = "Select Child Scorecard Visit"
                     , kinyarwanda = Just "Hitamo isuzuma ku ifishi y'imikurire y'umwana"
+                    , kirundi = Nothing
+                    }
+
+                HIVEncounter ->
+                    { english = "Select HIV Visit"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
@@ -7187,6 +7211,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                HIVEncounter ->
+                    { english = "Subsequent HIV Visit"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 HomeVisitEncounter ->
                     { english = "Subsequent Home Visit"
                     , kinyarwanda = Nothing
@@ -7233,6 +7263,12 @@ translationSet trans =
 
                 ChildScoreboardEncounter ->
                     translationSet ChildScorecard
+
+                HIVEncounter ->
+                    { english = "TB Management"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 HomeVisitEncounter ->
                     translationSet HomeVisit
@@ -22753,6 +22789,12 @@ translateActivePage page =
 
                         ChildScoreboardEncounter ->
                             { english = "Child Scorecard Participants"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        HIVEncounter ->
+                            { english = "HIV Participants"
                             , kinyarwanda = Nothing
                             , kirundi = Nothing
                             }

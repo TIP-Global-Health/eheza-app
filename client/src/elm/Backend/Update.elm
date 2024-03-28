@@ -3974,11 +3974,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                     ChildScoreboardEncounter ->
                                                         ChildScoreboardParticipantPage personId
 
-                                                    NutritionEncounter ->
-                                                        NutritionParticipantPage InitiatorParticipantsPage personId
-
-                                                    WellChildEncounter ->
-                                                        WellChildParticipantPage InitiatorParticipantsPage personId
+                                                    HIVEncounter ->
+                                                        --@todo
+                                                        IndividualEncounterTypesPage
 
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.
@@ -3989,8 +3987,14 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                     NCDEncounter ->
                                                         NCDParticipantPage InitiatorParticipantsPage personId
 
+                                                    NutritionEncounter ->
+                                                        NutritionParticipantPage InitiatorParticipantsPage personId
+
                                                     TuberculosisEncounter ->
                                                         TuberculosisParticipantPage personId
+
+                                                    WellChildEncounter ->
+                                                        WellChildParticipantPage InitiatorParticipantsPage personId
 
                                                     -- Note yet implemented. Providing 'default'
                                                     -- page, to satisfy compiler.
@@ -4199,6 +4203,22 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                         |> App.Model.MsgIndexedDb
                                     ]
 
+                                HIVEncounter ->
+                                    --@todo
+                                    []
+
+                                HomeVisitEncounter ->
+                                    [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostHomeVisitEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                NCDEncounter ->
+                                    [ Backend.NCDEncounter.Model.emptyNCDEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostNCDEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 NutritionEncounter ->
                                     case extraData of
                                         NutritionData nutritionEncounterType ->
@@ -4210,9 +4230,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                         _ ->
                                             []
 
-                                HomeVisitEncounter ->
-                                    [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostHomeVisitEncounter
+                                TuberculosisEncounter ->
+                                    [ Backend.TuberculosisEncounter.Model.emptyTuberculosisEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostTuberculosisEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
@@ -4226,18 +4246,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                                         _ ->
                                             []
-
-                                NCDEncounter ->
-                                    [ Backend.NCDEncounter.Model.emptyNCDEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostNCDEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
-
-                                TuberculosisEncounter ->
-                                    [ Backend.TuberculosisEncounter.Model.emptyTuberculosisEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostTuberculosisEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
 
                                 InmmunizationEncounter ->
                                     []

@@ -68,13 +68,14 @@ type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
     | ChildScoreboardEncounter
+    | HIVEncounter
     | HomeVisitEncounter
-      -- @todo : can be removed?
-    | InmmunizationEncounter
     | NCDEncounter
     | NutritionEncounter
     | TuberculosisEncounter
     | WellChildEncounter
+      -- @todo : can be removed?
+    | InmmunizationEncounter
 
 
 type DeliveryLocation
