@@ -23131,6 +23131,24 @@ translateActivePage page =
                     , kirundi = Nothing
                     }
 
+                HIVParticipantPage _ ->
+                    { english = "HIV Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVEncounterPage _ ->
+                    { english = "HIV Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVActivityPage _ _ ->
+                    { english = "HIV Activity"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
 
 translateChartPhrase : ChartPhrase -> TranslationSet String
 translateChartPhrase phrase =

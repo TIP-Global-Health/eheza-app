@@ -2967,6 +2967,13 @@ type alias TuberculosisTreatmentReview =
     TuberculosisMeasurement TreatmentOngoingValue
 
 
+type HIVPrescribedMedication
+    = MedicationOption1
+    | MedicationOption2
+    | MedicationOption3
+    | NoHIVPrescribedMedications
+
+
 
 -- Stock Management:
 
