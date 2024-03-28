@@ -289,6 +289,10 @@ dbSync.version(23).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],newborn',
 });
 
+dbSync.version(24).stores({
+    whatsAppUploads: '++localId,screenshot,language,report_type,person,phone_number,fileId,syncStage',
+});
+
 
 /**
  * --- !!! IMPORTANT !!! ---
@@ -348,7 +352,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 23;
+const dbVersion = 24;
 
 /**
  * Return saved info for General sync.
@@ -1221,6 +1225,7 @@ function makeProgressReportScreenshot(elementId, data) {
              screenshot: json.url,
              person: data.personId,
              date_measured: today.toISOString().split('T')[0],
+             language: data.language,
              report_type: data.reportType,
              phone_number: data.phoneNumber,
              syncStage: 0,
