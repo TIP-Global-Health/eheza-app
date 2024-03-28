@@ -33,7 +33,7 @@ view language currentDate selectedHealthCenter personId isChw initiator db model
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-participant acute-illness" ]
+        [ class "wrap wrap-alt-2 page-participant individual acute-illness" ]
         [ viewHeader language initiator model
         , div
             [ class "ui full segment" ]

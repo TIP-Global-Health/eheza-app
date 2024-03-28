@@ -133,6 +133,9 @@
                 else if (type === 'tuberculosis-measurements') {
                   return viewMeasurements('tuberculosis_encounter', uuid);
                 }
+                else if (type === 'hiv-measurements') {
+                    return viewMeasurements('hiv_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
@@ -522,6 +525,9 @@
                     else if (key === 'tuberculosis_encounter') {
                         target = node.tuberculosis_encounter;
                     }
+                    else if (key === 'hiv_encounter') {
+                        target = node.hiv_encounter;
+                    }
                     else if (key === 'newborn') {
                         target = node.newborn;
                     }
@@ -882,6 +888,7 @@
                 var encounterTypes = [
                   'acute_illness_encounter',
                   'child_scoreboard_encounter',
+                  'hiv_encounter',
                   'home_visit_encounter',
                   'ncd_encounter',
                   'nutrition_encounter',

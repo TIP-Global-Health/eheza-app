@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Entities exposing (..)
+import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
@@ -333,6 +334,11 @@ getChildScoreboardEncountersForParticipant =
 getTuberculosisEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( TuberculosisEncounterId, TuberculosisEncounter )
 getTuberculosisEncountersForParticipant =
     getParticipantEncountersByEncounterType .tuberculosisEncountersByParticipant
+
+
+getHIVEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( HIVEncounterId, HIVEncounter )
+getHIVEncountersForParticipant =
+    getParticipantEncountersByEncounterType .hivEncountersByParticipant
 
 
 getPrenatalEncountersForParticipant : ModelIndexedDb -> IndividualEncounterParticipantId -> List ( PrenatalEncounterId, PrenatalEncounter )

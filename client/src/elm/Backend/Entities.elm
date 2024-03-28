@@ -1613,3 +1613,11 @@ type alias EducationSessionId =
 
 type EducationSessionUuidType
     = EducationSessionUuidType
+
+
+type alias HIVEncounterId =
+    EntityUuid HIVEncounterUuidType
+
+
+type HIVEncounterUuidType
+    = HIVEncounterUuidType

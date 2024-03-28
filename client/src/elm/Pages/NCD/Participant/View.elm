@@ -31,7 +31,7 @@ view language currentDate selectedHealthCenter id initiator db =
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-participant ncd" ]
+        [ class "wrap wrap-alt-2 page-participant individual ncd" ]
         [ viewHeader language initiator
         , div
             [ class "ui full segment" ]

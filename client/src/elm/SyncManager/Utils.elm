@@ -7,6 +7,7 @@ import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder
 import Backend.EducationSession.Encoder
+import Backend.HIVEncounter.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
@@ -578,6 +579,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityHeight identifier ->
             getIdentifier identifier "height"
+
+        BackendAuthorityHIVEncounter identifier ->
+            getIdentifier identifier "hiv_encounter"
 
         BackendAuthorityHomeVisitEncounter identifier ->
             getIdentifier identifier "home_visit_encounter"
@@ -1319,6 +1323,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityHeight identifier ->
             encode Backend.Measurement.Encoder.encodeHeight identifier
+
+        BackendAuthorityHIVEncounter identifier ->
+            encode Backend.HIVEncounter.Encoder.encodeHIVEncounter identifier
 
         BackendAuthorityHomeVisitEncounter identifier ->
             encode Backend.HomeVisitEncounter.Encoder.encodeHomeVisitEncounter identifier
@@ -2123,6 +2130,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityHeight identifier ->
             HeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVEncounter identifier ->
+            HIVEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityHomeVisitEncounter identifier ->
             HomeVisitEncounterRevision (toEntityUuid identifier.uuid) identifier.entity

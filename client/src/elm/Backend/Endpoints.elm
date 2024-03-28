@@ -18,6 +18,9 @@ import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.EducationSession.Encoder exposing (encodeEducationSession)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
+import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
+import Backend.HIVEncounter.Encoder exposing (encodeHIVEncounter)
+import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
@@ -1439,3 +1442,15 @@ educationSessionEndpoint : ReadWriteEndPoint Error EducationSessionId EducationS
 educationSessionEndpoint =
     swEndpoint "nodes/education_session" decodeEducationSession
         |> withValueEncoder (object << encodeEducationSession)
+
+
+hivEncounterEndpoint : ReadWriteEndPoint Error HIVEncounterId HIVEncounter HIVEncounter (List IndividualEncounterParticipantId)
+hivEncounterEndpoint =
+    swEndpoint "nodes/hiv_encounter" decodeHIVEncounter
+        |> withValueEncoder (object << encodeHIVEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+hivMeasurementsEndpoint : ReadOnlyEndPoint Error HIVEncounterId HIVMeasurements ()
+hivMeasurementsEndpoint =
+    swEndpoint "nodes/hiv-measurements" decodeHIVMeasurements

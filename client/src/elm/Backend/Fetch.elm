@@ -351,6 +351,35 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchHIVEncounter id ->
+            Dict.get id model.hivEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchHIVEncounters ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.hivEncounters)) ids
+
+        FetchHIVEncountersForParticipant id ->
+            Dict.get id model.hivEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchHIVEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.hivEncountersByParticipant)) ids
+
+        FetchHIVMeasurements id ->
+            Dict.get id model.hivMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchEducationSession id ->
             Dict.get id model.educationSessions
                 |> Maybe.withDefault NotAsked
@@ -560,6 +589,15 @@ forget msg model =
 
         FetchTuberculosisMeasurements id ->
             { model | tuberculosisMeasurements = Dict.remove id model.tuberculosisMeasurements }
+
+        FetchHIVEncounter id ->
+            { model | hivEncounters = Dict.remove id model.hivEncounters }
+
+        FetchHIVEncountersForParticipant id ->
+            { model | hivEncountersByParticipant = Dict.remove id model.hivEncountersByParticipant }
+
+        FetchHIVMeasurements id ->
+            { model | hivMeasurements = Dict.remove id model.hivMeasurements }
 
         FetchEducationSession id ->
             { model | educationSessions = Dict.remove id model.educationSessions }

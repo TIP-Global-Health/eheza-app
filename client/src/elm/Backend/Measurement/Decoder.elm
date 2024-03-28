@@ -316,6 +316,11 @@ decodeTuberculosisMeasurements =
         |> optional "tuberculosis_treatment_review" (decodeHead decodeTuberculosisTreatmentReview) Nothing
 
 
+decodeHIVMeasurements : Decoder HIVMeasurements
+decodeHIVMeasurements =
+    succeed HIVMeasurements
+
+
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
 decodeStockManagementMeasurements =
     succeed StockManagementMeasurements
