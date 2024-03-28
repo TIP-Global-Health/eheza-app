@@ -44,6 +44,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'child_scoreboard_encounter' => 'child-scoreboard-encounter',
   'clinic' => 'clinics',
   'education_session' => 'education-session',
+  'hiv_encounter' => 'hiv-encounter',
   'home_visit_encounter' => 'home-visit-encounter',
   'individual_participant' => 'individual-participants',
   'ncd_encounter' => 'ncd-encounter',
