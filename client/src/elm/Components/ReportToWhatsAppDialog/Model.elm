@@ -3,6 +3,7 @@ module Components.ReportToWhatsAppDialog.Model exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import EverySet exposing (EverySet)
+import Translate.Model exposing (Language)
 
 
 type alias Model =
@@ -46,7 +47,8 @@ type CountryCode
     | CountryCodeTanzania
     | CountryCodeBurundi
     | CountryCodeUSACanada
-      -- @todo: delete this.
+      -- We have this for testing only.
+      -- Israel will not appear in available options.
     | CountryCodeIsrael
 
 
@@ -99,6 +101,6 @@ type Msg msg
     | SetCountryCode String
     | UpdatePhoneAtProfile PersonId Person String
     | SetReportComponents msg String
-    | Execute ReportType PersonId String
+    | Execute Language ReportType PersonId String
     | CancelExecute (Maybe msg)
     | SetExecutionResult (Maybe msg) String
