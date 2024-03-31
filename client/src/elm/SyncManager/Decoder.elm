@@ -42,6 +42,7 @@ import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
 import SyncManager.Utils exposing (siteFeaturesFromString, siteFromString)
+import Translate.Utils exposing (decodeLanguage)
 
 
 decodeIndexDbQueryTypeResult : Decoder IndexDbQueryTypeResult
@@ -206,6 +207,7 @@ decodeBackendWhatsAppEntity =
         |> required "localId" decodeInt
         |> required "person" string
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "language" decodeLanguage
         |> required "report_type" decodeReportType
         |> required "phone_number" string
         |> required "fileId" decodeInt

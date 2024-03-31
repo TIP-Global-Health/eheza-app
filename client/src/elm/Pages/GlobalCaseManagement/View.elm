@@ -31,8 +31,7 @@ import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson, tuberculosisManagementEnabled)
-import Backend.Village.Model exposing (Village)
-import Backend.Village.Utils exposing (getVillageById)
+import Backend.Village.Utils exposing (resolveVillageResidents)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -68,7 +67,7 @@ view :
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate features healthCenterId villageId isLabTech syncManager db model =
+view language currentDate features healthCenterId mVillageId isLabTech syncManager db model =
     let
         header =
             div
@@ -87,14 +86,11 @@ view language currentDate features healthCenterId villageId isLabTech syncManage
                 |> Maybe.withDefault NotAsked
 
         content =
-            Maybe.andThen
-                (getVillageById db
-                    >> Maybe.map
-                        (\village ->
-                            viewWebData language (viewContentForChw language currentDate features village model db) identity followUps
-                        )
+            Maybe.map
+                (\villageId ->
+                    viewWebData language (viewContentForChw language currentDate features villageId model db) identity followUps
                 )
-                villageId
+                mVillageId
                 |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate isLabTech model db) identity followUps)
                 |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
@@ -108,22 +104,24 @@ view language currentDate features healthCenterId villageId isLabTech syncManage
         ]
 
 
-viewContentForChw : Language -> NominalDate -> EverySet SiteFeature -> Village -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForChw language currentDate features village model db followUps =
+viewContentForChw : Language -> NominalDate -> EverySet SiteFeature -> VillageId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForChw language currentDate features villageId model db allFollowUps =
     let
-        followUpsForResidents =
-            resolveUniquePatientsFromFollowUps currentDate followUps
-                |> generateFollowUpsForResidents currentDate village db followUps
+        villageResidents =
+            resolveVillageResidents villageId db
+
+        followUps =
+            filterFollowUpsOfResidents villageResidents allFollowUps
 
         nutritionFollowUps =
-            generateNutritionFollowUps currentDate followUpsForResidents
+            generateNutritionFollowUps currentDate followUps
                 |> fillPersonName identity db
 
         nutritionFollowUpsPane =
             viewNutritionPane language currentDate nutritionFollowUps db model
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps currentDate db followUpsForResidents
+            generateAcuteIllnessFollowUps currentDate db followUps
                 |> fillPersonName Tuple.second db
 
         ( tbSuspectAcuteIllnessFollowUps, nonTBSuspectAcuteIllnessFollowUps ) =
@@ -137,14 +135,14 @@ viewContentForChw language currentDate features village model db followUps =
             viewAcuteIllnessPane language currentDate nonTBSuspectAcuteIllnessFollowUps db model
 
         prenatalFollowUps =
-            generatePrenatalFollowUps currentDate db followUpsForResidents
+            generatePrenatalFollowUps currentDate db followUps
                 |> fillPersonName Tuple.second db
 
         prenatalFollowUpsPane =
             viewPrenatalPane language currentDate prenatalFollowUps db model
 
         immunizationFollowUps =
-            generateImmunizationFollowUps currentDate followUpsForResidents
+            generateImmunizationFollowUps currentDate followUps
                 |> fillPersonName identity db
 
         immunizationFollowUpsPane =
@@ -154,7 +152,7 @@ viewContentForChw language currentDate features village model db followUps =
             if tuberculosisManagementEnabled features then
                 let
                     ( tuberculosisFollowUpsForExisitingParticipants, tuberculosisFollowUpsForNewParticipants ) =
-                        generateTuberculosisFollowUps currentDate db followUpsForResidents tbSuspectAcuteIllnessFollowUps
+                        generateTuberculosisFollowUps currentDate db followUps tbSuspectAcuteIllnessFollowUps
 
                     tuberculosisFollowUpsForExisting =
                         fillPersonName Tuple.second db tuberculosisFollowUpsForExisitingParticipants

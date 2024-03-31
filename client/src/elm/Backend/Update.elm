@@ -1426,6 +1426,22 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , Cmd.none
             , []
             )
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        site
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        isLabTech
+                        activePage
+                        syncManager
+                    )
+                    [ HandleFetchedPeople data ]
 
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }
