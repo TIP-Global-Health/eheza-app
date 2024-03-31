@@ -141,6 +141,11 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPeopleInVillage id ->
+            Dict.get id model.peopleInVillage
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchPerson id ->
             Dict.get id model.people
                 |> Maybe.withDefault NotAsked
@@ -346,6 +351,11 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchEducationSession id ->
+            Dict.get id model.educationSessions
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchStockManagementMeasurements id ->
             Dict.get id model.stockManagementMeasurements
                 |> Maybe.withDefault NotAsked
@@ -458,6 +468,9 @@ forget msg model =
         FetchPeopleByName search ->
             { model | personSearches = Dict.remove (String.trim search) model.personSearches }
 
+        FetchPeopleInVillage id ->
+            { model | peopleInVillage = Dict.remove id model.peopleInVillage }
+
         FetchPerson id ->
             { model | people = Dict.remove id model.people }
 
@@ -547,6 +560,9 @@ forget msg model =
 
         FetchTuberculosisMeasurements id ->
             { model | tuberculosisMeasurements = Dict.remove id model.tuberculosisMeasurements }
+
+        FetchEducationSession id ->
+            { model | educationSessions = Dict.remove id model.educationSessions }
 
         FetchStockManagementMeasurements id ->
             { model | stockManagementMeasurements = Dict.remove id model.stockManagementMeasurements }

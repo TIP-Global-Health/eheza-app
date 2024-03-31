@@ -6,6 +6,7 @@ import Backend.ChildScoreboardEncounter.Encoder
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder
+import Backend.EducationSession.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
@@ -547,6 +548,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityDashboardStats identifier ->
             getIdentifier identifier "statistics"
+
+        BackendAuthorityEducationSession identifier ->
+            getIdentifier identifier "education_session"
 
         BackendAuthorityExposure identifier ->
             getIdentifier identifier "exposure"
@@ -1286,6 +1290,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityDashboardStats identifier ->
             encode Backend.Dashboard.Encoder.encodeDashboardStatsRaw identifier
 
+        BackendAuthorityEducationSession identifier ->
+            encode Backend.EducationSession.Encoder.encodeEducationSession identifier
+
         BackendAuthorityExposure identifier ->
             encode Backend.Measurement.Encoder.encodeExposure identifier
 
@@ -1855,6 +1862,9 @@ siteFeatureFromString str =
         "tuberculosis_management" ->
             Just FeatureTuberculosisManagement
 
+        "group_education" ->
+            Just FeatureGroupEducation
+
         _ ->
             Nothing
 
@@ -1873,6 +1883,9 @@ siteFeatureToString feature =
 
         FeatureTuberculosisManagement ->
             "tuberculosis_management"
+
+        FeatureGroupEducation ->
+            "group_education"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature
@@ -2074,6 +2087,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityDashboardStats identifier ->
             DashboardStatsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityEducationSession identifier ->
+            EducationSessionRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityExposure identifier ->
             ExposureRevision (toEntityUuid identifier.uuid) identifier.entity
