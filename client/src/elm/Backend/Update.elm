@@ -15,6 +15,8 @@ import Backend.ChildScoreboardEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Model
+import Backend.EducationSession.Update
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
@@ -81,7 +83,7 @@ import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
 import Backend.Utils exposing (..)
-import Backend.Village.Utils exposing (getVillageClinicId)
+import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
@@ -506,25 +508,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 , motherMeasurements = motherMeasurements
                 , childMeasurements = childMeasurements
               }
-            , Cmd.none
-            , []
-            )
-
-        FetchPeopleByName name ->
-            let
-                trimmed =
-                    String.trim name
-            in
-            -- We'll limit the search to 500 each for now ... basically,
-            -- just to avoid truly pathological cases.
-            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
-            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
-            , []
-            )
-
-        HandleFetchedPeopleByName name data ->
-            ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
             , Cmd.none
             , []
             )
@@ -1307,11 +1290,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 in
                 ( { model | people = peopleUpdated }
                 , sw.getMany personEndpoint ids
-                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedPeople)
                 , []
                 )
 
-        HandleFetchPeople webData ->
+        HandleFetchedPeople webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
                     noChange
@@ -1325,6 +1308,69 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , Cmd.none
                     , []
                     )
+
+        FetchPeopleByName name ->
+            let
+                trimmed =
+                    String.trim name
+            in
+            -- We'll limit the search to 500 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            , sw.selectRange personEndpoint (ParamsNameContains trimmed) 0 (Just 500)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
+            , []
+            )
+
+        HandleFetchedPeopleByName trimmed data ->
+            ( { model | personSearches = Dict.insert trimmed data model.personSearches }
+            , Cmd.none
+            , []
+            )
+
+        FetchPeopleInVillage id ->
+            getVillageById model id
+                |> Maybe.map
+                    (\village ->
+                        let
+                            geoFields =
+                                String.join "|"
+                                    [ village.province
+                                    , village.district
+                                    , village.sector
+                                    , village.cell
+                                    , village.village
+                                    ]
+                        in
+                        ( { model | peopleInVillage = Dict.insert id Loading model.peopleInVillage }
+                        , sw.selectRange personEndpoint (ParamsGeoFields geoFields) 0 (Just 5000)
+                            |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleInVillage id)
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        HandleFetchedPeopleInVillage id data ->
+            ( { model | peopleInVillage = Dict.insert id data model.peopleInVillage }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        site
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        isLabTech
+                        activePage
+                        syncManager
+                    )
+                    [ HandleFetchedPeople data ]
 
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }
@@ -1532,6 +1578,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , Cmd.none
                     , []
                     )
+
+        FetchEducationSession id ->
+            ( { model | educationSessions = Dict.insert id Loading model.educationSessions }
+            , sw.get educationSessionEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedEducationSession id)
+            , []
+            )
+
+        HandleFetchedEducationSession id data ->
+            ( { model | educationSessions = Dict.insert id data model.educationSessions }
+            , Cmd.none
+            , []
+            )
 
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
@@ -3524,6 +3583,24 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , appMsgs
             )
 
+        MsgEducationSession sessionId subMsg ->
+            let
+                encounter =
+                    Dict.get sessionId model.educationSessions
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get sessionId model.educationSessionRequests
+                        |> Maybe.withDefault Backend.EducationSession.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.EducationSession.Update.update currentDate sessionId encounter subMsg requests
+            in
+            ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
+            , Cmd.map (MsgEducationSession sessionId) subCmd
+            , appMsgs
+            )
+
         MsgTraceContact traceContactId subMsg ->
             let
                 traceContact =
@@ -4432,6 +4509,34 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , rollbarOnFailure ++ appMsgs
             )
 
+        PostEducationSession educationSession ->
+            ( { model | postEducationSession = Loading }
+            , sw.post educationSessionEndpoint educationSession
+                |> toCmd (RemoteData.fromResult >> HandlePostedEducationSession)
+            , []
+            )
+
+        HandlePostedEducationSession data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( educationSessionId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.EducationSessionPage educationSessionId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postEducationSession = data }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -4788,6 +4893,15 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                         |> Maybe.withDefault (generateInitialComputedDashboard currentDate uuid villageId statsRaw model)
             in
             ( { model | computedDashboards = Dict.insert uuid updatedComputedDashboard model.computedDashboards }, recalc )
+
+        EducationSessionRevision uuid data ->
+            let
+                educationSessions =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.educationSessions
+            in
+            ( { model | educationSessions = educationSessions }
+            , recalc
+            )
 
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements

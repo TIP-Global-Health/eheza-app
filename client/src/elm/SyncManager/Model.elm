@@ -6,6 +6,7 @@ import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -92,6 +93,7 @@ type BackendAuthorityEntity
     | BackendAuthorityCovidTesting (BackendEntity CovidTesting)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
     | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
+    | BackendAuthorityEducationSession (BackendEntity EducationSession)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityFollowUp (BackendEntity FollowUp)
@@ -708,6 +710,7 @@ type SiteFeature
     | FeatureReportToWhatsApp
     | FeatureStockManagement
     | FeatureTuberculosisManagement
+    | FeatureGroupEducation
 
 
 type Msg

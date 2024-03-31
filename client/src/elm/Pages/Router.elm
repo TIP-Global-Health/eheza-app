@@ -270,6 +270,9 @@ pageToFragment current =
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
 
+                GroupEncounterTypesPage ->
+                    Just "group-encounter-types/"
+
                 PregnancyOutcomePage initiator id ->
                     Just <| "pregnancy-outcome/" ++ fromEntityUuid id ++ "/" ++ recordPreganancyInitiatorToUrlFragment initiator
 
@@ -343,6 +346,9 @@ pageToFragment current =
                 TuberculosisActivityPage id activity ->
                     Just <| "tuberculosis-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.TuberculosisActivity.Utils.activityToString activity
 
+                EducationSessionPage id ->
+                    Just <| "education-session/" ++ fromEntityUuid id
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -397,6 +403,7 @@ parser =
         , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (\id initiator -> UserPage <| DemographicsReportPage initiator id) (s "demographics-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
+        , map (UserPage <| GroupEncounterTypesPage) (s "group-encounter-types")
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
         , map (\id initiator -> UserPage <| PregnancyOutcomePage initiator id) (s "pregnancy-outcome" </> parseUuid </> parseRecordPreganancyInitiator)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
@@ -421,6 +428,7 @@ parser =
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
         , map (\id -> UserPage <| TuberculosisEncounterPage id) (s "tuberculosis-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| TuberculosisActivityPage id activity) (s "tuberculosis-activity" </> parseUuid </> parseTuberculosisActivity)
+        , map (\id -> UserPage <| EducationSessionPage id) (s "education-session" </> parseUuid)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
