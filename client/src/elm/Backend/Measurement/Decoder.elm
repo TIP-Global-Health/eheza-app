@@ -68,6 +68,11 @@ decodeTuberculosisMeasurement =
     decodeMeasurement "tuberculosis_encounter"
 
 
+decodeHIVMeasurement : Decoder value -> Decoder (Measurement HIVEncounterId value)
+decodeHIVMeasurement =
+    decodeMeasurement "hiv_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement
@@ -319,6 +324,13 @@ decodeTuberculosisMeasurements =
 decodeHIVMeasurements : Decoder HIVMeasurements
 decodeHIVMeasurements =
     succeed HIVMeasurements
+        |> optional "hiv_diagnostics" (decodeHead decodeHIVDiagnostics) Nothing
+        |> optional "hiv_followUp" (decodeHead decodeHIVFollowUp) Nothing
+        |> optional "hiv_health_education" (decodeHead decodeHIVHealthEducation) Nothing
+        |> optional "hiv_medication" (decodeHead decodeHIVMedication) Nothing
+        |> optional "hiv_referral" (decodeHead decodeHIVReferral) Nothing
+        |> optional "hiv_symptom_review" (decodeHead decodeHIVSymptomReview) Nothing
+        |> optional "hiv_treatment_review" (decodeHead decodeHIVTreatmentReview) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -5568,3 +5580,82 @@ decodeTuberculosisSymptom =
 decodeTuberculosisTreatmentReview : Decoder TuberculosisTreatmentReview
 decodeTuberculosisTreatmentReview =
     decodeTuberculosisMeasurement decodeTreatmentOngoingValue
+
+
+decodeHIVDiagnostics : Decoder HIVDiagnostics
+decodeHIVDiagnostics =
+    decodeHIVMeasurement decodeHIVDiagnosticsValue
+
+
+decodeHIVDiagnosticsValue : Decoder HIVDiagnosticsValue
+decodeHIVDiagnosticsValue =
+    succeed HIVDiagnosticsValue
+
+
+decodeHIVFollowUp : Decoder HIVFollowUp
+decodeHIVFollowUp =
+    decodeHIVMeasurement decodeFollowUpValue
+
+
+decodeHIVHealthEducation : Decoder HIVHealthEducation
+decodeHIVHealthEducation =
+    decodeHIVMeasurement decodeHIVHealthEducationValue
+
+
+decodeHIVHealthEducationValue : Decoder HIVHealthEducationValue
+decodeHIVHealthEducationValue =
+    succeed HIVHealthEducationValue
+
+
+decodeHIVMedication : Decoder HIVMedication
+decodeHIVMedication =
+    decodeHIVMeasurement decodeHIVMedicationValue
+
+
+decodeHIVMedicationValue : Decoder HIVMedicationValue
+decodeHIVMedicationValue =
+    succeed HIVMedicationValue
+
+
+
+-- decodeHIVPrescribedMedication : Decoder HIVPrescribedMedication
+-- decodeHIVPrescribedMedication =
+--     string
+--         |> andThen
+--             (\result ->
+--                 hivPrescribedMedicationFromString result
+--                     |> Maybe.map succeed
+--                     |> Maybe.withDefault (result ++ " is not a recognized HIVPrescribedMedication" |> fail)
+--             )
+
+
+decodeHIVReferral : Decoder HIVReferral
+decodeHIVReferral =
+    decodeHIVMeasurement decodeSendToHCValue
+
+
+decodeHIVSymptomReview : Decoder HIVSymptomReview
+decodeHIVSymptomReview =
+    decodeHIVMeasurement decodeHIVSymptomReviewValue
+
+
+decodeHIVSymptomReviewValue : Decoder HIVSymptomReviewValue
+decodeHIVSymptomReviewValue =
+    succeed HIVSymptomReviewValue
+
+
+
+-- decodeHIVSymptom : Decoder HIVSymptom
+-- decodeHIVSymptom =
+--     string
+--         |> andThen
+--             (\result ->
+--                 hivSymptomFromString result
+--                     |> Maybe.map succeed
+--                     |> Maybe.withDefault (result ++ " is not a recognized HIVSymptom" |> fail)
+--             )
+
+
+decodeHIVTreatmentReview : Decoder HIVTreatmentReview
+decodeHIVTreatmentReview =
+    decodeHIVMeasurement decodeTreatmentOngoingValue

@@ -73,6 +73,10 @@ type alias TuberculosisMeasurement value =
     Measurement TuberculosisEncounterId value
 
 
+type alias HIVMeasurement value =
+    Measurement HIVEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -2967,11 +2971,60 @@ type alias TuberculosisTreatmentReview =
     TuberculosisMeasurement TreatmentOngoingValue
 
 
+
+-- HIV:
+
+
+type alias HIVDiagnostics =
+    HIVMeasurement HIVDiagnosticsValue
+
+
+type alias HIVDiagnosticsValue =
+    {}
+
+
+type alias HIVFollowUp =
+    HIVMeasurement FollowUpValue
+
+
+type alias HIVHealthEducation =
+    HIVMeasurement HIVHealthEducationValue
+
+
+type alias HIVHealthEducationValue =
+    {}
+
+
+type alias HIVMedication =
+    HIVMeasurement HIVMedicationValue
+
+
+type alias HIVMedicationValue =
+    -- EverySet HIVPrescribedMedication
+    {}
+
+
 type HIVPrescribedMedication
     = MedicationOption1
     | MedicationOption2
     | MedicationOption3
     | NoHIVPrescribedMedications
+
+
+type alias HIVReferral =
+    HIVMeasurement SendToHCValue
+
+
+type alias HIVSymptomReview =
+    HIVMeasurement HIVSymptomReviewValue
+
+
+type alias HIVSymptomReviewValue =
+    {}
+
+
+type alias HIVTreatmentReview =
+    HIVMeasurement TreatmentOngoingValue
 
 
 
@@ -3354,7 +3407,14 @@ type alias TuberculosisMeasurements =
 
 
 type alias HIVMeasurements =
-    {}
+    { diagnostics : Maybe ( HIVDiagnosticsId, HIVDiagnostics )
+    , followUp : Maybe ( HIVFollowUpId, HIVFollowUp )
+    , healthEducation : Maybe ( HIVHealthEducationId, HIVHealthEducation )
+    , medication : Maybe ( HIVMedicationId, HIVMedication )
+    , referral : Maybe ( HIVReferralId, HIVReferral )
+    , symptomReview : Maybe ( HIVSymptomReviewId, HIVSymptomReview )
+    , treatmentReview : Maybe ( HIVTreatmentReviewId, HIVTreatmentReview )
+    }
 
 
 {-| A set of measurements that includes all required data for
