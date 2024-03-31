@@ -2,10 +2,14 @@
 
 /**
  * @file
- * Delivers WhatsApp records to messaging vendor.
+ * Deletes files of messages that were delivered.
+ *
+ * Since WhatsApp message was delivered, there's no point of storing the
+ * report file, which can be over 1MB is size.
+ * Also, we delete if all delivery attempts have failed.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_whatsapp/scripts/delete-screenshots.php.
+ *   profiles/hedley/modules/custom/hedley_whatsapp/scripts/delete-processed.php.
  */
 
 if (!drupal_is_cli()) {
@@ -35,12 +39,9 @@ $base_query->isNotNull('ss.field_screenshot_fid');
 $base_query->leftJoin('field_data_field_delivery_attempts', 'da', 'n.nid = da.entity_id');
 $base_query->leftJoin('field_data_field_date_concluded', 'dc', 'n.nid = dc.entity_id');
 $or = db_or();
+$or->isNotNull('dc.field_date_concluded_value');
 $or->condition('da.field_delivery_attempts_value', $delivery_attempts, '>=');
-$date_ago = date('Y-m-d H:i:s', strtotime('-1 days'));
-$or->condition('dc.field_date_concluded_value', $date_ago, '<');
 $base_query->condition($or);
-
-$base_query->range(0, 1);
 
 $count_query = clone $base_query;
 if ($nid) {
@@ -98,7 +99,7 @@ while ($processed < $total) {
     // Clear the entity cache to reflect the changes.
     entity_get_controller('node')->resetCache([$nid]);
 
-    $deleted += 1;
+    $deleted++;
   }
 
   $nid = end($ids);

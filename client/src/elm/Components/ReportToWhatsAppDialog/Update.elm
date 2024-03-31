@@ -7,6 +7,7 @@ import Backend.Person.Model exposing (PatchPersonInitator(..))
 import Components.ReportToWhatsAppDialog.Model exposing (..)
 import Components.ReportToWhatsAppDialog.Utils exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
+import Translate.Utils exposing (languageToCode)
 
 
 update : Msg msg -> Model -> ( Model, Cmd msg, ( List msg, List App.Model.Msg ) )
@@ -66,10 +67,11 @@ update msg model =
               )
             )
 
-        Execute reportType personId phoneNumber ->
+        Execute language reportType personId phoneNumber ->
             ( { model | state = Just <| ExecutionResult Nothing }
             , App.Ports.makeProgressReportScreenshot
-                { reportType = reportTypeToString reportType
+                { language = languageToCode language
+                , reportType = reportTypeToString reportType
                 , personId = fromEntityUuid personId
                 , phoneNumber = phoneNumber
                 }
