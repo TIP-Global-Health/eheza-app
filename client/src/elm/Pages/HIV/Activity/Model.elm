@@ -39,6 +39,37 @@ type alias DiagnosticsData =
     }
 
 
+
+--
+-- type alias PregnancySummaryValue =
+--     { expectedDateConcluded : NominalDate
+--     , deliveryComplications : EverySet DeliveryComplication
+--     , signs : EverySet PregnancySummarySign
+--     , apgarOneMin : Maybe Float
+--     , apgarFiveMin : Maybe Float
+--     , birthWeight : Maybe WeightInGrm
+--     , birthLength : Maybe HeightInCm
+--     , birthDefects : EverySet BirthDefect
+--     }
+--
+-- type alias PregnancySummaryForm =
+--     { expectedDateConcluded : Maybe Date
+--     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+--     , deliveryComplicationsPresent : Maybe Bool
+--     , deliveryComplications : Maybe (List DeliveryComplication)
+--     , apgarScoresAvailable : Maybe Bool
+--     , apgarOneMin : Maybe Float
+--     , apgarFiveMin : Maybe Float
+--     , apgarDirty : Bool
+--     , birthWeight : Maybe WeightInGrm
+--     , birthLengthAvailable : Maybe Bool
+--     , birthLength : Maybe HeightInCm
+--     , birthLengthDirty : Bool
+--     , birthDefectsPresent : Maybe Bool
+--     , birthDefects : Maybe (List BirthDefect)
+--     }
+
+
 emptyDiagnosticsData : DiagnosticsData
 emptyDiagnosticsData =
     { form = emptyDiagnosticsForm
@@ -149,11 +180,13 @@ type NextStepsTask
 
 type Msg
     = SetActivePage Page
+      -- DIAGNOSTICS
+    | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
+    | SetPositiveResultDate Date
+    | SetPositiveResultDateSelectorState (Maybe (DateSelectorConfig Msg))
 
 
 
--- DIAGNOSTICS
--- | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
 -- | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
 --   -- MEDICATION
 -- | SetActiveMedicationTask MedicationTask

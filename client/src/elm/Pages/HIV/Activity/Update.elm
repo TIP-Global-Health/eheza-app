@@ -1,6 +1,7 @@
 module Pages.HIV.Activity.Update exposing (update)
 
 import App.Model
+import App.Utils exposing (focusOnCalendarMsg)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model
@@ -39,8 +40,9 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault form
 
-        -- diagnosticsForm =
-        --     resolveFormWithDefaults .diagnostics diagnosticsFormWithDefault model.diagnosticsData.form
+        diagnosticsForm =
+            resolveFormWithDefaults .diagnostics diagnosticsFormWithDefault model.diagnosticsData.form
+
         --
         -- medicationForm =
         --     resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
@@ -66,21 +68,50 @@ update currentDate id db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetDiagnosticsBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value diagnosticsForm
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPositiveResultDate value ->
+            let
+                updatedForm =
+                    { diagnosticsForm | positiveResultDate = Just value }
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPositiveResultDateSelectorState state ->
+            let
+                updatedForm =
+                    { diagnosticsForm | dateSelectorPopupState = state }
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , [ focusOnCalendarMsg ]
+            )
 
 
--- SetDiagnosticsBoolInput formUpdateFunc value ->
---     let
---         updatedForm =
---             formUpdateFunc value diagnosticsForm
---
---         updatedData =
---             model.diagnosticsData
---                 |> (\data -> { data | form = updatedForm })
---     in
---     ( { model | diagnosticsData = updatedData }
---     , Cmd.none
---     , []
---     )
+
 --
 -- SaveDiagnostics personId particpantId saved ->
 --     let
