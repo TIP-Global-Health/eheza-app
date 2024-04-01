@@ -40,88 +40,88 @@ import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 
 
+expectActivity : NominalDate -> AssembledData -> HIVActivity -> Bool
+expectActivity currentDate assembled activity =
+    case activity of
+        Diagnostics ->
+            assembled.initialEncounter
 
--- expectActivity : NominalDate -> AssembledData -> HIVActivity -> Bool
--- expectActivity currentDate assembled activity =
---     case activity of
---         Diagnostics ->
---             assembled.initialEncounter
---
---         Medication ->
---             resolveMedicationTasks currentDate assembled
---                 |> List.isEmpty
---                 |> not
---
---         SymptomReview ->
---             not assembled.initialEncounter
---
---         NextSteps ->
---             mandatoryActivitiesForNextStepsCompleted currentDate assembled
---                 && (resolveNextStepsTasks currentDate assembled
---                         |> List.isEmpty
---                         |> not
---                    )
---
---
--- activityCompleted : NominalDate -> AssembledData -> HIVActivity -> Bool
--- activityCompleted currentDate assembled activity =
---     let
---         notExpected activityToCheck =
---             not <| expectActivity currentDate assembled activityToCheck
---     in
---     case activity of
---         Diagnostics ->
---             notExpected Diagnostics
---                 || isJust assembled.measurements.diagnostics
---
---         Medication ->
---             notExpected Medication
---                 || (resolveMedicationTasks currentDate assembled
---                         |> List.all (medicationTaskCompleted assembled)
---                    )
---
---         SymptomReview ->
---             notExpected SymptomReview
---                 || isJust assembled.measurements.symptomReview
---
---         NextSteps ->
---             notExpected NextSteps
---                 || (resolveNextStepsTasks currentDate assembled
---                         |> List.all (nextStepsTaskCompleted assembled)
---                    )
---
---
--- medicationTasks : List MedicationTask
--- medicationTasks =
---     [ TaskPrescribedMedication, TaskTreatmentReview ]
---
---
--- resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
--- resolveMedicationTasks currentDate assembled =
---     List.filter (expectMedicationTask currentDate assembled) medicationTasks
---
---
--- expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
--- expectMedicationTask currentDate assembled task =
---     case task of
---         TaskPrescribedMedication ->
---             assembled.initialEncounter
---
---         TaskTreatmentReview ->
---             not assembled.initialEncounter
---                 || isJust assembled.measurements.medication
---
---
--- medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
--- medicationTaskCompleted assembled task =
---     case task of
---         TaskPrescribedMedication ->
---             isJust assembled.measurements.medication
---
---         TaskTreatmentReview ->
---             isJust assembled.measurements.treatmentReview
---
---
+        Medication ->
+            resolveMedicationTasks currentDate assembled
+                |> List.isEmpty
+                |> not
+
+        SymptomReview ->
+            not assembled.initialEncounter
+
+        NextSteps ->
+            mandatoryActivitiesForNextStepsCompleted currentDate assembled
+                && (resolveNextStepsTasks currentDate assembled
+                        |> List.isEmpty
+                        |> not
+                   )
+
+
+activityCompleted : NominalDate -> AssembledData -> HIVActivity -> Bool
+activityCompleted currentDate assembled activity =
+    let
+        notExpected activityToCheck =
+            not <| expectActivity currentDate assembled activityToCheck
+    in
+    case activity of
+        Diagnostics ->
+            notExpected Diagnostics
+                || isJust assembled.measurements.diagnostics
+
+        Medication ->
+            notExpected Medication
+                || (resolveMedicationTasks currentDate assembled
+                        |> List.all (medicationTaskCompleted assembled)
+                   )
+
+        SymptomReview ->
+            notExpected SymptomReview
+                || isJust assembled.measurements.symptomReview
+
+        NextSteps ->
+            notExpected NextSteps
+                || (resolveNextStepsTasks currentDate assembled
+                        |> List.all (nextStepsTaskCompleted assembled)
+                   )
+
+
+medicationTasks : List MedicationTask
+medicationTasks =
+    [ TaskPrescribedMedication, TaskTreatmentReview ]
+
+
+resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
+resolveMedicationTasks currentDate assembled =
+    List.filter (expectMedicationTask currentDate assembled) medicationTasks
+
+
+expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
+expectMedicationTask currentDate assembled task =
+    case task of
+        TaskPrescribedMedication ->
+            assembled.initialEncounter
+
+        TaskTreatmentReview ->
+            not assembled.initialEncounter
+                || isJust assembled.measurements.medication
+
+
+medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
+medicationTaskCompleted assembled task =
+    case task of
+        TaskPrescribedMedication ->
+            isJust assembled.measurements.medication
+
+        TaskTreatmentReview ->
+            isJust assembled.measurements.treatmentReview
+
+
+
 -- medicationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
 -- medicationTasksCompletedFromTotal language currentDate assembled data task =
 --     case task of
@@ -156,135 +156,144 @@ import Translate.Model exposing (Language(..))
 --             )
 --
 --
--- nextStepsTasks : List NextStepsTask
--- nextStepsTasks =
---     [ TaskReferral, TaskHealthEducation, TaskFollowUp ]
---
---
--- resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
--- resolveNextStepsTasks currentDate assembled =
---     List.filter (expectNextStepsTask currentDate assembled) nextStepsTasks
---
---
--- expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
--- expectNextStepsTask currentDate assembled task =
---     case task of
---         TaskReferral ->
---             adverseEventReported assembled.measurements
---                 || symptomReported assembled.measurements
---
---         TaskHealthEducation ->
---             -- Always provide health education.
---             True
---
---         TaskFollowUp ->
---             -- Always schedule follow up.
---             True
--- adverseEventReported : HIVMeasurements -> Bool
--- adverseEventReported measurements =
---     getMeasurementValueFunc measurements.treatmentReview
---         |> Maybe.map
---             (\value ->
---                 case EverySet.toList value.adverseEvents of
---                     [] ->
---                         False
---
---                     [ NoAdverseEvent ] ->
---                         False
---
---                     _ ->
---                         True
---             )
---         |> Maybe.withDefault False
---
---
--- symptomReported : HIVMeasurements -> Bool
--- symptomReported measurements =
---     getMeasurementValueFunc measurements.symptomReview
---         |> Maybe.map
---             (\value ->
---                 case EverySet.toList value of
---                     [] ->
---                         False
---
---                     [ NoHIVSymptoms ] ->
---                         False
---
---                     _ ->
---                         True
---             )
---         |> Maybe.withDefault False
---
---
--- nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
--- nextStepsTaskCompleted assembled task =
---     case task of
---         TaskReferral ->
---             isJust assembled.measurements.referral
---
---         TaskHealthEducation ->
---             isJust assembled.measurements.healthEducation
---
---         TaskFollowUp ->
---             isJust assembled.measurements.followUp
---
---
--- nextStepsTasksCompletedFromTotal : HIVMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
--- nextStepsTasksCompletedFromTotal measurements data task =
---     case task of
---         TaskHealthEducation ->
---             let
---                 form =
---                     getMeasurementValueFunc measurements.healthEducation
---                         |> healthEducationFormWithDefault data.healthEducationForm
---             in
---             ( taskCompleted form.followUpTesting
---             , 1
---             )
---
---         TaskFollowUp ->
---             let
---                 form =
---                     getMeasurementValueFunc measurements.followUp
---                         |> followUpFormWithDefault data.followUpForm
---             in
---             ( taskCompleted form.option
---             , 1
---             )
---
---         TaskReferral ->
---             let
---                 form =
---                     getMeasurementValueFunc measurements.referral
---                         |> sendToHCFormWithDefault data.sendToHCForm
---
---                 ( reasonForNotSentActive, reasonForNotSentCompleted ) =
---                     form.referToHealthCenter
---                         |> Maybe.map
---                             (\sentToHC ->
---                                 if not sentToHC then
---                                     if isJust form.reasonForNotSendingToHC then
---                                         ( 2, 2 )
---
---                                     else
---                                         ( 1, 2 )
---
---                                 else
---                                     ( 1, 1 )
---                             )
---                         |> Maybe.withDefault ( 0, 1 )
---             in
---             ( reasonForNotSentActive + taskCompleted form.handReferralForm
---             , reasonForNotSentCompleted + 1
---             )
---
---
--- mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
--- mandatoryActivitiesForNextStepsCompleted currentDate assembled =
---     List.all (activityCompleted currentDate assembled)
---         [ Diagnostics, Medication, SymptomReview ]
---
---
+
+
+nextStepsTasks : List NextStepsTask
+nextStepsTasks =
+    [ TaskReferral, TaskHealthEducation, TaskFollowUp ]
+
+
+resolveNextStepsTasks : NominalDate -> AssembledData -> List NextStepsTask
+resolveNextStepsTasks currentDate assembled =
+    List.filter (expectNextStepsTask currentDate assembled) nextStepsTasks
+
+
+expectNextStepsTask : NominalDate -> AssembledData -> NextStepsTask -> Bool
+expectNextStepsTask currentDate assembled task =
+    case task of
+        TaskReferral ->
+            adverseEventReported assembled.measurements
+                || symptomReported assembled.measurements
+
+        TaskHealthEducation ->
+            -- Always provide health education.
+            True
+
+        TaskFollowUp ->
+            -- Always schedule follow up.
+            True
+
+
+adverseEventReported : HIVMeasurements -> Bool
+adverseEventReported measurements =
+    getMeasurementValueFunc measurements.treatmentReview
+        |> Maybe.map
+            (\value ->
+                case EverySet.toList value.adverseEvents of
+                    [] ->
+                        False
+
+                    [ NoAdverseEvent ] ->
+                        False
+
+                    _ ->
+                        True
+            )
+        |> Maybe.withDefault False
+
+
+symptomReported : HIVMeasurements -> Bool
+symptomReported measurements =
+    -- @todo
+    --     getMeasurementValueFunc measurements.symptomReview
+    --         |> Maybe.map
+    --             (\value ->
+    --                 case EverySet.toList value of
+    --                     [] ->
+    --                         False
+    --
+    --                     [ NoHIVSymptoms ] ->
+    --                         False
+    --
+    --                     _ ->
+    --                         True
+    --             )
+    --         |> Maybe.withDefault False
+    False
+
+
+nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
+nextStepsTaskCompleted assembled task =
+    case task of
+        TaskReferral ->
+            isJust assembled.measurements.referral
+
+        TaskHealthEducation ->
+            isJust assembled.measurements.healthEducation
+
+        TaskFollowUp ->
+            isJust assembled.measurements.followUp
+
+
+nextStepsTasksCompletedFromTotal : HIVMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal measurements data task =
+    case task of
+        TaskHealthEducation ->
+            -- @todo
+            -- let
+            --     form =
+            --         getMeasurementValueFunc measurements.healthEducation
+            --             |> healthEducationFormWithDefault data.healthEducationForm
+            -- in
+            -- ( taskCompleted form.followUpTesting
+            -- , 1
+            -- )
+            ( 0, 1 )
+
+        TaskFollowUp ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.followUp
+                        |> followUpFormWithDefault data.followUpForm
+            in
+            ( taskCompleted form.option
+            , 1
+            )
+
+        TaskReferral ->
+            let
+                form =
+                    getMeasurementValueFunc measurements.referral
+                        |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                    form.referToHealthCenter
+                        |> Maybe.map
+                            (\sentToHC ->
+                                if not sentToHC then
+                                    if isJust form.reasonForNotSendingToHC then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( reasonForNotSentActive + taskCompleted form.handReferralForm
+            , reasonForNotSentCompleted + 1
+            )
+
+
+mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
+mandatoryActivitiesForNextStepsCompleted currentDate assembled =
+    List.all (activityCompleted currentDate assembled)
+        [ Diagnostics, Medication, SymptomReview ]
+
+
+
 -- diagnosticsFormWithDefault : DiagnosticsForm -> Maybe HIVDiagnosticsValue -> DiagnosticsForm
 -- diagnosticsFormWithDefault form saved =
 --     saved
