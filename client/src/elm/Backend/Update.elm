@@ -5184,17 +5184,10 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         HIVFollowUpRevision uuid data ->
-            let
-                modelWithMappedFollowUp =
-                    mapFollowUpMeasurements
-                        healthCenterId
-                        (\measurements -> { measurements | hiv = Dict.insert uuid data measurements.hiv })
-                        model
-            in
             ( mapHIVMeasurements
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
-                modelWithMappedFollowUp
+                model
             , recalc
             )
 
