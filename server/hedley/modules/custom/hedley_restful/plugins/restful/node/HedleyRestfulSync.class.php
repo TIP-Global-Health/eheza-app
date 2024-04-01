@@ -391,6 +391,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'execution_date',
       'resilience_start_date',
       'expiration_date',
+      'positive_result_date',
     ];
     $multiDateFields = [
       'administration_dates',
