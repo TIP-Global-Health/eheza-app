@@ -20,6 +20,6 @@ encodeHIVEncounter session =
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
     , ( "deleted", bool False )
-    , ( "type", string "tuberculosis_encounter" )
+    , ( "type", string "hiv_encounter" )
     ]
         ++ encodeIfSet "shard" session.shard encodeEntityUuid
