@@ -2,6 +2,8 @@ module Pages.HIV.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Date exposing (Date)
+import DateSelector.Model exposing (DateSelectorConfig)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
@@ -45,12 +47,18 @@ emptyDiagnosticsData =
 
 type alias DiagnosticsForm =
     { diagnosed : Maybe Bool
+    , positiveResultDate : Maybe Date
+    , positiveResultDateDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyDiagnosticsForm : DiagnosticsForm
 emptyDiagnosticsForm =
     { diagnosed = Nothing
+    , positiveResultDate = Nothing
+    , positiveResultDateDirty = False
+    , dateSelectorPopupState = Nothing
     }
 
 
