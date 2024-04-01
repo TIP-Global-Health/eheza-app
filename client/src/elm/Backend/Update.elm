@@ -5160,6 +5160,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
+        HIVDiagnosticsRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         HIVEncounterRevision uuid data ->
             let
                 hivEncounters =
@@ -5172,6 +5180,61 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 | hivEncounters = hivEncounters
                 , hivEncountersByParticipant = hivEncountersByParticipant
               }
+            , recalc
+            )
+
+        HIVFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | hiv = Dict.insert uuid data measurements.hiv })
+                        model
+            in
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                modelWithMappedFollowUp
+            , recalc
+            )
+
+        HIVHealthEducationRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVMedicationRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVReferralRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVSymptomReviewRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVTreatmentReviewRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                model
             , recalc
             )
 

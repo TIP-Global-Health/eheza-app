@@ -177,8 +177,29 @@ decodeRevision =
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
 
+                    "hiv_diagnostics" ->
+                        decodeWithUuid HIVDiagnosticsRevision decodeHIVDiagnostics
+
                     "hiv_encounter" ->
                         decodeWithUuid HIVEncounterRevision decodeHIVEncounter
+
+                    "hiv_follow_up" ->
+                        decodeWithUuid HIVFollowUpRevision decodeHIVFollowUp
+
+                    "hiv_health_education" ->
+                        decodeWithUuid HIVHealthEducationRevision decodeHIVHealthEducation
+
+                    "hiv_medication" ->
+                        decodeWithUuid HIVMedicationRevision decodeHIVMedication
+
+                    "hiv_referral" ->
+                        decodeWithUuid HIVReferralRevision decodeHIVReferral
+
+                    "hiv_symptom_review" ->
+                        decodeWithUuid HIVSymptomReviewRevision decodeHIVSymptomReview
+
+                    "hiv_treatment_review" ->
+                        decodeWithUuid HIVTreatmentReviewRevision decodeHIVTreatmentReview
 
                     "home_visit_encounter" ->
                         decodeWithUuid HomeVisitEncounterRevision decodeHomeVisitEncounter
