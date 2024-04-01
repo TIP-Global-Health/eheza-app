@@ -4532,16 +4532,16 @@ encodeHIVDiagnostics =
 
 encodeHIVDiagnosticsValue : HIVDiagnosticsValue -> List ( String, Value )
 encodeHIVDiagnosticsValue value =
-    [ -- ( "hiv_diagnosis", encodeHIVDiagnosis value )
-      ( "deleted", bool False )
+    [ ( "hiv_diagnosis", encodeHIVDiagnosis value.diagnosis )
+    , ( "deleted", bool False )
     , ( "type", string "hiv_diagnostics" )
     ]
+        ++ encodeNullable "positive_result_date" value.positiveResultDate Gizra.NominalDate.encodeYYYYMMDD
 
 
-
--- encodeHIVDiagnosis : HIVDiagnosis -> Value
--- encodeHIVDiagnosis =
---     hivDiagnosisToString >> string
+encodeHIVDiagnosis : HIVDiagnosis -> Value
+encodeHIVDiagnosis =
+    hivDiagnosisToString >> string
 
 
 encodeHIVFollowUp : HIVFollowUp -> List ( String, Value )
