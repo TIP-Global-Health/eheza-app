@@ -13,7 +13,6 @@ class HedleyRestfulHIVSymptomReview extends HedleyRestfulHIVActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [
-  ];
+  protected $multiFields = [];
 
 }
