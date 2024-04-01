@@ -122,7 +122,7 @@ while ($processed < $total) {
     $parsed_uri = parse_url($image_uri);
 
     $language = $wrapper->field_language->value();
-    $template_sid = hedley_whatsapp_get_progress_report_template_sid($parsed_uri['host'], $language);
+    $template_sid = hedley_whatsapp_get_progress_report_template_sid($language);
     if (empty($template_sid)) {
       drush_print("Failed to pull message template SID for node ID $node->nid. Giving up on it.");
       continue;
