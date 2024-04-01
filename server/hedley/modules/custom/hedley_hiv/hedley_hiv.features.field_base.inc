@@ -11,14 +11,14 @@
 function hedley_hiv_field_default_field_bases() {
   $field_bases = array();
 
-  // Exported field_base: 'field_hiv_diagnosis'.
-  $field_bases['field_hiv_diagnosis'] = array(
+  // Exported field_base: 'field_hiv_diagnosis_signs'.
+  $field_bases['field_hiv_diagnosis_signs'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_hiv_diagnosis',
+    'field_name' => 'field_hiv_diagnosis_signs',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -28,7 +28,8 @@ function hedley_hiv_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'positive' => 'Positive',
+        'result-positive' => 'Positive result',
+        'result-date-estimated' => 'Positive result date estimated',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
