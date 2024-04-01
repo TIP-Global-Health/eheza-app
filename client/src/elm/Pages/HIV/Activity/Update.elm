@@ -5,6 +5,7 @@ import App.Utils exposing (focusOnCalendarMsg)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model
+import Backend.IndividualEncounterParticipant.Model exposing (HIVOutcome(..))
 import Backend.Measurement.Model exposing (AdverseEvent(..), HIVPrescribedMedication(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -110,47 +111,47 @@ update currentDate id db msg model =
             , [ focusOnCalendarMsg ]
             )
 
+        SaveDiagnostics personId particpantId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.diagnosticsData.form
+                        |> toDiagnosticsValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                let
+                                    saveMsg =
+                                        Backend.HIVEncounter.Model.SaveDiagnostics personId measurementId value
+                                            |> Backend.Model.MsgHIVEncounter id
+                                            |> App.Model.MsgIndexedDb
+
+                                    additionalMsgs =
+                                        if diagnosticsForm.diagnosed == Just False then
+                                            [ Backend.IndividualEncounterParticipant.Model.CloseHIVSession HIVOutcomeNotDiagnosed
+                                                |> Backend.Model.MsgIndividualEncounterParticipant particpantId
+                                                |> App.Model.MsgIndexedDb
+                                            , App.Model.SetActivePage PinCodePage
+                                            ]
+
+                                        else
+                                            [ App.Model.SetActivePage <| UserPage <| HIVEncounterPage id ]
+                                in
+                                saveMsg :: additionalMsgs
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
 
 
---
--- SaveDiagnostics personId particpantId saved ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         appMsgs =
---             model.diagnosticsData.form
---                 |> toDiagnosticsValueWithDefault measurement
---                 |> unwrap
---                     []
---                     (\value ->
---                         let
---                             saveMsg =
---                                 Backend.HIVEncounter.Model.SaveDiagnostics personId measurementId value
---                                     |> Backend.Model.MsgHIVEncounter id
---                                     |> App.Model.MsgIndexedDb
---
---                             additionalMsgs =
---                                 if diagnosticsForm.diagnosed == Just False then
---                                     [ Backend.IndividualEncounterParticipant.Model.CloseHIVSession OutcomeNotDiagnosed
---                                         |> Backend.Model.MsgIndividualEncounterParticipant particpantId
---                                         |> App.Model.MsgIndexedDb
---                                     , App.Model.SetActivePage PinCodePage
---                                     ]
---
---                                 else
---                                     [ App.Model.SetActivePage <| UserPage <| HIVEncounterPage id ]
---                         in
---                         saveMsg :: additionalMsgs
---                     )
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
+
 --
 -- SetActiveMedicationTask task ->
 --     let

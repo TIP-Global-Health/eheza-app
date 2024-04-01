@@ -184,10 +184,10 @@ type Msg
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
     | SetPositiveResultDate Date
     | SetPositiveResultDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
 
 
 
--- | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
 --   -- MEDICATION
 -- | SetActiveMedicationTask MedicationTask
 -- | SetPrescribedMedication HIVPrescribedMedication
