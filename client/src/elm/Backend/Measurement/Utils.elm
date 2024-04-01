@@ -4088,24 +4088,36 @@ tuberculosisPrescribedMedicationFromString sign =
             Nothing
 
 
-hivDiagnosisToString : HIVDiagnosis -> String
-hivDiagnosisToString diagnosis =
+hivDiagnosisSignToString : HIVDiagnosisSign -> String
+hivDiagnosisSignToString diagnosis =
     case diagnosis of
-        HIVDiagnosisPositive ->
-            "positive"
+        HIVResultPositiveReported ->
+            "result-positive-reported"
 
-        NoHIVDiagnosis ->
+        HIVResultPositiveKnown ->
+            "result-positive-know"
+
+        HIVResultDateEstimated ->
+            "result-date-estimated"
+
+        NoHIVDiagnosisSigns ->
             "none"
 
 
-hivDiagnosisFromString : String -> Maybe HIVDiagnosis
-hivDiagnosisFromString diagnosis =
+hivDiagnosisSignFromString : String -> Maybe HIVDiagnosisSign
+hivDiagnosisSignFromString diagnosis =
     case diagnosis of
-        "positive" ->
-            Just HIVDiagnosisPositive
+        "result-positive-reported" ->
+            Just HIVResultPositiveReported
+
+        "result-positive-know" ->
+            Just HIVResultPositiveKnown
+
+        "result-date-estimated" ->
+            Just HIVResultDateEstimated
 
         "none" ->
-            Just NoHIVDiagnosis
+            Just NoHIVDiagnosisSigns
 
         _ ->
             Nothing

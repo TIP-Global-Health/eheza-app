@@ -132,7 +132,7 @@ update currentDate id db msg model =
                                             |> App.Model.MsgIndexedDb
 
                                     additionalMsgs =
-                                        if diagnosticsForm.diagnosed == Just False then
+                                        if diagnosticsForm.resultPositive == Just False then
                                             [ Backend.IndividualEncounterParticipant.Model.CloseHIVSession HIVOutcomeNotDiagnosed
                                                 |> Backend.Model.MsgIndividualEncounterParticipant particpantId
                                                 |> App.Model.MsgIndexedDb

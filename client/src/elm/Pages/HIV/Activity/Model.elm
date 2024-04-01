@@ -77,18 +77,28 @@ emptyDiagnosticsData =
 
 
 type alias DiagnosticsForm =
-    { diagnosed : Maybe Bool
+    { -- Used in case we don't have info of positive HIV test result
+      -- for this patient (HIV test is done at Prenatal and NCD).
+      resultPositive : Maybe Bool
+    , -- Used in case we have info of positive HIV test result
+      -- for this patient (HIV test is done at Prenatal and NCD).
+      resultDateCorrect : Maybe Bool
     , positiveResultDate : Maybe Date
     , positiveResultDateDirty : Bool
+    , positiveResultDateEstimated : Maybe Bool
+    , positiveResultDateEstimatedDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyDiagnosticsForm : DiagnosticsForm
 emptyDiagnosticsForm =
-    { diagnosed = Nothing
+    { resultPositive = Nothing
+    , resultDateCorrect = Nothing
     , positiveResultDate = Nothing
     , positiveResultDateDirty = False
+    , positiveResultDateEstimated = Nothing
+    , positiveResultDateEstimatedDirty = False
     , dateSelectorPopupState = Nothing
     }
 
