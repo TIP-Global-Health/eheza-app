@@ -293,45 +293,49 @@ mandatoryActivitiesForNextStepsCompleted currentDate assembled =
         [ Diagnostics, Medication, SymptomReview ]
 
 
+diagnosticsFormWithDefault : DiagnosticsForm -> Maybe HIVDiagnosticsValue -> DiagnosticsForm
+diagnosticsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { diagnosed = or form.diagnosed (value.diagnosis == HIVDiagnosisPositive |> Just)
+                , positiveResultDate =
+                    maybeValueConsideringIsDirtyField form.positiveResultDateDirty
+                        form.positiveResultDate
+                        value.positiveResultDate
+                , positiveResultDateDirty = form.positiveResultDateDirty
+                , dateSelectorPopupState = form.dateSelectorPopupState
+                }
+            )
 
--- diagnosticsFormWithDefault : DiagnosticsForm -> Maybe HIVDiagnosticsValue -> DiagnosticsForm
--- diagnosticsFormWithDefault form saved =
---     saved
---         |> unwrap
---             form
---             (\value ->
---                 --@todo
---                 { diagnosed = or form.diagnosed Nothing
---                 }
---             )
---
---
--- toDiagnosticsValueWithDefault : Maybe HIVDiagnosticsValue -> DiagnosticsForm -> Maybe HIVDiagnosticsValue
--- toDiagnosticsValueWithDefault saved form =
---     diagnosticsFormWithDefault form saved
---         |> toDiagnosticsValue
---
---
--- toDiagnosticsValue : DiagnosticsForm -> Maybe HIVDiagnosticsValue
--- toDiagnosticsValue form =
---     Maybe.andThen
---         (\diagnosed ->
---             if not diagnosed then
---                 Just NoHIV
---
---             else
---                 Maybe.map
---                     (\isPulmonary ->
---                         if isPulmonary then
---                             HIVPulmonary
---
---                         else
---                             HIVExtrapulmonary
---                     )
---                     form.isPulmonary
---         )
---         form.diagnosed
---
+
+toDiagnosticsValueWithDefault : Maybe HIVDiagnosticsValue -> DiagnosticsForm -> Maybe HIVDiagnosticsValue
+toDiagnosticsValueWithDefault saved form =
+    diagnosticsFormWithDefault form saved
+        |> toDiagnosticsValue
+
+
+toDiagnosticsValue : DiagnosticsForm -> Maybe HIVDiagnosticsValue
+toDiagnosticsValue form =
+    Maybe.map
+        (\diagnosed ->
+            let
+                diagnosis =
+                    if diagnosed then
+                        HIVDiagnosisPositive
+
+                    else
+                        NoHIVDiagnosis
+            in
+            { diagnosis = diagnosis
+            , positiveResultDate = form.positiveResultDate
+            }
+        )
+        form.diagnosed
+
+
+
 --
 -- symptomReviewFormWithDefault : SymptomReviewForm -> Maybe HIVSymptomReviewValue -> SymptomReviewForm
 -- symptomReviewFormWithDefault form saved =
