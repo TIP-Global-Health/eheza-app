@@ -395,8 +395,8 @@ fetch model =
                 Pages.HIV.Encounter.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
-            UserPage (HIVActivityPage id _) ->
-                Pages.HIV.Activity.Fetch.fetch id model.indexedDb
+            UserPage (HIVActivityPage id activity) ->
+                Pages.HIV.Activity.Fetch.fetch id activity model.indexedDb
                     |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage id) ->

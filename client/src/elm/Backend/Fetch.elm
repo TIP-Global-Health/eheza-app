@@ -302,6 +302,13 @@ shouldFetch currentTime model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchNCDEncountersForParticipants ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                List.any (\id -> not (Dict.member id model.ncdEncountersByParticipant)) ids
+
         FetchNCDMeasurements id ->
             Dict.get id model.ncdMeasurements
                 |> Maybe.withDefault NotAsked

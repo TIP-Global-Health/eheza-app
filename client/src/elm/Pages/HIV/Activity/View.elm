@@ -3,9 +3,12 @@ module Pages.HIV.Activity.View exposing (view)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant, getPrenatalEncountersForParticipant)
+import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Date
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf)
@@ -49,6 +52,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSaveAction
         )
+import RemoteData
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -73,127 +77,177 @@ view language currentDate id activity db model =
 viewHeaderAndContent : Language -> NominalDate -> HIVEncounterId -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewHeaderAndContent language currentDate id activity db model assembled =
     div [ class "page-activity hiv" ] <|
-        [-- viewHeader language id activity
-         -- , viewContent language currentDate activity db model assembled
+        [ viewHeader language id activity
+        , viewContent language currentDate activity db model assembled
         ]
 
 
+viewHeader : Language -> HIVEncounterId -> HIVActivity -> Html Msg
+viewHeader language id activity =
+    div
+        [ class "ui basic segment head" ]
+        [ h1
+            [ class "ui header" ]
+            [ text <| translate language <| Translate.HIVActivityTitle activity ]
+        , span
+            [ class "link-back"
+            , onClick <| SetActivePage <| UserPage <| HIVEncounterPage id
+            ]
+            [ span [ class "icon-back" ] [] ]
+        ]
 
--- viewHeader : Language -> HIVEncounterId -> HIVActivity -> Html Msg
--- viewHeader language id activity =
---     div
---         [ class "ui basic segment head" ]
---         [ h1
---             [ class "ui header" ]
---             [ text <| translate language <| Translate.HIVActivityTitle activity ]
---         , span
---             [ class "link-back"
---             , onClick <| SetActivePage <| UserPage <| HIVEncounterPage id
---             ]
---             [ span [ class "icon-back" ] [] ]
---         ]
---
---
--- viewContent : Language -> NominalDate -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
--- viewContent language currentDate activity db model assembled =
---     div [ class "ui unstackable items" ] <|
---         ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
---             :: viewActivity language currentDate activity assembled db model
---         )
---
---
--- viewActivity : Language -> NominalDate -> HIVActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
--- viewActivity language currentDate activity assembled db model =
---     case activity of
---         Diagnostics ->
---             viewDiagnosticsContent language currentDate assembled model.diagnosticsData
---
---         Medication ->
---             viewMedicationContent language currentDate assembled model.medicationData
---
---         SymptomReview ->
---             viewSymptomReviewContent language currentDate assembled model.symptomReviewData
---
---         NextSteps ->
---             viewNextStepsContent language currentDate assembled model.nextStepsData
---
---
--- viewDiagnosticsContent : Language -> NominalDate -> AssembledData -> DiagnosticsData -> List (Html Msg)
--- viewDiagnosticsContent language currentDate assembled data =
---     let
---         form =
---             assembled.measurements.diagnostics
---                 |> getMeasurementValueFunc
---                 |> diagnosticsFormWithDefault data.form
---
---         ( inputs, tasksCompleted, totalTasks ) =
---             let
---                 ( derivedInputs, derivedTasksCompleted, derivedTotalTasks ) =
---                     Maybe.map
---                         (\diagnosed ->
---                             if diagnosed then
---                                 ( [ viewQuestionLabel language Translate.HIVLocationQuestion
---                                   , viewCustomBoolInput language
---                                         form.isPulmonary
---                                         (SetDiagnosticsBoolInput
---                                             (\value form_ ->
---                                                 { form_
---                                                     | isPulmonary = Just value
---                                                     , isPulmonaryDirty = True
---                                                 }
---                                             )
---                                         )
---                                         "is-pulmonary"
---                                         ( Translate.HIVDiagnosis HIVPulmonary
---                                         , Translate.HIVDiagnosis HIVExtrapulmonary
---                                         )
---                                         "sixteen"
---                                   ]
---                                 , taskCompleted form.isPulmonary
---                                 , 1
---                                 )
---
---                             else
---                                 ( [], 0, 0 )
---                         )
---                         form.diagnosed
---                         |> Maybe.withDefault ( [], 0, 0 )
---             in
---             ( [ viewQuestionLabel language Translate.HIVDiagnosedQuestion
---               , viewBoolInput
---                     language
---                     form.diagnosed
---                     (SetDiagnosticsBoolInput
---                         (\value form_ ->
---                             { form_
---                                 | diagnosed = Just value
---                                 , isPulmonary = Nothing
---                                 , isPulmonaryDirty = True
---                             }
---                         )
---                     )
---                     "diagnosed"
---                     Nothing
---               ]
---                 ++ derivedInputs
---             , taskCompleted form.diagnosed + derivedTasksCompleted
---             , 1 + derivedTotalTasks
---             )
---     in
---     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
---     , div [ class "ui full segment" ]
---         [ div [ class "full content" ]
---             [ div [ class "ui form danger-signs" ] inputs
---             ]
---         , div [ class "actions" ]
---             [ saveButton language
---                 (tasksCompleted == totalTasks)
---                 (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
---             ]
---         ]
---     ]
---
---
+
+viewContent : Language -> NominalDate -> HIVActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate activity db model assembled =
+    div [ class "ui unstackable items" ] <|
+        ((viewPersonDetailsExtended language currentDate assembled.person |> div [ class "item" ])
+            :: viewActivity language currentDate activity assembled db model
+        )
+
+
+viewActivity : Language -> NominalDate -> HIVActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate activity assembled db model =
+    case activity of
+        Diagnostics ->
+            viewDiagnosticsContent language currentDate assembled db model.diagnosticsData
+
+        -- Medication ->
+        --     viewMedicationContent language currentDate assembled model.medicationData
+        --
+        -- SymptomReview ->
+        --     viewSymptomReviewContent language currentDate assembled model.symptomReviewData
+        --
+        -- NextSteps ->
+        --     viewNextStepsContent language currentDate assembled model.nextStepsData
+        _ ->
+            []
+
+
+viewDiagnosticsContent : Language -> NominalDate -> AssembledData -> ModelIndexedDb -> DiagnosticsData -> List (Html Msg)
+viewDiagnosticsContent language currentDate assembled db data =
+    let
+        form =
+            assembled.measurements.diagnostics
+                |> getMeasurementValueFunc
+                |> diagnosticsFormWithDefault data.form
+
+        personId =
+            assembled.participant.person
+
+        ncdParticipantsIds =
+            resolveIndividualParticipantsForPerson personId NCDEncounter db
+
+        prenatalParticipantsIds =
+            resolveIndividualParticipantsForPerson personId AntenatalEncounter db
+
+        ncdEncountersIds =
+            List.map (getNCDEncountersForParticipant db >> List.map Tuple.first) ncdParticipantsIds
+                |> List.concat
+
+        prenatalEncountersIds =
+            List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first) prenatalParticipantsIds
+                |> List.concat
+
+        resolvePositiveHIVResultDates getMeasurementsFunc =
+            List.filterMap
+                (\encounterId ->
+                    getMeasurementsFunc db
+                        |> Dict.get encounterId
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.andThen .hivTest
+                        |> getMeasurementValueFunc
+                        |> Maybe.andThen
+                            (\value ->
+                                if value.testResult == Just TestPositive then
+                                    value.executionDate
+
+                                else
+                                    Nothing
+                            )
+                )
+
+        positiveHIVResultDatesFromNCD =
+            resolvePositiveHIVResultDates .ncdMeasurements ncdEncountersIds
+
+        positiveHIVResultDatesFromPrenatal =
+            resolvePositiveHIVResultDates .prenatalMeasurements prenatalEncountersIds
+
+        mPositiveHIVResultDate =
+            positiveHIVResultDatesFromNCD
+                ++ positiveHIVResultDatesFromPrenatal
+                |> List.sortWith Date.compare
+                |> List.head
+
+        --
+        -- ( inputs, tasksCompleted, totalTasks ) =
+        --     let
+        --         ( derivedInputs, derivedTasksCompleted, derivedTotalTasks ) =
+        --             Maybe.map
+        --                 (\diagnosed ->
+        --                     if diagnosed then
+        --                         ( [ viewQuestionLabel language Translate.HIVLocationQuestion
+        --                           , viewCustomBoolInput language
+        --                                 form.isPulmonary
+        --                                 (SetDiagnosticsBoolInput
+        --                                     (\value form_ ->
+        --                                         { form_
+        --                                             | isPulmonary = Just value
+        --                                             , isPulmonaryDirty = True
+        --                                         }
+        --                                     )
+        --                                 )
+        --                                 "is-pulmonary"
+        --                                 ( Translate.HIVDiagnosis HIVPulmonary
+        --                                 , Translate.HIVDiagnosis HIVExtrapulmonary
+        --                                 )
+        --                                 "sixteen"
+        --                           ]
+        --                         , taskCompleted form.isPulmonary
+        --                         , 1
+        --                         )
+        --
+        --                     else
+        --                         ( [], 0, 0 )
+        --                 )
+        --                 form.diagnosed
+        --                 |> Maybe.withDefault ( [], 0, 0 )
+        --     in
+        --     ( [ viewQuestionLabel language Translate.HIVDiagnosedQuestion
+        --       , viewBoolInput
+        --             language
+        --             form.diagnosed
+        --             (SetDiagnosticsBoolInput
+        --                 (\value form_ ->
+        --                     { form_
+        --                         | diagnosed = Just value
+        --                         , isPulmonary = Nothing
+        --                         , isPulmonaryDirty = True
+        --                     }
+        --                 )
+        --             )
+        --             "diagnosed"
+        --             Nothing
+        --       ]
+        --         ++ derivedInputs
+        --     , taskCompleted form.diagnosed + derivedTasksCompleted
+        --     , 1 + derivedTotalTasks
+        --     )
+    in
+    [-- div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+     -- , div [ class "ui full segment" ]
+     --     [ div [ class "full content" ]
+     --         [ div [ class "ui form danger-signs" ] inputs
+     --         ]
+     --     , div [ class "actions" ]
+     --         [ saveButton language
+     --             (tasksCompleted == totalTasks)
+     --             (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
+     --         ]
+     --     ]
+    ]
+
+
+
 -- viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
 -- viewMedicationContent language currentDate assembled data =
 --     let
