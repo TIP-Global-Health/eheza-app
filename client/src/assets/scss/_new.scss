@@ -4815,6 +4815,7 @@ div.page-activity.ncd {
     }
   }
 }
+
 div.page-activity.wellbeing {
 
   .ui.button .counter {
@@ -5480,4 +5481,38 @@ div.page-activity.stock-management {
     padding-bottom: 40px;
   }
 
+}
+
+div.page-activity.hiv {
+
+  .ui.full.segment {
+
+    .form.danger-signs {
+
+      .label {
+        font-weight: 500;
+      }
+
+      .label.header {
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .form-input.date {
+        border: 2px solid $color-light-gray;
+        color: $color-text;
+        height: 2em;
+        padding: 5px;
+        text-align: center;
+        width: 80%;
+      }
+
+      input.checkbox,
+      input.checkbox:focus {
+        height: 3rem;
+        width: 100%;
+      }
+    }
+
+  }
 }
