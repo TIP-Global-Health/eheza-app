@@ -192,8 +192,9 @@ type Msg
     = SetActivePage Page
       -- DIAGNOSTICS
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
+    | ConfirmPositiveResultDate Date Bool
     | SetPositiveResultDate Date
-    | SetPositiveResultDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
 
 

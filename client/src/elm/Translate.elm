@@ -741,6 +741,9 @@ type TranslationId
     | HIV
     | HIVActivityTitle HIVActivity
     | HIVPCRResult HIVPCRResult
+    | HIVPositiveDateCorrectQuestion NominalDate
+    | HIVPositiveDiagnosedQuestion
+    | HIVPositiveTestDateQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | HIVTreatmentSign HIVTreatmentSign
@@ -6646,6 +6649,24 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+        HIVPositiveDateCorrectQuestion date ->
+            { english = "The patient tested positive for HIV on " ++ formatDDMMYYYY date ++ ". Is this date correct"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HIVPositiveDiagnosedQuestion ->
+            { english = "Was this person diagnosed with HIV"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HIVPositiveTestDateQuestion ->
+            { english = "What was the positive test date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         HIVStatus status ->
             case status of

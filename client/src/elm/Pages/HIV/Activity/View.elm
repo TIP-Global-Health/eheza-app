@@ -9,10 +9,11 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant, getPrenatalEncountersForParticipant)
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
-import Date
+import Date exposing (Unit(..))
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -48,6 +49,7 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomBoolInput
+        , viewLabel
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
@@ -55,6 +57,7 @@ import Pages.Utils
 import RemoteData
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -178,73 +181,148 @@ viewDiagnosticsContent language currentDate assembled db data =
                 |> List.sortWith Date.compare
                 |> List.head
 
-        --
-        -- ( inputs, tasksCompleted, totalTasks ) =
-        --     let
-        --         ( derivedInputs, derivedTasksCompleted, derivedTotalTasks ) =
-        --             Maybe.map
-        --                 (\diagnosed ->
-        --                     if diagnosed then
-        --                         ( [ viewQuestionLabel language Translate.HIVLocationQuestion
-        --                           , viewCustomBoolInput language
-        --                                 form.isPulmonary
-        --                                 (SetDiagnosticsBoolInput
-        --                                     (\value form_ ->
-        --                                         { form_
-        --                                             | isPulmonary = Just value
-        --                                             , isPulmonaryDirty = True
-        --                                         }
-        --                                     )
-        --                                 )
-        --                                 "is-pulmonary"
-        --                                 ( Translate.HIVDiagnosis HIVPulmonary
-        --                                 , Translate.HIVDiagnosis HIVExtrapulmonary
-        --                                 )
-        --                                 "sixteen"
-        --                           ]
-        --                         , taskCompleted form.isPulmonary
-        --                         , 1
-        --                         )
-        --
-        --                     else
-        --                         ( [], 0, 0 )
-        --                 )
-        --                 form.diagnosed
-        --                 |> Maybe.withDefault ( [], 0, 0 )
-        --     in
-        --     ( [ viewQuestionLabel language Translate.HIVDiagnosedQuestion
-        --       , viewBoolInput
-        --             language
-        --             form.diagnosed
-        --             (SetDiagnosticsBoolInput
-        --                 (\value form_ ->
-        --                     { form_
-        --                         | diagnosed = Just value
-        --                         , isPulmonary = Nothing
-        --                         , isPulmonaryDirty = True
-        --                     }
-        --                 )
-        --             )
-        --             "diagnosed"
-        --             Nothing
-        --       ]
-        --         ++ derivedInputs
-        --     , taskCompleted form.diagnosed + derivedTasksCompleted
-        --     , 1 + derivedTotalTasks
-        --     )
+        ( inputs, tasksCompleted, totalTasks ) =
+            Maybe.map (resolveInputsAndTasksForExistingPositiveHIVResult language currentDate form) mPositiveHIVResultDate
+                |> Maybe.withDefault (resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form)
     in
-    [-- div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-     -- , div [ class "ui full segment" ]
-     --     [ div [ class "full content" ]
-     --         [ div [ class "ui form danger-signs" ] inputs
-     --         ]
-     --     , div [ class "actions" ]
-     --         [ saveButton language
-     --             (tasksCompleted == totalTasks)
-     --             (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
-     --         ]
-     --     ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form danger-signs" ] inputs
+            ]
+        , div [ class "actions" ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
+            ]
+        ]
     ]
+
+
+resolveInputsAndTasksForExistingPositiveHIVResult : Language -> NominalDate -> DiagnosticsForm -> NominalDate -> ( List (Html Msg), Int, Int )
+resolveInputsAndTasksForExistingPositiveHIVResult language currentDate form positiveHIVResultDate =
+    let
+        ( derivedInputs, derivedTasksCompleted, derivedTotalTasks ) =
+            Maybe.map
+                (\resultDateCorrect ->
+                    if not resultDateCorrect then
+                        resolveInputsAndTasksForPositiveHIVDate language currentDate form
+
+                    else
+                        ( [], 0, 0 )
+                )
+                form.resultDateCorrect
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( [ viewQuestionLabel language <| Translate.HIVPositiveDateCorrectQuestion positiveHIVResultDate
+      , viewBoolInput
+            language
+            form.resultDateCorrect
+            (ConfirmPositiveResultDate positiveHIVResultDate)
+            "result-date-correct"
+            Nothing
+      ]
+        ++ derivedInputs
+    , taskCompleted form.resultDateCorrect + derivedTasksCompleted
+    , 1 + derivedTotalTasks
+    )
+
+
+resolveInputsAndTasksForNonExistingPositiveHIVResult : Language -> NominalDate -> DiagnosticsForm -> ( List (Html Msg), Int, Int )
+resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form =
+    let
+        ( derivedInputs, derivedTasksCompleted, derivedTotalTasks ) =
+            Maybe.map
+                (\resultPositive ->
+                    if resultPositive then
+                        resolveInputsAndTasksForPositiveHIVDate language currentDate form
+
+                    else
+                        ( [], 0, 0 )
+                )
+                form.resultPositive
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( [ viewQuestionLabel language Translate.HIVPositiveDiagnosedQuestion
+      , viewBoolInput
+            language
+            form.resultPositive
+            (SetDiagnosticsBoolInput
+                (\value form_ ->
+                    { form_
+                        | resultPositive = Just value
+                        , positiveResultDate = Nothing
+                        , positiveResultDateDirty = True
+                        , positiveResultDateEstimated = Nothing
+                        , positiveResultDateEstimatedDirty = True
+                    }
+                )
+            )
+            "result-positive"
+            Nothing
+      ]
+        ++ derivedInputs
+    , taskCompleted form.resultPositive + derivedTasksCompleted
+    , 1 + derivedTotalTasks
+    )
+
+
+resolveInputsAndTasksForPositiveHIVDate : Language -> NominalDate -> DiagnosticsForm -> ( List (Html Msg), Int, Int )
+resolveInputsAndTasksForPositiveHIVDate language currentDate form =
+    let
+        dateForView =
+            Maybe.map formatDDMMYYYY form.positiveResultDate
+                |> Maybe.withDefault ""
+
+        estimatedChecked =
+            Maybe.withDefault False form.positiveResultDateEstimated
+
+        dateSelectorConfig =
+            { select = SetPositiveResultDate
+            , close = SetDateSelectorState Nothing
+            , dateFrom = Date.add Years -120 currentDate
+            , dateTo = currentDate
+            , dateDefault = Nothing
+            }
+    in
+    ( [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column required" ]
+                [ viewQuestionLabel language Translate.HIVPositiveTestDateQuestion
+                , div
+                    [ class "form-input date"
+                    , onClick <| SetDateSelectorState (Just dateSelectorConfig)
+                    ]
+                    [ text dateForView ]
+                ]
+            , div
+                [ class "three wide column" ]
+                [ viewLabel language Translate.Estimated
+                , input
+                    [ type_ "checkbox"
+                    , onClick
+                        (SetDiagnosticsBoolInput
+                            (\value form_ ->
+                                { form_
+                                    | positiveResultDateEstimated = Just value
+                                    , positiveResultDateEstimatedDirty = True
+                                }
+                            )
+                            (not estimatedChecked)
+                        )
+                    , checked estimatedChecked
+                    , classList
+                        [ ( "checkbox", True )
+                        , ( "checked", estimatedChecked )
+                        ]
+                    ]
+                    []
+                ]
+            , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.positiveResultDate
+            ]
+      ]
+    , taskCompleted form.positiveResultDate
+    , 1
+    )
 
 
 

@@ -83,10 +83,43 @@ update currentDate id db msg model =
             , []
             )
 
+        ConfirmPositiveResultDate date confirmed ->
+            let
+                updatedForm =
+                    { diagnosticsForm
+                        | resultDateCorrect = Just confirmed
+                        , positiveResultDate = Nothing
+                        , positiveResultDateDirty = True
+                        , positiveResultDateEstimated = Nothing
+                        , positiveResultDateEstimatedDirty = True
+                    }
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+
+                setPositiveResultDateMsg =
+                    if confirmed then
+                        [ SetPositiveResultDate date ]
+
+                    else
+                        []
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate id db) setPositiveResultDateMsg
+
         SetPositiveResultDate value ->
             let
                 updatedForm =
-                    { diagnosticsForm | positiveResultDate = Just value }
+                    { diagnosticsForm
+                        | positiveResultDate = Just value
+                        , positiveResultDateDirty = True
+                        , positiveResultDateEstimated = Nothing
+                        , positiveResultDateEstimatedDirty = True
+                    }
 
                 updatedData =
                     model.diagnosticsData
@@ -97,7 +130,7 @@ update currentDate id db msg model =
             , []
             )
 
-        SetPositiveResultDateSelectorState state ->
+        SetDateSelectorState state ->
             let
                 updatedForm =
                     { diagnosticsForm | dateSelectorPopupState = state }
