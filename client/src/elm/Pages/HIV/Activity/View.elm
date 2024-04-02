@@ -193,7 +193,11 @@ viewDiagnosticsContent language currentDate assembled db data =
         , div [ class "actions" ]
             [ saveButton language
                 (tasksCompleted == totalTasks)
-                (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
+                (SaveDiagnostics assembled.participant.person
+                    assembled.encounter.participant
+                    (isJust mPositiveHIVResultDate)
+                    assembled.measurements.diagnostics
+                )
             ]
         ]
     ]

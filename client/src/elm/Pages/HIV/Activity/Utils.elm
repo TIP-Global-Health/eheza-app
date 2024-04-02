@@ -320,61 +320,97 @@ diagnosticsFormWithDefault form saved =
             )
 
 
-toDiagnosticsValueWithDefault : Maybe HIVDiagnosticsValue -> DiagnosticsForm -> Maybe HIVDiagnosticsValue
-toDiagnosticsValueWithDefault saved form =
+toDiagnosticsValueWithDefault : Bool -> Maybe HIVDiagnosticsValue -> DiagnosticsForm -> Maybe HIVDiagnosticsValue
+toDiagnosticsValueWithDefault positiveResultRecorded saved form =
     diagnosticsFormWithDefault form saved
-        |> toDiagnosticsValue
+        |> toDiagnosticsValue positiveResultRecorded
 
 
-toDiagnosticsValue : DiagnosticsForm -> Maybe HIVDiagnosticsValue
-toDiagnosticsValue form =
-    case ( form.resultPositive, form.resultDateCorrect ) of
-        ( Just resultPositive, Nothing ) ->
-            if resultPositive then
-                Maybe.map
-                    (\positiveResultDateEstimated ->
-                        let
-                            esitmatedSign =
-                                if positiveResultDateEstimated then
-                                    [ HIVResultDateEstimated ]
-
-                                else
-                                    []
-                        in
-                        { signs = EverySet.fromList (HIVResultPositiveReported :: esitmatedSign)
-                        , positiveResultDate = form.positiveResultDate
-                        }
-                    )
-                    form.positiveResultDateEstimated
+toDiagnosticsValue : Bool -> DiagnosticsForm -> Maybe HIVDiagnosticsValue
+toDiagnosticsValue positiveResultRecorded form =
+    let
+        esitmatedSign =
+            if form.positiveResultDateEstimated == Just True then
+                [ HIVResultDateEstimated ]
 
             else
-                Just
-                    { signs = EverySet.singleton NoHIVDiagnosisSigns
-                    , positiveResultDate = Nothing
-                    }
+                []
+    in
+    if positiveResultRecorded then
+        Maybe.map
+            (\resultDateCorrect ->
+                let
+                    mainSign =
+                        if resultDateCorrect then
+                            [ HIVResultPositiveKnown ]
 
-        ( Nothing, Just resultDateCorrect ) ->
-            Maybe.map
-                (\positiveResultDateEstimated ->
-                    let
-                        esitmatedSign =
-                            if positiveResultDateEstimated then
-                                [ HIVResultDateEstimated ]
+                        else
+                            []
+                in
+                { signs = EverySet.fromList <| mainSign ++ esitmatedSign
+                , positiveResultDate = form.positiveResultDate
+                }
+            )
+            form.resultDateCorrect
 
-                            else
-                                []
-                    in
-                    { signs = EverySet.fromList (HIVResultPositiveKnown :: esitmatedSign)
-                    , positiveResultDate = form.positiveResultDate
-                    }
-                )
-                form.positiveResultDateEstimated
+    else
+        Maybe.map
+            (\resultPositive ->
+                let
+                    mainSign =
+                        if resultPositive then
+                            [ HIVResultPositiveReported ]
 
-        _ ->
-            Nothing
+                        else
+                            []
+                in
+                { signs = EverySet.fromList <| mainSign ++ esitmatedSign
+                , positiveResultDate = form.positiveResultDate
+                }
+            )
+            form.resultPositive
 
 
 
+--
+-- case ( form.resultPositive, form.resultDateCorrect ) of
+--     ( Just resultPositive, Nothing ) ->
+--         if resultPositive then
+--             let
+--                 esitmatedSign =
+--                     if form.positiveResultDateEstimated == Just True then
+--                         [ HIVResultDateEstimated ]
+--
+--                     else
+--                         []
+--             in
+--             Just
+--                 { signs = EverySet.fromList (HIVResultPositiveReported :: esitmatedSign)
+--                 , positiveResultDate = form.positiveResultDate
+--                 }
+--
+--         else
+--             Just
+--                 { signs = EverySet.singleton NoHIVDiagnosisSigns
+--                 , positiveResultDate = Nothing
+--                 }
+--
+--     ( Nothing, Just resultDateCorrect ) ->
+--         let
+--             esitmatedSign =
+--                 if form.positiveResultDateEstimated == Just True then
+--                     [ HIVResultDateEstimated ]
+--
+--                 else
+--                     []
+--         in
+--         Just
+--             { signs = EverySet.fromList (HIVResultPositiveKnown :: esitmatedSign)
+--             , positiveResultDate = form.positiveResultDate
+--             }
+--
+--     _ ->
+--         Nothing
 --
 -- symptomReviewFormWithDefault : SymptomReviewForm -> Maybe HIVSymptomReviewValue -> SymptomReviewForm
 -- symptomReviewFormWithDefault form saved =

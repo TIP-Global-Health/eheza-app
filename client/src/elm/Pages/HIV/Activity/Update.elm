@@ -144,7 +144,7 @@ update currentDate id db msg model =
             , [ focusOnCalendarMsg ]
             )
 
-        SaveDiagnostics personId particpantId saved ->
+        SaveDiagnostics personId particpantId positiveResultRecorded saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -154,7 +154,7 @@ update currentDate id db msg model =
 
                 appMsgs =
                     model.diagnosticsData.form
-                        |> toDiagnosticsValueWithDefault measurement
+                        |> toDiagnosticsValueWithDefault positiveResultRecorded measurement
                         |> unwrap
                             []
                             (\value ->
@@ -165,7 +165,7 @@ update currentDate id db msg model =
                                             |> App.Model.MsgIndexedDb
 
                                     additionalMsgs =
-                                        if diagnosticsForm.resultPositive == Just False then
+                                        if not positiveResultRecorded && diagnosticsForm.resultPositive == Just False then
                                             [ Backend.IndividualEncounterParticipant.Model.CloseHIVSession HIVOutcomeNotDiagnosed
                                                 |> Backend.Model.MsgIndividualEncounterParticipant particpantId
                                                 |> App.Model.MsgIndexedDb

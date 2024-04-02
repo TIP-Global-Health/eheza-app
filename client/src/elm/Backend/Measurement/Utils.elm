@@ -4095,7 +4095,7 @@ hivDiagnosisSignToString diagnosis =
             "result-positive-reported"
 
         HIVResultPositiveKnown ->
-            "result-positive-know"
+            "result-positive-known"
 
         HIVResultDateEstimated ->
             "result-date-estimated"
@@ -4110,7 +4110,7 @@ hivDiagnosisSignFromString diagnosis =
         "result-positive-reported" ->
             Just HIVResultPositiveReported
 
-        "result-positive-know" ->
+        "result-positive-known" ->
             Just HIVResultPositiveKnown
 
         "result-date-estimated" ->

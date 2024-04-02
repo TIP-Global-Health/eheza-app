@@ -195,7 +195,7 @@ type Msg
     | ConfirmPositiveResultDate Date Bool
     | SetPositiveResultDate Date
     | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
-    | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
+    | SaveDiagnostics PersonId IndividualEncounterParticipantId Bool (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
 
 
 
