@@ -44,19 +44,16 @@ update currentDate id db msg model =
         diagnosticsForm =
             resolveFormWithDefaults .diagnostics diagnosticsFormWithDefault model.diagnosticsData.form
 
-        --
-        -- medicationForm =
-        --     resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
-        --
-        -- dotForm =
-        --     resolveFormWithDefaults .dot dotFormWithDefault model.medicationData.dotForm
-        --
-        -- treatmentReviewForm =
-        --     resolveFormWithDefaults .treatmentReview ongoingTreatmentReviewFormWithDefault model.medicationData.treatmentReviewForm
-        --
-        -- generateMedicationMsgs nextTask =
-        --     Maybe.map (\task -> [ SetActiveMedicationTask task ]) nextTask
-        --         |> Maybe.withDefault [ SetActivePage <| UserPage <| HIVEncounterPage id ]
+        medicationForm =
+            resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
+
+        treatmentReviewForm =
+            resolveFormWithDefaults .treatmentReview ongoingTreatmentReviewFormWithDefault model.medicationData.treatmentReviewForm
+
+        generateMedicationMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveMedicationTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| HIVEncounterPage id ]
+
         --
         -- generateNextStepsMsgs nextTask =
         --     Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
@@ -183,166 +180,164 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        SetActiveMedicationTask task ->
+            let
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPrescribedMedication medication ->
+            let
+                form =
+                    medicationForm
+
+                updatedForm =
+                    setMultiSelectInputValue .medications
+                        (\medications -> { form | medications = medications, medicationsDirty = True })
+                        NoHIVPrescribedMedications
+                        medication
+                        form
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | prescribedMedicationForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SavePrescribedMedication personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask
+
+                appMsgs =
+                    toPrescribedMedicationValueWithDefault measurement model.medicationData.prescribedMedicationForm
+                        |> Maybe.map
+                            (Backend.HIVEncounter.Model.SavePrescribedMedication personId measurementId
+                                >> Backend.Model.MsgHIVEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetTreatmentReviewBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value treatmentReviewForm
+                    in
+                    model.medicationData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotTaking value ->
+            let
+                form =
+                    treatmentReviewForm
+
+                updatedForm =
+                    { form | reasonForNotTaking = Just value, reasonForNotTakingDirty = True }
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetTotalMissedDoses value ->
+            let
+                form =
+                    treatmentReviewForm
+
+                updatedForm =
+                    { form | totalMissedDoses = String.toInt value, totalMissedDosesDirty = True }
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAdverseEvent event ->
+            let
+                form =
+                    treatmentReviewForm
+
+                updatedForm =
+                    setMultiSelectInputValue .adverseEvents
+                        (\events -> { form | adverseEvents = events, adverseEventsDirty = True })
+                        NoAdverseEvent
+                        event
+                        form
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveTreatmentReview personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask
+
+                appMsgs =
+                    toOngoingTreatmentReviewValueWithDefault measurement model.medicationData.treatmentReviewForm
+                        |> Maybe.map
+                            (Backend.HIVEncounter.Model.SaveTreatmentReview personId measurementId
+                                >> Backend.Model.MsgHIVEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
 
 
---
--- SetActiveMedicationTask task ->
---     let
---         updatedData =
---             model.medicationData
---                 |> (\data -> { data | activeTask = Just task })
---     in
---     ( { model | medicationData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SetPrescribedMedication medication ->
---     let
---         form =
---             medicationForm
---
---         updatedForm =
---             setMultiSelectInputValue .medications
---                 (\medications -> { form | medications = medications, medicationsDirty = True })
---                 NoHIVPrescribedMedications
---                 medication
---                 form
---
---         updatedData =
---             model.medicationData
---                 |> (\data -> { data | prescribedMedicationForm = updatedForm })
---     in
---     ( { model | medicationData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SavePrescribedMedication personId saved nextTask ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         extraMsgs =
---             generateMedicationMsgs nextTask
---
---         appMsgs =
---             toPrescribedMedicationValueWithDefault measurement model.medicationData.prescribedMedicationForm
---                 |> Maybe.map
---                     (Backend.HIVEncounter.Model.SavePrescribedMedication personId measurementId
---                         >> Backend.Model.MsgHIVEncounter id
---                         >> App.Model.MsgIndexedDb
---                         >> List.singleton
---                     )
---                 |> Maybe.withDefault []
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
---         |> sequenceExtra (update currentDate id db) extraMsgs
---
---
---
--- SetTreatmentReviewBoolInput formUpdateFunc value ->
---     let
---         updatedData =
---             let
---                 updatedForm =
---                     formUpdateFunc value treatmentReviewForm
---             in
---             model.medicationData
---                 |> (\data -> { data | treatmentReviewForm = updatedForm })
---     in
---     ( { model | medicationData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SetReasonForNotTaking value ->
---     let
---         form =
---             treatmentReviewForm
---
---         updatedForm =
---             { form | reasonForNotTaking = Just value, reasonForNotTakingDirty = True }
---
---         updatedData =
---             model.medicationData
---                 |> (\data -> { data | treatmentReviewForm = updatedForm })
---     in
---     ( { model | medicationData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SetTotalMissedDoses value ->
---     let
---         form =
---             treatmentReviewForm
---
---         updatedForm =
---             { form | totalMissedDoses = String.toInt value, totalMissedDosesDirty = True }
---
---         updatedData =
---             model.medicationData
---                 |> (\data -> { data | treatmentReviewForm = updatedForm })
---     in
---     ( { model | medicationData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SetAdverseEvent event ->
---     let
---         form =
---             treatmentReviewForm
---
---         updatedForm =
---             setMultiSelectInputValue .adverseEvents
---                 (\events -> { form | adverseEvents = events, adverseEventsDirty = True })
---                 NoAdverseEvent
---                 event
---                 form
---
---         updatedData =
---             model.medicationData
---                 |> (\data -> { data | treatmentReviewForm = updatedForm })
---     in
---     ( { model | medicationData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SaveTreatmentReview personId saved nextTask ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         extraMsgs =
---             generateMedicationMsgs nextTask
---
---         appMsgs =
---             toOngoingTreatmentReviewValueWithDefault measurement model.medicationData.treatmentReviewForm
---                 |> Maybe.map
---                     (Backend.HIVEncounter.Model.SaveTreatmentReview personId measurementId
---                         >> Backend.Model.MsgHIVEncounter id
---                         >> App.Model.MsgIndexedDb
---                         >> List.singleton
---                     )
---                 |> Maybe.withDefault []
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
---         |> sequenceExtra (update currentDate id db) extraMsgs
+
 --
 -- SetSymptomReviewBoolInput formUpdateFunc value ->
 --     let

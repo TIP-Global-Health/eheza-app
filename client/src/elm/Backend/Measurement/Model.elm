@@ -3009,9 +3009,7 @@ type alias HIVMedication =
 
 
 type alias HIVMedicationValue =
-    -- @todo
-    -- EverySet HIVPrescribedMedication
-    {}
+    EverySet HIVPrescribedMedication
 
 
 type HIVPrescribedMedication

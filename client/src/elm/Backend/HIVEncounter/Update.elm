@@ -54,6 +54,30 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SavePrescribedMedication personId valueId value ->
+            ( { model | savePrescribedMedication = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivMedicationEndpoint HandleSavedPrescribedMedication
+            , []
+            )
+
+        HandleSavedPrescribedMedication data ->
+            ( { model | savePrescribedMedication = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveTreatmentReview personId valueId value ->
+            ( { model | saveTreatmentReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivTreatmentReviewEndpoint HandleSavedTreatmentReview
+            , []
+            )
+
+        HandleSavedTreatmentReview data ->
+            ( { model | saveTreatmentReview = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
 
 
 --
@@ -105,28 +129,3 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 --     , triggerRollbarOnFailure data
 --     )
 --
--- SavePrescribedMedication personId valueId value ->
---     ( { model | savePrescribedMedication = Loading }
---     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivMedicationEndpoint HandleSavedPrescribedMedication
---     , []
---     )
---
--- HandleSavedPrescribedMedication data ->
---     ( { model | savePrescribedMedication = data }
---     , Cmd.none
---     , triggerRollbarOnFailure data
---     )
---
---
---
--- SaveTreatmentReview personId valueId value ->
---     ( { model | saveTreatmentReview = Loading }
---     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivTreatmentReviewEndpoint HandleSavedTreatmentReview
---     , []
---     )
---
--- HandleSavedTreatmentReview data ->
---     ( { model | saveTreatmentReview = data }
---     , Cmd.none
---     , triggerRollbarOnFailure data
---     )
