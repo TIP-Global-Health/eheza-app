@@ -7,13 +7,13 @@ resilienceSurveyTypeToString : ResilienceSurveyType -> String
 resilienceSurveyTypeToString surveyType =
     case surveyType of
         ResilienceSurveyQuarterly ->
-            "monthly"
+            "quarterly"
 
 
 resilienceSurveyTypeFromString : String -> Maybe ResilienceSurveyType
 resilienceSurveyTypeFromString value =
     case value of
-        "monthly" ->
+        "quarterly" ->
             Just ResilienceSurveyQuarterly
 
         _ ->

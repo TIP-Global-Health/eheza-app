@@ -955,7 +955,6 @@ type TranslationId
     | ModeratePreeclampsia
     | Month
     | MonthAbbrev
-    | QuarterlySurveyScoreInterpretation Int
     | MonthSinglePlural Int
     | MonthsOfStock
     | MotherId
@@ -1241,6 +1240,7 @@ type TranslationId
     | ProvidedPreventionEducationQuestionShort
     | ProvidedSymtomReliefGuidanceQuestion
     | Province
+    | QuarterlySurveyScoreInterpretation Int
     | RandomBloodSugarResultNormalRange RandomBloodSugarResult
     | Read
     | ReadToggle Bool
@@ -1464,7 +1464,6 @@ type TranslationId
     | ResilienceMessageEndOfSecondMonthBullet3
     | ResilienceMessageEndOfSecondMonthBullet4
     | ResilienceMessageEndOfSecondMonthBullet5
-    | ResilienceQuarterlySurveyQuestion ResilienceSurveyQuestion
     | ResilienceKickOffBirthDateQuestion
     | ResilienceKickOffEducationLevelQuestion
     | ResilienceKickOffGenderQuestion
@@ -1475,6 +1474,7 @@ type TranslationId
     | ResilienceNotificationHeader String
     | ResilienceNotificationNumberOfUnread Int
     | ResilienceNotificationReadNowQuestion
+    | ResilienceQuarterlySurveyQuestion ResilienceSurveyQuestion
     | ResilienceReminderHeader String ResilienceReminderType
     | ResilienceReminderParagraph1 ResilienceReminderType
     | ResilienceReminderParagraph2 ResilienceReminderType
@@ -10207,25 +10207,6 @@ translationSet trans =
             , kirundi = Just "am"
             }
 
-        QuarterlySurveyScoreInterpretation score ->
-            if score < 14 then
-                { english = "Low resilient copers"
-                , kinyarwanda = Nothing
-                , kirundi = Nothing
-                }
-
-            else if score < 17 then
-                { english = "Medium resilient copers"
-                , kinyarwanda = Nothing
-                , kirundi = Nothing
-                }
-
-            else
-                { english = "High resilient copers"
-                , kinyarwanda = Nothing
-                , kirundi = Nothing
-                }
-
         MonthSinglePlural value ->
             if value == 1 then
                 { english = "1 Month"
@@ -16503,6 +16484,25 @@ translationSet trans =
             , kirundi = Just "Intara"
             }
 
+        QuarterlySurveyScoreInterpretation score ->
+            if score < 14 then
+                { english = "Low resilient copers"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else if score < 17 then
+                { english = "Medium resilient copers"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else
+                { english = "High resilient copers"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
         ReadToggle isRead ->
             if isRead then
                 { english = "Unread"
@@ -18789,36 +18789,6 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        ResilienceQuarterlySurveyQuestion question ->
-            case question of
-                ResilienceSurveyQuestion1 ->
-                    { english = "I look for creative ways to alter difficult situations"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                ResilienceSurveyQuestion2 ->
-                    { english = "Regardless of what happens to me, I believe I can control my reaction to it"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                ResilienceSurveyQuestion3 ->
-                    { english = "I believe I can grow in positive ways by dealing with difficult situations"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                ResilienceSurveyQuestion4 ->
-                    { english = "I actively look for ways to replace the losses I encounter in life"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                _ ->
-                    -- Not in use.
-                    translationSet EmptyString
-
         ResilienceKickOffBirthDateQuestion ->
             { english = "What is your birth date"
             , kinyarwanda = Nothing
@@ -18879,6 +18849,36 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        ResilienceQuarterlySurveyQuestion question ->
+            case question of
+                ResilienceSurveyQuestion1 ->
+                    { english = "I look for creative ways to alter difficult situations"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ResilienceSurveyQuestion2 ->
+                    { english = "Regardless of what happens to me, I believe I can control my reaction to it"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ResilienceSurveyQuestion3 ->
+                    { english = "I believe I can grow in positive ways by dealing with difficult situations"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ResilienceSurveyQuestion4 ->
+                    { english = "I actively look for ways to replace the losses I encounter in life"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                _ ->
+                    -- Not in use.
+                    translationSet EmptyString
 
         ResilienceReminderHeader name reminderType ->
             case reminderType of
