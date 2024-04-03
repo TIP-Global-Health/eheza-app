@@ -121,41 +121,38 @@ medicationTaskCompleted assembled task =
             isJust assembled.measurements.treatmentReview
 
 
+medicationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal language currentDate assembled data task =
+    case task of
+        TaskPrescribedMedication ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medication
+                        |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+            in
+            ( taskCompleted form.medications
+            , 1
+            )
 
--- medicationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
--- medicationTasksCompletedFromTotal language currentDate assembled data task =
---     case task of
---         TaskPrescribedMedication ->
---             let
---                 form =
---                     getMeasurementValueFunc assembled.measurements.medication
---                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
---             in
---             ( taskCompleted form.medications
---             , 1
---             )
---
---         TaskTreatmentReview ->
---             let
---                 form =
---                     getMeasurementValueFunc assembled.measurements.treatmentReview
---                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
---
---                 ( _, tasks ) =
---                     treatmentReviewInputsAndTasks language
---                         currentDate
---                         SetTreatmentReviewBoolInput
---                         SetReasonForNotTaking
---                         SetTotalMissedDoses
---                         SetAdverseEvent
---                         form
---             in
---             ( Maybe.Extra.values tasks
---                 |> List.length
---             , List.length tasks
---             )
---
---
+        TaskTreatmentReview ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.treatmentReview
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+
+                ( _, tasks ) =
+                    treatmentReviewInputsAndTasks language
+                        currentDate
+                        SetTreatmentReviewBoolInput
+                        SetReasonForNotTaking
+                        SetTotalMissedDoses
+                        SetAdverseEvent
+                        form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
 
 nextStepsTasks : List NextStepsTask
@@ -386,15 +383,13 @@ prescribedMedicationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { medications = or form.medications (Just <| EverySet.toList value)
-                , medicationsDirty = form.medicationsDirty
-                }
+                { medications = or form.medications (Just value) }
             )
 
 
 toPrescribedMedicationValue : PrescribedMedicationForm -> Maybe HIVMedicationValue
 toPrescribedMedicationValue form =
-    Maybe.map EverySet.fromList form.medications
+    form.medications
 
 
 

@@ -5627,19 +5627,18 @@ decodeHIVMedication =
 
 decodeHIVMedicationValue : Decoder HIVMedicationValue
 decodeHIVMedicationValue =
-    succeed HIVMedicationValue
+    field "prescribed_hiv_medications" decodeHIVPrescribedMedication
 
 
-
--- decodeHIVPrescribedMedication : Decoder HIVPrescribedMedication
--- decodeHIVPrescribedMedication =
---     string
---         |> andThen
---             (\result ->
---                 hivPrescribedMedicationFromString result
---                     |> Maybe.map succeed
---                     |> Maybe.withDefault (result ++ " is not a recognized HIVPrescribedMedication" |> fail)
---             )
+decodeHIVPrescribedMedication : Decoder HIVPrescribedMedication
+decodeHIVPrescribedMedication =
+    string
+        |> andThen
+            (\result ->
+                hivPrescribedMedicationFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVPrescribedMedication" |> fail)
+            )
 
 
 decodeHIVReferral : Decoder HIVReferral

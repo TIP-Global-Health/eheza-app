@@ -385,12 +385,10 @@ viewMedicationContent language currentDate assembled data =
         viewForm =
             case activeTask of
                 Just TaskPrescribedMedication ->
-                    -- @todo
-                    -- getMeasurementValueFunc measurements.medication
-                    --     |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
-                    --     |> viewPrescribedMedicationForm language currentDate
-                    --     |> List.singleton
-                    []
+                    getMeasurementValueFunc measurements.medication
+                        |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+                        |> viewPrescribedMedicationForm language currentDate
+                        |> List.singleton
 
                 Just TaskTreatmentReview ->
                     getMeasurementValueFunc measurements.treatmentReview
@@ -456,27 +454,20 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
-
---
---
--- viewPrescribedMedicationForm : Language -> NominalDate -> PrescribedMedicationForm -> Html Msg
--- viewPrescribedMedicationForm language currentDate form =
---     div [ class "ui form prescribed-medication" ]
---         [ viewQuestionLabel language Translate.HIVPrescribedMedicationsQuestion
---         , viewCheckBoxMultipleSelectInput language
---             [ MedicationRHZE
---             , MedicationRH
---             , MedicationOther
---             ]
---             []
---             (Maybe.withDefault [] form.medications)
---             Nothing
---             SetPrescribedMedication
---             Translate.HIVPrescribedMedication
---         ]
---
---
---
+viewPrescribedMedicationForm : Language -> NominalDate -> PrescribedMedicationForm -> Html Msg
+viewPrescribedMedicationForm language currentDate form =
+    div [ class "ui form prescribed-medication" ]
+        [ viewQuestionLabel language Translate.HIVPrescribedMedicationsQuestion
+        , viewCheckBoxSelectInput language
+            [ HIVMedicationOption1
+            , HIVMedicationOption2
+            , HIVMedicationOption3
+            ]
+            []
+            form.medications
+            SetPrescribedMedication
+            Translate.HIVPrescribedMedication
+        ]
 
 
 viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg

@@ -197,11 +197,7 @@ update currentDate id db msg model =
                     medicationForm
 
                 updatedForm =
-                    setMultiSelectInputValue .medications
-                        (\medications -> { form | medications = medications, medicationsDirty = True })
-                        NoHIVPrescribedMedications
-                        medication
-                        form
+                    { form | medications = Just medication }
 
                 updatedData =
                     model.medicationData
@@ -214,6 +210,9 @@ update currentDate id db msg model =
 
         SavePrescribedMedication personId saved nextTask ->
             let
+                _ =
+                    Debug.log "" saved
+
                 measurementId =
                     Maybe.map Tuple.first saved
 

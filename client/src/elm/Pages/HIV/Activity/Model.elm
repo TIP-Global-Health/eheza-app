@@ -119,15 +119,13 @@ emptyMedicationData =
 
 
 type alias PrescribedMedicationForm =
-    { medications : Maybe (List HIVPrescribedMedication)
-    , medicationsDirty : Bool
+    { medications : Maybe HIVPrescribedMedication
     }
 
 
 emptyPrescribedMedicationForm : PrescribedMedicationForm
 emptyPrescribedMedicationForm =
     { medications = Nothing
-    , medicationsDirty = False
     }
 
 

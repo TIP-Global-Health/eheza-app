@@ -106,6 +106,7 @@ import Pages.Dashboard.Model as Dashboard
 import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
 import Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
+import Pages.HIV.Activity.Model
 import Pages.MessagingCenter.Model exposing (MessagingTab(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
@@ -740,10 +741,13 @@ type TranslationId
     | HistoryTask HistoryTask
     | HIV
     | HIVActivityTitle HIVActivity
+    | HIVMedicationTask Pages.HIV.Activity.Model.MedicationTask
     | HIVPCRResult HIVPCRResult
     | HIVPositiveDateCorrectQuestion NominalDate
     | HIVPositiveDiagnosedQuestion
     | HIVPositiveTestDateQuestion
+    | HIVPrescribedMedication HIVPrescribedMedication
+    | HIVPrescribedMedicationsQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | HIVTreatmentSign HIVTreatmentSign
@@ -1219,6 +1223,7 @@ type TranslationId
     | PrenatalNCDProgramHeaderSuffix
     | PrenatalNCDProgramInstructions
     | PrenatalNextStepsTask Bool Pages.Prenatal.Activity.Types.NextStepsTask
+    | PrescribedMedication
     | OutsideCareSignQuestion OutsideCareSign
     | OutsideCareMedicationLabel OutsideCareMedication
     | OutsideCareMedicationDosage OutsideCareMedication
@@ -6636,6 +6641,14 @@ translationSet trans =
                 Backend.HIVActivity.Model.NextSteps ->
                     translationSet NextSteps
 
+        HIVMedicationTask task ->
+            case task of
+                Pages.HIV.Activity.Model.TaskPrescribedMedication ->
+                    translationSet PrescribedMedication
+
+                Pages.HIV.Activity.Model.TaskTreatmentReview ->
+                    translationSet TreatmentReview
+
         HIVPCRResult result ->
             case result of
                 ResultSuppressedViralLoad ->
@@ -6665,6 +6678,36 @@ translationSet trans =
         HIVPositiveTestDateQuestion ->
             { english = "What was the positive test date"
             , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HIVPrescribedMedication medication ->
+            case medication of
+                HIVMedicationOption1 ->
+                    { english = "TDF 300mg / 3TC 300mg / DTG 50mg (TLD) - 1 tablet per day"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationOption2 ->
+                    { english = "AZT 300mg/3TC 150mg + DTG 50mg-1 tablet per day"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationOption3 ->
+                    --@tod: same as option one. Change / Delete?
+                    { english = "TDF 300mg / 3TC 300mg / DTG 50mg (TLD) - 1 tablet per day"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoHIVPrescribedMedications ->
+                    translationSet EmptyString
+
+        HIVPrescribedMedicationsQuestion ->
+            { english = "What are the medications that were prescribed"
+            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
             , kirundi = Nothing
             }
 
@@ -15412,6 +15455,12 @@ translationSet trans =
                     , kirundi = Just "Rindira"
                     }
 
+        PrescribedMedication ->
+            { english = "Prescribed Medication"
+            , kinyarwanda = Just "Imiti yatanzwe"
+            , kirundi = Nothing
+            }
+
         PrenatalRecurrentNextStepsTask task ->
             case task of
                 Pages.Prenatal.RecurrentActivity.Types.NextStepsSendToHC ->
@@ -21287,10 +21336,7 @@ translationSet trans =
         TuberculosisMedicationTask task ->
             case task of
                 Pages.Tuberculosis.Activity.Model.TaskPrescribedMedication ->
-                    { english = "Prescribed Medication"
-                    , kinyarwanda = Just "Imiti yatanzwe"
-                    , kirundi = Nothing
-                    }
+                    translationSet PrescribedMedication
 
                 Pages.Tuberculosis.Activity.Model.TaskDOT ->
                     { english = "DOT"
