@@ -6690,7 +6690,7 @@ translationSet trans =
                     }
 
                 HIVMedicationOption2 ->
-                    { english = "AZT 300mg/3TC 150mg + DTG 50mg - 1 tablet per day"
+                    { english = "AZT 300mg / 3TC 150mg + DTG 50mg - 1 tablet per day"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
