@@ -6690,14 +6690,13 @@ translationSet trans =
                     }
 
                 HIVMedicationOption2 ->
-                    { english = "AZT 300mg/3TC 150mg + DTG 50mg-1 tablet per day"
+                    { english = "AZT 300mg/3TC 150mg + DTG 50mg - 1 tablet per day"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
                 HIVMedicationOption3 ->
-                    --@tod: same as option one. Change / Delete?
-                    { english = "TDF 300mg / 3TC 300mg / DTG 50mg (TLD) - 1 tablet per day"
+                    { english = "TDF 300mg / 3TC 300mg / EFV (600 or 400 mg) - 1 tablet per day bedtime"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
