@@ -201,22 +201,20 @@ adverseEventReported measurements =
 
 symptomReported : HIVMeasurements -> Bool
 symptomReported measurements =
-    -- @todo
-    --     getMeasurementValueFunc measurements.symptomReview
-    --         |> Maybe.map
-    --             (\value ->
-    --                 case EverySet.toList value of
-    --                     [] ->
-    --                         False
-    --
-    --                     [ NoHIVSymptoms ] ->
-    --                         False
-    --
-    --                     _ ->
-    --                         True
-    --             )
-    --         |> Maybe.withDefault False
-    False
+    getMeasurementValueFunc measurements.symptomReview
+        |> Maybe.map
+            (\value ->
+                case EverySet.toList value of
+                    [] ->
+                        False
+
+                    [ NoHIVSymptoms ] ->
+                        False
+
+                    _ ->
+                        True
+            )
+        |> Maybe.withDefault False
 
 
 nextStepsTaskCompleted : AssembledData -> NextStepsTask -> Bool
