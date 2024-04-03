@@ -6,7 +6,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (HIVOutcome(..))
-import Backend.Measurement.Model exposing (AdverseEvent(..), HIVPrescribedMedication(..))
+import Backend.Measurement.Model exposing (AdverseEvent(..), HIVPrescribedMedication(..), HIVSymptom(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Date
@@ -49,6 +49,9 @@ update currentDate id db msg model =
 
         treatmentReviewForm =
             resolveFormWithDefaults .treatmentReview ongoingTreatmentReviewFormWithDefault model.medicationData.treatmentReviewForm
+
+        symptomReviewForm =
+            resolveFormWithDefaults .symptomReview symptomReviewFormWithDefault model.symptomReviewData.form
 
         generateMedicationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveMedicationTask task ]) nextTask
@@ -210,9 +213,6 @@ update currentDate id db msg model =
 
         SavePrescribedMedication personId saved nextTask ->
             let
-                _ =
-                    Debug.log "" saved
-
                 measurementId =
                     Maybe.map Tuple.first saved
 
@@ -335,48 +335,55 @@ update currentDate id db msg model =
             )
                 |> sequenceExtra (update currentDate id db) extraMsgs
 
+        SetSymptom symptom ->
+            let
+                form =
+                    symptomReviewForm
+
+                updatedForm =
+                    setMultiSelectInputValue .symptoms
+                        (\symptoms -> { form | symptoms = symptoms, symptomsDirty = True })
+                        NoHIVSymptoms
+                        symptom
+                        form
+
+                updatedData =
+                    model.symptomReviewData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | symptomReviewData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSymptomReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.symptomReviewData.form
+                        |> toSymptomReviewValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.HIVEncounter.Model.SaveSymptomReview personId measurementId value
+                                    |> Backend.Model.MsgHIVEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| HIVEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
 
 
---
--- SetSymptomReviewBoolInput formUpdateFunc value ->
---     let
---         updatedForm =
---             formUpdateFunc value model.symptomReviewData.form
---
---         updatedData =
---             model.symptomReviewData
---                 |> (\data -> { data | form = updatedForm })
---     in
---     ( { model | symptomReviewData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SaveSymptomReview personId saved ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         appMsgs =
---             model.symptomReviewData.form
---                 |> toSymptomReviewValueWithDefault measurement
---                 |> unwrap
---                     []
---                     (\value ->
---                         [ Backend.HIVEncounter.Model.SaveSymptomReview personId measurementId value
---                             |> Backend.Model.MsgHIVEncounter id
---                             |> App.Model.MsgIndexedDb
---                         , App.Model.SetActivePage <| UserPage <| HIVEncounterPage id
---                         ]
---                     )
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
+
 --
 -- SetActiveNextStepsTask task ->
 --     let

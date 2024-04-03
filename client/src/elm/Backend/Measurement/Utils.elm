@@ -4291,5 +4291,8 @@ hivSymptomFromString symptom =
         "vomiting" ->
             Just HIVSymptomVomiting
 
+        "none" ->
+            Just NoHIVSymptoms
+
         _ ->
             Nothing

@@ -31,8 +31,8 @@ type alias Model =
     , saveDiagnostics : WebData ()
     , savePrescribedMedication : WebData ()
     , saveTreatmentReview : WebData ()
+    , saveSymptomReview : WebData ()
 
-    -- , saveSymptomReview : WebData ()
     -- , saveReferral : WebData ()
     -- , saveHealthEducation : WebData ()
     -- , saveFollowUp : WebData ()
@@ -45,8 +45,8 @@ emptyModel =
     , saveDiagnostics = NotAsked
     , savePrescribedMedication = NotAsked
     , saveTreatmentReview = NotAsked
+    , saveSymptomReview = NotAsked
 
-    -- , saveSymptomReview = NotAsked
     -- , saveReferral = NotAsked
     -- , saveHealthEducation = NotAsked
     -- , saveFollowUp = NotAsked
@@ -62,11 +62,11 @@ type Msg
     | HandleSavedPrescribedMedication (WebData ())
     | SaveTreatmentReview PersonId (Maybe HIVTreatmentReviewId) TreatmentOngoingValue
     | HandleSavedTreatmentReview (WebData ())
+    | SaveSymptomReview PersonId (Maybe HIVSymptomReviewId) HIVSymptomReviewValue
+    | HandleSavedSymptomReview (WebData ())
 
 
 
--- | SaveSymptomReview PersonId (Maybe HIVSymptomReviewId) HIVSymptomReviewValue
--- | HandleSavedSymptomReview (WebData ())
 -- | SaveReferral PersonId (Maybe HIVReferralId) SendToHCValue
 -- | HandleSavedReferral (WebData ())
 -- | SaveHealthEducation PersonId (Maybe HIVHealthEducationId) HIVHealthEducationValue

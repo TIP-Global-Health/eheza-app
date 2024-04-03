@@ -39,37 +39,6 @@ type alias DiagnosticsData =
     }
 
 
-
---
--- type alias PregnancySummaryValue =
---     { expectedDateConcluded : NominalDate
---     , deliveryComplications : EverySet DeliveryComplication
---     , signs : EverySet PregnancySummarySign
---     , apgarOneMin : Maybe Float
---     , apgarFiveMin : Maybe Float
---     , birthWeight : Maybe WeightInGrm
---     , birthLength : Maybe HeightInCm
---     , birthDefects : EverySet BirthDefect
---     }
---
--- type alias PregnancySummaryForm =
---     { expectedDateConcluded : Maybe Date
---     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
---     , deliveryComplicationsPresent : Maybe Bool
---     , deliveryComplications : Maybe (List DeliveryComplication)
---     , apgarScoresAvailable : Maybe Bool
---     , apgarOneMin : Maybe Float
---     , apgarFiveMin : Maybe Float
---     , apgarDirty : Bool
---     , birthWeight : Maybe WeightInGrm
---     , birthLengthAvailable : Maybe Bool
---     , birthLength : Maybe HeightInCm
---     , birthLengthDirty : Bool
---     , birthDefectsPresent : Maybe Bool
---     , birthDefects : Maybe (List BirthDefect)
---     }
-
-
 emptyDiagnosticsData : DiagnosticsData
 emptyDiagnosticsData =
     { form = emptyDiagnosticsForm
@@ -146,12 +115,16 @@ emptySymptomReviewData =
 
 
 type alias SymptomReviewForm =
-    {}
+    { symptoms : Maybe (List HIVSymptom)
+    , symptomsDirty : Bool
+    }
 
 
 emptySymptomReviewForm : SymptomReviewForm
 emptySymptomReviewForm =
-    {}
+    { symptoms = Nothing
+    , symptomsDirty = False
+    }
 
 
 type alias NextStepsData =
@@ -203,12 +176,12 @@ type Msg
     | SetTotalMissedDoses String
     | SetAdverseEvent AdverseEvent
     | SaveTreatmentReview PersonId (Maybe ( HIVTreatmentReviewId, HIVTreatmentReview )) (Maybe MedicationTask)
+      -- SYMPTOM REVIEW
+    | SetSymptom HIVSymptom
+    | SaveSymptomReview PersonId (Maybe ( HIVSymptomReviewId, HIVSymptomReview ))
 
 
 
---   -- SYMPTOM REVIEW
--- | SetSymptomReviewBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
--- | SaveSymptomReview PersonId (Maybe ( HIVSymptomReviewId, HIVSymptomReview ))
 --   -- NEXT STEPS
 -- | SetActiveNextStepsTask NextStepsTask
 -- | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool

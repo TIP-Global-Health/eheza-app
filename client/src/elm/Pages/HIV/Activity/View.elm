@@ -117,9 +117,9 @@ viewActivity language currentDate activity assembled db model =
         Medication ->
             viewMedicationContent language currentDate assembled model.medicationData
 
-        --
-        -- SymptomReview ->
-        --     viewSymptomReviewContent language currentDate assembled model.symptomReviewData
+        SymptomReview ->
+            viewSymptomReviewContent language currentDate assembled model.symptomReviewData
+
         --
         -- NextSteps ->
         --     viewNextStepsContent language currentDate assembled model.nextStepsData
@@ -486,84 +486,59 @@ viewTreatmentReviewForm language currentDate form =
         inputs
 
 
+viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
+viewSymptomReviewContent language currentDate assembled data =
+    let
+        form =
+            assembled.measurements.symptomReview
+                |> getMeasurementValueFunc
+                |> symptomReviewFormWithDefault data.form
 
---
---
--- viewSymptomReviewContent : Language -> NominalDate -> AssembledData -> SymptomReviewData -> List (Html Msg)
--- viewSymptomReviewContent language currentDate assembled data =
---     let
---         form =
---             assembled.measurements.symptomReview
---                 |> getMeasurementValueFunc
---                 |> symptomReviewFormWithDefault data.form
---
---         ( inputs, tasksCompleted, totalTasks ) =
---             ( [ viewQuestionLabel language <| Translate.HIVSymptomQuestion TuberculosisSymptomNightSweats
---               , viewBoolInput
---                     language
---                     form.nightSweats
---                     (SetSymptomReviewBoolInput
---                         (\value form_ ->
---                             { form_ | nightSweats = Just value }
---                         )
---                     )
---                     "night-sweats"
---                     Nothing
---               , viewQuestionLabel language <| Translate.HIVSymptomQuestion TuberculosisSymptomBloodInSputum
---               , viewBoolInput
---                     language
---                     form.bloodInSputum
---                     (SetSymptomReviewBoolInput
---                         (\value form_ ->
---                             { form_ | bloodInSputum = Just value }
---                         )
---                     )
---                     "blood-in-Sputum"
---                     Nothing
---               , viewQuestionLabel language <| Translate.HIVSymptomQuestion TuberculosisSymptomWeightLoss
---               , viewBoolInput
---                     language
---                     form.weightLoss
---                     (SetSymptomReviewBoolInput
---                         (\value form_ ->
---                             { form_ | weightLoss = Just value }
---                         )
---                     )
---                     "weight-loss"
---                     Nothing
---               , viewQuestionLabel language <| Translate.HIVSymptomQuestion TuberculosisSymptomSevereFatigue
---               , viewBoolInput
---                     language
---                     form.severeFatigue
---                     (SetSymptomReviewBoolInput
---                         (\value form_ ->
---                             { form_ | severeFatigue = Just value }
---                         )
---                     )
---                     "severe-fatigue"
---                     Nothing
---               ]
---             , taskCompleted form.nightSweats
---                 + taskCompleted form.bloodInSputum
---                 + taskCompleted form.weightLoss
---                 + taskCompleted form.severeFatigue
---             , 4
---             )
---     in
---     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
---     , div [ class "ui full segment" ]
---         [ div [ class "full content" ]
---             [ div [ class "ui form danger-signs" ] inputs
---             ]
---         , div [ class "actions" ]
---             [ saveButton language
---                 (tasksCompleted == totalTasks)
---                 (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
---             ]
---         ]
---     ]
---
---
+        ( inputs, tasksCompleted, totalTasks ) =
+            ( [ viewQuestionLabel language Translate.HIVSymptomReviewQuestion
+              , viewCheckBoxMultipleSelectInput language
+                    [ HIVSymptomFever
+                    , HIVSymptomFatigue
+                    , HIVSymptomSwollenLymphNodes
+                    , HIVSymptomSoreThroat
+                    , HIVSymptomRash
+                    , HIVSymptomMuscleJointPain
+                    , HIVSymptomHeadache
+                    , HIVSymptomSevereAbdominalPain
+                    ]
+                    [ HIVSymptomNightSweats
+                    , HIVSymptomDiarrhea
+                    , HIVSymptomWeightLoss
+                    , HIVSymptomCoughingUpBlood
+                    , HIVSymptomHairLoss
+                    , HIVSymptomMouthUlcers
+                    , HIVSymptomDifficultyBreathing
+                    , HIVSymptomVomiting
+                    ]
+                    (Maybe.withDefault [] form.symptoms)
+                    (Just NoHIVSymptoms)
+                    SetSymptom
+                    Translate.HIVSymptom
+              ]
+            , taskCompleted form.symptoms
+            , 1
+            )
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form symptom-review" ] inputs
+            ]
+        , div [ class "actions" ]
+            [ saveButton language
+                (tasksCompleted == totalTasks)
+                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
+            ]
+        ]
+    ]
+
+
+
 -- viewNextStepsContent : Language -> NominalDate -> AssembledData -> NextStepsData -> List (Html Msg)
 -- viewNextStepsContent language currentDate assembled data =
 --     let

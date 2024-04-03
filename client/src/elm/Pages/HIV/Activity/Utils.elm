@@ -392,36 +392,33 @@ toPrescribedMedicationValue form =
     form.medications
 
 
+toSymptomReviewValueWithDefault : Maybe HIVSymptomReviewValue -> SymptomReviewForm -> Maybe HIVSymptomReviewValue
+toSymptomReviewValueWithDefault saved form =
+    symptomReviewFormWithDefault form saved
+        |> toSymptomReviewValue
 
--- symptomReviewFormWithDefault : SymptomReviewForm -> Maybe HIVSymptomReviewValue -> SymptomReviewForm
--- symptomReviewFormWithDefault form saved =
---     saved
---         |> unwrap
---             form
---             (\value ->
---                 { nightSweats = or form.nightSweats (EverySet.member TuberculosisSymptomNightSweats value |> Just)
---                 , bloodInSputum = or form.bloodInSputum (EverySet.member TuberculosisSymptomBloodInSputum value |> Just)
---                 , weightLoss = or form.weightLoss (EverySet.member TuberculosisSymptomWeightLoss value |> Just)
---                 , severeFatigue = or form.severeFatigue (EverySet.member TuberculosisSymptomSevereFatigue value |> Just)
---                 }
---             )
---
---
--- toSymptomReviewValueWithDefault : Maybe HIVSymptomReviewValue -> SymptomReviewForm -> Maybe HIVSymptomReviewValue
--- toSymptomReviewValueWithDefault saved form =
---     symptomReviewFormWithDefault form saved
---         |> toSymptomReviewValue
---
---
--- toSymptomReviewValue : SymptomReviewForm -> Maybe HIVSymptomReviewValue
--- toSymptomReviewValue form =
---     [ ifNullableTrue TuberculosisSymptomNightSweats form.nightSweats
---     , ifNullableTrue TuberculosisSymptomBloodInSputum form.bloodInSputum
---     , ifNullableTrue TuberculosisSymptomWeightLoss form.weightLoss
---     , ifNullableTrue TuberculosisSymptomSevereFatigue form.severeFatigue
---     ]
---         |> Maybe.Extra.combine
---         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVSymptoms)
+
+symptomReviewFormWithDefault :
+    SymptomReviewForm
+    -> Maybe HIVSymptomReviewValue
+    -> SymptomReviewForm
+symptomReviewFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { symptoms = or form.symptoms (Just <| EverySet.toList value)
+                , symptomsDirty = form.symptomsDirty
+                }
+            )
+
+
+toSymptomReviewValue : SymptomReviewForm -> Maybe HIVSymptomReviewValue
+toSymptomReviewValue form =
+    Maybe.map EverySet.fromList form.symptoms
+
+
+
 --
 --
 -- toHealthEducationValueWithDefault : Maybe HIVHealthEducationValue -> HealthEducationForm -> Maybe HIVHealthEducationValue

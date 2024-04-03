@@ -78,21 +78,20 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveSymptomReview personId valueId value ->
+            ( { model | saveSymptomReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivSymptomReviewEndpoint HandleSavedSymptomReview
+            , []
+            )
+
+        HandleSavedSymptomReview data ->
+            ( { model | saveSymptomReview = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
 
 
---
--- SaveSymptomReview personId valueId value ->
---     ( { model | saveSymptomReview = Loading }
---     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivSymptomReviewEndpoint HandleSavedSymptomReview
---     , []
---     )
---
--- HandleSavedSymptomReview data ->
---     ( { model | saveSymptomReview = data }
---     , Cmd.none
---     , triggerRollbarOnFailure data
---     )
---
+
 -- SaveReferral personId valueId value ->
 --     ( { model | saveReferral = Loading }
 --     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivReferralEndpoint HandleSavedReferral

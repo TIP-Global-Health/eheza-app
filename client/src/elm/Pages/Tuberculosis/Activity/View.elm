@@ -436,7 +436,7 @@ viewSymptomReviewContent language currentDate assembled data =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form danger-signs" ] inputs
+            [ div [ class "ui form symptom-review" ] inputs
             ]
         , div [ class "actions" ]
             [ saveButton language
