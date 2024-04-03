@@ -91,7 +91,7 @@ view language currentTime nurseId nurse db model =
                                                 )
                                             -- We need to run the survey if
                                             -- it is the beginning of the Program(Baseline).
-                                            |> Maybe.withDefault (Date.diff Months programStartDate currentDate == 0)
+                                            |> Maybe.withDefault (Date.diff Days programStartDate currentDate == 0)
                                 in
                                 if runQuarterlySurvey then
                                     viewQuarterlySurvey language currentDate nurseId model.quarterlySurveyForm
