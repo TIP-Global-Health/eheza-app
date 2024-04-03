@@ -13,6 +13,8 @@ class HedleyRestfulHIVSymptomReview extends HedleyRestfulHIVActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [];
+  protected $multiFields = [
+    'field_hiv_symptoms',
+  ];
 
 }
