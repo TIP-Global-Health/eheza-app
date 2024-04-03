@@ -498,7 +498,7 @@ viewTreatmentReviewForm language currentDate form =
 --                 |> symptomReviewFormWithDefault data.form
 --
 --         ( inputs, tasksCompleted, totalTasks ) =
---             ( [ viewQuestionLabel language <| Translate.HIVSymptomQuestion SymptomNightSweats
+--             ( [ viewQuestionLabel language <| Translate.HIVSymptomQuestion TuberculosisSymptomNightSweats
 --               , viewBoolInput
 --                     language
 --                     form.nightSweats
@@ -509,7 +509,7 @@ viewTreatmentReviewForm language currentDate form =
 --                     )
 --                     "night-sweats"
 --                     Nothing
---               , viewQuestionLabel language <| Translate.HIVSymptomQuestion SymptomBloodInSputum
+--               , viewQuestionLabel language <| Translate.HIVSymptomQuestion TuberculosisSymptomBloodInSputum
 --               , viewBoolInput
 --                     language
 --                     form.bloodInSputum
@@ -520,7 +520,7 @@ viewTreatmentReviewForm language currentDate form =
 --                     )
 --                     "blood-in-Sputum"
 --                     Nothing
---               , viewQuestionLabel language <| Translate.HIVSymptomQuestion SymptomWeightLoss
+--               , viewQuestionLabel language <| Translate.HIVSymptomQuestion TuberculosisSymptomWeightLoss
 --               , viewBoolInput
 --                     language
 --                     form.weightLoss
@@ -531,7 +531,7 @@ viewTreatmentReviewForm language currentDate form =
 --                     )
 --                     "weight-loss"
 --                     Nothing
---               , viewQuestionLabel language <| Translate.HIVSymptomQuestion SymptomSevereFatigue
+--               , viewQuestionLabel language <| Translate.HIVSymptomQuestion TuberculosisSymptomSevereFatigue
 --               , viewBoolInput
 --                     language
 --                     form.severeFatigue

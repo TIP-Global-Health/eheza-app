@@ -21445,16 +21445,16 @@ translationSet trans =
 
         TuberculosisSymptomQuestion symptom ->
             case symptom of
-                SymptomNightSweats ->
+                TuberculosisSymptomNightSweats ->
                     translationSet NightSweatsQuestion
 
-                SymptomBloodInSputum ->
+                TuberculosisSymptomBloodInSputum ->
                     translationSet BloodInSputumQuestion
 
-                SymptomWeightLoss ->
+                TuberculosisSymptomWeightLoss ->
                     translationSet WeightLossQuestion
 
-                SymptomSevereFatigue ->
+                TuberculosisSymptomSevereFatigue ->
                     translationSet SevereFatigueQuestion
 
                 NoTuberculosisSymptoms ->

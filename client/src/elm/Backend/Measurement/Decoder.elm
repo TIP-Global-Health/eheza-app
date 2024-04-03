@@ -5653,19 +5653,19 @@ decodeHIVSymptomReview =
 
 decodeHIVSymptomReviewValue : Decoder HIVSymptomReviewValue
 decodeHIVSymptomReviewValue =
-    succeed HIVSymptomReviewValue
+    decodeEverySet decodeHIVSymptom
+        |> field "hiv_symptoms"
 
 
-
--- decodeHIVSymptom : Decoder HIVSymptom
--- decodeHIVSymptom =
---     string
---         |> andThen
---             (\result ->
---                 hivSymptomFromString result
---                     |> Maybe.map succeed
---                     |> Maybe.withDefault (result ++ " is not a recognized HIVSymptom" |> fail)
---             )
+decodeHIVSymptom : Decoder HIVSymptom
+decodeHIVSymptom =
+    string
+        |> andThen
+            (\result ->
+                hivSymptomFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVSymptom" |> fail)
+            )
 
 
 decodeHIVTreatmentReview : Decoder HIVTreatmentReview

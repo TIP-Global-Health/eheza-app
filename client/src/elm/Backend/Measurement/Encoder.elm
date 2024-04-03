@@ -4598,16 +4598,15 @@ encodeHIVSymptomReview =
 
 encodeHIVSymptomReviewValue : HIVSymptomReviewValue -> List ( String, Value )
 encodeHIVSymptomReviewValue value =
-    [ -- ( "hiv_symptoms", encodeEverySet encodeHIVSymptom value )
-      ( "deleted", bool False )
+    [ ( "hiv_symptoms", encodeEverySet encodeHIVSymptom value )
+    , ( "deleted", bool False )
     , ( "type", string "hiv_symptom_review" )
     ]
 
 
-
--- encodeHIVSymptom : HIVSymptom -> Value
--- encodeHIVSymptom =
---     hivSymptomToString >> string
+encodeHIVSymptom : HIVSymptom -> Value
+encodeHIVSymptom =
+    hivSymptomToString >> string
 
 
 encodeHIVTreatmentReview : HIVTreatmentReview -> List ( String, Value )
