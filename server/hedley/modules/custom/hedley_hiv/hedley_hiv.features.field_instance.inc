@@ -1953,6 +1953,43 @@ function hedley_hiv_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-hiv_symptom_review-field_hiv_symptoms'.
+  $field_instances['node-hiv_symptom_review-field_hiv_symptoms'] = array(
+    'bundle' => 'hiv_symptom_review',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hiv_symptoms',
+    'label' => 'HIV Symptoms',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-hiv_symptom_review-field_nurse'.
   $field_instances['node-hiv_symptom_review-field_nurse'] = array(
     'bundle' => 'hiv_symptom_review',
@@ -2564,6 +2601,7 @@ function hedley_hiv_field_default_field_instances() {
   t('Follow up options');
   t('HIV Diagnosis	Signs');
   t('HIV Encounter');
+  t('HIV Symptoms');
   t('Individual Participant');
   t('Missed doses');
   t('Nurse');
