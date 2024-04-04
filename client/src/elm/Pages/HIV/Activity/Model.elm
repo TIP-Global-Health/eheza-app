@@ -145,12 +145,20 @@ emptyNextStepsData =
 
 
 type alias HealthEducationForm =
-    {}
+    { positiveResult : Maybe Bool
+    , saferSexPractices : Maybe Bool
+    , encouragedPartnerTesting : Maybe Bool
+    , familyPlanningOptions : Maybe Bool
+    }
 
 
 emptyHealthEducationForm : HealthEducationForm
 emptyHealthEducationForm =
-    {}
+    { positiveResult = Nothing
+    , saferSexPractices = Nothing
+    , encouragedPartnerTesting = Nothing
+    , familyPlanningOptions = Nothing
+    }
 
 
 type NextStepsTask
