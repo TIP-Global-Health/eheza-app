@@ -748,6 +748,7 @@ type TranslationId
     | HIVActivityTitle HIVActivity
     | HIVHealthEducationQuestion HIVHealthEducationSign
     | HIVMedicationTask Pages.HIV.Activity.Model.MedicationTask
+    | HIVNextStepsTask Pages.HIV.Activity.Model.NextStepsTask
     | HIVPCRResult HIVPCRResult
     | HIVPositiveDateCorrectQuestion NominalDate
     | HIVPositiveDiagnosedQuestion
@@ -6682,6 +6683,17 @@ translationSet trans =
 
                 Pages.HIV.Activity.Model.TaskTreatmentReview ->
                     translationSet TreatmentReview
+
+        HIVNextStepsTask task ->
+            case task of
+                Pages.HIV.Activity.Model.TaskHealthEducation ->
+                    translationSet HealthEducation
+
+                Pages.HIV.Activity.Model.TaskReferral ->
+                    translationSet SendToHC
+
+                Pages.HIV.Activity.Model.TaskFollowUp ->
+                    translationSet FollowUp
 
         HIVPCRResult result ->
             case result of

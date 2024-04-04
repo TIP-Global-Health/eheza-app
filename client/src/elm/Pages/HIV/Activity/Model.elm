@@ -187,16 +187,13 @@ type Msg
       -- SYMPTOM REVIEW
     | SetSymptom HIVSymptom
     | SaveSymptomReview PersonId (Maybe ( HIVSymptomReviewId, HIVSymptomReview ))
-
-
-
---   -- NEXT STEPS
--- | SetActiveNextStepsTask NextStepsTask
--- | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
--- | SaveHealthEducation PersonId (Maybe ( HIVHealthEducationId, HIVHealthEducation )) (Maybe NextStepsTask)
--- | SetFollowUpOption FollowUpOption
--- | SaveFollowUp PersonId (Maybe ( HIVFollowUpId, HIVFollowUp )) (Maybe NextStepsTask)
--- | SetReferToHealthCenter Bool
--- | SetHandReferralForm Bool
--- | SetReasonForNonReferral ReasonForNonReferral
--- | SaveReferral PersonId (Maybe ( HIVReferralId, HIVReferral )) (Maybe NextStepsTask)
+      -- NEXT STEPS
+    | SetActiveNextStepsTask NextStepsTask
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( HIVHealthEducationId, HIVHealthEducation )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( HIVFollowUpId, HIVFollowUp )) (Maybe NextStepsTask)
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNonReferral ReasonForNonReferral
+    | SaveReferral PersonId (Maybe ( HIVReferralId, HIVReferral )) (Maybe NextStepsTask)
