@@ -13,6 +13,8 @@ class HedleyRestfulHIVHealthEducation extends HedleyRestfulHIVActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [];
+  protected $multiFields = [
+    'field_hiv_health_education_signs',
+  ];
 
 }
