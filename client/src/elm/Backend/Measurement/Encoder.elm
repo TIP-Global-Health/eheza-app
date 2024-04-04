@@ -4556,16 +4556,15 @@ encodeHIVHealthEducation =
 
 encodeHIVHealthEducationValue : HIVHealthEducationValue -> List ( String, Value )
 encodeHIVHealthEducationValue value =
-    [ -- ( "tb_health_education_signs", encodeEverySet encodeHIVHealthEducationSign value )
-      ( "deleted", bool False )
+    [ ( "hiv_health_education_signs", encodeEverySet encodeHIVHealthEducationSign value )
+    , ( "deleted", bool False )
     , ( "type", string "hiv_health_education" )
     ]
 
 
-
--- encodeHIVHealthEducationSign : HIVHealthEducationSign -> Value
--- encodeHIVHealthEducationSign =
---     hivHealthEducationSignToString >> string
+encodeHIVHealthEducationSign : HIVHealthEducationSign -> Value
+encodeHIVHealthEducationSign =
+    hivHealthEducationSignToString >> string
 
 
 encodeHIVMedication : HIVMedication -> List ( String, Value )

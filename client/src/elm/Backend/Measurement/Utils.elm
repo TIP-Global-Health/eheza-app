@@ -4296,3 +4296,44 @@ hivSymptomFromString symptom =
 
         _ ->
             Nothing
+
+
+hivHealthEducationSignToString : HIVHealthEducationSign -> String
+hivHealthEducationSignToString diagnosis =
+    case diagnosis of
+        EducationPositiveResult ->
+            "positive-result"
+
+        EducationSaferSexPractices ->
+            "safer-sex-practices"
+
+        EducationEncouragedPartnerTesting ->
+            "encouraged-partner-testing"
+
+        EducationFamilyPlanningOptions ->
+            "family-planning-options"
+
+        NoHIVHealthEducationSigns ->
+            "none"
+
+
+hivHealthEducationSignFromString : String -> Maybe HIVHealthEducationSign
+hivHealthEducationSignFromString diagnosis =
+    case diagnosis of
+        "positive-result" ->
+            Just EducationPositiveResult
+
+        "safer-sex-practices" ->
+            Just EducationSaferSexPractices
+
+        "encouraged-partner-testing" ->
+            Just EducationEncouragedPartnerTesting
+
+        "family-planning-options" ->
+            Just EducationFamilyPlanningOptions
+
+        "none" ->
+            Just NoHIVHealthEducationSigns
+
+        _ ->
+            Nothing

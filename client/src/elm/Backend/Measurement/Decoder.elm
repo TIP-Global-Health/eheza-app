@@ -5617,7 +5617,19 @@ decodeHIVHealthEducation =
 
 decodeHIVHealthEducationValue : Decoder HIVHealthEducationValue
 decodeHIVHealthEducationValue =
-    succeed HIVHealthEducationValue
+    decodeEverySet decodeHIVHealthEducationSign
+        |> field "hiv_health_education_signs"
+
+
+decodeHIVHealthEducationSign : Decoder HIVHealthEducationSign
+decodeHIVHealthEducationSign =
+    string
+        |> andThen
+            (\result ->
+                hivHealthEducationSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVHealthEducationSign" |> fail)
+            )
 
 
 decodeHIVMedication : Decoder HIVMedication
