@@ -451,6 +451,11 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
         ( extraClass, ( head, body ) ) =
             case message.category of
+                ResilienceCategoryGuide ->
+                    ( "guide"
+                    , viewGuideMessage language nurse
+                    )
+
                 ResilienceCategoryIntroduction ->
                     ( "introduction"
                     , viewIntroductionMessage language nurse message.order
@@ -555,6 +560,14 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             ]
             body
         ]
+
+
+viewGuideMessage : Language -> Nurse -> ( List (Html Msg), List (Html Msg) )
+viewGuideMessage language nurse =
+    -- TODO
+    ( []
+    , []
+    )
 
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )

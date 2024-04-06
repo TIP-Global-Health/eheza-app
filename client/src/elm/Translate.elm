@@ -17757,6 +17757,12 @@ translationSet trans =
 
         ResilienceCategory category ->
             case category of
+                ResilienceCategoryGuide ->
+                    { english = "Guide"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 ResilienceCategoryIntroduction ->
                     { english = "Introduction"
                     , kinyarwanda = Nothing
