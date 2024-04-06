@@ -10058,6 +10058,12 @@ translationSet trans =
 
         MessagingTab tab ->
             case tab of
+                TabGuide ->
+                    { english = "Guide"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 TabUnread ->
                     translationSet (ReadToggle True)
 

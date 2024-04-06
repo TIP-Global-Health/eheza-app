@@ -351,6 +351,9 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                         |> List.map viewMessage
             in
             case model.activeTab of
+                TabGuide ->
+                    []
+
                 TabUnread ->
                     List.map viewMessage unread
 
@@ -388,7 +391,8 @@ viewTabs : Language -> Model -> Html Msg
 viewTabs language model =
     let
         allTabs =
-            [ TabUnread
+            [ TabGuide
+            , TabUnread
             , TabFavorites
             , TabGrowth
             , TabConnecting

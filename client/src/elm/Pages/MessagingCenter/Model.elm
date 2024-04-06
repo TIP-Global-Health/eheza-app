@@ -42,7 +42,8 @@ emptyModel =
 
 
 type MessagingTab
-    = TabUnread
+    = TabGuide
+    | TabUnread
     | TabFavorites
     | TabGrowth
     | TabConnecting
