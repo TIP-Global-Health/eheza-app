@@ -1023,6 +1023,22 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
         break;
 
+    case 'IndexDbQueryGetShardsEntityByUuid':
+      (async () => {
+
+        let result = await dbSync
+            .shards
+            .where('uuid')
+            .equals(data)
+            .limit(1)
+            .toArray();
+
+        if (result[0]) {
+          return sendIndexedDbFetchResult(queryType, JSON.stringify(result[0]));
+        }
+      })();
+        break;
+
     default:
       throw queryType + ' is not a known Query type for `askFromIndexDb`';
   }

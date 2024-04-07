@@ -12,7 +12,8 @@ import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
 import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
-import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
+import Http exposing (Error(..))
+import HttpBuilder exposing (..)
 import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
@@ -895,6 +896,20 @@ update currentDate currentTime activePage dbVersion device msg model =
                 noError
                 []
 
+        BackendReportIncidentDetails details ->
+            let
+                cmd =
+                    HttpBuilder.post (device.backendUrl ++ "/api/report-incident-details")
+                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIncidentDetails details)
+                        |> HttpBuilder.send (always NoOp)
+            in
+            SubModelReturn
+                model
+                cmd
+                noError
+                []
+
         BackendReportSyncIncident incidentType ->
             let
                 cmd =
@@ -1250,12 +1265,38 @@ update currentDate currentTime activePage dbVersion device msg model =
                                                 ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
                                             )
                                         |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
+
+                                incidentDetailsMsg =
+                                    case error of
+                                        Http.BadStatus response ->
+                                            case Json.Decode.decodeString Utils.WebData.decodeDrupalError response.body of
+                                                Ok decoded ->
+                                                    if String.startsWith "Could not find UUID" decoded.title then
+                                                        let
+                                                            uuidAsString =
+                                                                String.dropLeft 21 decoded.title
+                                                        in
+                                                        [ QueryIndexDb <| IndexDbQueryGetShardsEntityByUuid uuidAsString ]
+
+                                                    else
+                                                        []
+
+                                                Err _ ->
+                                                    []
+
+                                        _ ->
+                                            []
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                (SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities }
+                                )
                                 setSyncInfoAurhoritiesCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadAuthorityHandle")
                                 []
+                                |> sequenceSubModelReturn
+                                    (update currentDate currentTime activePage dbVersion device)
+                                    incidentDetailsMsg
 
                         RemoteData.Success _ ->
                             let
@@ -1321,8 +1362,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 subModelReturn
                                     |> sequenceSubModelReturn
                                         (update currentDate currentTime activePage dbVersion device)
-                                        [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete
-                                        ]
+                                        [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete ]
 
                         _ ->
                             -- Satisfy the compiler.
@@ -1858,6 +1898,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                             { queryType = "IndexDbQueryGetTotalEntriesToUpload"
                             , data = Nothing
                             }
+
+                        IndexDbQueryGetShardsEntityByUuid uuidsAsString ->
+                            { queryType = "IndexDbQueryGetShardsEntityByUuid"
+                            , data = Just uuidsAsString
+                            }
             in
             SubModelReturn
                 model
@@ -1937,6 +1982,16 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 dbVersion
                                 device
                                 (BackendReportState result)
+                                model
+
+                        IndexDbQueryGetShardsEntityByUuidResult result ->
+                            update
+                                currentDate
+                                currentTime
+                                activePage
+                                dbVersion
+                                device
+                                (BackendReportIncidentDetails result)
                                 model
 
                 Err error ->
