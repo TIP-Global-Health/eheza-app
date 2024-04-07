@@ -30,6 +30,7 @@ import SyncManager.Utils
         , backendGeneralEntityToRevision
         , getDownloadPhotosSpeedForSubscriptions
         , getSyncSpeedForSubscriptions
+        , resolveIncidentDetailsMsg
         , syncInfoAuthorityForPort
         , syncInfoGeneralForPort
         )
@@ -1267,25 +1268,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                         |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
 
                                 incidentDetailsMsg =
-                                    case error of
-                                        Http.BadStatus response ->
-                                            case Json.Decode.decodeString Utils.WebData.decodeDrupalError response.body of
-                                                Ok decoded ->
-                                                    if String.startsWith "Could not find UUID" decoded.title then
-                                                        let
-                                                            uuidAsString =
-                                                                String.dropLeft 21 decoded.title
-                                                        in
-                                                        [ QueryIndexDb <| IndexDbQueryGetShardsEntityByUuid uuidAsString ]
-
-                                                    else
-                                                        []
-
-                                                Err _ ->
-                                                    []
-
-                                        _ ->
-                                            []
+                                    resolveIncidentDetailsMsg error
                             in
                             SubModelReturn
                                 (SyncManager.Utils.determineSyncStatus activePage
@@ -1461,12 +1444,18 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                                 setSyncInfoGeneralCmd =
                                     sendSyncInfoGeneralCmd syncInfoGeneral
+
+                                incidentDetailsMsg =
+                                    resolveIncidentDetailsMsg error
                             in
                             SubModelReturn
                                 (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
                                 setSyncInfoGeneralCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadGeneralHandle")
                                 []
+                                |> sequenceSubModelReturn
+                                    (update currentDate currentTime activePage dbVersion device)
+                                    incidentDetailsMsg
 
                         RemoteData.Success _ ->
                             let
@@ -1606,12 +1595,20 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                                 setSyncInfoGeneralCmd =
                                     sendSyncInfoGeneralCmd syncInfoGeneral
+
+                                incidentDetailsMsg =
+                                    resolveIncidentDetailsMsg error
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                (SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral }
+                                )
                                 setSyncInfoGeneralCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadWhatsAppHandle")
                                 []
+                                |> sequenceSubModelReturn
+                                    (update currentDate currentTime activePage dbVersion device)
+                                    incidentDetailsMsg
 
                         RemoteData.Success _ ->
                             let
@@ -2072,7 +2069,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 syncSpeed =
                     Editable.value model.syncSpeed
 
-                -- Safe guard against to0 low values.
+                -- Safe guard against too low values.
                 syncSpeedUpdated =
                     { syncSpeed
                         | idle =

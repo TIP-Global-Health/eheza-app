@@ -30,6 +30,8 @@ import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
 import EverySet exposing (EverySet)
+import Http
+import Json.Decode
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import Maybe.Extra
@@ -1077,6 +1079,9 @@ getSyncSpeedForSubscriptions model =
                 toFloat syncSpeed.idle
 
         SyncUploadGeneral record ->
+            checkWebData record.backendRemoteData
+
+        SyncUploadWhatsApp record ->
             checkWebData record.backendRemoteData
 
         SyncUploadAuthority record ->
@@ -2537,6 +2542,29 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildWeight identifier ->
             WellChildWeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+
+resolveIncidentDetailsMsg : Http.Error -> List Msg
+resolveIncidentDetailsMsg error =
+    case error of
+        Http.BadStatus response ->
+            case Json.Decode.decodeString Utils.WebData.decodeDrupalError response.body of
+                Ok decoded ->
+                    if String.startsWith "Could not find UUID" decoded.title then
+                        let
+                            uuidAsString =
+                                String.dropLeft 21 decoded.title
+                        in
+                        [ QueryIndexDb <| IndexDbQueryGetShardsEntityByUuid uuidAsString ]
+
+                    else
+                        []
+
+                Err _ ->
+                    []
+
+        _ ->
+            []
 
 
 fileUploadFailureThreshold : Int
