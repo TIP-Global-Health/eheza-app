@@ -234,16 +234,17 @@ nextStepsTasksCompletedFromTotal : HIVMeasurements -> NextStepsData -> NextSteps
 nextStepsTasksCompletedFromTotal measurements data task =
     case task of
         TaskHealthEducation ->
-            -- @todo
-            -- let
-            --     form =
-            --         getMeasurementValueFunc measurements.healthEducation
-            --             |> healthEducationFormWithDefault data.healthEducationForm
-            -- in
-            -- ( taskCompleted form.followUpTesting
-            -- , 1
-            -- )
-            ( 0, 1 )
+            let
+                form =
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            ( taskCompleted form.positiveResult
+                + taskCompleted form.saferSexPractices
+                + taskCompleted form.encouragedPartnerTesting
+                + taskCompleted form.familyPlanningOptions
+            , 4
+            )
 
         TaskFollowUp ->
             let
