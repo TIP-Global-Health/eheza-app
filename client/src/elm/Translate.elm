@@ -1346,6 +1346,14 @@ type TranslationId
     | ResilienceMessageGrowth4Title
     | ResilienceMessageGrowth4Paragraph1
     | ResilienceMessageGrowth4Paragraph2
+    | ResilienceMessageGuideTitle1
+    | ResilienceMessageGuide1Bullet1
+    | ResilienceMessageGuide1Bullet2
+    | ResilienceMessageGuideTitle2
+    | ResilienceMessageGuideTitle3
+    | ResilienceMessageGuideTitle4
+    | ResilienceMessageGuideTitle5
+    | ResilienceMessageGuideTitle6
     | ResilienceMessageStressManagement1Title
     | ResilienceMessageStressManagement1Paragraph1
     | ResilienceMessageStressManagement1Paragraph2
@@ -18090,6 +18098,54 @@ translationSet trans =
         ResilienceMessageGrowth4Paragraph2 ->
             { english = "Remember: A goal without a plan is just a wish."
             , kinyarwanda = Just "Fata umwanya wo kongera kureba mu ikayi y’imihigo."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuideTitle1 ->
+            { english = "a. Entering e-Heza Digital Data Solution"
+            , kinyarwanda = Just "a. Kwinjira muri e-Heza"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide1Bullet1 ->
+            { english = "i. Input your pin code"
+            , kinyarwanda = Just "   i. Shyiramo kode (ariyo Pin)"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide1Bullet2 ->
+            { english = "ii. Proceed to the \"Well-being\" icon"
+            , kinyarwanda = Just "ii. Komeza kuri \"Gubwa neza\""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuideTitle2 ->
+            { english = "b. Upon entering, find the \"Resilience Messages\" window"
+            , kinyarwanda = Just "b. Iyo winjiye, ukande ku idirishya ry’“Ubutumwa bwo Kwifasha kumererwa neza”"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuideTitle3 ->
+            { english = "c. Program Overview"
+            , kinyarwanda = Just "c. Ibice bigize iyi porogaramu"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuideTitle4 ->
+            { english = "d. Find Unread Section:  Click on \"Unread\" "
+            , kinyarwanda = Just "d. Kubona Ubutumwa utarasoma: Kanda ahanditse \"Umutumwa utarasoma\""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuideTitle5 ->
+            { english = "e. Saving your Favourite Messages: (If a message resonates positively with you, you can designate it as a favourite)"
+            , kinyarwanda = Just "e. Kubika Ubutumwa wakunze: (Niba hari ubutumwa wasomye ukabwishimira/ukabukunda, ushobora kubushyira muri iki gice) Uko bikorwa"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuideTitle6 ->
+            { english = "f. Scheduling Reminders: (if you lack time to read a message immediately, schedule a reminder)"
+            , kinyarwanda = Just "f. Gusaba Kwibutswa gusoma ubutumwa: (Niba ubuze umwanya wo gusoma ubutumwa, ushobora kubuhitamo ukaba wabusoma igihe uboneye umwanya)"
             , kirundi = Nothing
             }
 

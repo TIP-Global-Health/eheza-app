@@ -346,13 +346,16 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                 viewMessage =
                     viewResilienceMessage language nurseId nurse model
 
+                viewGuide =
+                    viewGuideMessage language nurse
+
                 viewFilteredByCategory category =
                     List.filter (Tuple.second >> .category >> (==) category) read
                         |> List.map viewMessage
             in
             case model.activeTab of
                 TabGuide ->
-                    []
+                    viewGuideMessage language nurse
 
                 TabUnread ->
                     List.map viewMessage unread
@@ -453,7 +456,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             case message.category of
                 ResilienceCategoryGuide ->
                     ( "guide"
-                    , viewGuideMessage language nurse
+                    , ( [], viewGuideMessage language nurse )
                     )
 
                 ResilienceCategoryIntroduction ->
@@ -562,12 +565,18 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         ]
 
 
-viewGuideMessage : Language -> Nurse -> ( List (Html Msg), List (Html Msg) )
+viewGuideMessage : Language -> Nurse -> List (Html Msg)
 viewGuideMessage language nurse =
-    -- TODO
-    ( []
-    , []
-    )
+    [ div [ class "ui report unstackable items" ]
+        [ div [ class "guide-message" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle1
+            , div []
+                [ text <| translate language Translate.ResilienceMessageGuide1Bullet1
+                , text <| translate language Translate.ResilienceMessageGuide1Bullet2
+                ]
+            ]
+        ]
+    ]
 
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
