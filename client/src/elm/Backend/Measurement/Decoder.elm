@@ -325,7 +325,7 @@ decodeHIVMeasurements : Decoder HIVMeasurements
 decodeHIVMeasurements =
     succeed HIVMeasurements
         |> optional "hiv_diagnostics" (decodeHead decodeHIVDiagnostics) Nothing
-        |> optional "hiv_followUp" (decodeHead decodeHIVFollowUp) Nothing
+        |> optional "hiv_follow_up" (decodeHead decodeHIVFollowUp) Nothing
         |> optional "hiv_health_education" (decodeHead decodeHIVHealthEducation) Nothing
         |> optional "hiv_medication" (decodeHead decodeHIVMedication) Nothing
         |> optional "hiv_referral" (decodeHead decodeHIVReferral) Nothing
