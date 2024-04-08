@@ -1232,11 +1232,9 @@ viewLabsEntry language isLabTech personName state label targetPage =
                             "this-week"
 
                         LabsEntryReadyForReview ->
-                            -- @todo: needs styling?
                             "this-week"
 
                         LabsEntryReviewed ->
-                            -- @todo: needs styling?
                             "this-week"
                    )
     in

@@ -7265,7 +7265,7 @@ translationSet trans =
                     translationSet ChildScorecard
 
                 HIVEncounter ->
-                    { english = "TB Management"
+                    { english = "HIV Management"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -23127,6 +23127,24 @@ translateActivePage page =
 
                 EducationSessionPage _ ->
                     { english = "Group Education"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVParticipantPage _ ->
+                    { english = "HIV Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVEncounterPage _ ->
+                    { english = "HIV Encounter"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVActivityPage _ _ ->
+                    { english = "HIV Activity"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

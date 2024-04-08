@@ -2967,6 +2967,13 @@ type alias TuberculosisTreatmentReview =
     TuberculosisMeasurement TreatmentOngoingValue
 
 
+type HIVPrescribedMedication
+    = MedicationOption1
+    | MedicationOption2
+    | MedicationOption3
+    | NoHIVPrescribedMedications
+
+
 
 -- Stock Management:
 
@@ -3344,6 +3351,10 @@ type alias TuberculosisMeasurements =
     , symptomReview : Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview )
     , treatmentReview : Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview )
     }
+
+
+type alias HIVMeasurements =
+    {}
 
 
 {-| A set of measurements that includes all required data for

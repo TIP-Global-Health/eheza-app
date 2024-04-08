@@ -19,6 +19,8 @@ import Backend.EducationSession.Model
 import Backend.EducationSession.Update
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.HIVEncounter.Model
+import Backend.HIVEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..), IndividualParticipantInitiator(..))
@@ -934,6 +936,62 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , []
                     )
 
+        FetchHIVEncountersForParticipant id ->
+            ( { model | hivEncountersByParticipant = Dict.insert id Loading model.hivEncountersByParticipant }
+            , sw.select hivEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHIVEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedHIVEncountersForParticipant id data ->
+            ( { model | hivEncountersByParticipant = Dict.insert id data model.hivEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVEncountersForParticipants ids ->
+            let
+                hivEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.hivEncountersByParticipant ids
+            in
+            ( { model | hivEncountersByParticipant = hivEncountersByParticipantUpdated }
+            , sw.select hivEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedHIVEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedHIVEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | hivEncountersByParticipant = Dict.union dictUpdated model.hivEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -1089,6 +1147,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
         HandleFetchedTuberculosisMeasurements id data ->
             ( { model | tuberculosisMeasurements = Dict.insert id data model.tuberculosisMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVMeasurements id ->
+            ( { model | hivMeasurements = Dict.insert id Loading model.hivMeasurements }
+            , sw.get hivMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHIVMeasurements id)
+            , []
+            )
+
+        HandleFetchedHIVMeasurements id data ->
+            ( { model | hivMeasurements = Dict.insert id data model.hivMeasurements }
             , Cmd.none
             , []
             )
@@ -1575,6 +1646,49 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                             Dict.map (\_ v -> RemoteData.Success v) dict
                     in
                     ( { model | tuberculosisEncounters = Dict.union dictUpdated model.tuberculosisEncounters }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchHIVEncounter id ->
+            ( { model | hivEncounters = Dict.insert id Loading model.hivEncounters }
+            , sw.get hivEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHIVEncounter id)
+            , []
+            )
+
+        HandleFetchedHIVEncounter id data ->
+            ( { model | hivEncounters = Dict.insert id data model.hivEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVEncounters ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    hivEncountersUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.hivEncounters ids
+                in
+                ( { model | hivEncounters = hivEncountersUpdated }
+                , sw.getMany hivEncounterEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedHIVEncounters)
+                , []
+                )
+
+        HandleFetchedHIVEncounters webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | hivEncounters = Dict.union dictUpdated model.hivEncounters }
                     , Cmd.none
                     , []
                     )
@@ -3583,6 +3697,24 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , appMsgs
             )
 
+        MsgHIVEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.hivEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.hivEncounterRequests
+                        |> Maybe.withDefault Backend.HIVEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.HIVEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | hivEncounterRequests = Dict.insert encounterId subModel model.hivEncounterRequests }
+            , Cmd.map (MsgHIVEncounter encounterId) subCmd
+            , appMsgs
+            )
+
         MsgEducationSession sessionId subMsg ->
             let
                 encounter =
@@ -3991,8 +4123,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                         ChildScoreboardParticipantPage personId
 
                                                     HIVEncounter ->
-                                                        --@todo
-                                                        IndividualEncounterTypesPage
+                                                        HIVParticipantPage personId
 
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.
@@ -4220,8 +4351,10 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                     ]
 
                                 HIVEncounter ->
-                                    --@todo
-                                    []
+                                    [ Backend.HIVEncounter.Model.emptyHIVEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostHIVEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
 
                                 HomeVisitEncounter ->
                                     [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
@@ -4513,6 +4646,34 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         |> RemoteData.withDefault []
             in
             ( { model | postTuberculosisEncounter = Dict.insert participantId data model.postTuberculosisEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostHIVEncounter hivEncounter ->
+            ( { model | postHIVEncounter = Dict.insert hivEncounter.participant Loading model.postHIVEncounter }
+            , sw.post hivEncounterEndpoint hivEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedHIVEncounter hivEncounter.participant)
+            , []
+            )
+
+        HandlePostedHIVEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( hivEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.HIVEncounterPage hivEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postHIVEncounter = Dict.insert participantId data model.postHIVEncounter }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
@@ -4997,6 +5158,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 (\measurements -> { measurements | heights = Dict.insert uuid data measurements.heights })
                 model
             , True
+            )
+
+        HIVEncounterRevision uuid data ->
+            let
+                hivEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.hivEncounters
+
+                hivEncountersByParticipant =
+                    Dict.remove data.participant model.hivEncountersByParticipant
+            in
+            ( { model
+                | hivEncounters = hivEncounters
+                , hivEncountersByParticipant = hivEncountersByParticipant
+              }
+            , recalc
             )
 
         HomeVisitEncounterRevision uuid data ->

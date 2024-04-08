@@ -24,6 +24,9 @@ import Pages.EducationSession.Fetch
 import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Fetch
 import Pages.GroupEncounterTypes.Fetch
+import Pages.HIV.Activity.Fetch
+import Pages.HIV.Encounter.Fetch
+import Pages.HIV.Participant.Fetch
 import Pages.HomeVisit.Activity.Fetch
 import Pages.HomeVisit.Encounter.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
@@ -237,6 +240,15 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
+            UserPage (HIVParticipantPage personId) ->
+                getLoggedInData model
+                    |> Maybe.map
+                        (\_ ->
+                            Pages.HIV.Participant.Fetch.fetch personId model.indexedDb
+                                |> List.map MsgIndexedDb
+                        )
+                    |> Maybe.withDefault []
+
             UserPage (IndividualEncounterParticipantsPage encounterType) ->
                 getLoggedInData model
                     |> Maybe.map
@@ -378,6 +390,14 @@ fetch model =
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
+
+            UserPage (HIVEncounterPage id) ->
+                Pages.HIV.Encounter.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
+            UserPage (HIVActivityPage id _) ->
+                Pages.HIV.Activity.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
 
             UserPage (NutritionProgressReportPage id) ->
                 Pages.Nutrition.ProgressReport.Fetch.fetch id model.indexedDb
