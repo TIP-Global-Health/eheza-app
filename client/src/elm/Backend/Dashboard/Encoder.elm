@@ -54,6 +54,7 @@ encodeDashboardStatsRaw stats =
     , encodeNutritionIndividualData stats.nutritionIndividualData
     , encodeNutritionGroupData stats.nutritionGroupData
     , encodeVillagesWithResidents stats.villagesWithResidents
+    , encodePatientsDetails stats.patientsDetails
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
@@ -133,9 +134,9 @@ encodeChildrenBeneficiariesStats stats =
     , ( "gender", encodeGender stats.gender )
     , ( "birth_date", encodeYYYYMMDD stats.birthDate )
     , ( "created", encodeYYYYMMDD stats.memberSince )
-    , ( "mother_id", int stats.motherIdentifier )
     , ( "graduation_date", encodeYYYYMMDD stats.graduationDate )
     ]
+        ++ encodeIfSet "mother_id" stats.motherIdentifier int
 
 
 encodeCompletedPrograms : List ParticipantStats -> ( String, Value )
@@ -165,9 +166,9 @@ encodeParticipantStats stats =
     [ ( "id", int stats.identifier )
     , ( "gender", encodeGender stats.gender )
     , ( "birth_date", encodeYYYYMMDD stats.birthDate )
-    , ( "mother_id", int stats.motherIdentifier )
     , ( "expected_date", encodeYYYYMMDD stats.expectedDate )
     ]
+        ++ encodeIfSet "mother_id" stats.motherIdentifier int
 
 
 encodeTotalEncountersData : TotalEncountersData -> ( String, Value )

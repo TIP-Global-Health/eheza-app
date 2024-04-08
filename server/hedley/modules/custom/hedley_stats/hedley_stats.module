@@ -3597,6 +3597,9 @@ function hedley_stats_add_patient_details($node, &$patients_details, $add_phone 
   $patients_details[$node->nid]['name'] = $node->title;
 
   if ($add_phone) {
-    $patients_details[$node->nid]['phone_number'] = empty($node->field_phone_number) ? '' : $node->field_phone_number[LANGUAGE_NONE][0]['value'];
+    $phone_number = empty($node->field_phone_number) ? '' : trim($node->field_phone_number[LANGUAGE_NONE][0]['value']);
+    if (!empty($phone_number)) {
+      $patients_details[$node->nid]['phone_number'] = $phone_number;
+    }
   }
 }

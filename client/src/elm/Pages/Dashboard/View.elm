@@ -2356,8 +2356,12 @@ viewModalTableRow patientsDetails rowData =
                 |> Maybe.withDefault ""
 
         ( motherName, phoneNumber ) =
-            Dict.get rowData.motherIdentifier patientsDetails
-                |> Maybe.map (\details -> ( details.name, details.phoneNumber ))
+            Maybe.andThen
+                (\motherIdentifier ->
+                    Dict.get motherIdentifier patientsDetails
+                        |> Maybe.map (\details -> ( details.name, details.phoneNumber ))
+                )
+                rowData.motherIdentifier
                 |> Maybe.withDefault ( "", Nothing )
     in
     tr []

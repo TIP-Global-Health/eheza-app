@@ -192,7 +192,7 @@ type alias ParticipantStats =
     { identifier : PersonIdentifier
     , gender : Gender
     , birthDate : NominalDate
-    , motherIdentifier : PersonIdentifier
+    , motherIdentifier : Maybe PersonIdentifier
     , expectedDate : NominalDate
     }
 

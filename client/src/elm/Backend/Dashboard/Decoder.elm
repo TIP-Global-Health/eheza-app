@@ -187,7 +187,7 @@ decodeChildrenBeneficiariesStats =
         |> required "gender" decodeGender
         |> required "birth_date" decodeYYYYMMDD
         |> required "created" decodeYYYYMMDD
-        |> optional "mother_id" decodeInt Nothing
+        |> optional "mother_id" (nullable decodeInt) Nothing
         |> required "graduation_date" decodeYYYYMMDD
 
 
@@ -197,7 +197,7 @@ decodeParticipantStats =
         |> required "id" decodeInt
         |> required "gender" decodeGender
         |> required "birth_date" decodeYYYYMMDD
-        |> required "mother_id" decodeInt
+        |> optional "mother_id" (nullable decodeInt) Nothing
         |> required "expected_date" decodeYYYYMMDD
 
 
