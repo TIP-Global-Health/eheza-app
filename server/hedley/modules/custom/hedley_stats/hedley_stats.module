@@ -535,6 +535,10 @@ function hedley_stats_clear_caches_for_health_center($nid, $cache_type_for_recal
     case HEDLEY_STATS_CHILD_SCOREBOARD:
       hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA, $nid);
       return;
+
+    case HEDLEY_STATS_GROUP_EDUCATION:
+      hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $nid);
+      return;
   }
 
   if ($cache_type_for_recalculation == HEDLEY_STATS_NUTRITION_INDIVIDUAL) {
