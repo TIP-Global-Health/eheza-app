@@ -56,6 +56,7 @@ define('HEDLEY_STATS_SYNC_SPV_DATA', 'sync_spv_data');
 define('HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA', 'sync_child_scoreboard_data');
 define('HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA', 'sync_nutrition_individual_data');
 define('HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA', 'sync_nutrition_group_data');
+define('HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA', 'sync_group_education_data');
 define('HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS', 'villages_with_residents');
 define('HEDLEY_STATS_SYNC_PATIENTS_DETAILS', 'patients_details');
 
@@ -641,6 +642,7 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_get_child_scorecard_data($health_center_id);
   hedley_stats_get_nutrition_individual_data($health_center_id);
   hedley_stats_get_nutrition_group_data($health_center_id);
+  hedley_stats_get_group_education_data($health_center_id, $patients_details);
 
   // Set (possibly altered) patients details in cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PATIENTS_DETAILS, $health_center_id, NULL, $patients_details);
@@ -758,6 +760,12 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   }
   $nutrition_group_data = $cache_data;
 
+  $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $health_center_id);
+  if ($cache_data === NULL) {
+    return [];
+  }
+  $group_education_data = $cache_data;
+
   $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PATIENTS_DETAILS, $health_center_id);
   $patients_details = $cache_data === NULL ? [] : $cache_data;
 
@@ -783,6 +791,7 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
     'child_scoreboard_data' => $child_scoreboard_data,
     'nutrition_individual_data' => $nutrition_individual_data,
     'nutrition_group_data' => $nutrition_group_data,
+    'group_education_data' => $group_education_data,
     'villages_with_residents' => $villages_with_residents,
     'patients_details' => $patients_details,
   ];
@@ -2131,6 +2140,87 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
 }
 
 /**
+ * Return Group Education data which is used to generate statistics.
+ *
+ * We get data of all education sessions that were ran during past 6 months.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ * @param array $patients_details
+ *   Patients Details data structure that will be edited.
+ *
+ * @return array
+ *   List of Education Sessions with topics and participants, by village.
+ *
+ * @throws Exception
+ */
+function hedley_stats_get_group_education_data($health_center_id, &$patients_details) {
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $health_center_id)) {
+    return $cache_data;
+  }
+
+  // Pull all Education Sessions over past 6 months, as dashboard presents
+  // data for past 6 months only.
+  $query = hedley_stats_get_base_query($health_center_id, 'education_session', HEDLEY_STATS_PERIOD_PAST_SIX_MONTHS);
+  // Resolve village UUID of the session.
+  $query->leftJoin('field_data_field_village_ref', 'vr', 'vr.entity_id = node.nid');
+  $query->leftJoin('field_data_field_uuid', 'uuid', 'uuid.entity_id = vr.field_village_ref_target_id');
+  $query->addField('uuid', 'field_uuid_value', 'village_uuid');
+  // Resolve education topics.
+  $query->leftJoin('field_data_field_education_topics', 'et', 'et.entity_id = node.nid');
+  $query->addField('et', 'field_education_topics_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT et.field_education_topics_value)", 'education_topics');
+  // Resolve participants.
+  $query->leftJoin('field_data_field_participating_patients', 'pp', 'pp.entity_id = node.nid');
+  $query->addField('pp', 'field_participating_patients_target_id');
+  $query->addExpression("GROUP_CONCAT(DISTINCT pp.field_participating_patients_target_id)", 'participating_patients');
+  $query->groupBy('node.nid');
+
+  $result = $query
+    ->execute()
+    ->fetchAll();
+  if (empty($result)) {
+    $result = [];
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $health_center_id, NULL, $result);
+    return $result;
+  }
+
+  $data = $patients_for_loading_details = [];
+  foreach ($result as $row) {
+    $participating_patients = explode(',', $row->participating_patients);
+
+    $data[$row->village_uuid][] = [
+      'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
+      'education_topics' => explode(',', $row->education_topics),
+      'participating_patients' => $participating_patients,
+    ];
+
+    // Resolve all patients we don't yet have details for.
+    foreach ($participating_patients as $patient_id) {
+      if (empty($patients_details[$patient_id])) {
+        $patients_for_loading_details[] = $patient_id;
+      }
+    }
+  }
+
+  // Load details for patients.
+  foreach (array_chunk($patients_for_loading_details, 500) as $ids) {
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      hedley_stats_add_patient_details($node, $patients_details);
+    }
+    // Free up memory.
+    drupal_static_reset();
+  }
+
+  // Store in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $health_center_id, NULL, $data);
+
+  return $data;
+}
+
+/**
  * Generates base query for Nutrition group data from single measurement type.
  *
  * Since statistics are generated for Nurse, we
@@ -3290,9 +3380,9 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period = FA
     'pmtct_participant',
   ];
 
-  // If we're dealing with group session or individual encounter,
-  // creation date is resolved using 'field_scheduled_date'.
-  if (in_array($node_type, $encounter_types) || $node_type == 'session') {
+  // If we're dealing with group session, education session, or individual
+  // encounter, creation date is resolved using 'field_scheduled_date'.
+  if (in_array($node_type, $encounter_types) || in_array($node_type, ['session', 'education_session'])) {
     $date_field = 'field_scheduled_date';
     hedley_general_join_field_to_query($query, 'node', $date_field, FALSE, NULL, NULL, TRUE);
   }
