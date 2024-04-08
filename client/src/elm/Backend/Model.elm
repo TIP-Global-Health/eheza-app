@@ -582,7 +582,14 @@ type Revision
     | HealthCenterRevision HealthCenterId HealthCenter
     | HealthEducationRevision HealthEducationId HealthEducation
     | HeightRevision HeightId Height
+    | HIVDiagnosticsRevision HIVDiagnosticsId HIVDiagnostics
     | HIVEncounterRevision HIVEncounterId HIVEncounter
+    | HIVFollowUpRevision HIVFollowUpId HIVFollowUp
+    | HIVHealthEducationRevision HIVHealthEducationId HIVHealthEducation
+    | HIVMedicationRevision HIVMedicationId HIVMedication
+    | HIVReferralRevision HIVReferralId HIVReferral
+    | HIVSymptomReviewRevision HIVSymptomReviewId HIVSymptomReview
+    | HIVTreatmentReviewRevision HIVTreatmentReviewId HIVTreatmentReview
     | HomeVisitEncounterRevision HomeVisitEncounterId HomeVisitEncounter
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | IsolationRevision IsolationId Isolation

@@ -22,6 +22,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
+import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
@@ -587,6 +588,7 @@ type TranslationId
     | DiagnosedOn
     | Diagnosis
     | DiagnosisDate
+    | Diagnostics
     | DifferenceBetweenDueAndDeliveryDates
     | Disabled
     | DistributionNotice DistributionNotice
@@ -737,6 +739,7 @@ type TranslationId
     | History
     | HistoryTask HistoryTask
     | HIV
+    | HIVActivityTitle HIVActivity
     | HIVPCRResult HIVPCRResult
     | HIVStatus HIVStatus
     | HIVStatusLabel
@@ -4809,6 +4812,12 @@ translationSet trans =
             , kirundi = Just "Itarike yo gusuzuma"
             }
 
+        Diagnostics ->
+            { english = "Diagnostics"
+            , kinyarwanda = Just "Gusuzuma uburwayi"
+            , kirundi = Nothing
+            }
+
         DifferenceBetweenDueAndDeliveryDates ->
             { english = "Difference between due date and delivery date"
             , kinyarwanda = Just "Ikinyuranyo kiri hagati y'amatariki"
@@ -6609,6 +6618,20 @@ translationSet trans =
             , kinyarwanda = Just "Virusi itera SIDA"
             , kirundi = Just "Umugera wa SIDA"
             }
+
+        HIVActivityTitle activity ->
+            case activity of
+                Backend.HIVActivity.Model.Diagnostics ->
+                    translationSet Diagnostics
+
+                Backend.HIVActivity.Model.Medication ->
+                    translationSet Medication
+
+                Backend.HIVActivity.Model.SymptomReview ->
+                    translationSet SymptomReview
+
+                Backend.HIVActivity.Model.NextSteps ->
+                    translationSet NextSteps
 
         HIVPCRResult result ->
             case result of
@@ -21077,10 +21100,7 @@ translationSet trans =
         TuberculosisActivityTitle activity ->
             case activity of
                 Backend.TuberculosisActivity.Model.Diagnostics ->
-                    { english = "Diagnostics"
-                    , kinyarwanda = Just "Gusuzuma uburwayi"
-                    , kirundi = Nothing
-                    }
+                    translationSet Diagnostics
 
                 Backend.TuberculosisActivity.Model.Medication ->
                     translationSet Medication

@@ -580,8 +580,29 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityHeight identifier ->
             getIdentifier identifier "height"
 
+        BackendAuthorityHIVDiagnostics identifier ->
+            getIdentifier identifier "hiv_diagnostics"
+
         BackendAuthorityHIVEncounter identifier ->
             getIdentifier identifier "hiv_encounter"
+
+        BackendAuthorityHIVFollowUp identifier ->
+            getIdentifier identifier "hiv_follow_up"
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            getIdentifier identifier "hiv_health_education"
+
+        BackendAuthorityHIVMedication identifier ->
+            getIdentifier identifier "hiv_medication"
+
+        BackendAuthorityHIVReferral identifier ->
+            getIdentifier identifier "hiv_referral"
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            getIdentifier identifier "hiv_symptom_review"
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            getIdentifier identifier "hiv_treatment_review"
 
         BackendAuthorityHomeVisitEncounter identifier ->
             getIdentifier identifier "home_visit_encounter"
@@ -1324,8 +1345,29 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityHeight identifier ->
             encode Backend.Measurement.Encoder.encodeHeight identifier
 
+        BackendAuthorityHIVDiagnostics identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVDiagnostics identifier
+
         BackendAuthorityHIVEncounter identifier ->
             encode Backend.HIVEncounter.Encoder.encodeHIVEncounter identifier
+
+        BackendAuthorityHIVFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVFollowUp identifier
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVHealthEducation identifier
+
+        BackendAuthorityHIVMedication identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVMedication identifier
+
+        BackendAuthorityHIVReferral identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVReferral identifier
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVSymptomReview identifier
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVTreatmentReview identifier
 
         BackendAuthorityHomeVisitEncounter identifier ->
             encode Backend.HomeVisitEncounter.Encoder.encodeHomeVisitEncounter identifier
@@ -2131,8 +2173,29 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityHeight identifier ->
             HeightRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityHIVDiagnostics identifier ->
+            HIVDiagnosticsRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityHIVEncounter identifier ->
             HIVEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVFollowUp identifier ->
+            HIVFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            HIVHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVMedication identifier ->
+            HIVMedicationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVReferral identifier ->
+            HIVReferralRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            HIVSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            HIVTreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityHomeVisitEncounter identifier ->
             HomeVisitEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
