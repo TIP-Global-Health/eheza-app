@@ -414,7 +414,9 @@ function hedley_stats_requires_child_scoreboard_statistics_recalculation($wrappe
  *   True, if statistics recalculation is required.
  */
 function hedley_stats_requires_group_education_statistics_recalculation($wrapper) {
-  $triggering_types = [HEDLEY_ACTIVITY_GROUP_EDUCATION_CONTENT_TYPE];
+  $triggering_types = [
+    HEDLEY_ACTIVITY_GROUP_EDUCATION_CONTENT_TYPE
+  ];
 
   $bundle = $wrapper->getBundle();
 
