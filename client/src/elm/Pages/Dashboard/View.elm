@@ -19,7 +19,9 @@ import Backend.Dashboard.Model
         , NutritionValue
         , PMTCTDataItem
         , ParticipantStats
+        , PatientDetails
         , Periods
+        , PersonIdentifier
         , PrenatalDataItem
         , SPVDataItem
         , TotalBeneficiaries
@@ -437,8 +439,13 @@ viewCaseManagementPage language currentDate stats db model =
                                                 )
                                             |> List.sortBy Tuple.first
                                             |> List.reverse
+
+                                    name =
+                                        Dict.get caseNutrition.identifier stats.patientsDetails
+                                            |> Maybe.map .name
+                                            |> Maybe.withDefault ""
                                 in
-                                { name = caseNutrition.name, nutrition = nutrition } :: accum
+                                { name = name, nutrition = nutrition } :: accum
                             )
                             []
                             stats.caseManagement.thisYear
@@ -447,18 +454,24 @@ viewCaseManagementPage language currentDate stats db model =
                     _ ->
                         List.foldl
                             (\caseNutrition accum ->
+                                let
+                                    name =
+                                        Dict.get caseNutrition.identifier stats.patientsDetails
+                                            |> Maybe.map .name
+                                            |> Maybe.withDefault ""
+                                in
                                 case model.currentCaseManagementFilter of
                                     Stunting ->
-                                        { name = caseNutrition.name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.stunting } :: accum
+                                        { name = name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.stunting } :: accum
 
                                     Underweight ->
-                                        { name = caseNutrition.name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.underweight } :: accum
+                                        { name = name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.underweight } :: accum
 
                                     Wasting ->
-                                        { name = caseNutrition.name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.wasting } :: accum
+                                        { name = name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.wasting } :: accum
 
                                     MUAC ->
-                                        { name = caseNutrition.name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.muac } :: accum
+                                        { name = name, nutrition = filterForCaseManagementTableFunc caseNutrition.nutrition.muac } :: accum
 
                                     -- We'll never get here - need to list it to satisfy compiler.
                                     MissedSession ->
@@ -1444,11 +1457,10 @@ viewMiscCards language currentDate stats monthBeforeStats =
         totalNewBeneficiariesTable =
             List.foldl
                 (\childrenBeneficiaries accum ->
-                    { name = childrenBeneficiaries.name
+                    { identifier = childrenBeneficiaries.identifier
                     , gender = childrenBeneficiaries.gender
                     , birthDate = childrenBeneficiaries.birthDate
-                    , motherName = childrenBeneficiaries.motherName
-                    , phoneNumber = childrenBeneficiaries.phoneNumber
+                    , motherIdentifier = childrenBeneficiaries.motherIdentifier
                     , expectedDate = currentDate
                     }
                         :: accum
@@ -2172,7 +2184,7 @@ viewCustomModal language page isChw nurse stats db model =
             (\state ->
                 case state of
                     StatisticsModal title data ->
-                        viewStatsTableModal language title data
+                        viewStatsTableModal language title stats.patientsDetails data
 
                     FiltersModal ->
                         viewFiltersModal language page isChw nurse stats db model
@@ -2180,8 +2192,8 @@ viewCustomModal language page isChw nurse stats db model =
         |> viewModal
 
 
-viewStatsTableModal : Language -> String -> List ParticipantStats -> Html Msg
-viewStatsTableModal language title data =
+viewStatsTableModal : Language -> String -> Dict PersonIdentifier PatientDetails -> List ParticipantStats -> Html Msg
+viewStatsTableModal language title patientsDetails data =
     div [ class "ui tiny active modal segment blue" ]
         [ div
             [ class "header" ]
@@ -2203,7 +2215,7 @@ viewStatsTableModal language title data =
                         ]
                     ]
                 , tbody []
-                    (List.map viewModalTableRow data)
+                    (List.map (viewModalTableRow patientsDetails) data)
                 ]
             ]
         ]
@@ -2335,12 +2347,23 @@ viewFiltersModal language page isChw nurse stats db model =
         ]
 
 
-viewModalTableRow : ParticipantStats -> Html Msg
-viewModalTableRow rowData =
+viewModalTableRow : Dict PersonIdentifier PatientDetails -> ParticipantStats -> Html Msg
+viewModalTableRow patientsDetails rowData =
+    let
+        name =
+            Dict.get rowData.identifier patientsDetails
+                |> Maybe.map .name
+                |> Maybe.withDefault ""
+
+        ( motherName, phoneNumber ) =
+            Dict.get rowData.motherIdentifier patientsDetails
+                |> Maybe.map (\details -> ( details.name, details.phoneNumber ))
+                |> Maybe.withDefault ( "", Nothing )
+    in
     tr []
-        [ td [ class "name" ] [ text rowData.name ]
-        , td [ class "mother-name" ] [ text rowData.motherName ]
-        , td [ class "phone-number" ] [ text <| Maybe.withDefault "-" rowData.phoneNumber ]
+        [ td [ class "name" ] [ text name ]
+        , td [ class "mother-name" ] [ text motherName ]
+        , td [ class "phone-number" ] [ text <| Maybe.withDefault "-" phoneNumber ]
         ]
 
 

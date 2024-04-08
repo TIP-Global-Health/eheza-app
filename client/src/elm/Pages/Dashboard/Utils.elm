@@ -172,6 +172,7 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
     , missedSessions = stats.missedSessions
     , totalEncounters = stats.totalEncounters
     , villagesWithResidents = stats.villagesWithResidents
+    , patientsDetails = stats.patientsDetails
     , timestamp = stats.timestamp
     }
 

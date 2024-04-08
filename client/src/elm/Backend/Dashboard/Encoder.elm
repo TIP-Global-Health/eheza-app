@@ -34,7 +34,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (fromEntityUuid)
-import Utils.Json exposing (encodeEverySet)
+import Utils.Json exposing (encodeEverySet, encodeIfSet)
 
 
 encodeDashboardStatsRaw : DashboardStatsRaw -> List ( String, Value )
@@ -82,7 +82,6 @@ encodeCasesManagementForYear dict =
 encodeCaseManagement : CaseManagement -> List ( String, Value )
 encodeCaseManagement caseManagement =
     [ ( "id", int caseManagement.identifier )
-    , ( "name", string caseManagement.name )
     , ( "birth_date", encodeYYYYMMDD caseManagement.birthDate )
     , ( "gender", encodeGender caseManagement.gender )
     , ( "nutrition", object <| encodeCaseNutrition caseManagement.nutrition )
@@ -131,12 +130,10 @@ encodeChildrenBeneficiariesData dict =
 encodeChildrenBeneficiariesStats : ChildrenBeneficiariesStats -> List ( String, Value )
 encodeChildrenBeneficiariesStats stats =
     [ ( "id", int stats.identifier )
-    , ( "name", string stats.name )
     , ( "gender", encodeGender stats.gender )
     , ( "birth_date", encodeYYYYMMDD stats.birthDate )
     , ( "created", encodeYYYYMMDD stats.memberSince )
-    , ( "mother_name", string stats.motherName )
-    , ( "phone_number", maybe string stats.phoneNumber )
+    , ( "mother_id", int stats.motherIdentifier )
     , ( "graduation_date", encodeYYYYMMDD stats.graduationDate )
     ]
 
@@ -165,11 +162,10 @@ encodeMissedSessions statsList =
 
 encodeParticipantStats : ParticipantStats -> List ( String, Value )
 encodeParticipantStats stats =
-    [ ( "name", string stats.name )
+    [ ( "id", int stats.identifier )
     , ( "gender", encodeGender stats.gender )
     , ( "birth_date", encodeYYYYMMDD stats.birthDate )
-    , ( "mother_name", string stats.motherName )
-    , ( "phone_number", maybe string stats.phoneNumber )
+    , ( "mother_id", int stats.motherIdentifier )
     , ( "expected_date", encodeYYYYMMDD stats.expectedDate )
     ]
 
@@ -575,3 +571,24 @@ encodeNutritionGroupEncounterDataItem item =
             ++ zscoreUnderweight
             ++ zscoreWasting
             ++ muac
+
+
+encodePatientsDetails : Dict PersonIdentifier PatientDetails -> ( String, Value )
+encodePatientsDetails dict =
+    let
+        value =
+            Dict.toList dict
+                |> List.map
+                    (\( k, v ) ->
+                        ( String.fromInt k, encodePatientDetails v )
+                    )
+                |> object
+    in
+    ( "patients_details", value )
+
+
+encodePatientDetails : PatientDetails -> Value
+encodePatientDetails details =
+    object <|
+        ( "name", string details.name )
+            :: encodeIfSet "phone_number" details.phoneNumber string

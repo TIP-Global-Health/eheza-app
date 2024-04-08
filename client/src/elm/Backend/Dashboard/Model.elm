@@ -78,6 +78,7 @@ type alias DashboardStatsRaw =
     , nutritionIndividualData : List NutritionIndividualDataItem
     , nutritionGroupData : List NutritionGroupDataItem
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
+    , patientsDetails : Dict PersonIdentifier PatientDetails
 
     -- UTC Date and time on which statistics were generated.
     , timestamp : String
@@ -104,6 +105,7 @@ emptyModel =
     , nutritionIndividualData = []
     , nutritionGroupData = []
     , villagesWithResidents = Dict.empty
+    , patientsDetails = Dict.empty
     , timestamp = ""
     , cacheHash = ""
     }
@@ -117,6 +119,7 @@ type alias DashboardStats =
     , missedSessions : List ParticipantStats
     , totalEncounters : TotalEncountersData
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
+    , patientsDetails : Dict PersonIdentifier PatientDetails
 
     -- UTC Date and time on which statistics were generated.
     , timestamp : String
@@ -141,7 +144,6 @@ type alias CaseManagementData =
 
 type alias CaseManagement =
     { identifier : PersonIdentifier
-    , name : String
     , birthDate : NominalDate
     , gender : Gender
     , nutrition : CaseNutrition
@@ -175,9 +177,7 @@ type alias ChildrenBeneficiariesStats =
     , gender : Gender
     , birthDate : NominalDate
     , memberSince : NominalDate
-    , name : String
-    , motherName : String
-    , phoneNumber : Maybe String
+    , motherIdentifier : PersonIdentifier
     , graduationDate : NominalDate
     }
 
@@ -189,11 +189,10 @@ type alias FamilyPlanningStats =
 
 
 type alias ParticipantStats =
-    { name : String
+    { identifier : PersonIdentifier
     , gender : Gender
     , birthDate : NominalDate
-    , motherName : String
-    , phoneNumber : Maybe String
+    , motherIdentifier : PersonIdentifier
     , expectedDate : NominalDate
     }
 
@@ -442,4 +441,10 @@ type alias NutritionEncounterDataItem =
     , zscoreWasting : Maybe Float
     , muac : Maybe Float
     , nutritionSigns : EverySet ChildNutritionSign
+    }
+
+
+type alias PatientDetails =
+    { name : String
+    , phoneNumber : Maybe String
     }

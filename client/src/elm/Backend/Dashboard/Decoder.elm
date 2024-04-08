@@ -72,6 +72,7 @@ decodeDashboardStatsRaw =
         |> required "nutrition_individual_data" (list decodeNutritionIndividualDataItem)
         |> required "nutrition_group_data" (list decodeNutritionGroupDataItem)
         |> required "villages_with_residents" decodeVillagesWithResidents
+        |> required "patients_details" decodePatientsDetails
         |> required "timestamp" string
         |> required "stats_cache_hash" string
 
@@ -102,7 +103,6 @@ decodeCaseManagement : Decoder CaseManagement
 decodeCaseManagement =
     succeed CaseManagement
         |> required "id" decodeInt
-        |> required "name" string
         |> required "birth_date" decodeYYYYMMDD
         |> required "gender" decodeGender
         |> required "nutrition" decodeCaseNutrition
@@ -187,20 +187,17 @@ decodeChildrenBeneficiariesStats =
         |> required "gender" decodeGender
         |> required "birth_date" decodeYYYYMMDD
         |> required "created" decodeYYYYMMDD
-        |> required "name" string
-        |> required "mother_name" string
-        |> optional "phone_number" (nullable string) Nothing
+        |> required "mother_id" decodeInt
         |> required "graduation_date" decodeYYYYMMDD
 
 
 decodeParticipantStats : Decoder ParticipantStats
 decodeParticipantStats =
     succeed ParticipantStats
-        |> required "name" string
+        |> required "id" decodeInt
         |> required "gender" decodeGender
         |> required "birth_date" decodeYYYYMMDD
-        |> required "mother_name" string
-        |> optional "phone_number" (nullable string) Nothing
+        |> required "mother_id" decodeInt
         |> required "expected_date" decodeYYYYMMDD
 
 
@@ -538,3 +535,29 @@ decodeNutritionGroupEncounterDataItem =
         |> optional "zscore_wasting" (nullable decodeFloat) Nothing
         |> optional "muac" (nullable decodeFloat) Nothing
         |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
+
+
+decodePatientsDetails : Decoder (Dict PersonIdentifier PatientDetails)
+decodePatientsDetails =
+    oneOf
+        [ dict decodePatientDetails
+            |> andThen
+                (\dict ->
+                    LegacyDict.toList dict
+                        |> List.filterMap
+                            (\( k, v ) ->
+                                String.toInt k
+                                    |> Maybe.map (\key -> ( key, v ))
+                            )
+                        |> Dict.fromList
+                        |> succeed
+                )
+        , succeed Dict.empty
+        ]
+
+
+decodePatientDetails : Decoder PatientDetails
+decodePatientDetails =
+    succeed PatientDetails
+        |> required "name" string
+        |> optional "phone_number" (nullable string) Nothing
