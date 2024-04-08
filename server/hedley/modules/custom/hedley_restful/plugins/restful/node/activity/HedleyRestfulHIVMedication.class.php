@@ -13,6 +13,8 @@ class HedleyRestfulHIVMedication extends HedleyRestfulHIVActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [];
+  protected $fields = [
+    'field_prescribed_hiv_medications',
+  ];
 
 }

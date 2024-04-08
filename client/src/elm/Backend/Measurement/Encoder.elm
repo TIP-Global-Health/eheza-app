@@ -4575,16 +4575,15 @@ encodeHIVMedication =
 
 encodeHIVMedicationValue : HIVMedicationValue -> List ( String, Value )
 encodeHIVMedicationValue value =
-    [ -- ( "prescribed_tb_medications", encodeEverySet encodeHIVPrescribedMedication value )
-      ( "deleted", bool False )
+    [ ( "prescribed_hiv_medications", encodeHIVPrescribedMedication value )
+    , ( "deleted", bool False )
     , ( "type", string "hiv_medication" )
     ]
 
 
-
--- encodeHIVPrescribedMedication : HIVPrescribedMedication -> Value
--- encodeHIVPrescribedMedication =
---     hivPrescribedMedicationToString >> string
+encodeHIVPrescribedMedication : HIVPrescribedMedication -> Value
+encodeHIVPrescribedMedication =
+    hivPrescribedMedicationToString >> string
 
 
 encodeHIVReferral : HIVReferral -> List ( String, Value )

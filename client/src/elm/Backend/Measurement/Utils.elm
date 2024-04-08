@@ -4123,6 +4123,41 @@ hivDiagnosisSignFromString diagnosis =
             Nothing
 
 
+hivPrescribedMedicationToString : HIVPrescribedMedication -> String
+hivPrescribedMedicationToString sign =
+    case sign of
+        HIVMedicationOption1 ->
+            "option1"
+
+        HIVMedicationOption2 ->
+            "option2"
+
+        HIVMedicationOption3 ->
+            "option3"
+
+        NoHIVPrescribedMedications ->
+            "none"
+
+
+hivPrescribedMedicationFromString : String -> Maybe HIVPrescribedMedication
+hivPrescribedMedicationFromString sign =
+    case sign of
+        "option1" ->
+            Just HIVMedicationOption1
+
+        "option2" ->
+            Just HIVMedicationOption2
+
+        "option3" ->
+            Just HIVMedicationOption3
+
+        "none" ->
+            Just NoHIVPrescribedMedications
+
+        _ ->
+            Nothing
+
+
 generatePreviousMeasurements :
     (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
     -> (ModelIndexedDb -> Dict encounterId (WebData measurements))

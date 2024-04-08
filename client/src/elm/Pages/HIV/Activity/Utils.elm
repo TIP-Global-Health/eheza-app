@@ -121,41 +121,38 @@ medicationTaskCompleted assembled task =
             isJust assembled.measurements.treatmentReview
 
 
+medicationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal language currentDate assembled data task =
+    case task of
+        TaskPrescribedMedication ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.medication
+                        |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+            in
+            ( taskCompleted form.medications
+            , 1
+            )
 
--- medicationTasksCompletedFromTotal : Language -> NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
--- medicationTasksCompletedFromTotal language currentDate assembled data task =
---     case task of
---         TaskPrescribedMedication ->
---             let
---                 form =
---                     getMeasurementValueFunc assembled.measurements.medication
---                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
---             in
---             ( taskCompleted form.medications
---             , 1
---             )
---
---         TaskTreatmentReview ->
---             let
---                 form =
---                     getMeasurementValueFunc assembled.measurements.treatmentReview
---                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
---
---                 ( _, tasks ) =
---                     treatmentReviewInputsAndTasks language
---                         currentDate
---                         SetTreatmentReviewBoolInput
---                         SetReasonForNotTaking
---                         SetTotalMissedDoses
---                         SetAdverseEvent
---                         form
---             in
---             ( Maybe.Extra.values tasks
---                 |> List.length
---             , List.length tasks
---             )
---
---
+        TaskTreatmentReview ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.treatmentReview
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+
+                ( _, tasks ) =
+                    treatmentReviewInputsAndTasks language
+                        currentDate
+                        SetTreatmentReviewBoolInput
+                        SetReasonForNotTaking
+                        SetTotalMissedDoses
+                        SetAdverseEvent
+                        form
+            in
+            ( Maybe.Extra.values tasks
+                |> List.length
+            , List.length tasks
+            )
 
 
 nextStepsTasks : List NextStepsTask
@@ -371,47 +368,31 @@ toDiagnosticsValue positiveResultRecorded form =
             form.resultPositive
 
 
+toPrescribedMedicationValueWithDefault : Maybe HIVMedicationValue -> PrescribedMedicationForm -> Maybe HIVMedicationValue
+toPrescribedMedicationValueWithDefault saved form =
+    prescribedMedicationFormWithDefault form saved
+        |> toPrescribedMedicationValue
 
---
--- case ( form.resultPositive, form.resultDateCorrect ) of
---     ( Just resultPositive, Nothing ) ->
---         if resultPositive then
---             let
---                 esitmatedSign =
---                     if form.positiveResultDateEstimated == Just True then
---                         [ HIVResultDateEstimated ]
---
---                     else
---                         []
---             in
---             Just
---                 { signs = EverySet.fromList (HIVResultPositiveReported :: esitmatedSign)
---                 , positiveResultDate = form.positiveResultDate
---                 }
---
---         else
---             Just
---                 { signs = EverySet.singleton NoHIVDiagnosisSigns
---                 , positiveResultDate = Nothing
---                 }
---
---     ( Nothing, Just resultDateCorrect ) ->
---         let
---             esitmatedSign =
---                 if form.positiveResultDateEstimated == Just True then
---                     [ HIVResultDateEstimated ]
---
---                 else
---                     []
---         in
---         Just
---             { signs = EverySet.fromList (HIVResultPositiveKnown :: esitmatedSign)
---             , positiveResultDate = form.positiveResultDate
---             }
---
---     _ ->
---         Nothing
---
+
+prescribedMedicationFormWithDefault :
+    PrescribedMedicationForm
+    -> Maybe HIVMedicationValue
+    -> PrescribedMedicationForm
+prescribedMedicationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { medications = or form.medications (Just value) }
+            )
+
+
+toPrescribedMedicationValue : PrescribedMedicationForm -> Maybe HIVMedicationValue
+toPrescribedMedicationValue form =
+    form.medications
+
+
+
 -- symptomReviewFormWithDefault : SymptomReviewForm -> Maybe HIVSymptomReviewValue -> SymptomReviewForm
 -- symptomReviewFormWithDefault form saved =
 --     saved
@@ -469,31 +450,3 @@ toDiagnosticsValue positiveResultRecorded form =
 --         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVHealthEducationSigns)
 --
 --
--- toPrescribedMedicationValueWithDefault : Maybe HIVMedicationValue -> PrescribedMedicationForm -> Maybe HIVMedicationValue
--- toPrescribedMedicationValueWithDefault saved form =
---     prescribedMedicationFormWithDefault form saved
---         |> toPrescribedMedicationValue
---
---
--- prescribedMedicationFormWithDefault :
---     PrescribedMedicationForm
---     -> Maybe HIVMedicationValue
---     -> PrescribedMedicationForm
--- prescribedMedicationFormWithDefault form saved =
---     saved
---         |> unwrap
---             form
---             (\value ->
---                 { medications = or form.medications (Just <| EverySet.toList value)
---                 , medicationsDirty = form.medicationsDirty
---                 }
---             )
---
---
--- toPrescribedMedicationValue : PrescribedMedicationForm -> Maybe HIVMedicationValue
--- toPrescribedMedicationValue form =
---     Maybe.map EverySet.fromList form.medications
-
-
-zza =
-    5

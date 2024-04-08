@@ -3009,15 +3009,13 @@ type alias HIVMedication =
 
 
 type alias HIVMedicationValue =
-    -- @todo
-    -- EverySet HIVPrescribedMedication
-    {}
+    HIVPrescribedMedication
 
 
 type HIVPrescribedMedication
-    = MedicationOption1
-    | MedicationOption2
-    | MedicationOption3
+    = HIVMedicationOption1
+    | HIVMedicationOption2
+    | HIVMedicationOption3
     | NoHIVPrescribedMedications
 
 

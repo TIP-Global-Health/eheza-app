@@ -1385,6 +1385,44 @@ function hedley_hiv_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-hiv_medication-field_prescribed_hiv_medications'.
+  $field_instances['node-hiv_medication-field_prescribed_hiv_medications'] = array(
+    'bundle' => 'hiv_medication',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prescribed_hiv_medications',
+    'label' => 'Prescribed HIV medications',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-hiv_medication-field_shards'.
   $field_instances['node-hiv_medication-field_shards'] = array(
     'bundle' => 'hiv_medication',
@@ -2531,6 +2569,7 @@ function hedley_hiv_field_default_field_instances() {
   t('Nurse');
   t('Person');
   t('Positive Result Date');
+  t('Prescribed HIV medications');
   t('Reason for Not Sending to HC');
   t('Reason for not taking');
   t('Scheduled Date');

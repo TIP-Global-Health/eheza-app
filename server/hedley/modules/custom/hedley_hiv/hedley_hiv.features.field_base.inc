@@ -107,5 +107,33 @@ function hedley_hiv_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_prescribed_hiv_medications'.
+  $field_bases['field_prescribed_hiv_medications'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_prescribed_hiv_medications',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'option1' => 'Option 1',
+        'option2' => 'Option 2',
+        'option3' => 'Option 3',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   return $field_bases;
 }

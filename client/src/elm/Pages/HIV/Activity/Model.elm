@@ -119,15 +119,13 @@ emptyMedicationData =
 
 
 type alias PrescribedMedicationForm =
-    { medications : Maybe (List HIVPrescribedMedication)
-    , medicationsDirty : Bool
+    { medications : Maybe HIVPrescribedMedication
     }
 
 
 emptyPrescribedMedicationForm : PrescribedMedicationForm
 emptyPrescribedMedicationForm =
     { medications = Nothing
-    , medicationsDirty = False
     }
 
 
@@ -196,18 +194,18 @@ type Msg
     | SetPositiveResultDate Date
     | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveDiagnostics PersonId IndividualEncounterParticipantId Bool (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
+      -- MEDICATION
+    | SetActiveMedicationTask MedicationTask
+    | SetPrescribedMedication HIVPrescribedMedication
+    | SavePrescribedMedication PersonId (Maybe ( HIVMedicationId, HIVMedication )) (Maybe MedicationTask)
+    | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
+    | SetReasonForNotTaking ReasonForNotTaking
+    | SetTotalMissedDoses String
+    | SetAdverseEvent AdverseEvent
+    | SaveTreatmentReview PersonId (Maybe ( HIVTreatmentReviewId, HIVTreatmentReview )) (Maybe MedicationTask)
 
 
 
---   -- MEDICATION
--- | SetActiveMedicationTask MedicationTask
--- | SetPrescribedMedication HIVPrescribedMedication
--- | SavePrescribedMedication PersonId (Maybe ( HIVMedicationId, HIVMedication )) (Maybe MedicationTask)
--- | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool
--- | SetReasonForNotTaking ReasonForNotTaking
--- | SetTotalMissedDoses String
--- | SetAdverseEvent AdverseEvent
--- | SaveTreatmentReview PersonId (Maybe ( HIVTreatmentReviewId, HIVTreatmentReview )) (Maybe MedicationTask)
 --   -- SYMPTOM REVIEW
 -- | SetSymptomReviewBoolInput (Bool -> SymptomReviewForm -> SymptomReviewForm) Bool
 -- | SaveSymptomReview PersonId (Maybe ( HIVSymptomReviewId, HIVSymptomReview ))
