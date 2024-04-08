@@ -57,6 +57,7 @@ define('HEDLEY_STATS_SYNC_CHILD_SCOREBOARD_DATA', 'sync_child_scoreboard_data');
 define('HEDLEY_STATS_SYNC_NUTRITION_INDIVIDUAL_DATA', 'sync_nutrition_individual_data');
 define('HEDLEY_STATS_SYNC_NUTRITION_GROUP_DATA', 'sync_nutrition_group_data');
 define('HEDLEY_STATS_SYNC_VILLAGES_WITH_RESIDENTS', 'villages_with_residents');
+define('HEDLEY_STATS_SYNC_PATIENTS_DETAILS', 'patients_details');
 
 // Cache methods.
 define('HEDLEY_STATS_CACHE_GET', 'get');
@@ -615,13 +616,19 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   // recalculation is completed).
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id);
 
+  // Mapping of patient ID to name and optionally phone number.
+  $patients_details = [];
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PATIENTS_DETAILS, $health_center_id)) {
+    $patients_details = $cache_data;
+  }
+
   // Get all clinics of type 'FBF' for the HC.
   $clinics = hedley_health_center_get_clinics_of_health_center($health_center_id);
   // Calculate statistics that are provided for FBF clinics only.
   $fbf_clinics = !empty($clinics['fbf']) ? $clinics['fbf'] : [];
-  hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
-  hedley_stats_get_case_management($health_center_id);
-  hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id);
+  hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics, $patients_details);
+  hedley_stats_get_case_management($health_center_id, $patients_details);
+  hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $patients_details);
   hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_THREE_MONTHS);
   $villages_with_residents = hedley_stats_get_villages_with_residents($health_center_id);
   hedley_stats_get_total_encounters($health_center_id, $villages_with_residents);
@@ -634,6 +641,9 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   hedley_stats_get_child_scorecard_data($health_center_id);
   hedley_stats_get_nutrition_individual_data($health_center_id);
   hedley_stats_get_nutrition_group_data($health_center_id);
+
+  // Set (possibly altered) patients details in cache.
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_PATIENTS_DETAILS, $health_center_id, NULL, $patients_details);
 
   $stats_cache_hash = md5(time());
   // Store in cache only the hash. All statistics have their own cache.
@@ -748,6 +758,9 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
   }
   $nutrition_group_data = $cache_data;
 
+  $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_PATIENTS_DETAILS, $health_center_id);
+  $patients_details = $cache_data === NULL ? [] : $cache_data;
+
   $wrapper = entity_metadata_wrapper('node', $health_center_id);
   $health_center_uuid = $wrapper->field_uuid->value();
 
@@ -771,6 +784,7 @@ function hedley_stats_pull_stats_for_health_center($health_center_id, $health_ce
     'nutrition_individual_data' => $nutrition_individual_data,
     'nutrition_group_data' => $nutrition_group_data,
     'villages_with_residents' => $villages_with_residents,
+    'patients_details' => $patients_details,
   ];
 
   $now = time();
@@ -2165,14 +2179,14 @@ function hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, ar
  *
  * @throws \Exception
  */
-function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, &$patients_details, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center_id, $period)) {
     return $cache_data;
   }
 
-  $items = hedley_stats_get_children_beneficiaries_group_stats($health_center_id, $period);
-  $items['individual'] = hedley_stats_get_children_beneficiaries_individual_stats($health_center_id);
+  $items = hedley_stats_get_children_beneficiaries_group_stats($health_center_id, $patients_details, $period);
+  $items['individual'] = hedley_stats_get_children_beneficiaries_individual_stats($health_center_id, $patients_details);
 
   // Store in cache.
   hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center_id, $period, $items);
@@ -2193,7 +2207,7 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
  *
  * @throws \Exception
  */
-function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, &$patients_details, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   $query = hedley_stats_get_base_query($health_center_id, 'pmtct_participant');
 
   $field_names = [
@@ -2223,14 +2237,11 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
   $adults = array_unique($adults);
   $children = array_unique($children);
 
-  $adults_info = $children_info = [];
+  $children_info = [];
   foreach (array_chunk($adults, 500) as $ids) {
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
-      $adults_info[$node->nid] = [
-        'name' => $node->title,
-        'phone_number' => empty($node->field_phone_number) ? '' : $node->field_phone_number[LANGUAGE_NONE][0]['value'],
-      ];
+      hedley_stats_add_patient_details($node, $patients_details, TRUE);
     }
     // Free up memory.
     drupal_static_reset();
@@ -2238,9 +2249,9 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
   foreach (array_chunk($children, 500) as $ids) {
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
+      hedley_stats_add_patient_details($node, $patients_details);
       $children_info[$node->nid] = [
         'id' => $node->nid,
-        'name' => $node->title,
         'birth_date' => $node->field_birth_date[LANGUAGE_NONE][0]['value'],
         'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
       ];
@@ -2268,11 +2279,9 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
     $items[$clinic_type][] = [
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
       'id' => $children_info[$child_id]['id'],
-      'name' => $children_info[$child_id]['name'],
       'birth_date' => date("Y-m-d", strtotime($birth_date)),
       'gender' => $children_info[$child_id]['gender'],
-      'mother_name' => $adults_info[$adult_id]['name'],
-      'phone_number' => $adults_info[$adult_id]['phone_number'],
+      'mother_id' => $adult_id,
       'graduation_date' => date_format(date_create($row->field_expected_field_expected_value2), 'Y-m-d'),
     ];
   }
@@ -2291,7 +2300,7 @@ function hedley_stats_get_children_beneficiaries_group_stats($health_center_id, 
  *
  * @throws \Exception
  */
-function hedley_stats_get_children_beneficiaries_individual_stats($health_center_id) {
+function hedley_stats_get_children_beneficiaries_individual_stats($health_center_id, &$patients_details) {
   $query = hedley_stats_get_base_query($health_center_id, 'individual_participant');
 
   $field_names = [
@@ -2317,9 +2326,9 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
   foreach (array_chunk($children, 500) as $ids) {
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
+      hedley_stats_add_patient_details($node, $patients_details);
       $children_info[$node->nid] = [
         'id' => $node->nid,
-        'name' => $node->title,
         'birth_date' => $node->field_birth_date[LANGUAGE_NONE][0]['value'],
         'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
       ];
@@ -2346,14 +2355,12 @@ function hedley_stats_get_children_beneficiaries_individual_stats($health_center
     $items[] = [
       'created' => hedley_stats_convert_timestamp_to_nominal($row->created),
       'id' => $children_info[$child_id]['id'],
-      'name' => $children_info[$child_id]['name'],
       'birth_date' => date("Y-m-d", $birth_date),
       'gender' => $children_info[$child_id]['gender'],
-      'graduation_date' => hedley_stats_convert_timestamp_to_nominal($graduation_date),
       // No need to provide mother details, because we do not present
       // it anywhere, when it comes to individual participant data.
-      'mother_name' => '',
-      'phone_number' => '',
+      'mother_id' => NULL,
+      'graduation_date' => hedley_stats_convert_timestamp_to_nominal($graduation_date),
     ];
   }
 
@@ -2449,7 +2456,7 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
  * @return array
  *   Array with the results.
  */
-function hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, array $fbf_clinics) {
+function hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, array $fbf_clinics, &$patients_details) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id)) {
     return $cache_data;
@@ -2504,14 +2511,11 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
     $children = array_unique($children);
     $mothers = array_unique($mothers);
-    $children_info = $mothers_info = [];
+    $children_info = [];
     foreach (array_chunk($mothers, 500) as $ids) {
       $nodes = node_load_multiple($ids);
       foreach ($nodes as $node) {
-        $mothers_info[$node->nid] = [
-          'name' => $node->title,
-          'phone_number' => empty($node->field_phone_number) ? '' : $node->field_phone_number[LANGUAGE_NONE][0]['value'],
-        ];
+        hedley_stats_add_patient_details($node, $patients_details, TRUE);
       }
       // Free up memory.
       drupal_static_reset();
@@ -2519,8 +2523,8 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
     foreach (array_chunk($children, 500) as $ids) {
       $nodes = node_load_multiple($ids);
       foreach ($nodes as $node) {
+        hedley_stats_add_patient_details($node, $patients_details);
         $children_info[$node->nid] = [
-          'name' => $node->title,
           'birth_date' => $node->field_birth_date[LANGUAGE_NONE][0]['value'],
           'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
         ];
@@ -2547,16 +2551,14 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         continue;
       }
 
-      $mother_info = $mothers_info[$mother_id];
       $participant_join_date = $participant_info['join_date'];
       $participant_graduate_date = $participant_info['graduate_date'];
 
       $expected_person = [
-        'name' => $child_info['name'],
+        'id' => $child_id,
         'gender' => $child_info['gender'],
         'birth_date' => hedley_restful_timestamp_only_date($birth_date),
-        'mother_name' => $mother_info['name'],
-        'phone_number' => $mother_info['phone_number'],
+        'mother_id' => $mother_id,
         'expected_date' => NULL,
       ];
 
@@ -2866,10 +2868,10 @@ function hedley_stats_get_total_nutrition_encounters_by_patient($health_center_i
  *
  * @throws \Exception
  */
-function hedley_stats_get_case_management($health_center_id) {
+function hedley_stats_get_case_management($health_center_id, &$patients_details) {
   return [
-    'this_year' => hedley_stats_get_case_management_for_period($health_center_id),
-    'last_year' => hedley_stats_get_case_management_for_period($health_center_id, HEDLEY_STATS_PERIOD_LAST_YEAR),
+    'this_year' => hedley_stats_get_case_management_for_period($health_center_id, $patients_details),
+    'last_year' => hedley_stats_get_case_management_for_period($health_center_id, $patients_details, HEDLEY_STATS_PERIOD_LAST_YEAR),
   ];
 }
 
@@ -2889,7 +2891,7 @@ function hedley_stats_get_case_management($health_center_id) {
  *
  * @throws \Exception
  */
-function hedley_stats_get_case_management_for_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+function hedley_stats_get_case_management_for_period($health_center_id, &$patients_details, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
     return $cache_data;
@@ -2926,9 +2928,9 @@ function hedley_stats_get_case_management_for_period($health_center_id, $period 
   foreach (array_chunk($people, 500) as $ids) {
     $nodes = node_load_multiple($ids);
     foreach ($nodes as $node) {
+      hedley_stats_add_patient_details($node, $patients_details);
       $people_info[$node->nid] = [
         'id' => $node->nid,
-        'name' => $node->title,
         'birth_date' => hedley_restful_timestamp_only_date($node->field_birth_date[LANGUAGE_NONE][0]['value']),
         'gender' => $node->field_gender[LANGUAGE_NONE][0]['value'],
       ];
@@ -3583,4 +3585,18 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
  */
 function hedley_stats_calculate_days_in_month($year, $month) {
   return (int) date('t', mktime(0, 0, 0, $month, 1, $year));
+}
+
+/**
+ * @param $node
+ * @param $patients_details
+ * @param $add_phone
+ * @return void
+ */
+function hedley_stats_add_patient_details($node, &$patients_details, $add_phone = FALSE) {
+  $patients_details[$node->nid]['name'] = $node->title;
+
+  if ($add_phone) {
+    $patients_details[$node->nid]['phone_number'] = empty($node->field_phone_number) ? '' : $node->field_phone_number[LANGUAGE_NONE][0]['value'];
+  }
 }
