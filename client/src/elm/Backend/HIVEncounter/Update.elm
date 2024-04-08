@@ -42,19 +42,20 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveDiagnostics personId valueId value ->
+            ( { model | saveDiagnostics = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivDiagnosticsEndpoint HandleSavedDiagnostics
+            , []
+            )
+
+        HandleSavedDiagnostics data ->
+            ( { model | saveDiagnostics = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
 
 
--- SaveDiagnostics personId valueId value ->
---     ( { model | saveDiagnostics = Loading }
---     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivDiagnosticsEndpoint HandleSavedDiagnostics
---     , []
---     )
---
--- HandleSavedDiagnostics data ->
---     ( { model | saveDiagnostics = data }
---     , Cmd.none
---     , triggerRollbarOnFailure data
---     )
+
 --
 -- SaveSymptomReview personId valueId value ->
 --     ( { model | saveSymptomReview = Loading }

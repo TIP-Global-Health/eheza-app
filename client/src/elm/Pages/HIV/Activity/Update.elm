@@ -1,9 +1,11 @@
 module Pages.HIV.Activity.Update exposing (update)
 
 import App.Model
+import App.Utils exposing (focusOnCalendarMsg)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model
+import Backend.IndividualEncounterParticipant.Model exposing (HIVOutcome(..))
 import Backend.Measurement.Model exposing (AdverseEvent(..), HIVPrescribedMedication(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -39,8 +41,9 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault form
 
-        -- diagnosticsForm =
-        --     resolveFormWithDefaults .diagnostics diagnosticsFormWithDefault model.diagnosticsData.form
+        diagnosticsForm =
+            resolveFormWithDefaults .diagnostics diagnosticsFormWithDefault model.diagnosticsData.form
+
         --
         -- medicationForm =
         --     resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
@@ -66,60 +69,122 @@ update currentDate id db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetDiagnosticsBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value diagnosticsForm
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ConfirmPositiveResultDate date confirmed ->
+            let
+                updatedForm =
+                    { diagnosticsForm
+                        | resultDateCorrect = Just confirmed
+                        , positiveResultDate = Nothing
+                        , positiveResultDateDirty = True
+                        , positiveResultDateEstimated = Nothing
+                        , positiveResultDateEstimatedDirty = True
+                    }
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+
+                setPositiveResultDateMsg =
+                    if confirmed then
+                        [ SetPositiveResultDate date ]
+
+                    else
+                        []
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra (update currentDate id db) setPositiveResultDateMsg
+
+        SetPositiveResultDate value ->
+            let
+                updatedForm =
+                    { diagnosticsForm
+                        | positiveResultDate = Just value
+                        , positiveResultDateDirty = True
+                        , positiveResultDateEstimated = Nothing
+                        , positiveResultDateEstimatedDirty = True
+                    }
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetDateSelectorState state ->
+            let
+                updatedForm =
+                    { diagnosticsForm | dateSelectorPopupState = state }
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , [ focusOnCalendarMsg ]
+            )
+
+        SaveDiagnostics personId particpantId positiveResultRecorded saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                appMsgs =
+                    model.diagnosticsData.form
+                        |> toDiagnosticsValueWithDefault positiveResultRecorded measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                let
+                                    saveMsg =
+                                        Backend.HIVEncounter.Model.SaveDiagnostics personId measurementId value
+                                            |> Backend.Model.MsgHIVEncounter id
+                                            |> App.Model.MsgIndexedDb
+
+                                    additionalMsgs =
+                                        if not positiveResultRecorded && diagnosticsForm.resultPositive == Just False then
+                                            [ Backend.IndividualEncounterParticipant.Model.CloseHIVSession HIVOutcomeNotDiagnosed
+                                                |> Backend.Model.MsgIndividualEncounterParticipant particpantId
+                                                |> App.Model.MsgIndexedDb
+                                            , App.Model.SetActivePage PinCodePage
+                                            ]
+
+                                        else
+                                            [ App.Model.SetActivePage <| UserPage <| HIVEncounterPage id ]
+                                in
+                                saveMsg :: additionalMsgs
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
 
 
--- SetDiagnosticsBoolInput formUpdateFunc value ->
---     let
---         updatedForm =
---             formUpdateFunc value diagnosticsForm
---
---         updatedData =
---             model.diagnosticsData
---                 |> (\data -> { data | form = updatedForm })
---     in
---     ( { model | diagnosticsData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SaveDiagnostics personId particpantId saved ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         appMsgs =
---             model.diagnosticsData.form
---                 |> toDiagnosticsValueWithDefault measurement
---                 |> unwrap
---                     []
---                     (\value ->
---                         let
---                             saveMsg =
---                                 Backend.HIVEncounter.Model.SaveDiagnostics personId measurementId value
---                                     |> Backend.Model.MsgHIVEncounter id
---                                     |> App.Model.MsgIndexedDb
---
---                             additionalMsgs =
---                                 if diagnosticsForm.diagnosed == Just False then
---                                     [ Backend.IndividualEncounterParticipant.Model.CloseHIVSession OutcomeNotDiagnosed
---                                         |> Backend.Model.MsgIndividualEncounterParticipant particpantId
---                                         |> App.Model.MsgIndexedDb
---                                     , App.Model.SetActivePage PinCodePage
---                                     ]
---
---                                 else
---                                     [ App.Model.SetActivePage <| UserPage <| HIVEncounterPage id ]
---                         in
---                         saveMsg :: additionalMsgs
---                     )
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
+
 --
 -- SetActiveMedicationTask task ->
 --     let

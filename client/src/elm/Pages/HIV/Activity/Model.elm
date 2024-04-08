@@ -2,6 +2,8 @@ module Pages.HIV.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Date exposing (Date)
+import DateSelector.Model exposing (DateSelectorConfig)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
@@ -37,6 +39,37 @@ type alias DiagnosticsData =
     }
 
 
+
+--
+-- type alias PregnancySummaryValue =
+--     { expectedDateConcluded : NominalDate
+--     , deliveryComplications : EverySet DeliveryComplication
+--     , signs : EverySet PregnancySummarySign
+--     , apgarOneMin : Maybe Float
+--     , apgarFiveMin : Maybe Float
+--     , birthWeight : Maybe WeightInGrm
+--     , birthLength : Maybe HeightInCm
+--     , birthDefects : EverySet BirthDefect
+--     }
+--
+-- type alias PregnancySummaryForm =
+--     { expectedDateConcluded : Maybe Date
+--     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+--     , deliveryComplicationsPresent : Maybe Bool
+--     , deliveryComplications : Maybe (List DeliveryComplication)
+--     , apgarScoresAvailable : Maybe Bool
+--     , apgarOneMin : Maybe Float
+--     , apgarFiveMin : Maybe Float
+--     , apgarDirty : Bool
+--     , birthWeight : Maybe WeightInGrm
+--     , birthLengthAvailable : Maybe Bool
+--     , birthLength : Maybe HeightInCm
+--     , birthLengthDirty : Bool
+--     , birthDefectsPresent : Maybe Bool
+--     , birthDefects : Maybe (List BirthDefect)
+--     }
+
+
 emptyDiagnosticsData : DiagnosticsData
 emptyDiagnosticsData =
     { form = emptyDiagnosticsForm
@@ -44,13 +77,29 @@ emptyDiagnosticsData =
 
 
 type alias DiagnosticsForm =
-    { diagnosed : Maybe Bool
+    { -- Used in case we don't have info of positive HIV test result
+      -- for this patient (HIV test is done at Prenatal and NCD).
+      resultPositive : Maybe Bool
+    , -- Used in case we have info of positive HIV test result
+      -- for this patient (HIV test is done at Prenatal and NCD).
+      resultDateCorrect : Maybe Bool
+    , positiveResultDate : Maybe Date
+    , positiveResultDateDirty : Bool
+    , positiveResultDateEstimated : Maybe Bool
+    , positiveResultDateEstimatedDirty : Bool
+    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyDiagnosticsForm : DiagnosticsForm
 emptyDiagnosticsForm =
-    { diagnosed = Nothing
+    { resultPositive = Nothing
+    , resultDateCorrect = Nothing
+    , positiveResultDate = Nothing
+    , positiveResultDateDirty = False
+    , positiveResultDateEstimated = Nothing
+    , positiveResultDateEstimatedDirty = False
+    , dateSelectorPopupState = Nothing
     }
 
 
@@ -141,12 +190,15 @@ type NextStepsTask
 
 type Msg
     = SetActivePage Page
+      -- DIAGNOSTICS
+    | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
+    | ConfirmPositiveResultDate Date Bool
+    | SetPositiveResultDate Date
+    | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
+    | SaveDiagnostics PersonId IndividualEncounterParticipantId Bool (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
 
 
 
--- DIAGNOSTICS
--- | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
--- | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
 --   -- MEDICATION
 -- | SetActiveMedicationTask MedicationTask
 -- | SetPrescribedMedication HIVPrescribedMedication

@@ -11,9 +11,9 @@ fetch id db =
     let
         fetchHIVEncounters =
             resolveIndividualParticipantsForPerson id HIVEncounter db
-                |> List.map FetchHIVEncountersForParticipant
+                |> FetchHIVEncountersForParticipants
     in
     [ FetchPerson id
     , FetchIndividualEncounterParticipantsForPerson id
+    , fetchHIVEncounters
     ]
-        ++ fetchHIVEncounters

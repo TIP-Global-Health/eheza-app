@@ -5590,6 +5590,19 @@ decodeHIVDiagnostics =
 decodeHIVDiagnosticsValue : Decoder HIVDiagnosticsValue
 decodeHIVDiagnosticsValue =
     succeed HIVDiagnosticsValue
+        |> required "hiv_diagnosis_signs" (decodeEverySet decodeHIVDiagnosisSign)
+        |> optional "positive_result_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+
+
+decodeHIVDiagnosisSign : Decoder HIVDiagnosisSign
+decodeHIVDiagnosisSign =
+    string
+        |> andThen
+            (\result ->
+                hivDiagnosisSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVDiagnosisSign" |> fail)
+            )
 
 
 decodeHIVFollowUp : Decoder HIVFollowUp

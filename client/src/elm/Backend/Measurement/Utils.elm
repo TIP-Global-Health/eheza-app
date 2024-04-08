@@ -4088,6 +4088,41 @@ tuberculosisPrescribedMedicationFromString sign =
             Nothing
 
 
+hivDiagnosisSignToString : HIVDiagnosisSign -> String
+hivDiagnosisSignToString diagnosis =
+    case diagnosis of
+        HIVResultPositiveReported ->
+            "result-positive-reported"
+
+        HIVResultPositiveKnown ->
+            "result-positive-known"
+
+        HIVResultDateEstimated ->
+            "result-date-estimated"
+
+        NoHIVDiagnosisSigns ->
+            "none"
+
+
+hivDiagnosisSignFromString : String -> Maybe HIVDiagnosisSign
+hivDiagnosisSignFromString diagnosis =
+    case diagnosis of
+        "result-positive-reported" ->
+            Just HIVResultPositiveReported
+
+        "result-positive-known" ->
+            Just HIVResultPositiveKnown
+
+        "result-date-estimated" ->
+            Just HIVResultDateEstimated
+
+        "none" ->
+            Just NoHIVDiagnosisSigns
+
+        _ ->
+            Nothing
+
+
 generatePreviousMeasurements :
     (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
     -> (ModelIndexedDb -> Dict encounterId (WebData measurements))

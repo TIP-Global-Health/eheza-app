@@ -2980,7 +2980,16 @@ type alias HIVDiagnostics =
 
 
 type alias HIVDiagnosticsValue =
-    {}
+    { signs : EverySet HIVDiagnosisSign
+    , positiveResultDate : Maybe NominalDate
+    }
+
+
+type HIVDiagnosisSign
+    = HIVResultPositiveReported
+    | HIVResultPositiveKnown
+    | HIVResultDateEstimated
+    | NoHIVDiagnosisSigns
 
 
 type alias HIVFollowUp =

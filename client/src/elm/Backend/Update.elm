@@ -867,6 +867,49 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
+        FetchNCDEncountersForParticipants ids ->
+            let
+                ncdEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.ncdEncountersByParticipant ids
+            in
+            ( { model | ncdEncountersByParticipant = ncdEncountersByParticipantUpdated }
+            , sw.select ncdEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedNCDEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedNCDEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | ncdEncountersByParticipant = Dict.union dictUpdated model.ncdEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchChildScoreboardEncountersForParticipant id ->
             ( { model | childScoreboardEncountersByParticipant = Dict.insert id Loading model.childScoreboardEncountersByParticipant }
             , sw.select childScoreboardEncounterEndpoint [ id ]

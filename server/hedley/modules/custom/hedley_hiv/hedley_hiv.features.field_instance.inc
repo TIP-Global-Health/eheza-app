@@ -67,8 +67,8 @@ function hedley_hiv_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-hiv_diagnostics-field_hiv_diagnosis'.
-  $field_instances['node-hiv_diagnostics-field_hiv_diagnosis'] = array(
+  // Exported field_instance: 'node-hiv_diagnostics-field_hiv_diagnosis_signs'.
+  $field_instances['node-hiv_diagnostics-field_hiv_diagnosis_signs'] = array(
     'bundle' => 'hiv_diagnostics',
     'default_value' => NULL,
     'deleted' => 0,
@@ -79,7 +79,7 @@ function hedley_hiv_field_default_field_instances() {
         'module' => 'list',
         'settings' => array(),
         'type' => 'list_default',
-        'weight' => 7,
+        'weight' => 8,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -89,8 +89,8 @@ function hedley_hiv_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_hiv_diagnosis',
-    'label' => 'HIV Diagnosis',
+    'field_name' => 'field_hiv_diagnosis_signs',
+    'label' => 'HIV Diagnosis	Signs',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -100,7 +100,7 @@ function hedley_hiv_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 7,
+      'weight' => 8,
     ),
   );
 
@@ -288,7 +288,7 @@ function hedley_hiv_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_text',
-      'weight' => 8,
+      'weight' => 9,
     ),
   );
 
@@ -2524,7 +2524,7 @@ function hedley_hiv_field_default_field_instances() {
   t('Date Measured');
   t('Date delivered to vendor');
   t('Follow up options');
-  t('HIV Diagnosis');
+  t('HIV Diagnosis	Signs');
   t('HIV Encounter');
   t('Individual Participant');
   t('Missed doses');

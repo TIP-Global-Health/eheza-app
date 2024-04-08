@@ -28,8 +28,8 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeHIVEncounter : WebData ()
+    , saveDiagnostics : WebData ()
 
-    -- , saveDiagnostics : WebData ()
     -- , saveSymptomReview : WebData ()
     -- , saveReferral : WebData ()
     -- , saveHealthEducation : WebData ()
@@ -42,8 +42,8 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { closeHIVEncounter = NotAsked
+    , saveDiagnostics = NotAsked
 
-    -- , saveDiagnostics = NotAsked
     -- , saveSymptomReview = NotAsked
     -- , saveReferral = NotAsked
     -- , saveHealthEducation = NotAsked
@@ -56,11 +56,11 @@ emptyModel =
 type Msg
     = CloseHIVEncounter
     | HandleClosedHIVEncounter (WebData ())
+    | SaveDiagnostics PersonId (Maybe HIVDiagnosticsId) HIVDiagnosticsValue
+    | HandleSavedDiagnostics (WebData ())
 
 
 
--- | SaveDiagnostics PersonId (Maybe HIVDiagnosticsId) HIVDiagnosticsValue
--- | HandleSavedDiagnostics (WebData ())
 -- | SavePrescribedMedication PersonId (Maybe HIVMedicationId) HIVMedicationValue
 -- | HandleSavedPrescribedMedication (WebData ())
 -- | SaveTreatmentReview PersonId (Maybe HIVTreatmentReviewId) TreatmentOngoingValue
