@@ -346,9 +346,6 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                 viewMessage =
                     viewResilienceMessage language nurseId nurse model
 
-                viewGuide =
-                    viewGuideMessage language nurse
-
                 viewFilteredByCategory category =
                     List.filter (Tuple.second >> .category >> (==) category) read
                         |> List.map viewMessage
@@ -567,13 +564,63 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
 
 viewGuideMessage : Language -> Nurse -> List (Html Msg)
 viewGuideMessage language nurse =
-    [ div [ class "ui report unstackable items" ]
-        [ div [ class "guide-message" ]
+    [ div [ class "guide-message" ]
+        [ p [ class "title" ]
+            --
             [ text <| translate language Translate.ResilienceMessageGuideTitle1
-            , div []
+            ]
+        , ul []
+            [ li []
                 [ text <| translate language Translate.ResilienceMessageGuide1Bullet1
-                , text <| translate language Translate.ResilienceMessageGuide1Bullet2
                 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide1Bullet2
+                ]
+            ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle2
+            ]
+        , ul []
+            [ li []
+                []
+            , li []
+                []
+            ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle3
+            ]
+        , ul []
+            [ li []
+                []
+            , li []
+                []
+            ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle4
+            ]
+        , ul []
+            [ li []
+                []
+            , li []
+                []
+            ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle5
+            ]
+        , ul []
+            [ li []
+                []
+            , li []
+                []
+            ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle6
+            ]
+        , ul []
+            [ li []
+                []
+            , li []
+                []
             ]
         ]
     ]

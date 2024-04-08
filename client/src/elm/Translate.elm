@@ -18108,14 +18108,14 @@ translationSet trans =
             }
 
         ResilienceMessageGuide1Bullet1 ->
-            { english = "i. Input your pin code"
-            , kinyarwanda = Just "   i. Shyiramo kode (ariyo Pin)"
+            { english = "Input your pin code"
+            , kinyarwanda = Just "Shyiramo kode (ariyo Pin)"
             , kirundi = Nothing
             }
 
         ResilienceMessageGuide1Bullet2 ->
-            { english = "ii. Proceed to the \"Well-being\" icon"
-            , kinyarwanda = Just "ii. Komeza kuri \"Gubwa neza\""
+            { english = "Proceed to the \"Well-being\" icon"
+            , kinyarwanda = Just "Komeza kuri \"Gubwa neza\""
             , kirundi = Nothing
             }
 
