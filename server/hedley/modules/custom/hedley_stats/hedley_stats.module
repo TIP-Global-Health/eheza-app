@@ -40,6 +40,7 @@ define('HEDLEY_STATS_SPV', 'sync_stats_spv');
 define('HEDLEY_STATS_CHILD_SCOREBOARD', 'sync_stats_child_scoreboard');
 define('HEDLEY_STATS_NUTRITION_INDIVIDUAL', 'sync_stats_nutrition_individual');
 define('HEDLEY_STATS_NUTRITION_GROUP', 'sync_stats_nutrition_group');
+define('HEDLEY_STATS_GROUP_EDUCATION', 'sync_stats_group_education');
 
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
@@ -174,6 +175,10 @@ function hedley_stats_requires_statistics_recalculation($node) {
 
   if (hedley_stats_requires_child_scoreboard_statistics_recalculation($wrapper)) {
     return HEDLEY_STATS_CHILD_SCOREBOARD;
+  }
+
+  if (hedley_stats_requires_group_education_statistics_recalculation($wrapper)) {
+    return HEDLEY_STATS_GROUP_EDUCATION;
   }
 
   if (hedley_stats_requires_nutrition_individual_statistics_recalculation($wrapper)) {
@@ -397,6 +402,23 @@ function hedley_stats_requires_child_scoreboard_statistics_recalculation($wrappe
   }
 
   return FALSE;
+}
+
+/**
+ * Checks if entity requires Group Education statistics recalculation.
+ *
+ * @param object $wrapper
+ *   Entity metadata wrapper.
+ *
+ * @return bool
+ *   True, if statistics recalculation is required.
+ */
+function hedley_stats_requires_group_education_statistics_recalculation($wrapper) {
+  $triggering_types = [HEDLEY_ACTIVITY_GROUP_EDUCATION_CONTENT_TYPE];
+
+  $bundle = $wrapper->getBundle();
+
+  return in_array($bundle, $triggering_types);
 }
 
 /**
