@@ -177,7 +177,7 @@ type alias ChildrenBeneficiariesStats =
     , gender : Gender
     , birthDate : NominalDate
     , memberSince : NominalDate
-    , motherIdentifier : PersonIdentifier
+    , motherIdentifier : Maybe PersonIdentifier
     , graduationDate : NominalDate
     }
 
