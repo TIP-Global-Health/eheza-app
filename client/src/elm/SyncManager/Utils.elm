@@ -183,15 +183,6 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncUploadWhatsApp emptyUploadRec, syncInfoAuthorities )
-
-                        else
-                            noChange
-
-                    SyncUploadWhatsApp record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
                             ( SyncUploadAuthority emptyUploadRec, syncInfoAuthorities )
 
                         else
@@ -201,7 +192,7 @@ determineSyncStatus activePage model =
                         case ( syncInfoAuthorities, record.indexDbRemoteData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next status.
-                                ( SyncDownloadGeneral RemoteData.NotAsked
+                                ( SyncUploadWhatsApp emptyUploadRec
                                 , syncInfoAuthorities
                                 )
 
@@ -219,13 +210,27 @@ determineSyncStatus activePage model =
                                         -- We've reached the last element,
                                         -- so reset authorities zipper to first element,
                                         -- and rotate to the next status.
-                                        ( SyncDownloadGeneral RemoteData.NotAsked
+                                        ( SyncUploadWhatsApp emptyUploadRec
                                         , Just (Zipper.first zipper)
                                         )
 
                             _ ->
                                 -- Still have data to upload.
                                 noChange
+
+                    -- It's important to have Whatsapp uploaded after Authority upload
+                    -- has completed, because Whatsapp record may refer to person
+                    -- that's pending upload at Authority.
+                    SyncUploadWhatsApp record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked
+                            , syncInfoAuthorities
+                            )
+
+                        else
+                            noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of
