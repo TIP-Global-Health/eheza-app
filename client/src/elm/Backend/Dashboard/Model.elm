@@ -44,8 +44,7 @@ type alias AssembledData =
     , nutritionIndividualData : List NutritionIndividualDataItem
     , nutritionGroupData : List NutritionGroupDataItem
     , nutritionPageData : NutritionPageData
-
-    -- , groupEducationData : GroupEducationData
+    , groupEducationData : List EducationSessionData
     }
 
 
