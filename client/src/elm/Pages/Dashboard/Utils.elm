@@ -23,6 +23,7 @@ import Backend.Dashboard.Model
         , NutritionStatus
         , NutritionValue
         , PMTCTDataItem
+        , PatientDetails
         , Periods
         , PersonIdentifier
         , PrenatalDataItem
@@ -190,9 +191,19 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
     , missedSessions = stats.missedSessions
     , totalEncounters = stats.totalEncounters
     , villagesWithResidents = stats.villagesWithResidents
-    , patientsDetails = stats.patientsDetails
+    , patientsDetails = generateFilteredPatientsDetails stats selectedVillageFilter
     , timestamp = stats.timestamp
     }
+
+
+generateFilteredPatientsDetails :
+    DashboardStatsRaw
+    -> Maybe VillageId
+    -> Dict PersonIdentifier PatientDetails
+generateFilteredPatientsDetails stats selectedVillageFilter =
+    Maybe.andThen (\villageId -> Dict.get villageId stats.villagesWithResidents) selectedVillageFilter
+        |> Maybe.map (\residents -> Dict.filter (\key _ -> List.member key residents) stats.patientsDetails)
+        |> Maybe.withDefault stats.patientsDetails
 
 
 generateFilteredData :
