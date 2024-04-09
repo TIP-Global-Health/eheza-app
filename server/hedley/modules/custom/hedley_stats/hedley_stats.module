@@ -415,7 +415,7 @@ function hedley_stats_requires_child_scoreboard_statistics_recalculation($wrappe
  */
 function hedley_stats_requires_group_education_statistics_recalculation($wrapper) {
   $triggering_types = [
-    HEDLEY_ACTIVITY_GROUP_EDUCATION_CONTENT_TYPE
+    HEDLEY_ACTIVITY_GROUP_EDUCATION_CONTENT_TYPE,
   ];
 
   $bundle = $wrapper->getBundle();
@@ -2182,7 +2182,7 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
  *
  * @throws Exception
  */
-function hedley_stats_get_group_education_data($health_center_id, &$patients_details) {
+function hedley_stats_get_group_education_data($health_center_id, array &$patients_details) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_GROUP_EDUCATION_DATA, $health_center_id)) {
     return $cache_data;
