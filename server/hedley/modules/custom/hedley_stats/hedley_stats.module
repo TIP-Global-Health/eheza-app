@@ -2216,6 +2216,15 @@ function hedley_stats_get_group_education_data($health_center_id, &$patients_det
 
   $data = $patients_for_loading_details = [];
   foreach ($result as $row) {
+    if (empty($row->education_topics)) {
+      // Session got no topics - skipping it.
+      continue;
+    }
+
+    if (empty($row->participating_patients)) {
+      // Session got no participants - skipping it.
+      continue;
+    }
     $participating_patients = explode(',', $row->participating_patients);
 
     $data[$row->village_uuid][] = [
