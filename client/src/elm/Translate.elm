@@ -290,6 +290,7 @@ type Dashboard
     | NumberOfCephaly
     | NumberOfChildrenSeen
     | NumberOfDiagnosedMalnourished
+    | NumberOfGroupSessions
     | NumberOfStunting
     | PatientsManagedAtHome
     | PatientCurrentlyUnderCare
@@ -308,11 +309,13 @@ type Dashboard
     | TotalMalnourished
     | TotalEncountersLabel
     | TotalAssessment
+    | TotalAttendees
     | TotalCases
     | TotalDiabeticCases
     | UncomplicatedMalariaByChws
     | UncomplicatedMalariaInPregnancyReferredToHc
     | UncomplicatedGIInfectionByCHWS
+    | UniquePatients
     | UseFamilyPlanning
     | Within4MonthsOfDueDate
     | WithDangerSigns
@@ -23664,6 +23667,12 @@ translateDashboard trans =
             , kirundi = Nothing
             }
 
+        NumberOfGroupSessions ->
+            { english = "Number of Group Sessions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NumberOfStunting ->
             { english = "# of Stunting"
             , kinyarwanda = Just "Umubare w'abana bagaragaweho igwingira"
@@ -23826,6 +23835,12 @@ translateDashboard trans =
             , kirundi = Just "igitigiri cy'Ivyasuzumwe vyose hamwe"
             }
 
+        TotalAttendees ->
+            { english = "Total Attendees"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         TotalCases ->
             { english = "Total Cases"
             , kinyarwanda = Just "Umubare w'abakiriwe bose"
@@ -23854,6 +23869,12 @@ translateDashboard trans =
             { english = "Uncomplicated GI Infections Managed by CHWs"
             , kinyarwanda = Just "Uburwayi bwo mu nda bworoheje bwavuwe n'abajyanama w'ubuzima"
             , kirundi = Just "Ingwara zo mu nda zoroshe zirashobora gucungegwa n'abaremeshakiyago"
+            }
+
+        UniquePatients ->
+            { english = "Unique Patients"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         UseFamilyPlanning ->

@@ -183,7 +183,7 @@ view language page currentDate site healthCenterId isChw nurse model db =
                                         ( viewChildWellnessPage language currentDate site healthCenterId subPage assembled db model, "child-wellness" )
 
                                     PageGroupEducation ->
-                                        ( [], "group-education" )
+                                        ( viewGroupEducationPage language currentDate isChw assembled db model, "group-education" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
@@ -1098,6 +1098,33 @@ viewNutritionChartsPage language currentDate isChw nurse activePage data db mode
             [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
             ]
         , links
+        ]
+    ]
+
+
+viewGroupEducationPage : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewGroupEducationPage language currentDate isChw assembled db model =
+    let
+        dateLastDayOfSelectedMonth =
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
+
+        sessionsDuringSelectedMonth =
+            List.filter (.startDate >> withinSelectedMonth dateLastDayOfSelectedMonth) assembled.groupEducationData
+
+        attendeesDuringSelectedMonth =
+            List.map (.participants >> EverySet.toList) sessionsDuringSelectedMonth
+                |> List.concat
+
+        uniqueAttendeesDuringSelectedMonth =
+            EverySet.fromList attendeesDuringSelectedMonth
+    in
+    [ monthSelector language dateLastDayOfSelectedMonth model
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.NumberOfGroupSessions) (String.fromInt <| List.length sessionsDuringSelectedMonth)
+            , chwCard language (Translate.Dashboard Translate.TotalAttendees) (String.fromInt <| List.length attendeesDuringSelectedMonth)
+            , chwCard language (Translate.Dashboard Translate.UniquePatients) (String.fromInt <| EverySet.size uniqueAttendeesDuringSelectedMonth)
+            ]
         ]
     ]
 
