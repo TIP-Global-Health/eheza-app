@@ -90,7 +90,7 @@ view language currentTime nurseId nurse db model =
                                                     Date.diff Months survey.dateMeasured currentDate >= 3
                                                 )
                                             -- We need to run the survey if
-                                            -- it is the beginning of the Program(Baseline).
+                                            -- it is the first time to use the program.
                                             |> Maybe.withDefault True
                                 in
                                 if runQuarterlySurvey then
