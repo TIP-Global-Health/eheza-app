@@ -19,6 +19,33 @@ import SyncManager.Model exposing (SiteFeature)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
+generatePreviousMeasurements :
+    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
+    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
+    -> Maybe encounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( encounterId, measurements ) )
+generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantId db =
+    encountersByParticipantFunc db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if currentEncounterId == Just encounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId (measurementsByEncouterFunc db) of
+                        Just (Success data) ->
+                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                        _ ->
+                            Nothing
+            )
+        -- Most recent date to least recent date.
+        |> List.sortWith sortTuplesByDateDesc
+
+
 {-| Given a MUAC in cm, classify according to the measurement tool shown
 at <https://github.com/Gizra/ihangane/issues/282>
 -}
@@ -3945,16 +3972,16 @@ tuberculosisDiagnosisFromString diagnosis =
 tuberculosisSymptomToString : TuberculosisSymptom -> String
 tuberculosisSymptomToString symptom =
     case symptom of
-        SymptomNightSweats ->
+        TuberculosisSymptomNightSweats ->
             "night-sweats"
 
-        SymptomBloodInSputum ->
+        TuberculosisSymptomBloodInSputum ->
             "blood-in-sputum"
 
-        SymptomWeightLoss ->
+        TuberculosisSymptomWeightLoss ->
             "wight-loss"
 
-        SymptomSevereFatigue ->
+        TuberculosisSymptomSevereFatigue ->
             "severe-fatigue"
 
         NoTuberculosisSymptoms ->
@@ -3965,16 +3992,16 @@ tuberculosisSymptomFromString : String -> Maybe TuberculosisSymptom
 tuberculosisSymptomFromString symptom =
     case symptom of
         "night-sweats" ->
-            Just SymptomNightSweats
+            Just TuberculosisSymptomNightSweats
 
         "blood-in-sputum" ->
-            Just SymptomBloodInSputum
+            Just TuberculosisSymptomBloodInSputum
 
         "wight-loss" ->
-            Just SymptomWeightLoss
+            Just TuberculosisSymptomWeightLoss
 
         "severe-fatigue" ->
-            Just SymptomSevereFatigue
+            Just TuberculosisSymptomSevereFatigue
 
         "none" ->
             Just NoTuberculosisSymptoms
@@ -4158,28 +4185,155 @@ hivPrescribedMedicationFromString sign =
             Nothing
 
 
-generatePreviousMeasurements :
-    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
-    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
-    -> Maybe encounterId
-    -> IndividualEncounterParticipantId
-    -> ModelIndexedDb
-    -> List ( NominalDate, ( encounterId, measurements ) )
-generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantId db =
-    encountersByParticipantFunc db participantId
-        |> List.filterMap
-            (\( encounterId, encounter ) ->
-                -- We do not want to get data of current encounter.
-                if currentEncounterId == Just encounterId then
-                    Nothing
+hivSymptomToString : HIVSymptom -> String
+hivSymptomToString symptom =
+    case symptom of
+        HIVSymptomFever ->
+            "fever"
 
-                else
-                    case Dict.get encounterId (measurementsByEncouterFunc db) of
-                        Just (Success data) ->
-                            Just ( encounter.startDate, ( encounterId, data ) )
+        HIVSymptomFatigue ->
+            "fatigue"
 
-                        _ ->
-                            Nothing
-            )
-        -- Most recent date to least recent date.
-        |> List.sortWith sortTuplesByDateDesc
+        HIVSymptomSwollenLymphNodes ->
+            "swollen-lymph-nodes"
+
+        HIVSymptomSoreThroat ->
+            "sore-throat"
+
+        HIVSymptomRash ->
+            "rash"
+
+        HIVSymptomMuscleJointPain ->
+            "muscle-joint-pain"
+
+        HIVSymptomHeadache ->
+            "headache"
+
+        HIVSymptomSevereAbdominalPain ->
+            "severe-abdominal-pain"
+
+        HIVSymptomNightSweats ->
+            "night-sweats"
+
+        HIVSymptomDiarrhea ->
+            "diarrhea"
+
+        HIVSymptomWeightLoss ->
+            "wight-loss"
+
+        HIVSymptomCoughingUpBlood ->
+            "coughing-up-blood"
+
+        HIVSymptomHairLoss ->
+            "hair-loss"
+
+        HIVSymptomMouthUlcers ->
+            "mouth-ulcers"
+
+        HIVSymptomDifficultyBreathing ->
+            "difficulty-breathing"
+
+        HIVSymptomVomiting ->
+            "vomiting"
+
+        NoHIVSymptoms ->
+            "none"
+
+
+hivSymptomFromString : String -> Maybe HIVSymptom
+hivSymptomFromString symptom =
+    case symptom of
+        "fever" ->
+            Just HIVSymptomFever
+
+        "fatigue" ->
+            Just HIVSymptomFatigue
+
+        "swollen-lymph-nodes" ->
+            Just HIVSymptomSwollenLymphNodes
+
+        "sore-throat" ->
+            Just HIVSymptomSoreThroat
+
+        "rash" ->
+            Just HIVSymptomRash
+
+        "muscle-joint-pain" ->
+            Just HIVSymptomMuscleJointPain
+
+        "headache" ->
+            Just HIVSymptomHeadache
+
+        "severe-abdominal-pain" ->
+            Just HIVSymptomSevereAbdominalPain
+
+        "night-sweats" ->
+            Just HIVSymptomNightSweats
+
+        "diarrhea" ->
+            Just HIVSymptomDiarrhea
+
+        "wight-loss" ->
+            Just HIVSymptomWeightLoss
+
+        "coughing-up-blood" ->
+            Just HIVSymptomCoughingUpBlood
+
+        "hair-loss" ->
+            Just HIVSymptomHairLoss
+
+        "mouth-ulcers" ->
+            Just HIVSymptomMouthUlcers
+
+        "difficulty-breathing" ->
+            Just HIVSymptomDifficultyBreathing
+
+        "vomiting" ->
+            Just HIVSymptomVomiting
+
+        "none" ->
+            Just NoHIVSymptoms
+
+        _ ->
+            Nothing
+
+
+hivHealthEducationSignToString : HIVHealthEducationSign -> String
+hivHealthEducationSignToString diagnosis =
+    case diagnosis of
+        EducationPositiveResult ->
+            "positive-result"
+
+        EducationSaferSexPractices ->
+            "safer-sex-practices"
+
+        EducationEncouragedPartnerTesting ->
+            "encouraged-partner-testing"
+
+        EducationFamilyPlanningOptions ->
+            "family-planning-options"
+
+        NoHIVHealthEducationSigns ->
+            "none"
+
+
+hivHealthEducationSignFromString : String -> Maybe HIVHealthEducationSign
+hivHealthEducationSignFromString diagnosis =
+    case diagnosis of
+        "positive-result" ->
+            Just EducationPositiveResult
+
+        "safer-sex-practices" ->
+            Just EducationSaferSexPractices
+
+        "encouraged-partner-testing" ->
+            Just EducationEncouragedPartnerTesting
+
+        "family-planning-options" ->
+            Just EducationFamilyPlanningOptions
+
+        "none" ->
+            Just NoHIVHealthEducationSigns
+
+        _ ->
+            Nothing

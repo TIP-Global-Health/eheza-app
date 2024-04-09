@@ -75,6 +75,76 @@ function hedley_hiv_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_hiv_health_education_signs'.
+  $field_bases['field_hiv_health_education_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_hiv_health_education_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'positive-result' => 'Positive Result',
+        'safer-sex-practices' => 'Safer Sex Practices',
+        'encouraged-partner-testing' => 'Encouraged Partner Testing',
+        'family-planning-options' => 'Family Planning Options',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hiv_symptoms'.
+  $field_bases['field_hiv_symptoms'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_hiv_symptoms',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'fever' => 'Fever',
+        'fatigue' => 'Fatigue',
+        'swollen-lymph-nodes' => 'Swollen lymph nodes',
+        'sore-throat' => 'Sore throat',
+        'rash' => 'Rash',
+        'muscle-joint-pain' => 'Muscle and joint pain',
+        'headache' => 'Headache',
+        'severe-abdominal-pain' => 'Severe abdominal pain',
+        'night-sweats' => 'Night sweats',
+        'diarrhea' => 'Diarrhea',
+        'wight-loss' => 'Weight loss',
+        'coughing-up-blood' => 'Coughing up blood',
+        'hair-loss' => 'Hair loss',
+        'mouth-ulcers' => 'Mouth ulcers',
+        'difficulty-breathing' => 'Difficulty breathing',
+        'vomiting' => 'Vomiting',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_positive_result_date'.
   $field_bases['field_positive_result_date'] = array(
     'active' => 1,

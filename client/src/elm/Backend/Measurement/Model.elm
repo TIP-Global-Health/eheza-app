@@ -2960,10 +2960,10 @@ type alias TuberculosisSymptomReviewValue =
 
 
 type TuberculosisSymptom
-    = SymptomNightSweats
-    | SymptomBloodInSputum
-    | SymptomWeightLoss
-    | SymptomSevereFatigue
+    = TuberculosisSymptomNightSweats
+    | TuberculosisSymptomBloodInSputum
+    | TuberculosisSymptomWeightLoss
+    | TuberculosisSymptomSevereFatigue
     | NoTuberculosisSymptoms
 
 
@@ -3001,7 +3001,15 @@ type alias HIVHealthEducation =
 
 
 type alias HIVHealthEducationValue =
-    {}
+    EverySet HIVHealthEducationSign
+
+
+type HIVHealthEducationSign
+    = EducationPositiveResult
+    | EducationSaferSexPractices
+    | EducationEncouragedPartnerTesting
+    | EducationFamilyPlanningOptions
+    | NoHIVHealthEducationSigns
 
 
 type alias HIVMedication =
@@ -3028,7 +3036,27 @@ type alias HIVSymptomReview =
 
 
 type alias HIVSymptomReviewValue =
-    {}
+    EverySet HIVSymptom
+
+
+type HIVSymptom
+    = HIVSymptomFever
+    | HIVSymptomFatigue
+    | HIVSymptomSwollenLymphNodes
+    | HIVSymptomSoreThroat
+    | HIVSymptomRash
+    | HIVSymptomMuscleJointPain
+    | HIVSymptomHeadache
+    | HIVSymptomSevereAbdominalPain
+    | HIVSymptomNightSweats
+    | HIVSymptomDiarrhea
+    | HIVSymptomWeightLoss
+    | HIVSymptomCoughingUpBlood
+    | HIVSymptomHairLoss
+    | HIVSymptomMouthUlcers
+    | HIVSymptomDifficultyBreathing
+    | HIVSymptomVomiting
+    | NoHIVSymptoms
 
 
 type alias HIVTreatmentReview =

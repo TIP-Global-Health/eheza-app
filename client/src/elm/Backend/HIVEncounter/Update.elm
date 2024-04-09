@@ -78,54 +78,50 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveSymptomReview personId valueId value ->
+            ( { model | saveSymptomReview = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivSymptomReviewEndpoint HandleSavedSymptomReview
+            , []
+            )
 
+        HandleSavedSymptomReview data ->
+            ( { model | saveSymptomReview = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
 
---
--- SaveSymptomReview personId valueId value ->
---     ( { model | saveSymptomReview = Loading }
---     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivSymptomReviewEndpoint HandleSavedSymptomReview
---     , []
---     )
---
--- HandleSavedSymptomReview data ->
---     ( { model | saveSymptomReview = data }
---     , Cmd.none
---     , triggerRollbarOnFailure data
---     )
---
--- SaveReferral personId valueId value ->
---     ( { model | saveReferral = Loading }
---     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivReferralEndpoint HandleSavedReferral
---     , []
---     )
---
--- HandleSavedReferral data ->
---     ( { model | saveReferral = data }
---     , Cmd.none
---     , triggerRollbarOnFailure data
---     )
---
--- SaveHealthEducation personId valueId value ->
---     ( { model | saveHealthEducation = Loading }
---     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivHealthEducationEndpoint HandleSavedHealthEducation
---     , []
---     )
---
--- HandleSavedHealthEducation data ->
---     ( { model | saveHealthEducation = data }
---     , Cmd.none
---     , triggerRollbarOnFailure data
---     )
---
--- SaveFollowUp personId valueId value ->
---     ( { model | saveFollowUp = Loading }
---     , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivFollowUpEndpoint HandleSavedFollowUp
---     , []
---     )
---
--- HandleSavedFollowUp data ->
---     ( { model | saveFollowUp = data }
---     , Cmd.none
---     , triggerRollbarOnFailure data
---     )
---
+        SaveReferral personId valueId value ->
+            ( { model | saveReferral = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivReferralEndpoint HandleSavedReferral
+            , []
+            )
+
+        HandleSavedReferral data ->
+            ( { model | saveReferral = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveHealthEducation personId valueId value ->
+            ( { model | saveHealthEducation = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivHealthEducationEndpoint HandleSavedHealthEducation
+            , []
+            )
+
+        HandleSavedHealthEducation data ->
+            ( { model | saveHealthEducation = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveFollowUp personId valueId value ->
+            ( { model | saveFollowUp = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value hivFollowUpEndpoint HandleSavedFollowUp
+            , []
+            )
+
+        HandleSavedFollowUp data ->
+            ( { model | saveFollowUp = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
