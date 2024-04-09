@@ -104,10 +104,9 @@
     &.page-filters {
       background-color: transparent;
       min-height: 40px;
-      padding: 25px 0;
-      margin-bottom: 25px;
+      padding: 15px 0;
+      margin-bottom: 35px;
       display: flex;
-      border-bottom: solid 1px $color-white;
 
       button {
         background-color: $color-white;
@@ -133,16 +132,11 @@
       }
     }
 
-    &.page-filters.center {
-      justify-content: center;
-    }
-
-    &.page-filters.nurse {
-      border-bottom: none;
+    &.page-filters.top-row {
       margin-bottom: 0;
     }
 
-    &.page-filters.nurse.center {
+    &.page-filters.center {
       justify-content: center;
     }
 

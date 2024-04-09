@@ -693,6 +693,7 @@ type TranslationId
     | GroupAssessment
     | Grams
     | Gravida
+    | GroupEducation
     | GroupEncounterType GroupEncounterType
     | GroupOfFoods GroupOfFoods
     | Growth
@@ -5446,6 +5447,9 @@ translationSet trans =
                         PageChildWellnessNutrition ->
                             translationSet Nutrition
 
+                PageGroupEducation ->
+                    translationSet GroupEducation
+
         EncounterWarningForDiagnosisPane warning suffix ->
             let
                 suffix_ =
@@ -6235,6 +6239,12 @@ translationSet trans =
             { english = "Gravida"
             , kinyarwanda = Just "Inda zose watwise"
             , kirundi = Just "Inday ya"
+            }
+
+        GroupEducation ->
+            { english = "Group Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         GroupEncounterType encounterType ->
@@ -23084,10 +23094,7 @@ translateActivePage page =
                     }
 
                 EducationSessionPage _ ->
-                    { english = "Group Education"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet GroupEducation
 
 
 translateChartPhrase : ChartPhrase -> TranslationSet String

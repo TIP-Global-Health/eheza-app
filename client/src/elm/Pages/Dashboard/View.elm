@@ -137,6 +137,9 @@ view language page currentDate site healthCenterId isChw nurse model db =
                 PageChildWellness _ ->
                     viewHeader language Translate.Pediatrics (UserPage <| DashboardPage PageMain)
 
+                PageGroupEducation ->
+                    viewHeader language Translate.GroupEducation (UserPage <| DashboardPage PageMain)
+
         content =
             Dict.get healthCenterId db.computedDashboards
                 |> Maybe.andThen (.assembledPermutations >> Dict.get ( model.programTypeFilter, model.selectedVillageFilter ))
@@ -178,6 +181,9 @@ view language page currentDate site healthCenterId isChw nurse model db =
 
                                     PageChildWellness subPage ->
                                         ( viewChildWellnessPage language currentDate site healthCenterId subPage assembled db model, "child-wellness" )
+
+                                    PageGroupEducation ->
+                                        ( [], "group-education" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
@@ -657,24 +663,29 @@ viewFiltersPane language page db model =
 viewMenuForNurse : Language -> Html Msg
 viewMenuForNurse language =
     div []
-        [ div [ class "ui segment page-filters nurse" ]
+        [ div [ class "ui segment page-filters top-row" ]
             [ viewMenuButton language PagePrenatal Nothing
             , viewMenuButton language (PageNutrition PageCharts) Nothing
             , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
             ]
-        , div [ class "ui segment page-filters nurse center" ]
+        , div [ class "ui segment page-filters center" ]
             [ viewMenuButton language (PageNCD PageHypertension) Nothing
             , viewMenuButton language (PageChildWellness PageChildWellnessOverview) Nothing
+            , viewMenuButton language PageGroupEducation Nothing
             ]
         ]
 
 
 viewMenuForChw : Language -> Html Msg
 viewMenuForChw language =
-    div [ class "ui segment page-filters" ]
-        [ viewMenuButton language PagePrenatal Nothing
-        , viewMenuButton language (PageNutrition PageCharts) Nothing
-        , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+    div []
+        [ div [ class "ui segment page-filters top-row" ]
+            [ viewMenuButton language PagePrenatal Nothing
+            , viewMenuButton language (PageNutrition PageCharts) Nothing
+            , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+            ]
+        , div [ class "ui segment page-filters center" ]
+            [ viewMenuButton language PageGroupEducation Nothing ]
         ]
 
 
