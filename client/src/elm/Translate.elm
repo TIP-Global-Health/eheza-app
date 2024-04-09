@@ -1350,10 +1350,32 @@ type TranslationId
     | ResilienceMessageGuide1Bullet1
     | ResilienceMessageGuide1Bullet2
     | ResilienceMessageGuideTitle2
+    | ResilienceMessageGuide2Bullet1
+    | ResilienceMessageGuide2Bullet2
     | ResilienceMessageGuideTitle3
+    | ResilienceMessageGuide3Bullet1
+    | ResilienceMessageGuide3Bullet2
+    | ResilienceMessageGuide3Bullet3
+    | ResilienceMessageGuide3Bullet4
+    | ResilienceMessageGuide3Bullet5
+    | ResilienceMessageGuide3Bullet6
+    | ResilienceMessageGuide3Bullet7
+    | ResilienceMessageGuide3Note
     | ResilienceMessageGuideTitle4
+    | ResilienceMessageGuide4Text
     | ResilienceMessageGuideTitle5
+    | ResilienceMessageGuide5Bullet1
+    | ResilienceMessageGuide5Bullet2
+    | ResilienceMessageGuide5Bullet3
     | ResilienceMessageGuideTitle6
+    | ResilienceMessageGuide6Bullet1
+    | ResilienceMessageGuide6Bullet2
+    | ResilienceMessageGuide6Bullet3
+    | ResilienceMessageGuide6Bullet4
+    | ResilienceMessageGuide6Bullet5
+    | ResilienceMessageGuide6Bullet6
+    | ResilienceMessageGuide6Bullet7
+    | ResilienceMessageGuide6Note
     | ResilienceMessageStressManagement1Title
     | ResilienceMessageStressManagement1Paragraph1
     | ResilienceMessageStressManagement1Paragraph2
@@ -10068,7 +10090,7 @@ translationSet trans =
             case tab of
                 TabGuide ->
                     { english = "Guide"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uko Bikorwa"
                     , kirundi = Nothing
                     }
 
@@ -18125,9 +18147,69 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageGuide2Bullet1 ->
+            { english = "Respond to the four questions presented."
+            , kinyarwanda = Just "Subiza ibibazo 16 byatanzwe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide2Bullet2 ->
+            { english = "Receive a score before progressing further."
+            , kinyarwanda = Just "Akira amanota mbere yo gukomeza."
+            , kirundi = Nothing
+            }
+
         ResilienceMessageGuideTitle3 ->
             { english = "c. Program Overview"
             , kinyarwanda = Just "c. Ibice bigize iyi porogaramu"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide3Bullet1 ->
+            { english = "Unread"
+            , kinyarwanda = Just "Ubutumwa utarasoma"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide3Bullet2 ->
+            { english = "Favourites"
+            , kinyarwanda = Just "Ubutumwa wishimiye"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide3Bullet3 ->
+            { english = "Growth"
+            , kinyarwanda = Just "Gutera imbere"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide3Bullet4 ->
+            { english = "Connecting"
+            , kinyarwanda = Just "Gusabana"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide3Bullet5 ->
+            { english = "Stress Management"
+            , kinyarwanda = Just "Kwiyitaho"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide3Bullet6 ->
+            { english = "Self-care"
+            , kinyarwanda = Just "Guhangana n’umunaniro"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide3Bullet7 ->
+            { english = "Mindfulness"
+            , kinyarwanda = Just "Zirikana ibi"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide3Note ->
+            { english = "(Messages are appropriately categorized within each section once done reading)"
+            , kinyarwanda = Just "(Iyo umaze gusoma ubutumwa, bwijyana muri buri cyiciro cyabwo)"
             , kirundi = Nothing
             }
 
@@ -18137,15 +18219,87 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageGuide4Text ->
+            { english = "Locate unread messages in that section. Click twice on the message to increase its visibility, and after that it will be removed from unread messages"
+            , kinyarwanda = Just "Shakira ubutumwa utarasoma muri icyo gice. Kanda inshuro ebyili ku butumwa uri gusoma kugirango ubusome neza. maze buhite buva ku rutonde rw'ubutumwa utarasoma"
+            , kirundi = Nothing
+            }
+
         ResilienceMessageGuideTitle5 ->
             { english = "e. Saving your Favourite Messages: (If a message resonates positively with you, you can designate it as a favourite)"
             , kinyarwanda = Just "e. Kubika Ubutumwa wakunze: (Niba hari ubutumwa wasomye ukabwishimira/ukabukunda, ushobora kubushyira muri iki gice) Uko bikorwa"
             , kirundi = Nothing
             }
 
+        ResilienceMessageGuide5Bullet1 ->
+            { english = "After reading a message Click on the three buttons above a message"
+            , kinyarwanda = Just "Umaze gusoma ubutumwa,  Kanda ku tudomo dutatu turi hejuru y’ubutumwa"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide5Bullet2 ->
+            { english = "Options include \"Read it,\" \"Favourites,\" and \"Remind me.\""
+            , kinyarwanda = Just "Amahitamo arimo \"Soma,\" \"Ubwo ukunda,\" na \"Unyibutse.\""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide5Bullet3 ->
+            { english = "Choose \"Favourite\" to mark the message"
+            , kinyarwanda = Just " Hitamo \"Ubwo ukunda\" (burahita bujya mu gice cy’ubutumwa ukunda."
+            , kirundi = Nothing
+            }
+
         ResilienceMessageGuideTitle6 ->
             { english = "f. Scheduling Reminders: (if you lack time to read a message immediately, schedule a reminder)"
             , kinyarwanda = Just "f. Gusaba Kwibutswa gusoma ubutumwa: (Niba ubuze umwanya wo gusoma ubutumwa, ushobora kubuhitamo ukaba wabusoma igihe uboneye umwanya)"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide6Bullet1 ->
+            { english = "Click on the three buttons above a message."
+            , kinyarwanda = Just "Kanda ku tudomo dutatu turi hejuru y’ubutumwa"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide6Bullet2 ->
+            { english = "Options include \"Read it,\" \"Favourites,\" and \"Remind me.\""
+            , kinyarwanda = Just "Amahitamo arimo \"Soma,\" \"Ubwo ukunda,\" na \"Unyibutse\""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide6Bullet3 ->
+            { english = "Click on \"Remind me\" for messages you cannot read immediately."
+            , kinyarwanda = Just "Kanda kuri \"Unyibutse\" kubutumwa utagiye gusoma ako kanya."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide6Bullet4 ->
+            { english = "Set a reminder to revisit the message in:"
+            , kinyarwanda = Just "Hitamo igihe uraba waboneye umwanya waza gusoma ubutumwa. Urahabwa amahitamo yo kuba wabusoma mu gihe cy’:"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide6Bullet5 ->
+            { english = "One hour"
+            , kinyarwanda = Just "Isaha imwe"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide6Bullet6 ->
+            { english = "Six hours"
+            , kinyarwanda = Just "Amasaha atandatu"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide6Bullet7 ->
+            { english = "Twelve hours"
+            , kinyarwanda = Just "Amasaha cumi n'abiri"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGuide6Note ->
+            { english = "Note: It is important to note that reading the message requires clicking on it."
+            , kinyarwanda = Just "Icyitonderwa: Ni ngombwa kumenya ko gusoma ubutumwa bisaba gukanda kuri ubwo butumwa."
             , kirundi = Nothing
             }
 

@@ -5045,6 +5045,10 @@ div.page-activity.messaging-center {
 
       .title {
         font-weight: bold;
+
+        &.note {
+          font-style: italic;
+        }
       }
     }
   }
