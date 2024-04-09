@@ -253,15 +253,10 @@ programTypeFromString string =
 decodeVillagesWithResidents : Decoder (Dict VillageId (List Int))
 decodeVillagesWithResidents =
     oneOf
-        [ decodeVillagesWithResidents_
+        [ dict (list decodeInt)
+            |> andThen (legacyDictToDict toEntityUuid)
         , succeed Dict.empty
         ]
-
-
-decodeVillagesWithResidents_ : Decoder (Dict VillageId (List Int))
-decodeVillagesWithResidents_ =
-    dict (list int)
-        |> andThen (legacyDictToDict toEntityUuid)
 
 
 decodeAcuteIllnessDataItem : Decoder AcuteIllnessDataItem
@@ -532,4 +527,4 @@ decodeEducationSessionData =
     succeed EducationSessionData
         |> required "start_date" decodeYYYYMMDD
         |> required "education_topics" (decodeEverySet decodeEducationTopic)
-        |> required "participating_patients" (decodeEverySet int)
+        |> required "participating_patients" (decodeEverySet decodeInt)
