@@ -325,7 +325,7 @@ decodeHIVMeasurements : Decoder HIVMeasurements
 decodeHIVMeasurements =
     succeed HIVMeasurements
         |> optional "hiv_diagnostics" (decodeHead decodeHIVDiagnostics) Nothing
-        |> optional "hiv_followUp" (decodeHead decodeHIVFollowUp) Nothing
+        |> optional "hiv_follow_up" (decodeHead decodeHIVFollowUp) Nothing
         |> optional "hiv_health_education" (decodeHead decodeHIVHealthEducation) Nothing
         |> optional "hiv_medication" (decodeHead decodeHIVMedication) Nothing
         |> optional "hiv_referral" (decodeHead decodeHIVReferral) Nothing
@@ -5617,7 +5617,19 @@ decodeHIVHealthEducation =
 
 decodeHIVHealthEducationValue : Decoder HIVHealthEducationValue
 decodeHIVHealthEducationValue =
-    succeed HIVHealthEducationValue
+    decodeEverySet decodeHIVHealthEducationSign
+        |> field "hiv_health_education_signs"
+
+
+decodeHIVHealthEducationSign : Decoder HIVHealthEducationSign
+decodeHIVHealthEducationSign =
+    string
+        |> andThen
+            (\result ->
+                hivHealthEducationSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVHealthEducationSign" |> fail)
+            )
 
 
 decodeHIVMedication : Decoder HIVMedication

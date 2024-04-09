@@ -145,12 +145,20 @@ emptyNextStepsData =
 
 
 type alias HealthEducationForm =
-    {}
+    { positiveResult : Maybe Bool
+    , saferSexPractices : Maybe Bool
+    , encouragedPartnerTesting : Maybe Bool
+    , familyPlanningOptions : Maybe Bool
+    }
 
 
 emptyHealthEducationForm : HealthEducationForm
 emptyHealthEducationForm =
-    {}
+    { positiveResult = Nothing
+    , saferSexPractices = Nothing
+    , encouragedPartnerTesting = Nothing
+    , familyPlanningOptions = Nothing
+    }
 
 
 type NextStepsTask
@@ -179,16 +187,13 @@ type Msg
       -- SYMPTOM REVIEW
     | SetSymptom HIVSymptom
     | SaveSymptomReview PersonId (Maybe ( HIVSymptomReviewId, HIVSymptomReview ))
-
-
-
---   -- NEXT STEPS
--- | SetActiveNextStepsTask NextStepsTask
--- | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
--- | SaveHealthEducation PersonId (Maybe ( HIVHealthEducationId, HIVHealthEducation )) (Maybe NextStepsTask)
--- | SetFollowUpOption FollowUpOption
--- | SaveFollowUp PersonId (Maybe ( HIVFollowUpId, HIVFollowUp )) (Maybe NextStepsTask)
--- | SetReferToHealthCenter Bool
--- | SetHandReferralForm Bool
--- | SetReasonForNonReferral ReasonForNonReferral
--- | SaveReferral PersonId (Maybe ( HIVReferralId, HIVReferral )) (Maybe NextStepsTask)
+      -- NEXT STEPS
+    | SetActiveNextStepsTask NextStepsTask
+    | SetHealthEducationBoolInput (Bool -> HealthEducationForm -> HealthEducationForm) Bool
+    | SaveHealthEducation PersonId (Maybe ( HIVHealthEducationId, HIVHealthEducation )) (Maybe NextStepsTask)
+    | SetFollowUpOption FollowUpOption
+    | SaveFollowUp PersonId (Maybe ( HIVFollowUpId, HIVFollowUp )) (Maybe NextStepsTask)
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | SetReasonForNonReferral ReasonForNonReferral
+    | SaveReferral PersonId (Maybe ( HIVReferralId, HIVReferral )) (Maybe NextStepsTask)

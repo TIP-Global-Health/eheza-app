@@ -3001,7 +3001,15 @@ type alias HIVHealthEducation =
 
 
 type alias HIVHealthEducationValue =
-    {}
+    EverySet HIVHealthEducationSign
+
+
+type HIVHealthEducationSign
+    = EducationPositiveResult
+    | EducationSaferSexPractices
+    | EducationEncouragedPartnerTesting
+    | EducationFamilyPlanningOptions
+    | NoHIVHealthEducationSigns
 
 
 type alias HIVMedication =

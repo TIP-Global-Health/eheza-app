@@ -57,10 +57,9 @@ update currentDate id db msg model =
             Maybe.map (\task -> [ SetActiveMedicationTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| HIVEncounterPage id ]
 
-        --
-        -- generateNextStepsMsgs nextTask =
-        --     Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
-        --         |> Maybe.withDefault [ SetActivePage <| UserPage <| HIVEncounterPage id ]
+        generateNextStepsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
+                |> Maybe.withDefault [ SetActivePage <| UserPage <| HIVEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -382,179 +381,176 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        SetActiveNextStepsTask task ->
+            let
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | activeTask = Just task })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
+        SetHealthEducationBoolInput formUpdateFunc value ->
+            let
+                updatedForm =
+                    formUpdateFunc value model.nextStepsData.healthEducationForm
 
---
--- SetActiveNextStepsTask task ->
---     let
---         updatedData =
---             model.nextStepsData
---                 |> (\data -> { data | activeTask = Just task })
---     in
---     ( { model | nextStepsData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SetHealthEducationBoolInput formUpdateFunc value ->
---     let
---         updatedForm =
---             formUpdateFunc value model.nextStepsData.healthEducationForm
---
---         updatedData =
---             model.nextStepsData
---                 |> (\data -> { data | healthEducationForm = updatedForm })
---     in
---     ( { model | nextStepsData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SaveHealthEducation personId saved nextTask ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         extraMsgs =
---             generateNextStepsMsgs nextTask
---
---         appMsgs =
---             toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
---                 |> Maybe.map
---                     (Backend.HIVEncounter.Model.SaveHealthEducation personId measurementId
---                         >> Backend.Model.MsgHIVEncounter id
---                         >> App.Model.MsgIndexedDb
---                         >> List.singleton
---                     )
---                 |> Maybe.withDefault []
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
---         |> sequenceExtra (update currentDate id db) extraMsgs
---
--- SetFollowUpOption option ->
---     let
---         form =
---             model.nextStepsData.followUpForm
---
---         updatedForm =
---             { form | option = Just option }
---
---         updatedData =
---             model.nextStepsData
---                 |> (\data -> { data | followUpForm = updatedForm })
---     in
---     ( { model | nextStepsData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SaveFollowUp personId saved nextTask ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         extraMsgs =
---             generateNextStepsMsgs nextTask
---
---         appMsgs =
---             toFollowUpValueWithDefault measurement model.nextStepsData.followUpForm
---                 |> Maybe.map
---                     (Backend.HIVEncounter.Model.SaveFollowUp personId measurementId
---                         >> Backend.Model.MsgHIVEncounter id
---                         >> App.Model.MsgIndexedDb
---                         >> List.singleton
---                     )
---                 |> Maybe.withDefault []
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
---         |> sequenceExtra (update currentDate id db) extraMsgs
---
--- SetReferToHealthCenter value ->
---     let
---         form =
---             model.nextStepsData.sendToHCForm
---
---         updatedForm =
---             { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
---
---         updatedData =
---             model.nextStepsData
---                 |> (\data -> { data | sendToHCForm = updatedForm })
---     in
---     ( { model | nextStepsData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SetHandReferralForm value ->
---     let
---         form =
---             model.nextStepsData.sendToHCForm
---
---         updatedForm =
---             { form | handReferralForm = Just value }
---
---         updatedData =
---             model.nextStepsData
---                 |> (\data -> { data | sendToHCForm = updatedForm })
---     in
---     ( { model | nextStepsData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SetReasonForNonReferral value ->
---     let
---         form =
---             model.nextStepsData.sendToHCForm
---
---         updatedForm =
---             { form | reasonForNotSendingToHC = Just value }
---
---         updatedData =
---             model.nextStepsData
---                 |> (\data -> { data | sendToHCForm = updatedForm })
---     in
---     ( { model | nextStepsData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SaveReferral personId saved nextTask ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             getMeasurementValueFunc saved
---
---         extraMsgs =
---             generateNextStepsMsgs nextTask
---
---         appMsgs =
---             toSendToHCValueWithDefault measurement model.nextStepsData.sendToHCForm
---                 |> Maybe.map
---                     (Backend.HIVEncounter.Model.SaveReferral personId measurementId
---                         >> Backend.Model.MsgHIVEncounter id
---                         >> App.Model.MsgIndexedDb
---                         >> List.singleton
---                     )
---                 |> Maybe.withDefault []
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
---         |> sequenceExtra (update currentDate id db) extraMsgs
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | healthEducationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHealthEducation personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
+                        |> Maybe.map
+                            (Backend.HIVEncounter.Model.SaveHealthEducation personId measurementId
+                                >> Backend.Model.MsgHIVEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetFollowUpOption option ->
+            let
+                form =
+                    model.nextStepsData.followUpForm
+
+                updatedForm =
+                    { form | option = Just option }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | followUpForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFollowUp personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toFollowUpValueWithDefault measurement model.nextStepsData.followUpForm
+                        |> Maybe.map
+                            (Backend.HIVEncounter.Model.SaveFollowUp personId measurementId
+                                >> Backend.Model.MsgHIVEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs
+
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value, reasonForNotSendingToHC = Nothing }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNonReferral value ->
+            let
+                form =
+                    model.nextStepsData.sendToHCForm
+
+                updatedForm =
+                    { form | reasonForNotSendingToHC = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveReferral personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
+
+                appMsgs =
+                    toSendToHCValueWithDefault measurement model.nextStepsData.sendToHCForm
+                        |> Maybe.map
+                            (Backend.HIVEncounter.Model.SaveReferral personId measurementId
+                                >> Backend.Model.MsgHIVEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update currentDate id db) extraMsgs

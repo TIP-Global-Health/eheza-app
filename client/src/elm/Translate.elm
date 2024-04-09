@@ -746,7 +746,9 @@ type TranslationId
     | HistoryTask HistoryTask
     | HIV
     | HIVActivityTitle HIVActivity
+    | HIVHealthEducationQuestion HIVHealthEducationSign
     | HIVMedicationTask Pages.HIV.Activity.Model.MedicationTask
+    | HIVNextStepsTask Pages.HIV.Activity.Model.NextStepsTask
     | HIVPCRResult HIVPCRResult
     | HIVPositiveDateCorrectQuestion NominalDate
     | HIVPositiveDiagnosedQuestion
@@ -6645,6 +6647,35 @@ translationSet trans =
                 Backend.HIVActivity.Model.NextSteps ->
                     translationSet NextSteps
 
+        HIVHealthEducationQuestion sign ->
+            case sign of
+                EducationPositiveResult ->
+                    { english = "Have you counseled patient on positive HIV test meaning"
+                    , kinyarwanda = Just "Waba wasobanuriye umurwayi (umubyeyi) icyo bisibanuye kugira ibisubizo biri positifu ku bwandu bw'agakoko gatera SIDA"
+                    , kirundi = Just "Mbega warahanuye wongera urabwira umugwayi iciza c'igipimo c'umugera wa SIDA"
+                    }
+
+                EducationSaferSexPractices ->
+                    { english = "Have you counseled patient on safer sex practices"
+                    , kinyarwanda = Just "Wagiriye inama umubyeyi ku bijyanye no gukora imibonano mpuzabitsina ikingiye"
+                    , kirundi = Just "Mbega warahanuye  umugwayi kuvyerekeye iciza co kwikingira mu gihe c'imibonano mpuza ibitsina"
+                    }
+
+                EducationEncouragedPartnerTesting ->
+                    { english = "Have you encouraged the patient’s partner to get tested"
+                    , kinyarwanda = Just "Waba washishikarije umubyueyi kubwira uwo babana kwipimisha"
+                    , kirundi = Just "Mbega wateye inguvu umufasha w'umugwayi kugira yipimishe"
+                    }
+
+                EducationFamilyPlanningOptions ->
+                    { english = "Have you counseled the patient on family planning options"
+                    , kinyarwanda = Just "Waba wagiriye inama umurwayi (umubyeyi) uburyo bwo kuboneza urubyaro"
+                    , kirundi = Just "Mbega warahanuye umugwayi kuvyerekeye uburyo bwo kuvyara k'urugero"
+                    }
+
+                NoHIVHealthEducationSigns ->
+                    translationSet EmptyString
+
         HIVMedicationTask task ->
             case task of
                 Pages.HIV.Activity.Model.TaskPrescribedMedication ->
@@ -6652,6 +6683,17 @@ translationSet trans =
 
                 Pages.HIV.Activity.Model.TaskTreatmentReview ->
                     translationSet TreatmentReview
+
+        HIVNextStepsTask task ->
+            case task of
+                Pages.HIV.Activity.Model.TaskHealthEducation ->
+                    translationSet HealthEducation
+
+                Pages.HIV.Activity.Model.TaskReferral ->
+                    translationSet SendToHC
+
+                Pages.HIV.Activity.Model.TaskFollowUp ->
+                    translationSet FollowUp
 
         HIVPCRResult result ->
             case result of

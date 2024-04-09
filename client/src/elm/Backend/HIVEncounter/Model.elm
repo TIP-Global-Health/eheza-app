@@ -32,10 +32,9 @@ type alias Model =
     , savePrescribedMedication : WebData ()
     , saveTreatmentReview : WebData ()
     , saveSymptomReview : WebData ()
-
-    -- , saveReferral : WebData ()
-    -- , saveHealthEducation : WebData ()
-    -- , saveFollowUp : WebData ()
+    , saveReferral : WebData ()
+    , saveHealthEducation : WebData ()
+    , saveFollowUp : WebData ()
     }
 
 
@@ -46,10 +45,9 @@ emptyModel =
     , savePrescribedMedication = NotAsked
     , saveTreatmentReview = NotAsked
     , saveSymptomReview = NotAsked
-
-    -- , saveReferral = NotAsked
-    -- , saveHealthEducation = NotAsked
-    -- , saveFollowUp = NotAsked
+    , saveReferral = NotAsked
+    , saveHealthEducation = NotAsked
+    , saveFollowUp = NotAsked
     }
 
 
@@ -64,12 +62,9 @@ type Msg
     | HandleSavedTreatmentReview (WebData ())
     | SaveSymptomReview PersonId (Maybe HIVSymptomReviewId) HIVSymptomReviewValue
     | HandleSavedSymptomReview (WebData ())
-
-
-
--- | SaveReferral PersonId (Maybe HIVReferralId) SendToHCValue
--- | HandleSavedReferral (WebData ())
--- | SaveHealthEducation PersonId (Maybe HIVHealthEducationId) HIVHealthEducationValue
--- | HandleSavedHealthEducation (WebData ())
--- | SaveFollowUp PersonId (Maybe HIVFollowUpId) FollowUpValue
--- | HandleSavedFollowUp (WebData ())
+    | SaveReferral PersonId (Maybe HIVReferralId) SendToHCValue
+    | HandleSavedReferral (WebData ())
+    | SaveHealthEducation PersonId (Maybe HIVHealthEducationId) HIVHealthEducationValue
+    | HandleSavedHealthEducation (WebData ())
+    | SaveFollowUp PersonId (Maybe HIVFollowUpId) FollowUpValue
+    | HandleSavedFollowUp (WebData ())

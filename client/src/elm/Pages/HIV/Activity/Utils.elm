@@ -234,16 +234,17 @@ nextStepsTasksCompletedFromTotal : HIVMeasurements -> NextStepsData -> NextSteps
 nextStepsTasksCompletedFromTotal measurements data task =
     case task of
         TaskHealthEducation ->
-            -- @todo
-            -- let
-            --     form =
-            --         getMeasurementValueFunc measurements.healthEducation
-            --             |> healthEducationFormWithDefault data.healthEducationForm
-            -- in
-            -- ( taskCompleted form.followUpTesting
-            -- , 1
-            -- )
-            ( 0, 1 )
+            let
+                form =
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+            in
+            ( taskCompleted form.positiveResult
+                + taskCompleted form.saferSexPractices
+                + taskCompleted form.encouragedPartnerTesting
+                + taskCompleted form.familyPlanningOptions
+            , 4
+            )
 
         TaskFollowUp ->
             let
@@ -416,32 +417,35 @@ toSymptomReviewValue form =
     Maybe.map EverySet.fromList form.symptoms
 
 
+toHealthEducationValueWithDefault : Maybe HIVHealthEducationValue -> HealthEducationForm -> Maybe HIVHealthEducationValue
+toHealthEducationValueWithDefault saved form =
+    healthEducationFormWithDefault form saved
+        |> toHealthEducationValue
 
---
---
--- toHealthEducationValueWithDefault : Maybe HIVHealthEducationValue -> HealthEducationForm -> Maybe HIVHealthEducationValue
--- toHealthEducationValueWithDefault saved form =
---     healthEducationFormWithDefault form saved
---         |> toHealthEducationValue
---
---
--- healthEducationFormWithDefault :
---     HealthEducationForm
---     -> Maybe HIVHealthEducationValue
---     -> HealthEducationForm
--- healthEducationFormWithDefault form saved =
---     saved
---         |> unwrap
---             form
---             (\value ->
---                 { followUpTesting = or form.followUpTesting (EverySet.member EducationFollowUpTesting value |> Just) }
---             )
---
---
--- toHealthEducationValue : HealthEducationForm -> Maybe HIVHealthEducationValue
--- toHealthEducationValue form =
---     [ ifNullableTrue EducationFollowUpTesting form.followUpTesting ]
---         |> Maybe.Extra.combine
---         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVHealthEducationSigns)
---
---
+
+healthEducationFormWithDefault :
+    HealthEducationForm
+    -> Maybe HIVHealthEducationValue
+    -> HealthEducationForm
+healthEducationFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { positiveResult = or form.positiveResult (EverySet.member EducationPositiveResult value |> Just)
+                , saferSexPractices = or form.saferSexPractices (EverySet.member EducationSaferSexPractices value |> Just)
+                , encouragedPartnerTesting = or form.encouragedPartnerTesting (EverySet.member EducationEncouragedPartnerTesting value |> Just)
+                , familyPlanningOptions = or form.familyPlanningOptions (EverySet.member EducationFamilyPlanningOptions value |> Just)
+                }
+            )
+
+
+toHealthEducationValue : HealthEducationForm -> Maybe HIVHealthEducationValue
+toHealthEducationValue form =
+    [ ifNullableTrue EducationPositiveResult form.positiveResult
+    , ifNullableTrue EducationSaferSexPractices form.saferSexPractices
+    , ifNullableTrue EducationEncouragedPartnerTesting form.encouragedPartnerTesting
+    , ifNullableTrue EducationFamilyPlanningOptions form.familyPlanningOptions
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVHealthEducationSigns)
