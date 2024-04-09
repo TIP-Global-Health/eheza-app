@@ -3,6 +3,7 @@ module Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis, encodeAcuteIllnessEncounterType)
 import Backend.Dashboard.Model exposing (..)
+import Backend.EducationSession.Encoder exposing (encodeEducationTopic)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (encodeDeliveryLocation, encodeIndividualEncounterParticipantOutcome)
 import Backend.Measurement.Encoder
@@ -53,6 +54,7 @@ encodeDashboardStatsRaw stats =
     , encodeChildScoreboardData stats.childScoreboardData
     , encodeNutritionIndividualData stats.nutritionIndividualData
     , encodeNutritionGroupData stats.nutritionGroupData
+    , encodeGroupEducationData stats.groupEducationData
     , encodeVillagesWithResidents stats.villagesWithResidents
     , encodePatientsDetails stats.patientsDetails
     , ( "timestamp", string stats.timestamp )
@@ -593,3 +595,26 @@ encodePatientDetails details =
     object <|
         ( "name", string details.name )
             :: encodeIfSet "phone_number" details.phoneNumber string
+
+
+encodeGroupEducationData : Dict VillageId (List EducationSessionData) -> ( String, Value )
+encodeGroupEducationData dict =
+    let
+        value =
+            Dict.toList dict
+                |> List.map
+                    (\( villageId, sessionData ) ->
+                        ( fromEntityUuid villageId, list encodeEducationSessionData sessionData )
+                    )
+                |> object
+    in
+    ( "group_education_data", value )
+
+
+encodeEducationSessionData : EducationSessionData -> Value
+encodeEducationSessionData data =
+    object
+        [ ( "start_date", encodeYYYYMMDD data.startDate )
+        , ( "education_topics", encodeEverySet encodeEducationTopic data.topics )
+        , ( "participating_patients", encodeEverySet int data.participants )
+        ]

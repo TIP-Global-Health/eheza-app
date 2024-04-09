@@ -5,6 +5,7 @@ module Backend.Dashboard.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis, AcuteIllnessEncounterType)
+import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
 import Backend.Measurement.Model
@@ -43,7 +44,13 @@ type alias AssembledData =
     , nutritionIndividualData : List NutritionIndividualDataItem
     , nutritionGroupData : List NutritionGroupDataItem
     , nutritionPageData : NutritionPageData
+
+    -- , groupEducationData : GroupEducationData
     }
+
+
+
+-- type alias GroupEducationData =
 
 
 type alias NutritionPageData =
@@ -77,6 +84,7 @@ type alias DashboardStatsRaw =
     , childScoreboardData : List ChildScoreboardDataItem
     , nutritionIndividualData : List NutritionIndividualDataItem
     , nutritionGroupData : List NutritionGroupDataItem
+    , groupEducationData : Dict VillageId (List EducationSessionData)
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
     , patientsDetails : Dict PersonIdentifier PatientDetails
 
@@ -104,6 +112,7 @@ emptyModel =
     , childScoreboardData = []
     , nutritionIndividualData = []
     , nutritionGroupData = []
+    , groupEducationData = Dict.empty
     , villagesWithResidents = Dict.empty
     , patientsDetails = Dict.empty
     , timestamp = ""
@@ -447,4 +456,11 @@ type alias NutritionEncounterDataItem =
 type alias PatientDetails =
     { name : String
     , phoneNumber : Maybe String
+    }
+
+
+type alias EducationSessionData =
+    { startDate : NominalDate
+    , topics : EverySet EducationTopic
+    , participants : EverySet PersonIdentifier
     }
