@@ -45,6 +45,8 @@ type alias AssembledData =
     , nutritionGroupData : List NutritionGroupDataItem
     , nutritionPageData : NutritionPageData
     , groupEducationData : List EducationSessionData
+    , healthCenterVillages : List VillageId
+    , patientsDetails : Dict PersonIdentifier PatientDetails
     }
 
 
@@ -126,8 +128,6 @@ type alias DashboardStats =
     , familyPlanning : List FamilyPlanningStats
     , missedSessions : List ParticipantStats
     , totalEncounters : TotalEncountersData
-    , villagesWithResidents : Dict VillageId (List PersonIdentifier)
-    , patientsDetails : Dict PersonIdentifier PatientDetails
 
     -- UTC Date and time on which statistics were generated.
     , timestamp : String

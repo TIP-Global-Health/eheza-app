@@ -149,6 +149,8 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     , nutritionGroupData = generateFilteredData .nutritionGroupData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
     , groupEducationData = generateGroupEducationData stats selectedVillageFilter
+    , healthCenterVillages = Dict.keys stats.villagesWithResidents
+    , patientsDetails = generateFilteredPatientsDetails stats selectedVillageFilter
     }
 
 
@@ -190,8 +192,6 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
     , familyPlanning = stats.familyPlanning
     , missedSessions = stats.missedSessions
     , totalEncounters = stats.totalEncounters
-    , villagesWithResidents = stats.villagesWithResidents
-    , patientsDetails = generateFilteredPatientsDetails stats selectedVillageFilter
     , timestamp = stats.timestamp
     }
 

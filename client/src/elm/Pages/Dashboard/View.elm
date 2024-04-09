@@ -163,6 +163,7 @@ view language page currentDate site healthCenterId isChw nurse model db =
                                             nurse
                                             subPage
                                             assembled.stats
+                                            assembled.patientsDetails
                                             assembled.nutritionPageData
                                             db
                                             model
@@ -181,7 +182,7 @@ view language page currentDate site healthCenterId isChw nurse model db =
                         div [ class <| "dashboard " ++ pageClass ] <|
                             viewFiltersPane language page db model
                                 :: pageContent
-                                ++ [ viewCustomModal language page isChw nurse assembled.stats db model
+                                ++ [ viewCustomModal language page isChw nurse assembled db model
                                    , div [ class "timestamp" ]
                                         [ text <| (translate language <| Translate.Dashboard Translate.LastUpdated) ++ ": " ++ assembled.stats.timestamp ++ " UTC" ]
                                    ]
@@ -284,11 +285,12 @@ viewNutritionPage :
     -> Nurse
     -> NutritionSubPage
     -> DashboardStats
+    -> Dict PersonIdentifier PatientDetails
     -> NutritionPageData
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewNutritionPage language currentDate healthCenterId isChw nurse activePage stats data db model =
+viewNutritionPage language currentDate healthCenterId isChw nurse activePage stats patientsDetails data db model =
     case activePage of
         PageCharts ->
             viewNutritionChartsPage language currentDate isChw nurse activePage data db model
@@ -297,7 +299,7 @@ viewNutritionPage language currentDate healthCenterId isChw nurse activePage sta
             viewStatsPage language currentDate isChw nurse stats healthCenterId db model
 
         PageCaseManagement ->
-            viewCaseManagementPage language currentDate stats db model
+            viewCaseManagementPage language currentDate stats patientsDetails db model
 
 
 viewStatsPage : Language -> NominalDate -> Bool -> Nurse -> DashboardStats -> HealthCenterId -> ModelIndexedDb -> Model -> List (Html Msg)
@@ -390,8 +392,15 @@ mapMalnorishedByMonth mappedMonth caseManagement =
             []
 
 
-viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> ModelIndexedDb -> Model -> List (Html Msg)
-viewCaseManagementPage language currentDate stats db model =
+viewCaseManagementPage :
+    Language
+    -> NominalDate
+    -> DashboardStats
+    -> Dict PersonIdentifier PatientDetails
+    -> ModelIndexedDb
+    -> Model
+    -> List (Html Msg)
+viewCaseManagementPage language currentDate stats patientsDetails db model =
     if model.programTypeFilter /= FilterProgramFbf then
         []
 
@@ -441,7 +450,7 @@ viewCaseManagementPage language currentDate stats db model =
                                             |> List.reverse
 
                                     name =
-                                        Dict.get caseNutrition.identifier stats.patientsDetails
+                                        Dict.get caseNutrition.identifier patientsDetails
                                             |> Maybe.map .name
                                             |> Maybe.withDefault ""
                                 in
@@ -456,7 +465,7 @@ viewCaseManagementPage language currentDate stats db model =
                             (\caseNutrition accum ->
                                 let
                                     name =
-                                        Dict.get caseNutrition.identifier stats.patientsDetails
+                                        Dict.get caseNutrition.identifier patientsDetails
                                             |> Maybe.map .name
                                             |> Maybe.withDefault ""
                                 in
@@ -2177,17 +2186,17 @@ viewPieChartLegend language translateFunc colorFunc signs =
         )
 
 
-viewCustomModal : Language -> DashboardPage -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewCustomModal language page isChw nurse stats db model =
+viewCustomModal : Language -> DashboardPage -> Bool -> Nurse -> AssembledData -> ModelIndexedDb -> Model -> Html Msg
+viewCustomModal language page isChw nurse assembled db model =
     model.modalState
         |> Maybe.map
             (\state ->
                 case state of
                     StatisticsModal title data ->
-                        viewStatsTableModal language title stats.patientsDetails data
+                        viewStatsTableModal language title assembled.patientsDetails data
 
                     FiltersModal ->
-                        viewFiltersModal language page isChw nurse stats db model
+                        viewFiltersModal language page isChw nurse assembled.healthCenterVillages db model
             )
         |> viewModal
 
@@ -2221,8 +2230,8 @@ viewStatsTableModal language title patientsDetails data =
         ]
 
 
-viewFiltersModal : Language -> DashboardPage -> Bool -> Nurse -> DashboardStats -> ModelIndexedDb -> Model -> Html Msg
-viewFiltersModal language page isChw nurse stats db model =
+viewFiltersModal : Language -> DashboardPage -> Bool -> Nurse -> List VillageId -> ModelIndexedDb -> Model -> Html Msg
+viewFiltersModal language page isChw nurse healthCenterVillages db model =
     let
         programTypeFilterInputSection =
             if isChw then
@@ -2293,19 +2302,19 @@ viewFiltersModal language page isChw nurse stats db model =
                                             :: options
 
                                 options =
-                                    Dict.keys stats.villagesWithResidents
-                                        |> List.filterMap
-                                            (\villageId ->
-                                                Dict.get villageId authorizedVillages
-                                                    |> Maybe.map
-                                                        (\village ->
-                                                            option
-                                                                [ value (fromEntityUuid villageId)
-                                                                , selected (model.selectedVillageFilter == Just villageId)
-                                                                ]
-                                                                [ text village.name ]
-                                                        )
-                                            )
+                                    List.filterMap
+                                        (\villageId ->
+                                            Dict.get villageId authorizedVillages
+                                                |> Maybe.map
+                                                    (\village ->
+                                                        option
+                                                            [ value (fromEntityUuid villageId)
+                                                            , selected (model.selectedVillageFilter == Just villageId)
+                                                            ]
+                                                            [ text village.name ]
+                                                    )
+                                        )
+                                        healthCenterVillages
 
                                 villageInput =
                                     select
