@@ -510,6 +510,7 @@ decodePatientDetails : Decoder PatientDetails
 decodePatientDetails =
     succeed PatientDetails
         |> required "name" string
+        |> required "gender" decodeGender
         |> optional "phone_number" (nullable string) Nothing
 
 

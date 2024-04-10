@@ -593,8 +593,10 @@ encodePatientsDetails dict =
 encodePatientDetails : PatientDetails -> Value
 encodePatientDetails details =
     object <|
-        ( "name", string details.name )
-            :: encodeIfSet "phone_number" details.phoneNumber string
+        [ ( "name", string details.name )
+        , ( "gender", encodeGender details.gender )
+        ]
+            ++ encodeIfSet "phone_number" details.phoneNumber string
 
 
 encodeGroupEducationData : Dict VillageId (List EducationSessionData) -> ( String, Value )
