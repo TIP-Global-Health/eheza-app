@@ -40,7 +40,7 @@ import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
 import Debug exposing (toString)
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, isDiffTruthy, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -195,7 +195,9 @@ view language page currentDate site healthCenterId isChw nurse model db =
                                         ( viewGroupEducationPage language currentDate isChw assembled db model, "group-education" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
-                            viewFiltersPane language page db model
+                            (viewFiltersPane language page db model
+                                |> showIf (isNothing model.educationSessionDrillIn)
+                            )
                                 :: pageContent
                                 ++ [ viewCustomModal language page isChw nurse assembled db model
                                    , div [ class "timestamp" ]
@@ -1121,6 +1123,11 @@ viewGroupEducationPage language currentDate isChw assembled db model =
 viewGroupEducationDrillIn : Language -> NominalDate -> Dict PersonIdentifier PatientDetails -> EducationSessionData -> List (Html Msg)
 viewGroupEducationDrillIn language currentDate patientsDetails session =
     let
+        topics =
+            EverySet.toList session.topics
+                |> List.map (\topic -> li [] [ text <| translate language <| Translate.EducationTopic topic ])
+                |> ul [ class "session-topics" ]
+
         tableContent =
             headerRow
                 :: (List.map viewPatientEntry <|
@@ -1128,7 +1135,7 @@ viewGroupEducationDrillIn language currentDate patientsDetails session =
                    )
 
         headerRow =
-            div [ class "patient-entry header" ]
+            div [ class "entry header" ]
                 [ div [ class "name" ] [ text <| translate language Translate.Name ]
                 , div [ class "gender" ] [ text <| translate language Translate.GenderLabel ]
                 ]
@@ -1137,16 +1144,16 @@ viewGroupEducationDrillIn language currentDate patientsDetails session =
             Dict.get patientId patientsDetails
                 |> Maybe.map
                     (\patient ->
-                        div [ class "patient-entry" ]
+                        div [ class "entry" ]
                             [ div [ class "name" ] [ text patient.name ]
-
-                            -- , div [ class "gender" ] [ text <| translate language <| Translate.Gender patient.gender ]
+                            , div [ class "gender" ] [ text <| translate language <| Translate.Gender patient.gender ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode
     in
-    [ div [ class "ui grid" ]
-        [ div [ class "patient-table" ]
+    [ topics
+    , div [ class "ui grid" ]
+        [ div [ class "patients-table" ]
             tableContent
         ]
     ]
@@ -1173,7 +1180,7 @@ viewGroupEducationStandard language currentDate isChw assembled db model =
                 :: List.map viewSessionEntry sessionsDuringSelectedMonth
 
         headerRow =
-            div [ class "session-entry header" ]
+            div [ class "entry header" ]
                 [ div [ class "topics" ] [ text <| translate language Translate.GroupEducation ]
                 , div [ class "date" ] [ text <| translate language Translate.StartDate ]
                 , div [ class "attendance" ] [ text <| translate language Translate.Attendance ]
@@ -1190,7 +1197,7 @@ viewGroupEducationStandard language currentDate isChw assembled db model =
                     else
                         [ class "icon-forward hidden" ]
             in
-            div [ class "session-entry" ]
+            div [ class "entry" ]
                 [ EverySet.toList session.topics
                     |> List.map (\topic -> li [] [ text <| translate language <| Translate.EducationTopic topic ])
                     |> ul [ class "topics" ]
