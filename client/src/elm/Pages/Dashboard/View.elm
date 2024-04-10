@@ -1189,7 +1189,7 @@ viewGroupEducationStandard language currentDate isChw assembled db model =
         viewSessionEntry session =
             let
                 drillInArrributes =
-                    if isChw then
+                    if isJust model.selectedVillageFilter then
                         [ class "icon-forward"
                         , onClick <| SetEducationSessionDrillIn (Just session)
                         ]
