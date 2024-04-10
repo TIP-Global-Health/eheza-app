@@ -715,3 +715,66 @@
     width: 100%;
   }
 }
+
+.dashboard.group-education {
+
+  .sessions-table {
+    color: #848484;
+    font-size: 22px;
+    padding: 20px;
+
+    .session-entry {
+      background: $color-white;
+      border-bottom: 2px solid $color-gray-border;
+      display: flex;
+      font-size: 18px;
+      font-weight: 500;
+      padding: 20px;
+      text-align: center;
+
+      .topics {
+        margin: 0;
+        padding-left: 10px;
+        text-align: left;
+        width: 380px;
+
+        li {
+          line-height: 24px;
+          margin-bottom: 0;
+        }
+      }
+
+      .date {
+        align-self: center;
+        margin-left: 20px;
+        text-align: left;
+        width: 120px;
+      }
+
+      .attendance {
+        align-self: center;
+        width: 120px;
+      }
+
+      .icon-forward {
+        align-self: center;
+        background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+        background-size: 45px 50px;
+        height: 50px;
+        width: 45px;
+      }
+
+      .icon-forward.hidden {
+        visibility: hidden;
+      }
+    }
+
+    .session-entry.header {
+      font-weight: 700;
+    }
+
+    .session-entry:last-child {
+      border-bottom: none;
+    }
+  }
+}
