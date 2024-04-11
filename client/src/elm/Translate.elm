@@ -1678,6 +1678,7 @@ type TranslationId
     | ThisGroupHasNoMothers
     | Time
     | To
+    | Topics
     | TotalHighRiskPregnancies
     | ToThePatient
     | TransportationPlanQuestion
@@ -12819,6 +12820,9 @@ translationSet trans =
                     , kirundi = Just "Kuvyara k'urugero"
                     }
 
+                FilterGroupEducation ->
+                    translationSet GroupEducation
+
         PauseEncounter ->
             { english = "Pause Encounter"
             , kinyarwanda = Just "Igikorwa cyahagaritswe"
@@ -20766,6 +20770,12 @@ translationSet trans =
             { english = "to"
             , kinyarwanda = Just "kuri"
             , kirundi = Just "kuri"
+            }
+
+        Topics ->
+            { english = "Topics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         TotalHighRiskPregnancies ->
