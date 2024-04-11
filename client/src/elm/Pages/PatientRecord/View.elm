@@ -646,7 +646,7 @@ viewGroupEducationPane language currentDate sessions =
                 |> List.map (viewGroupEducationEntry language)
     in
     div [ class "pane group-education" ]
-        [ viewPaneHeading language <| Translate.PatientRecordFilter FilterFamilyPlanning
+        [ viewPaneHeading language <| Translate.PatientRecordFilter FilterGroupEducation
         , div [ class "pane-content" ] <|
             entriesHeading
                 :: viewEntries language entries
