@@ -39,7 +39,7 @@ import RemoteData
 import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage)
-import Utils.NominalDate exposing (sortByDate, sortTuplesByDateDesc)
+import Utils.NominalDate exposing (sortByDate, sortByDateDesc, sortTuplesByDateDesc)
 import ZScore.Model
 
 
@@ -238,8 +238,8 @@ viewContentForOther language currentDate site isChw personId person patientType 
                 FilterGroupEducation ->
                     Dict.get personId db.educationSessionsByPerson
                         |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.withDefault Dict.empty
-                        |> Dict.values
+                        |> Maybe.map Dict.values
+                        |> Maybe.withDefault []
                         |> viewGroupEducationPane language currentDate
 
                 FilterDemographics ->
@@ -642,7 +642,8 @@ viewGroupEducationPane language currentDate sessions =
                 ]
 
         entries =
-            List.map (viewGroupEducationEntry language) sessions
+            List.sortWith (sortByDateDesc .startDate) sessions
+                |> List.map (viewGroupEducationEntry language)
     in
     div [ class "pane group-education" ]
         [ viewPaneHeading language <| Translate.PatientRecordFilter FilterFamilyPlanning
