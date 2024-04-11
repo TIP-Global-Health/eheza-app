@@ -177,6 +177,9 @@ type alias ModelIndexedDb =
     -- Stock Management.
     , stockUpdates : WebData (Dict StockUpdateId StockUpdate)
 
+    -- Group Education.
+    , educationSessionsByPerson : Dict PersonId (WebData (Dict EducationSessionId EducationSession))
+
     -- Track requests to mutate data.
     , postPerson : WebData PersonId
     , postRelationship : Dict PersonId (WebData MyRelationship)
@@ -267,6 +270,7 @@ emptyModelIndexedDb =
     , resilienceSurveysByNurse = Dict.empty
     , resilienceMessagesByNurse = Dict.empty
     , stockUpdates = NotAsked
+    , educationSessionsByPerson = Dict.empty
     , postPerson = NotAsked
     , postRelationship = Dict.empty
     , postPmtctParticipant = Dict.empty
@@ -331,6 +335,7 @@ type MsgIndexedDb
     | FetchEditableSessionSummaryByActivity SessionId
     | FetchEditableSessionSummaryByParticipant SessionId
     | FetchEducationSession EducationSessionId
+    | FetchEducationSessionsForPerson PersonId
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions PersonId
@@ -398,6 +403,7 @@ type MsgIndexedDb
     | HandleFetchedChildScoreboardMeasurements ChildScoreboardEncounterId (WebData ChildScoreboardMeasurements)
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
     | HandleFetchedEducationSession EducationSessionId (WebData EducationSession)
+    | HandleFetchedEducationSessionsForPerson PersonId (WebData (Dict EducationSessionId EducationSession))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
     | HandleFetchedExpectedSessions PersonId (WebData (Dict SessionId Session))

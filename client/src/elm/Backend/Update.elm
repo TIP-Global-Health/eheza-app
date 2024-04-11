@@ -1592,6 +1592,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
+        FetchEducationSessionsForPerson id ->
+            ( { model | educationSessionsByPerson = Dict.insert id Loading model.educationSessionsByPerson }
+            , sw.select educationSessionEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedEducationSessionsForPerson id)
+            , []
+            )
+
+        HandleFetchedEducationSessionsForPerson id data ->
+            ( { model | educationSessionsByPerson = Dict.insert id data model.educationSessionsByPerson }
+            , Cmd.none
+            , []
+            )
+
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
             , sw.get sessionEndpoint sessionId
