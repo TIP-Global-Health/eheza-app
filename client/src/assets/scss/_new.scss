@@ -4696,6 +4696,41 @@ div.page-activity.patient-record {
     margin: auto 0;
   }
 
+  .heading.group-education,
+  .entry.group-education {
+    display: grid;
+    grid-gap: 20px;
+    grid-template-columns: 60% auto;
+    text-align: center;
+  }
+
+  .entry.group-education {
+    background: $color-white;
+    border-bottom: 2px solid $color-gray-border;
+    // display: flex;
+    font-size: 18px;
+    font-weight: 500;
+    // padding: 20px;
+    text-align: left;
+  }
+
+  .entry.group-education.header {
+    font-weight: 700;
+  }
+
+  .entry.group-education:last-child {
+    border-bottom: none;
+  }
+  .entry.group-education .topics {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .entry.group-education .date {
+    align-self: center;
+    text-align: center;
+  }
+
   .ui.unstackable.items .actions {
     margin-bottom: 30px;
   }
