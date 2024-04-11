@@ -955,7 +955,7 @@
                 }
 
                 // For education_session endpoint, check participant param and
-                // only return those sessions were participant has participanted.
+                // only return those sessions were participant has participated.
                 if (type === 'education_session') {
                   var personId = params.get('participant');
                   if (personId) {
