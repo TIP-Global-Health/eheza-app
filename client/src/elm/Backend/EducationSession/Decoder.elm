@@ -1,4 +1,4 @@
-module Backend.EducationSession.Decoder exposing (decodeEducationSession)
+module Backend.EducationSession.Decoder exposing (decodeEducationSession, decodeEducationTopic)
 
 import Backend.EducationSession.Model exposing (..)
 import Backend.EducationSession.Utils exposing (..)

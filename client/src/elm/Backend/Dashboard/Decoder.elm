@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounterType)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Dashboard.Model exposing (..)
+import Backend.EducationSession.Decoder exposing (decodeEducationTopic)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeDeliveryLocation, decodeIndividualEncounterParticipantOutcome)
 import Backend.Measurement.Decoder
@@ -71,7 +72,9 @@ decodeDashboardStatsRaw =
         |> required "child_scoreboard_data" (list decodeChildScoreboardDataItem)
         |> required "nutrition_individual_data" (list decodeNutritionIndividualDataItem)
         |> required "nutrition_group_data" (list decodeNutritionGroupDataItem)
+        |> required "group_education_data" decodeGroupEducationData
         |> required "villages_with_residents" decodeVillagesWithResidents
+        |> required "patients_details" decodePatientsDetails
         |> required "timestamp" string
         |> required "stats_cache_hash" string
 
@@ -86,23 +89,21 @@ decodeCaseManagementData =
 decodeCaseManagementDataForYear : Decoder (Dict ProgramType (List CaseManagement))
 decodeCaseManagementDataForYear =
     dict (list decodeCaseManagement)
-        |> andThen
-            (\dict ->
-                LegacyDict.toList dict
-                    |> List.map
-                        (\( k, v ) ->
-                            ( programTypeFromString k, v )
-                        )
-                    |> Dict.fromList
-                    |> succeed
-            )
+        |> andThen (legacyDictToDict programTypeFromString)
+
+
+legacyDictToDict : (String -> k) -> LegacyDict.Dict String v -> Decoder (Dict k v)
+legacyDictToDict toKeyFunc =
+    LegacyDict.toList
+        >> List.map (\( k, v ) -> ( toKeyFunc k, v ))
+        >> Dict.fromList
+        >> succeed
 
 
 decodeCaseManagement : Decoder CaseManagement
 decodeCaseManagement =
     succeed CaseManagement
         |> required "id" decodeInt
-        |> required "name" string
         |> required "birth_date" decodeYYYYMMDD
         |> required "gender" decodeGender
         |> required "nutrition" decodeCaseNutrition
@@ -121,16 +122,7 @@ decodeCaseNutrition =
 decodeNutritionValueDict : Decoder NutritionValue -> Decoder (Dict Int NutritionValue)
 decodeNutritionValueDict decoder =
     dict (decodeWithFallback (NutritionValue Neutral "X") decoder)
-        |> andThen
-            (\dict ->
-                LegacyDict.toList dict
-                    |> List.map
-                        (\( k, v ) ->
-                            ( Maybe.withDefault 1 (String.toInt k), v )
-                        )
-                    |> Dict.fromList
-                    |> succeed
-            )
+        |> andThen (legacyDictToDict (String.toInt >> Maybe.withDefault 1))
 
 
 decodeZScoreNutritionValue : Decoder NutritionValue
@@ -168,16 +160,7 @@ decodeMuacNutritionValue =
 decodeChildrenBeneficiariesData : Decoder (Dict ProgramType (List ChildrenBeneficiariesStats))
 decodeChildrenBeneficiariesData =
     dict (list decodeChildrenBeneficiariesStats)
-        |> andThen
-            (\dict ->
-                LegacyDict.toList dict
-                    |> List.map
-                        (\( k, v ) ->
-                            ( programTypeFromString k, v )
-                        )
-                    |> Dict.fromList
-                    |> succeed
-            )
+        |> andThen (legacyDictToDict programTypeFromString)
 
 
 decodeChildrenBeneficiariesStats : Decoder ChildrenBeneficiariesStats
@@ -187,20 +170,17 @@ decodeChildrenBeneficiariesStats =
         |> required "gender" decodeGender
         |> required "birth_date" decodeYYYYMMDD
         |> required "created" decodeYYYYMMDD
-        |> required "name" string
-        |> required "mother_name" string
-        |> optional "phone_number" (nullable string) Nothing
+        |> optional "mother_id" (nullable decodeInt) Nothing
         |> required "graduation_date" decodeYYYYMMDD
 
 
 decodeParticipantStats : Decoder ParticipantStats
 decodeParticipantStats =
     succeed ParticipantStats
-        |> required "name" string
+        |> required "id" decodeInt
         |> required "gender" decodeGender
         |> required "birth_date" decodeYYYYMMDD
-        |> required "mother_name" string
-        |> optional "phone_number" (nullable string) Nothing
+        |> optional "mother_id" (nullable decodeInt) Nothing
         |> required "expected_date" decodeYYYYMMDD
 
 
@@ -229,31 +209,13 @@ decodeTotalEncountersForVillages =
 decodeTotalEncountersForVillages_ : Decoder (Dict VillageId (Dict ProgramType Periods))
 decodeTotalEncountersForVillages_ =
     dict decodeTotalEncounters
-        |> andThen
-            (\dict ->
-                LegacyDict.toList dict
-                    |> List.map
-                        (\( k, v ) ->
-                            ( toEntityUuid k, v )
-                        )
-                    |> Dict.fromList
-                    |> succeed
-            )
+        |> andThen (legacyDictToDict toEntityUuid)
 
 
 decodeTotalEncounters : Decoder (Dict ProgramType Periods)
 decodeTotalEncounters =
     dict decodePeriods
-        |> andThen
-            (\dict ->
-                LegacyDict.toList dict
-                    |> List.map
-                        (\( k, v ) ->
-                            ( programTypeFromString k, v )
-                        )
-                    |> Dict.fromList
-                    |> succeed
-            )
+        |> andThen (legacyDictToDict programTypeFromString)
 
 
 decodePeriods : Decoder Periods
@@ -291,24 +253,10 @@ programTypeFromString string =
 decodeVillagesWithResidents : Decoder (Dict VillageId (List Int))
 decodeVillagesWithResidents =
     oneOf
-        [ decodeVillagesWithResidents_
+        [ dict (list decodeInt)
+            |> andThen (legacyDictToDict toEntityUuid)
         , succeed Dict.empty
         ]
-
-
-decodeVillagesWithResidents_ : Decoder (Dict VillageId (List Int))
-decodeVillagesWithResidents_ =
-    dict (list int)
-        |> andThen
-            (\dict ->
-                LegacyDict.toList dict
-                    |> List.map
-                        (\( k, v ) ->
-                            ( toEntityUuid k, v )
-                        )
-                    |> Dict.fromList
-                    |> succeed
-            )
 
 
 decodeAcuteIllnessDataItem : Decoder AcuteIllnessDataItem
@@ -538,3 +486,45 @@ decodeNutritionGroupEncounterDataItem =
         |> optional "zscore_wasting" (nullable decodeFloat) Nothing
         |> optional "muac" (nullable decodeFloat) Nothing
         |> optional "nutrition_signs" (decodeEverySet decodeChildNutritionSign) EverySet.empty
+
+
+decodePatientsDetails : Decoder (Dict PersonIdentifier PatientDetails)
+decodePatientsDetails =
+    oneOf
+        [ dict decodePatientDetails
+            |> andThen
+                (LegacyDict.toList
+                    >> List.filterMap
+                        (\( k, v ) ->
+                            String.toInt k
+                                |> Maybe.map (\key -> ( key, v ))
+                        )
+                    >> Dict.fromList
+                    >> succeed
+                )
+        , succeed Dict.empty
+        ]
+
+
+decodePatientDetails : Decoder PatientDetails
+decodePatientDetails =
+    succeed PatientDetails
+        |> required "name" string
+        |> optional "phone_number" (nullable string) Nothing
+
+
+decodeGroupEducationData : Decoder (Dict VillageId (List EducationSessionData))
+decodeGroupEducationData =
+    oneOf
+        [ dict (list decodeEducationSessionData)
+            |> andThen (legacyDictToDict toEntityUuid)
+        , succeed Dict.empty
+        ]
+
+
+decodeEducationSessionData : Decoder EducationSessionData
+decodeEducationSessionData =
+    succeed EducationSessionData
+        |> required "start_date" decodeYYYYMMDD
+        |> required "education_topics" (decodeEverySet decodeEducationTopic)
+        |> required "participating_patients" (decodeEverySet decodeInt)

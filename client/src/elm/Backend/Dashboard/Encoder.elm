@@ -3,6 +3,7 @@ module Backend.Dashboard.Encoder exposing (encodeDashboardStatsRaw)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis, encodeAcuteIllnessEncounterType)
 import Backend.Dashboard.Model exposing (..)
+import Backend.EducationSession.Encoder exposing (encodeEducationTopic)
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (encodeDeliveryLocation, encodeIndividualEncounterParticipantOutcome)
 import Backend.Measurement.Encoder
@@ -34,7 +35,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (fromEntityUuid)
-import Utils.Json exposing (encodeEverySet)
+import Utils.Json exposing (encodeEverySet, encodeIfSet)
 
 
 encodeDashboardStatsRaw : DashboardStatsRaw -> List ( String, Value )
@@ -53,7 +54,9 @@ encodeDashboardStatsRaw stats =
     , encodeChildScoreboardData stats.childScoreboardData
     , encodeNutritionIndividualData stats.nutritionIndividualData
     , encodeNutritionGroupData stats.nutritionGroupData
+    , encodeGroupEducationData stats.groupEducationData
     , encodeVillagesWithResidents stats.villagesWithResidents
+    , encodePatientsDetails stats.patientsDetails
     , ( "timestamp", string stats.timestamp )
     , ( "stats_cache_hash", string stats.cacheHash )
     ]
@@ -82,7 +85,6 @@ encodeCasesManagementForYear dict =
 encodeCaseManagement : CaseManagement -> List ( String, Value )
 encodeCaseManagement caseManagement =
     [ ( "id", int caseManagement.identifier )
-    , ( "name", string caseManagement.name )
     , ( "birth_date", encodeYYYYMMDD caseManagement.birthDate )
     , ( "gender", encodeGender caseManagement.gender )
     , ( "nutrition", object <| encodeCaseNutrition caseManagement.nutrition )
@@ -131,14 +133,12 @@ encodeChildrenBeneficiariesData dict =
 encodeChildrenBeneficiariesStats : ChildrenBeneficiariesStats -> List ( String, Value )
 encodeChildrenBeneficiariesStats stats =
     [ ( "id", int stats.identifier )
-    , ( "name", string stats.name )
     , ( "gender", encodeGender stats.gender )
     , ( "birth_date", encodeYYYYMMDD stats.birthDate )
     , ( "created", encodeYYYYMMDD stats.memberSince )
-    , ( "mother_name", string stats.motherName )
-    , ( "phone_number", maybe string stats.phoneNumber )
     , ( "graduation_date", encodeYYYYMMDD stats.graduationDate )
     ]
+        ++ encodeIfSet "mother_id" stats.motherIdentifier int
 
 
 encodeCompletedPrograms : List ParticipantStats -> ( String, Value )
@@ -165,13 +165,12 @@ encodeMissedSessions statsList =
 
 encodeParticipantStats : ParticipantStats -> List ( String, Value )
 encodeParticipantStats stats =
-    [ ( "name", string stats.name )
+    [ ( "id", int stats.identifier )
     , ( "gender", encodeGender stats.gender )
     , ( "birth_date", encodeYYYYMMDD stats.birthDate )
-    , ( "mother_name", string stats.motherName )
-    , ( "phone_number", maybe string stats.phoneNumber )
     , ( "expected_date", encodeYYYYMMDD stats.expectedDate )
     ]
+        ++ encodeIfSet "mother_id" stats.motherIdentifier int
 
 
 encodeTotalEncountersData : TotalEncountersData -> ( String, Value )
@@ -575,3 +574,47 @@ encodeNutritionGroupEncounterDataItem item =
             ++ zscoreUnderweight
             ++ zscoreWasting
             ++ muac
+
+
+encodePatientsDetails : Dict PersonIdentifier PatientDetails -> ( String, Value )
+encodePatientsDetails dict =
+    let
+        value =
+            Dict.toList dict
+                |> List.map
+                    (\( k, v ) ->
+                        ( String.fromInt k, encodePatientDetails v )
+                    )
+                |> object
+    in
+    ( "patients_details", value )
+
+
+encodePatientDetails : PatientDetails -> Value
+encodePatientDetails details =
+    object <|
+        ( "name", string details.name )
+            :: encodeIfSet "phone_number" details.phoneNumber string
+
+
+encodeGroupEducationData : Dict VillageId (List EducationSessionData) -> ( String, Value )
+encodeGroupEducationData dict =
+    let
+        value =
+            Dict.toList dict
+                |> List.map
+                    (\( villageId, sessionData ) ->
+                        ( fromEntityUuid villageId, list encodeEducationSessionData sessionData )
+                    )
+                |> object
+    in
+    ( "group_education_data", value )
+
+
+encodeEducationSessionData : EducationSessionData -> Value
+encodeEducationSessionData data =
+    object
+        [ ( "start_date", encodeYYYYMMDD data.startDate )
+        , ( "education_topics", encodeEverySet encodeEducationTopic data.topics )
+        , ( "participating_patients", encodeEverySet int data.participants )
+        ]
