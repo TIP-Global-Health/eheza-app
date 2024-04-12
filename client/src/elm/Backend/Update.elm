@@ -1592,6 +1592,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
+        FetchEducationSessionsForPerson id ->
+            ( { model | educationSessionsByPerson = Dict.insert id Loading model.educationSessionsByPerson }
+            , sw.select educationSessionEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedEducationSessionsForPerson id)
+            , []
+            )
+
+        HandleFetchedEducationSessionsForPerson id data ->
+            ( { model | educationSessionsByPerson = Dict.insert id data model.educationSessionsByPerson }
+            , Cmd.none
+            , []
+            )
+
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
             , sw.get sessionEndpoint sessionId
@@ -4898,8 +4911,29 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             let
                 educationSessions =
                     Dict.update uuid (Maybe.map (always (Success data))) model.educationSessions
+
+                -- For every session participant, we check if it has data at
+                -- educationSessionsByPerson dict. If so, we add the session to
+                -- that data.
+                updatedEducationSessionsByPerson =
+                    EverySet.toList data.participants
+                        |> List.foldl
+                            (\personId accum ->
+                                Dict.get personId model.educationSessionsByPerson
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> Maybe.map
+                                        (\sessionsDict ->
+                                            let
+                                                updatedSessionsDict =
+                                                    Dict.insert uuid data sessionsDict
+                                            in
+                                            Dict.insert personId (Success updatedSessionsDict) accum
+                                        )
+                                    |> Maybe.withDefault accum
+                            )
+                            model.educationSessionsByPerson
             in
-            ( { model | educationSessions = educationSessions }
+            ( { model | educationSessions = educationSessions, educationSessionsByPerson = updatedEducationSessionsByPerson }
             , recalc
             )
 
