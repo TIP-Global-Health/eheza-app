@@ -123,6 +123,9 @@ pageToFragment current =
 
                                         PageChildWellnessNutrition ->
                                             "child-wellness-nutrition"
+
+                                PageGroupEducation ->
+                                    "group-education"
                     in
                     Just ("dashboard/" ++ url)
 
@@ -457,6 +460,7 @@ parseDashboardPage =
         , map (PageNCD PageDiabetes) (s "diabetes")
         , map (PageChildWellness PageChildWellnessOverview) (s "child-wellness")
         , map (PageChildWellness PageChildWellnessNutrition) (s "child-wellness-nutrition")
+        , map PageGroupEducation (s "group-education")
         ]
 
 

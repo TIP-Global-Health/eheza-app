@@ -11,6 +11,7 @@ import Backend.Dashboard.Model
         , CaseNutritionTotal
         , ChildScoreboardDataItem
         , DashboardStats
+        , EducationSessionData
         , NCDDataItem
         , Nutrition
         , NutritionDataItem
@@ -39,8 +40,8 @@ import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
 import Debug exposing (toString)
 import EverySet
-import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, isDiffTruthy, toLastDayOfMonth)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, isDiffTruthy, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -101,10 +102,10 @@ view language page currentDate site healthCenterId isChw nurse model db =
                             else
                                 Translate.DashboardLabel
                     in
-                    viewHeader language label PinCodePage
+                    viewHeader language label (SetActivePage PinCodePage)
 
                 PageAcuteIllness _ ->
-                    viewHeader language Translate.AcuteIllness (UserPage <| DashboardPage PageMain)
+                    viewHeader language Translate.AcuteIllness (SetActivePage <| UserPage <| DashboardPage PageMain)
 
                 PageNutrition subPage ->
                     let
@@ -115,27 +116,38 @@ view language page currentDate site healthCenterId isChw nurse model db =
                             else
                                 Translate.ChildNutrition
 
-                        goBackPage =
+                        goBackAction =
                             case subPage of
                                 PageCharts ->
-                                    UserPage <| DashboardPage PageMain
+                                    SetActivePage <| UserPage <| DashboardPage PageMain
 
                                 PageStats ->
-                                    UserPage <| DashboardPage <| PageNutrition PageCharts
+                                    SetActivePage <| UserPage <| DashboardPage <| PageNutrition PageCharts
 
                                 PageCaseManagement ->
-                                    UserPage <| DashboardPage model.latestPage
+                                    SetActivePage <| UserPage <| DashboardPage model.latestPage
                     in
-                    viewHeader language label goBackPage
+                    viewHeader language label goBackAction
 
                 PagePrenatal ->
-                    viewHeader language Translate.AntenatalCare (UserPage <| DashboardPage PageMain)
+                    viewHeader language Translate.AntenatalCare (SetActivePage <| UserPage <| DashboardPage PageMain)
 
                 PageNCD _ ->
-                    viewHeader language Translate.NCDs (UserPage <| DashboardPage PageMain)
+                    viewHeader language Translate.NCDs (SetActivePage <| UserPage <| DashboardPage PageMain)
 
                 PageChildWellness _ ->
-                    viewHeader language Translate.Pediatrics (UserPage <| DashboardPage PageMain)
+                    viewHeader language Translate.Pediatrics (SetActivePage <| UserPage <| DashboardPage PageMain)
+
+                PageGroupEducation ->
+                    let
+                        goBackAction =
+                            if isJust model.educationSessionDrillIn then
+                                SetEducationSessionDrillIn Nothing
+
+                            else
+                                SetActivePage <| UserPage <| DashboardPage PageMain
+                    in
+                    viewHeader language Translate.GroupEducation goBackAction
 
         content =
             Dict.get healthCenterId db.computedDashboards
@@ -178,9 +190,14 @@ view language page currentDate site healthCenterId isChw nurse model db =
 
                                     PageChildWellness subPage ->
                                         ( viewChildWellnessPage language currentDate site healthCenterId subPage assembled db model, "child-wellness" )
+
+                                    PageGroupEducation ->
+                                        ( viewGroupEducationPage language currentDate isChw assembled db model, "group-education" )
                         in
                         div [ class <| "dashboard " ++ pageClass ] <|
-                            viewFiltersPane language page db model
+                            (viewFiltersPane language page db model
+                                |> showIf (isNothing model.educationSessionDrillIn)
+                            )
                                 :: pageContent
                                 ++ [ viewCustomModal language page isChw nurse assembled db model
                                    , div [ class "timestamp" ]
@@ -196,14 +213,14 @@ view language page currentDate site healthCenterId isChw nurse model db =
         ]
 
 
-viewHeader : Language -> TranslationId -> Page -> Html Msg
-viewHeader language label goBackPage =
+viewHeader : Language -> TranslationId -> Msg -> Html Msg
+viewHeader language label goBackAction =
     div [ class "ui basic head segment" ]
         [ h1 [ class "ui header" ]
             [ translateText language label ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage goBackPage
+            , onClick goBackAction
             ]
             [ span [ class "icon-back" ] [] ]
         ]
@@ -657,24 +674,29 @@ viewFiltersPane language page db model =
 viewMenuForNurse : Language -> Html Msg
 viewMenuForNurse language =
     div []
-        [ div [ class "ui segment page-filters nurse" ]
+        [ div [ class "ui segment page-filters top-row" ]
             [ viewMenuButton language PagePrenatal Nothing
             , viewMenuButton language (PageNutrition PageCharts) Nothing
             , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
             ]
-        , div [ class "ui segment page-filters nurse center" ]
+        , div [ class "ui segment page-filters center" ]
             [ viewMenuButton language (PageNCD PageHypertension) Nothing
             , viewMenuButton language (PageChildWellness PageChildWellnessOverview) Nothing
+            , viewMenuButton language PageGroupEducation Nothing
             ]
         ]
 
 
 viewMenuForChw : Language -> Html Msg
 viewMenuForChw language =
-    div [ class "ui segment page-filters" ]
-        [ viewMenuButton language PagePrenatal Nothing
-        , viewMenuButton language (PageNutrition PageCharts) Nothing
-        , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+    div []
+        [ div [ class "ui segment page-filters top-row" ]
+            [ viewMenuButton language PagePrenatal Nothing
+            , viewMenuButton language (PageNutrition PageCharts) Nothing
+            , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
+            ]
+        , div [ class "ui segment page-filters center" ]
+            [ viewMenuButton language PageGroupEducation Nothing ]
         ]
 
 
@@ -1087,6 +1109,116 @@ viewNutritionChartsPage language currentDate isChw nurse activePage data db mode
             [ viewMonthlyChart language currentDate MonthlyChartIncidence FilterBeneficiariesIncidenceChart data.newCasesGraphData model.currentBeneficiariesIncidenceChartsFilter
             ]
         , links
+        ]
+    ]
+
+
+viewGroupEducationPage : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewGroupEducationPage language currentDate isChw assembled db model =
+    Maybe.map (viewGroupEducationDrillIn language currentDate assembled.patientsDetails)
+        model.educationSessionDrillIn
+        |> Maybe.withDefault (viewGroupEducationStandard language currentDate isChw assembled db model)
+
+
+viewGroupEducationDrillIn : Language -> NominalDate -> Dict PersonIdentifier PatientDetails -> EducationSessionData -> List (Html Msg)
+viewGroupEducationDrillIn language currentDate patientsDetails session =
+    let
+        topics =
+            EverySet.toList session.topics
+                |> List.map (\topic -> li [] [ text <| translate language <| Translate.EducationTopic topic ])
+                |> ul [ class "session-topics" ]
+
+        tableContent =
+            headerRow
+                :: (List.map viewPatientEntry <|
+                        EverySet.toList session.participants
+                   )
+
+        headerRow =
+            div [ class "entry header" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Name ]
+                , div [ class "gender" ] [ text <| translate language Translate.GenderLabel ]
+                ]
+
+        viewPatientEntry patientId =
+            Dict.get patientId patientsDetails
+                |> Maybe.map
+                    (\patient ->
+                        div [ class "entry" ]
+                            [ div [ class "name" ] [ text patient.name ]
+                            , div [ class "gender" ] [ text <| translate language <| Translate.Gender patient.gender ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+    in
+    [ topics
+    , div [ class "ui grid" ]
+        [ div [ class "patients-table" ]
+            tableContent
+        ]
+    ]
+
+
+viewGroupEducationStandard : Language -> NominalDate -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewGroupEducationStandard language currentDate isChw assembled db model =
+    let
+        dateLastDayOfSelectedMonth =
+            resolveSelectedDateForMonthSelector currentDate model.monthGap
+
+        sessionsDuringSelectedMonth =
+            List.filter (.startDate >> withinSelectedMonth dateLastDayOfSelectedMonth) assembled.groupEducationData
+
+        attendeesDuringSelectedMonth =
+            List.map (.participants >> EverySet.toList) sessionsDuringSelectedMonth
+                |> List.concat
+
+        uniqueAttendeesDuringSelectedMonth =
+            EverySet.fromList attendeesDuringSelectedMonth
+
+        tableContent =
+            headerRow
+                :: List.map viewSessionEntry sessionsDuringSelectedMonth
+
+        headerRow =
+            div [ class "entry header" ]
+                [ div [ class "topics" ] [ text <| translate language Translate.GroupEducation ]
+                , div [ class "date" ] [ text <| translate language Translate.StartDate ]
+                , div [ class "attendance" ] [ text <| translate language Translate.Attendance ]
+                ]
+
+        viewSessionEntry session =
+            let
+                drillInArrributes =
+                    if isJust model.selectedVillageFilter then
+                        [ class "icon-forward"
+                        , onClick <| SetEducationSessionDrillIn (Just session)
+                        ]
+
+                    else
+                        [ class "icon-forward hidden" ]
+            in
+            div [ class "entry" ]
+                [ EverySet.toList session.topics
+                    |> List.map (\topic -> li [] [ text <| translate language <| Translate.EducationTopic topic ])
+                    |> ul [ class "topics" ]
+                , div [ class "date" ]
+                    [ text <| formatDDMMYYYY session.startDate ]
+                , div [ class "attendance" ]
+                    [ text <| String.fromInt <| EverySet.size session.participants ]
+                , div drillInArrributes []
+                ]
+    in
+    [ monthSelector language dateLastDayOfSelectedMonth model
+    , div [ class "ui grid" ]
+        [ div [ class "three column row" ]
+            [ chwCard language (Translate.Dashboard Translate.NumberOfGroupSessions) (String.fromInt <| List.length sessionsDuringSelectedMonth)
+            , chwCard language (Translate.Dashboard Translate.TotalAttendees) (String.fromInt <| List.length attendeesDuringSelectedMonth)
+            , chwCard language (Translate.Dashboard Translate.UniquePatients) (String.fromInt <| EverySet.size uniqueAttendeesDuringSelectedMonth)
+            ]
+        ]
+    , div [ class "ui grid" ]
+        [ div [ class "sessions-table" ]
+            tableContent
         ]
     ]
 

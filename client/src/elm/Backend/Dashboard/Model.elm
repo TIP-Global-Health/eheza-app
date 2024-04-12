@@ -454,6 +454,7 @@ type alias NutritionEncounterDataItem =
 
 type alias PatientDetails =
     { name : String
+    , gender : Gender
     , phoneNumber : Maybe String
     }
 

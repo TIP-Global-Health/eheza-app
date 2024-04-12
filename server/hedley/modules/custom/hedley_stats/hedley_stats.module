@@ -3727,7 +3727,7 @@ function hedley_stats_calculate_days_in_month($year, $month) {
 }
 
 /**
- * Adds mapping for patient name and optionally phone number to data structure.
+ * Adds name, gender and optionally phone number mapping for patient.
  *
  * @param object $node
  *   Patient node.
@@ -3738,6 +3738,7 @@ function hedley_stats_calculate_days_in_month($year, $month) {
  */
 function hedley_stats_add_patient_details($node, array &$patients_details, $add_phone = FALSE) {
   $patients_details[$node->nid]['name'] = $node->title;
+  $patients_details[$node->nid]['gender'] = $node->field_gender[LANGUAGE_NONE][0]['value'];
 
   if ($add_phone) {
     $phone_number = empty($node->field_phone_number) ? '' : trim($node->field_phone_number[LANGUAGE_NONE][0]['value']);
