@@ -137,6 +137,27 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
         fetchTuberculosisEncountersForParticipantMsg =
             EverySet.toList tuberculosisParticipants
                 |> FetchTuberculosisEncountersForParticipants
+
+        --
+        --  HIV follows ups calculations.
+        --
+        hivEncounters =
+            generateHIVEncounters followUps
+
+        hivParticipants =
+            generateHIVParticipants hivEncounters db
+
+        fetchHIVEncountersMsg =
+            EverySet.toList hivEncounters
+                |> FetchHIVEncounters
+
+        fetchHIVParticipantsMsg =
+            EverySet.toList hivParticipants
+                |> FetchIndividualEncounterParticipants
+
+        fetchHIVEncountersForParticipantMsg =
+            EverySet.toList hivParticipants
+                |> FetchHIVEncountersForParticipants
     in
     [ FetchPeopleInVillage villageId
     , fetchAcuteIllnessEncountersMsg
@@ -150,6 +171,7 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
     , fetchAcuteIllnessEncountersForParticipantMsg
     , fetchPrenatalEncountersForParticipantMsg
     , fetchTuberculosisEncountersForParticipantMsg
+    , fetchHIVEncountersForParticipantMsg
     , fetchIndividualParticipantsMsg
     ]
 

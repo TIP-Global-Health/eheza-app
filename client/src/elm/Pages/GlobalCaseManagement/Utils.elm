@@ -420,6 +420,11 @@ generateTuberculosisEncounters followUps =
     generateEncountersIdsFromMeasurements .tuberculosis followUps
 
 
+generateHIVEncounters : FollowUpMeasurements -> EverySet HIVEncounterId
+generateHIVEncounters followUps =
+    generateEncountersIdsFromMeasurements .hiv followUps
+
+
 generateEncountersIdsFromMeasurements :
     (FollowUpMeasurements -> Dict measurementId { a | encounterId : Maybe encounterId })
     -> FollowUpMeasurements
@@ -444,6 +449,11 @@ generatePrenatalParticipants encounters db =
 generateTuberculosisParticipants : EverySet TuberculosisEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
 generateTuberculosisParticipants encounters db =
     generateParticipantsIdsByEncounters .tuberculosisEncounters encounters db
+
+
+generateHIVParticipants : EverySet HIVEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
+generateHIVParticipants encounters db =
+    generateParticipantsIdsByEncounters .hivEncounters encounters db
 
 
 generateParticipantsIdsByEncounters :
