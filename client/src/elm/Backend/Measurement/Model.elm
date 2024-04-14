@@ -3334,6 +3334,7 @@ type alias FollowUpMeasurements =
     , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
     , tuberculosis : Dict TuberculosisFollowUpId TuberculosisFollowUp
+    , hiv : Dict HIVFollowUpId HIVFollowUp
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
     , ncdLabs : Dict NCDLabsResultsId NCDLabsResults
