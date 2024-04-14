@@ -998,8 +998,8 @@ generateHIVFollowUpEntryData language currentDate limitDate db ( participantId, 
             dateConcludedCriteria =
                 Dict.get participantId db.individualParticipants
                     |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.andThen .endDate
-                    |> Maybe.map (\endDate -> Date.compare endDate limitDate)
+                    |> Maybe.andThen .dateConcluded
+                    |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
         in
         if dateConcludedCriteria == Just LT then
             -- Illness was concluded before limit date, so we do not need to follow up on it.
