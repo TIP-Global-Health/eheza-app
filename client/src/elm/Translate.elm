@@ -747,6 +747,7 @@ type TranslationId
     | HIV
     | HIVActivityTitle HIVActivity
     | HIVHealthEducationQuestion HIVHealthEducationSign
+    | HIVFollowUpLabel
     | HIVMedicationTask Pages.HIV.Activity.Model.MedicationTask
     | HIVNextStepsTask Pages.HIV.Activity.Model.NextStepsTask
     | HIVPCRResult HIVPCRResult
@@ -3742,6 +3743,9 @@ translationSet trans =
                 FilterTuberculosis ->
                     translationSet Tuberculosis
 
+                FilterHIV ->
+                    translationSet HIV
+
         CaseManagementPaneHeader encounterType ->
             case encounterType of
                 Pages.GlobalCaseManagement.Model.FilterAcuteIllness ->
@@ -3782,6 +3786,9 @@ translationSet trans =
 
                 FilterTuberculosis ->
                     translationSet Tuberculosis
+
+                FilterHIV ->
+                    translationSet HIV
 
         Celsius ->
             { english = "Celsius"
@@ -6675,6 +6682,12 @@ translationSet trans =
 
                 NoHIVHealthEducationSigns ->
                     translationSet EmptyString
+
+        HIVFollowUpLabel ->
+            { english = "HIV Follow up"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         HIVMedicationTask task ->
             case task of

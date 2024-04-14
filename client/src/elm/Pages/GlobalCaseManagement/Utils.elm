@@ -13,7 +13,7 @@ import Backend.Measurement.Model
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Utils exposing (tuberculosisManagementEnabled)
+import Backend.Utils exposing (hivManagementEnabled, tuberculosisManagementEnabled)
 import Backend.Village.Model exposing (Village)
 import Backend.Village.Utils exposing (isVillageResident)
 import Date exposing (Unit(..))
@@ -34,6 +34,12 @@ chwFilters features =
     ]
         ++ (if tuberculosisManagementEnabled features then
                 [ FilterTuberculosis ]
+
+            else
+                []
+           )
+        ++ (if hivManagementEnabled features then
+                [ FilterHIV ]
 
             else
                 []
@@ -378,6 +384,61 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
         )
         ( Dict.empty, acuteIllnessItemsByPerson )
         itemsFromTuberculosis
+
+
+generateHIVFollowUps :
+    NominalDate
+    -> ModelIndexedDb
+    -> FollowUpMeasurements
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
+generateHIVFollowUps limitDate db followUps =
+    let
+        encountersData =
+            generateHIVEncounters followUps
+                |> EverySet.toList
+                |> List.filterMap
+                    (\encounterId ->
+                        Dict.get encounterId db.hivEncounters
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map (\encounter -> ( encounterId, encounter.participant ))
+                    )
+                |> Dict.fromList
+    in
+    Dict.values followUps.hiv
+        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+        |> List.foldl
+            (\item accum ->
+                let
+                    encounterData =
+                        item.encounterId
+                            |> Maybe.andThen
+                                (\encounterId -> Dict.get encounterId encountersData)
+                in
+                encounterData
+                    |> Maybe.map
+                        (\participantId ->
+                            let
+                                personId =
+                                    item.participantId
+
+                                newItem =
+                                    HIVFollowUpItem item.dateMeasured "" item.encounterId item.value
+                            in
+                            Dict.get ( participantId, personId ) accum
+                                |> Maybe.map
+                                    (\member ->
+                                        if Date.compare newItem.dateMeasured member.dateMeasured == GT then
+                                            Dict.insert ( participantId, personId ) newItem accum
+
+                                        else
+                                            accum
+                                    )
+                                |> Maybe.withDefault
+                                    (Dict.insert ( participantId, personId ) newItem accum)
+                        )
+                    |> Maybe.withDefault accum
+            )
+            Dict.empty
 
 
 filterResolvedFollowUps : NominalDate -> Maybe NominalDate -> Bool
