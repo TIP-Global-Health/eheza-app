@@ -590,10 +590,12 @@
     // These are types of follow-ups that need to be loaded, even if they
     // were resolved during period of past 6 months.
     // This is required to present data at Dashboard statistics.
-    var resolvedFollowUpMeasurementsTypes = [
-      'acute_illness_trace_contact',
-      'prenatal_labs_results',
-      'ncd_labs_results'
+    var followUpMeasurementsTypesUsedByDashboard = [
+      'acute_illness_follow_up',
+      'follow_up',
+      'nutrition_follow_up',
+      'prenatal_follow_up',
+      'well_child_follow_up',
     ];
 
     function viewFollowUpMeasurements (shard) {
@@ -611,22 +613,17 @@
 
         return query.toArray().catch(databaseError).then(function (nodes) {
             if (nodes) {
+              console.log(nodes);
                 var today = new Date();
-                var sixMonthsFromToday = new Date();
-                sixMonthsFromToday.setMonth(today.getMonth() + 6);
 
                 nodes.forEach(function (node) {
                     if (node.date_concluded != undefined && typeof node.date_concluded != 'undefined') {
-                        var targetDate = sixMonthsFromToday;
-
-                        if (resolvedFollowUpMeasurementsTypes.includes(node.type)) {
-                          var targetDate = today;
+                        var resolutionDate = new Date(node.date_concluded);
+                        if (followUpMeasurementsTypesUsedByDashboard.includes(node.type)) {
+                          resolutionDate.setMonth(today.getMonth() + 6);
                         }
 
-                        // Do not load resolved items.
-                        var resolutionDate = new Date(node.date_concluded);
-
-                        if (resolutionDate < targetDate) {
+                        if (resolutionDate < today) {
                           return;
                         }
                     }

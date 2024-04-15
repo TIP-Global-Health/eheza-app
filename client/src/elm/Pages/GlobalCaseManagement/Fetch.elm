@@ -164,10 +164,12 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
     , fetchPrenatalEncountersMsg
     , fetchTuberculosisEncountersMsg
     , fetchWellChildEncountersMsg
+    , fetchHIVEncountersMsg
     , fetchAcuteIllnessParticipantsMsg
     , fetchPrenatalParticipantsMsg
     , fetchTuberculosisParticipantsMsg
     , fetchHomeVisitEncountersMsg
+    , fetchHIVParticipantsMsg
     , fetchAcuteIllnessEncountersForParticipantMsg
     , fetchPrenatalEncountersForParticipantMsg
     , fetchTuberculosisEncountersForParticipantMsg
