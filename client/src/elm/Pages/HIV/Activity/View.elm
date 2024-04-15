@@ -605,7 +605,7 @@ viewNextStepsContent language currentDate assembled data =
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language
                             currentDate
-                            [ OneDay, OneWeek ]
+                            [ OneDay, OneWeek, OneMonth ]
                             SetFollowUpOption
                         |> List.singleton
 
