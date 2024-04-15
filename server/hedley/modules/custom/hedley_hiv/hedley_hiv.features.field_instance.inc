@@ -590,7 +590,7 @@ function hedley_hiv_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_date_concluded',
-    'label' => 'Date delivered to vendor',
+    'label' => 'Resolution Date',
     'required' => 0,
     'settings' => array(
       'default_value' => 'now',
@@ -2635,7 +2635,6 @@ function hedley_hiv_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Adverse Events');
   t('Date Measured');
-  t('Date delivered to vendor');
   t('Follow up options');
   t('HIV Diagnosis	Signs');
   t('HIV Encounter');
@@ -2649,6 +2648,7 @@ function hedley_hiv_field_default_field_instances() {
   t('Prescribed HIV medications');
   t('Reason for Not Sending to HC');
   t('Reason for not taking');
+  t('Resolution Date');
   t('Scheduled Date');
   t('Send to HC');
   t('Shards');

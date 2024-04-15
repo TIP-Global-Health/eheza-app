@@ -22,6 +22,7 @@ import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.Utils
 import RemoteData exposing (WebData)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (SiteFeature)
 
 
@@ -390,7 +391,7 @@ generateHIVFollowUps :
     NominalDate
     -> ModelIndexedDb
     -> FollowUpMeasurements
-    -> Dict ( IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
+    -> Dict ( Maybe IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
 generateHIVFollowUps limitDate db followUps =
     let
         encountersData =
@@ -409,34 +410,46 @@ generateHIVFollowUps limitDate db followUps =
         |> List.foldl
             (\item accum ->
                 let
-                    encounterData =
-                        item.encounterId
-                            |> Maybe.andThen
-                                (\encounterId -> Dict.get encounterId encountersData)
+                    personId =
+                        item.participantId
+
+                    encounterIdAsString =
+                        Maybe.map fromEntityUuid item.encounterId
                 in
-                encounterData
-                    |> Maybe.map
-                        (\participantId ->
-                            let
-                                personId =
-                                    item.participantId
+                if encounterIdAsString == Just "dummy" then
+                    let
+                        newItem =
+                            HIVFollowUpItem item.dateMeasured "" Nothing item.value
+                    in
+                    Dict.insert ( Nothing, personId ) newItem accum
 
-                                newItem =
-                                    HIVFollowUpItem item.dateMeasured "" item.encounterId item.value
-                            in
-                            Dict.get ( participantId, personId ) accum
-                                |> Maybe.map
-                                    (\member ->
-                                        if Date.compare newItem.dateMeasured member.dateMeasured == GT then
-                                            Dict.insert ( participantId, personId ) newItem accum
+                else
+                    let
+                        encounterData =
+                            Maybe.andThen
+                                (\encounterId -> Dict.get encounterId encountersData)
+                                item.encounterId
+                    in
+                    encounterData
+                        |> Maybe.map
+                            (\participantId ->
+                                let
+                                    newItem =
+                                        HIVFollowUpItem item.dateMeasured "" item.encounterId item.value
+                                in
+                                Dict.get ( Just participantId, personId ) accum
+                                    |> Maybe.map
+                                        (\member ->
+                                            if Date.compare newItem.dateMeasured member.dateMeasured == GT then
+                                                Dict.insert ( Just participantId, personId ) newItem accum
 
-                                        else
-                                            accum
-                                    )
-                                |> Maybe.withDefault
-                                    (Dict.insert ( participantId, personId ) newItem accum)
-                        )
-                    |> Maybe.withDefault accum
+                                            else
+                                                accum
+                                        )
+                                    |> Maybe.withDefault
+                                        (Dict.insert ( Just participantId, personId ) newItem accum)
+                            )
+                        |> Maybe.withDefault accum
             )
             Dict.empty
 
@@ -653,10 +666,7 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
             ++ peopleForNutritionIndividual
             ++ peopleForWellChild
             |> Pages.Utils.unique
-    , acuteIllness = uniquePatientsFromFollowUps .acuteIllness
-    , prenatal = uniquePatientsFromFollowUps .prenatal
     , immunization = uniquePatientsFromFollowUps .nextVisit
-    , tuberculosis = uniquePatientsFromFollowUps .tuberculosis
     }
 
 

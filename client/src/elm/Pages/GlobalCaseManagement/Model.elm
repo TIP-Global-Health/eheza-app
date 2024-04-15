@@ -138,7 +138,7 @@ type alias HIVFollowUpItem =
 
 
 type alias HIVFollowUpEntry =
-    { participantId : IndividualEncounterParticipantId
+    { participantId : Maybe IndividualEncounterParticipantId
     , personId : PersonId
     , item : HIVFollowUpItem
     }
@@ -194,7 +194,7 @@ type alias FollowUpTuberculosisData =
 type alias FollowUpHIVData =
     { personId : PersonId
     , personName : String
-    , participantId : IndividualEncounterParticipantId
+    , participantId : Maybe IndividualEncounterParticipantId
     }
 
 
@@ -234,10 +234,7 @@ type alias NCDLabsEntryData =
 
 type alias FollowUpPatients =
     { nutrition : List PersonId
-    , acuteIllness : List PersonId
-    , prenatal : List PersonId
     , immunization : List PersonId
-    , tuberculosis : List PersonId
     }
 
 

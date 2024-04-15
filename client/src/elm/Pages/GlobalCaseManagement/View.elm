@@ -31,7 +31,7 @@ import Backend.Person.Utils exposing (generateFullName)
 import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
-import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantForPerson, tuberculosisManagementEnabled)
+import Backend.Utils exposing (hivManagementEnabled, resolveIndividualParticipantForPerson, resolveIndividualParticipantsForPerson, tuberculosisManagementEnabled)
 import Backend.Village.Utils exposing (resolveVillageResidents)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
@@ -53,7 +53,7 @@ import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewModal)
-import Utils.NominalDate exposing (sortEncounterTuplesDesc)
+import Utils.NominalDate exposing (sortDatesDesc, sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -936,7 +936,7 @@ viewTuberculosisFollowUpEntry language currentDate entry =
 viewHIVPane :
     Language
     -> NominalDate
-    -> Dict ( IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
+    -> Dict ( Maybe IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
     -> ModelIndexedDb
     -> Model
     -> Html Msg
@@ -968,7 +968,7 @@ generateHIVFollowUpEntries :
     Language
     -> NominalDate
     -> NominalDate
-    -> Dict ( IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
+    -> Dict ( Maybe IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
     -> ModelIndexedDb
     -> List HIVFollowUpEntry
 generateHIVFollowUpEntries language currentDate limitDate itemsDict db =
@@ -982,10 +982,10 @@ generateHIVFollowUpEntryData :
     -> NominalDate
     -> NominalDate
     -> ModelIndexedDb
-    -> ( IndividualEncounterParticipantId, PersonId )
+    -> ( Maybe IndividualEncounterParticipantId, PersonId )
     -> HIVFollowUpItem
     -> Maybe HIVFollowUpEntry
-generateHIVFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
+generateHIVFollowUpEntryData language currentDate limitDate db ( mParticipantId, personId ) item =
     if item.dateMeasured == currentDate then
         -- We do not display follow ups that were scheduled today,
         -- since we should not allow starting and encounter, if there
@@ -994,42 +994,76 @@ generateHIVFollowUpEntryData language currentDate limitDate db ( participantId, 
         Nothing
 
     else
-        let
-            dateConcludedCriteria =
-                Dict.get participantId db.individualParticipants
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.andThen .dateConcluded
-                    |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
-        in
-        if dateConcludedCriteria == Just LT then
-            -- Illness was concluded before limit date, so we do not need to follow up on it.
-            Nothing
+        Maybe.map
+            (\participantId ->
+                let
+                    dateConcludedCriteria =
+                        Dict.get participantId db.individualParticipants
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.andThen .dateConcluded
+                            |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
+                in
+                if dateConcludedCriteria == Just LT then
+                    -- Illness was concluded before limit date, so we do not need to follow up on it.
+                    Nothing
 
-        else
-            let
-                allEncountersWithIds =
-                    getHIVEncountersForParticipant db participantId
-                        |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
-                        -- Sort DESC
-                        |> List.sortWith sortEncounterTuplesDesc
-            in
-            List.head allEncountersWithIds
-                |> Maybe.andThen
-                    (\( encounterId, encounter ) ->
-                        -- Follow up belongs to last encounter, which indicates that
-                        -- there was no other encounter that has resolved this follow up.
-                        if item.encounterId == Just encounterId then
-                            HIVFollowUpEntry
-                                participantId
-                                personId
-                                item
-                                |> Just
+                else
+                    let
+                        allEncountersWithIds =
+                            getHIVEncountersForParticipant db participantId
+                                |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
+                                -- Sort DESC
+                                |> List.sortWith sortEncounterTuplesDesc
+                    in
+                    List.head allEncountersWithIds
+                        |> Maybe.andThen
+                            (\( encounterId, encounter ) ->
+                                -- Follow up belongs to last encounter, which indicates that
+                                -- there was no other encounter that has resolved this follow up.
+                                if item.encounterId == Just encounterId then
+                                    HIVFollowUpEntry
+                                        (Just participantId)
+                                        personId
+                                        item
+                                        |> Just
+
+                                else
+                                    -- Last encounter has not originated the follow up.
+                                    -- Therefore, we know that follow up is resolved.
+                                    Nothing
+                            )
+            )
+            mParticipantId
+            -- In case there's no individual participant for item, we know it's an
+            -- entry for 'dummy' follow up created for positive HIV test result.
+            |> Maybe.withDefault
+                (let
+                    -- Resolve date of last HIV encounter.
+                    mDateOfLastHIVEncounter =
+                        resolveIndividualParticipantsForPerson personId HIVEncounter db
+                            |> List.map (getHIVEncountersForParticipant db)
+                            |> List.concat
+                            |> List.map (Tuple.second >> .startDate)
+                            |> List.sortWith sortDatesDesc
+                            |> List.head
+
+                    entry =
+                        HIVFollowUpEntry Nothing personId item
+                 in
+                 Maybe.map
+                    (\dateOfLastHIVEncounter ->
+                        -- Generate entry, if date of last HIV encounter was  prior to
+                        -- item date (which stores datye of positive HIV result).
+                        if Date.compare dateOfLastHIVEncounter item.dateMeasured == LT then
+                            Just entry
 
                         else
-                            -- Last encounter has not originated the follow up.
-                            -- Therefore, we know that follow up is resolved.
                             Nothing
                     )
+                    mDateOfLastHIVEncounter
+                    |> -- No HIV encounters - record entry.
+                       Maybe.withDefault (Just entry)
+                )
 
 
 viewHIVFollowUpEntry : Language -> NominalDate -> HIVFollowUpEntry -> Html Msg

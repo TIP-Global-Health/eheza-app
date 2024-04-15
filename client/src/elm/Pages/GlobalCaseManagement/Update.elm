@@ -159,7 +159,19 @@ startFollowUpEncounterTuberculosis currentDate selectedHealthCenter data =
 
 startFollowUpEncounterHIV : NominalDate -> HealthCenterId -> FollowUpHIVData -> List App.Model.Msg
 startFollowUpEncounterHIV currentDate selectedHealthCenter data =
-    [ emptyHIVEncounter data.participantId currentDate (Just selectedHealthCenter)
-        |> Backend.Model.PostHIVEncounter
-        |> App.Model.MsgIndexedDb
-    ]
+    -- If participant was provided, we create new encounter for existing participant.
+    Maybe.map
+        (\participantId ->
+            [ emptyHIVEncounter participantId currentDate (Just selectedHealthCenter)
+                |> Backend.Model.PostHIVEncounter
+                |> App.Model.MsgIndexedDb
+            ]
+        )
+        data.participantId
+        |> -- Participant was not provided, so we create new participant (which
+           -- also creates encounter for newly created participant).
+           Maybe.withDefault
+            [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HIVEncounter selectedHealthCenter
+                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                |> App.Model.MsgIndexedDb
+            ]
